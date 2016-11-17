@@ -1,0 +1,193 @@
+tabs                       light gray on dark gray
+tabs.focused               black      on dark cyan
+tabs.background            default    on black
+
+cli                        black on light gray
+
+$topbar_bg = dark blue
+topbar                    light gray  on $topbar_bg
+topbar.host.connected     light green on $topbar_bg
+topbar.host.disconnected  light red   on $topbar_bg
+topbar.help.key           light cyan  on $topbar_bg
+topbar.help.equals        light cyan  on $topbar_bg
+topbar.help.label         light cyan  on $topbar_bg
+topbar.help.space         light cyan  on $topbar_bg
+
+$bottombar_bg = dark gray
+bottombar                             light gray  on $bottombar_bg
+bottombar.important                   light red   on $bottombar_bg
+bottombar.bandwidth.up                dark green  on $bottombar_bg
+bottombar.bandwidth.up.highlighted    light green on $bottombar_bg
+bottombar.bandwidth.down              dark cyan   on $bottombar_bg
+bottombar.bandwidth.down.highlighted  light cyan  on $bottombar_bg
+
+$log_bg = dark gray
+log                        light gray  on $log_bg
+log.timestamp              dark cyan   on $log_bg
+log.info                   light green on $log_bg
+log.error                  light red   on $log_bg
+log.debug                  yellow      on $log_bg
+log.dupecount              light cyan  on $log_bg
+
+
+$list_bg.uf = black
+$list_bg.f  = dark gray
+torrentlist                                        default              on $list_bg.uf
+torrentlist.focused                                default              on $list_bg.f
+torrentlist.header                                 light gray,underline on $list_bg.uf
+
+$tpath_fg = light gray
+torrentlist.tpath.header                           $tpath_fg,underline on $list_bg.uf
+torrentlist.tpath.unfocused                        $tpath_fg           on $list_bg.uf
+torrentlist.tpath.focused                          $tpath_fg           on $list_bg.f
+
+$progress_fg = dark blue
+$progress_hl = light blue
+torrentlist.progress.header                        $progress_fg,underline on $list_bg.uf
+torrentlist.progress.unfocused                     $progress_fg           on $list_bg.uf
+torrentlist.progress.focused                       $progress_fg           on $list_bg.f
+torrentlist.progress.highlighted.unfocused         $progress_hl           on $list_bg.uf
+torrentlist.progress.highlighted.focused           $progress_hl           on $list_bg.f
+
+$ratio_fg = dark blue
+$ratio_hl = light blue
+torrentlist.ratio.header                           $ratio_fg,underline on $list_bg.uf
+torrentlist.ratio.unfocused                        $ratio_fg           on $list_bg.uf
+torrentlist.ratio.focused                          $ratio_fg           on $list_bg.f
+torrentlist.ratio.highlighted.unfocused            $ratio_hl           on $list_bg.uf
+torrentlist.ratio.highlighted.focused              $ratio_hl           on $list_bg.f
+
+$size_fg = dark magenta
+torrentlist.size.header                            $size_fg,underline on $list_bg.uf
+torrentlist.size.unfocused                         $size_fg           on $list_bg.uf
+torrentlist.size.focused                           $size_fg           on $list_bg.f
+
+$downloaded_fg = dark cyan
+$downloaded_hl = light cyan
+torrentlist.downloaded.header                      $downloaded_fg,underline on $list_bg.uf
+torrentlist.downloaded.unfocused                   $downloaded_fg           on $list_bg.uf
+torrentlist.downloaded.focused                     $downloaded_fg           on $list_bg.f
+torrentlist.downloaded.highlighted.unfocused       $downloaded_hl           on $list_bg.uf
+torrentlist.downloaded.highlighted.focused         $downloaded_hl           on $list_bg.f
+
+$uploaded_fg = dark green
+$uploaded_hl = light green
+torrentlist.uploaded.header                        $uploaded_fg,underline   on $list_bg.uf
+torrentlist.uploaded.unfocused                     $uploaded_fg             on $list_bg.uf
+torrentlist.uploaded.focused                       $uploaded_fg             on $list_bg.f
+torrentlist.uploaded.highlighted.unfocused         $uploaded_hl             on $list_bg.uf
+torrentlist.uploaded.highlighted.focused           $uploaded_hl             on $list_bg.f
+
+$eta_fg = brown
+$eta_hl = yellow
+torrentlist.eta.header                             $eta_fg,underline on $list_bg.uf
+torrentlist.eta.unfocused                          $eta_fg           on $list_bg.uf
+torrentlist.eta.focused                            $eta_fg           on $list_bg.f
+torrentlist.eta.highlighted.unfocused              $eta_hl           on $list_bg.uf
+torrentlist.eta.highlighted.focused                $eta_hl           on $list_bg.f
+
+$peers-connected_fg = light gray
+$peers-connected_hl = white
+torrentlist.peers-connected.header                 $peers-connected_fg,underline on $list_bg.uf
+torrentlist.peers-connected.unfocused              $peers-connected_fg           on $list_bg.uf
+torrentlist.peers-connected.focused                $peers-connected_fg           on $list_bg.f
+torrentlist.peers-connected.highlighted.unfocused  $peers-connected_hl           on $list_bg.uf
+torrentlist.peers-connected.highlighted.focused    $peers-connected_hl           on $list_bg.f
+
+$peers-seeding_fg = light gray
+$peers-seeding_hl = white
+torrentlist.peers-seeding.header                   $peers-seeding_fg,underline on $list_bg.uf
+torrentlist.peers-seeding.unfocused                $peers-seeding_fg           on $list_bg.uf
+torrentlist.peers-seeding.focused                  $peers-seeding_fg           on $list_bg.f
+torrentlist.peers-seeding.highlighted.unfocused    $peers-seeding_hl           on $list_bg.uf
+torrentlist.peers-seeding.highlighted.focused      $peers-seeding_hl           on $list_bg.f
+
+$rate-down_fg = dark cyan
+$rate-down_hl = light cyan
+torrentlist.rate-down.header                       $rate-down_fg,underline on $list_bg.uf
+torrentlist.rate-down.unfocused                    $rate-down_fg           on $list_bg.uf
+torrentlist.rate-down.focused                      $rate-down_fg           on $list_bg.f
+torrentlist.rate-down.highlighted.unfocused        $rate-down_hl           on $list_bg.uf
+torrentlist.rate-down.highlighted.focused          $rate-down_hl           on $list_bg.f
+
+$rate-up_fg = dark green
+$rate-up_hl = light green
+torrentlist.rate-up.header                         $rate-up_fg,underline on $list_bg.uf
+torrentlist.rate-up.unfocused                      $rate-up_fg           on $list_bg.uf
+torrentlist.rate-up.focused                        $rate-up_fg           on $list_bg.f
+torrentlist.rate-up.highlighted.unfocused          $rate-up_hl           on $list_bg.uf
+torrentlist.rate-up.highlighted.focused            $rate-up_hl           on $list_bg.f
+
+
+$name.idle_fg = light gray
+torrentlist.name.header                            $name.idle_fg,underline on $list_bg.uf
+torrentlist.name.idle.progress1.unfocused          $name.idle_fg,underline on $list_bg.uf
+torrentlist.name.idle.progress1.focused            $name.idle_fg,underline on $list_bg.f
+torrentlist.name.idle.progress2.unfocused          $name.idle_fg           on $list_bg.uf
+torrentlist.name.idle.progress2.focused            $name.idle_fg           on $list_bg.f
+torrentlist.name.idle.complete.unfocused           $name.idle_fg           on $list_bg.uf
+torrentlist.name.idle.complete.focused             $name.idle_fg           on $list_bg.f
+
+$name.uploading_fg = dark green
+torrentlist.name.uploading.progress1.unfocused     $name.uploading_fg,underline on $list_bg.uf
+torrentlist.name.uploading.progress1.focused       $name.uploading_fg,underline on $list_bg.f
+torrentlist.name.uploading.progress2.unfocused     $name.uploading_fg           on $list_bg.uf
+torrentlist.name.uploading.progress2.focused       $name.uploading_fg           on $list_bg.f
+torrentlist.name.uploading.complete.unfocused      $name.uploading_fg           on $list_bg.uf
+torrentlist.name.uploading.complete.focused        $name.uploading_fg           on $list_bg.f
+
+$name.downloading_fg = dark cyan
+torrentlist.name.downloading.progress1.unfocused   $name.downloading_fg,underline on $list_bg.uf
+torrentlist.name.downloading.progress1.focused     $name.downloading_fg,underline on $list_bg.f
+torrentlist.name.downloading.progress2.unfocused   $name.downloading_fg           on $list_bg.uf
+torrentlist.name.downloading.progress2.focused     $name.downloading_fg           on $list_bg.f
+torrentlist.name.downloading.complete.unfocused    $name.downloading_fg           on $list_bg.uf
+torrentlist.name.downloading.complete.focused      $name.downloading_fg           on $list_bg.f
+
+$name.isolated_fg = dark red
+torrentlist.name.isolated.progress1.unfocused      $name.isolated_fg,underline on $list_bg.uf
+torrentlist.name.isolated.progress1.focused        $name.isolated_fg,underline on $list_bg.f
+torrentlist.name.isolated.progress2.unfocused      $name.isolated_fg           on $list_bg.uf
+torrentlist.name.isolated.progress2.focused        $name.isolated_fg           on $list_bg.f
+torrentlist.name.isolated.complete.unfocused       $name.isolated_fg           on $list_bg.uf
+torrentlist.name.isolated.complete.focused         $name.isolated_fg           on $list_bg.f
+
+$name.connected_fg = dark magenta
+torrentlist.name.connected.progress1.unfocused     $name.connected_fg,underline on $list_bg.uf
+torrentlist.name.connected.progress1.focused       $name.connected_fg,underline on $list_bg.f
+torrentlist.name.connected.progress2.unfocused     $name.connected_fg           on $list_bg.uf
+torrentlist.name.connected.progress2.focused       $name.connected_fg           on $list_bg.f
+torrentlist.name.connected.complete.unfocused      $name.connected_fg           on $list_bg.uf
+torrentlist.name.connected.complete.focused        $name.connected_fg           on $list_bg.f
+
+$name.queued_fg = brown
+torrentlist.name.queued.progress1.unfocused        $name.queued_fg,underline on $list_bg.uf
+torrentlist.name.queued.progress1.focused          $name.queued_fg,underline on $list_bg.f
+torrentlist.name.queued.progress2.unfocused        $name.queued_fg           on $list_bg.uf
+torrentlist.name.queued.progress2.focused          $name.queued_fg           on $list_bg.f
+torrentlist.name.queued.complete.unfocused         $name.queued_fg           on $list_bg.uf
+torrentlist.name.queued.complete.focused           $name.queued_fg           on $list_bg.f
+
+$name.stopped_fg = dark gray
+torrentlist.name.stopped.progress1.unfocused       $list_bg.f,underline  on $list_bg.uf
+torrentlist.name.stopped.progress1.focused         $list_bg.uf,underline on $list_bg.f
+torrentlist.name.stopped.progress2.unfocused       $list_bg.f            on $list_bg.uf
+torrentlist.name.stopped.progress2.focused         $list_bg.uf           on $list_bg.f
+torrentlist.name.stopped.complete.unfocused        $list_bg.f            on $list_bg.uf
+torrentlist.name.stopped.complete.focused          $list_bg.uf           on $list_bg.f
+
+$name.verifying_fg = yellow
+torrentlist.name.verifying.progress1.unfocused     $name.verifying_fg,underline on $list_bg.uf
+torrentlist.name.verifying.progress1.focused       $name.verifying_fg,underline on $list_bg.f
+torrentlist.name.verifying.progress2.unfocused     $name.verifying_fg           on $list_bg.uf
+torrentlist.name.verifying.progress2.focused       $name.verifying_fg           on $list_bg.f
+torrentlist.name.verifying.complete.unfocused      $name.verifying_fg           on $list_bg.uf
+torrentlist.name.verifying.complete.focused        $name.verifying_fg           on $list_bg.f
+
+$name.initializing_fg = light blue
+torrentlist.name.initializing.progress1.unfocused  $name.initializing_fg,underline on $list_bg.uf
+torrentlist.name.initializing.progress1.focused    $name.initializing_fg,underline on $list_bg.f
+torrentlist.name.initializing.progress2.unfocused  $name.initializing_fg           on $list_bg.uf
+torrentlist.name.initializing.progress2.focused    $name.initializing_fg           on $list_bg.f
+torrentlist.name.initializing.complete.unfocused   $name.initializing_fg           on $list_bg.uf
+torrentlist.name.initializing.complete.focused     $name.initializing_fg           on $list_bg.f

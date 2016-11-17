@@ -1,0 +1,105 @@
+This is list a of rough ideas.  Feel free to contribute your own, ask/answer
+questions and point out issues.
+
+* commands
+** TODO tab: Add --background,-b option                         :improvement:
+   If given, the new or specified tab should not be focused.
+
+** TODO New command: sort                                       :improvement:
+   Sort torrents in the focused list or in another tab (--focus,-f).  Check if
+   tab actually contains a torrent list and not a help page, for example.
+
+** TODO New command: columns                                    :improvement:
+   Set the columns in the focused list or in another tab (--focus,-f).  Check
+   if tab actually contains a torrent list and not a help page, for example.
+
+** TODO add: --path,-p option                                   :improvement:
+   The newly added torrent is downloaded to the specified path.
+
+** TODO Command chaining with &, |, ;                           :improvement:
+   Commands can be separated with '&', '|' or ';'.  Run each command
+   separately.  Stop execution if:
+    - The previous command failed and is separated with '&'
+    - The previous command succeeeded and is separated with '|'
+
+*** TODO Document how command chaining works in 'help commands'
+
+*** TODO Maybe offer alternatives to '&', '|', and ';'?
+    Ideally, the command chaining characters should be escapable, which is
+    straightforward in the built-in prompt.  But on the CLI they have meaning
+    to the shell, which means they have to be escaped twice, once so the shell
+    ignores them and then again for tctrl to ignore them.
+
+    Maybe offer '+', '-' and ':' as aliases? The downside would be that there
+    are more characters one would have to escape in torrent names, etc.
+
+
+* client
+** TODO NotImplementedError                                     :improvement:
+   The classes exported by `client` should derive from base classes that raise
+   NotImplementedError in all undefined methods and properties.
+
+*** TODO NotImplementedError callbacks
+    Figure out how to avoid tons of ~try: ... except NotImplementedError as e:
+    log.error(e)~.  Maybe with a callback somewhere?
+
+
+** TODO Allow selecting multiple torrents for action
+   The user should be able to mark and unmark torrents with space.
+     - Add a new column that displays a single character if the torrent is
+       selected.
+     - Make command 'select' which takes one argument: 'add'/'+',
+       'remove'/'-', 'all'/'*' or 'none'/'0'.  Executing the command does what
+       the argument says to the focused torrent (in case of 'add'/'remove') or
+       adds/removes all torrents in the current list to the selection (in case
+       of 'none'/'0').  It should also accept a FILTER argument.
+
+*** TODO Show number of selected torrents
+    The best place would probably in the bottom bar.  Either implement that in
+    tui.infobar.TorrentCountersWidget or create a new widget.
+
+*** TODO All torrent commands should use torrent selection
+    Commands like stop, start, verify, etc should apply to
+      - all marked torrents if any torrents are marked.
+      - the focused torrent if any torrent is focused.
+      - the torrents selected by FILTER argument(s).
+    Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
+
+
+* tui.keymap
+** TODO Chainable keybindings                                   :improvement:
+   Example: f a -> ls active
+            f p -> ls paused
+            f i -> ls isolated
+
+*** TODO Chainable keybindings                                  :improvement:
+    When the user hits the first key of a chain, a list should appear that
+    offers further keys and what they do.  But what should be displayed with
+    the keybinding 'a b c -> ls something' when the user hits a?
+
+
+* tui.logger
+** TODO Some long log messages are not displayed                        :bug:
+   To reproduce, create some log messages and change the terminal size.
+
+   ~$ tctrl --debug client.aiotransmission~
+
+   Some messages will appear as empty but show the message when the terminal
+   becomes large enough.
+
+** TODO Make log widget scrollable                              :improvement:
+   How to scroll?  Do we need a command for that, like ~scrollog
+   up/down/pgup/pgdown~?  Is there a better way?
+
+
+* tui.tabs
+** TODO New tab not always rendered                                     :bug:
+   If no tab exists and a new one is created, it isn't rendered until
+   something else happens, like opening the command prompt.
+
+
+
+
+
+#+STARTUP: showeverything
+#+OPTIONS: toc:nil num:nil H:10

@@ -1,0 +1,108 @@
+* tctrl
+  tctrl is a TUI (text user interface) and CLI (command line interface) client
+  for the [[http://www.transmissionbt.com/][BitTorrent Client Transmission]] (and perhaps others in the future).
+
+  [[file:screenshot.png]]
+
+** Features
+   - Use *filters* to list/start/stop/remove/... torrents matching any
+     combination of criteria
+   - *Tabs* with different lists, documentation, etc
+   - Everything is done via *commands*, and they are invoked
+     - through *keybindings*,
+     - by entering them in a *built-in command prompt*,
+     - by providing them as *CLI arguments* in your interactive shell or in
+       *scripts*,
+     - or by listing them in an *rc file*.
+   - *Themes* with 16 and 256 colors
+   - *Complete built-in documentation* with ~help~ command
+   - Full *API abstraction layer* makes it possible to support other torrent
+     clients (probably deluge, maybe rtorrent)
+
+** Examples
+   Add two torrents (file and hash) and exit
+   #+BEGIN_EXAMPLE shell
+   $ tctrl add /path/to/some.torrent d4d6b73851fe3288e40389a8e1fb98124a9b9ba5
+   #+END_EXAMPLE
+
+   Connect to non-default host and present the TUI
+   #+BEGIN_EXAMPLE shell
+   $ tctrl set srv.url torrents.local:1234
+   #+END_EXAMPLE
+
+   Print all uploading and/or downloading torrents on torrents.local and exit
+   #+BEGIN_EXAMPLE shell
+   $ tctrl set srv.url torrents.local \; ls active
+   #+END_EXAMPLE
+
+   List torrents with more than 50 seeds, then remove them
+   #+BEGIN_EXAMPLE shell
+   $ tctrl ls 'seeds>50'
+   $ tctrl rm 'seeds>50'
+   #+END_EXAMPLE
+
+   Stop/pause torrents with "/foo/" in their download path and a ratio above 10
+   #+BEGIN_EXAMPLE shell
+   $ tctrl stop 'path~/foo/&ratio>10'
+   #+END_EXAMPLE
+
+   Open two tabs with different torrent lists:
+     - slowly uploading torrents with "/foo/" in their download path
+     - small or well-seeded torrents, sorted by size (ascending) and number of
+       seeds (descending)
+   #+BEGIN_EXAMPLE shell
+   $ tctrl tab ls 'path~/foo/&rate-up<10k' \; tab ls 'size<500M|seeds>=1k' --sort 'size,!seeds'
+   #+END_EXAMPLE
+
+** Configuration
+   All configuration is done in ~$HOME/.config/tctrl/rc~.  Each line is a command
+   that is called during startup.  Commands given as CLI arguments are called
+   after the rc commands.
+
+*** Example config
+   #+BEGIN_EXAMPLE shell
+   # Host that runs Transmission daemon
+   set srv.url otherhost:123
+
+   # Poll every 10 seconds
+   set tui.poll 10
+
+   # Default columns in torrent lists
+   set tlist.columns name ratio rate-up rate-down
+
+   # Open a few tabs
+   tab ls active --sort !progress,path,!rate
+   tab ls paused --sort !progress --columns name,progress,ratio,size
+   tab ls isolated --sort tracker --columns name,path
+   #+END_EXAMPLE
+
+** Installation
+   # TODO: Link to pypy repo
+
+** Requirements
+   - Python >=3.5
+   - [[http://www.urwid.org/][urwid]] >=1.3.0
+   - [[https://github.com/KeepSafe/aiohttp/][aiohttp]] >=0.22.5
+   - [[https://pypi.python.org/pypi/appdirs][appdirs]]
+   - [[https://pypi.python.org/pypi/blinker/][blinker]]
+
+** Contributing
+   There is a (incomplete) [[file:TODO.org][TODO list]].  Feel free to work on that.
+
+   If you want to contribute code and get stuck, don't know where to even
+   begin, or just to make sure you're not duplicating someone else's efforts,
+   open an issue.
+
+** License
+   tctrl is free software: you can redistribute it and/or modify it under the
+   terms of the GNU General Public License as published by the Free Software
+   Foundation, either version 3 of the License, or (at your option) any later
+   version.
+
+   This program is distributed in the hope that it will be useful but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE.  See the [[https://github.com/KeepSafe/aiohttp/][GNU General Public License]] for
+   more details.
+
+#+STARTUP: showeverything
+#+OPTIONS: num:nil
