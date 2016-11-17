@@ -76,8 +76,7 @@
    tab ls isolated --sort tracker --columns name,path
    #+END_EXAMPLE
 
-** Installation
-   # TODO: Link to pypy repo
+# ** Installation
 
 ** Requirements
    - Python >=3.5
