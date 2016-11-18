@@ -23,9 +23,6 @@ class HelpCmd(base.HelpCmdbase):
     provides = {'tui'}
     tui = ExpectedResource
 
-    # target_tab_id defaults to current tab if we're not run by 'tab' command.
-    target_tab_id = None
-
     def display_help(self, topics, lines):
         import urwid
 
@@ -33,7 +30,7 @@ class HelpCmd(base.HelpCmdbase):
         titlew = urwid.AttrMap(urwid.Text(titletext), 'tabs', 'tabs.focused')
         lines = [urwid.Text(l) for l in lines]
         helpw = urwid.ListBox(urwid.SimpleListWalker(lines))
-        self.tui.tabs.load(titlew, helpw, position=self.target_tab_id)
+        self.tui.tabs.load(titlew, helpw)
 
 
 class VersionCmd(base.VersionCmdbase):

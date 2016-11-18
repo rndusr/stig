@@ -31,16 +31,13 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
     provides = {'tui'}
     tui = ExpectedResource
 
-    # target_tab_id defaults to current tab if we're not run by 'tab' command.
-    target_tab_id = None
-
     def make_list(self, filters, sort, columns):
         import urwid
         from ...tui.torrent.tlist import TorrentListWidget
 
         tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
         titlew = urwid.AttrMap(urwid.Text(tlistw.title), 'tabs', 'tabs.focused')
-        self.tui.tabs.load(titlew, tlistw, position=self.target_tab_id)
+        self.tui.tabs.load(titlew, tlistw)
         return True
 
 

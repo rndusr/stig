@@ -214,7 +214,7 @@ class TabCmd(metaclass=InitCommand):
 
         if COMMAND:
             log.debug('Running command in tab %d: %r', tabs.focus_position, COMMAND)
-            process = self.cmdmgr.run(COMMAND, target_tab_id=tabs.get_id())
+            process = self.cmdmgr.run(COMMAND)
             # Sync processes are always finished at this point.
             # Async processes must finish before we can report our own success.
             if not process.finished:
