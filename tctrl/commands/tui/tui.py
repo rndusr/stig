@@ -187,7 +187,7 @@ class TabCmd(metaclass=InitCommand):
     tui = ExpectedResource
     cmdmgr = ExpectedResource
 
-    def run(self, close, focus, COMMAND):
+    async def run(self, close, focus, COMMAND):
         import urwid
         tabs = self.tui.tabs
 
@@ -207,8 +207,12 @@ class TabCmd(metaclass=InitCommand):
             log.debug('Inserted new tab at position %d', tabs.focus_position)
         if COMMAND:
             log.debug('Running command in tab %d: %r', tabs.focus_position, COMMAND)
-            retval = self.cmdmgr(COMMAND, target_tab_id=tabs.get_id(), on_error=log.error)
-            return retval if isinstance(retval, bool) else True
+            process = self.cmdmgr.run(COMMAND, target_tab_id=tabs.get_id())
+            # Sync processes are always finished at this point.
+            # Async processes must finish before we can report our own success.
+            if not process.finished:
+                await process.task
+            return process.success
         else:
             return True
 
