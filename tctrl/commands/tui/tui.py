@@ -196,15 +196,22 @@ class TabCmd(metaclass=InitCommand):
             i = self.get_tab_index(close, tabs)
             if i is not None:
                 tabs.remove(i)
+            else:
+                return False
+
         if focus is not None:
             log.debug('Focusing tab %r', focus)
             i = self.get_tab_index(focus, tabs)
             if i is not None:
                 tabs.focus_position = i
+            else:
+                return False
+
         if close is False and focus is None:
             titlew = urwid.AttrMap(urwid.Text('Empty tab'), 'tabs', 'tabs.focused')
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d', tabs.focus_position)
+
         if COMMAND:
             log.debug('Running command in tab %d: %r', tabs.focus_position, COMMAND)
             process = self.cmdmgr.run(COMMAND, target_tab_id=tabs.get_id())
