@@ -233,7 +233,6 @@ class Timestamp(float):
         return abs(self - time.time()) < TIMEDELTA_NOW
 
 
-
 # Because 'convert' needs Number, which is specified in this file, it must be
 # imported AFTER Number exists to avoid a circular import.
 from . import convert

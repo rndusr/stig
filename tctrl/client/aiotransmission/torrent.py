@@ -78,14 +78,11 @@ _STATUS_MAP = {
 
 class TrackerList(tuple):
     def __new__(cls, trackers):
-        obj = super().__new__(cls,
-            tuple({
-                'id': t['id'],
-                'url-announce': utils.split_url(t['announce'])
-            }
-            for t in trackers)
+        return super().__new__(cls,
+            ({'id': tracker['id'],
+              'url-announce': utils.split_url(tracker['announce'])}
+             for tracker in trackers)
         )
-        return obj
 
 
 # Map our keys to tuples of needed RPC field names for those keys
