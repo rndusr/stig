@@ -14,6 +14,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
+from collections import abc
 from .utils import pretty_float
 
 
@@ -233,6 +234,48 @@ class Timestamp(float):
         return abs(self - time.time()) < TIMEDELTA_NOW
 
 
+
+from functools import total_ordering
+@total_ordering
+class TorrentFilePriority(str):
+    _INT2STR = {-1: 'low', 0: 'normal', 1: 'high'}
+    _STR2INT = {'low': -1, 'normal': 0, 'high': 1}
+
+    def __new__(cls, prio):
+        if isinstance(prio, int):
+            obj = super().__new__(cls, cls._INT2STR[prio])
+        else:
+            assert prio in self._STR2INT
+            obj = super().__new__(cls, prio)
+        return obj
+
+    def __int__(self): return self._STR2INT(self)
+    def __lt__(self, other): return int(self) < int(other)
+
+class TorrentFile(abc.Mapping):
+    _TYPES = {
+        'name'            : lambda raw: SmartCmpStr(raw['name']),
+        'size-total'      : lambda raw: convert.size(raw['size-total'], unit='byte'),
+        'size-downloaded' : lambda raw: convert.size(raw['size-downloaded'], unit='byte'),
+        'is-wanted'       : lambda raw: bool(raw['is-wanted']),
+        'priority'        : lambda raw: TorrentFilePriority(raw['priority']),
+        'progress'        : lambda raw: Percent(raw['size-downloaded'] / raw['size-total'] * 100),
+    }
+
+    def __init__(self, name, size_total, size_downloaded, is_wanted, priority):
+        self._raw = {'name': name, 'is-wanted': is_wanted, 'priority': priority,
+                     'size-total': size_total, 'size-downloaded': size_downloaded}
+        self._cache = {}
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            self._cache[key] = self._TYPES[key](self._raw)
+        return self._cache[key]
+
+    def __iter__(self): iter(self._TYPES)
+    def __len__(self): return len(self._TYPES)
+
+
 # Because 'convert' needs Number, which is specified in this file, it must be
 # imported AFTER Number exists to avoid a circular import.
 from . import convert
@@ -279,4 +322,5 @@ TYPES = {
     'size-corrupt'      : lambda v: convert.size(v, unit='byte'),
 
     'trackers'          : tuple,
+    'files'             : tuple,
 }

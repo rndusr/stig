@@ -67,14 +67,18 @@ _STATUS_MAP = {
     6: tkeys.Status.SEED,
 }
 
-# class FileList(tuple):
-#     def __new__(cls, files):
-#         return super().__new__(cls,
-#             tuple({'size-downloaded': Number(f['bytesCompleted'], prefix='metric'),
-#                    'size-total': Number(f['length'], prefix='metric'),
-#                    'name': f['name']}
-#                   for f in files)
-#         )
+
+class FileList(tuple):
+    def __new__(cls, files, fileStats):
+        return super().__new__(cls,
+            (tkeys.TorrentFile(name=f['name'],
+                               size_total=f['length'],
+                               size_downloaded=f['bytesCompleted'],
+                               is_wanted=fS['wanted'],
+                               priority=fS['priority'])
+             for f,fS in zip(files, fileStats))
+        )
+
 
 class TrackerList(tuple):
     def __new__(cls, trackers):
@@ -125,7 +129,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
-    # 'files'             : ('files',),
+    'files'             : ('files', 'fileStats'),
 }
 
 # Map our keys to callables that adjust the raw RPC values or create new
@@ -140,6 +144,7 @@ _MODIFY = {
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
     'trackers'        : TrackerList,
+    'files'           : FileList,
 }
 
 class Torrent(TorrentBase):
@@ -167,7 +172,7 @@ class Torrent(TorrentBase):
     def __getitem__(self, key):
         if key not in self._cache:
             if key in _MODIFY:
-                # Modifier gets all values specified in _
+                # Modifier gets all values specified in DEPENDENCIES
                 args = tuple(self._raw[field] for field in DEPENDENCIES[key])
                 value = _MODIFY[key](*args)
             else:
