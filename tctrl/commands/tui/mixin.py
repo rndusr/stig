@@ -46,14 +46,18 @@ class make_selection():
     def make_selection(self, TORRENT):
         """Get TorrentFilter instance or tuple of torrent IDs from arguments or focused torrent"""
         tabs = self.tui.tabs
-        filters = self.cmdutils.parseargs_filter(TORRENT)
-        if filters is None:
-            # Try to find focused torrent in focused tab
-            if hasattr(tabs.focus, 'focused_torrent') and \
-               tabs.focus.focused_torrent is not None:
-                return (tabs.focus.focused_torrent.tid,)
-            else:
-                log.error('No torrent selected')
+        try:
+            filters = self.cmdutils.parseargs_filter(TORRENT)
+        except ValueError as e:
+            log.error(e)
         else:
-            return filters
+            if filters is None:
+                # Try to find focused torrent in focused tab
+                if hasattr(tabs.focus, 'focused_torrent') and \
+                   tabs.focus.focused_torrent is not None:
+                    return (tabs.focus.focused_torrent.tid,)
+                else:
+                    log.error('No torrent selected')
+            else:
+                return filters
 
