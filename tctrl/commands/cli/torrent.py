@@ -25,7 +25,7 @@ from shutil import get_terminal_size
 def _print_table(items, columns_wanted, COLUMN_SPECS):
     """Print table from a two-dimensional array of column objects
 
-    `COLUMN_SPECS` maps column IDs to _ColumnBase classes.  A column ID is any
+    `COLUMN_SPECS` maps column IDs to ColumnBase classes.  A column ID is any
     hashable object, but you probably want strings like 'name', 'id', 'date',
     etc.
 
@@ -35,8 +35,8 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
     objects by passing them to the classes in `COLUMN_SPECS`.
     """
 
-    # Create two-dimensional list to represent a table.  Each cell is some
-    # kind of _ColumnBase instance (see columns.tlist module).
+    # Create two-dimensional list to represent a table.  Each cell must be a
+    # ColumnBase instance (see columns.tlist module).
     rows  = []
     for item in items:
         row = []

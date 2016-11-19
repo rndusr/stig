@@ -99,7 +99,7 @@ class CellWidgetBase(urwid.WidgetWrap):
         return super().__init__(self.attrmap)
 
     def update(self, torrent):
-        self.torrent = torrent
+        self.data = torrent
         new_value = self.get_value()
         if self.value != new_value:
             self.value = new_value
@@ -197,7 +197,7 @@ class Downloaded(COLUMNS['downloaded'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        t = self.torrent
+        t = self.data
         if t['%downloaded'] < 100 and 0 < t['size-downloaded'] < t['size-final']:
             return 'highlighted'
 
@@ -215,7 +215,7 @@ class Uploaded(COLUMNS['uploaded'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        if self.torrent['size-uploaded'] < self.torrent['size-downloaded']:
+        if self.data['size-uploaded'] < self.data['size-downloaded']:
             return 'highlighted'
 
     @classmethod
