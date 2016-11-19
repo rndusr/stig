@@ -138,6 +138,39 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
                 return self.make_tlist(filters, sort, columns)
 
 
+class ListFilesCmdbase(metaclass=InitCommand):
+    name = 'filelist'
+    aliases = ('fls', 'lsf')
+    provides = set()
+    category = 'torrent'
+    description = 'List torrent files'
+    usage = make_torrentcmd_usage('filelist', hasoptions=True)
+    examples = ('filelist',
+                "filelist 'A.Torrent.with.Files'")
+    argspecs = (
+        make_filter_argspec(default_to_focused_torrent=True),
+    )
+
+    srvapi = ExpectedResource
+    cmdutils = ExpectedResource
+
+    async def run(self, FILTER):
+        filters = self.make_selection(FILTER)
+        if filters is None:  # Bad filter expression
+            return False
+        else:
+            response = await self.make_request(
+                self.srvapi.torrent.torrents(filters, keys=('name', 'files')),
+                quiet=True, update_torrentlist=False)
+
+            if response.success:
+                if asyncio.iscoroutinefunction(self.make_flist):
+                    await self.make_flist(response.torrents)
+                else:
+                    self.make_flist(response.torrents)
+
+            return response.success
+
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
     name = 'remove'
