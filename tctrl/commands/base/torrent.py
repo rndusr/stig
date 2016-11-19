@@ -132,10 +132,11 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
             return False
         else:
             log.debug('Listing %s torrents sorted by %s', filters, sort)
-            if asyncio.iscoroutinefunction(self.make_list):
-                return await self.make_list(filters, sort, columns)
+            if asyncio.iscoroutinefunction(self.make_tlist):
+                return await self.make_tlist(filters, sort, columns)
             else:
-                return self.make_list(filters, sort, columns)
+                return self.make_tlist(filters, sort, columns)
+
 
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):

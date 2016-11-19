@@ -30,7 +30,7 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
 class ListTorrentsCmd(base.ListTorrentsCmdbase, mixin.make_request):
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
-    async def make_list(self, filters, sort, columns):
+    async def make_tlist(self, filters, sort, columns):
         # Get wanted torrents and sort them
         if filters is None:
             keys = set(sort.needed_keys)

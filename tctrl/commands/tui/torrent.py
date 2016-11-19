@@ -31,7 +31,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
     provides = {'tui'}
     tui = ExpectedResource
 
-    def make_list(self, filters, sort, columns):
+    def make_tlist(self, filters, sort, columns):
         import urwid
         from ...tui.torrent.tlist import TorrentListWidget
 
