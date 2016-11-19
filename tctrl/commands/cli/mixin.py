@@ -24,9 +24,9 @@ class make_request():
 
 
 class make_selection():
-    def make_selection(self, TORRENT):
+    def make_selection(self, FILTER):
         """Get TorrentFilter instance or IDs from arguments"""
-        filters = self.cmdutils.parseargs_filter(TORRENT)
+        filters = self.cmdutils.parseargs_filter(FILTER)
         if filters is None:
             log.error('No torrent specified')
         else:
