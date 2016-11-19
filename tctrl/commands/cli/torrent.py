@@ -18,8 +18,126 @@ log = make_logger(__name__)
 from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
-from ...columns.tlist import COLUMNS
+from ...columns.tlist import COLUMNS as TLIST_COLUMNS
 from shutil import get_terminal_size
+
+
+def _print_table(items, columns_wanted, COLUMN_SPECS):
+    """Print table from a two-dimensional array of column objects
+
+    `COLUMN_SPECS` maps column IDs to _ColumnBase classes.  A column ID is any
+    hashable object, but you probably want strings like 'name', 'id', 'date',
+    etc.
+
+    `columns_wanted` is a sequence of column IDs.
+
+    `items` is a sequence of arbitrary objects that are used to create cell
+    objects by passing them to the classes in `COLUMN_SPECS`.
+    """
+
+    # Create two-dimensional list to represent a table.  Each cell is some
+    # kind of _ColumnBase instance (see columns.tlist module).
+    rows  = []
+    for item in items:
+        row = []
+        for i,colname in enumerate(columns_wanted):
+            cell = COLUMN_SPECS[colname](item)
+            cell.index = i
+            row.append(cell)
+        rows.append(row)
+
+    termsize = get_terminal_size(fallback=(None, None))
+    delimiter = '|' if termsize.columns is None else '│'
+
+    # Whether to print for a human or for a machine to read our output
+    pretty_output = termsize.columns is not None
+
+    def assemble_line(row):
+        line = []
+        for cell in row:
+            if pretty_output:
+                line.append(cell.get_string())
+            else:
+                line.append(str(cell.get_raw()))
+        return delimiter.join(line)
+
+    def assemble_headers():
+        # This must be called after shrink_and_expand_to_fit() so we can
+        # grab the final column widths from the first row.
+        widths = tuple(cell.width for cell in rows[0])
+        headers = []
+        for colname,width in zip(columns_wanted, widths):
+            header_items = COLUMN_SPECS[colname].header
+            left  = header_items.get('left', '')
+            right = header_items.get('right', '')
+            space = ' '*(width - len(left) - len(right))
+            header = ''.join((left, space, right))[:width]
+            headers.append(header)
+        return delimiter.join(headers)
+
+    def shrink_and_expand_to_fit():
+        log.debug('TTY width is {}'.format(termsize))
+
+        def get_colwidth(colindex):
+            # Get maximum column width (width of widest cell in all rows)
+            return max(len(row[colindex].get_string())
+                       for row in rows)
+
+        def set_colwidth(colindex, width):
+            # Set column width of all rows
+            for row in rows:
+                cell = row[colindex]
+                cell.width = width
+
+        def widest_columns():
+            # Column indexes sorted by column width
+            return sorted(range(len(columns_wanted)),
+                          key=lambda colindex: get_colwidth(colindex),
+                          reverse=True)
+
+        # Expand column widths to make all cell values fit
+        for colindex in range(len(columns_wanted)):
+            colwidth = get_colwidth(colindex)
+            set_colwidth(colindex, colwidth)
+
+        # Rows should have identical column widths from now on, so we can
+        # use the first row to check our progress.
+        while len(assemble_line(rows[0])) > termsize.columns:
+            excess = len(assemble_line(rows[0])) - termsize.columns
+            widest = widest_columns()
+            widest_0 = get_colwidth(widest[0])
+            widest_1 = get_colwidth(widest[1])
+
+            # Shorten widest column by difference to second widest column
+            # (leaving them at the same width), but not by more than `excess`
+            # characters and at least one character.
+
+            # TODO: This is very slow when listing lots of rows in a small
+            # terminal because the widest column is shrunk by only 1 character
+            # before checking again.  In theory, the minimum shrink amount
+            # should be something like: int(`excess` / <number of shrinkable
+            # columns>) + 1 The number of shrinkable columns can be determined
+            # by filtering the classes in COLUMNS for `class.width is None`.
+            shorten_by = max(1, min(excess, widest_0 - widest_1))
+            set_colwidth(widest[0], widest_0 - shorten_by)
+
+    if rows:
+        if not pretty_output:
+            log.debug('Could not detect TTY size - assuming stdout is no TTY')
+            headerstr = None
+        elif termsize.columns < len(columns_wanted)*3:
+            log.error('Too many columns for this terminal size')
+            return False
+        else:
+            shrink_and_expand_to_fit()
+            headerstr = '\033[1;4m' + assemble_headers() + '\033[0m'
+
+        for linenum,row in enumerate(rows):
+            if headerstr is not None and \
+               linenum % (termsize.lines-1) == 0:
+                log.info(headerstr)
+            log.info(assemble_line(row))
+
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -37,117 +155,17 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase, mixin.make_request):
         else:
             keys = set(sort.needed_keys + filters.needed_keys)
         for colname in columns:
-            keys.update(COLUMNS[colname].needed_keys)
+            keys.update(TLIST_COLUMNS[colname].needed_keys)
         response = await self.make_request(
             self.srvapi.torrent.torrents(filters, keys=keys),
             quiet=True)
         torrents = sort.apply(response.torrents)
 
-        # Create Table
-        termsize = get_terminal_size(fallback=(None, None))
-        delimiter = '|' if termsize.columns is None else '│'
-
-        # Whether to print for a human or for a machine to read our output
-        pretty = termsize.columns is not None
-
-        # Create two-dimensional list to represent a table.  Each cell is some
-        # kind of _ColumnBase instance (see columns.tlist module).
-        rows  = []  # Two-dimensional list
-        for t in torrents:
-            row = []
-            for i,colname in enumerate(columns):
-                cell = COLUMNS[colname](t)
-                cell.index = i
-                row.append(cell)
-            rows.append(row)
-
-        def assemble_line(row):
-            line = []
-            for cell in row:
-                if pretty:
-                    line.append(cell.get_string())
-                else:
-                    line.append(str(cell.get_raw()))
-            return delimiter.join(line)
-
-        def assemble_headers():
-            # This must be called after shrink_and_expand_to_fit() so we can
-            # grab the final column widths from the first row.
-            widths = tuple(cell.width for cell in rows[0])
-            headers = []
-            for colname,width in zip(columns, widths):
-                header_items = COLUMNS[colname].header
-                left  = header_items.get('left', '')
-                right = header_items.get('right', '')
-                space = ' '*(width - len(left) - len(right))
-                header = ''.join((left, space, right))[:width]
-                headers.append(header)
-            return delimiter.join(headers)
-
-        def shrink_and_expand_to_fit():
-            log.debug('TTY width is {}'.format(termsize))
-
-            def get_colwidth(colindex):
-                # Get maximum column width (width of widest cell in all rows)
-                return max(len(row[colindex].get_string())
-                           for row in rows)
-
-            def set_colwidth(colindex, width):
-                # Set column width of all rows
-                for row in rows:
-                    cell = row[colindex]
-                    cell.width = width
-
-            def widest_columns():
-                # Column indexes sorted by column width
-                return sorted((colindex for colindex,colname in enumerate(columns)),
-                              key=lambda colindex: get_colwidth(colindex),
-                              reverse=True)
-
-            # Expand column widths to make all cell values fit
-            for colindex,colname in enumerate(columns):
-                colwidth = get_colwidth(colindex)
-                set_colwidth(colindex, colwidth)
-
-            # Rows should have identical column widths from now on, so we can
-            # use the first row to check our progress.
-            while len(assemble_line(rows[0])) > termsize.columns:
-                excess = len(assemble_line(rows[0])) - termsize.columns
-                widest = widest_columns()
-                widest_0 = get_colwidth(widest[0])
-                widest_1 = get_colwidth(widest[1])
-
-                # Shorten widest column by difference to second widest
-                # column (leaving them at the same width), but not by more
-                # than `excess` characters and at least one character.
-                # TODO: This is very slow when listing lots of torrents in a
-                # small terminal because the widest column is shrunk by only 1
-                # character before checking again.  In theory, the minimum
-                # shrink amount should be something like:
-                #     int(`excess` / <number of shrinkable columns>) + 1
-                # The number of shrinkable columns can be determined by
-                # filtering the classes in COLUMNS for `class.width is None`.
-                shorten_by = max(1, min(excess, widest_0 - widest_1))
-                set_colwidth(widest[0], widest_0 - shorten_by)
-
-        if rows:
-            if not pretty:
-                log.debug('Could not detect TTY size - assuming stdout is no TTY')
-                headerstr = None
-            elif termsize.columns < len(columns)*3:
-                log.error('Too many columns for this terminal size')
-                return False
-            else:
-                shrink_and_expand_to_fit()
-                headerstr = '\033[1;4m' + assemble_headers() + '\033[0m'
-
-            for linenum,row in enumerate(rows):
-                if headerstr is not None and \
-                   linenum % (termsize.lines-1) == 0:
-                    log.info(headerstr)
-                log.info(assemble_line(row))
-
+        if torrents:
+            _print_table(torrents, columns, TLIST_COLUMNS)
         return len(torrents) > 0
+
+
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
