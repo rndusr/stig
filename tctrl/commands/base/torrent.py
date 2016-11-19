@@ -19,18 +19,6 @@ import asyncio
 from .. import (InitCommand, ExpectedResource)
 
 
-# Argument definitions that are shared between commands
-ARGSPEC_FILTER = {
-    'names': ('FILTER',), 'nargs': '*',
-    'description': ('Filter expression (see `help filter`) or '
-                    'focused torrent in the TUI')
-}
-
-ARGSPEC_TOGGLE = {
-    'names': ('--toggle','-t'), 'action': 'store_true',
-    'description': ('Start TORRENT if stopped and vice versa')
-}
-
 def make_torrentcmd_usage(cmdname, hasoptions=False):
     # Commands that accept torrent filters have very similar usage sections.
     OPTIONS= '[<OPTIONS>]'
@@ -41,6 +29,19 @@ def make_torrentcmd_usage(cmdname, hasoptions=False):
         for i in range(len(usage)):
             usage[i] += ' ' + OPTIONS
     return tuple(usage)
+
+# Argument definitions that are shared between commands
+def make_filter_argspec(default_to_focused_torrent=True):
+    argspec = {'names': ('FILTER',), 'nargs': '*',
+               'description': 'Filter expression (see `help filter`)'}
+    if default_to_focused_torrent:
+         argspec['description'] += ' or focused torrent in the TUI'
+    return argspec
+
+ARGSPEC_TOGGLE = {
+    'names': ('--toggle','-t'), 'action': 'store_true',
+    'description': ('Start TORRENT if stopped and vice versa')
+}
 
 
 class AddTorrentsCmdbase(metaclass=InitCommand):
@@ -89,8 +90,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
                 'ls active&tracker~example.org',
                 'ls active|idle&tracker~example')
     argspecs = (
-        { 'names': ('FILTER',), 'nargs': '*',
-          'description': ('Filter expression (see `help filter`)') },
+        make_filter_argspec(default_to_focused_torrent=False),
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'tlist.sort' setting",
           'description': ('Comma-separated list of sort orders '
@@ -150,7 +150,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 'remove "some torrent" another\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
     argspecs = (
-        ARGSPEC_FILTER,
+        make_filter_argspec(default_to_focused_torrent=True),
         { 'names': ('--delete-files','-d'), 'action': 'store_true',
           'description': 'Delete any downloaded files' },
     )
@@ -180,7 +180,8 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
                 "start 'night of the living dead' Metropolis",
                 'start ubuntu --force')
     argspecs = (
-        ARGSPEC_FILTER, ARGSPEC_TOGGLE,
+        make_filter_argspec(default_to_focused_torrent=True),
+        ARGSPEC_TOGGLE,
         { 'names': ('--force','-f'), 'action': 'store_true',
           'description': 'Ignore download queue' }
     )
@@ -211,7 +212,10 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
     examples = ('stop',
                 'stop "night of the living dead" idle',
                 'stop --toggle ubuntu')
-    argspecs = (ARGSPEC_FILTER, ARGSPEC_TOGGLE)
+    argspecs = (
+        make_filter_argspec(default_to_focused_torrent=True),
+        ARGSPEC_TOGGLE,
+    )
 
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
@@ -238,7 +242,7 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     usage = make_torrentcmd_usage('verify', hasoptions=False)
     examples = ('verify',
                 'verify debian')
-    argspecs = (ARGSPEC_FILTER,)
+    argspecs = (make_filter_argspec(default_to_focused_torrent=True),)
 
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
