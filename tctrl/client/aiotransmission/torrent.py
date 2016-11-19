@@ -69,11 +69,16 @@ _STATUS_MAP = {
 
 
 class FileList(tuple):
+    # TODO: We don't really need to request 'files' on every new request
+    # because name and length don't change and everything else is in
+    # 'fileStats'.  But then we have to keep FileList objects alive somehow
+    # and find a way to await the async request to get 'files' once in __new__
+    # or __init__.
     def __new__(cls, files, fileStats):
         return super().__new__(cls,
             (tkeys.TorrentFile(name=f['name'],
                                size_total=f['length'],
-                               size_downloaded=f['bytesCompleted'],
+                               size_downloaded=fS['bytesCompleted'],
                                is_wanted=fS['wanted'],
                                priority=fS['priority'])
              for f,fS in zip(files, fileStats))
