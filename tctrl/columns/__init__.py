@@ -35,7 +35,7 @@ class ColumnBase():
         text = str(self.get_value())
         if self.width is None:
             return text
-        else:
+        elif len(text) > self.width:
             text = self._crop(text)
 
         if self.align == 'right':
