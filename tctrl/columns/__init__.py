@@ -38,18 +38,19 @@ class ColumnBase():
         text = str(self.get_value())
         if self.width is None:
             return text
-        elif len(text) > self.width:
-            text = self._crop(text)
-
-        if self.align == 'right':
-            return text.rjust(self.width)
-        elif self.align == 'left':
-            return text.ljust(self.width)
         else:
-            raise RuntimeError("Not 'left' or 'right': {!r}".format(self.align))
+            return self._crop_and_align(text, self.width, self.align)
 
-    def _crop(self, string):
-        return string[:self.width]
+    def _crop_and_align(self, string, width, side):
+        if len(string) > width:
+            string = string[:width]
+
+        if side == 'right':
+            return string.rjust(width)
+        elif side == 'left':
+            return string.ljust(width)
+        else:
+            raise TypeError("side argument must be 'left' or 'right', not {!r}".format(side))
 
     def __repr__(self):
         return '<{} {}>'.format(type(self).__name__, self.get_value())
