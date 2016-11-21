@@ -166,6 +166,19 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase, mixin.make_request):
         return len(torrents) > 0
 
 
+class ListFilesCmd(base.ListFilesCmdbase,
+                   mixin.make_request, mixin.make_selection):
+    provides = {'cli'}
+    srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
+    async def make_flist(self, torrents):
+        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+            if TERMSIZE.columns is None:
+                torrentname = 'torrentname:' + torrent['name']
+            else:
+                torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
+            log.info(torrentname)
+            _print_table(torrent['files'], ('filename', 'size-total'), FLIST_COLUMNS)
+
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
