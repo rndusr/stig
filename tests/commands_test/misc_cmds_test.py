@@ -1,9 +1,9 @@
 from resources_cmd import CommandTestCase
 
-from tctrl.client.errors import ClientError
+from stig.client.errors import ClientError
 
 
-from tctrl.commands.cli import HelpCmd
+from stig.commands.cli import HelpCmd
 class TestHelpCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -52,7 +52,7 @@ class TestHelpCmd(CommandTestCase):
                            ('INFO', '^Mock help for foo'))
 
 
-from tctrl.commands.cli import ResetCmd
+from stig.commands.cli import ResetCmd
 class TestResetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -72,7 +72,7 @@ class TestResetCmd(CommandTestCase):
         self.assert_logged(logged, ('ERROR', '^Unknown setting: foo.bar'))
 
 
-from tctrl.commands.cli import SetCmd
+from stig.commands.cli import SetCmd
 class TestSetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()

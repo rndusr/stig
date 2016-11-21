@@ -1,5 +1,5 @@
-* tctrl
-  tctrl is a TUI (text user interface) and CLI (command line interface) client
+* stig
+  stig is a TUI (text user interface) and CLI (command line interface) client
   for the [[http://www.transmissionbt.com/][BitTorrent Client Transmission]] (and perhaps others in the future).
 
   [[file:screenshot.png]]
@@ -22,28 +22,28 @@
 ** Examples
    Add two torrents (file and hash) and exit
    #+BEGIN_EXAMPLE shell
-   $ tctrl add /path/to/some.torrent d4d6b73851fe3288e40389a8e1fb98124a9b9ba5
+   $ stig add /path/to/some.torrent d4d6b73851fe3288e40389a8e1fb98124a9b9ba5
    #+END_EXAMPLE
 
    Connect to non-default host and present the TUI
    #+BEGIN_EXAMPLE shell
-   $ tctrl set srv.url torrents.local:1234
+   $ stig set srv.url torrents.local:1234
    #+END_EXAMPLE
 
    Print all uploading and/or downloading torrents on torrents.local and exit
    #+BEGIN_EXAMPLE shell
-   $ tctrl set srv.url torrents.local \; ls active
+   $ stig set srv.url torrents.local \; ls active
    #+END_EXAMPLE
 
    List torrents with more than 50 seeds, then remove them
    #+BEGIN_EXAMPLE shell
-   $ tctrl ls 'seeds>50'
-   $ tctrl rm 'seeds>50'
+   $ stig ls 'seeds>50'
+   $ stig rm 'seeds>50'
    #+END_EXAMPLE
 
    Stop/pause torrents with "/foo/" in their download path and a ratio above 10
    #+BEGIN_EXAMPLE shell
-   $ tctrl stop 'path~/foo/&ratio>10'
+   $ stig stop 'path~/foo/&ratio>10'
    #+END_EXAMPLE
 
    Open two tabs with different torrent lists:
@@ -51,11 +51,11 @@
      - small or well-seeded torrents, sorted by size (ascending) and number of
        seeds (descending)
    #+BEGIN_EXAMPLE shell
-   $ tctrl tab ls 'path~/foo/&rate-up<10k' \; tab ls 'size<500M|seeds>=1k' --sort 'size,!seeds'
+   $ stig tab ls 'path~/foo/&rate-up<10k' \; tab ls 'size<500M|seeds>=1k' --sort 'size,!seeds'
    #+END_EXAMPLE
 
 ** Configuration
-   All configuration is done in ~$HOME/.config/tctrl/rc~.  Each line is a command
+   All configuration is done in ~$HOME/.config/stig/rc~.  Each line is a command
    that is called during startup.  Commands given as CLI arguments are called
    after the rc commands.
 
@@ -93,7 +93,7 @@
    open an issue.
 
 ** License
-   tctrl is free software: you can redistribute it and/or modify it under the
+   stig is free software: you can redistribute it and/or modify it under the
    terms of the GNU General Public License as published by the Free Software
    Foundation, either version 3 of the License, or (at your option) any later
    version.

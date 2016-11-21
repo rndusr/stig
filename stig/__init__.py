@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from .version import __version__
-APPNAME = 'tctrl'
+APPNAME = 'stig'
 
 def run():
     from . import main

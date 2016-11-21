@@ -1,5 +1,5 @@
-from tctrl.client.aiotransmission.rpc import (TransmissionRPC, TransmissionURL)
-from tctrl.client import (ClientError, ConnectionError, RPCError, AuthError)
+from stig.client.aiotransmission.rpc import (TransmissionRPC, TransmissionURL)
+from stig.client import (ClientError, ConnectionError, RPCError, AuthError)
 
 import resources_aiotransmission as rsrc
 

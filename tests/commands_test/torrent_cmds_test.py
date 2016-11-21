@@ -1,10 +1,10 @@
 from resources_cmd import (CommandTestCase, MockTorrent, mock_terminal_size)
 
-from tctrl.client.utils import Response
-from tctrl.client.errors import ClientError
+from stig.client.utils import Response
+from stig.client.errors import ClientError
 
 
-from tctrl.commands.cli import AddTorrentsCmd
+from stig.commands.cli import AddTorrentsCmd
 class TestAddTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -68,14 +68,14 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_logged(logged, ('INFO', '^Added Some Torrent$'))
 
 
-from tctrl.commands.cli import ListTorrentsCmd
+from stig.commands.cli import ListTorrentsCmd
 class TestListTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         ListTorrentsCmd.srvapi = self.api
         ListTorrentsCmd.cmdutils = self.cmdutils
         ListTorrentsCmd.cfg = self.cfg
-        from tctrl.commands.cli import torrent
+        from stig.commands.cli import torrent
         torrent.get_terminal_size = mock_terminal_size
 
     async def do(self, args, errors):
@@ -132,7 +132,7 @@ class TestListTorrentsCmd(CommandTestCase):
         await self.do(['-s', 'foo'], errors=('Nope!',))
 
 
-from tctrl.commands.cli import RemoveTorrentsCmd
+from stig.commands.cli import RemoveTorrentsCmd
 class TestRemoveTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -165,7 +165,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                       msgs=(ClientError('no torrents found'),))
 
 
-from tctrl.commands.cli import StartTorrentsCmd
+from stig.commands.cli import StartTorrentsCmd
 class TestStartTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -217,7 +217,7 @@ class TestStartTorrentsCmd(CommandTestCase):
                             'Started torrent 2'))
 
 
-from tctrl.commands.cli import StopTorrentsCmd
+from stig.commands.cli import StopTorrentsCmd
 class TestStopTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -258,7 +258,7 @@ class TestStopTorrentsCmd(CommandTestCase):
                             'Started torrent 2'))
 
 
-from tctrl.commands.cli import VerifyTorrentsCmd
+from stig.commands.cli import VerifyTorrentsCmd
 class TestVerifyTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()

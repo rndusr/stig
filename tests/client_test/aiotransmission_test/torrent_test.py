@@ -1,10 +1,10 @@
-from tctrl.client.aiotransmission import torrent
+from stig.client.aiotransmission import torrent
 
 import unittest
 
 
 def test_all_dependencies_are_standard_keys():
-    from tctrl.client.tkeys import TYPES
+    from stig.client.tkeys import TYPES
     assert set(torrent.DEPENDENCIES) == set(TYPES)
 
 

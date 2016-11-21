@@ -1,4 +1,4 @@
-from tctrl.client.aiotransmission.rpc import (TransmissionURL,
+from stig.client.aiotransmission.rpc import (TransmissionURL,
                                               CSRF_ERROR_CODE, CSRF_HEADER,
                                               AUTH_ERROR_CODE)
 from aiohttp import web

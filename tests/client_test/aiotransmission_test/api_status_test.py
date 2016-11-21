@@ -1,5 +1,5 @@
-from tctrl.client.aiotransmission.api_status import StatusAPI
-from tctrl.client import constants as const
+from stig.client.aiotransmission.api_status import StatusAPI
+from stig.client import constants as const
 
 import resources_aiotransmission as rsrc
 
@@ -38,7 +38,7 @@ class FakeRequestPoller():
     async def stop(self):
         pass
 
-from tctrl.client.aiotransmission import api_status
+from stig.client.aiotransmission import api_status
 api_status.RequestPoller = FakeRequestPoller
 api_status.convert.bandwidth.unit = 'byte'
 api_status.convert.bandwidth.prefix = 'metric'

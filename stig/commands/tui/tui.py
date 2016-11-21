@@ -133,11 +133,11 @@ class RcCmd(metaclass=InitCommand):
     provides = {'tui'}
     description = 'Run commands in rc file'
     usage = ('rc <FILE>',)
-    examples = ('rc rc.example.org   # Load $XDG_CONFIG_HOME/.config/tctrl/rc.example.org',)
+    examples = ('rc rc.example.org   # Load $XDG_CONFIG_HOME/.config/{APPNAME}/rc.example.org',)
     argspecs = (
         {'names': ('FILE',),
          'description': ('Path to rc file; if FILE does not start with '
-                         "'.', '~' or '/', $XDG_CONFIG_HOME/.config/tctrl/ "
+                         "'.', '~' or '/', $XDG_CONFIG_HOME/.config/{APPNAME}/ "
                          'is prepended')},
     )
     cmdmgr = ExpectedResource
@@ -158,6 +158,8 @@ class RcCmd(metaclass=InitCommand):
             log.error('Loading rc file failed: {}'.format(e))
             return False
         else:
+            log.debug('Read commands from rc file: {!r}'.format(FILE))
+            log.debug(lines)
             for cmdline in lines:
                 self.cmdmgr(cmdline)
             return True

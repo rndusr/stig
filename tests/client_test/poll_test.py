@@ -1,5 +1,5 @@
-from tctrl.client.poll import RequestPoller
-from tctrl.client.errors import ConnectionError
+from stig.client.poll import RequestPoller
+from stig.client.errors import ConnectionError
 
 import asynctest
 import asyncio

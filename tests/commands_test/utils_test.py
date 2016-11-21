@@ -1,4 +1,4 @@
-from tctrl.commands import utils
+from stig.commands import utils
 
 import unittest
 

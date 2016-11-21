@@ -1,4 +1,4 @@
-from tctrl.client import tkeys as tkeys
+from stig.client import tkeys as tkeys
 
 import unittest
 import time

@@ -8,7 +8,7 @@ class Test_get_cmds(unittest.TestCase):
     def mock_args(self, args):
         sys.argv = [sys.argv[0]] + args
         global cliopts
-        from tctrl import cliopts
+        from stig import cliopts
         importlib.reload(cliopts)
 
     def test_no_commands(self):

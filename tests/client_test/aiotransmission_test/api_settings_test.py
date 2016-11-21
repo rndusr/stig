@@ -1,4 +1,4 @@
-from tctrl.client.aiotransmission.api_settings import (SettingsAPI, convert, const)
+from stig.client.aiotransmission.api_settings import (SettingsAPI, convert, const)
 import resources_aiotransmission as rsrc
 
 import asynctest

@@ -1,4 +1,4 @@
-from tctrl.tui.tabs import (Tabs, TabID, _find_unused_id)
+from stig.tui.tabs import (Tabs, TabID, _find_unused_id)
 
 import unittest
 import urwid
@@ -23,7 +23,7 @@ def make_large_id(existing_ids):
         return TabID(999)
     else:
         return TabID(max(existing_ids) + 100)
-from tctrl.tui import tabs
+from stig.tui import tabs
 tabs._find_unused_id = make_large_id
 
 

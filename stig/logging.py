@@ -20,7 +20,7 @@ def make_logger(modname=None):
         # any other modules
         return logging.getLogger(MAIN_PACKAGE_NAME)
     elif modname.startswith(MAIN_PACKAGE_NAME+'.'):
-        # Remove main package name from modname ('tctrl.tui' -> 'tui')
+        # Remove main package name from logger name ('foo.bar.baz' -> 'bar.baz')
         loggername = modname[len(MAIN_PACKAGE_NAME)+1:]
     else:
         loggername = modname

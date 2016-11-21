@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import (patch, mock_open)
 
-from tctrl.settings import rcfile
+from stig.settings import rcfile
 
 _MOCK_CFG = """
 # this is a comment

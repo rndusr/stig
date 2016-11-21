@@ -1,5 +1,5 @@
-from tctrl.client.tfilter import (_TorrentFilter, TorrentFilter)
-from tctrl.client.aiotransmission.torrent import Torrent
+from stig.client.tfilter import (_TorrentFilter, TorrentFilter)
+from stig.client.aiotransmission.torrent import Torrent
 
 import unittest
 

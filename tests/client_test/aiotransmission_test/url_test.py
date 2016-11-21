@@ -1,4 +1,4 @@
-from tctrl.client.aiotransmission.rpc import TransmissionURL
+from stig.client.aiotransmission.rpc import TransmissionURL
 
 import unittest
 

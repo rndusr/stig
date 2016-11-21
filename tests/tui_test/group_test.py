@@ -1,4 +1,4 @@
-from tctrl.tui.group import Group
+from stig.tui.group import Group
 
 import unittest
 import urwid

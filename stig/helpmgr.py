@@ -152,8 +152,8 @@ class HelpManager():
               "(e.g. 'tab') enforce their interface."),
              ("\t\t\t- \tAny command that starts with 'set tui.' enforces the TUI."),
              ("\t\t\t- \tIf applying the above rules is inconclusive, the last "
-              "command wins.  For example 'tctrl tab ls idle \; help' does not "
-              "load the TUI, but 'tctrl help \; tab ls idle' does."),
+              "command wins.  For example '{APPNAME} tab ls idle \; help' does not "
+              "load the TUI, but '{APPNAME} help \; tab ls idle' does."),
             '',
         ]
 

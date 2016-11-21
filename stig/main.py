@@ -60,7 +60,7 @@ cmdmgr.resources.update(aioloop=aioloop,
                         helpmgr=helpmgr)
 helpmgr.commands = cmdmgr
 cmdmgr.load_cmds_from_module(
-    'tctrl.commands.cli', 'tctrl.commands.tui',
+    'stig.commands.cli', 'stig.commands.tui',
 )
 
 from .commands.cmdcache import CommandCache

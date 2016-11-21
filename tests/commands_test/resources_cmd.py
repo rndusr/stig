@@ -1,7 +1,7 @@
 import asynctest
 
-from tctrl.client.utils import Response
-from tctrl.client.base import TorrentBase
+from stig.client.utils import Response
+from stig.client.base import TorrentBase
 
 
 def mock_terminal_size(fallback=(None, None)):
@@ -87,7 +87,7 @@ class MockUtils():
     def log_msgs(self, *args, **kwargs):
         # Don't mock logging so we can check what is actually logged on the
         # different levels level.
-        from tctrl.commands.utils import log_msgs
+        from stig.commands.utils import log_msgs
         return log_msgs(*args, **kwargs)
 
 

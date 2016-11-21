@@ -18,7 +18,7 @@ from ..client import ClientError
 
 
 def _connect_to_new_url(url):
-    # See also tctrl.hooks
+    # See also ..hooks
     async def coro():
         try:
             await srvapi.rpc.connect(url.value)

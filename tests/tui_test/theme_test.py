@@ -1,5 +1,5 @@
 import unittest
-from tctrl.tui import theme
+from stig.tui import theme
 import io
 
 import logging

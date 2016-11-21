@@ -1,4 +1,4 @@
-from tctrl.client.convert import _DataCountConverter
+from stig.client.convert import _DataCountConverter
 
 import unittest
 

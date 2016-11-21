@@ -1,5 +1,5 @@
 import unittest
-from tctrl.tui.keymap import (Key, KeyMap)
+from stig.tui.keymap import (Key, KeyMap)
 from urwid import Text
 
 import logging

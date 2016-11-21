@@ -2,7 +2,7 @@ import unittest
 import asynctest
 import asyncio
 
-from tctrl.commands import (CommandManager, InitCommand, _CommandBase,
+from stig.commands import (CommandManager, InitCommand, _CommandBase,
                             ExpectedResource, CmdError, CmdArgError,
                             CmdNotFoundError)
 

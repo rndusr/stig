@@ -1,5 +1,5 @@
 import unittest
-from tctrl.settings.settings import (Settings, StringValue, IntegerValue,
+from stig.settings.settings import (Settings, StringValue, IntegerValue,
                                      NumberValue, BooleanValue, PathValue,
                                      ListValue, OptionValue)
 

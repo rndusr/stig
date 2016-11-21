@@ -28,7 +28,7 @@ questions and point out issues.
     Ideally, the command chaining characters should be escapable, which is
     straightforward in the built-in prompt.  But on the CLI they have meaning
     to the shell, which means they have to be escaped twice, once so the shell
-    ignores them and then again for tctrl to ignore them.
+    ignores them and then again for stig to ignore them.
 
     Maybe offer '+', '-' and ':' as aliases? The downside would be that there
     are more characters one would have to escape in torrent names, etc.
@@ -82,7 +82,7 @@ questions and point out issues.
 ** TODO Some long log messages are not displayed                        :bug:
    To reproduce, create some log messages and change the terminal size.
 
-   ~$ tctrl --debug client.aiotransmission~
+   ~$ stig --debug client.aiotransmission~
 
    Some messages will appear as empty but show the message when the terminal
    becomes large enough.

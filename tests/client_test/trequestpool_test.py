@@ -1,7 +1,7 @@
-from tctrl.client.trequestpool import TorrentRequestPool
-from tctrl.client.aiotransmission.torrent import Torrent
-from tctrl.client.tfilter import TorrentFilter
-from tctrl.client.utils import Response
+from stig.client.trequestpool import TorrentRequestPool
+from stig.client.aiotransmission.torrent import Torrent
+from stig.client.tfilter import TorrentFilter
+from stig.client.utils import Response
 
 import asynctest
 import asyncio
