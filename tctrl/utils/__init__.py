@@ -40,9 +40,8 @@ def striplines(lines):
 
 def strwidth(string):
     """Return displayed width of `string`, considering wide characters"""
-    return len(string) + \
-        sum(1 for char in string
-            if unicodedata.east_asian_width(char) in 'FW')
+    return len(string) + sum(1 for char in string
+                             if unicodedata.east_asian_width(char) in 'FW')
 
 
 def strcrop(string, width):
