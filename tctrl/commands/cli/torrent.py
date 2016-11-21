@@ -19,7 +19,11 @@ from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
 from ...columns.tlist import COLUMNS as TLIST_COLUMNS
+from ...columns.flist import COLUMNS as FLIST_COLUMNS
+from ...utils import strwidth
+
 from shutil import get_terminal_size
+TERMSIZE = get_terminal_size(fallback=(None, None))
 
 
 def _print_table(items, columns_wanted, COLUMN_SPECS):
@@ -46,11 +50,10 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
             row.append(cell)
         rows.append(row)
 
-    termsize = get_terminal_size(fallback=(None, None))
-    delimiter = '|' if termsize.columns is None else '│'
+    delimiter = '|' if TERMSIZE.columns is None else '│'
 
     # Whether to print for a human or for a machine to read our output
-    pretty_output = termsize.columns is not None
+    pretty_output = TERMSIZE.columns is not None
 
     def assemble_line(row):
         line = []
@@ -76,11 +79,11 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
         return delimiter.join(headers)
 
     def shrink_and_expand_to_fit():
-        log.debug('TTY width is {}'.format(termsize))
+        log.debug('TTY width is {}'.format(TERMSIZE))
 
         def get_colwidth(colindex):
             # Get maximum column width (width of widest cell in all rows)
-            return max(len(row[colindex].get_string())
+            return max(strwidth(row[colindex].get_string())
                        for row in rows)
 
         def set_colwidth(colindex, width):
@@ -102,8 +105,8 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
 
         # Rows should have identical column widths from now on, so we can
         # use the first row to check our progress.
-        while len(assemble_line(rows[0])) > termsize.columns:
-            excess = len(assemble_line(rows[0])) - termsize.columns
+        while strwidth(assemble_line(rows[0])) > TERMSIZE.columns:
+            excess = strwidth(assemble_line(rows[0])) - TERMSIZE.columns
             widest = widest_columns()
             widest_0 = get_colwidth(widest[0])
             widest_1 = get_colwidth(widest[1])
@@ -114,10 +117,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
 
             # TODO: This is very slow when listing lots of rows in a small
             # terminal because the widest column is shrunk by only 1 character
-            # before checking again.  In theory, the minimum shrink amount
-            # should be something like: int(`excess` / <number of shrinkable
-            # columns>) + 1 The number of shrinkable columns can be determined
-            # by filtering the classes in COLUMNS for `class.width is None`.
+            # before checking again.
             shorten_by = max(1, min(excess, widest_0 - widest_1))
             set_colwidth(widest[0], widest_0 - shorten_by)
 
@@ -125,7 +125,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
         if not pretty_output:
             log.debug('Could not detect TTY size - assuming stdout is no TTY')
             headerstr = None
-        elif termsize.columns < len(columns_wanted)*3:
+        elif TERMSIZE.columns < len(columns_wanted)*3:
             log.error('Too many columns for this terminal size')
             return False
         else:
@@ -134,7 +134,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
 
         for linenum,row in enumerate(rows):
             if headerstr is not None and \
-               linenum % (termsize.lines-1) == 0:
+               linenum % (TERMSIZE.lines-1) == 0:
                 log.info(headerstr)
             log.info(assemble_line(row))
 
