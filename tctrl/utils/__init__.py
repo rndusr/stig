@@ -13,8 +13,10 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-
+import unicodedata
 import re
+
+
 def natsortkey(key):
     """Provide this as the 'key' argument to `list.sort`, `sorted`, etc.
 
@@ -34,3 +36,61 @@ def striplines(lines):
     while lines and lines[-1] == '':
         lines.pop(-1)
     yield from lines
+
+
+def strwidth(string):
+    """Return displayed width of `string`, considering wide characters"""
+    return len(string) + \
+        sum(1 for char in string
+            if unicodedata.east_asian_width(char) in 'FW')
+
+
+def strcrop(string, width):
+    """Return `string` cropped to `width`, considering wide characters"""
+    def widechar_indexes(s):
+        for i,c in enumerate(s):
+            if unicodedata.east_asian_width(c) in 'FW':
+                yield i
+
+    indexes = list(widechar_indexes(string)) + [len(string)]
+    if not indexes:
+        return string[:width]  # No wide chars, regular cropping is ok
+
+    parts = []
+    start = 0
+    end = 0
+    currwidth = strwidth(''.join(parts))
+
+    while indexes and currwidth < width and end < len(string):
+        end = indexes.pop(0)
+        if end > 0:
+            parts.append(string[start:end])
+            currwidth = strwidth(''.join(parts))
+            start = end
+
+    if currwidth > width:
+        excess = currwidth - width
+        parts[-1] = parts[-1][:-excess]
+
+    return ''.join(parts)
+
+
+def stralign(string, width, side='left'):
+    """Return `string` aligned to `side`, considering wide characters
+
+    The returned string is filled up with spaces to take `width` single-spaced
+    characters and cropped with `strcrop` if necessary.
+    """
+    fill = width - strwidth(string)
+    if fill < 0:
+        string = strcrop(string, width)
+
+    fill = width - strwidth(string)
+    if fill > 0:
+        if side == 'left':
+            string = string + ' '*fill
+        elif side == 'right':
+            string = ' '*fill + string
+        else:
+            raise TypeError("side argument must be 'left' or 'right', not {!r}".format(side))
+    return string
