@@ -10,6 +10,9 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 
+"""Column specifications for tables"""
+
+
 class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
