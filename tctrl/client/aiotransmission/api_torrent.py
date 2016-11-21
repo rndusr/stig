@@ -177,16 +177,6 @@ class TorrentAPI():
         else:
             from time import time
             start = time()
-
-            # Combine characters with diacritical marks ("a˚" -> "å") so len()
-            # reports the correct length.
-            # http://www.unicode.org/faq/char_combmark.html
-            for t in raw_tlist:
-                try:
-                    t['name'] = unicodedata.normalize('NFC', t['name'])
-                except KeyError:
-                    pass
-
             self._tcache.update(raw_tlist)
             if len(ids_requested) > 0:
                 tlist = self._tcache.get(*ids_requested)

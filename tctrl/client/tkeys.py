@@ -146,6 +146,7 @@ class Status(str):
 
 
 import operator
+import unicodedata
 class SmartCmpStr(str):
     """String with smart comparison capabilities
 
@@ -153,6 +154,13 @@ class SmartCmpStr(str):
     comparison case-insensitive if the other string consists solely of
     lower-case characters.
     """
+
+    def __new__(cls, string):
+        # Combine characters with diacritical marks ("a˚" -> "å") so len()
+        # reports the correct length.
+        # http://www.unicode.org/faq/char_combmark.html
+        return super().__new__(cls, unicodedata.normalize('NFC', string))
+
     def __cmp(self, other, op):
         if not isinstance(other, str):
             return NotImplemented
@@ -251,6 +259,7 @@ class TorrentFilePriority(str):
 
     def __int__(self): return self._STR2INT(self)
     def __lt__(self, other): return int(self) < int(other)
+
 
 class TorrentFile(abc.Mapping):
     _TYPES = {
