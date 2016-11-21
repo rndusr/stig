@@ -45,6 +45,15 @@ class Path(ColumnBase):
                     dirs[i] = d[:-1]
                     break
             path = PATHSEP + PATHSEP.join(dirs)
+            if len(path) <= len(dirs)*2:
+                break  # Each dir is now exactly one character long.
+
+        # If "/t/p/t/y/t" is still too long, simply remove enough characters
+        # from the front.
+        if len(path) > self.width:
+            excess = len(path) - self.width + 1
+            path = '…' + path[excess:]
+
         return path
 
 COLUMNS['path'] = Path
