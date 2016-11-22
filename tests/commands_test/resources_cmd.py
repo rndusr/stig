@@ -4,11 +4,6 @@ from stig.client.utils import Response
 from stig.client.base import TorrentBase
 
 
-def mock_terminal_size(fallback=(None, None)):
-    from collections import namedtuple
-    return namedtuple('mock_terminal_size', ['columns', 'lines'])(*fallback)
-
-
 class MockAPI():
     def __init__(self, *args, **kwargs):
         self.init_args = args

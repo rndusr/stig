@@ -1,4 +1,4 @@
-from resources_cmd import (CommandTestCase, MockTorrent, mock_terminal_size)
+from resources_cmd import (CommandTestCase, MockTorrent)
 
 from stig.client.utils import Response
 from stig.client.errors import ClientError
@@ -75,8 +75,9 @@ class TestListTorrentsCmd(CommandTestCase):
         ListTorrentsCmd.srvapi = self.api
         ListTorrentsCmd.cmdutils = self.cmdutils
         ListTorrentsCmd.cfg = self.cfg
+        from types import SimpleNamespace
         from stig.commands.cli import torrent
-        torrent.get_terminal_size = mock_terminal_size
+        torrent.TERMSIZE = SimpleNamespace(columns=None, lines=None)
 
     async def do(self, args, errors):
         tlist = (
