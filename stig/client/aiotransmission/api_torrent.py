@@ -227,6 +227,8 @@ class TorrentAPI():
                         msgs.append(ClientError(str(e)))
                     else:
                         tlist = tuple(response.torrents)
+            else:
+                msgs.extend(response.msgs)
 
             success = len(tlist) > 0
             if not success:
