@@ -23,7 +23,7 @@ from aiohttp import Timeout as AsyncIOTimeout
 from . import errors
 
 
-def _funcname(func, *args, **kwargs):
+def _funcname(func, *posargs, **kwargs):
     if hasattr(func, '__qualname__'):
         name = func.__qualname__
     elif hasattr(func, '__name__'):
@@ -31,12 +31,14 @@ def _funcname(func, *args, **kwargs):
     else:
         name = repr(func)
 
-    name += '('
-    if args:
-        name += ', '.join(repr(arg) for arg in args)
+    args = []
+    if posargs:
+        args.append(', '.join(repr(arg) for arg in posargs))
     if kwargs:
-        name += ', '.join('%s=%r' % (k,v) for k,v in kwargs.items())
-    return name + ')'
+        args.append(', '.join('%s=%r' % (k,v) for k,v in kwargs.items()))
+
+    name += '(' + ', '.join(args) + ')'
+    return name
 
 
 class _SleepUneasy():
