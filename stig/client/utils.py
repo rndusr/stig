@@ -13,6 +13,47 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 
+# Only needed until asyncio gets a timeout again.
+# https://github.com/python/asyncio/commit/e39449787dedd839e31946915fa933a08955b667
+from aiohttp import Timeout as AsyncIOTimeout
+import asyncio
+class SleepUneasy():
+    """Asynchronous sleep() that can be aborted"""
+
+    def __init__(self, loop):
+        self.loop = loop
+        self._interrupt = asyncio.Event(loop=self.loop)
+
+    async def sleep(self, seconds=None):
+        """Sleep for `seconds` or until `stop` is called"""
+        self._interrupt.clear()
+        try:
+            with AsyncIOTimeout(seconds, loop=self.loop):
+                await self._interrupt.wait()
+        except asyncio.TimeoutError:
+            pass  # Interval passed without interrupt
+        finally:
+            self._interrupt.clear()
+
+    def interrupt(self):
+        """Stop sleeping"""
+        self._interrupt.set()
+
+
+class PerfectInterval():
+    """Remove processing time from intervals"""
+
+    def __init__(self, loop):
+        self._loop = loop
+        self._started = loop.time()
+
+    def __call__(self, seconds):
+        now = self._loop.time()
+        stop_at = int(now) + seconds
+        diff = stop_at - now
+        return diff
+
+
 from types import SimpleNamespace
 class Response(SimpleNamespace):
     """Response to an API call

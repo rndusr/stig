@@ -16,11 +16,8 @@ import asyncio
 import functools
 import blinker
 
-# Only needed until asyncio gets a timeout again.
-# https://github.com/python/asyncio/commit/e39449787dedd839e31946915fa933a08955b667
-from aiohttp import Timeout as AsyncIOTimeout
-
 from . import errors
+from .utils import (SleepUneasy, PerfectInterval)
 
 
 def _funcname(func, *posargs, **kwargs):
@@ -41,43 +38,6 @@ def _funcname(func, *posargs, **kwargs):
     return name
 
 
-class _SleepUneasy():
-    """sleep() that can be aborted"""
-
-    def __init__(self, loop):
-        self.loop = loop
-        self._interrupt = asyncio.Event(loop=self.loop)
-
-    async def sleep(self, seconds=None):
-        """Sleep for `seconds` or until `stop` is called"""
-        self._interrupt.clear()
-        try:
-            with AsyncIOTimeout(seconds, loop=self.loop):
-                await self._interrupt.wait()
-        except asyncio.TimeoutError:
-            pass  # Interval passed without interrupt
-        finally:
-            self._interrupt.clear()
-
-    def stop(self):
-        """Stop sleeping"""
-        self._interrupt.set()
-
-
-class PerfectInterval():
-    """Remove processing time from intervals"""
-
-    def __init__(self, loop):
-        self._loop = loop
-        self._started = loop.time()
-
-    def __call__(self, seconds):
-        now = self._loop.time()
-        stop_at = int(now) + seconds
-        diff = stop_at - now
-        return diff
-
-
 class RequestPoller():
     """Continuously send request and publish the response
 
@@ -95,7 +55,7 @@ class RequestPoller():
         self._interval = interval
         self._poll_task = None
         self._poll_loop_task = None
-        self._sleep = _SleepUneasy(loop=loop)
+        self._sleep = SleepUneasy(loop=loop)
         self._skip_ongoing_request = False
         self.set_request(request, *args, **kwargs)
 
@@ -213,7 +173,7 @@ class RequestPoller():
         Do nothing if this poller is not started.
         """
         if self.running:
-            self._sleep.stop()
+            self._sleep.interrupt()
 
     @property
     def running(self):
