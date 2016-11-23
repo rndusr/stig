@@ -223,6 +223,12 @@ class RequestPoller():
         self._on_error.connect(callback, weak=autoremove)
 
     @property
+    def has_callbacks(self):
+        """Whether anyone is interested in response to callback"""
+        return bool(self._on_response.receivers) or \
+               bool(self._on_error.receivers)
+
+    @property
     def interval(self):
         """Seconds between polls"""
         return self._interval
