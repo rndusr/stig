@@ -88,8 +88,8 @@ class CellWidgetBase(urwid.WidgetWrap):
         self.attrmap = urwid.AttrMap(self.text, self.style.attrs('unfocused'))
         return super().__init__(self.attrmap)
 
-    def update(self, torrent):
-        self.data = torrent
+    def update(self, data):
+        self.data = data
         new_value = self.get_value()
         if self.value != new_value:
             self.value = new_value
