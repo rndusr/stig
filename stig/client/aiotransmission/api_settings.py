@@ -71,14 +71,14 @@ class SettingsAPI(abc.Mapping):
         # autoconnect must be True so the CLI 'help' command can display
         # current values (e.g. 'help srv.limit.rate.down').
         self._poller = RequestPoller(self._srvapi.rpc.session_get,
-                                     autoconnect=True,
+                                     autoconnect=False,
                                      interval=interval,
                                      loop=srvapi.loop)
         self._poller.on_response(self._handle_session_get)
-        self._poller.on_error(self._handle_error)
+    #     self._poller.on_error(self._handle_error)
 
-    def _handle_error(self, e):
-        log.debug('Ignoring {!r}'.format(e))
+    # def _handle_error(self, e):
+    #     log.debug('Ignoring {!r}'.format(e))
 
     def clearcache(self):
         """Clear cached settings"""

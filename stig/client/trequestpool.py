@@ -47,8 +47,8 @@ class TorrentRequestPool():
                                      interval=interval,
                                      loop=srvapi.loop)
         self._poller.on_response(self._handle_tlist)
-        self._poller.on_error(lambda e: log.debug('Ignoring {!r}'.format(e)),
-                              autoremove=False)
+        # self._poller.on_error(lambda e: log.debug('Ignoring {!r}'.format(e)),
+        #                       autoremove=False)
 
     def register(self, sid, callback, keys=(), filters=None):
         """Add new request to request pool
