@@ -23,27 +23,27 @@ import urwid
 
 from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
-from ...columns.tlist import COLUMNS
+from ...columns.tlist import COLUMNS as _COLUMNS
 
 
 TUICOLUMNS = {}
 
 import os
 PATHSEP = os.sep
-class Path(COLUMNS['path'], CellWidgetBase):
+class Path(_COLUMNS['path'], CellWidgetBase):
     width = 20
     style = Style(prefix='torrentlist.tpath', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['path'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['path'].header),
                            style.attrs('header'))
 
 TUICOLUMNS['path'] = Path
 
 
-class PeersConnected(COLUMNS['peers-connected'], CellWidgetBase):
+class PeersConnected(_COLUMNS['peers-connected'], CellWidgetBase):
     style = Style(prefix='torrentlist.peers-connected', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['peers-connected'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['peers-connected'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -52,10 +52,10 @@ class PeersConnected(COLUMNS['peers-connected'], CellWidgetBase):
 TUICOLUMNS['peers-connected'] = PeersConnected
 
 
-class PeersSeeding(COLUMNS['peers-seeding'], CellWidgetBase):
+class PeersSeeding(_COLUMNS['peers-seeding'], CellWidgetBase):
     style = Style(prefix='torrentlist.peers-seeding', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['peers-seeding'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['peers-seeding'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -64,10 +64,10 @@ class PeersSeeding(COLUMNS['peers-seeding'], CellWidgetBase):
 TUICOLUMNS['peers-seeding'] = PeersSeeding
 
 
-class Progress(COLUMNS['progress'], CellWidgetBase):
+class Progress(_COLUMNS['progress'], CellWidgetBase):
     style = Style(prefix='torrentlist.progress', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['progress'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['progress'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -76,10 +76,10 @@ class Progress(COLUMNS['progress'], CellWidgetBase):
 TUICOLUMNS['progress'] = Progress
 
 
-class Ratio(COLUMNS['ratio'], CellWidgetBase):
+class Ratio(_COLUMNS['ratio'], CellWidgetBase):
     style = Style(prefix='torrentlist.ratio', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['ratio'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['ratio'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -89,23 +89,23 @@ class Ratio(COLUMNS['ratio'], CellWidgetBase):
 TUICOLUMNS['ratio'] = Ratio
 
 
-class Size(COLUMNS['size'], CellWidgetBase):
+class Size(_COLUMNS['size'], CellWidgetBase):
     style = Style(prefix='torrentlist.size', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['size'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['size'].header),
                            style.attrs('header'))
 
     @classmethod
     def set_unit(cls, unit):
-        cls.header.original_widget.right = COLUMNS['size'].header['right']
+        cls.header.original_widget.right = _COLUMNS['size'].header['right']
 
 TUICOLUMNS['size'] = Size
 
 
-class Downloaded(COLUMNS['downloaded'], CellWidgetBase):
+class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
     style = Style(prefix='torrentlist.downloaded', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['downloaded'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['downloaded'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -115,15 +115,15 @@ class Downloaded(COLUMNS['downloaded'], CellWidgetBase):
 
     @classmethod
     def set_unit(cls, unit):
-        cls.header.original_widget.right = COLUMNS['downloaded'].header['right']
+        cls.header.original_widget.right = _COLUMNS['downloaded'].header['right']
 
 TUICOLUMNS['downloaded'] = Downloaded
 
 
-class Uploaded(COLUMNS['uploaded'], CellWidgetBase):
+class Uploaded(_COLUMNS['uploaded'], CellWidgetBase):
     style = Style(prefix='torrentlist.uploaded', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['uploaded'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['uploaded'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -132,15 +132,15 @@ class Uploaded(COLUMNS['uploaded'], CellWidgetBase):
 
     @classmethod
     def set_unit(cls, unit):
-        cls.header.original_widget.right = COLUMNS['uploaded'].header['right']
+        cls.header.original_widget.right = _COLUMNS['uploaded'].header['right']
 
 TUICOLUMNS['uploaded'] = Uploaded
 
 
-class RateDown(COLUMNS['rate-down'], CellWidgetBase):
+class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
     style = Style(prefix='torrentlist.rate-down', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['rate-down'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-down'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -148,15 +148,15 @@ class RateDown(COLUMNS['rate-down'], CellWidgetBase):
 
     @classmethod
     def set_unit(cls, unit):
-        cls.header.original_widget.right = COLUMNS['rate-down'].header['right']
+        cls.header.original_widget.right = _COLUMNS['rate-down'].header['right']
 
 TUICOLUMNS['rate-down'] = RateDown
 
 
-class RateUp(COLUMNS['rate-up'], CellWidgetBase):
+class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
     style = Style(prefix='torrentlist.rate-up', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['rate-up'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-up'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -164,15 +164,15 @@ class RateUp(COLUMNS['rate-up'], CellWidgetBase):
 
     @classmethod
     def set_unit(cls, unit):
-        cls.header.original_widget.right = COLUMNS['rate-up'].header['right']
+        cls.header.original_widget.right = _COLUMNS['rate-up'].header['right']
 
 TUICOLUMNS['rate-up'] = RateUp
 
 
-class EtaComplete(COLUMNS['eta'], CellWidgetBase):
+class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
     style = Style(prefix='torrentlist.eta', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['eta'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['eta'].header),
                            style.attrs('header'))
 
     def get_mode(self):
@@ -181,7 +181,7 @@ class EtaComplete(COLUMNS['eta'], CellWidgetBase):
 TUICOLUMNS['eta'] = EtaComplete
 
 
-class TorrentName(COLUMNS['name'], CellWidgetBase):
+class TorrentName(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),
                   modes=('idle.progress1', 'idle.progress2', 'idle.complete',
@@ -193,7 +193,7 @@ class TorrentName(COLUMNS['name'], CellWidgetBase):
                          'uploading.progress1', 'uploading.progress2', 'uploading.complete',
                          'queued.progress1', 'queued.progress2', 'queued.complete',
                          'connected.progress1', 'connected.progress2', 'connected.complete'))
-    header = urwid.AttrMap(ColumnHeaderWidget(**COLUMNS['name'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
     needed_keys = ('name', 'status', '%downloaded', '%verified', '%metadata',
                    'isolated', 'rate-up', 'rate-down', 'peers-connected')

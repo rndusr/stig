@@ -34,10 +34,27 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
     def make_tlist(self, filters, sort, columns):
         import urwid
         from ...tui.torrent.tlist import TorrentListWidget
-
         tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
         titlew = urwid.AttrMap(urwid.Text(tlistw.title), 'tabs', 'tabs.focused')
         self.tui.tabs.load(titlew, tlistw)
+        return True
+
+
+class ListFilesCmd(base.ListFilesCmdbase,
+                   mixin.make_request, mixin.make_selection):
+    provides = {'tui'}
+    tui = ExpectedResource
+    srvapi = ExpectedResource
+
+    async def make_flist(self, filters):
+        import urwid
+        from ...tui.torrent.flist import FileListWidget
+        flistw = FileListWidget(self.srvapi, filters,
+                                columns=('name', 'progress', 'size'))
+        title = 'Files:%s' % filters
+        titlew = urwid.AttrMap(urwid.Text(title), 'tabs', 'tabs.focused')
+
+        self.tui.tabs.load(titlew, flistw)
         return True
 
 

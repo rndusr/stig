@@ -91,6 +91,10 @@ class Table():
                 cellwidget = cellcls()
                 member.add(colname, cellwidget, options=cellcls.width, removable=True)
 
+    def clear(self):
+        """Remove all registered rows"""
+        self._members = {}
+
 
 class ColumnHeaderWidget(urwid.WidgetWrap):
     """Column widget with left and right text"""

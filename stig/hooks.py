@@ -15,7 +15,8 @@ from .logging import make_logger
 log = make_logger(__name__)
 
 from .main import (cfg, srvapi)
-from .columns.tlist import COLUMNS
+from .columns.tlist import COLUMNS as TCOLUMNS
+from .columns.flist import COLUMNS as FCOLUMNS
 
 
 def _set_rpc_timeout(timeout):
@@ -31,10 +32,10 @@ cfg['srv.url'].on_change(_set_rpc_url)
 def _set_bandwidth_unit(unit):
     srvapi.bandwidth_unit = unit.value
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
-    COLUMNS['rate-up'].set_unit(u)
-    COLUMNS['rate-down'].set_unit(u)
+    TCOLUMNS['rate-up'].set_unit(u)
+    TCOLUMNS['rate-down'].set_unit(u)
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
-_set_bandwidth_unit(cfg['unit.size'])  # Initialize COLUMNS
+_set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TCOLUMNS[...].set_unit()
 
 
 def _set_bandwidth_prefix(prefix):
@@ -45,11 +46,12 @@ cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 def _set_size_unit(unit):
     srvapi.size_unit = unit.value
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
-    COLUMNS['size'].set_unit(u)
-    COLUMNS['downloaded'].set_unit(u)
-    COLUMNS['uploaded'].set_unit(u)
+    TCOLUMNS['size'].set_unit(u)
+    TCOLUMNS['downloaded'].set_unit(u)
+    TCOLUMNS['uploaded'].set_unit(u)
+    FCOLUMNS['size'].set_unit(u)
 cfg['unit.size'].on_change(_set_size_unit)
-_set_size_unit(cfg['unit.size'])  # Initialize COLUMNS
+_set_size_unit(cfg['unit.size'])  # Initially call TCOLUMNS[...].set_unit()
 
 
 def _set_size_prefix(prefix):

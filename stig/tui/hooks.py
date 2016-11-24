@@ -81,7 +81,11 @@ def _set_tlist_columns(colnames):
 cfg['tlist.columns'].on_change(_set_tlist_columns)
 
 def _refresh_tlists(value):
-    tui.refresh_tlists()
+    from .torrent.tlist import TorrentListWidget
+    from .torrent.flist import FileListWidget
+    for widget in tui.tabs:
+        if isinstance(widget, (TorrentListWidget, FileListWidget)):
+            widget.clear()
     tui.srvapi.poll()
 cfg['unit.bandwidth'].on_change(_refresh_tlists)
 cfg['unit.size'].on_change(_refresh_tlists)

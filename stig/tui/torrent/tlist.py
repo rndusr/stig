@@ -141,7 +141,7 @@ class TorrentListWidget(urwid.WidgetWrap):
                     self._listbox.focus_position = i
                     break
 
-    def refresh(self):
+    def clear(self):
         for tw in tuple(self._walker):
             tw.torrent.clearcache()
             self._walker.remove(tw)

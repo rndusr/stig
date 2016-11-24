@@ -181,7 +181,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             else:
                 torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
             log.info(torrentname)
-            _print_table(torrent['files'], ('filename', 'size-total'), FLIST_COLUMNS)
+            _print_table(torrent['files'], ('name', 'size'), FLIST_COLUMNS)
 
 
 

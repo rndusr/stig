@@ -31,10 +31,10 @@ class Filename(ColumnBase):
     def _crop_and_align(self, name, width, side):
         return stralign(name, width, side)
 
-COLUMNS['filename'] = Filename
+COLUMNS['name'] = Filename
 
 
-class SizeTotal(ColumnBase):
+class Size(ColumnBase):
     header = {'left': 'Size', 'right': '?'}
     width = 6
 
@@ -48,4 +48,17 @@ class SizeTotal(ColumnBase):
     def set_unit(cls, unit):
         cls.header['right'] = unit
 
-COLUMNS['size-total'] = SizeTotal
+COLUMNS['size'] = Size
+
+
+class Progress(ColumnBase):
+    header = {'right': '%'}
+    width = 5
+
+    def get_value(self):
+        return self.data['progress']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+COLUMNS['progress'] = Progress

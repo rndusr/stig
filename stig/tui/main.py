@@ -130,10 +130,3 @@ def run(cmds):
         aioloop.run_until_complete(srvapi.stop_polling())
 
     return True
-
-
-def refresh_tlists():
-    from .torrent.tlist import TorrentListWidget
-    for widget in tabs:
-        if isinstance(widget, TorrentListWidget):
-            widget.refresh()

@@ -13,19 +13,21 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from ...main import cfg
-from . import tlist_columns as columns
+from .tlist_columns import TUICOLUMNS as TCOLUMNS
+from .flist_columns import TUICOLUMNS as FCOLUMNS
 
 
 def _set_bandwidth_unit(unit):
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
-    columns.RateUp.set_unit(u)
-    columns.RateDown.set_unit(u)
+    TCOLUMNS['rate-up'].set_unit(u)
+    TCOLUMNS['rate-down'].set_unit(u)
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 
 
 def _set_size_unit(unit):
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
-    columns.Size.set_unit(u)
-    columns.Downloaded.set_unit(u)
-    columns.Uploaded.set_unit(u)
+    TCOLUMNS['size'].set_unit(u)
+    TCOLUMNS['downloaded'].set_unit(u)
+    TCOLUMNS['uploaded'].set_unit(u)
+    FCOLUMNS['size'].set_unit(u)
 cfg['unit.size'].on_change(_set_size_unit)
