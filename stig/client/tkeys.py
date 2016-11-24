@@ -282,6 +282,8 @@ class TorrentFile(abc.Mapping):
             self._cache[key] = self._TYPES[key](self._raw)
         return self._cache[key]
 
+    def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
+
     def __iter__(self): iter(self._TYPES)
     def __len__(self): return len(self._TYPES)
 
