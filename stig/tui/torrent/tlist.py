@@ -178,20 +178,3 @@ class TorrentListWidget(urwid.WidgetWrap):
     @property
     def focused_torrent(self):
         return self._listbox.focus
-
-    _selectable = True
-    def keypress(self, size, key):
-        key = super().keypress(size, key)
-
-        # urwid.ListBox doesn't handle 'home' and 'end' keys.
-        if self._listbox.focus is not None:
-            if key == 'home':
-                self._listbox.focus_position = 0
-                self._listbox._invalidate()  # Don't know why this is needed?
-                key = None
-            elif key == 'end':
-                self._listbox.focus_position = len(self._walker)-1
-                self._listbox._invalidate()  # Don't know why this is needed?
-                key = None
-
-        return key

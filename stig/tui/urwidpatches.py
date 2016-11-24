@@ -46,3 +46,21 @@ class AsyncioEventLoop_withfixedraise(urwid.AsyncioEventLoop):
             raise self._exc_info
 
 urwid.AsyncioEventLoop = AsyncioEventLoop_withfixedraise
+
+
+# # Tell ListBox to move to first/last item on 'home'/'end' keys.
+class ListBox_with_home_end(urwid.ListBox):
+    def keypress(self, size, key):
+        key = super().keypress(size, key)
+        if self.focus is not None:
+            if key == 'home':
+                self.focus_position = 0
+                self._invalidate()  # Don't know why this is needed?
+                key = None
+            elif key == 'end':
+                self.focus_position = len(self.body)-1
+                self._invalidate()  # Don't know why this is needed?
+                key = None
+        return key
+
+urwid.ListBox = ListBox_with_home_end
