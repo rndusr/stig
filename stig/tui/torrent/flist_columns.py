@@ -47,6 +47,23 @@ class Size(_COLUMNS['size'], CellWidgetBase):
 TUICOLUMNS['size'] = Size
 
 
+class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
+    width = 6
+    style = Style(prefix='filelist.downloaded', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['downloaded'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.data['progress'] < 100 else None
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['downloaded'].header['right']
+
+TUICOLUMNS['downloaded'] = Downloaded
+
+
 class Progress(_COLUMNS['progress'], CellWidgetBase):
     width = 6
     style = Style(prefix='filelist.progress', focusable=True,

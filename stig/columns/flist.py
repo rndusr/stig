@@ -51,6 +51,23 @@ class Size(ColumnBase):
 COLUMNS['size'] = Size
 
 
+class Downloaded(ColumnBase):
+    header = {'left': 'Dn', 'right': '?'}
+    width = 6
+
+    def get_value(self):
+        return self.data['size-downloaded']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = unit
+
+COLUMNS['downloaded'] = Downloaded
+
+
 class Progress(ColumnBase):
     header = {'right': '%'}
     width = 5

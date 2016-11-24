@@ -49,7 +49,9 @@ def _set_size_unit(unit):
     TCOLUMNS['size'].set_unit(u)
     TCOLUMNS['downloaded'].set_unit(u)
     TCOLUMNS['uploaded'].set_unit(u)
+
     FCOLUMNS['size'].set_unit(u)
+    FCOLUMNS['downloaded'].set_unit(u)
 cfg['unit.size'].on_change(_set_size_unit)
 _set_size_unit(cfg['unit.size'])  # Initially call TCOLUMNS[...].set_unit()
 
