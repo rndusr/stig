@@ -81,7 +81,7 @@ def parseargs_sort(args):
     return TorrentSorter(listify_args(args))
 
 def parseargs_columns(args):
-    from ..tui.torrent.tlist_columns import COLUMNS
+    from ..columns.tlist import COLUMNS
     args = listify_args(args)
     for arg in args:
         if arg not in COLUMNS:
