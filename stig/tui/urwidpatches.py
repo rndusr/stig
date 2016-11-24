@@ -11,11 +11,11 @@
 
 """Monkey patches that should be removed when they are resolved upstream"""
 
+import urwid
 
 # Workaround until this bug is resolved:
 # https://github.com/urwid/urwid/pull/86
 # https://github.com/urwid/urwid/issues/90
-import urwid
 from distutils.version import LooseVersion
 if LooseVersion(urwid.__version__) <= LooseVersion('1.3.1'):
     urwid.AsyncioEventLoop._idle_emulation_delay = 1/25
@@ -24,13 +24,12 @@ if LooseVersion(urwid.__version__) <= LooseVersion('1.3.1'):
 # Raise UnicodeDecodeError properly.
 # https://github.com/urwid/urwid/pull/92
 # https://github.com/urwid/urwid/pull/196
-from urwid import ExitMainLoop
 class AsyncioEventLoop_withfixedraise(urwid.AsyncioEventLoop):
     def _exception_handler(self, loop, context):
         exc = context.get('exception')
         if exc:
             loop.stop()
-            if not isinstance(exc, ExitMainLoop):
+            if not isinstance(exc, urwid.ExitMainLoop):
                 self._exc_info = exc
         else:
             loop.default_exception_handler(context)
