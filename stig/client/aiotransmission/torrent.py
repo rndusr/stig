@@ -76,12 +76,13 @@ class FileList(tuple):
     # or __init__.
     def __new__(cls, files, fileStats):
         return super().__new__(cls,
-            (tkeys.TorrentFile(name=f['name'],
+            (tkeys.TorrentFile(id=i,
+                               name=f['name'],
                                size_total=f['length'],
                                size_downloaded=fS['bytesCompleted'],
                                is_wanted=fS['wanted'],
                                priority=fS['priority'])
-             for f,fS in zip(files, fileStats))
+             for i,(f,fS) in enumerate(zip(files, fileStats)))
         )
 
 

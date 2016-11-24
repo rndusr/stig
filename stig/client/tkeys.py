@@ -263,6 +263,7 @@ class TorrentFilePriority(str):
 
 class TorrentFile(abc.Mapping):
     _TYPES = {
+        'id'              : lambda raw: int(raw['id']),
         'name'            : lambda raw: SmartCmpStr(raw['name']),
         'size-total'      : lambda raw: convert.size(raw['size-total'], unit='byte'),
         'size-downloaded' : lambda raw: convert.size(raw['size-downloaded'], unit='byte'),
@@ -271,8 +272,8 @@ class TorrentFile(abc.Mapping):
         'progress'        : lambda raw: Percent(raw['size-downloaded'] / raw['size-total'] * 100),
     }
 
-    def __init__(self, name, size_total, size_downloaded, is_wanted, priority):
-        self._raw = {'name': name, 'is-wanted': is_wanted, 'priority': priority,
+    def __init__(self, id, name, size_total, size_downloaded, is_wanted, priority):
+        self._raw = {'id': id, 'name': name, 'is-wanted': is_wanted, 'priority': priority,
                      'size-total': size_total, 'size-downloaded': size_downloaded}
         self._cache = {}
 
