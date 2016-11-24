@@ -383,10 +383,10 @@ class HelpManager():
              "provided with the '--rcfile' option.  An existing rc file at the "
              "default path can be ignored with the '--norcfile' option."),
             '',
-            ('\tCommands in an rc file are called during startup before any '
+            ('\tCommands in an rc file are called during startup before the '
              'commands given on the command line.'),
             '',
-            ("\tTUI commands (e.g. 'tab') in an rc file are ignored if the TUI "
-             "is not loaded."),
+            ("\tTUI commands (e.g. 'tab' or 'bind') in an rc file are ignored "
+             "in CLI mode."),
         ]
         return finalize_lines(lines)
