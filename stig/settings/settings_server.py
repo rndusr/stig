@@ -69,13 +69,10 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
     valuesyntax = '[+=|-=]<NUMBER>[k|M|G|T|Ki|Mi|Gi|Ti][b|B] or [on|off]'
 
     def convert(self, value):
-        log.debug('RateLimitValue: converting {!r}'.format(value))
         try:
             # value may be something like 'on' or 'off'
-            value = BooleanValue.convert(self, value)
+            return BooleanValue.convert(self, value)
         except ValueError:
-            log.debug('Not a bool: {!r}'.format(value))
-
             # Parse relative values
             if isinstance(value, str) and len(value) >= 3 and value[:2] in ('+=', '-='):
                 op = value[:2]
@@ -91,10 +88,6 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
 
             # Let parent provide the error message
             return super().convert(value)
-        else:
-            # Rate limit is either enabled or disabled
-            log.debug('Rate limit is either turned {}'.format('on' if value else 'off'))
-            return const.ENABLED if value else const.DISABLED
 
     def validate(self, value):
         if value not in (const.ENABLED, const.DISABLED):
