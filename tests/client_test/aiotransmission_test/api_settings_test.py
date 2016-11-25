@@ -179,6 +179,7 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_path_incomplete('/123')
         self.rpc.fake_settings['incomplete-dir-enabled'] = True
         self.rpc.fake_settings['incomplete-dir'] = '/123'
+        await self.api.set_path_incomplete(False)
         await self.api.set_path_incomplete('relative/path')
         self.rpc.fake_settings['incomplete-dir-enabled'] = True
         self.rpc.fake_settings['incomplete-dir'] = '/123/relative/path'

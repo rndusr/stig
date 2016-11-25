@@ -295,7 +295,8 @@ class SettingsAPI(abc.Mapping):
         feature is enabled or disabled without changing the path.
         """
         if isinstance(path, str):
-            current_path = await self.get_path_incomplete()
+            await self.update()
+            current_path = self._raw['incomplete-dir']
             await self._set({'incomplete-dir': self._absolute_path(path, current_path),
                              'incomplete-dir-enabled': True})
         else:
