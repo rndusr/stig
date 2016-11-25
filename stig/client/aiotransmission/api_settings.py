@@ -255,7 +255,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def path_complete(self):
         """Path to directory where torrent files are put"""
-        return self._raw['download-dir']
+        return os.path.normpath(self._raw['download-dir'])
 
     async def get_path_complete(self):
         """Get path to directory where torrent files are put"""
