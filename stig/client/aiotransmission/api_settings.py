@@ -271,6 +271,14 @@ class SettingsAPI(abc.Mapping):
         path = self._absolute_path(path, await self.get_path_complete())
         await self._set({'download-dir': path})
 
+    @setting
+    def path_incomplete(self):
+        """Path to directory where incomplete torrent files are put"""
+        if not self._raw['incomplete-dir-enabled']:
+            return const.DISABLED
+        else:
+            return os.path.normpath(self._raw['incomplete-dir'])
+
     async def get_path_incomplete(self):
         """Get path to directory where incomplete torrent files are put
 
@@ -278,10 +286,7 @@ class SettingsAPI(abc.Mapping):
         with complete ones.
         """
         await self.update()
-        if not self._raw['incomplete-dir-enabled']:
-            return const.DISABLED
-        else:
-            return self._raw['incomplete-dir']
+        return self.path_incomplete
 
     async def set_path_incomplete(self, path):
         """Set path to directory where torrent files are put before they are complete
