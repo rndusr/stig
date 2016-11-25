@@ -72,9 +72,9 @@ class MockUtils():
         self.sortobj = MockTorrentSorter(args)
         return self.sortobj
 
-    columns = ['name', 'rate-down', 'rate-up']
-    def parseargs_columns(self, args):
-        return self.columns
+    torrent_columns = ['name']
+    def parseargs_torrent_columns(self, args):
+        return self.torrent_columns
 
     def listify_args(self, lst):
         return lst
