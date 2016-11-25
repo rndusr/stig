@@ -170,7 +170,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                    mixin.make_request, mixin.make_selection):
     provides = {'cli'}
     srvapi = ExpectedResource
-    async def make_flist(self, filters):
+    async def make_flist(self, filters, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(filters, keys=('name', 'files')),
             quiet=True, update_torrentlist=False)
@@ -181,7 +181,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             else:
                 torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
             log.info(torrentname)
-            _print_table(torrent['files'], ('name', 'size'), FLIST_COLUMNS)
+            _print_table(torrent['files'], columns, FLIST_COLUMNS)
 
 
 

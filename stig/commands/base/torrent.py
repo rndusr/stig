@@ -99,7 +99,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'tlist.columns' setting",
           'description': ('Comma-separated list of column names '
-                          "(see 'column' command for available columns)") },
+                          "(see 'help tlist.columns' for available columns)") },
     )
     more_sections = {
         'SCRIPTING': (
@@ -126,7 +126,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         try:
             filters = self.cmdutils.parseargs_filter(FILTER)
             sort = self.cmdutils.parseargs_sort(sort)
-            columns = self.cmdutils.parseargs_columns(columns)
+            columns = self.cmdutils.parseargs_torrent_columns(columns)
         except ValueError as e:
             log.error(e)
             return False
@@ -149,21 +149,32 @@ class ListFilesCmdbase(metaclass=InitCommand):
                 "filelist 'A.Torrent.with.Files'")
     argspecs = (
         make_filter_argspec(default_to_focused_torrent=True),
+        { 'names': ('--columns', '-c'),
+          'default_description': "current value of 'flist.columns' setting",
+          'description': ('Comma-separated list of column names '
+                          "(see 'help flist.columns' for available columns)") },
     )
 
     cmdutils = ExpectedResource
     cfg = ExpectedResource
 
-    async def run(self, FILTER):
+    async def run(self, FILTER, columns):
+        columns = self.cfg['flist.columns'].value if columns is None else columns
+        try:
+            columns = self.cmdutils.parseargs_file_columns(columns)
+        except ValueError as e:
+            log.error(e)
+            return False
+
         filters = self.make_selection(FILTER)
         if filters is None:  # Bad filter expression
             return False
         else:
             log.debug('Listing files of %s torrents', filters)
             if asyncio.iscoroutinefunction(self.make_flist):
-                return await self.make_flist(filters)
+                return await self.make_flist(filters, columns)
             else:
-                return self.make_flist(filters)
+                return self.make_flist(filters, columns)
 
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):

@@ -46,11 +46,10 @@ class ListFilesCmd(base.ListFilesCmdbase,
     tui = ExpectedResource
     srvapi = ExpectedResource
 
-    async def make_flist(self, filters):
+    async def make_flist(self, filters, columns):
         import urwid
         from ...tui.torrent.flist import FileListWidget
-        flistw = FileListWidget(self.srvapi, filters,
-                                columns=('name', 'progress', 'size'))
+        flistw = FileListWidget(self.srvapi, filters, columns)
         title = 'Files:%s' % filters
         titlew = urwid.AttrMap(urwid.Text(title), 'tabs', 'tabs.focused')
 

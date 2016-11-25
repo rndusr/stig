@@ -80,8 +80,16 @@ def parseargs_sort(args):
     from ..client import TorrentSorter
     return TorrentSorter(listify_args(args))
 
-def parseargs_columns(args):
+def parseargs_torrent_columns(args):
     from ..columns.tlist import COLUMNS
+    args = listify_args(args)
+    for arg in args:
+        if arg not in COLUMNS:
+            raise ValueError('Unknown column: {}'.format(arg))
+    return args
+
+def parseargs_file_columns(args):
+    from ..columns.flist import COLUMNS
     args = listify_args(args)
     for arg in args:
         if arg not in COLUMNS:
