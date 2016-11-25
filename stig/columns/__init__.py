@@ -36,7 +36,7 @@ class ColumnBase():
         'right').
         """
         text = str(self.get_value())
-        if self.width is None:
+        if not isinstance(self.width, int):
             return text
         else:
             return self._crop_and_align(text, self.width, self.align)
