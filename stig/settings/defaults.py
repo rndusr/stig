@@ -28,7 +28,7 @@ DEFAULT_TLIST_SORT    = ('name',)
 DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
                          'eta', 'peers-connected', 'peers-seeding', 'rate-down',
                          'rate-up')
-DEFAULT_FLIST_COLUMNS = ('name', 'progress', 'downloaded', 'size')
+DEFAULT_FLIST_COLUMNS = ('priority', 'name', 'progress', 'downloaded', 'size')
 
 
 from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,

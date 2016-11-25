@@ -79,3 +79,18 @@ class Progress(ColumnBase):
         return int(self.get_value())
 
 COLUMNS['progress'] = Progress
+
+
+class Priority(ColumnBase):
+    header = {'left': 'Priority'}
+    width = 4
+    align = 'left'
+
+    def get_value(self):
+        val = self.data['priority']
+        return '' if val == 'normal' else val
+
+    def get_raw(self):
+        return int(self.get_value())
+
+COLUMNS['priority'] = Priority

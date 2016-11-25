@@ -224,3 +224,13 @@ filelist.progress.unfocused                $progress_fg           on $list_bg.uf
 filelist.progress.focused                  $progress_fg           on $list_bg.f
 filelist.progress.highlighted.unfocused    $progress_hl           on $list_bg.uf
 filelist.progress.highlighted.focused      $progress_hl           on $list_bg.f
+
+$priority_fg = brown
+$priority_hl = yellow
+filelist.priority.header                   $priority_fg,underline on $list_bg.uf
+filelist.priority.unfocused                $priority_fg           on $list_bg.uf
+filelist.priority.focused                  $priority_fg           on $list_bg.f
+filelist.priority.low.unfocused            $priority_fg           on $list_bg.uf
+filelist.priority.low.focused              $priority_fg           on $list_bg.f
+filelist.priority.high.unfocused           $priority_hl           on $list_bg.uf
+filelist.priority.high.focused             $priority_hl           on $list_bg.f
