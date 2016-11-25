@@ -70,7 +70,7 @@ COLUMNS['downloaded'] = Downloaded
 
 class Progress(ColumnBase):
     header = {'right': '%'}
-    width = 5
+    width = 4
 
     def get_value(self):
         return self.data['progress']

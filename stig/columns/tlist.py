@@ -89,7 +89,7 @@ COLUMNS['peers-seeding'] = PeersSeeding
 
 class Progress(ColumnBase):
     header = {'right': '%'}
-    width = 5
+    width = 4
     needed_keys = ('%verified', '%downloaded', '%metadata')
 
     def get_value(self):

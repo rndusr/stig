@@ -34,7 +34,6 @@ TUICOLUMNS['name'] = Filename
 
 
 class Size(_COLUMNS['size'], CellWidgetBase):
-    width = 6
     style = Style(prefix='filelist.size', focusable=True,
                   extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['size'].header),
@@ -48,7 +47,6 @@ TUICOLUMNS['size'] = Size
 
 
 class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
-    width = 6
     style = Style(prefix='filelist.downloaded', focusable=True,
                   extras=('header',), modes=('highlighted',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['downloaded'].header),
@@ -65,7 +63,6 @@ TUICOLUMNS['downloaded'] = Downloaded
 
 
 class Progress(_COLUMNS['progress'], CellWidgetBase):
-    width = 6
     style = Style(prefix='filelist.progress', focusable=True,
                   extras=('header',), modes=('highlighted',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['progress'].header),
