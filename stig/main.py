@@ -100,8 +100,8 @@ def run():
         success = True
         for cmd in cmds:
             success = cmdmgr(cmd, block=True, on_error=log.error) and success
-        if not success:
-            sys.exit(1)
+            if not success:
+                sys.exit(1)
 
     elif cmdmgr.active_interface == 'tui':
         # rc file commands must run first so cli commands can override
