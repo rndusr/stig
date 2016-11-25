@@ -19,6 +19,18 @@ import os
 from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
+from functools import wraps
+
+
+def setting(method):
+    """Decorator for SettingsAPI properties"""
+    @wraps(method)
+    def wrapped(self):
+        if self._raw is None:
+            return const.DISCONNECTED
+        else:
+            return method(self)
+    return property(wrapped)
 
 
 class SettingsAPI(abc.Mapping):
@@ -133,9 +145,7 @@ class SettingsAPI(abc.Mapping):
 
     def _get_rate_limit(self, direction, alt=False):
         key_value, key_enabled = self._rate_limit_keys(direction, alt)
-        if self._raw is None:
-            return const.DISCONNECTED
-        elif self._raw[key_enabled]:
+        if self._raw[key_enabled]:
             # Transmission reports kilobytes
             return convert.bandwidth(self._raw[key_value]*1000, unit='byte')
         else:
@@ -155,7 +165,7 @@ class SettingsAPI(abc.Mapping):
             return {key_value: int(l/1000), key_enabled: True}
 
 
-    @property
+    @setting
     def rate_limit_up(self):
         """Cached upload rate limit
 
@@ -186,7 +196,7 @@ class SettingsAPI(abc.Mapping):
         await self._set(self._set_rate_limit(limit, 'up', alt=False))
 
 
-    @property
+    @setting
     def rate_limit_down(self):
         """Cached download rate limit (see `rate_limit_up`)"""
         if 'rate_limit_down' not in self._cache:
@@ -203,7 +213,7 @@ class SettingsAPI(abc.Mapping):
         await self._set(self._set_rate_limit(limit, 'down', alt=False))
 
 
-    @property
+    @setting
     def alt_rate_limit_up(self):
         """Cached alternative upload rate limit (see `rate_limit_up`)"""
         if 'rate_limit_up' not in self._cache:
@@ -220,7 +230,7 @@ class SettingsAPI(abc.Mapping):
         await self._set(self._set_rate_limit(limit, 'up', alt=True))
 
 
-    @property
+    @setting
     def alt_rate_limit_down(self):
         """Cached alternative download rate limit (see `rate_limit_up`)"""
         if 'rate_limit_down' not in self._cache:
@@ -242,7 +252,7 @@ class SettingsAPI(abc.Mapping):
     def _absolute_path(self, path, cwd):
         return os.path.normpath(os.path.join(cwd, path))
 
-    @property
+    @setting
     def path_complete(self):
         """Path to directory where torrent files are put"""
         return self._raw['download-dir']
@@ -293,7 +303,7 @@ class SettingsAPI(abc.Mapping):
 
     # Other settings
 
-    @property
+    @setting
     def dht(self):
         """Whether DHT is used to discover peers"""
         return const.ENABLED if self._raw['dht-enabled'] else const.DISABLED
@@ -308,7 +318,7 @@ class SettingsAPI(abc.Mapping):
         await self._set({'dht-enabled': bool(enabled)})
 
 
-    @property
+    @setting
     def lpd(self):
         """Whether Local Peer Discovery is used to discover peers"""
         return const.ENABLED if self._raw['lpd-enabled'] else const.DISABLED
@@ -323,7 +333,7 @@ class SettingsAPI(abc.Mapping):
         await self._set({'lpd-enabled': bool(enabled)})
 
 
-    @property
+    @setting
     def encryption(self):
         """Whether protocol encryption is used to mask BitTorrent traffic
 
