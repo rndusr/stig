@@ -84,7 +84,7 @@ def init_defaults(cfg):
     )
 
 
-from .settings_server import (RateLimitSrvValue, PathSrvValue)
+from .settings_server import (RateLimitSrvValue, PathSrvValue, PathIncompleteSrvValue)
 
 def init_server_defaults(cfg, settingsapi):
     cfg.load(
@@ -102,7 +102,7 @@ def init_server_defaults(cfg, settingsapi):
                      getter=lambda: settingsapi['path-complete'],
                      setter=settingsapi.set_path_complete),
 
-        PathSrvValue('srv.path.incomplete',
+        PathIncompleteSrvValue('srv.path.incomplete',
                      description='Where to put incomplete torrent files',
                      getter=lambda: settingsapi['path-incomplete'],
                      setter=settingsapi.set_path_incomplete),

@@ -100,6 +100,15 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
 class PathSrvValue(SrvValueBase, PathValue):
     pass
 
+class PathIncompleteSrvValue(PathSrvValue):
+    typename = 'path or bool'
+    def convert(self, value):
+        try:
+            # value may be something like 'on' or 'off'
+            return BooleanValue.convert(self, value)
+        except ValueError:
+            return super().convert(value)
+
 
 def is_server_setting(name):
     if name.startswith('srv.') and \
