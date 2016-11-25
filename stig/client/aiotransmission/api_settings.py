@@ -24,12 +24,14 @@ from .. import constants as const
 class SettingsAPI(abc.Mapping):
     """Transmission daemon settings
 
-    get_* methods are coroutine functions and fresh values from the server.
+    get_* methods are coroutine functions and fetch values from the server.
 
     Cached values that are updated every `interval` seconds are available as
-    properties with 'get_' removed from the equivalent method name.
+    properties with 'get_' removed from the equivalent method name.  For
+    example, `get_path_incomplete` as an asyncronous method, `path_incomplete`
+    is a syncronous property.
 
-    Cached values are also available as items, e.g. settings['rate-limit-up'].
+    Cached values are also available as items, e.g. settings['path-incomplete'].
     (Remove 'get_' from the method name and replace '_' with '-'.)
 
     To update cached values, use `update` (async) or `poll` (sync).
