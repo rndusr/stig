@@ -22,11 +22,17 @@ class HelpCmd(base.HelpCmdbase):
 
     async def run(self, TOPIC):
         from ...settings import is_server_setting
+        from ...main import srvapi
+        from ...client import ClientError
+
         for topic in TOPIC:
             if is_server_setting(topic):
-                from ...main import srvapi
-                await srvapi.settings.update()
-                break
+                try:
+                    await srvapi.settings.update()
+                except ClientError as e:
+                    log.error(str(e))
+                finally:
+                    break
         return super().run(TOPIC)
 
     def display_help(self, topics, lines):
