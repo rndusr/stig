@@ -298,12 +298,8 @@ class SettingsAPI(abc.Mapping):
             current_path = await self.get_path_incomplete()
             await self._set({'incomplete-dir': self._absolute_path(path, current_path),
                              'incomplete-dir-enabled': True})
-        elif path:
-            await self._set({'incomplete-dir-enabled': True})
-        elif not path:
-            await self._set({'incomplete-dir-enabled': False})
         else:
-            raise ValueError('Invalid path value: {!r}'.format(path))
+            await self._set({'incomplete-dir-enabled': bool(path)})
 
 
     # Other settings
