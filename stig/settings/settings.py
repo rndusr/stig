@@ -240,6 +240,8 @@ class IntegerValue(NumberValue):
     _numbertype = 'integer'
 
 
+TRUE = ('enable', 'enabled', 'yes', 'on', 'true', '1')
+FALSE = ('disable', 'disabled', 'no', 'off', 'false', '0')
 class BooleanValue(ValueBase):
     type = bool
     typename = 'boolean'
@@ -251,9 +253,9 @@ class BooleanValue(ValueBase):
             if value in (0, 1):
                 return bool(value)
         elif isinstance(value, str):
-            if value.lower() in ('enabled', 'no', 'off', 'false', '0'):
+            if value.lower() in FALSE:
                 return False
-            elif value.lower() in ('disabled', 'yes', 'on', 'true', '1'):
+            elif value.lower() in TRUE:
                 return True
         raise ValueError('Not a {}'.format(self.typename))
 
