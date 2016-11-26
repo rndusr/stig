@@ -192,6 +192,7 @@ class TabCmd(metaclass=InitCommand):
     async def run(self, close, focus, COMMAND):
         import urwid
         tabs = self.tui.tabs
+        cmdargs = {}
 
         if close is not False:
             log.debug('Closing tab %r', close)
@@ -209,14 +210,25 @@ class TabCmd(metaclass=InitCommand):
             else:
                 return False
 
+        # Remember which torrent is focused in current tab so we can provide
+        # it to the command running in a new tab.
+        try:
+            cmdargs['focused_torrent'] = tabs.focus.focused_torrent.torrent
+        except AttributeError:
+            pass
+
         if close is False and focus is None:
             titlew = urwid.AttrMap(urwid.Text('Empty tab'), 'tabs', 'tabs.focused')
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d', tabs.focus_position)
 
         if COMMAND:
-            log.debug('Running command in tab %d: %r', tabs.focus_position, COMMAND)
-            process = self.cmdmgr.run(COMMAND)
+            log.debug('Running command in tab %d with args %s: %r',
+                      tabs.focus_position,
+                      ', '.join('%s=%r' % (k,v) for k,v in cmdargs.items()),
+                      COMMAND)
+
+            process = self.cmdmgr.run(COMMAND, **cmdargs)
             # Sync processes are always finished at this point.
             # Async processes must finish before we can report our own success.
             if not process.finished:
