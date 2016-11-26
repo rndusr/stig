@@ -20,6 +20,7 @@ from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
 from ...utils import strcrop
+from . import make_tab_title
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -37,7 +38,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
         import urwid
         from ...tui.torrent.tlist import TorrentListWidget
         tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
-        titlew = urwid.AttrMap(urwid.Text('T:%s' % tlistw.title), 'tabs', 'tabs.focused')
+        titlew = make_tab_title('T', tlistw.title,
+                                'tabs.torrentlist.unfocused', 'tabs.torrentlist.focused')
         self.tui.tabs.load(titlew, tlistw)
         return True
 
@@ -56,11 +58,11 @@ class ListFilesCmd(base.ListFilesCmdbase,
         if isinstance(filters, abc.Sequence) and len(filters) == 1:
             # filters is a torrent ID - resolve it to a name
             response = await self.srvapi.torrent.torrents(filters, keys=('name',))
-            title = 'F:%s' % strcrop(response.torrents[0]['name'], 30, tail='…')
+            title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
-            title = 'F:%s' % filters
-        titlew = urwid.AttrMap(urwid.Text(title), 'tabs', 'tabs.focused')
-
+            title = str(filters)
+        titlew = make_tab_title('F', title,
+                                'tabs.filelist.unfocused', 'tabs.filelist.focused')
         self.tui.tabs.load(titlew, flistw)
         return True
 

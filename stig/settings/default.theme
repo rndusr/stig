@@ -1,6 +1,11 @@
-tabs                       light gray on dark gray
-tabs.focused               black      on dark cyan
-tabs.background            default    on black
+tabs.unfocused             white        on black
+tabs.focused               black        on white
+tabs.torrentlist.unfocused dark cyan    on dark gray
+tabs.torrentlist.focused   black        on dark cyan
+tabs.filelist.unfocused    dark magenta on dark gray
+tabs.filelist.focused      black        on dark magenta
+tabs.help.unfocused        yellow       on dark gray
+tabs.help.focused          black        on yellow
 
 cli                        black on light gray
 

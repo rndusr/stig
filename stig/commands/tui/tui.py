@@ -218,7 +218,7 @@ class TabCmd(metaclass=InitCommand):
             pass
 
         if close is False and focus is None:
-            titlew = urwid.AttrMap(urwid.Text('Empty tab'), 'tabs', 'tabs.focused')
+            titlew = urwid.AttrMap(urwid.Text('Empty tab'), 'tabs.unfocused', 'tabs.focused')
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d', tabs.focus_position)
 
