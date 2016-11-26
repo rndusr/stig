@@ -11,6 +11,13 @@
 
 """Commands for the TUI"""
 
+import urwid
+def make_tab_title(kind, text, attr_unfocused, attr_focused):
+    return urwid.AttrMap(
+        urwid.Text([('tabs.unfocused', kind+':'), text]),
+        attr_unfocused, attr_focused
+    )
+
 from .config import *
 from .help import *
 from .torrent import *
