@@ -14,10 +14,12 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from collections import abc
 
 from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
+from ...utils import strcrop
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -50,7 +52,13 @@ class ListFilesCmd(base.ListFilesCmdbase,
         import urwid
         from ...tui.torrent.flist import FileListWidget
         flistw = FileListWidget(self.srvapi, filters, columns)
-        title = 'Files:%s' % filters
+
+        if isinstance(filters, abc.Sequence) and len(filters) == 1:
+            # filters is a torrent ID - resolve it to a name
+            response = await self.srvapi.torrent.torrents(filters, keys=('name',))
+            title = '[F] %s' % strcrop(response.torrents[0]['name'], 30, tail='…')
+        else:
+            title = '[F] %s' % filters
         titlew = urwid.AttrMap(urwid.Text(title), 'tabs', 'tabs.focused')
 
         self.tui.tabs.load(titlew, flistw)
