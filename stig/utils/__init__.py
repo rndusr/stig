@@ -44,12 +44,22 @@ def strwidth(string):
                              if unicodedata.east_asian_width(char) in 'FW')
 
 
-def strcrop(string, width):
-    """Return `string` cropped to `width`, considering wide characters"""
+def strcrop(string, width, tail=None):
+    """Return `string` cropped to `width`, considering wide characters
+
+    If `tail` is not None, it must be a string that is appended to the cropped
+    string.
+    """
     def widechar_indexes(s):
         for i,c in enumerate(s):
             if unicodedata.east_asian_width(c) in 'FW':
                 yield i
+
+    if strwidth(string) <= width:
+        return string  # string is already short enough
+
+    if tail is not None:
+        width -= strwidth(tail)  # Account for tail in final width
 
     indexes = list(widechar_indexes(string)) + [len(string)]
     if not indexes:
@@ -70,6 +80,9 @@ def strcrop(string, width):
     if currwidth > width:
         excess = currwidth - width
         parts[-1] = parts[-1][:-excess]
+
+    if tail is not None:
+        parts.append(tail)
 
     return ''.join(parts)
 
