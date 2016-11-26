@@ -37,7 +37,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
         import urwid
         from ...tui.torrent.tlist import TorrentListWidget
         tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
-        titlew = urwid.AttrMap(urwid.Text(tlistw.title), 'tabs', 'tabs.focused')
+        titlew = urwid.AttrMap(urwid.Text('T:%s' % tlistw.title), 'tabs', 'tabs.focused')
         self.tui.tabs.load(titlew, tlistw)
         return True
 
@@ -56,9 +56,9 @@ class ListFilesCmd(base.ListFilesCmdbase,
         if isinstance(filters, abc.Sequence) and len(filters) == 1:
             # filters is a torrent ID - resolve it to a name
             response = await self.srvapi.torrent.torrents(filters, keys=('name',))
-            title = '[F] %s' % strcrop(response.torrents[0]['name'], 30, tail='…')
+            title = 'F:%s' % strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
-            title = '[F] %s' % filters
+            title = 'F:%s' % filters
         titlew = urwid.AttrMap(urwid.Text(title), 'tabs', 'tabs.focused')
 
         self.tui.tabs.load(titlew, flistw)

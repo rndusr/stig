@@ -168,7 +168,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         title = str(self._filters) if self._filters is not None else 'all'
         sortstr = str(self._sort)
         if sortstr is not 'name':
-            title += ' [%s]' % sortstr
+            title += ' {%s}' % sortstr
         return title
 
     @property
