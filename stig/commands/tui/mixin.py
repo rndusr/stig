@@ -53,7 +53,9 @@ class make_selection():
         else:
             if filters is None:
                 # Try to find focused torrent in focused tab
-                if hasattr(tabs.focus, 'focused_torrent') and \
+                if hasattr(self, 'focused_torrent'):
+                    return (self.focused_torrent['id'],)
+                elif hasattr(tabs.focus, 'focused_torrent') and \
                    tabs.focus.focused_torrent is not None:
                     return (tabs.focus.focused_torrent.tid,)
                 else:
