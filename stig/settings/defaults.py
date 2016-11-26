@@ -165,4 +165,5 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 'P', 'action': 'start --toggle --force'},
     {'context': 'torrent', 'key': 'delete', 'action': 'remove'},
     {'context': 'torrent', 'key': 'shift-delete', 'action': 'remove --delete-files'},
+    {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
 )
