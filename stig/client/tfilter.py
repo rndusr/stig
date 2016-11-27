@@ -304,8 +304,6 @@ class _TorrentFilter():
         return self._hash
 
 
-_NOFILTER = _TorrentFilter('all')
-
 class TorrentFilter():
     """One or more filters combined with & and | operators"""
 
@@ -336,7 +334,7 @@ class TorrentFilter():
                 if expect is 'filter':
                     if part not in '&|':
                         f = _TorrentFilter(part)
-                        if f == _NOFILTER:
+                        if f == _TorrentFilter('all'):
                             # part is 'all' or '*' - this disables all other filters
                             filters = []
                             ops = []
