@@ -16,9 +16,6 @@ this, write a new class that derives from CellWidgetBase and register it in
 the COLUMNS dictionary to make it available.
 """
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import urwid
 
 from ..table import ColumnHeaderWidget

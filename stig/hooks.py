@@ -11,9 +11,6 @@
 
 """General hooks that are always needed regardless of the interface"""
 
-from .logging import make_logger
-log = make_logger(__name__)
-
 from .main import (cfg, srvapi)
 from .columns.tlist import COLUMNS as TCOLUMNS
 from .columns.flist import COLUMNS as FCOLUMNS

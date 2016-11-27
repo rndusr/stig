@@ -11,9 +11,6 @@
 
 """Column classes that display information in torrent file lists"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import urwid
 
 from ..table import ColumnHeaderWidget
