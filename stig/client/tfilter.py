@@ -9,299 +9,119 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+"""Filtering Torrents by their values"""
+
 from ..logging import make_logger
 log = make_logger(__name__)
 
 import re
-import operator
 from itertools import zip_longest
 from collections import abc
 
+from .filter_common import (BoolFilterSpec, CmpFilterSpec, Filter)
+
 from .tkeys import TYPES as VALUETYPES
-
-
-class _Filter():
-    """A filter specification"""
-
-    def __init__(self, checkfunc, needed_keys, description, aliases=(), value_type=None):
-        self.checkfunc = checkfunc
-        self.needed_keys = needed_keys
-        self.value_type = value_type
-        self.aliases = aliases
-        if description.startswith('...'):
-            self.description = 'Torrents that are ' + description[3:].strip()
-        elif description.startswith(':::'):
-            self.description = 'Match VALUE against the ' + description[3:].strip()
-        else:
-            self.description = description
-
-    def __call__(self, *args, **kwargs):
-        return self.checkfunc(*args, **kwargs)
-
-
-# Filters without arguments
-BOOLEAN_FILTERS = {
-    # '...' is replaced with 'Torrents that are'
-    'all':               _Filter(lambda t: True,
-                                 aliases=('*',),
-                                 needed_keys=(),
-                                 description='All torrents'),
-    'verifying':         _Filter(lambda t: t['status'] == 'verifying',
-                                 aliases=('checking',),
-                                 needed_keys=('status',),
-                                 description='... being verified or queued for verification'),
-    'stopped':           _Filter(lambda t: t['status'] == 'stopped',
-                                 aliases=('paused',),
-                                 needed_keys=('status',),
-                                 description='... not allowed to up- or download'),
-    'seeding':           _Filter(lambda t: t['status'] == 'seeding',
-                                 needed_keys=('status',),
-                                 description='... complete and offered for download'),
-    'leeching':          _Filter(lambda t: t['status'] == 'leeching',
-                                 needed_keys=('status',),
-                                 description='... downloading or waiting for seeds'),
-    'complete':          _Filter(lambda t: t['%downloaded'] >= 100,
-                                 needed_keys=('%downloaded',),
-                                 description='Torrents with all wanted files complete'),
-    'active':            _Filter(lambda t: t['peers-connected'] > 0 or t['status'] == 'verifying',
-                                 needed_keys=('peers-connected', 'status'),
-                                 description='... connected to peers or being verified'),
-    'downloading':       _Filter(lambda t: t['rate-down'] > 0,
-                                 needed_keys=('rate-down',),
-                                 description='... using download bandwidth'),
-    'uploading':         _Filter(lambda t: t['rate-up'] > 0,
-                                 needed_keys=('rate-up',),
-                                 description='... using upload bandwidth'),
-    'idle':              _Filter(lambda t: t['stalled'],
-                                 needed_keys=('stalled',),
-                                 description='... not down- or uploading but not stopped'),
-    'private':           _Filter(lambda t: t['private'],
-                                 needed_keys=('private',),
-                                 description='... only connectable through trackers'),
-    'public':            _Filter(lambda t: not t['private'],
-                                 needed_keys=('private',),
-                                 description='... connectable through DHT and/or PEX'),
-    'isolated':          _Filter(lambda t: t['isolated'],
-                                 needed_keys=('isolated',),
-                                 description='... cannot discover new peers in any way'),
-}
-
-
-# Filters with arguments
-COMPARATIVE_FILTERS = {}
-
-# Most comparative filters are almost identical
-for name,aliases,key,desc in (
-        # ':::' is replaced with 'Matches VALUE against the'
-        ('connections', ('conn',), 'peers-connected', '::: number of connected peers'),
-        ('%downloaded', ('%done', '%complete'), '%downloaded', '::: percentage of downloaded bytes'),
-        ('downloaded', ('down',), 'size-downloaded', '::: number of downloaded bytes'),
-        ('id', (), 'id', '::: ID'),
-        ('path', ('dir',), 'path', '::: full path to download directory'),
-        ('name', ('title',), 'name', '::: name'),
-        ('ratio', (), 'ratio', '::: uploadded/downloaded ratio'),
-        ('rate-down', ('rdown',), 'rate-down', '::: download rate'),
-        ('rate-up', ('rup',), 'rate-up', '::: upload rate'),
-        ('seeds', (), 'peers-seeding', '::: largest number of seeds reported by any tracker'),
-        ('size', (), 'size-final', '::: combined size of all wanted files'),
-        ('uploaded', ('up',), 'size-uploaded', '::: number of uploaded bytes'),
-    ):
-    # key=key is needed to make the key variable local inside the lambda.
-    # Without it, it is always be set to the last key in the looped-over tuple
-    # above when filterfunc is called.
+def _make_cmp_filter(key, aliases, description):
     filterfunc = lambda t, op, v, key=key: op(t[key], v)
-    COMPARATIVE_FILTERS[name] = _Filter(filterfunc,
-                                        aliases=aliases,
-                                        needed_keys=(key,),
-                                        value_type=VALUETYPES[key],
-                                        description=desc)
-
-COMPARATIVE_FILTERS['tracker'] = _Filter(
-    lambda t, op, v: any(op(tracker['url-announce'].domain, v)
-                       for tracker in t['trackers']),
-    needed_keys=('trackers',),
-    value_type=str,
-    description='::: domain of the announce URL of trackers'
-)
-# TODO: Add more filters 'time-created', 'time-added', 'time-started',
-# 'time-finished', 'time-active'
+    return CmpFilterSpec(filterfunc, description=description,
+                         needed_keys=(key,), aliases=aliases,
+                         value_type=VALUETYPES[key])
 
 
-_NEEDED_KEYS = {}
-_ALIASES = {}
-for filters in (BOOLEAN_FILTERS, COMPARATIVE_FILTERS):
-    for fname,f in filters.items():
-        _NEEDED_KEYS[fname] = f.needed_keys
-        for alias in f.aliases:
-            if alias in _ALIASES:
-                raise RuntimeError('Filter alias {!r} exists twice!'.format(alias))
-            _ALIASES[alias] = fname
+class _TorrentFilter(Filter):
+    DEFAULT_FILTER = 'name'
+
+    # Filters without arguments
+    BOOLEAN_FILTERS = {
+        # '...' is replaced with 'Torrents that are'
+        'active': BoolFilterSpec(
+            lambda t: t['peers-connected'] > 0 or t['status'] == 'verifying',
+            description='... connected to peers or being verified',
+            needed_keys=('peers-connected', 'status')),
+        'all': BoolFilterSpec(
+            lambda t: True,
+            description='All torrents',
+            needed_keys=(),
+            aliases=('*',)),
+        'complete': BoolFilterSpec(
+            lambda t: t['%downloaded'] >= 100,
+            description='Torrents with all wanted files complete',
+            needed_keys=('%downloaded',)),
+        'downloading': BoolFilterSpec(
+            lambda t: t['rate-down'] > 0,
+            description='... using download bandwidth',
+            needed_keys=('rate-down',)),
+        'idle': BoolFilterSpec(
+            lambda t: t['stalled'],
+            description='... not down- or uploading but not stopped',
+            needed_keys=('stalled',)),
+        'isolated': BoolFilterSpec(
+            lambda t: t['isolated'],
+            description='... cannot discover new peers in any way',
+            needed_keys=('isolated',)),
+        'leeching': BoolFilterSpec(
+            lambda t: t['status'] == 'leeching',
+            description='... downloading or waiting for seeds',
+            needed_keys=('status',)),
+        'private': BoolFilterSpec(
+            lambda t: t['private'],
+            description='... only connectable through trackers',
+            needed_keys=('private',)),
+        'public': BoolFilterSpec(
+            lambda t: not t['private'],
+            description='... connectable through DHT and/or PEX',
+            needed_keys=('private',)),
+        'seeding': BoolFilterSpec(
+            lambda t: t['status'] == 'seeding',
+            description='... complete and offered for download',
+            needed_keys=('status',)),
+        'stopped': BoolFilterSpec(
+            lambda t: t['status'] == 'stopped',
+            description='... not allowed to up- or download',
+            needed_keys=('status',),
+            aliases=('paused',)),
+        'uploading': BoolFilterSpec(
+            lambda t: t['rate-up'] > 0,
+            description='... using upload bandwidth',
+            needed_keys=('rate-up',)),
+        'verifying': BoolFilterSpec(
+            lambda t: t['status'] == 'verifying',
+            description='... being verified or queued for verification',
+            needed_keys=('status',),
+            aliases=('checking',)),
+    }
 
 
-def _check_value(name, value, op):
-    """Convert `value` to correct type for filter `name`, ensure op is compatible
+    # Filters with arguments
+    COMPARATIVE_FILTERS = {
+        'connections': _make_cmp_filter('peers-connected', ('conn',),
+                                        '::: number of connected peers'),
+        '%downloaded': _make_cmp_filter('%downloaded', ('%done', '%complete'),
+                                        '::: percentage of downloaded bytes'),
+        'downloaded': _make_cmp_filter('size-downloaded', ('down',),
+                                       '::: number of downloaded bytes'),
+        'id':        _make_cmp_filter('id', (), '::: ID'),
+        'name':      _make_cmp_filter('name', ('title',), '::: name'),
+        'path':      _make_cmp_filter('path', ('dir',), '::: full path to download directory'),
+        'ratio':     _make_cmp_filter('ratio', (), '::: uploaded/downloaded ratio'),
+        'rate-down': _make_cmp_filter('rate-down', ('rdown',), '::: download rate'),
+        'rate-up':   _make_cmp_filter('rate-up', ('rup',), '::: upload rate'),
+        'seeds':     _make_cmp_filter('peers-seeding', (),
+                                      '::: largest number of seeds reported by any tracker'),
+        'size':      _make_cmp_filter('size-final', (),
+                                      '::: combined size of all wanted files'),
+        'uploaded':  _make_cmp_filter('size-uploaded', (),
+                                      '::: number of uploaded bytes'),
 
-    Raises ValueError on failure.
-    """
-    if name not in COMPARATIVE_FILTERS:
-        return value
+        'tracker': CmpFilterSpec(
+            lambda t, op, v: any(op(tracker['url-announce'].domain, v)
+                                 for tracker in t['trackers']),
+            description='::: domain of the announce URL of trackers',
+            needed_keys=('trackers',),
+            value_type=str,
+        ),
+    }
 
-    # Convert value to proper type
-    target_type = COMPARATIVE_FILTERS[name].value_type
-    if type(value) is not target_type:
-        try:
-            value = target_type(value)
-        except ValueError:
-            raise ValueError('Invalid value for filter {!r}: {!r}'.format(name, value))
-
-    # Make sure value and operator are compatible
-    if op == '~' and not isinstance(value, str):
-        raise ValueError('Invalid operator for filter {!r}: {}'.format(name, op))
-
-    return value
-
-
-_OPERATORS = {
-    '=': operator.__eq__, '~': operator.__contains__,
-    '>': operator.__gt__, '<': operator.__lt__,
-    '>=': operator.__ge__, '<=': operator.__le__,
-}
-_OP_CHARS = ''.join(_OPERATORS)
-_OP_LIST = '(?:' + '|'.join(sorted(_OPERATORS, key=lambda op: len(op), reverse=True)) + ')'
-_INVERT_CHAR = '!'
-_FILTER_REGEX = re.compile(r'^'
-                           r'(?P<invert1>' + _INVERT_CHAR + '?)'
-                           r'(?P<name>[^' + _OP_CHARS+_INVERT_CHAR + ']*)'
-                           r'(?P<invert2>' + _INVERT_CHAR + '?)'
-                           r'(?P<op>' + _OP_LIST + '|)'
-                           r'(?P<value>.*)$')
-
-
-class _TorrentFilter():
-    """A single filter, e.g. idle"""
-
-    def __init__(self, filter_str=''):
-        # name: Name of filter (user-readable string)
-        # invert: Whether to invert filter (bool)
-        # op: Comparison operator as string (see _OPERATORS)
-        # value: User-given value as string (will be converted to proper type)
-        name, invert, op, value = (None, False, None, None)
-        if filter_str != '':
-            match = _FILTER_REGEX.fullmatch(filter_str)
-            if match is None:
-                raise ValueError('Invalid filter: {!r}'.format(filter_str))
-            else:
-                name = match.group('name')
-                op = match.group('op') or None
-                invert = bool(match.group('invert1')) ^ bool(match.group('invert2'))
-                value = match.group('value')
-                value = None if value.strip() == '' else value
-
-        # No operator but a value doesn't make any sense
-        if op is None and value is not None:
-            raise ValueError('Malformed filter expression: {!r}'.format(filter_str))
-
-        # Handle spaces around operator: If there's a space before the
-        # operator, strip value.  Otherwise, preserve them.  In any case,
-        # strip name.
-        if op is not None:
-            if name.endswith(' '):
-                value = value.strip(' ')
-        if name is not None:
-            name = name.strip()
-
-        if name is None:
-            # No filter_str provided
-            name = 'all'
-        elif name is '':
-            # No filter name is given, but a value and maybe an operator.
-            name = 'name'
-        elif name in _ALIASES:
-            name = _ALIASES[name]
-
-        # Make sure value has the correct type and operator is compatible
-        if value is not None:
-            value = _check_value(name, value, op)
-
-        log.debug('Parsed filter %r: name=%r, invert=%r, op=%r, value=%r',
-                  filter_str, name, invert, op, value)
-
-        # Filter that doesn't use value argument
-        if name in BOOLEAN_FILTERS:
-            self._check_func = BOOLEAN_FILTERS[name]
-            self.needed_keys = _NEEDED_KEYS[name]
-
-        # Filter that needs an argument
-        elif name in COMPARATIVE_FILTERS:
-            f = COMPARATIVE_FILTERS[name]
-            if op is None and value is None:
-                # Abuse comparative filter as boolean filter
-                # (e.g. 'peers-connected' matches torrents with peers-connect!=0)
-                keys = f.needed_keys
-                self._check_func = lambda t, keys=keys: all(bool(t[key]) for key in keys)
-                self.needed_keys = _NEEDED_KEYS[name]
-
-            elif op is None:
-                ops = '[' + '|'.join(sorted(_OPERATORS)) + ']'
-                raise ValueError('Missing operator and value: {} {} ...'.format(name, ops))
-            elif value is None:
-                raise ValueError('Missing value: {} ...'.format(filter_str))
-            else:
-                self._check_func = lambda t, f=f, v=value, op=_OPERATORS[op]: f(t, op, v)
-                self.needed_keys = _NEEDED_KEYS[name]
-
-        elif value is op is None:
-            # `name` is no known filter - default to filter 'name' and
-            # operator '~'.
-            value = name
-            name = 'name'
-            op = '~'
-            key = 'name'
-            self.needed_keys = (key,)
-            self._check_func = lambda t, key=key, op=_OPERATORS[op], v=value: op(t[key], v)
-        else:
-            raise ValueError('Invalid filter name: {!r}'.format(name))
-
-        self._name, self._invert, self._op, self._value = name, invert, op, value
-        self._hash = hash((name, invert, op, value))
-
-    def apply(self, torrents, invert=False, ids=False):
-        """Yield torrents or torrent IDs that match"""
-        invert = self._invert ^ bool(invert)  # xor
-        wanted = self._check_func
-        for t in torrents:
-            if wanted(t) ^ invert:
-                yield t['id'] if ids else t
-
-    def match(self, torrent):
-        """Return True if `torrent` matches filter, False otherwise"""
-        return self._check_func(torrent) ^ self._invert
-
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            for attr in ('_name', '_value', '_invert', '_op'):
-                if getattr(self, attr) != getattr(other, attr):
-                    return False
-            return True
-        else:
-            return NotImplemented
-
-    def __str__(self):
-        if self._name is None:
-            return 'all'
-        elif self._value is None:
-            return ('!' if self._invert else '') + self._name
-        else:
-            name = self._name if self._name != 'name' else ''
-            op = ('!' if self._invert else '') + self._op
-            val = str(self._value)
-            return name + op + val
-
-    def __repr__(self):
-        return '<{} {}>'.format(type(self).__name__, str(self))
-
-    def __hash__(self):
-        return self._hash
 
 
 class TorrentFilter():
