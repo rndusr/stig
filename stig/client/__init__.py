@@ -14,7 +14,7 @@ from .constants import *
 
 from .utils import Response
 
-from .tfilter import TorrentFilter
+from .filters.tfilter import TorrentFilter
 from .tsort import TorrentSorter
 
 from .poll import RequestPoller

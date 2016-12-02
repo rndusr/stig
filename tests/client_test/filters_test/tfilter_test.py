@@ -1,4 +1,4 @@
-from stig.client.tfilter import (SingleTorrentFilter, TorrentFilter)
+from stig.client.filters.tfilter import (SingleTorrentFilter, TorrentFilter)
 from stig.client.aiotransmission.torrent import Torrent
 
 import unittest

@@ -297,7 +297,7 @@ class HelpManager():
     @property
     def filter(self):
         """Provide help text for arguments to TorrentFilter"""
-        from .client.tfilter import _TorrentFilter
+        from .client.filters.tfilter import SingleTorrentFilter
         lines = [
             'FILTERING TORRENTS',
             ('\tCommands that accept FILTER arguments are applied to torrents '
@@ -339,11 +339,11 @@ class HelpManager():
         ]
 
         lines += ['', '\tBOOLEAN FILTERS']
-        for fname,f in sorted(_TorrentFilter.BOOLEAN_FILTERS.items()):
+        for fname,f in sorted(SingleTorrentFilter.BOOLEAN_FILTERS.items()):
             lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
 
         lines += ['', '\tCOMPARATIVE FILTERS']
-        for fname,f in sorted(_TorrentFilter.COMPARATIVE_FILTERS.items()):
+        for fname,f in sorted(SingleTorrentFilter.COMPARATIVE_FILTERS.items()):
             lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
         return finalize_lines(lines)
 

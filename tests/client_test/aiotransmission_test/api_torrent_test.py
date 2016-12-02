@@ -2,7 +2,7 @@ from stig.client.aiotransmission.api_torrent import TorrentAPI
 from stig.client.aiotransmission.rpc import TransmissionRPC
 from stig.client.aiotransmission.torrent import Torrent
 from stig.client import errors
-from stig.client.tfilter import TorrentFilter
+from stig.client.filters.tfilter import TorrentFilter
 
 import resources_aiotransmission as rsrc
 

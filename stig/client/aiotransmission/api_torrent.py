@@ -21,7 +21,7 @@ import unicodedata
 from ..utils import (Response, pluralize)
 from .torrent import TorrentFields, Torrent
 from .. import ClientError
-from ..tfilter import TorrentFilter
+from ..filters.tfilter import TorrentFilter
 
 
 class _TorrentCache():

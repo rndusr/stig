@@ -1,6 +1,6 @@
 from stig.client.trequestpool import TorrentRequestPool
 from stig.client.aiotransmission.torrent import Torrent
-from stig.client.tfilter import TorrentFilter
+from stig.client.filters.tfilter import TorrentFilter
 from stig.client.utils import Response
 
 import asynctest

@@ -11,14 +11,14 @@
 
 """Filtering Torrents by their values"""
 
-from ..logging import make_logger
+from ...logging import make_logger
 log = make_logger(__name__)
 
 import re
 
-from .filter_common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
-from .tkeys import TYPES as VALUETYPES
+from ..tkeys import TYPES as VALUETYPES
 def _make_cmp_filter(key, aliases, description):
     filterfunc = lambda t, op, v, key=key: op(t[key], v)
     return CmpFilterSpec(filterfunc, description=description,

@@ -9,9 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Common stuff for Torrent and TorrentFile filters"""
+"""Filter sequences of Torrents, TorrentFiles by arbitrary criteria"""
 
-from ..logging import make_logger
+from ...logging import make_logger
 log = make_logger(__name__)
 
 import operator
