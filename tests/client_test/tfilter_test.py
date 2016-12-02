@@ -1,4 +1,4 @@
-from stig.client.tfilter import (_TorrentFilter, TorrentFilter)
+from stig.client.tfilter import (SingleTorrentFilter, TorrentFilter)
 from stig.client.aiotransmission.torrent import Torrent
 
 import unittest
@@ -25,201 +25,201 @@ def getids(torrents, *ids):
 
 
 
-class Test_TorrentFilter(unittest.TestCase):
+class TestSingleTorrentFilter(unittest.TestCase):
     def test_parser(self):
-        self.assertEqual(str(_TorrentFilter()), 'all')
-        self.assertEqual(str(_TorrentFilter('*')), 'all')
-        self.assertEqual(str(_TorrentFilter('idle')), 'idle')
-        self.assertEqual(str(_TorrentFilter('!idle')), '!idle')
-        self.assertEqual(str(_TorrentFilter('foo')), '~foo')
-        self.assertEqual(str(_TorrentFilter('~foo')), '~foo')
-        self.assertEqual(str(_TorrentFilter('=foo')), '=foo')
-        self.assertEqual(str(_TorrentFilter('!=foo')), '!=foo')
-        self.assertEqual(str(_TorrentFilter('name= foo')), '= foo')
-        self.assertEqual(str(_TorrentFilter('name!=foo ')), '!=foo ')
-        self.assertEqual(str(_TorrentFilter('%downloaded>17.2')), '%downloaded>17.2')
+        self.assertEqual(str(SingleTorrentFilter()), 'all')
+        self.assertEqual(str(SingleTorrentFilter('*')), 'all')
+        self.assertEqual(str(SingleTorrentFilter('idle')), 'idle')
+        self.assertEqual(str(SingleTorrentFilter('!idle')), '!idle')
+        self.assertEqual(str(SingleTorrentFilter('foo')), '~foo')
+        self.assertEqual(str(SingleTorrentFilter('~foo')), '~foo')
+        self.assertEqual(str(SingleTorrentFilter('=foo')), '=foo')
+        self.assertEqual(str(SingleTorrentFilter('!=foo')), '!=foo')
+        self.assertEqual(str(SingleTorrentFilter('name= foo')), '= foo')
+        self.assertEqual(str(SingleTorrentFilter('name!=foo ')), '!=foo ')
+        self.assertEqual(str(SingleTorrentFilter('%downloaded>17.2')), '%downloaded>17.2')
 
         with self.assertRaises(ValueError) as cm:
-            _TorrentFilter('=')
+            SingleTorrentFilter('=')
         self.assertEqual(str(cm.exception), "Missing value: = ...")
         with self.assertRaises(ValueError) as cm:
-            _TorrentFilter('%downloaded!>')
+            SingleTorrentFilter('%downloaded!>')
         self.assertEqual(str(cm.exception), "Missing value: %downloaded!> ...")
         # with self.assertRaises(ValueError) as cm:
-        #     _TorrentFilter('tracker')
+        #     SingleTorrentFilter('tracker')
         # self.assertEqual(str(cm.exception), "Missing operator and value: tracker [<|<=|=|>|>=|~] ...")
         with self.assertRaises(ValueError) as cm:
-            _TorrentFilter('name! =foo')
+            SingleTorrentFilter('name! =foo')
         self.assertEqual(str(cm.exception), "Malformed filter expression: 'name! =foo'")
 
     def test_parsing_spaces(self):
-       self.assertEqual(str(_TorrentFilter(' idle ')), 'idle')
-       self.assertEqual(str(_TorrentFilter('   %downloaded   ')), '%downloaded')
-       self.assertEqual(str(_TorrentFilter(' name = foo')), '=foo')
-       self.assertEqual(str(_TorrentFilter(' name != foo  ')), '!=foo')
-       self.assertEqual(str(_TorrentFilter(' name= foo, bar and baz  ')), '= foo, bar and baz  ')
+       self.assertEqual(str(SingleTorrentFilter(' idle ')), 'idle')
+       self.assertEqual(str(SingleTorrentFilter('   %downloaded   ')), '%downloaded')
+       self.assertEqual(str(SingleTorrentFilter(' name = foo')), '=foo')
+       self.assertEqual(str(SingleTorrentFilter(' name != foo  ')), '!=foo')
+       self.assertEqual(str(SingleTorrentFilter(' name= foo, bar and baz  ')), '= foo, bar and baz  ')
 
-       self.assertEqual(str(_TorrentFilter(' =   foo, bar and baz ')), '=foo, bar and baz')
-       self.assertEqual(str(_TorrentFilter('=   foo, bar and baz ')), '=   foo, bar and baz ')
+       self.assertEqual(str(SingleTorrentFilter(' =   foo, bar and baz ')), '=foo, bar and baz')
+       self.assertEqual(str(SingleTorrentFilter('=   foo, bar and baz ')), '=   foo, bar and baz ')
 
     def test_unknown_filter(self):
         with self.assertRaises(ValueError) as cm:
-            _TorrentFilter('foo=bar')
+            SingleTorrentFilter('foo=bar')
         self.assertEqual(str(cm.exception), "Invalid filter name: 'foo'")
         with self.assertRaises(ValueError) as cm:
-            _TorrentFilter('foo!~bar')
+            SingleTorrentFilter('foo!~bar')
         self.assertEqual(str(cm.exception), "Invalid filter name: 'foo'")
 
     def test_equality(self):
-        self.assertEqual(_TorrentFilter('name=foo'), _TorrentFilter('name=foo'))
-        self.assertNotEqual(_TorrentFilter('name=foo'), _TorrentFilter('name=Foo'))
-        self.assertEqual(_TorrentFilter('complete'), _TorrentFilter('complete'))
-        self.assertNotEqual(_TorrentFilter('complete'), _TorrentFilter('!complete'))
-        self.assertEqual(_TorrentFilter('!private'), _TorrentFilter('!private'))
-        self.assertNotEqual(_TorrentFilter('private'), _TorrentFilter('!private'))
+        self.assertEqual(SingleTorrentFilter('name=foo'), SingleTorrentFilter('name=foo'))
+        self.assertNotEqual(SingleTorrentFilter('name=foo'), SingleTorrentFilter('name=Foo'))
+        self.assertEqual(SingleTorrentFilter('complete'), SingleTorrentFilter('complete'))
+        self.assertNotEqual(SingleTorrentFilter('complete'), SingleTorrentFilter('!complete'))
+        self.assertEqual(SingleTorrentFilter('!private'), SingleTorrentFilter('!private'))
+        self.assertNotEqual(SingleTorrentFilter('private'), SingleTorrentFilter('!private'))
 
     def test_equals_operator(self):
-        tids = _TorrentFilter('name=Foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name=Foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,})
-        tids = _TorrentFilter('name=foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name=foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,})
-        tids = _TorrentFilter('name=Foof').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name=Foof').apply(tlist, key='id')
         self.assertEqual(set(tids), set())
-        tids = _TorrentFilter('name=FooF').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name=FooF').apply(tlist, key='id')
         self.assertEqual(set(tids), {4,})
-        tids = _TorrentFilter('name=42').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name=42').apply(tlist, key='id')
         self.assertEqual(set(tids), set())
 
     def test_contains_operator(self):
-        tids = _TorrentFilter('name~i').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name~i').apply(tlist, key='id')
         self.assertEqual(set(tids), {3,})
-        tids = _TorrentFilter('name~oof').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name~oof').apply(tlist, key='id')
         self.assertEqual(set(tids), {4,})
-        tids = _TorrentFilter('name~oof').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name~oof').apply(tlist, key='id')
         self.assertEqual(set(tids), {4,})
-        tids = _TorrentFilter('name~OOF').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name~OOF').apply(tlist, key='id')
         self.assertEqual(set(tids), set())
-        tids = _TorrentFilter('name~123').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name~123').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,})
 
     def test_inverter(self):
-        tids = _TorrentFilter('downloading').apply(tlist, key='id')
+        tids = SingleTorrentFilter('downloading').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,})
-        tids = _TorrentFilter('!downloading').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!downloading').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3, 4})
-        tids = _TorrentFilter('name~foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name~foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 4})
-        tids = _TorrentFilter('name!~foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name!~foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {2, 3})
-        tids = _TorrentFilter('!name~foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!name~foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {2, 3})
-        tids = _TorrentFilter('!name!~foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!name!~foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 4})
 
     def test_invalid_operators(self):
         with self.assertRaises(ValueError) as cm:
-            tuple(_TorrentFilter('%downloaded~4').apply(tlist, key='id'))
+            tuple(SingleTorrentFilter('%downloaded~4').apply(tlist, key='id'))
         self.assertEqual(str(cm.exception), "Invalid operator for filter '%downloaded': ~")
 
     def test_invalid_values(self):
         with self.assertRaises(ValueError) as cm:
-            tuple(_TorrentFilter('rate-down>foo').apply(tlist, key='id'))
+            tuple(SingleTorrentFilter('rate-down>foo').apply(tlist, key='id'))
         self.assertEqual(str(cm.exception), "Invalid value for filter 'rate-down': 'foo'")
 
     def test_aliases(self):
-        tids1 = tuple(_TorrentFilter('verifying').apply(tlist, key='id'))
-        tids2 = tuple(_TorrentFilter('checking').apply(tlist, key='id'))
+        tids1 = tuple(SingleTorrentFilter('verifying').apply(tlist, key='id'))
+        tids2 = tuple(SingleTorrentFilter('checking').apply(tlist, key='id'))
         self.assertEqual(set(tids1), set(tids2))
 
     def test_no_filter(self):
-        tids = _TorrentFilter().apply(tlist, key='id')
+        tids = SingleTorrentFilter().apply(tlist, key='id')
         self.assertEqual(set(tids), {1,2,3,4})
 
     def test_larger_smaller_operator(self):
         # 375Ki == 384k
-        tids = _TorrentFilter('rate-down>375Ki').apply(tlist, key='id')
+        tids = SingleTorrentFilter('rate-down>375Ki').apply(tlist, key='id')
         self.assertEqual(set(tids), set())
-        tids = _TorrentFilter('rate-down<375 Ki').apply(tlist, key='id')
+        tids = SingleTorrentFilter('rate-down<375 Ki').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3, 4})
-        tids = _TorrentFilter('rate-down>=375 ki').apply(tlist, key='id')
+        tids = SingleTorrentFilter('rate-down>=375 ki').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,})
-        tids = _TorrentFilter('rate-down<=384K').apply(tlist, key='id')
+        tids = SingleTorrentFilter('rate-down<=384K').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 2, 3, 4})
 
-        tids = _TorrentFilter('%downloaded>0').apply(tlist, key='id')
+        tids = SingleTorrentFilter('%downloaded>0').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 2, 3, 4})
-        tids = _TorrentFilter('%downloaded>20').apply(tlist, key='id')
+        tids = SingleTorrentFilter('%downloaded>20').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3, 4})
-        tids = _TorrentFilter('%downloaded>90').apply(tlist, key='id')
+        tids = SingleTorrentFilter('%downloaded>90').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3})
-        tids = _TorrentFilter('%downloaded<90').apply(tlist, key='id')
+        tids = SingleTorrentFilter('%downloaded<90').apply(tlist, key='id')
         self.assertEqual(set(tids), {2, 4})
-        tids = _TorrentFilter('%downloaded<20').apply(tlist, key='id')
+        tids = SingleTorrentFilter('%downloaded<20').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,})
 
     def test_larger_smaller_operator_on_strings(self):
-        tids = _TorrentFilter('name<4').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name<4').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3})
-        tids = _TorrentFilter('name<=4').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name<=4').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3, 4})
-        tids = _TorrentFilter('name<fo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name<fo').apply(tlist, key='id')
         self.assertEqual(set(tids), {2, 3})
-        tids = _TorrentFilter('name<=Foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name<=Foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 2, 3})
 
-        tids = _TorrentFilter('name>3').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name>3').apply(tlist, key='id')
         self.assertEqual(set(tids), {2, 4})
-        tids = _TorrentFilter('name>=3').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name>=3').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 2, 3, 4})
-        tids = _TorrentFilter('name>Bar123').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name>Bar123').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 3, 4})
-        tids = _TorrentFilter('name>=Bar123').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name>=Bar123').apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 2, 3, 4})
 
     def test_boolean_fallback(self):
-        tids = _TorrentFilter('downloaded').apply(tlist, key='id')
+        tids = SingleTorrentFilter('downloaded').apply(tlist, key='id')
         self.assertEqual(set(tids), {4,})
-        tids = _TorrentFilter('!downloaded').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!downloaded').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,2,3})
-        tids = _TorrentFilter('name').apply(tlist, key='id')
+        tids = SingleTorrentFilter('name').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,2,3,4})
 
     def test_name_is_default(self):
-        tids = _TorrentFilter('=foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('=foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,})
-        tids = _TorrentFilter('!=foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!=foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,3,4})
-        tids = _TorrentFilter('~foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('~foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,4})
-        tids = _TorrentFilter('!~foo').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!~foo').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,3})
         tl = list(tlist)
         tl.append(Torrent({'id': 999, 'name': ''}))
-        tids = _TorrentFilter('!').apply(tl, key='id')
+        tids = SingleTorrentFilter('!').apply(tl, key='id')
         self.assertEqual(set(tids), {999,})
 
     def test_progress_filter(self):
-        tids = _TorrentFilter('complete').apply(tlist, key='id')
+        tids = SingleTorrentFilter('complete').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,})
-        tids = _TorrentFilter('!complete').apply(tlist, key='id')
+        tids = SingleTorrentFilter('!complete').apply(tlist, key='id')
         self.assertEqual(set(tids), {2, 3, 4})
-        tids = _TorrentFilter('%downloaded=48').apply(tlist, key='id')
+        tids = SingleTorrentFilter('%downloaded=48').apply(tlist, key='id')
         self.assertEqual(set(tids), {4,})
 
     def test_status_filter(self):
-        tids = _TorrentFilter('stopped').apply(tlist, key='id')
+        tids = SingleTorrentFilter('stopped').apply(tlist, key='id')
         self.assertEqual(set(tids), {4,})
-        tids = _TorrentFilter('downloading').apply(tlist, key='id')
+        tids = SingleTorrentFilter('downloading').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,})
-        tids = _TorrentFilter('uploading').apply(tlist, key='id')
+        tids = SingleTorrentFilter('uploading').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,3})
-        tids = _TorrentFilter('active').apply(tlist, key='id')
+        tids = SingleTorrentFilter('active').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,3})
 
     def test_private_filter(self):
-        tids = _TorrentFilter('public').apply(tlist, key='id')
+        tids = SingleTorrentFilter('public').apply(tlist, key='id')
         self.assertEqual(set(tids), {1,3})
-        tids = _TorrentFilter('private').apply(tlist, key='id')
+        tids = SingleTorrentFilter('private').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,4})
 
 
