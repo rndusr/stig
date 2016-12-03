@@ -19,17 +19,6 @@ import asyncio
 from .. import (InitCommand, ExpectedResource)
 
 
-def make_torrentcmd_usage(cmdname, hasoptions=False):
-    # Commands that accept torrent filters have very similar usage sections.
-    OPTIONS= '[<OPTIONS>]'
-    ARGS = '[<FILTER> <FILTER> <FILTER> ...]'
-    usage = [cmdname,
-             cmdname + ' ' + ARGS]
-    if hasoptions:
-        for i in range(len(usage)):
-            usage[i] += ' ' + OPTIONS
-    return tuple(usage)
-
 # Argument definitions that are shared between commands
 def make_filter_argspec(default_to_focused_torrent=True):
     argspec = {'names': ('FILTER',), 'nargs': '*',
@@ -83,7 +72,8 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'List torrents'
-    usage = make_torrentcmd_usage('list', hasoptions=True)
+    usage = ('list [<OPTIONS>]',
+             'list [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]'),
     examples = ('ls active',
                 'ls !active',
                 'ls seeds<10',
@@ -144,7 +134,8 @@ class ListFilesCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'List torrent files'
-    usage = make_torrentcmd_usage('filelist', hasoptions=True)
+    usage = ('filelist [<OPTIONS>]',
+             'filelist [<OPTIONS>] <TORRENT FILTER> [<FILE FILTER>]'),
     examples = ('filelist',
                 "filelist 'A.Torrent.with.Files'")
     argspecs = (
@@ -183,7 +174,8 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Remove torrents'
-    usage = make_torrentcmd_usage('remove', hasoptions=True)
+    usage = ('remove [<OPTIONS>]',
+             'remove [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]'),
     examples = ('remove',
                 'remove "some torrent" another\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
@@ -213,7 +205,8 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Start downloading torrents'
-    usage = make_torrentcmd_usage('start', hasoptions=True)
+    usage = ('start [<OPTIONS>]',
+             'start [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]'),
     examples = ('start',
                 "start 'night of the living dead' Metropolis",
                 'start ubuntu --force')
@@ -246,7 +239,8 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Stop downloading torrents'
-    usage = make_torrentcmd_usage('stop', hasoptions=True)
+    usage = ('stop [<OPTIONS>]',
+             'stop [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]'),
     examples = ('stop',
                 'stop "night of the living dead" idle',
                 'stop --toggle ubuntu')
@@ -277,7 +271,8 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Verify downloaded torrent data'
-    usage = make_torrentcmd_usage('verify', hasoptions=False)
+    usage = ('verify [<OPTIONS>]',
+             'verify [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]'),
     examples = ('verify',
                 'verify debian')
     argspecs = (make_filter_argspec(default_to_focused_torrent=True),)
