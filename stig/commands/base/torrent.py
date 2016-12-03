@@ -126,7 +126,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         try:
             filters = self.cmdutils.parseargs_tfilter(TORRENT_FILTER)
             sort = self.cmdutils.parseargs_sort(sort)
-            columns = self.cmdutils.parseargs_torrent_columns(columns)
+            columns = self.cmdutils.parseargs_tcolumns(columns)
         except ValueError as e:
             log.error(e)
             return False

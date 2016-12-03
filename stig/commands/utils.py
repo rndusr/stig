@@ -80,7 +80,8 @@ def parseargs_sort(args):
     from ..client import TorrentSorter
     return TorrentSorter(listify_args(args))
 
-def parseargs_torrent_columns(args):
+def parseargs_tcolumns(args):
+    """Return valid torrent list columns"""
     from ..columns.tlist import COLUMNS
     args = listify_args(args)
     for arg in args:
