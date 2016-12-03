@@ -27,13 +27,7 @@ class BoolFilterSpec():
         self.filter_function = func
         self.needed_keys = needed_keys
         self.aliases = aliases
-
-        if description.startswith('...'):
-            self.description = 'Torrents that are ' + description[3:].strip()
-        elif description.startswith(':::'):
-            self.description = 'Match VALUE against the ' + description[3:].strip()
-        else:
-            self.description = description
+        self.description = description
 
 
 class CmpFilterSpec(BoolFilterSpec):
