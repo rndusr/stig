@@ -213,7 +213,7 @@ class _CommandBase():
                 # First name is the kwarg for run()
                 key = argspec['names'][0].lstrip('-').replace('-', '_')
                 value = getattr(args_parsed, key)
-                kwargs[key] = value
+                kwargs[key.replace(' ', '_')] = value
             self._args = kwargs
 
             if asyncio.iscoroutinefunction(self.run):
