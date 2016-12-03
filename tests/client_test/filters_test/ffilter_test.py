@@ -1,0 +1,42 @@
+from stig.client.filters.ffilter import (TorrentFileFilter)
+from stig.client.tkeys import TorrentFile
+
+import unittest
+
+
+flist = (
+    TorrentFile(id=1, name='Foo', is_wanted=True, priority='normal',
+                size_downloaded=10e3, size_total=10e3 ),
+    TorrentFile(id=2, name='Bar', is_wanted=False, priority='normal',
+                size_total=20e3, size_downloaded=10e3),
+    TorrentFile(id=3, name='Baz', is_wanted=True, priority='low',
+                size_total=20e3, size_downloaded=20e3),
+    TorrentFile(id=4, name='Bang', is_wanted=True, priority='high',
+                size_total=30e3, size_downloaded=20e3),
+    TorrentFile(id=5, name='Flupp', is_wanted=False, priority='high',
+                size_total=30e3, size_downloaded=30e3),
+)
+
+
+def f(filter_str):
+    return tuple(TorrentFileFilter(filter_str).apply(flist))
+
+
+class Test_FileFilter(unittest.TestCase):
+    def test_name_filter(self):
+        self.assertEqual(f('name=Foo'), (flist[0],))
+        self.assertEqual(f('name~F'), (flist[0], flist[4]))
+        self.assertEqual(f('name~Ba'), (flist[1], flist[2], flist[3]))
+
+    def test_wanted_filter(self):
+        self.assertEqual(f('wanted'), (flist[0], flist[2], flist[3]))
+        self.assertEqual(f('!wanted'), (flist[1], flist[4]))
+
+    def test_priority_filter(self):
+        self.assertEqual(f('priority=low'), (flist[2],))
+        self.assertEqual(f('priority=normal'), (flist[0], flist[1]))
+        self.assertEqual(f('priority=high'), (flist[3], flist[4]))
+
+        with self.assertRaises(ValueError) as cm:
+            f('priority=foo')
+        self.assertIn('foo', str(cm.exception))
