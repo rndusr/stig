@@ -332,6 +332,8 @@ class HelpManager():
             ("\tWhen matching numbers, the unit prefixes 'k', 'M', 'G', 'T' and "
              "their binary counterparts 'Ki', 'Mi', 'Gi', 'Ti' are supported.  "
              "The case of unit prefixes is ignored."),
+            ("\tExample: 'size>1mi' is the same as 'size>1048576' (1 Mebibyte); "
+             "'size>1m' is the same as 'size>1000000' (1 Megabyte)"),
             '',
             ("\tFilters can be combined with the operators '&' (logical AND) "
              "and '|' (logical OR).  Multiple FILTER arguments are combined with '|'."),
