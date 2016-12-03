@@ -45,7 +45,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
 
 
 class ListFilesCmd(base.ListFilesCmdbase,
-                   mixin.make_request, mixin.make_selection):
+                   mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource
     srvapi = ExpectedResource
@@ -68,27 +68,27 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
-                        mixin.update_torrentlist, mixin.make_request, mixin.make_selection):
+                        mixin.update_torrentlist, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
-                       mixin.update_torrentlist, mixin.make_request, mixin.make_selection):
+                       mixin.update_torrentlist, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class StopTorrentsCmd(base.StopTorrentsCmdbase,
-                      mixin.update_torrentlist, mixin.make_request, mixin.make_selection):
+                      mixin.update_torrentlist, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class VerifyTorrentsCmd(base.VerifyTorrentsCmdbase,
-                        mixin.make_request, mixin.make_selection):
+                        mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist

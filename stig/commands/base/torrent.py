@@ -166,7 +166,7 @@ class ListFilesCmdbase(metaclass=InitCommand):
             log.error(e)
             return False
 
-        filters = self.make_selection(FILTER)
+        filters = self.select_torrents(FILTER)
         if filters is None:  # Bad filter expression
             return False
         else:
@@ -196,8 +196,8 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
 
-    async def run(self, FILTER, delete_files):
-        filters = self.make_selection(FILTER)
+    async def run(self, TORRENT_FILTER, delete_files):
+        filters = self.select_torrents(TORRENT_FILTER)
         if filters is None:  # Bad filter expression
             return False
         else:
@@ -227,8 +227,8 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
 
-    async def run(self, FILTER, toggle, force):
-        filters = self.make_selection(FILTER)
+    async def run(self, TORRENT_FILTER, toggle, force):
+        filters = self.select_torrents(TORRENT_FILTER)
         if filters is None:  # Bad filter expression
             return False
         elif toggle:
@@ -258,8 +258,8 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
 
-    async def run(self, FILTER, toggle):
-        filters = self.make_selection(FILTER)
+    async def run(self, TORRENT_FILTER, toggle):
+        filters = self.select_torrents(TORRENT_FILTER)
         if filters is None:  # Bad filter expression
             return False
         elif toggle:
@@ -285,8 +285,8 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
 
-    async def run(self, FILTER):
-        filters = self.make_selection(FILTER)
+    async def run(self, TORRENT_FILTER):
+        filters = self.select_torrents(TORRENT_FILTER)
         if filters is None:  # Bad filter expression
             return False
         else:

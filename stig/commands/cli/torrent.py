@@ -167,7 +167,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase, mixin.make_request):
 
 
 class ListFilesCmd(base.ListFilesCmdbase,
-                   mixin.make_request, mixin.make_selection):
+                   mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
     srvapi = ExpectedResource
     async def make_flist(self, filters, columns):
@@ -186,20 +186,20 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
-                        mixin.make_request, mixin.make_selection):
+                        mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
 
 class StopTorrentsCmd(base.StopTorrentsCmdbase,
-                      mixin.make_request, mixin.make_selection):
+                      mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
-                       mixin.make_request, mixin.make_selection):
+                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
 
 class VerifyTorrentsCmd(base.VerifyTorrentsCmdbase,
-                        mixin.make_request, mixin.make_selection):
+                        mixin.make_request, mixin.select_torrents):
     provides = {'cli'}

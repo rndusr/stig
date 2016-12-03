@@ -23,9 +23,9 @@ class make_request():
         return response
 
 
-class make_selection():
-    def make_selection(self, FILTER):
-        """Get TorrentFilter instance or IDs from arguments"""
+class select_torrents():
+    def select_torrents(self, FILTER):
+        """Get TorrentFilter instance or torrent IDs from FILTER"""
         try:
             filters = self.cmdutils.parseargs_tfilter(FILTER)
         except ValueError as e:

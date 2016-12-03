@@ -42,9 +42,9 @@ class make_request():
         return response
 
 
-class make_selection():
-    def make_selection(self, TORRENT):
-        """Get TorrentFilter instance or tuple of torrent IDs from arguments or focused torrent"""
+class select_torrents():
+    def select_torrents(self, FILTER):
+        """Get TorrentFilter instance or torrent IDs from FILTER or focused torrent"""
         tabs = self.tui.tabs
         try:
             filters = self.cmdutils.parseargs_tfilter(FILTER)
