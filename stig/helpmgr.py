@@ -297,11 +297,10 @@ class HelpManager():
     @property
     def filter(self):
         """Provide help text for arguments to TorrentFilter"""
-        from .client.filters.tfilter import SingleTorrentFilter
         lines = [
-            'FILTERING TORRENTS',
-            ('\tCommands that accept FILTER arguments are applied to torrents '
-             'that match these arguments.'),
+            'FILTERING TORRENTS AND FILES',
+            ('\tCommands that accept FILTER arguments for torrents or files '
+             'are applied to torrents or files that match these arguments.'),
             '',
             '\tThere are two kinds of filters:',
             "\t\t- \tBoolean filters stand on their own (e.g. 'downloading')",
@@ -340,13 +339,24 @@ class HelpManager():
             "\tExample: 'name=foo paused' is the same as 'name=foo|paused'.",
         ]
 
-        lines += ['', '\tBOOLEAN FILTERS']
+        from .client.filters.tfilter import SingleTorrentFilter
+        lines += ['', '\tTORRENT FILTERS']
+        lines.append('\t\tBOOLEAN FILTERS')
         for fname,f in sorted(SingleTorrentFilter.BOOLEAN_FILTERS.items()):
-            lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
-
-        lines += ['', '\tCOMPARATIVE FILTERS']
+            lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+        lines += ['', '\t\tCOMPARATIVE FILTERS']
         for fname,f in sorted(SingleTorrentFilter.COMPARATIVE_FILTERS.items()):
-            lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+            lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+
+        from .client.filters.ffilter import SingleTorrentFileFilter
+        lines += ['', '\tTORRENT FILE FILTERS']
+        lines.append('\t\tBOOLEAN FILTERS')
+        for fname,f in sorted(SingleTorrentFileFilter.BOOLEAN_FILTERS.items()):
+            lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+        lines += ['', '\t\tCOMPARATIVE FILTERS']
+        for fname,f in sorted(SingleTorrentFileFilter.COMPARATIVE_FILTERS.items()):
+            lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+
         return finalize_lines(lines)
 
     @property
