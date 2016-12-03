@@ -25,7 +25,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Download torrents'
-    usage = ('add <TORRENT> <TORRENT> <TORRENT> ...',)
+    usage = ('add <TORRENT> <TORRENT> <TORRENT> ... [<OPTIONS>]',)
     examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
                 'add --stopped http://example.org/something.torrent')
     argspecs = (
