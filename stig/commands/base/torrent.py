@@ -19,14 +19,6 @@ import asyncio
 from .. import (InitCommand, ExpectedResource)
 
 
-# Argument definitions that are shared between commands
-def make_filter_argspec(default_to_focused_torrent=True):
-    argspec = {'names': ('FILTER',), 'nargs': '*',
-               'description': 'Filter expression (see `help filter`)'}
-    if default_to_focused_torrent:
-         argspec['description'] += ' or focused torrent in the TUI'
-    return argspec
-
 ARGSPEC_TOGGLE = {
     'names': ('--toggle','-t'), 'action': 'store_true',
     'description': ('Start TORRENT if stopped and vice versa')
@@ -80,7 +72,9 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
                 'ls active&tracker~example.org',
                 'ls active|idle&tracker~example')
     argspecs = (
-        make_filter_argspec(default_to_focused_torrent=False),
+        {'names': ('TORRENT FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filter`)'},
+
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'tlist.sort' setting",
           'description': ('Comma-separated list of sort orders '
@@ -180,7 +174,9 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 'remove "some torrent" another\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
     argspecs = (
-        make_filter_argspec(default_to_focused_torrent=True),
+        {'names': ('TORRENT FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
         { 'names': ('--delete-files','-d'), 'action': 'store_true',
           'description': 'Delete any downloaded files' },
     )
@@ -211,10 +207,11 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
                 "start 'night of the living dead' Metropolis",
                 'start ubuntu --force')
     argspecs = (
-        make_filter_argspec(default_to_focused_torrent=True),
-        ARGSPEC_TOGGLE,
+        {'names': ('TORRENT FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
         { 'names': ('--force','-f'), 'action': 'store_true',
-          'description': 'Ignore download queue' }
+          'description': 'Ignore download queue' },
+        ARGSPEC_TOGGLE,
     )
 
     srvapi = ExpectedResource
@@ -245,7 +242,8 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
                 'stop "night of the living dead" idle',
                 'stop --toggle ubuntu')
     argspecs = (
-        make_filter_argspec(default_to_focused_torrent=True),
+        {'names': ('TORRENT FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
         ARGSPEC_TOGGLE,
     )
 
@@ -275,7 +273,10 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
              'verify [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]'),
     examples = ('verify',
                 'verify debian')
-    argspecs = (make_filter_argspec(default_to_focused_torrent=True),)
+    argspecs = (
+        {'names': ('TORRENT FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+    )
 
     srvapi = ExpectedResource
     cmdutils = ExpectedResource  # Needed by make_request
