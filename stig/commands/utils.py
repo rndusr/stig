@@ -96,7 +96,8 @@ def parseargs_tcolumns(args):
             raise ValueError('Unknown column: {}'.format(arg))
     return args
 
-def parseargs_file_columns(args):
+def parseargs_fcolumns(args):
+    """Return valid file list columns"""
     from ..columns.flist import COLUMNS
     args = listify_args(args)
     for arg in args:

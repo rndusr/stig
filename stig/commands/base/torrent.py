@@ -161,7 +161,7 @@ class ListFilesCmdbase(metaclass=InitCommand):
     async def run(self, FILTER, columns):
         columns = self.cfg['flist.columns'].value if columns is None else columns
         try:
-            columns = self.cmdutils.parseargs_file_columns(columns)
+            columns = self.cmdutils.parseargs_fcolumns(columns)
         except ValueError as e:
             log.error(e)
             return False
