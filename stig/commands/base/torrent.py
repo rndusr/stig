@@ -19,12 +19,6 @@ import asyncio
 from .. import (InitCommand, ExpectedResource)
 
 
-ARGSPEC_TOGGLE = {
-    'names': ('--toggle','-t'), 'action': 'store_true',
-    'description': ('Start TORRENT if stopped and vice versa')
-}
-
-
 class AddTorrentsCmdbase(metaclass=InitCommand):
     name = 'add'
     aliases = ('download','get')
@@ -194,6 +188,12 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 update_torrentlist=True)
             return response.success
 
+
+# Argument definitions that are shared between commands
+ARGSPEC_TOGGLE = {
+    'names': ('--toggle','-t'), 'action': 'store_true',
+    'description': ('Start TORRENT if stopped and vice versa')
+}
 
 class StartTorrentsCmdbase(metaclass=InitCommand):
     name = 'start'
