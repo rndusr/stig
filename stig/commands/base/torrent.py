@@ -124,7 +124,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         sort = self.cfg['tlist.sort'].value if sort is None else sort
         columns = self.cfg['tlist.columns'].value if columns is None else columns
         try:
-            filters = self.cmdutils.parseargs_filter(FILTER)
+            filters = self.cmdutils.parseargs_tfilter(TORRENT_FILTER)
             sort = self.cmdutils.parseargs_sort(sort)
             columns = self.cmdutils.parseargs_torrent_columns(columns)
         except ValueError as e:

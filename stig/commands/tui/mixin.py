@@ -47,7 +47,7 @@ class make_selection():
         """Get TorrentFilter instance or tuple of torrent IDs from arguments or focused torrent"""
         tabs = self.tui.tabs
         try:
-            filters = self.cmdutils.parseargs_filter(TORRENT)
+            filters = self.cmdutils.parseargs_tfilter(FILTER)
         except ValueError as e:
             log.error(e)
         else:

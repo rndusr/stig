@@ -123,7 +123,7 @@ class TestListTorrentsCmd(CommandTestCase):
     async def test_invalid_filter(self):
         def raise_filter_error(self):
             raise ValueError('Nope!')
-        self.cmdutils.parseargs_filter = raise_filter_error
+        self.cmdutils.parseargs_tfilter = raise_filter_error
         await self.do(['foo'], errors=('Nope!',))
 
     async def test_invalid_sort(self):

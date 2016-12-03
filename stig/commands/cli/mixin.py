@@ -27,7 +27,7 @@ class make_selection():
     def make_selection(self, FILTER):
         """Get TorrentFilter instance or IDs from arguments"""
         try:
-            filters = self.cmdutils.parseargs_filter(FILTER)
+            filters = self.cmdutils.parseargs_tfilter(FILTER)
         except ValueError as e:
             log.error(e)
         else:

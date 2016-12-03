@@ -70,7 +70,7 @@ def listify_args(args):
     return tuple(arg for arg in args if arg)
 
 
-def parseargs_filter(args):
+def parseargs_tfilter(args):
     """Return TorrentFilter instance or None if `args` evaluates to False"""
     if args:
         from ..client import TorrentFilter

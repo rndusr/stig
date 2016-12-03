@@ -64,7 +64,7 @@ class MockUtils():
     def __init__(self):
         self.logged = []
 
-    def parseargs_filter(self, args):
+    def parseargs_tfilter(self, args):
         self.filterobj = MockTorrentFilter(args)
         return self.filterobj
 
