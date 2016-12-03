@@ -251,9 +251,12 @@ class TorrentFilePriority(str):
 
     def __new__(cls, prio):
         if isinstance(prio, int):
+            if prio not in cls._INT2STR:
+                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, prio))
             obj = super().__new__(cls, cls._INT2STR[prio])
         else:
-            assert prio in self._STR2INT
+            if prio not in cls._STR2INT:
+                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, prio))
             obj = super().__new__(cls, prio)
         return obj
 
