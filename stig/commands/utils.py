@@ -77,6 +77,7 @@ def parseargs_tfilter(args):
         return TorrentFilter(args)
 
 def parseargs_sort(args):
+    """Return TorrentSorter instance"""
     from ..client import TorrentSorter
     return TorrentSorter(listify_args(args))
 
