@@ -76,6 +76,12 @@ def parseargs_tfilter(args):
         from ..client import TorrentFilter
         return TorrentFilter(args)
 
+def parseargs_ffilter(args):
+    """Return TorrentFileFilter instance or None if `args` evaluates to False"""
+    if args:
+        from ..client import TorrentFileFilter
+        return TorrentFileFilter(args)
+
 def parseargs_sort(args):
     """Return TorrentSorter instance"""
     from ..client import TorrentSorter
