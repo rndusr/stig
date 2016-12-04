@@ -167,12 +167,12 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase, mixin.make_request):
 
 
 class ListFilesCmd(base.ListFilesCmdbase,
-                   mixin.make_request, mixin.select_torrents):
+                   mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'cli'}
     srvapi = ExpectedResource
-    async def make_flist(self, filters, columns):
+    async def make_flist(self, tfilters, ffilters, columns):
         response = await self.make_request(
-            self.srvapi.torrent.torrents(filters, keys=('name', 'files')),
+            self.srvapi.torrent.torrents(tfilters, keys=('name', 'files')),
             quiet=True, update_torrentlist=False)
 
         for torrent in sorted(response.torrents, key=lambda t: t['name'].lower()):
@@ -181,8 +181,24 @@ class ListFilesCmd(base.ListFilesCmdbase,
             else:
                 torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
             log.info(torrentname)
-            _print_table(torrent['files'], columns, FLIST_COLUMNS)
 
+            if ffilters is None:
+                files = torrent['files']
+            else:
+                files = tuple(ffilters.apply(torrent['files']))
+
+            if files:
+                _print_table(files, columns, FLIST_COLUMNS)
+            else:
+                if ffilters is None:
+                    log.error('No files')
+                else:
+                    log.error('No matching files: {}'.format(ffilters))
+
+
+class PriorityCmd(base.PriorityCmdbase,
+                  mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,

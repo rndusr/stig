@@ -125,9 +125,15 @@ class ListFilesCmdbase(metaclass=InitCommand):
     usage = ('filelist [<OPTIONS>]',
              'filelist [<OPTIONS>] [<TORRENT FILTER>] [<FILE FILTER>]')
     examples = ('filelist',
-                "filelist 'A.Torrent.with.Files'")
+                "filelist A.Torrent.with.Files",
+                "filelist A.Torrent.with.Files priority=low")
     argspecs = (
-        make_filter_argspec(default_to_focused_torrent=True),
+        {'names': ('TORRENT FILTER',), 'nargs': '?',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
+        { 'names': ('FILE FILTER',), 'nargs': '?',
+          'description': 'Filter expression (see `help filter`)' },
+
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'flist.columns' setting",
           'description': ('Comma-separated list of column names '
@@ -137,7 +143,7 @@ class ListFilesCmdbase(metaclass=InitCommand):
     cmdutils = ExpectedResource
     cfg = ExpectedResource
 
-    async def run(self, FILTER, columns):
+    async def run(self, TORRENT_FILTER, FILE_FILTER, columns):
         columns = self.cfg['flist.columns'].value if columns is None else columns
         try:
             columns = self.cmdutils.parseargs_fcolumns(columns)
@@ -145,7 +151,16 @@ class ListFilesCmdbase(metaclass=InitCommand):
             log.error(e)
             return False
 
-        filters = self.select_torrents(FILTER)
+        tfilters = self.select_torrents(TORRENT_FILTER)
+        if tfilters is None:
+            return False  # Bad torrent filter or no torrent filter specified
+        ffilters = self.select_files(FILE_FILTER)
+        log.debug('Listing %s files of %s torrents', ffilters, tfilters)
+
+        if asyncio.iscoroutinefunction(self.make_flist):
+            return await self.make_flist(tfilters, ffilters, columns)
+        else:
+            return self.make_flist(tfilters, ffilters, columns)
         if filters is None:  # Bad filter expression
             return False
         else:
