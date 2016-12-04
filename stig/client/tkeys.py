@@ -260,7 +260,7 @@ class TorrentFilePriority(str):
             obj = super().__new__(cls, prio)
         return obj
 
-    def __int__(self): return self._STR2INT(self)
+    def __int__(self): return self._STR2INT[self]
     def __lt__(self, other): return int(self) < int(other)
 
 
