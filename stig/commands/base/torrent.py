@@ -98,7 +98,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
     cmdutils = ExpectedResource
     cfg = ExpectedResource
 
-    async def run(self, FILTER, sort, columns):
+    async def run(self, TORRENT_FILTER, sort, columns):
         sort = self.cfg['tlist.sort'].value if sort is None else sort
         columns = self.cfg['tlist.columns'].value if columns is None else columns
         try:
