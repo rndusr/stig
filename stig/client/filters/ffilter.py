@@ -34,6 +34,11 @@ class SingleTorrentFileFilter(Filter):
             lambda f, op, v: op(f['name'], v),
             description='Match VALUE against file name',
             value_type=TorrentFile.TYPES['name']),
+        'size': CmpFilterSpec(
+            lambda f, op, v: op(f['size-total'], v),
+            aliases=(),
+            description='Match VALUE against file size',
+            value_type=TorrentFile.TYPES['size-total']),
         'priority': CmpFilterSpec(
             lambda f, op, v: op(f['priority'], v),
             aliases=('prio',),
