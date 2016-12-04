@@ -33,12 +33,12 @@ class SingleTorrentFileFilter(Filter):
         'name': CmpFilterSpec(
             lambda f, op, v: op(f['name'], v),
             description='Match VALUE against file name',
-            value_type=str),
+            value_type=TorrentFile.TYPES['name']),
         'priority': CmpFilterSpec(
             lambda f, op, v: op(f['priority'], v),
             aliases=('prio',),
             description='Match VALUE against file download priority (low, normal or high)',
-            value_type=TorrentFilePriority),
+            value_type=TorrentFile.TYPES['priority']),
     }
 
 
