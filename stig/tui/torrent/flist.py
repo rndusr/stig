@@ -38,9 +38,10 @@ class FileWidget(urwid.WidgetWrap):
 
 
 class FileListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, filters, columns):
+    def __init__(self, srvapi, tfilters, ffilters, columns):
         self._srvapi = srvapi
-        self._filters = filters
+        self._tfilters = tfilters
+        self._ffilters = ffilters
 
         self._table = Table(**TUICOLUMNS)
         self._table.columns = columns
@@ -59,7 +60,7 @@ class FileListWidget(urwid.WidgetWrap):
 
     def _create_poller(self):
         self._poller = self._srvapi.create_poller(
-            self._srvapi.torrent.torrents, self._filters, keys=('files', 'name'))
+            self._srvapi.torrent.torrents, self._tfilters, keys=('files', 'name'))
         self._poller.on_response(self._handle_response)
 
     def _handle_response(self, response):
@@ -89,7 +90,7 @@ class FileListWidget(urwid.WidgetWrap):
         fws = self._filewidgets = {}
 
         for t in sorted(self._torrents, key=lambda t: t['name'].lower()):
-            for f in t['files']:
+            for f in self._maybe_filter(t['files']):
                 fid = (t['id'], f['id'])
                 fwcls = keymap.wrap(FileWidget, context='file')
                 table.register(fid)
@@ -101,9 +102,13 @@ class FileListWidget(urwid.WidgetWrap):
     def _update_listitems(self):
         fws = self._filewidgets
         for t in self._torrents:
-            for f in t['files']:
+            for f in self._maybe_filter(t['files']):
                 fid = (t['id'], f['id'])
                 fws[fid].update(f)
+
+    def _maybe_filter(self, files):
+        return files if self._ffilters is None else \
+            self._ffilters.apply(files)
 
     def clear(self):
         self._filewidgets = {}

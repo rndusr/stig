@@ -45,22 +45,26 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
 
 
 class ListFilesCmd(base.ListFilesCmdbase,
-                   mixin.make_request, mixin.select_torrents):
+                   mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
     tui = ExpectedResource
     srvapi = ExpectedResource
 
-    async def make_flist(self, filters, columns):
+    async def make_flist(self, tfilters, ffilters, columns):
         import urwid
         from ...tui.torrent.flist import FileListWidget
-        flistw = FileListWidget(self.srvapi, filters, columns)
 
-        if isinstance(filters, abc.Sequence) and len(filters) == 1:
-            # filters is a torrent ID - resolve it to a name
-            response = await self.srvapi.torrent.torrents(filters, keys=('name',))
+        flistw = FileListWidget(self.srvapi, tfilters, ffilters, columns)
+
+        if isinstance(tfilters, abc.Sequence) and len(tfilters) == 1:
+            # tfilters is a torrent ID - resolve it to a name
+            response = await self.srvapi.torrent.torrents(tfilters, keys=('name',))
             title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
-            title = str(filters)
+            if ffilters is None:
+                title = str(tfilters)
+            else:
+                title = '%s files of %s torrents' % (ffilters, tfilters)
         titlew = make_tab_title('F', title,
                                 'tabs.filelist.unfocused', 'tabs.filelist.focused')
         self.tui.tabs.load(titlew, flistw)
