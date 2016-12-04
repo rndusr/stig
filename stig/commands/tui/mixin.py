@@ -44,20 +44,30 @@ class make_request():
 
 class select_torrents():
     def select_torrents(self, FILTER):
-        """Get TorrentFilter instance or torrent IDs from FILTER or focused torrent"""
-        tabs = self.tui.tabs
+        """Get TorrentFilter instance, focused torrent ID or None
+
+        `FILTER` is an argument for TorrentFilter.
+
+        Returns a TorrentFilter instance or None if `FILTER` evaluates to
+        False.
+        """
         try:
             filters = self.cmdutils.parseargs_tfilter(FILTER)
         except ValueError as e:
             log.error(e)
         else:
             if filters is None:
-                # Try to find focused torrent in focused tab
+                tabs = self.tui.tabs
+
+                # Maybe this command has focused_torrent set by the 'tab' command.
                 if hasattr(self, 'focused_torrent'):
                     return (self.focused_torrent['id'],)
+
+                # Try to find focused torrent in focused tab
                 elif hasattr(tabs.focus, 'focused_torrent') and \
                    tabs.focus.focused_torrent is not None:
                     return (tabs.focus.focused_torrent.tid,)
+
                 else:
                     log.error('No torrent selected')
             else:

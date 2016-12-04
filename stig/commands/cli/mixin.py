@@ -25,7 +25,13 @@ class make_request():
 
 class select_torrents():
     def select_torrents(self, FILTER):
-        """Get TorrentFilter instance or torrent IDs from FILTER"""
+        """Get TorrentFilter instance or None
+
+        `FILTER` is an argument for TorrentFilter.
+
+        Returns a TorrentFilter instance or None if `FILTER` evaluates to
+        False.
+        """
         try:
             filters = self.cmdutils.parseargs_tfilter(FILTER)
         except ValueError as e:
