@@ -41,13 +41,13 @@
    $ stig rm 'seeds>50'
    #+END_EXAMPLE
 
-   Stop/pause torrents with "/foo/" in their download path and a ratio above 10
+   Stop/pause torrents with ~/foo/~ in their download path and a ratio above 10
    #+BEGIN_EXAMPLE shell
    $ stig stop 'path~/foo/&ratio>10'
    #+END_EXAMPLE
 
    Open two tabs with different torrent lists:
-     - slowly uploading torrents with "/foo/" in their download path
+     - slowly uploading torrents with ~/foo/~ in their download path
      - small or well-seeded torrents, sorted by size (ascending) and number of
        seeds (descending)
    #+BEGIN_EXAMPLE shell
