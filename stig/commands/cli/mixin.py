@@ -41,3 +41,14 @@ class select_torrents():
                 log.error('No torrent specified')
             else:
                 return filters
+
+
+class select_files():
+    def select_files(self, FILTER):
+        """Get TorrentFileFilter instance or None"""
+        try:
+            return self.cmdutils.parseargs_ffilter(FILTER)
+        except ValueError as e:
+            log.error(e)
+        else:
+            return None
