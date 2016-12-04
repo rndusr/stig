@@ -265,14 +265,24 @@ class TorrentFilePriority(str):
 
 
 class TorrentFile(abc.Mapping):
-    _TYPES = {
-        'id'              : lambda raw: int(raw['id']),
-        'name'            : lambda raw: SmartCmpStr(raw['name']),
-        'size-total'      : lambda raw: convert.size(raw['size-total'], unit='byte'),
-        'size-downloaded' : lambda raw: convert.size(raw['size-downloaded'], unit='byte'),
-        'is-wanted'       : lambda raw: bool(raw['is-wanted']),
-        'priority'        : lambda raw: TorrentFilePriority(raw['priority']),
-        'progress'        : lambda raw: Percent(raw['size-downloaded'] / raw['size-total'] * 100),
+    TYPES = {
+        'id'              : lambda val: int(val),
+        'name'            : lambda val: SmartCmpStr(val),
+        'size-total'      : lambda val: convert.size(val, unit='byte'),
+        'size-downloaded' : lambda val: convert.size(val, unit='byte'),
+        'is-wanted'       : lambda val: bool(val),
+        'priority'        : lambda val: TorrentFilePriority(val),
+        'progress'        : lambda val: Percent(val),
+    }
+
+    _VALUES = {
+        'id'              : lambda raw: raw['id'],
+        'name'            : lambda raw: raw['name'],
+        'size-total'      : lambda raw: raw['size-total'],
+        'size-downloaded' : lambda raw: raw['size-downloaded'],
+        'is-wanted'       : lambda raw: raw['is-wanted'],
+        'priority'        : lambda raw: raw['priority'],
+        'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
     }
 
     def __init__(self, id, name, size_total, size_downloaded, is_wanted, priority):
@@ -282,7 +292,9 @@ class TorrentFile(abc.Mapping):
 
     def __getitem__(self, key):
         if key not in self._cache:
-            self._cache[key] = self._TYPES[key](self._raw)
+            self._cache[key] = self.TYPES[key](
+                self._VALUES[key](self._raw)
+            )
         return self._cache[key]
 
     def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
