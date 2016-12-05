@@ -44,7 +44,7 @@ class make_request():
 
 class select_torrents():
     def select_torrents(self, FILTER):
-        """Get TorrentFilter instance, focused torrent ID or None
+        """Get TorrentFilter instance, focused torrent ID in a tuple or None
 
         `FILTER` is an argument for TorrentFilter.
 
