@@ -18,7 +18,7 @@ import os
 import base64
 import unicodedata
 
-from ..utils import (Response, pluralize)
+from ..utils import Response
 from .torrent import TorrentFields, Torrent
 from .. import ClientError
 from ..filters.tfilter import TorrentFilter
@@ -234,8 +234,8 @@ class TorrentAPI():
             if not success:
                 msgs.append(ClientError('No matching torrents found: {}'.format(filters)))
             else:
-                msgs.append('Found {} {} {}'.format(
-                    len(tlist), filters, pluralize('torrent', len(tlist))))
+                msgs.append('Found {} {} torrent{}'.format(
+                    len(tlist), filters, '' if len(tlist) == 1 else 's'))
 
             return Response(success=success, torrents=tlist, msgs=msgs)
 

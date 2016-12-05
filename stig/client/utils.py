@@ -102,8 +102,3 @@ def pretty_float(n):
         return '%.1f' % n
     else:
         return '%.0f' % n
-
-
-def pluralize(word, n):
-    """Return `word`+'s' if n != 1, `word` otherwise"""
-    return word+'s' if abs(n) != 1 else word
