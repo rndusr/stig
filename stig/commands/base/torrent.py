@@ -139,6 +139,7 @@ class ListFilesCmdbase(metaclass=InitCommand):
           'description': ('Comma-separated list of column names '
                           "(see 'help flist.columns' for available columns)") },
     )
+    more_sections = {'SCRIPTING': ListTorrentsCmdbase.more_sections['SCRIPTING']}
 
     cmdutils = ExpectedResource
     cfg = ExpectedResource
