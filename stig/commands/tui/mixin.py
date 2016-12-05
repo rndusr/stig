@@ -59,14 +59,21 @@ class select_torrents():
             if filters is None:
                 tabs = self.tui.tabs
 
-                # Maybe this command has focused_torrent set by the 'tab' command.
+                # Get Torrent object from attribute set by 'tab' command (this
+                # happens if for example when you run 'tab filelist' while a
+                # torrent is focused)
                 if hasattr(self, 'focused_torrent'):
                     return (self.focused_torrent['id'],)
 
-                # Try to find focused torrent in focused tab
+                # Get Torrent object from widget in focused tab
                 elif hasattr(tabs.focus, 'focused_torrent') and \
                    tabs.focus.focused_torrent is not None:
                     return (tabs.focus.focused_torrent.tid,)
+
+                # Get torrent ID from widget in focused tab
+                elif hasattr(tabs.focus, 'focused_torrent_id') and \
+                   tabs.focus.focused_torrent_id is not None:
+                    return (tabs.focus.focused_torrent_id,)
 
                 else:
                     log.error('No torrent selected')
