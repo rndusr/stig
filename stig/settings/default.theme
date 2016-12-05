@@ -239,3 +239,5 @@ filelist.priority.low.unfocused            $priority_fg           on $list_bg.uf
 filelist.priority.low.focused              $priority_fg           on $list_bg.f
 filelist.priority.high.unfocused           $priority_hl           on $list_bg.uf
 filelist.priority.high.focused             $priority_hl           on $list_bg.f
+filelist.priority.shun.unfocused           dark blue              on $list_bg.uf
+filelist.priority.shun.focused             dark blue              on $list_bg.f
