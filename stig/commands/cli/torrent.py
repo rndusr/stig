@@ -177,7 +177,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
         for torrent in sorted(response.torrents, key=lambda t: t['name'].lower()):
             if TERMSIZE.columns is None:
-                torrentname = 'torrentname:' + torrent['name']
+                torrentname = 'torrent: ' + torrent['name']
             else:
                 torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
             log.info(torrentname)
