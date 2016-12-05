@@ -166,4 +166,9 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 'delete', 'action': 'remove'},
     {'context': 'torrent', 'key': 'shift-delete', 'action': 'remove --delete-files'},
     {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
+
+    {'context': 'file', 'key': '+', 'action': 'priority high'},
+    {'context': 'file', 'key': '.', 'action': 'priority normal'},
+    {'context': 'file', 'key': '-', 'action': 'priority low'},
+    {'context': 'file', 'key': '0', 'action': 'priority shun'},
 )
