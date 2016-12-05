@@ -475,8 +475,8 @@ class TorrentAPI():
 
         priority: 'high', 'low', 'normal' or 'shun'
         torrents: See `torrents` method
-        files: TorrentFileFilter object (or its string representation) or None
-               for all files
+        files: TorrentFileFilter object (or its string representation),
+               sequence of file IDs or None for all files
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
@@ -485,7 +485,6 @@ class TorrentAPI():
             success: True if any torrents were found and had matching files,
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
-
         """
         response = await self.torrents(torrents, keys=('id', 'name', 'files'),
                                        autoconnect=autoconnect)
@@ -497,16 +496,27 @@ class TorrentAPI():
             msgs = []
             success = False
 
+            if isinstance(files, str):
+                files = TorrentFileFilter(files)
+
+            if files is None:
+                filter_files = lambda flist: flist
+            elif isinstance(files, TorrentFileFilter):
+                filter_files = lambda flist: tuple(files.apply(flist))
+            elif isinstance(files, abc.Sequence) and \
+                 all(isinstance(fid, int) for fid in files):
+                filter_files = lambda flist: tuple(f for f in flist if f['id'] in files)
+            else:
+                raise ValueError("Invalid 'files' argument: {!r}".format(files))
+
             for t in sorted(response.torrents, key=lambda t: t['name'].lower()):
                 # Filter torrent's files
+                flist = filter_files(t['files'])
                 if files is None:
                     flist = t['files']
                     msgs.append('{} file{}: {}'
                                 .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
                 else:
-                    if not isinstance(files, TorrentFileFilter):
-                        files = TorrentFileFilter(files)
-                    flist = tuple(files.apply(t['files']))
                     if not flist:
                         msgs.append(ClientError('No matching files: {}'.format(t['name'])))
                     else:
