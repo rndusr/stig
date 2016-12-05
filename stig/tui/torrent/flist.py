@@ -114,3 +114,21 @@ class FileListWidget(urwid.WidgetWrap):
         self._filewidgets = {}
         self._table.clear()
         self._walker[:] = []
+
+    @property
+    def focused_torrent_id(self):
+        """Torrent ID of the focused file's torrent"""
+        focused_fw = self._listbox.focus
+        if focused_fw is not None:
+            for (tid,fid),fw in self._filewidgets.items():
+                if focused_fw is fw:
+                    return tid
+
+    @property
+    def focused_file_id(self):
+        """File ID/index of the focused file"""
+        focused_fw = self._listbox.focus
+        if focused_fw is not None:
+            for (tid,fid),fw in self._filewidgets.items():
+                if focused_fw is fw:
+                    return fid
