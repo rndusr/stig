@@ -197,7 +197,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
 
 class PriorityCmd(base.PriorityCmdbase,
-                  mixin.make_request, mixin.select_torrents):
+                  mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'cli'}
 
 

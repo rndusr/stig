@@ -162,14 +162,56 @@ class ListFilesCmdbase(metaclass=InitCommand):
             return await self.make_flist(tfilters, ffilters, columns)
         else:
             return self.make_flist(tfilters, ffilters, columns)
-        if filters is None:  # Bad filter expression
+
+
+class PriorityCmdbase(metaclass=InitCommand):
+    name = 'priority'
+    aliases = ('prio',)
+    provides = set()
+    category = 'torrent'
+    description = 'Change download priority of files'
+    usage = ('priority <PRIORITY>',
+             'priority <PRIORITY> [<TORRENT FILTER>] [<FILE FILTER>]')
+    examples = ('priority low',
+                'priority high "some torrent" size>12M')
+    argspecs = (
+        { 'names': ('PRIORITY',),
+          'description': ("File priority; must be low/normal/high/shun, "
+                          "l/n/h/s or -/./+/0")},
+        {'names': ('TORRENT FILTER',), 'nargs': '?',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+        { 'names': ('FILE FILTER',), 'nargs': '?',
+         'description': 'Filter expression (see `help filter`) or focused file in the TUI'},
+    )
+
+    srvapi = ExpectedResource
+    cmdutils = ExpectedResource  # Needed by make_request
+
+    _PRIORITY = {'l': 'low',    '-': 'low',    'low': 'low',
+                 'n': 'normal', '.': 'normal', 'normal': 'normal',
+                 'h': 'high',   '+': 'high'  , 'high': 'high',
+                 's': 'shun',   '0': 'shun',   'shun': 'shun'}
+
+    async def run(self, PRIORITY, TORRENT_FILTER, FILE_FILTER):
+        try:
+            priority = self._PRIORITY[PRIORITY.lower()]
+        except KeyError:
+            log.error('Invalid priority: {!r}'.format(PRIORITY))
+            return False
+
+        tfilters = self.select_torrents(TORRENT_FILTER)
+        if tfilters is None:  # Bad filter expression or no filter given
             return False
         else:
-            log.debug('Listing files of %s torrents', filters)
-            if asyncio.iscoroutinefunction(self.make_flist):
-                return await self.make_flist(filters, columns)
-            else:
-                return self.make_flist(filters, columns)
+            ffilters = self.select_files(FILE_FILTER)
+            msg = 'New download priority of %s files in %s torrents: %s' % (
+                'all' if ffilters is None else ffilters, tfilters, priority)
+            log.info(msg)
+
+            response = await self.make_request(
+                self.srvapi.torrent.file_priority(priority, tfilters, ffilters),
+                update_torrentlist=False)
+            return response.success
 
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
