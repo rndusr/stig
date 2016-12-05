@@ -174,6 +174,8 @@ class ListFilesCmd(base.ListFilesCmdbase,
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilters, keys=('name', 'files')),
             quiet=True, update_torrentlist=False)
+        if len(response.torrents) < 1:
+            return False
 
         for torrent in sorted(response.torrents, key=lambda t: t['name'].lower()):
             if TERMSIZE.columns is None:
