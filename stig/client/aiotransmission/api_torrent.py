@@ -22,6 +22,7 @@ from ..utils import Response
 from .torrent import TorrentFields, Torrent
 from .. import ClientError
 from ..filters.tfilter import TorrentFilter
+from ..filters.ffilter import TorrentFileFilter
 
 
 class _TorrentCache():
@@ -467,3 +468,83 @@ class TorrentAPI():
                                           method_args={'delete-local-data':delete},
                                           check=check, keys=('name',),
                                           autoconnect=autoconnect)
+
+
+    async def file_priority(self, priority, torrents, files, autoconnect=True):
+        """Change download priority of individual torrent files
+
+        priority: 'high', 'low', 'normal' or 'shun'
+        torrents: See `torrents` method
+        files: TorrentFileFilter object (or its string representation) or None
+               for all files
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of matching Torrents that have matching files with
+                      the keys 'id', 'name' and 'files'
+            success: True if any torrents were found and had matching files,
+                     False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+
+        """
+        response = await self.torrents(torrents, keys=('id', 'name', 'files'),
+                                       autoconnect=autoconnect)
+        if not response.success:
+            return Response(torrents=(), success=False, msgs=response.msgs)
+        else:
+            torrents = ()
+            torrent_ids = []
+            msgs = []
+            success = False
+
+            for t in sorted(response.torrents, key=lambda t: t['name'].lower()):
+                # Filter torrent's files
+                if files is None:
+                    flist = t['files']
+                    msgs.append('{} file{}: {}'
+                                .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
+                else:
+                    if not isinstance(files, TorrentFileFilter):
+                        files = TorrentFileFilter(files)
+                    flist = tuple(files.apply(t['files']))
+                    if not flist:
+                        msgs.append(ClientError('No matching files: {}'.format(t['name'])))
+                    else:
+                        msgs.append('{} matching file{}: {}'
+                                    .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
+                success = len(flist) > 0 or success
+
+                # Transmission wants a list of file indexes; luckily, the
+                # file's ID is its index (see .torrent.FileList).
+                findexes = tuple(f['id'] for f in flist)
+                if findexes:
+                    response = await self._set_files_priority(priority, t['id'], findexes, autoconnect)
+                    if response.success:
+                        torrent_ids.append(t['id'])
+                    msgs.extend(response.msgs)
+
+        if torrent_ids:
+            response = await self.torrents(torrent_ids, keys=('id', 'name', 'files'),
+                                           autoconnect=autoconnect)
+            if response.success:
+                torrents = response.torrents
+        return Response(torrents=torrents,
+                        success=success,
+                        msgs=msgs)
+
+    async def _set_files_priority(self, priority, torrent_id, file_indexes, autoconnect):
+        fi = tuple(file_indexes)
+        if priority in ('high', 'normal', 'low'):
+            return await self._torrent_action(
+                self.rpc.torrent_set, (torrent_id,),
+                method_args={'priority-%s' % priority: fi, 'files-wanted': fi},
+                keys=(),
+                autoconnect=autoconnect)
+        elif priority == 'shun':
+            return await self._torrent_action(
+                self.rpc.torrent_set, (torrent_id,),
+                method_args={'files-unwanted': fi},
+                keys=(),
+                autoconnect=autoconnect)
+        else:
+            raise ValueError('Invalid priority: {!r}'.format(priority))
