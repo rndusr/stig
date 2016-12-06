@@ -155,7 +155,7 @@ class ListFilesCmdbase(metaclass=InitCommand):
         tfilters = self.select_torrents(TORRENT_FILTER)
         if tfilters is None:
             return False  # Bad torrent filter or no torrent filter specified
-        ffilters = self.select_files(FILE_FILTER)
+        ffilters = self.select_files(FILE_FILTER, default_to_focused=False)
         log.debug('Listing %s files of %s torrents', ffilters, tfilters)
 
         if asyncio.iscoroutinefunction(self.make_flist):
@@ -203,7 +203,7 @@ class PriorityCmdbase(metaclass=InitCommand):
         if tfilters is None:  # Bad filter expression or no filter given
             return False
         else:
-            ffilters = self.select_files(FILE_FILTER)
+            ffilters = self.select_files(FILE_FILTER, default_to_focused=True)
             msg = 'New download priority of %s files in %s torrents: %s' % (
                 'all' if ffilters is None else ffilters, tfilters, priority)
             log.info(msg)
