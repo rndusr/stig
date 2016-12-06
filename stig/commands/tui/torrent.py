@@ -35,8 +35,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
     def make_tlist(self, filters, sort, columns):
         from ...tui.torrent.tlist import TorrentListWidget
         tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
-        titlew = make_tab_title('T', tlistw.title,
-                                'tabs.torrentlist.unfocused', 'tabs.torrentlist.focused')
+        titlew = make_tab_title(tlistw.title, 'tabs.torrentlist.unfocused', 'tabs.torrentlist.focused')
         self.tui.tabs.load(titlew, tlistw)
         return True
 
@@ -60,8 +59,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 title = str(tfilters)
             else:
                 title = '%s files of %s torrents' % (ffilters, tfilters)
-        titlew = make_tab_title('F', title,
-                                'tabs.filelist.unfocused', 'tabs.filelist.focused')
+        titlew = make_tab_title(title, 'tabs.filelist.unfocused', 'tabs.filelist.focused')
         self.tui.tabs.load(titlew, flistw)
         return True
 

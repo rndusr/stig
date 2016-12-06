@@ -26,8 +26,7 @@ class HelpCmd(base.HelpCmdbase):
 
     def display_help(self, topics, lines):
         import urwid
-        titlew = make_tab_title('H', ','.join(topics),
-                                'tabs.help.unfocused', 'tabs.help.focused')
+        titlew = make_tab_title(','.join(topics), 'tabs.help.unfocused', 'tabs.help.focused')
         lines = [urwid.Text(l) for l in lines]
         helpw = urwid.ListBox(urwid.SimpleListWalker(lines))
         self.tui.tabs.load(titlew, helpw)
