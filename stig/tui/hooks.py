@@ -24,9 +24,9 @@ def _connect_to_new_url(url):
     aioloop.create_task(coro())
 cfg['srv.url'].on_change(_connect_to_new_url)
 
-def _update_torrentlists(seconds):
+def _update_pollers(seconds):
     tui.srvapi.poll()
-srvapi.rpc.on('connected', _update_torrentlists)
+srvapi.rpc.on('connected', _update_pollers)
 
 def _clear_torrentlists(seconds):
     from .torrent.tlist import TorrentListWidget
