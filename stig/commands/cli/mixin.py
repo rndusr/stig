@@ -14,8 +14,11 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from .. import ExpectedResource
+
 
 class make_request():
+    cmdutils = ExpectedResource
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
@@ -24,6 +27,7 @@ class make_request():
 
 
 class select_torrents():
+    cmdutils = ExpectedResource
     def select_torrents(self, FILTER):
         """Get TorrentFilter instance or None
 
@@ -44,6 +48,7 @@ class select_torrents():
 
 
 class select_files():
+    cmdutils = ExpectedResource
     def select_files(self, FILTER, default_to_focused=False):
         """Get TorrentFileFilter instance or None"""
         try:
