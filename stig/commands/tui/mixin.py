@@ -15,20 +15,24 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 
-class update_torrentlist():
-    def update_torrentlist(self):
-        """Reduce polling interval for a few seconds"""
+class update_lists():
+    def update_lists(self):
+        """Reduce polling interval for a few seconds
+
+        This affects TorrentListWidgets and FileListWidgets.
+        """
         short_interval = 0.5
+        duration = 2
         srvapi = self.srvapi
         if srvapi.interval > 1:
             import asyncio
             async def coro():
-                log.debug('Setting interval to 0.5 for 2 seconds')
+                log.debug('Setting poll interval to %s for %s seconds', short_interval, duration)
                 orig_interval = srvapi.interval
                 srvapi.interval = short_interval
-                await asyncio.sleep(2, loop=self.aioloop)
+                await asyncio.sleep(duration, loop=self.aioloop)
                 srvapi.interval = orig_interval
-                log.debug('Interval restored')
+                log.debug('Interval restored to %s', srvapi.interval)
             self.aioloop.create_task(coro())
 
 
