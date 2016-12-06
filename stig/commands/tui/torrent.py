@@ -24,7 +24,7 @@ from . import make_tab_title
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
-                     mixin.update_torrentlist, mixin.make_request):
+                     mixin.polling_frenzy, mixin.make_request):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
@@ -72,27 +72,27 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
 
 class PriorityCmd(base.PriorityCmdbase,
-                  mixin.make_request, mixin.select_torrents, mixin.select_files):
+                  mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.select_torrents
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
-                        mixin.update_torrentlist, mixin.make_request, mixin.select_torrents):
+                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
-                       mixin.update_torrentlist, mixin.make_request, mixin.select_torrents):
+                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class StopTorrentsCmd(base.StopTorrentsCmdbase,
-                      mixin.update_torrentlist, mixin.make_request, mixin.select_torrents):
+                      mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource      # Needed by mixin.update_torrentlist
     aioloop = ExpectedResource  # Needed by mixin.update_torrentlist

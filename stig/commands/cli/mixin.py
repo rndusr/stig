@@ -16,7 +16,7 @@ log = make_logger(__name__)
 
 
 class make_request():
-    async def make_request(self, request_coro, update_torrentlist=False, quiet=False):
+    async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
         self.cmdutils.log_msgs(log, response.msgs, quiet)

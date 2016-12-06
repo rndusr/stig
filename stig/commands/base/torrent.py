@@ -47,8 +47,8 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
             force_torrentlist_update = force_torrentlist_update or success
 
         # Update torrentlist AFTER all 'add' requests
-        if success and force_torrentlist_update and hasattr(self, 'update_torrentlist'):
-            self.update_torrentlist()
+        if force_torrentlist_update and hasattr(self, 'polling_frenzy'):
+            self.polling_frenzy()
         return success
 
 
@@ -210,7 +210,7 @@ class PriorityCmdbase(metaclass=InitCommand):
 
             response = await self.make_request(
                 self.srvapi.torrent.file_priority(priority, tfilters, ffilters),
-                update_torrentlist=False)
+                polling_frenzy=True)
             return response.success
 
 
@@ -243,7 +243,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
         else:
             response = await self.make_request(
                 self.srvapi.torrent.remove(filters, delete=delete_files),
-                update_torrentlist=True)
+                polling_frenzy=True)
             return response.success
 
 
@@ -281,10 +281,10 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
             return False
         elif toggle:
             response = await self.make_request(self.srvapi.torrent.toggle_stopped(filters, force=force),
-                                               update_torrentlist=True)
+                                               polling_frenzy=True)
         else:
             response = await self.make_request(self.srvapi.torrent.start(filters, force=force),
-                                               update_torrentlist=True)
+                                               polling_frenzy=True)
         return response.success
 
 
@@ -314,10 +314,10 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
             return False
         elif toggle:
             response = await self.make_request(self.srvapi.torrent.toggle_stopped(filters),
-                                               update_torrentlist=True)
+                                               polling_frenzy=True)
         else:
             response = await self.make_request(self.srvapi.torrent.stop(filters),
-                                               update_torrentlist=True)
+                                               polling_frenzy=True)
         return response.success
 
 
@@ -345,5 +345,5 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
             return False
         else:
             response = await self.make_request(self.srvapi.torrent.verify(filters),
-                                               update_torrentlist=False)
+                                               polling_frenzy=False)
             return response.success

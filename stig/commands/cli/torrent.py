@@ -173,7 +173,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
     async def make_flist(self, tfilters, ffilters, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilters, keys=('name', 'files')),
-            quiet=True, update_torrentlist=False)
+            quiet=True)
         if len(response.torrents) < 1:
             return False
 

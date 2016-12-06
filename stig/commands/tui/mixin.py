@@ -15,14 +15,15 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 
-class update_lists():
-    def update_lists(self):
+from .. import ExpectedResource
+
+class polling_frenzy():
+    aioloop = ExpectedResource
+    def polling_frenzy(self, duration=2, short_interval=0.5):
         """Reduce polling interval for a few seconds
 
         This affects TorrentListWidgets and FileListWidgets.
         """
-        short_interval = 0.5
-        duration = 2
         srvapi = self.srvapi
         if srvapi.interval > 1:
             import asyncio
@@ -37,12 +38,12 @@ class update_lists():
 
 
 class make_request():
-    async def make_request(self, request_coro, update_torrentlist=False, quiet=False):
+    async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
         self.cmdutils.log_msgs(log, response.msgs, quiet)
-        if response.success and update_torrentlist and hasattr(self, 'update_torrentlist'):
-            self.update_torrentlist()
+        if response.success and polling_frenzy and hasattr(self, 'polling_frenzy'):
+            self.polling_frenzy()
         return response
 
 
