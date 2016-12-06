@@ -59,14 +59,6 @@ def _set_theme(themefile):
         raise ValueError(e)
 cfg['tui.theme'].on_change(_set_theme)
 
-
-def _set_tlist_columns(colnames):
-    tlist = tui.tabs.focus
-    if tlist is not None:
-        tui.srvapi.treqpool.poll()
-        tlist.set(columns=colnames.value)
-cfg['tlist.columns'].on_change(_set_tlist_columns)
-
 def _refresh_tlists(value):
     from .torrent.tlist import TorrentListWidget
     from .torrent.flist import FileListWidget
