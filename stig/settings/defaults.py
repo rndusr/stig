@@ -157,6 +157,8 @@ DEFAULT_KEYMAP = (
     {'context': 'tabs', 'key': 'A', 'action': 'tab ls active'},
     {'context': 'tabs', 'key': 'i', 'action': 'ls isolated'},
     {'context': 'tabs', 'key': 'I', 'action': 'tab ls isolated'},
+    {'context': 'tabs', 'key': 's', 'action': 'ls stopped'},
+    {'context': 'tabs', 'key': 'S', 'action': 'tab ls stopped'},
     {'context': 'tabs', 'key': 'z', 'action': 'ls'},
     {'context': 'tabs', 'key': 'Z', 'action': 'tab ls'},
 
