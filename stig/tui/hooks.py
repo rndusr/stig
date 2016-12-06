@@ -59,23 +59,12 @@ def _set_theme(themefile):
         raise ValueError(e)
 cfg['tui.theme'].on_change(_set_theme)
 
-# TODO: tlist.sort/.columns(/.filter?) settings specify the defaults
-#       for new torrentlists.  on_change should also change the columns of all
-#       existing lists.
-
-# def _set_tlist_sort(sortnames):
-#     pass
-# cfg['tlist.sort'].on_change(_set_tlist_sort)
-
-# def _set_tlist_filters(filternames):
-#     pass
-# cfg['tlist.filters'].on_change(_set_tlist_filters)
 
 def _set_tlist_columns(colnames):
     tlist = tui.tabs.focus
     if tlist is not None:
-        tlist.set(columns=colnames.value)
         tui.srvapi.treqpool.poll()
+        tlist.set(columns=colnames.value)
 cfg['tlist.columns'].on_change(_set_tlist_columns)
 
 def _refresh_tlists(value):
