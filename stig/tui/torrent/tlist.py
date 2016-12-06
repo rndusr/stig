@@ -142,6 +142,7 @@ class TorrentListWidget(urwid.WidgetWrap):
                     break
 
     def clear(self):
+        """Remove all list items"""
         for tw in tuple(self._walker):
             tw.torrent.clearcache()
             self._walker.remove(tw)
