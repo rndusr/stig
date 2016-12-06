@@ -116,6 +116,11 @@ class FileListWidget(urwid.WidgetWrap):
         self._table.clear()
         self._walker[:] = []
 
+    def update(self):
+        """Call `clear` and then poll immediately"""
+        self.clear()
+        self._poller.poll()
+
     @property
     def focused_torrent_id(self):
         """Torrent ID of the focused file's torrent"""
