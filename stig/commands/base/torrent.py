@@ -198,18 +198,34 @@ class PriorityCmdbase(metaclass=InitCommand):
             return False
 
         tfilters = self.select_torrents(TORRENT_FILTER)
+        ffilters = self.select_files(FILE_FILTER, default_to_focused=True)
         if tfilters is None:  # Bad filter expression or no filter given
             return False
-        else:
-            ffilters = self.select_files(FILE_FILTER, default_to_focused=True)
+
+        if not isinstance(tfilters, tuple):
+            # tfilters must be TorrentFilters instance, which means the user
+            # specified a filter and will be informed about the matches.
+            if isinstance(ffilters, tuple):
+                # The user did specify a torrent filter but not a file filter,
+                # so select_files() may have returned a focused file.  But we
+                # assume that the user meant all files of the matching
+                # torrents, otherwise they wouldn't have given a torrent
+                # filter.
+                ffilters = None
+
             msg = 'New download priority of %s files in %s torrents: %s' % (
                 'all' if ffilters is None else ffilters, tfilters, priority)
             log.info(msg)
+            quiet = False
+        else:
+            # We're operating on the focused file and success is indiciated by
+            # the updated file list, so no info message necessary.
+            quiet = True
 
-            response = await self.make_request(
-                self.srvapi.torrent.file_priority(priority, tfilters, ffilters),
-                polling_frenzy=True)
-            return response.success
+        response = await self.make_request(
+            self.srvapi.torrent.file_priority(priority, tfilters, ffilters),
+            polling_frenzy=True, quiet=quiet)
+        return response.success
 
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
