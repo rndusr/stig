@@ -36,7 +36,6 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
     )
 
     srvapi = ExpectedResource
-    cmdutils = ExpectedResource  # Needed by make_request
 
     async def run(self, TORRENT, stopped):
         success = True
@@ -185,7 +184,6 @@ class PriorityCmdbase(metaclass=InitCommand):
     )
 
     srvapi = ExpectedResource
-    cmdutils = ExpectedResource  # Needed by make_request
 
     _PRIORITY = {'l': 'low',    '-': 'low',    'low': 'low',
                  'n': 'normal', '.': 'normal', 'normal': 'normal',
@@ -234,7 +232,6 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     )
 
     srvapi = ExpectedResource
-    cmdutils = ExpectedResource  # Needed by make_request
 
     async def run(self, TORRENT_FILTER, delete_files):
         filters = self.select_torrents(TORRENT_FILTER)
@@ -273,7 +270,6 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
     )
 
     srvapi = ExpectedResource
-    cmdutils = ExpectedResource  # Needed by make_request
 
     async def run(self, TORRENT_FILTER, toggle, force):
         filters = self.select_torrents(TORRENT_FILTER)
@@ -306,7 +302,6 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
     )
 
     srvapi = ExpectedResource
-    cmdutils = ExpectedResource  # Needed by make_request
 
     async def run(self, TORRENT_FILTER, toggle):
         filters = self.select_torrents(TORRENT_FILTER)
@@ -337,7 +332,6 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     )
 
     srvapi = ExpectedResource
-    cmdutils = ExpectedResource  # Needed by make_request
 
     async def run(self, TORRENT_FILTER):
         filters = self.select_torrents(TORRENT_FILTER)

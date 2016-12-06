@@ -26,8 +26,6 @@ from . import make_tab_title
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.polling_frenzy, mixin.make_request):
     provides = {'tui'}
-    tui = ExpectedResource      # Needed by mixin.update_torrentlist
-    aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class ListTorrentsCmd(base.ListTorrentsCmdbase):
@@ -54,7 +52,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
         flistw = FileListWidget(self.srvapi, tfilters, ffilters, columns)
 
         if isinstance(tfilters, abc.Sequence) and len(tfilters) == 1:
-            # tfilters is a torrent ID - resolve it to a name
+            # tfilters is a torrent ID - resolve it to a name for the title
             response = await self.srvapi.torrent.torrents(tfilters, keys=('name',))
             title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
@@ -71,31 +69,23 @@ class ListFilesCmd(base.ListFilesCmdbase,
 class PriorityCmd(base.PriorityCmdbase,
                   mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
-    tui = ExpectedResource      # Needed by mixin.select_torrents
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
-    tui = ExpectedResource      # Needed by mixin.update_torrentlist
-    aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
-    tui = ExpectedResource      # Needed by mixin.update_torrentlist
-    aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class StopTorrentsCmd(base.StopTorrentsCmdbase,
                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
-    tui = ExpectedResource      # Needed by mixin.update_torrentlist
-    aioloop = ExpectedResource  # Needed by mixin.update_torrentlist
 
 
 class VerifyTorrentsCmd(base.VerifyTorrentsCmdbase,
                         mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
-    tui = ExpectedResource      # Needed by mixin.update_torrentlist

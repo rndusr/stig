@@ -38,6 +38,8 @@ class polling_frenzy():
 
 
 class make_request():
+    cmdutils = ExpectedResource
+
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
@@ -48,6 +50,8 @@ class make_request():
 
 
 class select_torrents():
+    tui = ExpectedResource
+
     def select_torrents(self, FILTER):
         """Get TorrentFilter instance, focused torrent ID in a tuple or None
 
