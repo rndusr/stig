@@ -148,6 +148,11 @@ class TorrentListWidget(urwid.WidgetWrap):
             self._walker.remove(tw)
         tui.srvapi.treqpool.poll()
 
+    def update(self):
+        """Call `clear` and then poll immediately"""
+        self.clear()
+        tui.srvapi.treqpool.poll()
+
     def set(self, columns=None, filters=None, sort=None):
         update_request = False
         old_id = self.id
