@@ -101,7 +101,7 @@ class SingleTorrentFilter(Filter):
     COMPARATIVE_FILTERS = {
         'connections': _make_cmp_filter('peers-connected', ('conn',),
                                         '... number of connected peers'),
-        '%downloaded': _make_cmp_filter('%downloaded', ('%done', '%complete'),
+        '%downloaded': _make_cmp_filter('%downloaded', ('%down',),
                                         '... percentage of downloaded bytes'),
         'downloaded': _make_cmp_filter('size-downloaded', ('down',),
                                        '... number of downloaded bytes'),
