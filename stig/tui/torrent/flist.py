@@ -111,6 +111,7 @@ class FileListWidget(urwid.WidgetWrap):
             self._ffilters.apply(files)
 
     def clear(self):
+        """Remove all list items"""
         self._filewidgets = {}
         self._table.clear()
         self._walker[:] = []
