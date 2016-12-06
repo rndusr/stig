@@ -81,12 +81,12 @@ class TorrentListWidget(urwid.WidgetWrap):
 
         # Register new request in request pool
         log.debug('Registering keys for %s: %s', self.id, keys)
-        tui.srvapi.treqpool.register(self.id, self.update,
+        tui.srvapi.treqpool.register(self.id, self._handle_tlist,
                                      keys=keys,
                                      filters=self._filters)
         tui.srvapi.treqpool.poll()
 
-    def update(self, torrents=None):
+    def _handle_tlist(self, torrents=None):
         self._torrents = torrents
         self._invalidate()
 
