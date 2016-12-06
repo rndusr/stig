@@ -93,7 +93,7 @@ def parseargs_tcolumns(args):
     args = listify_args(args)
     for arg in args:
         if arg not in COLUMNS:
-            raise ValueError('Unknown column: {}'.format(arg))
+            raise ValueError('Unknown column name: {}'.format(arg))
     return args
 
 def parseargs_fcolumns(args):
@@ -102,7 +102,7 @@ def parseargs_fcolumns(args):
     args = listify_args(args)
     for arg in args:
         if arg not in COLUMNS:
-            raise ValueError('Unknown column: {}'.format(arg))
+            raise ValueError('Unknown column name: {}'.format(arg))
     return args
 
 
