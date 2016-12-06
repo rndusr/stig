@@ -42,18 +42,18 @@ class SingleTorrentFileFilter(Filter):
         'downloaded': CmpFilterSpec(
             lambda f, op, v: op(f['size-downloaded'], v),
             aliases=('down',),
-            description='Match VALUE against downloaded bytes',
+            description='Match VALUE against number of downloaded bytes',
             value_type=TorrentFile.TYPES['size-downloaded']),
+        '%downloaded': CmpFilterSpec(
+            lambda f, op, v: op(f['progress'], v),
+            aliases=('%down',),
+            description='Match VALUE against percentage of downloaded bytes',
+            value_type=TorrentFile.TYPES['progress']),
         'priority': CmpFilterSpec(
             lambda f, op, v: op(f['priority'], v),
             aliases=('prio',),
-            description='Match VALUE against file download priority (low, normal or high)',
+            description='Match VALUE against download priority (low, normal or high)',
             value_type=TorrentFile.TYPES['priority']),
-        'progress': CmpFilterSpec(
-            lambda f, op, v: op(f['progress'], v),
-            aliases=('percent',),
-            description='Match VALUE against percent downloaded',
-            value_type=TorrentFile.TYPES['progress']),
     }
 
 
