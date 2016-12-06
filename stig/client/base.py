@@ -12,9 +12,9 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-
-# TODO: Base classes should be in an 'abc' module.
 from collections import abc
+
+
 class TorrentBase(abc.Mapping):
     """Information about a torrent as a mapping
 
