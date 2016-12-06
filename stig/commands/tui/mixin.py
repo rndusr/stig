@@ -87,14 +87,14 @@ class select_torrents():
 
 
 class select_files():
-    def select_files(self, FILTER):
+    def select_files(self, FILTER, default_to_focused=False):
         """Get TorrentFileFilter instance, focused file ID or None"""
         try:
             filters = self.cmdutils.parseargs_ffilter(FILTER)
         except ValueError as e:
             log.error(e)
         else:
-            if filters is None:
+            if filters is None and default_to_focused:
                 tabs = self.tui.tabs
 
                 # Get torrent ID from widget in focused tab

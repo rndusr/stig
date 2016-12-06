@@ -44,7 +44,7 @@ class select_torrents():
 
 
 class select_files():
-    def select_files(self, FILTER):
+    def select_files(self, FILTER, default_to_focused=False):
         """Get TorrentFileFilter instance or None"""
         try:
             return self.cmdutils.parseargs_ffilter(FILTER)
