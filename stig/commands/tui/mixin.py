@@ -94,7 +94,9 @@ class select_files():
         except ValueError as e:
             log.error(e)
         else:
-            if filters is None and default_to_focused:
+            if filters is not None:
+                return filters
+            elif default_to_focused:
                 tabs = self.tui.tabs
 
                 # Get torrent ID from widget in focused tab
