@@ -35,7 +35,6 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase):
     tui = ExpectedResource
 
     def make_tlist(self, filters, sort, columns):
-        import urwid
         from ...tui.torrent.tlist import TorrentListWidget
         tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
         titlew = make_tab_title('T', tlistw.title,
@@ -51,9 +50,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
     srvapi = ExpectedResource
 
     async def make_flist(self, tfilters, ffilters, columns):
-        import urwid
         from ...tui.torrent.flist import FileListWidget
-
         flistw = FileListWidget(self.srvapi, tfilters, ffilters, columns)
 
         if isinstance(tfilters, abc.Sequence) and len(tfilters) == 1:
