@@ -28,12 +28,13 @@ def _update_pollers(seconds):
     tui.srvapi.poll()
 srvapi.rpc.on('connected', _update_pollers)
 
-def _clear_torrentlists(seconds):
+def _clear_list_widgets(seconds):
     from .torrent.tlist import TorrentListWidget
-    for tlistw in tui.tabs.contents:
-        if isinstance(tlistw, TorrentListWidget):
-            tlistw.update([])
-srvapi.rpc.on('disconnected', _clear_torrentlists)
+    from .torrent.flist import FileListWidget
+    for widget in tui.tabs.contents:
+        if isinstance(widget, (TorrentListWidget, FileListWidget)):
+            widget.clear()
+srvapi.rpc.on('disconnected', _clear_list_widgets)
 
 def _set_poll_interval(seconds):
     tui.srvapi.interval = seconds.value
