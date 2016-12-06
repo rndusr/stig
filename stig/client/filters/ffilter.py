@@ -49,6 +49,11 @@ class SingleTorrentFileFilter(Filter):
             aliases=('prio',),
             description='Match VALUE against file download priority (low, normal or high)',
             value_type=TorrentFile.TYPES['priority']),
+        'progress': CmpFilterSpec(
+            lambda f, op, v: op(f['progress'], v),
+            aliases=('percent',),
+            description='Match VALUE against percent downloaded',
+            value_type=TorrentFile.TYPES['progress']),
     }
 
 
