@@ -170,7 +170,7 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
 
     {'context': 'file', 'key': '+', 'action': 'priority high'},
-    {'context': 'file', 'key': '.', 'action': 'priority normal'},
+    {'context': 'file', 'key': '=', 'action': 'priority normal'},
     {'context': 'file', 'key': '-', 'action': 'priority low'},
     {'context': 'file', 'key': '0', 'action': 'priority shun'},
 )
