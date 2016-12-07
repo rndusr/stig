@@ -126,7 +126,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
             log.debug('Could not detect TTY size - assuming stdout is no TTY')
             headerstr = None
         elif TERMSIZE.columns < len(columns_wanted)*3:
-            log.error('Too many columns for this terminal size')
+            log.error('Terminal is too narrow for %d columns', len(columns_wanted))
             return False
         else:
             shrink_and_expand_to_fit()
