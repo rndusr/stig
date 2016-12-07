@@ -40,7 +40,7 @@ class TorrentRequestPool():
     """
     def __init__(self, srvapi, interval=1):
         self._api = srvapi.torrent
-        self._filters = {}
+        self._tfilters = {}
         self._keys = {}
         self._poller = RequestPoller(request=self._api.torrents,
                                      autoconnect=False,
@@ -50,19 +50,19 @@ class TorrentRequestPool():
         # self._poller.on_error(lambda e: log.debug('Ignoring {!r}'.format(e)),
         #                       autoremove=False)
 
-    def register(self, sid, callback, keys=(), filters=None):
+    def register(self, sid, callback, keys=(), tfilter=None):
         """Add new request to request pool
 
         sid: Subscriber ID (any hashable)
         callback: Callable that receives a tuple of Torrents on updates
         keys: Wanted Torrent keys
-        filters: None for all torrents or TorrentFilter instance
+        tfilter: None for all torrents or TorrentFilter instance
         """
         log.debug('Registering subscriber: %s', sid)
         event = blinker.signal(sid)
         event.connect(callback)
         self._keys[event] = keys
-        self._filters[event] = filters
+        self._tfilters[event] = tfilter
 
         # It's possible that a currently ongoing request doesn't collect the
         # keys this new callback needs.  In that case, the request is finished
@@ -84,7 +84,7 @@ class TorrentRequestPool():
         else:
             kwargs = {}
 
-            all_filters = tuple(self._filters.values())
+            all_filters = tuple(self._tfilters.values())
             if not all_filters or None in all_filters:
                 # No subscribers or at least one subscriber wants all torrents
                 kwargs['torrents'] = None
@@ -115,18 +115,18 @@ class TorrentRequestPool():
                 return True
 
         log.debug('Processing %d torrents for %d subscribers',
-                  len(tlist), len(self._filters))
-        if len(self._filters) == 1:
+                  len(tlist), len(self._tfilters))
+        if len(self._tfilters) == 1:
             # If there's only one subscriber, there's no need to filter the
             # torrents again.
-            event = next(iter(self._filters))
+            event = next(iter(self._tfilters))
             if has_subscribers(event):
                 log.debug('Running callback: %r', event.name)
                 event.send(tlist)
         else:
             # More than 1 subscriber means we have to filter the torrents
             # again for each one.
-            for event,filter in self._filters.items():
+            for event,filter in self._tfilters.items():
                 if has_subscribers(event):
                     log.debug('Running callback: %r', event.name)
                     if filter is None:
@@ -146,13 +146,13 @@ class TorrentRequestPool():
         log.debug('Removing subscriber: %s', sid)
         event = blinker.signal(sid)
         del self._keys[event]
-        del self._filters[event]
+        del self._tfilters[event]
         self._combine_requests()
 
     @property
     def has_subscribers(self):
         """Whether any subscribers are registered"""
-        return bool(self._filters)
+        return bool(self._tfilters)
 
     def __getattr__(self, attr):
         if attr in ('start', 'stop', 'poll', 'running'):

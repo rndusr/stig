@@ -49,9 +49,9 @@ class TorrentListItemWidget(urwid.WidgetWrap):
 
 
 class TorrentListWidget(urwid.WidgetWrap):
-    def __init__(self, sort=None, filters=None, columns=[]):
+    def __init__(self, sort=None, tfilter=None, columns=[]):
         self._sort = sort
-        self._filters = filters
+        self._tfilter = tfilter
         self._columns = columns
 
         self._table = Table(**TUICOLUMNS)
@@ -70,12 +70,12 @@ class TorrentListWidget(urwid.WidgetWrap):
         self._register_request()
 
     def _register_request(self):
-        # Get keys needed for sort order, filters and columns
+        # Get keys needed for sort order, tfilter and columns
         keys = []
         if self._sort is not None:
             keys.extend(self._sort.needed_keys)
-        if self._filters is not None:
-            keys.extend(self._filters.needed_keys)
+        if self._tfilter is not None:
+            keys.extend(self._tfilter.needed_keys)
         for colname in self._columns:
             keys.extend(TUICOLUMNS[colname].needed_keys)
 
@@ -83,7 +83,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         log.debug('Registering keys for %s: %s', self.id, keys)
         tui.srvapi.treqpool.register(self.id, self._handle_tlist,
                                      keys=keys,
-                                     filters=self._filters)
+                                     tfilter=self._tfilter)
         tui.srvapi.treqpool.poll()
 
     def _handle_tlist(self, torrents=None):
@@ -153,14 +153,14 @@ class TorrentListWidget(urwid.WidgetWrap):
         self.clear()
         tui.srvapi.treqpool.poll()
 
-    def set(self, columns=None, filters=None, sort=None):
+    def set(self, columns=None, tfilter=None, sort=None):
         update_request = False
         old_id = self.id
         if columns is not None:
             self._table.columns = columns
             update_request = True
-        if filters is not None:
-            self._filters = filters
+        if tfilter is not None:
+            self._tfilter = tfilter
             update_request = True
         if sort is not None:
             self._sort = sort
@@ -171,7 +171,7 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        title = str(self._filters) if self._filters is not None else 'all'
+        title = str(self._tfilter) if self._tfilter is not None else 'all'
         sortstr = str(self._sort)
         if sortstr is not 'name':
             title += ' {%s}' % sortstr

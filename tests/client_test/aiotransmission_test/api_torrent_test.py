@@ -107,7 +107,7 @@ class TestGettingTorrents(TorrentAPITestCase):
         self.assertIn('42', str(response.msgs[0]))
         self.assertIn('23', str(response.msgs[1]))
 
-    async def test_get_torrents_by_filters(self):
+    async def test_get_torrents_by_filter(self):
         self.daemon.response = rsrc.response_torrents(
             {'id': 1, 'name': 'Foo'},
             {'id': 2, 'name': 'Bar'},
@@ -182,7 +182,7 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         self.assert_torrentkeys_equal('id', response.torrents, 2, 3)
         self.assert_torrentkeys_equal('name', response.torrents, 'Bar', 'Boo')
 
-    async def test_rpc_method_without_filters(self):
+    async def test_rpc_method_without_filter(self):
         response = await self.api._torrent_action(
             method=self.mock_method,
             keys=('name',)

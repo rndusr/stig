@@ -192,33 +192,33 @@ class TorrentAPI():
             log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
         return Response(success=success, torrents=tlist, msgs=msgs)
 
-    async def _get_torrents_by_filters(self, keys, filters=None, autoconnect=True):
+    async def _get_torrents_by_filter(self, keys, tfilter=None, autoconnect=True):
         """Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: See _get_torrents_by_ids
-        filters: A TorrentFilter instance or None
+        tfilter: A TorrentFilter instance or None
         autoconnect: See _get_torrents_by_ids
         """
         if not autoconnect and not self.rpc.connected:
             return None
-        elif filters == None:
+        elif tfilter == None:
             log.debug('Looking for all torrents with keys: %s', keys)
             # No filter specified - just return all torrents with the specified keys
             return await self._get_torrents_by_ids(keys=keys, autoconnect=autoconnect)
         else:
-            log.debug('Looking for %s torrents with keys: %s', filters, keys)
+            log.debug('Looking for %s torrents with keys: %s', tfilter, keys)
             tlist = ()
             msgs = []
             success = False
-            if isinstance(filters, str):
-                filters = TorrentFilter(filters)
+            if isinstance(tfilter, str):
+                tfilter = TorrentFilter(tfilter)
 
             # Request all torrents with the keys needed to filter them
-            log.debug('Requesting full list with filter keys: %s', filters.needed_keys)
-            response = await self._get_torrents_by_ids(keys=filters.needed_keys)
+            log.debug('Requesting full list with filter keys: %s', tfilter.needed_keys)
+            response = await self._get_torrents_by_ids(keys=tfilter.needed_keys)
             if response.success:
-                # Find IDs of torrents that match filters
-                wanted_ids = tuple(t['id'] for t in filters.apply(response.torrents))
+                # Find IDs of torrents that match tfilter
+                wanted_ids = tuple(t['id'] for t in tfilter.apply(response.torrents))
                 log.debug('Wanted IDs: %s', wanted_ids)
                 if len(wanted_ids) > 0:
                     # Get only wanted torrents with all wanted keys
@@ -233,10 +233,10 @@ class TorrentAPI():
 
             success = len(tlist) > 0
             if not success:
-                msgs.append(ClientError('No matching torrents found: {}'.format(filters)))
+                msgs.append(ClientError('No matching torrents found: {}'.format(tfilter)))
             else:
                 msgs.append('Found {} {} torrent{}'.format(
-                    len(tlist), filters, '' if len(tlist) == 1 else 's'))
+                    len(tlist), tfilter, '' if len(tlist) == 1 else 's'))
 
             return Response(success=success, torrents=tlist, msgs=msgs)
 
@@ -257,7 +257,7 @@ class TorrentAPI():
         if torrents is None:
             return await self._get_torrents_by_ids(keys, autoconnect=autoconnect)
         elif isinstance(torrents, (str, TorrentFilter)):
-            return await self._get_torrents_by_filters(keys, filters=torrents, autoconnect=autoconnect)
+            return await self._get_torrents_by_filter(keys, tfilter=torrents, autoconnect=autoconnect)
         elif isinstance(torrents, abc.Sequence) and \
              all(isinstance(id, int) for id in torrents):
             return await self._get_torrents_by_ids(keys, ids=torrents, autoconnect=autoconnect)

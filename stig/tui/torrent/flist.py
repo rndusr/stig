@@ -38,10 +38,10 @@ class FileWidget(urwid.WidgetWrap):
 
 
 class FileListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tfilters, ffilters, columns):
+    def __init__(self, srvapi, tfilter, ffilter, columns):
         self._srvapi = srvapi
-        self._tfilters = tfilters
-        self._ffilters = ffilters
+        self._tfilter = tfilter
+        self._ffilter = ffilter
 
         self._table = Table(**TUICOLUMNS)
         self._table.columns = columns
@@ -60,7 +60,7 @@ class FileListWidget(urwid.WidgetWrap):
 
     def _create_poller(self):
         self._poller = self._srvapi.create_poller(
-            self._srvapi.torrent.torrents, self._tfilters, keys=('files', 'name'))
+            self._srvapi.torrent.torrents, self._tfilter, keys=('files', 'name'))
         self._poller.on_response(self._handle_response)
 
     def _handle_response(self, response):
@@ -107,8 +107,8 @@ class FileListWidget(urwid.WidgetWrap):
                 fws[fid].update(f)
 
     def _maybe_filter(self, files):
-        return files if self._ffilters is None else \
-            self._ffilters.apply(files)
+        return files if self._ffilter is None else \
+            self._ffilter.apply(files)
 
     def clear(self):
         """Remove all list items"""
