@@ -1,4 +1,4 @@
-from resources_cmd import (CommandTestCase, MockTorrent)
+from resources_cmd import (CommandTestCase, MockTorrent, mock_select_torrents)
 
 from stig.client.utils import Response
 from stig.client.errors import ClientError
@@ -78,6 +78,7 @@ class TestListTorrentsCmd(CommandTestCase):
         from types import SimpleNamespace
         from stig.commands.cli import torrent
         torrent.TERMSIZE = SimpleNamespace(columns=None, lines=None)
+        ListTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, errors):
         tlist = (
@@ -99,9 +100,9 @@ class TestListTorrentsCmd(CommandTestCase):
                                ('INFO', 'Some Torrent'),
                                ('INFO', 'Another Torrent'))
             keys_exp = set(self.cmdutils.sortobj.needed_keys + \
-                           self.cmdutils.filterobj.needed_keys + \
+                           process.mock_tfilter.needed_keys + \
                            tuple(self.cmdutils.columns))
-            self.api.torrent.assert_called(1, 'torrents', (self.cmdutils.filterobj,),
+            self.api.torrent.assert_called(1, 'torrents', (process.mock_tfilter,),
                                            {'keys': keys_exp})
             self.assertEqual(self.cmdutils.sortobj.applied, tlist)
 
@@ -121,9 +122,9 @@ class TestListTorrentsCmd(CommandTestCase):
         await self.do(['-s', 'name,size', 'downloading', 'uploading'], errors=())
 
     async def test_invalid_filter(self):
-        def raise_filter_error(self):
+        def bad_select_torrents(self, *args, **kwargs):
             raise ValueError('Nope!')
-        self.cmdutils.parseargs_tfilter = raise_filter_error
+        ListTorrentsCmd.select_torrents = bad_select_torrents
         await self.do(['foo'], errors=('Nope!',))
 
     async def test_invalid_sort(self):
@@ -139,6 +140,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         super().setUp()
         RemoveTorrentsCmd.srvapi = self.api
         RemoveTorrentsCmd.cmdutils = self.cmdutils
+        RemoveTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs, delete=False):
         success_exp = all(isinstance(msg, str) for msg in msgs)
@@ -146,7 +148,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         process = RemoveTorrentsCmd(args, loop=self.loop)
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
-        self.api.torrent.assert_called(1, 'remove', (self.cmdutils.filterobj,), {'delete': delete})
+        self.api.torrent.assert_called(1, 'remove', (process.mock_tfilter,), {'delete': delete})
         self.assertEqual(process.success, success_exp)
         exp_msgs = tuple( (('INFO' if isinstance(msg, str) else 'ERROR'), str(msg))
                           for msg in msgs )
@@ -172,6 +174,7 @@ class TestStartTorrentsCmd(CommandTestCase):
         super().setUp()
         StartTorrentsCmd.srvapi = self.api
         StartTorrentsCmd.cmdutils = self.cmdutils
+        StartTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs=(), force=False, toggle=False):
         success_exp = all(isinstance(msg, str) for msg in msgs)
@@ -180,9 +183,9 @@ class TestStartTorrentsCmd(CommandTestCase):
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
         if toggle:
-            self.api.torrent.assert_called(1, 'toggle_stopped', (self.cmdutils.filterobj,), {'force': force})
+            self.api.torrent.assert_called(1, 'toggle_stopped', (process.mock_tfilter,), {'force': force})
         else:
-            self.api.torrent.assert_called(1, 'start', (self.cmdutils.filterobj,), {'force': force})
+            self.api.torrent.assert_called(1, 'start', (process.mock_tfilter,), {'force': force})
         self.assertEqual(process.success, success_exp)
         exp_msgs = tuple( (('INFO' if isinstance(msg, str) else 'ERROR'), str(msg))
                           for msg in msgs )
@@ -224,6 +227,7 @@ class TestStopTorrentsCmd(CommandTestCase):
         super().setUp()
         StopTorrentsCmd.srvapi = self.api
         StopTorrentsCmd.cmdutils = self.cmdutils
+        StopTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs=(), toggle=False):
         success_exp = all(isinstance(msg, str) for msg in msgs)
@@ -232,9 +236,9 @@ class TestStopTorrentsCmd(CommandTestCase):
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
         if toggle:
-            self.api.torrent.assert_called(1, 'toggle_stopped', (self.cmdutils.filterobj,), {})
+            self.api.torrent.assert_called(1, 'toggle_stopped', (process.mock_tfilter,), {})
         else:
-            self.api.torrent.assert_called(1, 'stop', (self.cmdutils.filterobj,), {})
+            self.api.torrent.assert_called(1, 'stop', (process.mock_tfilter,), {})
         self.assertEqual(process.success, success_exp)
         exp_msgs = tuple( (('INFO' if isinstance(msg, str) else 'ERROR'), str(msg))
                           for msg in msgs )
@@ -265,6 +269,7 @@ class TestVerifyTorrentsCmd(CommandTestCase):
         super().setUp()
         VerifyTorrentsCmd.srvapi = self.api
         VerifyTorrentsCmd.cmdutils = self.cmdutils
+        VerifyTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs=()):
         success_exp = all(isinstance(msg, str) for msg in msgs)
@@ -272,7 +277,7 @@ class TestVerifyTorrentsCmd(CommandTestCase):
         process = VerifyTorrentsCmd(args, loop=self.loop)
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
-        self.api.torrent.assert_called(1, 'verify', (self.cmdutils.filterobj,), {})
+        self.api.torrent.assert_called(1, 'verify', (process.mock_tfilter,), {})
         self.assertEqual(process.success, success_exp)
         exp_msgs = tuple( (('INFO' if isinstance(msg, str) else 'ERROR'), str(msg))
                           for msg in msgs )

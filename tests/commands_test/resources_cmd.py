@@ -52,6 +52,11 @@ class MockTorrentFilter():
         pass
     needed_keys = ('name', 'id')
 
+def mock_select_torrents(self, *args, **kwargs):
+    self.mock_tfilter = MockTorrentFilter(*args, **kwargs)
+    return self.mock_tfilter
+
+
 class MockTorrentSorter(MockTorrentFilter):
     def apply(self, torrents):
         if hasattr(self, 'raises'):
@@ -63,10 +68,6 @@ class MockTorrentSorter(MockTorrentFilter):
 class MockUtils():
     def __init__(self):
         self.logged = []
-
-    def parseargs_tfilter(self, args):
-        self.filterobj = MockTorrentFilter(args)
-        return self.filterobj
 
     def parseargs_sort(self, args):
         self.sortobj = MockTorrentSorter(args)
