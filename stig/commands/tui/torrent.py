@@ -28,13 +28,14 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
     provides = {'tui'}
 
 
-class ListTorrentsCmd(base.ListTorrentsCmdbase):
+class ListTorrentsCmd(base.ListTorrentsCmdbase,
+                      mixin.select_torrents):
     provides = {'tui'}
     tui = ExpectedResource
 
-    def make_tlist(self, filters, sort, columns):
+    def make_tlist(self, tfilter, sort, columns):
         from ...tui.torrent.tlist import TorrentListWidget
-        tlistw = TorrentListWidget(filters=filters, sort=sort, columns=columns)
+        tlistw = TorrentListWidget(filters=tfilter, sort=sort, columns=columns)
         titlew = make_tab_title(tlistw.title, 'tabs.torrentlist.unfocused', 'tabs.torrentlist.focused')
         self.tui.tabs.load(titlew, tlistw)
         return True
@@ -46,19 +47,19 @@ class ListFilesCmd(base.ListFilesCmdbase,
     tui = ExpectedResource
     srvapi = ExpectedResource
 
-    async def make_flist(self, tfilters, ffilters, columns):
+    async def make_flist(self, tfilter, ffilter, columns):
         from ...tui.torrent.flist import FileListWidget
-        flistw = FileListWidget(self.srvapi, tfilters, ffilters, columns)
+        flistw = FileListWidget(self.srvapi, tfilter, ffilter, columns)
 
-        if isinstance(tfilters, abc.Sequence) and len(tfilters) == 1:
-            # tfilters is a torrent ID - resolve it to a name for the title
-            response = await self.srvapi.torrent.torrents(tfilters, keys=('name',))
+        if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
+            # tfilter is a torrent ID - resolve it to a name for the title
+            response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
             title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
-            if ffilters is None:
-                title = str(tfilters)
+            if ffilter is None:
+                title = str(tfilter)
             else:
-                title = '%s files of %s torrents' % (ffilters, tfilters)
+                title = '%s files of %s torrents' % (ffilter, tfilter)
         titlew = make_tab_title(title, 'tabs.filelist.unfocused', 'tabs.filelist.focused')
         self.tui.tabs.load(titlew, flistw)
         return True

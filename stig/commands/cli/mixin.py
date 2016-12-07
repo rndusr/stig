@@ -19,6 +19,7 @@ from .. import ExpectedResource
 
 class make_request():
     cmdutils = ExpectedResource
+
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
@@ -27,33 +28,46 @@ class make_request():
 
 
 class select_torrents():
-    cmdutils = ExpectedResource
-    def select_torrents(self, FILTER):
+    def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=None):
         """Get TorrentFilter instance or None
 
-        `FILTER` is an argument for TorrentFilter.
+        If `FILTER` evaluates to True, it is passed to TorrentFilter and the
+        resulting object is returned.
 
-        Returns a TorrentFilter instance or None if `FILTER` evaluates to
-        False.
+        If `FILTER` evaluates to False, None is returned if allow_no_filter
+        evaluates to True, otherwise a ValueError is raised.
+
+        `discover_torrent` is ignored and only used in the TUI version of this
+        method (see ..tui.mixin.select_torrent).
         """
-        try:
-            filters = self.cmdutils.parseargs_tfilter(FILTER)
-        except ValueError as e:
-            log.error(e)
+        if FILTER:
+            from ...client import TorrentFilter
+            return TorrentFilter(FILTER)
         else:
-            if filters is None:
-                log.error('No torrent specified')
+            if allow_no_filter:
+                return None
             else:
-                return filters
+                raise ValueError('No torrent specified')
 
 
 class select_files():
-    cmdutils = ExpectedResource
-    def select_files(self, FILTER, default_to_focused=False):
-        """Get TorrentFileFilter instance or None"""
-        try:
-            return self.cmdutils.parseargs_ffilter(FILTER)
-        except ValueError as e:
-            log.error(e)
+    def select_files(self, FILTER, allow_no_filter=True, discover_file=None):
+        """Get TorrentFileFilter instance or None
+
+        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and
+        the resulting object is returned.
+
+        If `FILTER` evaluates to False, None is returned if allow_no_filter
+        evaluates to True, otherwise a ValueError is raised.
+
+        `discover_file` is ignored and only used in the TUI version of this
+        method (see ..tui.mixin.select_file).
+        """
+        if FILTER:
+            from ...client import TorrentFileFilter
+            return TorrentFileFilter(FILTER)
         else:
-            return None
+            if allow_no_filter:
+                return None
+            else:
+                raise ValueError('No torrent specified')

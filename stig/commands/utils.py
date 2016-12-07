@@ -70,18 +70,6 @@ def listify_args(args):
     return tuple(arg for arg in args if arg)
 
 
-def parseargs_tfilter(args):
-    """Return TorrentFilter instance or None if `args` evaluates to False"""
-    if args:
-        from ..client import TorrentFilter
-        return TorrentFilter(args)
-
-def parseargs_ffilter(args):
-    """Return TorrentFileFilter instance or None if `args` evaluates to False"""
-    if args:
-        from ..client import TorrentFileFilter
-        return TorrentFileFilter(args)
-
 def parseargs_sort(args):
     """Return TorrentSorter instance"""
     from ..client import TorrentSorter

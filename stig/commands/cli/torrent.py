@@ -145,19 +145,20 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
     provides = {'cli'}
 
 
-class ListTorrentsCmd(base.ListTorrentsCmdbase, mixin.make_request):
+class ListTorrentsCmd(base.ListTorrentsCmdbase,
+                      mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
-    async def make_tlist(self, filters, sort, columns):
+    async def make_tlist(self, tfilter, sort, columns):
         # Get wanted torrents and sort them
-        if filters is None:
+        if tfilter is None:
             keys = set(sort.needed_keys)
         else:
-            keys = set(sort.needed_keys + filters.needed_keys)
+            keys = set(sort.needed_keys + tfilter.needed_keys)
         for colname in columns:
             keys.update(TLIST_COLUMNS[colname].needed_keys)
         response = await self.make_request(
-            self.srvapi.torrent.torrents(filters, keys=keys),
+            self.srvapi.torrent.torrents(tfilter, keys=keys),
             quiet=True)
         torrents = sort.apply(response.torrents)
 
@@ -170,9 +171,9 @@ class ListFilesCmd(base.ListFilesCmdbase,
                    mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'cli'}
     srvapi = ExpectedResource
-    async def make_flist(self, tfilters, ffilters, columns):
+    async def make_flist(self, tfilter, ffilter, columns):
         response = await self.make_request(
-            self.srvapi.torrent.torrents(tfilters, keys=('name', 'files')),
+            self.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
             quiet=True)
         if len(response.torrents) < 1:
             return False
@@ -184,18 +185,18 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
             log.info(torrentname)
 
-            if ffilters is None:
+            if ffilter is None:
                 files = torrent['files']
             else:
-                files = tuple(ffilters.apply(torrent['files']))
+                files = tuple(ffilter.apply(torrent['files']))
 
             if files:
                 _print_table(files, columns, FLIST_COLUMNS)
             else:
-                if ffilters is None:
+                if ffilter is None:
                     log.error('No files')
                 else:
-                    log.error('No matching files: {}'.format(ffilters))
+                    log.error('No matching files: {}'.format(ffilter))
 
 
 class PriorityCmd(base.PriorityCmdbase,

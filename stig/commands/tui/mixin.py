@@ -19,6 +19,7 @@ from .. import ExpectedResource
 
 class polling_frenzy():
     aioloop = ExpectedResource
+
     def polling_frenzy(self, duration=2, short_interval=0.5):
         """Reduce polling interval for a few seconds
 
@@ -52,58 +53,92 @@ class make_request():
 class select_torrents():
     tui = ExpectedResource
 
-    def select_torrents(self, FILTER):
+    def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True):
         """Get TorrentFilter instance, focused torrent ID in a tuple or None
 
-        `FILTER` is an argument for TorrentFilter.
+        If `FILTER` evaluates to True, it is passed to TorrentFilter and the
+        resulting object is returned.
 
-        Returns a TorrentFilter instance or None if `FILTER` evaluates to
-        False.
+        If `FILTER` evaluates to False, a torrent ID is returned in a tuple if
+        possible and `discover_torrent` evaluates to True. Otherwise, None is
+        returned if `allow_no_filter` evaluates to True, else a ValueError is
+        raised.
+
+        Torrents are discovered by getting the:
+            - `focused_torrent` attribute in this command's object (e.g. set
+              by the 'tab' command),
+            - `focused_torrent` attribute of the focused tab's widget
+              (e.g. TorrentListWidget),
+            - `focused_torrent_id` attribute of the focused tab's widget
+              (e.g. TorrentFileListWidget).
         """
-        try:
-            filters = self.cmdutils.parseargs_tfilter(FILTER)
-        except ValueError as e:
-            log.error(e)
+        if FILTER:
+            from ...client import TorrentFilter
+            return TorrentFilter(FILTER)
         else:
-            if filters is None:
-                tabs = self.tui.tabs
-
-                # Get Torrent object from attribute set by 'tab' command (this
-                # happens if for example when you run 'tab filelist' while a
-                # torrent is focused)
-                if hasattr(self, 'focused_torrent'):
-                    return (self.focused_torrent['id'],)
-
-                # Get Torrent object from widget in focused tab
-                elif hasattr(tabs.focus, 'focused_torrent') and \
-                   tabs.focus.focused_torrent is not None:
-                    return (tabs.focus.focused_torrent.tid,)
-
-                # Get torrent ID from widget in focused tab
-                elif hasattr(tabs.focus, 'focused_torrent_id') and \
-                   tabs.focus.focused_torrent_id is not None:
-                    return (tabs.focus.focused_torrent_id,)
-
-                else:
-                    log.error('No torrent selected')
+            if discover_torrent:
+                tid = self._find_torrent_id()
+                if tid is not None:
+                    return (tid,)
+            if allow_no_filter:
+                return None
             else:
-                return filters
+                raise ValueError('No torrent specified')
+
+    def _find_torrent_id(self):
+        focused_widget = self.tui.tabs.focus
+
+        # Get Torrent object from attribute set by 'tab' command (this
+        # happens if for example when you run 'tab filelist' while a
+        # torrent is focused)
+        if hasattr(self, 'focused_torrent'):
+            return self.focused_torrent['id']
+
+        # Get Torrent object from widget in focused tab
+        elif hasattr(focused_widget, 'focused_torrent') and \
+             focused_widget.focused_torrent is not None:
+            return focused_widget.focused_torrent.tid
+
+        # Get torrent ID from widget in focused tab
+        elif hasattr(focused_widget, 'focused_torrent_id') and \
+             focused_widget.focused_torrent_id is not None:
+            return focused_widget.focused_torrent_id
 
 
 class select_files():
-    def select_files(self, FILTER, default_to_focused=False):
-        """Get TorrentFileFilter instance, focused file ID or None"""
-        try:
-            filters = self.cmdutils.parseargs_ffilter(FILTER)
-        except ValueError as e:
-            log.error(e)
-        else:
-            if filters is not None:
-                return filters
-            elif default_to_focused:
-                tabs = self.tui.tabs
+    tui = ExpectedResource
 
-                # Get torrent ID from widget in focused tab
-                if hasattr(tabs.focus, 'focused_file_id') and \
-                   tabs.focus.focused_file_id is not None:
-                    return (tabs.focus.focused_file_id,)
+    def select_files(self, FILTER, allow_no_filter=True, discover_file=True):
+        """Get TorrentFileFilter instance, focused file ID or None
+
+        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and
+        the resulting object is returned.
+
+        If `FILTER` evaluates to False, a file ID is returned in a tuple if
+        possible and `discover_file` evaluates to True. Otherwise, None is
+        returned if `allow_no_filter` evaluates to True, else a ValueError is
+        raised.
+
+        File are discovered by getting the `focused_file_id` of the focused
+        tab's widget.
+        """
+        if FILTER:
+            from ...client import TorrentFileFilter
+            return TorrentFileFilter(FILTER)
+        else:
+            if discover_file:
+                fid = self._find_file_id()
+                if fid is not None:
+                    return (fid,)
+            if allow_no_filter:
+                return None
+            else:
+                raise ValueError('No torrent file specified')
+
+    def _find_file_id(self):
+        focused_widget = self.tui.tabs.focus
+
+        # Get torrent ID from widget in focused tab
+        if hasattr(focused_widget, 'focused_file_id') and \
+           focused_widget.focused_file_id is not None:
+            return focused_widget.focused_file_id

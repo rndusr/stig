@@ -196,7 +196,7 @@ class TorrentAPI():
         """Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: See _get_torrents_by_ids
-        filters: A TorrentFilters instance or None
+        filters: A TorrentFilter instance or None
         autoconnect: See _get_torrents_by_ids
         """
         if not autoconnect and not self.rpc.connected:

@@ -93,7 +93,6 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         ),
     }
 
-
     cmdutils = ExpectedResource
     cfg = ExpectedResource
 
@@ -101,18 +100,20 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         sort = self.cfg['tlist.sort'].value if sort is None else sort
         columns = self.cfg['tlist.columns'].value if columns is None else columns
         try:
-            filters = self.cmdutils.parseargs_tfilter(TORRENT_FILTER)
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=True,
+                                           discover_torrent=False)
             sort = self.cmdutils.parseargs_sort(sort)
             columns = self.cmdutils.parseargs_tcolumns(columns)
         except ValueError as e:
             log.error(e)
             return False
         else:
-            log.debug('Listing %s torrents sorted by %s', filters, sort)
+            log.debug('Listing %s torrents sorted by %s', tfilter, sort)
             if asyncio.iscoroutinefunction(self.make_tlist):
-                return await self.make_tlist(filters, sort, columns)
+                return await self.make_tlist(tfilter, sort, columns)
             else:
-                return self.make_tlist(filters, sort, columns)
+                return self.make_tlist(tfilter, sort, columns)
 
 
 class ListFilesCmdbase(metaclass=InitCommand):
@@ -147,20 +148,22 @@ class ListFilesCmdbase(metaclass=InitCommand):
         columns = self.cfg['flist.columns'].value if columns is None else columns
         try:
             columns = self.cmdutils.parseargs_fcolumns(columns)
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+            ffilter = self.select_files(FILE_FILTER,
+                                        allow_no_filter=True,
+                                        discover_file=True)
         except ValueError as e:
             log.error(e)
             return False
 
-        tfilters = self.select_torrents(TORRENT_FILTER)
-        if tfilters is None:
-            return False  # Bad torrent filter or no torrent filter specified
-        ffilters = self.select_files(FILE_FILTER, default_to_focused=False)
-        log.debug('Listing %s files of %s torrents', ffilters, tfilters)
+        log.debug('Listing %s files of %s torrents', ffilter, tfilter)
 
         if asyncio.iscoroutinefunction(self.make_flist):
-            return await self.make_flist(tfilters, ffilters, columns)
+            return await self.make_flist(tfilter, ffilter, columns)
         else:
-            return self.make_flist(tfilters, ffilters, columns)
+            return self.make_flist(tfilter, ffilter, columns)
 
 
 class PriorityCmdbase(metaclass=InitCommand):
@@ -197,24 +200,33 @@ class PriorityCmdbase(metaclass=InitCommand):
             log.error('Invalid priority: {!r}'.format(PRIORITY))
             return False
 
-        tfilters = self.select_torrents(TORRENT_FILTER)
-        ffilters = self.select_files(FILE_FILTER, default_to_focused=True)
-        if tfilters is None:  # Bad filter expression or no filter given
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+            ffilter = self.select_files(FILE_FILTER,
+                                        allow_no_filter=True,
+                                        discover_file=True)
+        except ValueError as e:
+            log.error(e)
             return False
 
-        if not isinstance(tfilters, tuple):
-            # tfilters must be TorrentFilters instance, which means the user
+        log.debug('Setting file download priority to %s for %s files of %s torrents',
+                  priority, ffilter, tfilter)
+
+        if not isinstance(tfilter, tuple):
+            # tfilter must be TorrentFilter instance, which means the user
             # specified a filter and will be informed about the matches.
-            if isinstance(ffilters, tuple):
+            if isinstance(ffilter, tuple):
                 # The user did specify a torrent filter but not a file filter,
                 # so select_files() may have returned a focused file.  But we
                 # assume that the user meant all files of the matching
                 # torrents, otherwise they wouldn't have given a torrent
                 # filter.
-                ffilters = None
+                ffilter = None
 
             msg = 'New download priority of %s files in %s torrents: %s' % (
-                'all' if ffilters is None else ffilters, tfilters, priority)
+                'all' if ffilter is None else ffilter, tfilter, priority)
             log.info(msg)
             quiet = False
         else:
@@ -223,7 +235,7 @@ class PriorityCmdbase(metaclass=InitCommand):
             quiet = True
 
         response = await self.make_request(
-            self.srvapi.torrent.file_priority(priority, tfilters, ffilters),
+            self.srvapi.torrent.file_priority(priority, tfilter, ffilter),
             polling_frenzy=True, quiet=quiet)
         return response.success
 
@@ -250,12 +262,16 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER, delete_files):
-        filters = self.select_torrents(TORRENT_FILTER)
-        if filters is None:  # Bad filter expression
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
             return False
         else:
             response = await self.make_request(
-                self.srvapi.torrent.remove(filters, delete=delete_files),
+                self.srvapi.torrent.remove(tfilter, delete=delete_files),
                 polling_frenzy=True)
             return response.success
 
@@ -288,16 +304,23 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER, toggle, force):
-        filters = self.select_torrents(TORRENT_FILTER)
-        if filters is None:  # Bad filter expression
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
             return False
-        elif toggle:
-            response = await self.make_request(self.srvapi.torrent.toggle_stopped(filters, force=force),
-                                               polling_frenzy=True)
         else:
-            response = await self.make_request(self.srvapi.torrent.start(filters, force=force),
-                                               polling_frenzy=True)
-        return response.success
+            if toggle:
+                response = await self.make_request(
+                    self.srvapi.torrent.toggle_stopped(tfilter, force=force),
+                    polling_frenzy=True)
+            else:
+                response = await self.make_request(
+                    self.srvapi.torrent.start(tfilter, force=force),
+                    polling_frenzy=True)
+            return response.success
 
 
 class StopTorrentsCmdbase(metaclass=InitCommand):
@@ -320,16 +343,23 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER, toggle):
-        filters = self.select_torrents(TORRENT_FILTER)
-        if filters is None:  # Bad filter expression
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
             return False
-        elif toggle:
-            response = await self.make_request(self.srvapi.torrent.toggle_stopped(filters),
-                                               polling_frenzy=True)
         else:
-            response = await self.make_request(self.srvapi.torrent.stop(filters),
-                                               polling_frenzy=True)
-        return response.success
+            if toggle:
+                response = await self.make_request(
+                    self.srvapi.torrent.toggle_stopped(tfilter),
+                    polling_frenzy=True)
+            else:
+                response = await self.make_request(
+                    self.srvapi.torrent.stop(tfilter),
+                    polling_frenzy=True)
+            return response.success
 
 
 class VerifyTorrentsCmdbase(metaclass=InitCommand):
@@ -350,10 +380,14 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER):
-        filters = self.select_torrents(TORRENT_FILTER)
-        if filters is None:  # Bad filter expression
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
             return False
         else:
-            response = await self.make_request(self.srvapi.torrent.verify(filters),
+            response = await self.make_request(self.srvapi.torrent.verify(tfilter),
                                                polling_frenzy=False)
             return response.success
