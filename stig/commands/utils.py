@@ -69,6 +69,11 @@ def listify_args(args):
 
 
 def log_msgs(logger, msgs, quiet=False):
+    """Log messages to `logger`
+
+    `msgs` is an iterable of strings or exceptions.  Strings are logged to
+    level INFO, exceptions are logged to level ERROR.
+    """
     for msg in msgs:
         if isinstance(msg, str):
             if not quiet:
