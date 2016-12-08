@@ -57,16 +57,15 @@ def listify_args(args):
 
     if isinstance(args, str):
         # args is a string of comma-separated list items
-        args = tuple(str(arg).strip() for arg in args.split(','))
+        args = (str(arg).strip() for arg in args.split(','))
     elif isinstance(args, abc.Iterable):
         # args is an iterable of list items; each item may be a string of
         # comma-separated items
-        args = tuple(a
-                     for arg in args
-                     for a in listify_args(arg))
+        args = (a for arg in args
+                for a in listify_args(arg))
     else:
         # args is something else
-        args = tuple(str(args).strip())
+        args = (str(args).strip())
     return tuple(arg for arg in args if arg)
 
 
