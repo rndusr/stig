@@ -16,6 +16,8 @@ log = make_logger(__name__)
 
 
 from .. import ExpectedResource
+from .. import utils
+
 
 class polling_frenzy():
     aioloop = ExpectedResource
@@ -39,12 +41,10 @@ class polling_frenzy():
 
 
 class make_request():
-    cmdutils = ExpectedResource
-
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
-        self.cmdutils.log_msgs(log, response.msgs, quiet)
+        utils.log_msgs(log, response.msgs, quiet)
         if response.success and polling_frenzy and hasattr(self, 'polling_frenzy'):
             self.polling_frenzy()
         return response

@@ -332,7 +332,7 @@ class CommandManager():
         self._active_interface = None
         self._resources = CallbackDict(callback=self._update_resources)
         from . import utils
-        self._resources.update(cmdmgr=self, cmdutils=utils)
+        self._resources.update(cmdmgr=self)
 
     def load_cmds_from_module(self, *modules):
         """Import modules and look for command classes

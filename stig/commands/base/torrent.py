@@ -17,6 +17,7 @@ log = make_logger(__name__)
 import asyncio
 
 from .. import (InitCommand, ExpectedResource)
+from . import mixin
 
 
 class AddTorrentsCmdbase(metaclass=InitCommand):
@@ -51,7 +52,8 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         return success
 
 
-class ListTorrentsCmdbase(metaclass=InitCommand):
+class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
+                          metaclass=InitCommand):
     name = 'list'
     aliases = ('ls',)
     provides = set()
@@ -93,7 +95,6 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
         ),
     }
 
-    cmdutils = ExpectedResource
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, sort, columns):
@@ -103,8 +104,8 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
                                            discover_torrent=False)
-            sort = self.cmdutils.parseargs_sort(sort)
-            columns = self.cmdutils.parseargs_tcolumns(columns)
+            sort = self.get_torrent_sorter(sort)
+            columns = self.get_tlist_columns(columns)
         except ValueError as e:
             log.error(e)
             return False
@@ -116,7 +117,7 @@ class ListTorrentsCmdbase(metaclass=InitCommand):
                 return self.make_tlist(tfilter, sort, columns)
 
 
-class ListFilesCmdbase(metaclass=InitCommand):
+class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
     name = 'filelist'
     aliases = ('fls', 'lsf')
     provides = set()
@@ -141,13 +142,12 @@ class ListFilesCmdbase(metaclass=InitCommand):
     )
     more_sections = {'SCRIPTING': ListTorrentsCmdbase.more_sections['SCRIPTING']}
 
-    cmdutils = ExpectedResource
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, FILE_FILTER, columns):
         columns = self.cfg['flist.columns'].value if columns is None else columns
         try:
-            columns = self.cmdutils.parseargs_fcolumns(columns)
+            columns = self.get_flist_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
                                            discover_torrent=True)

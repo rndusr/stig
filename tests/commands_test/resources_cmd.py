@@ -64,27 +64,9 @@ class MockTorrentSorter(MockTorrentFilter):
         self.applied = torrents
         return torrents
 
-
-class MockUtils():
-    def __init__(self):
-        self.logged = []
-
-    def parseargs_sort(self, args):
-        self.sortobj = MockTorrentSorter(args)
-        return self.sortobj
-
-    tcolumns = ['name']
-    def parseargs_tcolumns(self, args):
-        return self.tcolumns
-
-    def listify_args(self, lst):
-        return lst
-
-    def log_msgs(self, *args, **kwargs):
-        # Don't mock logging so we can check what is actually logged on the
-        # different levels level.
-        from stig.commands.utils import log_msgs
-        return log_msgs(*args, **kwargs)
+def mock_get_torrent_sorter(self, *args, **kwargs):
+    self.mock_tsorter = MockTorrentSorter(*args, **kwargs)
+    return self.mock_tsorter
 
 
 class MockHelpManager():
@@ -135,7 +117,6 @@ class CommandTestCase(asynctest.TestCase):
     def setUp(self):
         self.api = SimpleNamespace(torrent=MockAPI(),
                                    rpc=MockAPI())
-        self.cmdutils = MockUtils()
         self.cfg = MockSettings()
         self.helpmgr = MockHelpManager()
 

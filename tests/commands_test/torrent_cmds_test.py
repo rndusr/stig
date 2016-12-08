@@ -1,4 +1,5 @@
-from resources_cmd import (CommandTestCase, MockTorrent, mock_select_torrents)
+from resources_cmd import (CommandTestCase, MockTorrent, mock_select_torrents,
+                           mock_get_torrent_sorter)
 
 from stig.client.utils import Response
 from stig.client.errors import ClientError
@@ -9,7 +10,6 @@ class TestAddTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         AddTorrentsCmd.srvapi = self.api
-        AddTorrentsCmd.cmdutils = self.cmdutils
 
     async def test_success(self):
         self.api.torrent.response = Response(
@@ -73,19 +73,20 @@ class TestListTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         ListTorrentsCmd.srvapi = self.api
-        ListTorrentsCmd.cmdutils = self.cmdutils
         ListTorrentsCmd.cfg = self.cfg
+        ListTorrentsCmd.select_torrents = mock_select_torrents
+        ListTorrentsCmd.get_torrent_sorter = mock_get_torrent_sorter
+        ListTorrentsCmd.get_tlist_columns = lambda self, columns: ('name',)
+
         from types import SimpleNamespace
         from stig.commands.cli import torrent
         torrent.TERMSIZE = SimpleNamespace(columns=None, lines=None)
-        ListTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, errors):
         tlist = (
             MockTorrent(id=1, name='Some Torrent'),
             MockTorrent(id=2, name='Another Torrent')
         )
-        self.cmdutils.columns = ['name']
         self.api.torrent.response = Response(errors=(), msgs=[], torrents=tlist)
         with self.assertLogs(level='INFO') as logged:
             process = ListTorrentsCmd(args, loop=self.loop)
@@ -99,12 +100,12 @@ class TestListTorrentsCmd(CommandTestCase):
             self.assert_logged(logged,
                                ('INFO', 'Some Torrent'),
                                ('INFO', 'Another Torrent'))
-            keys_exp = set(self.cmdutils.sortobj.needed_keys + \
+            keys_exp = set(process.mock_tsorter.needed_keys + \
                            process.mock_tfilter.needed_keys + \
-                           tuple(self.cmdutils.columns))
+                           ('name',))  # columns
             self.api.torrent.assert_called(1, 'torrents', (process.mock_tfilter,),
                                            {'keys': keys_exp})
-            self.assertEqual(self.cmdutils.sortobj.applied, tlist)
+            self.assertEqual(process.mock_tsorter.applied, tlist)
 
     async def test_filter(self):
         await self.do(['active'], errors=())
@@ -128,9 +129,9 @@ class TestListTorrentsCmd(CommandTestCase):
         await self.do(['foo'], errors=('Nope!',))
 
     async def test_invalid_sort(self):
-        def raise_sort_error(self):
+        def bad_get_torrent_sorter(self, *args, **kwargs):
             raise ValueError('Nope!')
-        self.cmdutils.parseargs_sort = raise_sort_error
+        ListTorrentsCmd.get_torrent_sorter = bad_get_torrent_sorter
         await self.do(['-s', 'foo'], errors=('Nope!',))
 
 
@@ -139,7 +140,6 @@ class TestRemoveTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         RemoveTorrentsCmd.srvapi = self.api
-        RemoveTorrentsCmd.cmdutils = self.cmdutils
         RemoveTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs, delete=False):
@@ -173,7 +173,6 @@ class TestStartTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         StartTorrentsCmd.srvapi = self.api
-        StartTorrentsCmd.cmdutils = self.cmdutils
         StartTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs=(), force=False, toggle=False):
@@ -226,7 +225,6 @@ class TestStopTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         StopTorrentsCmd.srvapi = self.api
-        StopTorrentsCmd.cmdutils = self.cmdutils
         StopTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs=(), toggle=False):
@@ -268,7 +266,6 @@ class TestVerifyTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         VerifyTorrentsCmd.srvapi = self.api
-        VerifyTorrentsCmd.cmdutils = self.cmdutils
         VerifyTorrentsCmd.select_torrents = mock_select_torrents
 
     async def do(self, args, msgs=()):

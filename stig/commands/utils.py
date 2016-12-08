@@ -40,7 +40,6 @@ class CallbackDict(dict):
 
 
 from collections import abc
-
 def listify_args(args):
     """Make list from `args`
 
@@ -67,30 +66,6 @@ def listify_args(args):
         # args is something else
         args = (str(args).strip())
     return tuple(arg for arg in args if arg)
-
-
-def parseargs_sort(args):
-    """Return TorrentSorter instance"""
-    from ..client import TorrentSorter
-    return TorrentSorter(listify_args(args))
-
-def parseargs_tcolumns(args):
-    """Return valid torrent list columns"""
-    from ..columns.tlist import COLUMNS
-    args = listify_args(args)
-    for arg in args:
-        if arg not in COLUMNS:
-            raise ValueError('Unknown column name: {}'.format(arg))
-    return args
-
-def parseargs_fcolumns(args):
-    """Return valid file list columns"""
-    from ..columns.flist import COLUMNS
-    args = listify_args(args)
-    for arg in args:
-        if arg not in COLUMNS:
-            raise ValueError('Unknown column name: {}'.format(arg))
-    return args
 
 
 def log_msgs(logger, msgs, quiet=False):
