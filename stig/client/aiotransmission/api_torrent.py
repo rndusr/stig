@@ -111,7 +111,7 @@ class TorrentAPI():
                     args['metainfo'] = str(base64.b64encode(f.read()),
                                            encoding='ascii')
             except OSError as e:
-                msgs.append(ClientError(e.strerror))
+                msgs.append(ClientError('%s: %s' % (e.strerror, torrent_str)))
                 return Response(success=success, torrent=torrent, msgs=msgs)
         elif len(torrent_str) == 40 and all(c in HEXDIGITS for c in torrent_str):
             # Convert hash to magnet link
