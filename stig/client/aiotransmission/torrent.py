@@ -20,32 +20,36 @@ from ..base import TorrentBase
 
 # Some values need to be modified to comply with our internal standards
 
-def _modify_ratio(ratio):
+def _modify_ratio(raw_torrent):
     #define TR_RATIO_NA  -1
     #define TR_RATIO_INF -2
+    ratio = raw_torrent['uploadRatio']
     return tkeys.Ratio.UNKNOWN if ratio in (-1, -2) else ratio
 
-def _modify_eta(seconds):
+def _modify_eta(raw_torrent):
     #define TR_ETA_NOT_AVAIL -1
     #define TR_ETA_UNKNOWN -2
+    seconds = raw_torrent['eta']
     if seconds == -1:
         return tkeys.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
         return tkeys.Timedelta.UNKNOWN
     return  seconds
 
-def _count_seeds(trackerStats):
+def _count_seeds(raw_torrent):
+    trackerStats = raw_torrent['trackerStats']
     if trackerStats:
         return max(t['seederCount'] for t in trackerStats)
     else:
         return tkeys.SeedCount.UNKNOWN
 
-def _is_isolated(trackerStats, isPrivate):
+def _is_isolated(raw_torrent):
     """Return whether this torrent can find any peers via trackers or DHT"""
-    if not isPrivate:
+    if not raw_torrent['isPrivate']:
         return False  # DHT is used
 
     # Torrent has trackers?
+    trackerStats = raw_torrent['trackerStats']
     if trackerStats:
         # Did we try to connect to a tracker?
         if any(tracker['hasAnnounced'] for tracker in trackerStats):
@@ -74,7 +78,10 @@ class FileList(tuple):
     # 'fileStats'.  But then we have to keep FileList objects alive somehow
     # and find a way to await the async request to get 'files' once in __new__
     # or __init__.
-    def __new__(cls, files, fileStats):
+
+    def __new__(cls, raw_torrent):
+        files = raw_torrent['files']
+        fileStats = raw_torrent['fileStats']
         return super().__new__(cls,
             (tkeys.TorrentFile(id=i,
                                name=f['name'],
@@ -87,7 +94,8 @@ class FileList(tuple):
 
 
 class TrackerList(tuple):
-    def __new__(cls, trackers):
+    def __new__(cls, raw_torrent):
+        trackers = raw_torrent['trackers']
         return super().__new__(cls,
             ({'id': tracker['id'],
               'url-announce': utils.split_url(tracker['announce'])}
@@ -139,12 +147,12 @@ DEPENDENCIES = {
 }
 
 # Map our keys to callables that adjust the raw RPC values or create new
-# values from existing RPC values (see 'isolated').
+# values from existing RPC values.
 _MODIFY = {
-    '%downloaded'     : lambda v: v*100,
-    '%metadata'       : lambda v: v*100,
-    '%verified'       : lambda v: v*100,
-    'status'          : lambda v: _STATUS_MAP[v],
+    '%downloaded'     : lambda raw: raw['percentDone']*100,
+    '%metadata'       : lambda raw: raw['metadataPercentComplete']*100,
+    '%verified'       : lambda raw: raw['recheckProgress']*100,
+    'status'          : lambda raw: _STATUS_MAP[raw['status']],
     'peers-seeding'   : _count_seeds,
     'isolated'        : _is_isolated,
     'ratio'           : _modify_ratio,
@@ -178,9 +186,8 @@ class Torrent(TorrentBase):
     def __getitem__(self, key):
         if key not in self._cache:
             if key in _MODIFY:
-                # Modifier gets all values specified in DEPENDENCIES
-                args = tuple(self._raw[field] for field in DEPENDENCIES[key])
-                value = _MODIFY[key](*args)
+                # Modifier gets the whole raw torrent
+                value = _MODIFY[key](self._raw)
             else:
                 fields = DEPENDENCIES[key]
                 assert len(fields) == 1
