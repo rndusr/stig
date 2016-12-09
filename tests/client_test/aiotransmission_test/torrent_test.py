@@ -10,23 +10,25 @@ def test_all_dependencies_are_standard_keys():
 
 class Test_is_isolated(unittest.TestCase):
     def test_no_trackers_and_public(self):
-        tc = torrent._is_isolated(isPrivate=False, trackerStats=[])
+        tc = torrent._is_isolated({'isPrivate': False, 'trackerStats': []})
         self.assertEqual(tc, False)
 
     def test_no_trackers_and_private(self):
-        tc = torrent._is_isolated(isPrivate=True, trackerStats=[])
+        tc = torrent._is_isolated({'isPrivate': True, 'trackerStats': []})
         self.assertEqual(tc, True)
 
     def test_trackers_and_private(self):
         tc = torrent._is_isolated(
-            isPrivate=True,
-            trackerStats=[{'lastAnnounceSucceeded': False, 'hasAnnounced': False},
-                          {'lastAnnounceSucceeded': False, 'hasAnnounced': True}])
+            {'isPrivate': True,
+             'trackerStats': [{'lastAnnounceSucceeded': False, 'hasAnnounced': False},
+                              {'lastAnnounceSucceeded': False, 'hasAnnounced': True}]}
+        )
         self.assertEqual(tc, True)
         tc = torrent._is_isolated(
-            isPrivate=True,
-            trackerStats=[{'lastAnnounceSucceeded': False, 'hasAnnounced': False},
-                          {'lastAnnounceSucceeded': True, 'hasAnnounced': True}])
+            {'isPrivate': True,
+             'trackerStats': [{'lastAnnounceSucceeded': False, 'hasAnnounced': False},
+                              {'lastAnnounceSucceeded': True, 'hasAnnounced': True}]}
+        )
         self.assertEqual(tc, False)
 
 
