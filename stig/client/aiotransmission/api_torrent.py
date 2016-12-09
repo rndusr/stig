@@ -78,6 +78,14 @@ class TorrentAPI():
         self.rpc = rpc
         self._tcache = _TorrentCache()
 
+    async def _request(self, method, *args, **kwargs):
+        try:
+            result = await method(*args, **kwargs)
+        except ClientError as e:
+            return Response(result=None, msgs=(e,), success=False)
+        else:
+            return Response(result=result, msgs=(), success=True)
+
     async def add(self, torrent, stopped=False):
         """Add torrent from file, URL or hash
 
@@ -120,33 +128,54 @@ class TorrentAPI():
             # It's probably a link, let the daemon figure it out
             args['filename'] = torrent_str
 
-        try:
-            result = await self.rpc.torrent_add(**args)
-        except ClientError as e:
-            if 'Invalid or corrupt' in str(e):
-                msgs.append(ClientError('Invalid or corrupt torrent: ' + torrent_str))
+        response = await self._request(self.rpc.torrent_add, **args)
+        if not response.success:
+            if 'Invalid or corrupt' in str(response.msgs[0]):
+                msgs = (ClientError('Invalid or corrupt torrent: {!r}'.format(torrent_str)),)
             else:
-                msgs.append(ClientError(str(e)))
+                msgs = response.msgs
+            return Response(success=False, torrent=None, msgs=msgs)
         else:
+            result = response.result
             if 'torrent-duplicate' in result:
                 info = result['torrent-duplicate']
                 msgs.append(ClientError('Torrent already exists: ' + info['name']))
+                success = False
             elif 'torrent-added' in result:
-                success = True
                 info = result['torrent-added']
-                msgs.append('Added ' + info['name'])
+                msgs.append('Added %s' % info['name'])
+                success = True
             else:
                 raise RuntimeError('Malformed response: {}'.format(result))
             torrent = Torrent({'id': info['id'], 'name': info['name']})
 
         return Response(success=success, torrent=torrent, msgs=msgs)
 
+
+    async def _request_torrents(self, fields, ids=None):
+        """Unmodified 'torrent-get' request"""
+        try:
+            if ids is None:
+                # Request all IDs
+                rtlist = await self.rpc.torrent_get(fields=fields)
+            else:
+                if len(ids) > 0:
+                    # Request given IDs
+                    rtlist = await self.rpc.torrent_get(fields=fields, ids=ids)
+                else:
+                    # No IDs (i.e. empty torrent list) requested
+                    rtlist = []
+        except ClientError as e:
+            return Response(success=False, raw_torrents=[], msgs=[e])
+        else:
+            return Response(success=True, raw_torrents=rtlist)
+
     async def _get_torrents_by_ids(self, keys, ids=None, autoconnect=True):
         """Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: 'ALL' for all supported Torrent keys or a sequence of key
               strings (see client.tkeys.TYPES for available keys)
-        ids: None for all torrents or a list of wanted IDs
+        ids: None for all torrents or a sequence of wanted IDs
         autoconnect: Wether to attempt to connect automatically if not
                      connected; if False and not connected, return None
         """
@@ -160,36 +189,29 @@ class TorrentAPI():
         tlist = ()
         msgs = []
         success = False
-        try:
-            if ids is None:
-                ids_requested = ()
-                # Request all IDs
-                raw_tlist = await self.rpc.torrent_get(fields=fields)
-            else:
-                ids_requested = tuple(ids)
-                if len(ids_requested) > 0:
-                    # Request given IDs
-                    raw_tlist = await self.rpc.torrent_get(fields=fields, ids=ids_requested)
-                else:
-                    # No IDs (i.e. empty torrent list) requested
-                    raw_tlist = []
-        except ClientError as e:
-            msgs.append(ClientError(str(e)))
+
+        response = await self._request_torrents(fields, ids)
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=response.msgs)
         else:
             from time import time
             start = time()
+
+            raw_tlist = response.raw_torrents
             self._tcache.update(raw_tlist)
-            if len(ids_requested) > 0:
-                tlist = self._tcache.get(*ids_requested)
-                for tid in ids_requested:
+            if ids:
+                tlist = self._tcache.get(*ids)
+                for tid in ids:
                     # Torrent objects are equal to an integer of the torrent's ID
                     if tid not in tlist:
                         msgs.append(ClientError('No torrent with ID: {}'.format(tid)))
             else:
                 self._tcache.purge(t['id'] for t in raw_tlist)  # Remove deleted torrents from cache
                 tlist = self._tcache.get()
-            success = len(tlist) > 0 or len(ids_requested) <= 0
+            success = len(tlist) > 0 or not ids
+
             log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
+
         return Response(success=success, torrents=tlist, msgs=msgs)
 
     async def _get_torrents_by_filter(self, keys, tfilter=None, autoconnect=True):
