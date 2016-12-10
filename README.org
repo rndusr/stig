@@ -84,6 +84,7 @@
    - [[https://github.com/KeepSafe/aiohttp/][aiohttp]] >=0.22.5
    - [[https://pypi.python.org/pypi/appdirs][appdirs]]
    - [[https://pypi.python.org/pypi/blinker/][blinker]]
+   - [[https://pypi.python.org/pypi/setuptools][setuptools]]
 
 ** Contributing
    There is a (incomplete) [[file:TODO.org][TODO list]].  Feel free to work on that.
