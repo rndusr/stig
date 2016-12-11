@@ -134,7 +134,7 @@ class RequestPoller():
                 if self._on_error.receivers:
                     self._on_error.send(error)
                 else:
-                    log.debug('Uncaught exception in {!r}'.format(self))
+                    log.debug('Uncaught exception in %r', self)
                     raise error
 
     def skip_ongoing_request(self):
@@ -211,14 +211,12 @@ class RequestPoller():
         If the request raises an exception, 'response' callbacks are called
         with `None` and 'error' callbacks are called with the exception.
         """
-        log.debug('Registering {!r} to receive {} responses'
-                  .format(_funcname(callback), self._request_str))
+        log.debug('Registering %r to receive %s responses', _funcname(callback), self._request_str)
         self._on_response.connect(callback, weak=autoremove)
 
     def on_error(self, callback, autoremove=True):
         """Register `callback` to receive request exceptions (see `on_response`)"""
-        log.debug('Registering {!r} to receive {} errors'
-                  .format(_funcname(callback), self._request_str))
+        log.debug('Registering %r to receive %s errors', _funcname(callback), self._request_str)
         self._on_error.connect(callback, weak=autoremove)
 
     @property

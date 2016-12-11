@@ -158,7 +158,7 @@ class RcCmd(metaclass=InitCommand):
             log.error('Loading rc file failed: {}'.format(e))
             return False
         else:
-            log.debug('Read commands from rc file: {!r}'.format(FILE))
+            log.debug('Reading commands from rc file: %r', FILE)
             log.debug(lines)
             for cmdline in lines:
                 self.cmdmgr(cmdline)

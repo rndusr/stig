@@ -31,7 +31,7 @@ class SrvValueBase(ValueBase):
         return self._getter()
 
     async def set(self, value):
-        log.debug('Setting server value {!r}: {!r}'.format(self.name, value))
+        log.debug('Setting server value %r: %r', self.name, value)
         try:
             value = self.convert(value)
             self.validate(value)
@@ -39,29 +39,27 @@ class SrvValueBase(ValueBase):
         except ClientError as e:
             raise ValueError("Can't change server setting {}: {}".format(self.name, e))
         except ValueError as e:
-            log.debug('{} while setting {} to {!r}: {}'
-                      .format(type(e).__name__, self.name, value, e))
+            log.debug('%s while setting %s to %r: %s', type(e).__name__, self.name, value, e)
             raise ValueError('{} = {}: {}'.format(self.name, self.str(value), e))
         else:
-            log.debug('Successfully set {} to {!r}'
-                      .format(self.name, value))
+            log.debug('Successfully set %s to %r', self.name, value)
 
     def convert(self, value):
-        log.debug('SrvValueBase: converting {!r}'.format(value))
+        log.debug('SrvValueBase: converting %r', value)
         if value is const.DISCONNECTED:
             return value
         else:
-            log.debug('consulting super().convert for {!r}'.format(value))
+            log.debug('consulting super().convert for %r', value)
             value = super().convert(value)
-            log.debug('got back: {!r}'.format(value))
+            log.debug('got back: %r', value)
             return value
 
     def validate(self, value):
-        log.debug('SrvValueBase: validating {!r}'.format(value))
+        log.debug('SrvValueBase: validating %r', value)
         if value is not const.DISCONNECTED:
-            log.debug('SrvValueBase: consulting super().validate for {!r}'.format(value))
+            log.debug('consulting super().validate for %r', value)
             super().validate(value)
-            log.debug('Valid value: {!r}'.format(value))
+            log.debug('Valid value: %r', value)
 
 
 class RateLimitSrvValue(SrvValueBase, NumberValue):

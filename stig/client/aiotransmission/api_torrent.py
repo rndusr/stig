@@ -38,10 +38,10 @@ class _TorrentCache():
         # Add or update torrents
         for tid,t in rtdict.items():
             if tid in tdict:
-                # log.debug('Updating torrent #{}'.format(tid))
+                log.debug('Updating torrent #%d', tid)
                 tdict[tid].update(t)
             else:
-                # log.debug('Adding torrent #{}'.format(tid))
+                log.debug('Adding torrent #%d', tid)
                 tdict[tid] = Torrent(t)
 
         log.debug('Updated %d cached torrents in %.3fms',

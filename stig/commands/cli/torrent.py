@@ -79,7 +79,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
         return delimiter.join(headers)
 
     def shrink_and_expand_to_fit():
-        log.debug('TTY width is {}'.format(TERMSIZE))
+        log.debug('TTY width is %dx%d', TERMSIZE.columns, TERMSIZE.lines)
 
         def get_colwidth(colindex):
             # Get maximum column width (width of widest cell in all rows)

@@ -489,7 +489,7 @@ class CommandManager():
                     # exc.args is () if cmd didn't raise any exception but
                     # returned False.  In that case, we assume the error(s)
                     # were already reported by the cmd itself.
-                    log.debug('Calling {!r} with {!r}'.format(on_error, exc))
+                    log.debug('Calling %r with %r', on_error, exc)
                     on_error(exc)
             else:
                 log.debug('Re-raising %r', exc)

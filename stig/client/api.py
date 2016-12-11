@@ -126,16 +126,16 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
 
     async def _manage_pollers(self):
         while True:
-            log.debug('Managing {} pollers'.format(len(self._pollers)))
+            log.debug('Managing %d pollers', len(self._pollers))
             for poller in tuple(self._pollers):
                 if not poller.running and poller.has_callbacks:
-                    log.debug('Starting because not running and cbs: {!r}'.format(poller))
+                    log.debug('Starting because not running and has callbacks: %r', poller)
                     await poller.start()
                 elif poller.running and not poller.has_callbacks:
-                    log.debug('Stopping because running and no cbs: {!r}'.format(poller))
+                    log.debug('Stopping because running and no callbacks: %r', poller)
                     await poller.stop()
                     self._pollers.remove(poller)
-                    log.debug('Remaining pollers: {!r}'.format(self._pollers))
+                    log.debug('Remaining pollers: %r', self._pollers)
             await self._manage_pollers_interval.sleep(10)
 
     _POLLERS = ('status', 'settings', 'treqpool')
