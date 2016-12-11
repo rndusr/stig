@@ -62,8 +62,6 @@ class StatusAPI():
                                            interval=interval,
                                            loop=srvapi.loop)
         self._poller_stats.on_response(self._handle_session_stats)
-        # self._poller_stats.on_error(lambda e: log.debug('Ignoring {!r}'.format(e)),
-        #                             autoremove=False)
 
         # 'session-stats' provides some counters, but not enough, so we
         # request a minimalistic torrent list.
@@ -73,8 +71,6 @@ class StatusAPI():
                                             interval=interval,
                                             loop=srvapi.loop)
         self._poller_tcount.on_response(self._handle_tlist)
-        # self._poller_tcount.on_error(lambda e: log.debug('Ignoring {!r}'.format(e)),
-        #                             autoremove=False)
 
     def _reset_session_stats(self):
         self._session_stats = {}
