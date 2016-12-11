@@ -62,6 +62,8 @@ class StatusAPI():
                                            interval=interval,
                                            loop=srvapi.loop)
         self._poller_stats.on_response(self._handle_session_stats)
+        self._poller_stats.on_error(lambda e: log.debug('Ignoring exception: %r', e),
+                                    autoremove=False)
 
         # 'session-stats' provides some counters, but not enough, so we
         # request a minimalistic torrent list.
