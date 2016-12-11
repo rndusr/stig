@@ -1,5 +1,5 @@
 from stig.client.poll import RequestPoller
-from stig.client.errors import ConnectionError
+from stig.client.errors import (ConnectionError, AuthError)
 
 import asynctest
 import asyncio
@@ -123,7 +123,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         await self.advance(0)
         self.assertEqual(status, 'None calls')
 
-    async def test_request_raises_ConnectionError(self):
+    async def test_request_raises_ClientError(self):
         # Connection fails after a few successfull requests
         requests_before_failure = 3
         requests_before_different_failure = 6
@@ -132,7 +132,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
             nonlocal requests
             requests += 1
             if requests > requests_before_different_failure:
-                raise ConnectionError('Another error')
+                raise AuthError('Another error')
             elif requests > requests_before_failure:
                 raise ConnectionError('Server unreachable')
             else:
@@ -170,8 +170,8 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         self.assertEqual(len(errors), 2)
         self.assertIsInstance(errors[0], ConnectionError)
         self.assertEqual(str(errors[0]), 'Connection failed: Server unreachable')
-        self.assertIsInstance(errors[1], ConnectionError)
-        self.assertEqual(str(errors[1]), 'Connection failed: Another error')
+        self.assertIsInstance(errors[1], AuthError)
+        self.assertEqual(str(errors[1]), 'Authentication failed: Another error')
 
         await rp.stop()
 
