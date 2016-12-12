@@ -4,6 +4,6 @@ clean:
 	find . -name "__pycache__" -delete
 	rm -rf .cache  # py.test junk
 
-test:
+check:
 	# python3 -m pytest --maxfail=1 ./tests/
 	nosetests3 --stop ./tests/
