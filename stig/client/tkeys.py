@@ -299,8 +299,8 @@ class TorrentFile(abc.Mapping):
 
     def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
 
-    def __iter__(self): iter(self._TYPES)
-    def __len__(self): return len(self._TYPES)
+    def __iter__(self): return iter(self.TYPES)
+    def __len__(self): return len(self.TYPES)
 
 
 # Because 'convert' needs Number, which is specified in this file, it must be
