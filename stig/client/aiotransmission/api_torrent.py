@@ -255,7 +255,7 @@ class TorrentAPI():
 
             success = len(tlist) > 0
             if not success:
-                msgs.append(ClientError('No matching torrents found: {}'.format(tfilter)))
+                msgs.append(ClientError('No matching torrents: {}'.format(tfilter)))
             else:
                 msgs.append('Found {} {} torrent{}'.format(
                     len(tlist), tfilter, '' if len(tlist) == 1 else 's'))
