@@ -88,6 +88,6 @@ class Priority(ColumnBase):
         return '' if val == 'normal' else val
 
     def get_raw(self):
-        return self.data['priority'] if self.data['is-wanted'] else 'shun'
+        return 'shun' if self.data['is-wanted'] is False else self.data['priority']
 
 COLUMNS['priority'] = Priority
