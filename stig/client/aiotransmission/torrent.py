@@ -72,25 +72,77 @@ _STATUS_MAP = {
 }
 
 
-class FileList(tuple):
-    # TODO: We don't really need to request 'files' on every new request
-    # because name and length don't change and everything else is in
-    # 'fileStats'.  But then we have to keep FileList objects alive somehow
-    # and find a way to await the async request to get 'files' once in __new__
-    # or __init__.
+# TODO: We don't really need to request 'files' on every new request
+# because name and length don't change and everything else is in
+# 'fileStats'.  But then we have to keep FileList objects alive somehow
+# and find a way to await the async request to get 'files' once in __new__
+# or __init__.
 
-    def __new__(cls, raw_torrent):
-        files = raw_torrent['files']
-        fileStats = raw_torrent['fileStats']
-        return super().__new__(cls,
-            (tkeys.TorrentFile(id=i,
-                               name=f['name'],
-                               size_total=f['length'],
-                               size_downloaded=fS['bytesCompleted'],
-                               is_wanted=fS['wanted'],
-                               priority=fS['priority'])
-             for i,(f,fS) in enumerate(zip(files, fileStats)))
-        )
+def _create_filelist(raw_torrent):
+    files = raw_torrent['fileStats'].copy()
+    if 'files' in raw_torrent:
+        for i,(f1,f2) in enumerate(zip(files, raw_torrent['files'])):
+            f1['id'] = i
+            f1.update(f2)
+    else:
+        for i,f in enumerate(files):
+            f['id'] = i
+
+    def get_path(tfile): return tfile['name']
+    def set_path(tfile, path): tfile['name'] = path
+
+    def make_TorrentFile(tfile):
+        return tkeys.TorrentFile(id=tfile['id'], name=tfile['name'],
+                                 size_total=tfile['length'],
+                                 size_downloaded=tfile['bytesCompleted'],
+                                 is_wanted=tfile['wanted'],
+                                 priority=tfile['priority'])
+
+    return FileList(entries=files,
+                    file_maker=make_TorrentFile,
+                    path_getter=get_path,
+                    path_setter=set_path)
+
+
+import os
+from collections import abc
+class FileList(abc.Mapping):
+    def __init__(self, entries, path_getter, path_setter, file_maker):
+        items = {}
+        subfolders = {}
+
+        for entry in entries:
+            parts = path_getter(entry).split(os.sep, 1)
+            if len(parts) == 1:
+                items[parts[0]] = file_maker(entry)
+
+            elif len(parts) == 2:
+                subfolder, subpath = parts
+                if subfolder not in subfolders:
+                    subfolders[subfolder] = []
+                path_setter(entry, subpath)
+                subfolders[subfolder].append(entry)
+            else:
+                raise RuntimeError(parts)
+
+        for subfolder,entries in subfolders.items():
+            items[subfolder] = FileList(entries,
+                                        path_getter=path_getter,
+                                        path_setter=path_setter,
+                                        file_maker=file_maker)
+        self._items = items
+
+    def __repr__(self):
+        return '<%s %r>' % (type(self).__name__, self._items)
+
+    def __getitem__(self, key):
+        return self._items[key]
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def __len__(self):
+        return len(self._items)
 
 
 class TrackerList(tuple):
@@ -158,7 +210,7 @@ _MODIFY = {
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
     'trackers'        : TrackerList,
-    'files'           : FileList,
+    'files'           : _create_filelist,
 }
 
 class Torrent(TorrentBase):

@@ -358,5 +358,5 @@ TYPES = {
     'size-corrupt'      : lambda v: convert.size(v, unit='byte'),
 
     'trackers'          : tuple,
-    'files'             : tuple,
+    'files'             : dict,
 }
