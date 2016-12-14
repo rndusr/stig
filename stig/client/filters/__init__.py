@@ -304,21 +304,17 @@ class FilterChain():
 
     def apply(self, objects):
         """Yield matching objects from iterable `objects`"""
-        log.debug('Filtering %d objects for %s', len(objects), self)
-
-        def is_a_hit(t):
-            # All filters in an AND_chain must match for the AND_chain to
-            # match.  At least one AND_chain must match.
-            if any(all(f.match(t) for f in AND_chain)
-                   for AND_chain in self._filterchains):
-                return True
-            else:
-                return False
-
         if self._filterchains:
-            yield from filter(is_a_hit, objects)
+            yield from filter(self.match, objects)
         else:
             yield from objects
+
+    def match(self, obj):
+        """Whether `obj` matches this filter chain"""
+        # All filters in an AND_chain must match for the AND_chain to
+        # match.  At least one AND_chain must match.
+        return any(all(f.match(obj) for f in AND_chain)
+                   for AND_chain in self._filterchains)
 
     @property
     def needed_keys(self):
