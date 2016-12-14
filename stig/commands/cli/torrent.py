@@ -175,28 +175,70 @@ class ListFilesCmd(base.ListFilesCmdbase,
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
             quiet=True)
-        if len(response.torrents) < 1:
+        torrents = response.torrents
+
+        if len(torrents) < 1:
             return False
 
-        for torrent in sorted(response.torrents, key=lambda t: t['name'].lower()):
-            if TERMSIZE.columns is None:
-                torrentname = 'torrent: ' + torrent['name']
-            else:
-                torrentname = '\033[1;7m' + torrent['name'].ljust(TERMSIZE.columns) + '\033[0m'
-            log.info(torrentname)
+        files = []
+        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+            files.extend(self._flatten_tree(torrent['files'], ffilter))
 
-            if ffilter is None:
-                files = torrent['files']
+        if files:
+            _print_table(files, columns, FLIST_COLUMNS)
+        else:
+            if str(tfilter) != 'all':
+                log.error('No matching files in {} torrents: {}'.format(tfilter, ffilter))
             else:
-                files = tuple(ffilter.apply(torrent['files']))
+                log.error('No matching files: {}'.format(ffilter))
 
-            if files:
-                _print_table(files, columns, FLIST_COLUMNS)
-            else:
-                if ffilter is None:
-                    log.error('No files')
+    def _flatten_tree(self, files, ffilter=None, _indent_level=0):
+        """Return list of rows for _print_table
+
+        `files` must be a nested mapping tree (e.g. FileList).
+        `ffilter` must be a TorrentFileFilter instance or None.
+        """
+        from ...client.tkeys import TorrentFile
+
+        def _sum_subdir_size(subdir, key):
+            sizes = []
+            for value in subdir.values():
+                if isinstance(value, TorrentFile):
+                    sizes.append(value[key])
                 else:
-                    log.error('No matching files: {}'.format(ffilter))
+                    sizes.append(_sum_subdir_size(value, key))
+            return sum(sizes, type(sizes[0])(0))
+
+        def _sum_subdir_priority(subdir):
+            priorities = set()
+            for value in subdir.values():
+                if isinstance(value, TorrentFile):
+                    priorities.add(value['priority'])
+                else:
+                    priorities.add(_sum_subdir_priority(value))
+            return priorities.pop() if len(priorities) <= 1 else ''
+
+        indent_str = '  '*(_indent_level)
+        flist = []
+        for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
+            if isinstance(value, TorrentFile):
+                if ffilter is None or ffilter.match(value):
+                    entry = dict(value)  # Copy original TorrentFile
+                    entry['name'] = '%s%s' % (indent_str, entry['name'])
+                    flist.append(entry)
+
+            else:
+                sub_flist = self._flatten_tree(value, ffilter, _indent_level+1)
+                if sub_flist:
+                    folder = {'name': '%s%s' % (indent_str, str(key)),
+                              'size-downloaded': _sum_subdir_size(value, 'size-downloaded'),
+                              'size-total': _sum_subdir_size(value, 'size-total'),
+                              'priority': _sum_subdir_priority(value),
+                              'is-wanted': True}
+                    folder['progress'] = folder['size-downloaded'] / folder['size-total'] * 100
+                    flist.append(folder)
+                    flist.extend(sub_flist)
+        return flist
 
 
 class PriorityCmd(base.PriorityCmdbase,
