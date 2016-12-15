@@ -125,6 +125,15 @@ class TorrentFileTree(abc.Mapping):
             items[subfolder] = TorrentFileTree(entries, path=path+[subfolder])
         self._items = items
 
+    @property
+    def flat(self):
+        """Yield TorrentFiles from this tree recursively"""
+        for entry in self._items.values():
+            if isinstance(entry, tkeys.TorrentFile):
+                yield entry
+            else:
+                yield from entry.flat
+
     def __repr__(self):
         return '<%s %r>' % (type(self).__name__, self._items)
 
