@@ -88,50 +88,41 @@ def _create_filelist(raw_torrent):
         for i,f in enumerate(files):
             f['id'] = i
 
-    def get_path(tfile): return tfile['name']
-    def set_path(tfile, path): tfile['name'] = path
-
-    def make_TorrentFile(tfile):
-        return tkeys.TorrentFile(id=tfile['id'], name=tfile['name'], path=tfile['path'],
-                                 size_total=tfile['length'],
-                                 size_downloaded=tfile['bytesCompleted'],
-                                 is_wanted=tfile['wanted'],
-                                 priority=tfile['priority'])
-
-    return TorrentFileTree(entries=files,
-                           file_maker=make_TorrentFile,
-                           path_getter=get_path,
-                           path_setter=set_path)
+    return TorrentFileTree(entries=files)
 
 
 import os
 from collections import abc
 class TorrentFileTree(abc.Mapping):
-    def __init__(self, entries, path_getter, path_setter, file_maker, path=[]):
+    def __init__(self, entries, path=[]):
+        if isinstance(entries, TorrentFileTree):
+            self._items = entries._items
+            return
+
         items = {}
         subfolders = {}
 
         for entry in entries:
-            parts = path_getter(entry).split(os.sep, 1)
+            parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
-                entry['path'] = path
-                items[parts[0]] = file_maker(entry)
+                items[parts[0]] = tkeys.TorrentFile(
+                    id=entry['id'], name=entry['name'], path=path,
+                    size_total=entry['length'],
+                    size_downloaded=entry['bytesCompleted'],
+                    is_wanted=entry['wanted'],
+                    priority=entry['priority'])
 
             elif len(parts) == 2:
                 subfolder, subpath = parts
                 if subfolder not in subfolders:
                     subfolders[subfolder] = []
-                path_setter(entry, subpath)
+                entry['name'] = subpath
                 subfolders[subfolder].append(entry)
             else:
                 raise RuntimeError(parts)
 
         for subfolder,entries in subfolders.items():
-            items[subfolder] = TorrentFileTree(entries,
-                                               path=path + [subfolder],
-                                               path_getter=path_getter,
-                                               path_setter=path_setter,
-                                               file_maker=file_maker)
+            items[subfolder] = TorrentFileTree(entries, path=path+[subfolder])
         self._items = items
 
     def __repr__(self):
