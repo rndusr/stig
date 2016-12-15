@@ -274,10 +274,12 @@ class TorrentFilePriority(str):
     def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
 
+import os
 class TorrentFile(abc.Mapping):
     TYPES = {
         'id'              : lambda val: int(val),
         'name'            : lambda val: SmartCmpStr(val),
+        'path'            : lambda val: SmartCmpStr(val),
         'size-total'      : lambda val: convert.size(val, unit='byte'),
         'size-downloaded' : lambda val: convert.size(val, unit='byte'),
         'is-wanted'       : lambda val: bool(val),
@@ -288,6 +290,7 @@ class TorrentFile(abc.Mapping):
     _VALUES = {
         'id'              : lambda raw: raw['id'],
         'name'            : lambda raw: raw['name'],
+        'path'            : lambda raw: os.sep.join(raw['path']),
         'size-total'      : lambda raw: raw['size-total'],
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
@@ -295,8 +298,10 @@ class TorrentFile(abc.Mapping):
         'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
     }
 
-    def __init__(self, id, name, size_total, size_downloaded, is_wanted, priority):
-        self._raw = {'id': id, 'name': name, 'is-wanted': is_wanted, 'priority': priority,
+    def __init__(self, id, name, path, size_total, size_downloaded, is_wanted, priority):
+        self._raw = {'id': id, 'name': name,
+                     'path': path[1:],  # First item is torrent name
+                     'is-wanted': is_wanted, 'priority': priority,
                      'size-total': size_total, 'size-downloaded': size_downloaded}
         self._cache = {}
 

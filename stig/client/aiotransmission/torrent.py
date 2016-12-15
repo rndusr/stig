@@ -92,7 +92,7 @@ def _create_filelist(raw_torrent):
     def set_path(tfile, path): tfile['name'] = path
 
     def make_TorrentFile(tfile):
-        return tkeys.TorrentFile(id=tfile['id'], name=tfile['name'],
+        return tkeys.TorrentFile(id=tfile['id'], name=tfile['name'], path=tfile['path'],
                                  size_total=tfile['length'],
                                  size_downloaded=tfile['bytesCompleted'],
                                  is_wanted=tfile['wanted'],
@@ -107,13 +107,14 @@ def _create_filelist(raw_torrent):
 import os
 from collections import abc
 class TorrentFileTree(abc.Mapping):
-    def __init__(self, entries, path_getter, path_setter, file_maker):
+    def __init__(self, entries, path_getter, path_setter, file_maker, path=[]):
         items = {}
         subfolders = {}
 
         for entry in entries:
             parts = path_getter(entry).split(os.sep, 1)
             if len(parts) == 1:
+                entry['path'] = path
                 items[parts[0]] = file_maker(entry)
 
             elif len(parts) == 2:
@@ -127,6 +128,7 @@ class TorrentFileTree(abc.Mapping):
 
         for subfolder,entries in subfolders.items():
             items[subfolder] = TorrentFileTree(entries,
+                                               path=path + [subfolder],
                                                path_getter=path_getter,
                                                path_setter=path_setter,
                                                file_maker=file_maker)
