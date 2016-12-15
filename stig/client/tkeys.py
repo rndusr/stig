@@ -271,6 +271,7 @@ class TorrentFilePriority(str):
 
     def __int__(self): return self._STR2INT[self]
     def __lt__(self, other): return int(self) < int(other)
+    def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
 
 class TorrentFile(abc.Mapping):
