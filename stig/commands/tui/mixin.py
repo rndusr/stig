@@ -70,7 +70,7 @@ class select_torrents():
             - `focused_torrent` attribute of the focused tab's widget
               (e.g. TorrentListWidget),
             - `focused_torrent_id` attribute of the focused tab's widget
-              (e.g. TorrentFileListWidget).
+              (e.g. FileListWidget).
         """
         if FILTER:
             from ...client import TorrentFilter

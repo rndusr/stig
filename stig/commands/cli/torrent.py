@@ -195,7 +195,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
     def _flatten_tree(self, files, ffilter=None, _indent_level=0):
         """Return list of rows for _print_table
 
-        `files` must be a nested mapping tree (e.g. FileList).
+        `files` must be a nested mapping tree (i.e. TorrentFileTree).
         `ffilter` must be a TorrentFileFilter instance or None.
         """
         from ...client.tkeys import TorrentFile

@@ -547,7 +547,7 @@ class TorrentAPI():
                 success = len(flist) > 0 or success
 
                 # Transmission wants a list of file indexes; luckily, the
-                # file's ID is its index (see .torrent.FileList).
+                # file's ID is its index (see .torrent.TorrentFileTree).
                 findexes = tuple(f['id'] for f in flist)
                 if findexes:
                     response = await self._set_files_priority(priority, t['id'], findexes, autoconnect)

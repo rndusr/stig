@@ -74,7 +74,7 @@ _STATUS_MAP = {
 
 # TODO: We don't really need to request 'files' on every new request
 # because name and length don't change and everything else is in
-# 'fileStats'.  But then we have to keep FileList objects alive somehow
+# 'fileStats'.  But then we have to keep TorrentFileTree objects alive somehow
 # and find a way to await the async request to get 'files' once in __new__
 # or __init__.
 
@@ -98,15 +98,15 @@ def _create_filelist(raw_torrent):
                                  is_wanted=tfile['wanted'],
                                  priority=tfile['priority'])
 
-    return FileList(entries=files,
-                    file_maker=make_TorrentFile,
-                    path_getter=get_path,
-                    path_setter=set_path)
+    return TorrentFileTree(entries=files,
+                           file_maker=make_TorrentFile,
+                           path_getter=get_path,
+                           path_setter=set_path)
 
 
 import os
 from collections import abc
-class FileList(abc.Mapping):
+class TorrentFileTree(abc.Mapping):
     def __init__(self, entries, path_getter, path_setter, file_maker):
         items = {}
         subfolders = {}
@@ -126,10 +126,10 @@ class FileList(abc.Mapping):
                 raise RuntimeError(parts)
 
         for subfolder,entries in subfolders.items():
-            items[subfolder] = FileList(entries,
-                                        path_getter=path_getter,
-                                        path_setter=path_setter,
-                                        file_maker=file_maker)
+            items[subfolder] = TorrentFileTree(entries,
+                                               path_getter=path_getter,
+                                               path_setter=path_setter,
+                                               file_maker=file_maker)
         self._items = items
 
     def __repr__(self):
