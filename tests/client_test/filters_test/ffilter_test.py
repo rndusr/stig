@@ -5,16 +5,11 @@ import unittest
 
 
 flist = (
-    TorrentFile(id=1, name='Foo', is_wanted=True, priority='normal',
-                size_downloaded=10e3, size_total=10e3 ),
-    TorrentFile(id=2, name='Bar', is_wanted=False, priority='normal',
-                size_total=20e3, size_downloaded=10e3),
-    TorrentFile(id=3, name='Baz', is_wanted=True, priority='low',
-                size_total=20e3, size_downloaded=20e3),
-    TorrentFile(id=4, name='Bang', is_wanted=True, priority='high',
-                size_total=30e3, size_downloaded=20e3),
-    TorrentFile(id=5, name='Flupp', is_wanted=False, priority='high',
-                size_total=30e3, size_downloaded=30e3),
+    TorrentFile(id=1, name='Foo',  is_wanted=True,  priority='normal', size_total=10e3, size_downloaded=10e3),
+    TorrentFile(id=2, name='Bar',  is_wanted=False, priority='normal', size_total=20e3, size_downloaded=10e3),
+    TorrentFile(id=3, name='Baz',  is_wanted=True,  priority='low',    size_total=20e3, size_downloaded=20e3),
+    TorrentFile(id=4, name='Bang', is_wanted=True,  priority='high',   size_total=30e3, size_downloaded=20e3),
+    TorrentFile(id=5, name='Flup', is_wanted=False, priority='high',   size_total=30e3, size_downloaded=30e3),
 )
 
 
@@ -34,8 +29,9 @@ class Test_FileFilter(unittest.TestCase):
 
     def test_priority_filter(self):
         self.assertEqual(f('priority=low'), (flist[2],))
-        self.assertEqual(f('priority=normal'), (flist[0], flist[1]))
-        self.assertEqual(f('priority=high'), (flist[3], flist[4]))
+        self.assertEqual(f('priority=normal'), (flist[0],))
+        self.assertEqual(f('priority=high'), (flist[3],))
+        self.assertEqual(f('priority=shun'), (flist[1], flist[4]))
 
         with self.assertRaises(ValueError) as cm:
             f('priority=foo')

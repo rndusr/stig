@@ -255,8 +255,8 @@ class Timestamp(float):
 from functools import total_ordering
 @total_ordering
 class TorrentFilePriority(str):
-    _INT2STR = {-1: 'low', 0: 'normal', 1: 'high'}
-    _STR2INT = {'low': -1, 'normal': 0, 'high': 1}
+    _INT2STR = {-1:'low', 0:'normal', 1:'high', -2:'shun'}
+    _STR2INT = {'low':-1, 'normal':0, 'high':1, 'shun':-2}
 
     def __new__(cls, prio):
         if isinstance(prio, int):
@@ -290,7 +290,7 @@ class TorrentFile(abc.Mapping):
         'size-total'      : lambda raw: raw['size-total'],
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
-        'priority'        : lambda raw: raw['priority'],
+        'priority'        : lambda raw: -2 if not raw['is-wanted'] else raw['priority'],
         'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
     }
 
