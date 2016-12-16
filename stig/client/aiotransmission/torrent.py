@@ -15,7 +15,7 @@ log = make_logger(__name__)
 
 from .. import tkeys as tkeys
 from .. import utils
-from ..base import TorrentBase
+from .. import base
 
 
 # Some values need to be modified to comply with our internal standards
@@ -92,8 +92,7 @@ def _create_filelist(raw_torrent):
 
 
 import os
-from collections import abc
-class TorrentFileTree(abc.Mapping):
+class TorrentFileTree(base.TorrentFileTreeBase):
     def __init__(self, entries, path=[]):
         if isinstance(entries, TorrentFileTree):
             self._items = entries._items
@@ -124,27 +123,6 @@ class TorrentFileTree(abc.Mapping):
         for subfolder,entries in subfolders.items():
             items[subfolder] = TorrentFileTree(entries, path=path+[subfolder])
         self._items = items
-
-    @property
-    def flat(self):
-        """Yield TorrentFiles from this tree recursively"""
-        for entry in self._items.values():
-            if isinstance(entry, tkeys.TorrentFile):
-                yield entry
-            else:
-                yield from entry.flat
-
-    def __repr__(self):
-        return '<%s %r>' % (type(self).__name__, self._items)
-
-    def __getitem__(self, key):
-        return self._items[key]
-
-    def __iter__(self):
-        return iter(self._items)
-
-    def __len__(self):
-        return len(self._items)
 
 
 class TrackerList(tuple):
@@ -215,7 +193,7 @@ _MODIFY = {
     'files'           : _create_filelist,
 }
 
-class Torrent(TorrentBase):
+class Torrent(base.TorrentBase):
     """Information about a torrent as a mapping
 
     The available keys are specified in DEPENDENCIES and tkeys.TYPES.
