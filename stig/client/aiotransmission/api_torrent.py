@@ -521,6 +521,8 @@ class TorrentAPI():
             if isinstance(files, str):
                 files = TorrentFileFilter(files)
 
+            # Set filter_files to a function that takes a TorrentFileTree and
+            # returns a list of TorrentFiles.
             if files is None:
                 filter_files = lambda ftree: tuple(ftree.flat)
             elif isinstance(files, TorrentFileFilter):
@@ -535,7 +537,6 @@ class TorrentAPI():
                 # Filter torrent's files
                 flist = filter_files(t['files'])
                 if files is None:
-                    flist = t['files']
                     msgs.append('{} file{}: {}'
                                 .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
                 else:
