@@ -186,11 +186,13 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
         if files:
             _print_table(files, columns, FLIST_COLUMNS)
+            return True
         else:
             if str(tfilter) != 'all':
                 log.error('No matching files in {} torrents: {}'.format(tfilter, ffilter))
             else:
                 log.error('No matching files: {}'.format(ffilter))
+            return False
 
     def _flatten_tree(self, files, ffilter=None, _indent_level=0):
         """Return list of rows for _print_table
