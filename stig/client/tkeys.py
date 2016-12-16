@@ -325,6 +325,13 @@ from . import convert
 # Map keys to value types.  A type is any callable that converts a single
 # value to the appropriate type.  Types are used to convert values from the
 # server and from the user (e.g. numbers like '10k').
+from . import base
+def _ensure_TorrentFileTree(obj):
+    if isinstance(obj, base.TorrentFileTreeBase):
+        return obj
+    else:
+        raise RuntimeError('Not a TorrentFileTreeBase instance: {!r}'.format(obj))
+
 TYPES = {
     'id'                : int,
     'hash'              : str,
@@ -364,5 +371,5 @@ TYPES = {
     'size-corrupt'      : lambda v: convert.size(v, unit='byte'),
 
     'trackers'          : tuple,
-    'files'             : dict,
+    'files'             : _ensure_TorrentFileTree,
 }
