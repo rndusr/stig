@@ -175,7 +175,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
-    'files'             : ('files', 'fileStats'),
+    'files'             : ('fileStats',),
 }
 
 # Map our keys to callables that adjust the raw RPC values or create new
