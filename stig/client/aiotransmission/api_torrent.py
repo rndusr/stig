@@ -165,18 +165,19 @@ class TorrentAPI():
                 fields = ('id',) + tuple(fields)
             if ids is None:
                 # Request all IDs
-                rtlist = await self.rpc.torrent_get(fields=fields)
+                raw_tlist = await self.rpc.torrent_get(fields=fields)
             else:
                 if len(ids) > 0:
                     # Request given IDs
-                    rtlist = await self.rpc.torrent_get(fields=fields, ids=ids)
+                    raw_tlist = await self.rpc.torrent_get(fields=fields, ids=ids)
                 else:
                     # No IDs (i.e. empty torrent list) requested
-                    rtlist = []
+                    raw_tlist = []
         except ClientError as e:
             return Response(success=False, raw_torrents=[], msgs=[e])
         else:
-            return Response(success=True, raw_torrents=rtlist)
+            self._tcache.update(raw_tlist)
+            return Response(success=True, raw_torrents=raw_tlist)
 
     async def _get_torrents_by_ids(self, keys, ids=None, autoconnect=True):
         """Return a Response object with 'torrents' set to a tuple of Torrents
@@ -206,7 +207,6 @@ class TorrentAPI():
             start = time()
 
             raw_tlist = response.raw_torrents
-            self._tcache.update(raw_tlist)
             if ids:
                 tlist = self._tcache.get(*ids)
                 for tid in ids:
