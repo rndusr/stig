@@ -22,7 +22,7 @@ class SleepUneasy():
         self._interrupt = asyncio.Event(loop=self.loop)
 
     async def sleep(self, seconds=None):
-        """Sleep for `seconds` or until `stop` is called"""
+        """Sleep for `seconds` or until `interrupt` is called"""
         self._interrupt.clear()
         try:
             with AsyncIOTimeout(seconds, loop=self.loop):
