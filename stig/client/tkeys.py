@@ -11,6 +11,18 @@
 
 """Value types for Torrent classes"""
 
+# The TYPES dictionary at the end of this file maps Torrent key names to
+# types.  Every Torrent key must have a type, even if it's just a no-op
+# (`lambda obj: obj`).
+#
+# A type is any callable that converts a single value to the appropriate class
+# instance.
+#
+# Types are used to convert values from the server (e.g. large integers) and
+# from the user (e.g. number strings like '3.5G').  Not all types must accept
+# user-given values (e.g. 'files').
+
+
 from ..logging import make_logger
 log = make_logger(__name__)
 
@@ -322,9 +334,6 @@ class TorrentFile(abc.Mapping):
 # imported AFTER Number exists to avoid a circular import.
 from . import convert
 
-# Map keys to value types.  A type is any callable that converts a single
-# value to the appropriate type.  Types are used to convert values from the
-# server and from the user (e.g. numbers like '10k').
 from . import base
 def _ensure_TorrentFileTree(obj):
     if isinstance(obj, base.TorrentFileTreeBase):
