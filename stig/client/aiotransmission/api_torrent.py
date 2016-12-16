@@ -161,6 +161,8 @@ class TorrentAPI():
     async def _request_torrents(self, fields, ids=None):
         """Unmodified 'torrent-get' request"""
         try:
+            if 'id' not in fields:
+                fields = ('id',) + tuple(fields)
             if ids is None:
                 # Request all IDs
                 rtlist = await self.rpc.torrent_get(fields=fields)
@@ -420,7 +422,7 @@ class TorrentAPI():
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        response = await self.torrents(torrents, keys=('id','status'))
+        response = await self.torrents(torrents, keys=('status',))
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
 
@@ -514,7 +516,7 @@ class TorrentAPI():
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        response = await self.torrents(torrents, keys=('id', 'name', 'files'),
+        response = await self.torrents(torrents, keys=('name', 'files'),
                                        autoconnect=autoconnect)
         if not response.success:
             return Response(torrents=(), success=False, msgs=response.msgs)
@@ -563,7 +565,7 @@ class TorrentAPI():
                     msgs.extend(response.msgs)
 
         if torrent_ids:
-            response = await self.torrents(torrent_ids, keys=('id', 'name', 'files'),
+            response = await self.torrents(torrent_ids, keys=('name', 'files'),
                                            autoconnect=autoconnect)
             if response.success:
                 torrents = response.torrents
