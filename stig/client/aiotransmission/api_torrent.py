@@ -48,8 +48,7 @@ class _TorrentCache():
                   len(tdict), (time.time()-start)*1000)
 
     def purge(self, existing_tids):
-        # Remove torrents with IDs that are not in existing_ids
-        existing_tids = tuple(existing_tids)
+        """Remove torrents with IDs that are not in `existing_ids`"""
         tdict = self._tdict
         known_tids = set(tdict)
         removed_tids = known_tids.difference(existing_tids)
