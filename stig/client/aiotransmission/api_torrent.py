@@ -56,6 +56,7 @@ class _TorrentCache():
             del tdict[tid]
 
     def get(self, *ids):
+        """Return tuple of Torrent objects"""
         if ids:
             return tuple(t for tid,t in self._tdict.items() if tid in ids)
         else:
