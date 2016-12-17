@@ -72,24 +72,18 @@ _STATUS_MAP = {
 }
 
 
-# TODO: We don't really need to request 'files' on every new request
-# because name and length don't change and everything else is in
-# 'fileStats'.  But then we have to keep TorrentFileTree objects alive somehow
-# and find a way to await the async request to get 'files' once in __new__
-# or __init__.
-
-def _create_filelist(raw_torrent):
-    files = raw_torrent['fileStats'].copy()
+def _create_TorrentFileTree(raw_torrent):
+    filelist = raw_torrent['fileStats']
+    # Combine 'files' and 'fileStats' fields and add the 'id' field, which
+    # is the index in the list provided by Transmission.
     if 'files' in raw_torrent:
-        for i,(f1,f2) in enumerate(zip(files, raw_torrent['files'])):
+        for i,(f1,f2) in enumerate(zip(filelist, raw_torrent['files'])):
             f1['id'] = i
             f1.update(f2)
     else:
-        for i,f in enumerate(files):
+        for i,f in enumerate(filelist):
             f['id'] = i
-
-    return TorrentFileTree(entries=files)
-
+    return TorrentFileTree(entries=filelist)
 
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
@@ -123,6 +117,21 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         for subfolder,entries in subfolders.items():
             items[subfolder] = TorrentFileTree(entries, path=path+[subfolder])
         self._items = items
+
+    def update(self, fileStats):
+        def update_files(ftree, fileStats):
+            for entry in ftree.values():
+                if isinstance(entry, tkeys.TorrentFile):
+                    # File ID is its index in the list provided by
+                    # Transmission (see _create_TorrentFileTree)
+                    fstats = fileStats[entry['id']]
+                    entry.update({'size-downloaded': fstats['bytesCompleted'],
+                                  'is-wanted': fstats['wanted'],
+                                  'priority': fstats['priority']})
+                else:
+                    update_files(entry, fileStats)
+
+        update_files(self._items, fileStats)
 
 
 class TrackerList(tuple):
@@ -175,6 +184,9 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
+
+    # 'files' is called once to initialize file names and sizes by
+    # api_torrent.TorrentAPI._get_torrents_by_ids when files are requested.
     'files'             : ('fileStats',),
 }
 
@@ -190,7 +202,7 @@ _MODIFY = {
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
     'trackers'        : TrackerList,
-    'files'           : _create_filelist,
+    'files'           : _create_TorrentFileTree,
 }
 
 class Torrent(base.TorrentBase):
@@ -206,6 +218,17 @@ class Torrent(base.TorrentBase):
     def update(self, raw_torrent):
         old = self._raw
         cache = self._cache
+
+        # Update an existing TorrentFileTree instead of creating a new one
+        if 'fileStats' in raw_torrent and 'files' in cache:
+            cache['files'].update(raw_torrent.pop('fileStats'))
+            # Make sure the 'files' RPC field doesn't exist because it always
+            # triggers the creation of a new TorrentFileTree (see
+            # _create_TorrentFileTree).
+            if 'files' in raw_torrent:
+                del raw_torrent['files']
+
+        # Remove cached values if their original/raw value(s) differ
         for k,v in tuple(cache.items()):
             fields = DEPENDENCIES[k]
             for field in fields:

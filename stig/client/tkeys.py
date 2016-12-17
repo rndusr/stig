@@ -324,8 +324,17 @@ class TorrentFile(abc.Mapping):
             )
         return self._cache[key]
 
-    def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
+    def update(self, raw):
+        self._raw.update(raw)
+        try:
+            for k in raw:
+                del self._cache[k]
+            if 'size-downloaded' in raw:
+                del self._cache['progress']
+        except KeyError:
+            pass
 
+    def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
 
