@@ -164,13 +164,17 @@ class Group(urwid.WidgetWrap):
             if item['removable']:
                 self.remove(item['name'])
 
-    def replace(self, name, *args, **kwargs):
+    def replace(self, name, widget):
         """Remove `name` if it exists and add new item with the same name"""
-        try:
-            self.remove(name)
-        except ValueError:
-            pass
-        self.add(name, *args, **kwargs)
+        if not self.exists(name):
+            raise ValueError('Unknown item name: {}'.format(name))
+        else:
+            visible = self.visible(name)
+            item = self._get_item(name=name)
+            item['widget'] = widget
+            self.hide(name)
+            if visible:
+                self.show(name)
 
     def set_size(self, name, opts):
         """Change size options for widget
