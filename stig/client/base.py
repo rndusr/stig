@@ -77,6 +77,13 @@ class TorrentFileTreeBase(abc.Mapping):
             else:
                 yield from entry.files
 
+    @property
+    def folders(self):
+        """Yield (name, TorrentFileTree) tuples recursively"""
+        for name,entry in self._items.items():
+            if isinstance(entry, TorrentFileTreeBase):
+                yield (name, entry)
+                yield from entry.folders
     def __repr__(self):
         return '<%s %r>' % (type(self).__name__, self._items)
 
