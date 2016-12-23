@@ -541,12 +541,12 @@ class TorrentAPI():
             # Set filter_files to a function that takes a TorrentFileTree and
             # returns a list of TorrentFiles.
             if files is None:
-                filter_files = lambda ftree: tuple(ftree.flat)
+                filter_files = lambda ftree: tuple(ftree.files)
             elif isinstance(files, TorrentFileFilter):
-                filter_files = lambda ftree: tuple(files.apply(ftree.flat))
+                filter_files = lambda ftree: tuple(files.apply(ftree.files))
             elif isinstance(files, abc.Sequence) and \
                  all(isinstance(fid, int) for fid in files):
-                filter_files = lambda ftree: tuple(f for f in ftree.flat if f['id'] in files)
+                filter_files = lambda ftree: tuple(f for f in ftree.files if f['id'] in files)
             else:
                 raise ValueError("Invalid 'files' argument: {!r}".format(files))
 

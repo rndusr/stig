@@ -69,13 +69,13 @@ class TorrentFileTreeBase(abc.Mapping):
         raise NotImplementedError()
 
     @property
-    def flat(self):
-        """Yield TorrentFiles from this tree recursively"""
+    def files(self):
+        """Yield all TorrentFiles recursively"""
         for entry in self._items.values():
             if isinstance(entry, tkeys.TorrentFile):
                 yield entry
             else:
-                yield from entry.flat
+                yield from entry.files
 
     def __repr__(self):
         return '<%s %r>' % (type(self).__name__, self._items)
