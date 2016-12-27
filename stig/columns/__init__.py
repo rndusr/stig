@@ -55,4 +55,7 @@ class ColumnBase():
             raise TypeError("side argument must be 'left' or 'right', not {!r}".format(side))
 
     def __repr__(self):
-        return '<{} {}>'.format(type(self).__name__, self.get_value())
+        if self.data:
+            return '<{} {}>'.format(type(self).__name__, self.get_value())
+        else:
+            return '<{} <UNINITIALIZED>>'.format(type(self).__name__)
