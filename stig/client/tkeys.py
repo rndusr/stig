@@ -288,6 +288,8 @@ class TorrentFilePriority(str):
 
 import os
 class TorrentFile(abc.Mapping):
+    """Mapping that holds the values of a single file in a torrent"""
+
     # Distinguish subtrees from files without comparing classes everywhere
     nodetype = 'leaf'
 
