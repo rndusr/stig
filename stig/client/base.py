@@ -75,7 +75,7 @@ class TorrentFileTreeBase(abc.Mapping):
     def files(self):
         """Yield all TorrentFiles recursively"""
         for entry in self._items.values():
-            if isinstance(entry, tkeys.TorrentFile):
+            if entry.nodetype == 'leaf':
                 yield entry
             else:
                 yield from entry.files
@@ -84,7 +84,7 @@ class TorrentFileTreeBase(abc.Mapping):
     def folders(self):
         """Yield (name, TorrentFileTree) tuples recursively"""
         for name,entry in self._items.items():
-            if isinstance(entry, TorrentFileTreeBase):
+            if entry.nodetype == 'parent':
                 yield (name, entry)
                 yield from entry.folders
 
