@@ -99,7 +99,7 @@ class FileTreeDecorator(ArrowTree):
 
         tfiles = tuple(tree.files)
 
-        def sum_size(tree, key):
+        def sum_size(tfiles, key):
             sizes = tuple(tfile[key] for tfile in tfiles)
             # Preserve the original type (Number)
             first_size = sizes[0]
