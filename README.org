@@ -81,7 +81,7 @@
 ** Requirements
    - Python >=3.5
    - [[http://www.urwid.org/][urwid]] >=1.3.0
-   - [[https://github.com/KeepSafe/aiohttp/][aiohttp]] >=0.22.5
+   - [[https://github.com/KeepSafe/aiohttp/][aiohttp]] >=1.1.5
    - [[https://pypi.python.org/pypi/appdirs][appdirs]]
    - [[https://pypi.python.org/pypi/blinker/][blinker]]
    - [[https://pypi.python.org/pypi/setuptools][setuptools]]
