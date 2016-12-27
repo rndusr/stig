@@ -65,6 +65,9 @@ from . import tkeys
 class TorrentFileTreeBase(abc.Mapping):
     """Nested mapping of a Torrent's files"""
 
+    # Distinguish subtrees from files without comparing classes everywhere
+    nodetype = 'parent'
+
     def __init__(self, *args, **kwargs):
         raise NotImplementedError()
 

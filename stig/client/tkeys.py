@@ -288,6 +288,9 @@ class TorrentFilePriority(str):
 
 import os
 class TorrentFile(abc.Mapping):
+    # Distinguish subtrees from files without comparing classes everywhere
+    nodetype = 'leaf'
+
     TYPES = {
         'id'              : lambda val: int(val),
         'name'            : lambda val: SmartCmpStr(val),
