@@ -12,11 +12,13 @@
 
 """Column specifications for tables"""
 
+from collections import defaultdict
 
 class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
     align = 'right'
+    data = defaultdict(lambda: None)
 
     def __init__(self, data=None):
         self.data = data
