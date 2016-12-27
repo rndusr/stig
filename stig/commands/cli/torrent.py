@@ -18,9 +18,10 @@ log = make_logger(__name__)
 from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
+from ...utils import strwidth
 from ...columns.tlist import COLUMNS as TLIST_COLUMNS
 from ...columns.flist import COLUMNS as FLIST_COLUMNS
-from ...utils import strwidth
+from ...columns.flist import create_directory_data
 
 from shutil import get_terminal_size
 TERMSIZE = get_terminal_size(fallback=(None, None))
@@ -200,46 +201,23 @@ class ListFilesCmd(base.ListFilesCmdbase,
         `files` must be a nested mapping tree (i.e. TorrentFileTree).
         `ffilter` must be a TorrentFileFilter instance or None.
         """
-        from ...client.tkeys import TorrentFile
+        indent = lambda text: '%s%s' % ('  '*(_indent_level), text)
 
-        def _sum_subdir_size(subdir, key):
-            sizes = []
-            for value in subdir.values():
-                if isinstance(value, TorrentFile):
-                    sizes.append(value[key])
-                else:
-                    sizes.append(_sum_subdir_size(value, key))
-            return sum(sizes, type(sizes[0])(0))
-
-        def _sum_subdir_priority(subdir):
-            priorities = set()
-            for value in subdir.values():
-                if isinstance(value, TorrentFile):
-                    priorities.add(value['priority'])
-                else:
-                    priorities.add(_sum_subdir_priority(value))
-            return priorities.pop() if len(priorities) <= 1 else ''
-
-        indent_str = '  '*(_indent_level)
         flist = []
         for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
-            if isinstance(value, TorrentFile):
+            if value.nodetype == 'leaf':
                 if ffilter is None or ffilter.match(value):
-                    entry = dict(value)  # Copy original TorrentFile
-                    entry['name'] = '%s%s' % (indent_str, entry['name'])
-                    flist.append(entry)
+                    filenode = dict(value)  # Copy original TorrentFile
+                    filenode['name'] = indent(filenode['name'])
+                    flist.append(filenode)
 
-            else:
+            elif value.nodetype == 'parent':
                 sub_flist = self._flatten_tree(value, ffilter, _indent_level+1)
-                if sub_flist:
-                    folder = {'name': '%s%s' % (indent_str, str(key)),
-                              'size-downloaded': _sum_subdir_size(value, 'size-downloaded'),
-                              'size-total': _sum_subdir_size(value, 'size-total'),
-                              'priority': _sum_subdir_priority(value),
-                              'is-wanted': True}
-                    folder['progress'] = folder['size-downloaded'] / folder['size-total'] * 100
-                    flist.append(folder)
-                    flist.extend(sub_flist)
+                dirnode = create_directory_data(key, value)
+                dirnode['name'] = indent(dirnode['name'])
+                flist.append(dirnode)
+                flist.extend(sub_flist)
+
         return flist
 
 

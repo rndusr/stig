@@ -18,19 +18,12 @@ import urwidtrees
 from .. import main as tui
 from ..table import Table
 from .flist_columns import TUICOLUMNS
+from ...columns.flist import create_directory_data
 
 COLUMNS_FOCUS_MAP = {}
 for col in TUICOLUMNS.values():
     COLUMNS_FOCUS_MAP.update(col.style.focus_map)
 
-
-from collections import Mapping
-class TorrentFileDirectory(dict):
-    def __hash__(self):
-        return hash(self['id'])
-
-    def __repr__(self):
-        return '<{} {!r}>'.format(type(self).__name__, self['id'])
 
 
 class FileWidget(urwid.WidgetWrap):
@@ -78,7 +71,7 @@ class FileTreeDecorator(ArrowTree):
                         if self._ffilter is None or self._ffilter.match(v):
                             tree.append((v, None))
                     elif v.nodetype == 'parent':
-                        dirnode = self._create_directory_data(name=k, tree=v)
+                        dirnode = create_directory_data(name=k, tree=v)
                         tree.append(create_tree(dirnode, v))
                 return (nodename, tree or None)
 
@@ -86,42 +79,11 @@ class FileTreeDecorator(ArrowTree):
         for t in sorted(torrents, key=lambda t: t['name'].lower()):
             filetree = t['files']
             rootnodename = next(iter(filetree.keys()))
-            rootnode = self._create_directory_data(rootnodename, tree=filetree)
+            rootnode = create_directory_data(rootnodename, tree=filetree)
             tree = create_tree(rootnode, filetree[rootnodename])
             if tree is not None:
                 forest.append(tree)
         return forest
-
-    def _create_directory_data(self, name, tree):
-        # Create a mapping that has the same keys as a TorrentFile instance.
-        # Each value recursively summarizes the values of all the TorrentFiles
-        # in `tree`.
-
-        tfiles = tuple(tree.files)
-
-        def sum_size(tfiles, key):
-            sizes = tuple(tfile[key] for tfile in tfiles)
-            # Preserve the original type (Number)
-            first_size = sizes[0]
-            start_value = type(first_size)(0, unit=first_size.unit, prefix=first_size.prefix)
-            return sum(sizes, start_value)
-
-        def sum_priority(tfiles):
-            if len(set(tfile['priority'] for tfile in tfiles)) == 1:
-                return tfiles[0]['priority']
-            else:
-                return ''
-
-        data = {'name': str(name),
-                'size-downloaded': sum_size(tfiles, 'size-downloaded'),
-                'size-total': sum_size(tfiles, 'size-total'),
-                'priority': sum_priority(tfiles),
-                'is-wanted': True}
-        progress_cls = type(tfiles[0]['progress'])
-        data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
-        data['tid'] = tfiles[0]['tid']
-        data['id'] = tree.path
-        return TorrentFileDirectory(data)
 
     def decorate(self, pos, data, is_first=True):
         node_id = (data['tid'], data['id'])
@@ -161,7 +123,7 @@ class FileTreeDecorator(ArrowTree):
                 path = content.path
                 widget_id = (tid, path)
                 if widget_id in widgets:
-                    data = self._create_directory_data(name, tree=content)
+                    data = create_directory_data(name, tree=content)
                     widgets[widget_id].update(data)
 
 

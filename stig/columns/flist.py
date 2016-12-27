@@ -14,8 +14,8 @@
 from . import ColumnBase
 from ..utils import stralign
 
-COLUMNS = {}
 
+COLUMNS = {}
 
 class Filename(ColumnBase):
     header = {'left': 'Filename'}
@@ -91,3 +91,46 @@ class Priority(ColumnBase):
         return 'shun' if self.data['is-wanted'] is False else self.data['priority']
 
 COLUMNS['priority'] = Priority
+
+
+
+
+from collections import Mapping
+class TorrentFileDirectory(dict):
+    def __hash__(self):
+        return hash(self['id'])
+
+    def __repr__(self):
+        return '<{} {!r}>'.format(type(self).__name__, self['id'])
+
+def create_directory_data(name, tree):
+    # Create a mapping that has the same keys as a TorrentFile instance.
+    # Each value recursively summarizes the values of all the TorrentFiles
+    # in `tree`.
+
+    tfiles = tuple(tree.files)
+
+    def sum_size(tfiles, key):
+        sizes = tuple(tfile[key] for tfile in tfiles)
+        # Preserve the original type (Number)
+        first_size = sizes[0]
+        start_value = type(first_size)(0, unit=first_size.unit, prefix=first_size.prefix)
+        return sum(sizes, start_value)
+
+    def sum_priority(tfiles):
+        if len(set(tfile['priority'] for tfile in tfiles)) == 1:
+            return tfiles[0]['priority']
+        else:
+            return ''
+
+    data = {'name': str(name),
+            'size-downloaded': sum_size(tfiles, 'size-downloaded'),
+            'size-total': sum_size(tfiles, 'size-total'),
+            'priority': sum_priority(tfiles),
+            'is-wanted': True}
+    progress_cls = type(tfiles[0]['progress'])
+    data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
+    data['tid'] = tfiles[0]['tid']
+    data['id'] = tree.path
+    return TorrentFileDirectory(data)
+
