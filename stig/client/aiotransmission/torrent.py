@@ -83,15 +83,16 @@ def _create_TorrentFileTree(raw_torrent):
     else:
         for i,f in enumerate(filelist):
             f['id'] = i
-    return TorrentFileTree(entries=filelist)
+    return TorrentFileTree(raw_torrent['id'], entries=filelist)
 
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
-    def __init__(self, entries, path=[]):
+    def __init__(self, torrent_id, entries, path=[]):
         if isinstance(entries, TorrentFileTree):
             self._items = entries._items
             return
 
+        self._path = os.sep.join(path[1:])
         items = {}
         subfolders = {}
 
@@ -99,7 +100,8 @@ class TorrentFileTree(base.TorrentFileTreeBase):
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
                 items[parts[0]] = tkeys.TorrentFile(
-                    id=entry['id'], name=entry['name'], path=path,
+                    tid=torrent_id, id=entry['id'],
+                    name=entry['name'], path=path,
                     size_total=entry['length'],
                     size_downloaded=entry['bytesCompleted'],
                     is_wanted=entry['wanted'],
@@ -115,7 +117,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 raise RuntimeError(parts)
 
         for subfolder,entries in subfolders.items():
-            items[subfolder] = TorrentFileTree(entries, path=path+[subfolder])
+            items[subfolder] = TorrentFileTree(torrent_id, entries, path=path+[subfolder])
         self._items = items
 
     def update(self, fileStats):

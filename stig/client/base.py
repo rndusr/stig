@@ -84,6 +84,11 @@ class TorrentFileTreeBase(abc.Mapping):
             if isinstance(entry, TorrentFileTreeBase):
                 yield (name, entry)
                 yield from entry.folders
+
+    @property
+    def path(self):
+        return self._path
+
     def __repr__(self):
         return '<%s %r>' % (type(self).__name__, self._items)
 
