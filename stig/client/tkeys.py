@@ -294,6 +294,7 @@ class TorrentFile(abc.Mapping):
     nodetype = 'leaf'
 
     TYPES = {
+        'tid'             : lambda val: int(val),
         'id'              : lambda val: int(val),
         'name'            : lambda val: SmartCmpStr(val),
         'path'            : lambda val: SmartCmpStr(val),
@@ -305,6 +306,7 @@ class TorrentFile(abc.Mapping):
     }
 
     _VALUES = {
+        'tid'             : lambda raw: raw['tid'],
         'id'              : lambda raw: raw['id'],
         'name'            : lambda raw: raw['name'],
         'path'            : lambda raw: os.sep.join(raw['path']),
@@ -315,8 +317,8 @@ class TorrentFile(abc.Mapping):
         'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
     }
 
-    def __init__(self, id, name, path, size_total, size_downloaded, is_wanted, priority):
-        self._raw = {'id': id, 'name': name,
+    def __init__(self, tid, id, name, path, size_total, size_downloaded, is_wanted, priority):
+        self._raw = {'tid': tid, 'id': id, 'name': name,
                      'path': path[1:],  # First item is torrent name
                      'is-wanted': is_wanted, 'priority': priority,
                      'size-total': size_total, 'size-downloaded': size_downloaded}
