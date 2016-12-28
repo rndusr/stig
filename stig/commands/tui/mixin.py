@@ -127,18 +127,18 @@ class select_files():
             return TorrentFileFilter(FILTER)
         else:
             if discover_file:
-                fid = self._find_file_id()
-                if fid is not None:
-                    return (fid,)
+                fids = self._find_file_ids()
+                if fids is not None:
+                    return fids
             if allow_no_filter:
                 return None
             else:
                 raise ValueError('No torrent file specified')
 
-    def _find_file_id(self):
+    def _find_file_ids(self):
         focused_widget = self.tui.tabs.focus
 
         # Get torrent ID from widget in focused tab
-        if hasattr(focused_widget, 'focused_file_id') and \
-           focused_widget.focused_file_id is not None:
-            return focused_widget.focused_file_id
+        if hasattr(focused_widget, 'focused_file_ids') and \
+           focused_widget.focused_file_ids is not None:
+            return focused_widget.focused_file_ids
