@@ -138,8 +138,6 @@ class FileTreeDecorator(ArrowTree):
 
 class FileListWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tfilter, ffilter, columns):
-        self._srvapi = srvapi
-        self._tfilter = tfilter
         self._ffilter = ffilter
         self._torrents = ()
         self._initialized = False
@@ -154,11 +152,8 @@ class FileListWidget(urwid.WidgetWrap):
         ])
         super().__init__(urwid.AttrMap(pile, 'filelist'))
 
-        self._create_poller()
-
-    def _create_poller(self):
-        self._poller = self._srvapi.create_poller(
-            self._srvapi.torrent.torrents, self._tfilter, keys=('files', 'name'))
+        self._poller = srvapi.create_poller(
+            srvapi.torrent.torrents, tfilter, keys=('files', 'name'))
         self._poller.on_response(self._handle_response)
 
     def _handle_response(self, response):
