@@ -63,10 +63,11 @@ class FileTreeDecorator(ArrowTree):
         # are mappings instead of widgets.  Each mapping contains the
         # information that the `decorate` method needs to create a widget.
 
+        ffilter = self._ffilter
         def create_tree(nodename, content):
             if content.nodetype == 'leaf':
                 # Torrent has a single file and no directories
-                if self._ffilter is None or self._ffilter.match(content):
+                if ffilter is None or ffilter.match(content):
                     return (content, None)
                 else:
                     return None
@@ -76,7 +77,7 @@ class FileTreeDecorator(ArrowTree):
                 tree = []
                 for k,v in sorted(content.items(), key=lambda pair: pair[0].lower()):
                     if v.nodetype == 'leaf':
-                        if self._ffilter is None or self._ffilter.match(v):
+                        if ffilter is None or ffilter.match(v):
                             tree.append((v, None))
                     elif v.nodetype == 'parent':
                         dirnode = create_directory_data(name=k, tree=v)
