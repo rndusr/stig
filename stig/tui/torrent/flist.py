@@ -128,12 +128,11 @@ class FileTreeDecorator(ArrowTree):
 
             # Update directory nodes
             for name,content in t['files'].folders:
-                path = content.path
-                widget_id = (tid, path)
+                fids = tuple(f['id'] for f in content.files)
+                widget_id = (tid, fids)
                 if widget_id in widgets:
                     data = create_directory_data(name, tree=content)
                     widgets[widget_id].update(data)
-
 
 
 class FileListWidget(urwid.WidgetWrap):
@@ -205,17 +204,14 @@ class FileListWidget(urwid.WidgetWrap):
     @property
     def focused_torrent_id(self):
         """Torrent ID of the focused file's torrent"""
-        focused_fw = self._listbox.focus
-        if focused_fw is not None:
-            for (tid,fid),fw in self._filewidgets.items():
-                if focused_fw is fw:
-                    return tid
+        focus = self._listbox.focus
+        if focus is not None:
+            return focus.original_widget.torrent_id
 
     @property
-    def focused_file_id(self):
-        """File ID/index of the focused file"""
-        focused_fw = self._listbox.focus
-        if focused_fw is not None:
-            for (tid,fid),fw in self._filewidgets.items():
-                if focused_fw is fw:
-                    return fid
+    def focused_file_ids(self):
+        """File IDs of the focused files in a tuple"""
+        focus = self._listbox.focus
+        if focus is not None:
+            fid = focus.original_widget.file_id
+            return fid if isinstance(fid, tuple) else (fid,)
