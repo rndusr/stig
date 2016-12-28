@@ -95,13 +95,12 @@ COLUMNS['priority'] = Priority
 
 
 
-from collections import Mapping
 class TorrentFileDirectory(dict):
     def __hash__(self):
-        return hash(self['id'])
+        return hash(self['path'])
 
     def __repr__(self):
-        return '<{} {!r}>'.format(type(self).__name__, self['id'])
+        return '<{} {!r}>'.format(type(self).__name__, self['path'])
 
 def create_directory_data(name, tree):
     # Create a mapping that has the same keys as a TorrentFile instance.
@@ -131,6 +130,7 @@ def create_directory_data(name, tree):
     progress_cls = type(tfiles[0]['progress'])
     data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
     data['tid'] = tfiles[0]['tid']
-    data['id'] = tree.path
+    data['path'] = tree.path
+    data['id'] = tuple(tf['id'] for tf in tfiles)
     return TorrentFileDirectory(data)
 
