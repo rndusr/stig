@@ -37,6 +37,14 @@ class FileWidget(urwid.WidgetWrap):
             widget.update(tfile)
         self._tfile = tfile
 
+    @property
+    def torrent_id(self):
+        return self._tfile['tid']
+
+    @property
+    def file_id(self):
+        return self._tfile['id']
+
 
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
