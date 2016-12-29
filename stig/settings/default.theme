@@ -210,7 +210,7 @@ filelist.name.unfocused                  $name_fg           on $list_bg.uf
 filelist.name.focused                    $name_fg           on $list_bg.f
 
 $size_fg = dark magenta
-filelist.size.header                     $size_fg,underline on $list_bg.uf
+filelist.size.header                       $size_fg,underline on $list_bg.uf
 filelist.size.unfocused                    $size_fg           on $list_bg.uf
 filelist.size.focused                      $size_fg           on $list_bg.f
 
