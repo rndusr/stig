@@ -204,10 +204,13 @@ filelist                                 default              on $list_bg.uf
 filelist.focused                         default              on $list_bg.f
 filelist.header                          light gray,underline on $list_bg.uf
 
-$name_fg = light gray
-filelist.name.header                     $name_fg,underline on $list_bg.uf
-filelist.name.unfocused                  $name_fg           on $list_bg.uf
-filelist.name.focused                    $name_fg           on $list_bg.f
+$file_fg = light gray
+$folder_fg = white
+filelist.name.header                     light gray,underline on $list_bg.uf
+filelist.name.file.unfocused             $file_fg           on $list_bg.uf
+filelist.name.file.focused               $file_fg           on $list_bg.f
+filelist.name.folder.unfocused           $folder_fg         on $list_bg.uf
+filelist.name.folder.focused             $folder_fg         on $list_bg.f
 
 $size_fg = dark magenta
 filelist.size.header                       $size_fg,underline on $list_bg.uf
