@@ -64,7 +64,7 @@ class FileTreeDecorator(ArrowTree):
         # information that the `decorate` method needs to create a widget.
 
         ffilter = self._ffilter
-        def create_tree(nodename, content):
+        def create_tree(node, content):
             if content.nodetype == 'leaf':
                 # Torrent has a single file and no directories
                 if ffilter is None or ffilter.match(content):
@@ -75,18 +75,23 @@ class FileTreeDecorator(ArrowTree):
             elif content.nodetype == 'parent':
                 # Torrent has at least one directory
                 tree = []
+                files_filtered = 0
                 for k,v in sorted(content.items(), key=lambda pair: pair[0].lower()):
                     if v.nodetype == 'leaf':
                         if ffilter is None or ffilter.match(v):
                             tree.append((v, None))
+                        else:
+                            files_filtered += 1
                     elif v.nodetype == 'parent':
                         dirnode = create_directory_data(name=k, tree=v)
                         tree.append(create_tree(dirnode, v))
-                return (nodename, tree or None)
+                node['files_filtered'] = files_filtered
+                return (node, tree or None)
 
         forest = []  # Multiple trees as siblings
         for t in sorted(torrents, key=lambda t: t['name'].lower()):
             filetree = t['files']
+            # This works because t['files'] always has 1 item: the torrent's name
             rootnodename = next(iter(filetree.keys()))
             rootnode = create_directory_data(rootnodename, tree=filetree)
             tree = create_tree(rootnode, filetree[rootnodename])
