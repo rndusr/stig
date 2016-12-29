@@ -181,12 +181,13 @@ class ListFilesCmd(base.ListFilesCmdbase,
         if len(torrents) < 1:
             return False
 
-        files = []
+        filelist = []
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
-            files.extend(self._flatten_tree(torrent['files'], ffilter))
+            files, filtered_count = self._flatten_tree(torrent['files'], ffilter)
+            filelist.extend(files)
 
-        if files:
-            _print_table(files, columns, FLIST_COLUMNS)
+        if filelist:
+            _print_table(filelist, columns, FLIST_COLUMNS)
             return True
         else:
             if str(tfilter) != 'all':
@@ -204,21 +205,24 @@ class ListFilesCmd(base.ListFilesCmdbase,
         indent = lambda text: '%s%s' % ('  '*(_indent_level), text)
 
         flist = []
+        filtered_count = 0
         for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
             if value.nodetype == 'leaf':
                 if ffilter is None or ffilter.match(value):
                     filenode = dict(value)  # Copy original TorrentFile
                     filenode['name'] = indent(filenode['name'])
                     flist.append(filenode)
+                else:
+                    filtered_count += 1
 
             elif value.nodetype == 'parent':
-                sub_flist = self._flatten_tree(value, ffilter, _indent_level+1)
-                dirnode = create_directory_data(key, value)
+                sub_flist, sub_filtered_count = self._flatten_tree(value, ffilter, _indent_level+1)
+                dirnode = create_directory_data(key, value, sub_filtered_count)
                 dirnode['name'] = indent(dirnode['name'])
                 flist.append(dirnode)
                 flist.extend(sub_flist)
 
-        return flist
+        return flist, filtered_count
 
 
 class PriorityCmd(base.PriorityCmdbase,
