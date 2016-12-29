@@ -9,20 +9,15 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-
 """Column specifications for tables"""
-
-from collections import defaultdict
 
 class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
     align = 'right'
-    data = defaultdict(lambda: None)
 
     def __init__(self, data=None):
-        if data is not None:
-            self.data = data
+        self.data = data if data is not None else {}
         super().__init__()
 
     def get_value(self):
