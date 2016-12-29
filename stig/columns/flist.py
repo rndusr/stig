@@ -102,7 +102,7 @@ class TorrentFileDirectory(dict):
     def __repr__(self):
         return '<{} {!r}>'.format(type(self).__name__, self['path'])
 
-def create_directory_data(name, tree):
+def create_directory_data(name, tree, filtered_count=0):
     # Create a mapping that has the same keys as a TorrentFile instance.
     # Each value recursively summarizes the values of all the TorrentFiles
     # in `tree`.
@@ -122,11 +122,17 @@ def create_directory_data(name, tree):
         else:
             return ''
 
-    data = {'name': str(name),
-            'size-downloaded': sum_size(tfiles, 'size-downloaded'),
+    data = {'size-downloaded': sum_size(tfiles, 'size-downloaded'),
             'size-total': sum_size(tfiles, 'size-total'),
             'priority': sum_priority(tfiles),
             'is-wanted': True}
+
+    if filtered_count > 0:
+        data['name'] = '%s (%d file%s filtered)' % (name, filtered_count,
+                                                    '' if filtered_count == 1 else 's')
+    else:
+        data['name'] = str(name)
+
     progress_cls = type(tfiles[0]['progress'])
     data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
     data['tid'] = tfiles[0]['tid']
