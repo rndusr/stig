@@ -21,7 +21,8 @@ class ColumnBase():
     data = defaultdict(lambda: None)
 
     def __init__(self, data=None):
-        self.data = data
+        if data is not None:
+            self.data = data
         super().__init__()
 
     def get_value(self):
