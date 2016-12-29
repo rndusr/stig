@@ -27,6 +27,9 @@ class SingleTorrentFileFilter(Filter):
         'wanted': BoolFilterSpec(
             lambda f: f['is-wanted'],
             description='Wanted files'),
+        'complete': BoolFilterSpec(
+            lambda f: f['progress'] >= 100,
+            description='Fully downloaded files'),
     }
 
     COMPARATIVE_FILTERS = {
