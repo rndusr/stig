@@ -215,4 +215,4 @@ class FileListWidget(urwid.WidgetWrap):
         focus = self._listbox.focus
         if focus is not None:
             fid = focus.original_widget.file_id
-            return fid if isinstance(fid, tuple) else (fid,)
+            return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)

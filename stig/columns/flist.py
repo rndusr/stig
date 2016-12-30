@@ -137,6 +137,6 @@ def create_directory_data(name, tree, filtered_count=0):
     data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
     data['tid'] = tfiles[0]['tid']
     data['path'] = tree.path
-    data['id'] = tuple(tf['id'] for tf in tfiles)
+    data['id'] = frozenset(tf['id'] for tf in tfiles)
     return TorrentFileDirectory(data)
 
