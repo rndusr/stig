@@ -21,38 +21,38 @@
 
 ** Examples
    Add two torrents (file and hash) and exit
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC sh
    $ stig add /path/to/some.torrent d4d6b73851fe3288e40389a8e1fb98124a9b9ba5
-   #+END_EXAMPLE
+   #+END_SRC
 
    Connect to non-default host and present the TUI
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC sh
    $ stig set srv.url torrents.local:1234
-   #+END_EXAMPLE
+   #+END_SRC
 
    Print all uploading and/or downloading torrents on torrents.local and exit
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC sh
    $ stig set srv.url torrents.local \; ls active
-   #+END_EXAMPLE
+   #+END_SRC
 
    List torrents with more than 50 seeds, then remove them
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC sh
    $ stig ls 'seeds>50'
    $ stig rm 'seeds>50'
-   #+END_EXAMPLE
+   #+END_SRC
 
    Stop/pause torrents with ~/foo/~ in their download path and a ratio above 10
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC sh
    $ stig stop 'path~/foo/&ratio>10'
-   #+END_EXAMPLE
+   #+END_SRC
 
    Open two tabs with different torrent lists:
      - slowly uploading torrents with ~/foo/~ in their download path
      - small or well-seeded torrents, sorted by size (ascending) and number of
        seeds (descending)
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC sh
    $ stig tab ls 'path~/foo/&rate-up<10k' \; tab ls 'size<500M|seeds>=1k' --sort 'size,!seeds'
-   #+END_EXAMPLE
+   #+END_SRC
 
 ** Configuration
    All configuration is done in ~$HOME/.config/stig/rc~.  Each line is a command
@@ -60,7 +60,7 @@
    after the rc commands.
 
 *** Example config
-   #+BEGIN_EXAMPLE shell
+   #+BEGIN_SRC
    # Host that runs Transmission daemon
    set srv.url otherhost:123
 
@@ -74,7 +74,7 @@
    tab ls active --sort !progress,path,!rate
    tab ls paused --sort !progress --columns name,progress,ratio,size
    tab ls isolated --sort tracker --columns name,path
-   #+END_EXAMPLE
+   #+END_SRC
 
 # ** Installation
 
