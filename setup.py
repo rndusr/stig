@@ -41,5 +41,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Environment :: Console',
         'Operating System :: Unix',
+        'Development Status :: 3 - Alpha',
     ],
 )
