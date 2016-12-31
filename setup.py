@@ -1,16 +1,25 @@
-# TODO: https://packaging.python.org/
-
 with open('stig/version.py') as f:
     exec(f.read())  # Load __version__ into globals()
 
-from setuptools import setup, find_packages
 
+# Convert README.org to rst for pypi page
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.org', 'rst')
+except ImportError:
+    long_description = ''
+
+
+from setuptools import setup, find_packages
 setup(
     name = 'stig',
     version = __version__,
     license = 'GPLv3+',
     author_email = 'rndusr@posteo.de',
+
     description = 'TUI and CLI client for the Transmission daemon',
+    long_description = long_description,
+
     url = 'https://github.com/rndusr/stig',
     keywords = 'bittorrent torrent transmission',
 
