@@ -92,7 +92,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
             self._items = entries._items
             return
 
-        self._path = os.sep.join(path[1:])
+        self._path = os.sep.join(path)
         items = {}
         subfolders = {}
 

@@ -318,8 +318,7 @@ class TorrentFile(abc.Mapping):
     }
 
     def __init__(self, tid, id, name, path, size_total, size_downloaded, is_wanted, priority):
-        self._raw = {'tid': tid, 'id': id, 'name': name,
-                     'path': path[1:],  # First item is torrent name
+        self._raw = {'tid': tid, 'id': id, 'name': name, 'path': path,
                      'is-wanted': is_wanted, 'priority': priority,
                      'size-total': size_total, 'size-downloaded': size_downloaded}
         self._cache = {}
