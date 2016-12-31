@@ -14,6 +14,9 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from shutil import get_terminal_size
+TERMSIZE = get_terminal_size(fallback=(None, None))
+import os
 
 from ..base import torrent as base
 from . import mixin
@@ -23,8 +26,6 @@ from ...columns.tlist import COLUMNS as TLIST_COLUMNS
 from ...columns.flist import COLUMNS as FLIST_COLUMNS
 from ...columns.flist import create_directory_data
 
-from shutil import get_terminal_size
-TERMSIZE = get_terminal_size(fallback=(None, None))
 
 
 def _print_table(items, columns_wanted, COLUMN_SPECS):
@@ -202,7 +203,16 @@ class ListFilesCmd(base.ListFilesCmdbase,
         `files` must be a nested mapping tree (i.e. TorrentFileTree).
         `ffilter` must be a TorrentFileFilter instance or None.
         """
-        indent = lambda text: '%s%s' % ('  '*(_indent_level), text)
+        if TERMSIZE.columns is None:
+            def indent_file_name(node):
+                node['name'] = os.path.join(node['path'], node['name'])
+
+            def indent_directory_name(node):
+                node['name'] = node['path']
+        else:
+            def indent_file_name(node):
+                node['name'] = '%s%s' % ('  '*(_indent_level), node['name'])
+            indent_directory_name = indent_file_name
 
         flist = []
         filtered_count = 0
@@ -210,7 +220,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             if value.nodetype == 'leaf':
                 if ffilter is None or ffilter.match(value):
                     filenode = dict(value)  # Copy original TorrentFile
-                    filenode['name'] = indent(filenode['name'])
+                    indent_file_name(filenode)
                     flist.append(filenode)
                 else:
                     filtered_count += 1
@@ -218,7 +228,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             elif value.nodetype == 'parent':
                 sub_flist, sub_filtered_count = self._flatten_tree(value, ffilter, _indent_level+1)
                 dirnode = create_directory_data(key, value, sub_filtered_count)
-                dirnode['name'] = indent(dirnode['name'])
+                indent_directory_name(dirnode)
                 flist.append(dirnode)
                 flist.extend(sub_flist)
 
