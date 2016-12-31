@@ -148,7 +148,7 @@ class FileTreeDecorator(ArrowTree):
 
             # Update directory nodes
             for name,content in t['files'].folders:
-                fids = tuple(f['id'] for f in content.files)
+                fids = frozenset(f['id'] for f in content.files)
                 node_id = (tid, fids)
                 if node_id in widgets:
                     filtered_count = self._filtered_counts[node_id]
