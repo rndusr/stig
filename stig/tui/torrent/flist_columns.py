@@ -27,20 +27,11 @@ class Filename(_COLUMNS['name'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
 
-    def _files_filtered(self):
-        return self.data['files_filtered'] if 'files_filtered' in self.data else 0
-
-    def get_value(self):
-        files_filtered = self._files_filtered()
-        if files_filtered > 0:
-            self.data['name'] = '%s (%d files filtered)' % (self.data['name'], files_filtered)
-        return super().get_value()
-
     def get_mode(self):
-        if isinstance(self.data['id'], tuple):
-            return 'folder'
-        else:
+        if isinstance(self.data['id'], int):
             return 'file'
+        else:
+            return 'folder'
 
 TUICOLUMNS['name'] = Filename
 

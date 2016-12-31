@@ -127,11 +127,7 @@ def create_directory_data(name, tree, filtered_count=0):
             'priority': sum_priority(tfiles),
             'is-wanted': True}
 
-    if filtered_count > 0:
-        data['name'] = '%s (%d file%s filtered)' % (name, filtered_count,
-                                                    '' if filtered_count == 1 else 's')
-    else:
-        data['name'] = str(name)
+    data['name'] = create_directory_name(name, filtered_count)
 
     progress_cls = type(tfiles[0]['progress'])
     data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
@@ -140,3 +136,10 @@ def create_directory_data(name, tree, filtered_count=0):
     data['id'] = frozenset(tf['id'] for tf in tfiles)
     return TorrentFileDirectory(data)
 
+
+def create_directory_name(name, filtered_count):
+    if filtered_count > 0:
+        return '%s (%d file%s filtered)' % (name, filtered_count,
+                                            '' if filtered_count == 1 else 's')
+    else:
+        return str(name)

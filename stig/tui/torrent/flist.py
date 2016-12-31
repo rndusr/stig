@@ -14,11 +14,12 @@ log = make_logger(__name__)
 
 import urwid
 import urwidtrees
+from collections import abc
 
 from .. import main as tui
 from ..table import Table
 from .flist_columns import TUICOLUMNS
-from ...columns.flist import create_directory_data
+from ...columns.flist import (create_directory_data, create_directory_name)
 
 COLUMNS_FOCUS_MAP = {}
 for col in TUICOLUMNS.values():
@@ -55,8 +56,19 @@ class FileTreeDecorator(ArrowTree):
         self._table = table
         self._ffilter = ffilter
         self._widgets = {}
+        self._filtered_counts = {}
         forest = self._create_file_forest(torrents)
         super().__init__(forest, indent=2)
+
+    def _file_is_filtered(self, tfile):
+        if self._ffilter is None:
+            return False  # No filter specified
+        elif isinstance(self._ffilter, (abc.Sequence, abc.Set)):
+            # ffilter is a collection of file IDs
+            return not tfile['id'] in self._ffilter
+        else:
+            # ffilter is a TorrentFileFilter instance
+            return not self._ffilter.match(tfile)
 
     def _create_file_forest(self, torrents):
         # Create a list of nested trees in SimpleTree format.  But the leaves
@@ -67,7 +79,7 @@ class FileTreeDecorator(ArrowTree):
         def create_tree(node, content):
             if content.nodetype == 'leaf':
                 # Torrent has a single file and no directories
-                if ffilter is None or ffilter.match(content):
+                if not self._file_is_filtered(content):
                     return (content, None)
                 else:
                     return None
@@ -75,17 +87,20 @@ class FileTreeDecorator(ArrowTree):
             elif content.nodetype == 'parent':
                 # Torrent has at least one directory
                 tree = []
-                files_filtered = 0
+                filtered_count = 0
                 for k,v in sorted(content.items(), key=lambda pair: pair[0].lower()):
                     if v.nodetype == 'leaf':
-                        if ffilter is None or ffilter.match(v):
+                        if not self._file_is_filtered(v):
                             tree.append((v, None))
                         else:
-                            files_filtered += 1
+                            filtered_count += 1
                     elif v.nodetype == 'parent':
                         dirnode = create_directory_data(name=k, tree=v)
                         tree.append(create_tree(dirnode, v))
-                node['files_filtered'] = files_filtered
+
+                node_id = (node['tid'], node['id'])
+                self._filtered_counts[node_id] = filtered_count
+                node['name'] = create_directory_name(node['name'], filtered_count)
                 return (node, tree or None)
 
         forest = []  # Multiple trees as siblings
@@ -100,8 +115,6 @@ class FileTreeDecorator(ArrowTree):
         return forest
 
     def decorate(self, pos, data, is_first=True):
-        node_id = (data['tid'], data['id'])
-
         # We can use the tree position as table ID
         self._table.register(pos)
         row = self._table.get_row(pos)
@@ -117,6 +130,7 @@ class FileTreeDecorator(ArrowTree):
         # Wrap the whole row in a FileWidget with keymapping.  This also
         # applies all the other values besides the name (size, progress, etc).
         file_widget = self._filewidgetcls(data, row)
+        node_id = (data['tid'], data['id'])
         self._widgets[node_id] = file_widget
         return urwid.AttrMap(file_widget, attr_map=None, focus_map=COLUMNS_FOCUS_MAP)
 
@@ -128,17 +142,19 @@ class FileTreeDecorator(ArrowTree):
             # Update file nodes
             for f in t['files'].files:
                 fid = f['id']
-                widget_id = (tid, fid)
-                if widget_id in widgets:
-                    widgets[widget_id].update(f)
+                node_id = (tid, fid)
+                if node_id in widgets:
+                    widgets[node_id].update(f)
 
             # Update directory nodes
             for name,content in t['files'].folders:
                 fids = tuple(f['id'] for f in content.files)
-                widget_id = (tid, fids)
-                if widget_id in widgets:
-                    data = create_directory_data(name, tree=content)
-                    widgets[widget_id].update(data)
+                node_id = (tid, fids)
+                if node_id in widgets:
+                    filtered_count = self._filtered_counts[node_id]
+                    data = create_directory_data(name, tree=content,
+                                                 filtered_count=filtered_count)
+                    widgets[node_id].update(data)
 
 
 class FileListWidget(urwid.WidgetWrap):
@@ -214,5 +230,8 @@ class FileListWidget(urwid.WidgetWrap):
         """File IDs of the focused files in a tuple"""
         focus = self._listbox.focus
         if focus is not None:
+            # The focused widget in the list can be a file or a directory.  If
+            # it's a directory, the 'file_id' property returns the IDs of all
+            # the contained files recursively.
             fid = focus.original_widget.file_id
             return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
