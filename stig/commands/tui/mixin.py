@@ -114,10 +114,10 @@ class select_files():
         If `FILTER` evaluates to True, it is passed to TorrentFileFilter and
         the resulting object is returned.
 
-        If `FILTER` evaluates to False, a file ID is returned in a tuple if
-        possible and `discover_file` evaluates to True. Otherwise, None is
-        returned if `allow_no_filter` evaluates to True, else a ValueError is
-        raised.
+        If `FILTER` evaluates to False and `discover_file` evaluates to True,
+        the file ID (or IDs) are returned in a tuple if possible. Otherwise,
+        None is returned if `allow_no_filter` evaluates to True, else a
+        ValueError is raised.
 
         File are discovered by getting the `focused_file_id` of the focused
         tab's widget.
