@@ -153,7 +153,7 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
                                            discover_torrent=True)
             ffilter = self.select_files(FILE_FILTER,
                                         allow_no_filter=True,
-                                        discover_file=True)
+                                        discover_file=False)
         except ValueError as e:
             log.error(e)
             return False
