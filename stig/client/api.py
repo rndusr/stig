@@ -181,6 +181,7 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
             if not poller.running:
                 await poller.start()
         self._manage_pollers_task = self.loop.create_task(self._manage_pollers())
+        self._manage_pollers_task.add_done_callback(lambda task: task.result())
 
     async def stop_polling(self):
         """Stop all created pollers"""
