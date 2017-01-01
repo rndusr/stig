@@ -40,6 +40,7 @@ class _lazy_property():
         value = self.fget(obj)
         setattr(obj, self.func_name, value)
         setattr(obj, self.func_name + '_created', True)
+        obj.manage_pollers_now()
         return value
 
 
@@ -50,8 +51,6 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     StatusAPI, TorrentRequestPool and TorrentCounters in a lazy manner on
     demand.
     """
-    manage_pollers_interval = 10
-
     def __init__(self, url, interval=1, loop=None):
         if loop is None:
             raise TypeError('Missing argument: loop')
@@ -121,27 +120,45 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
         """
         poller = RequestPoller(*args, interval=self.interval, loop=self.loop, **kwargs)
         self._pollers.append(poller)
-        self._manage_pollers_interval.interrupt()
+        self.manage_pollers_now()
         return poller
 
     async def _manage_pollers(self):
+        def is_needed(poller):
+            # Whether anyone is still interested in the poller
+            try:
+                return poller.has_callbacks
+            except AttributeError:
+                try:
+                    return poller.has_subscribers
+                except AttributeError:
+                    return True
+
         while True:
-            log.debug('Managing %d pollers', len(self._pollers))
-            for poller in tuple(self._pollers):
-                if not poller.running and poller.has_callbacks:
+            for poller in self._existing_pollers:
+                log.debug('Managing poller: %r', poller)
+                running = poller.running
+                needed = is_needed(poller)
+
+                if not running and needed:
                     log.debug('Starting because not running and has callbacks: %r', poller)
                     await poller.start()
-                elif poller.running and not poller.has_callbacks:
+                elif running and not needed:
                     log.debug('Stopping because running and no callbacks: %r', poller)
                     await poller.stop()
-                    self._pollers.remove(poller)
-                    log.debug('Remaining pollers: %r', self._pollers)
-            await self._manage_pollers_interval.sleep(10)
+                    if poller in self._pollers:
+                        self._pollers.remove(poller)
+                    # log.debug('%d remaining pollers', len(tuple(self._existing_pollers)))
+            await self._manage_pollers_interval.sleep(5)
 
-    _POLLERS = ('status', 'settings', 'treqpool')
+    def manage_pollers_now(self):
+        self._manage_pollers_interval.interrupt()
+
+    # Standard pollers accessible through properties
+    _STD_POLLERS = ('status', 'settings', 'treqpool')
     @property
     def _existing_pollers(self):
-        for pname in self._POLLERS:
+        for pname in self._STD_POLLERS:
             if self.created(pname):
                 yield getattr(self, pname)
         yield from self._pollers
