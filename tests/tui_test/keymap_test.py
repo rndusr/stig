@@ -17,9 +17,10 @@ def test_key_creation():
                     ('ins', 'insert'),
                     ('return', 'enter'),
                     ('space', ' '),
-                    ('shift-delete', 'shift delete')):
+                    ('shift-delete', 'shift delete'),
+                    ('-', '-')):
         k = Key(key)
-        assert k == exp
+        assert k == exp, print('%r != %r' % (k, exp))
 
 def test_key_string():
     for key,exp in ((Key('meta l'), 'alt-l'),
@@ -27,8 +28,9 @@ def test_key_string():
                     (Key('esc'), 'escape'),
                     (Key('ins'), 'insert'),
                     (Key('return'), 'enter'),
-                    (Key(' '), 'space')):
-        assert key.pretty == exp
+                    (Key(' '), 'space'),
+                    (Key('-'), '-')):
+        assert key.pretty == exp, print('%r != %r' % (key.pretty, exp))
 
 
 class TestKeyMap(unittest.TestCase):

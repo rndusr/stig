@@ -25,7 +25,7 @@ class Key(str):
 
     _PARSE_MAP = (
         (re.compile(r'^<(.+)>$'),                 r'\1'),
-        (re.compile(r'-'),                        r' '),
+        (re.compile(r'(.+)-(.+)'),                r'\1 \2'),
         (re.compile(r'^alt', flags=re.I),         r'meta'),
         (re.compile(r'^space$', flags=re.I),      r' '),
         (re.compile(r'^return$', flags=re.I),     r'enter'),
