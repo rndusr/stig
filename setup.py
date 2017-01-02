@@ -1,11 +1,12 @@
 # Create long_description from README.org if possible
+long_description = ''
 try:
     import pypandoc
     import os
     if os.path.exists('README.org'):
         long_description = pypandoc.convert('README.org', 'rst')
 except ImportError:
-    long_description = ''
+    pass
 
 
 with open('stig/version.py') as f:
