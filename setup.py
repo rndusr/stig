@@ -22,6 +22,7 @@ setup(
     name = 'stig',
     version = __version__,
     license = 'GPLv3+',
+    author = 'Random User',
     author_email = 'rndusr@posteo.de',
 
     description = 'TUI and CLI client for the Transmission daemon',
