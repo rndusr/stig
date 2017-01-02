@@ -88,8 +88,6 @@
    - [[https://pypi.python.org/pypi/setuptools][setuptools]]
 
 ** Contributing
-   There is a (incomplete) [[file:TODO.org][TODO list]].  Feel free to work on that.
-
    If you want to contribute code and get stuck, don't know where to even
    begin, or just to make sure you're not duplicating someone else's efforts,
    open an issue.
