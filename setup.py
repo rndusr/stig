@@ -1,21 +1,15 @@
-with open('stig/version.py') as f:
-    exec(f.read())  # Load __version__ into globals()
-
-# Convert README.org to rst for pypi page
+# Create long_description from README.org if possible
 try:
     import pypandoc
-    import re
-
-    long_description = []
-    imgref_regex = re.compile(r'^\s*\|image\d+\|')
-    for line in pypandoc.convert('README.org', 'rst').split('\n'):
-        if not imgref_regex.match(line):
-            long_description.append(line)
-    long_description = '\n'.join(long_description)
-
+    import os
+    if os.path.exists('README.org'):
+        long_description = pypandoc.convert('README.org', 'rst')
 except ImportError:
     long_description = ''
 
+
+with open('stig/version.py') as f:
+    exec(f.read())  # Load __version__ into globals()
 
 from setuptools import setup, find_packages
 setup(

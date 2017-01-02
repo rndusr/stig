@@ -2,7 +2,7 @@
   stig is a TUI (text user interface) and CLI (command line interface) client
   for the [[http://www.transmissionbt.com/][BitTorrent Client Transmission]] (and perhaps others in the future).
 
-  [[file:screenshot.png]]
+  [[file:https://raw.githubusercontent.com/rndusr/stig/master/screenshot.png]]
 
 ** Features
    - Use *filters* to list/start/stop/remove/... torrents matching any
