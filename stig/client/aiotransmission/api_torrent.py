@@ -358,7 +358,7 @@ class TorrentAPI():
                 await method(ids=tuple(t['id'] for t in tlist), **method_args)
             except ClientError as e:
                 msgs.append(e)
-                tlist.clear()
+                tlist = ()
 
         # The resulting torrents have only 'id' and 'name' keys
         tlist = tuple(Torrent({'id': t['id'], 'name': t['name']})
