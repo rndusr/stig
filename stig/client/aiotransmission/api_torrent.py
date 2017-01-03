@@ -501,12 +501,13 @@ class TorrentAPI():
         else:
             msg = 'Removing %s (keeping files)'
 
-        def check(t):
+        def create_info_msg(t):
             return (True, msg % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_remove, torrents,
+                                          keys=('name',),
                                           method_args={'delete-local-data': delete},
-                                          check=check, keys=('name',),
+                                          check=create_info_msg,
                                           autoconnect=autoconnect)
 
 
