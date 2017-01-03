@@ -166,6 +166,35 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
             return self.make_flist(tfilter, ffilter, columns)
 
 
+class MoveTorrentsCmdbase(metaclass=InitCommand):
+    name = 'move'
+    aliases = ('mv',)
+    provides = set()
+    category = 'torrent'
+    description = "Change torrents' location"
+    usage = ('move [<TORRENT FILTER>] <PATH>',)
+    examples = ('move new/path',
+                'move size>50g path/to/lots/of/storage')
+    argspecs = (
+        {'names': ('TORRENT FILTER',), 'nargs': '?',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
+        {'names': ('PATH',),
+         'description': 'New location of the specified torrent(s)'},
+    )
+
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT_FILTER, PATH):
+        tfilter = self.select_torrents(TORRENT_FILTER,
+                                       allow_no_filter=False,
+                                       discover_torrent=True)
+        response = await self.make_request(self.srvapi.torrent.move(tfilter, PATH),
+                                           polling_frenzy=False)
+        return response.success
+
+
+
 class PriorityCmdbase(metaclass=InitCommand):
     name = 'priority'
     aliases = ('prio',)

@@ -65,6 +65,11 @@ class ListFilesCmd(base.ListFilesCmdbase,
         return True
 
 
+class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
+                      mixin.make_request, mixin.select_torrents):
+    provides = {'tui'}
+
+
 class PriorityCmd(base.PriorityCmdbase,
                   mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
