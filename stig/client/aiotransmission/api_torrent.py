@@ -334,11 +334,12 @@ class TorrentAPI():
         response = await self.torrents(torrents, keys=keys)
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
+        else:
+            msgs = list(response.msgs)
 
         if check is None:
             tlist = response.torrents
         else:
-            msgs = list(response.msgs)
             # Filter torrents through check function
             for t in response.torrents:
                 passed, msg = check(t)
