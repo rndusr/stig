@@ -76,7 +76,11 @@
    tab ls isolated --sort tracker --columns name,path
    #+END_SRC
 
-# ** Installation
+** Installation
+   The latest release can be installed from [[https://pypi.python.org/pypi/stig][PyPI]].
+   #+BEGIN_SRC sh
+   $ pip3 install stig
+   #+END_SRC
 
 ** Requirements
    - Python >=3.5
