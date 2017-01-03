@@ -504,7 +504,7 @@ class TorrentAPI():
             return (True, msg % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_remove, torrents,
-                                          method_args={'delete-local-data':delete},
+                                          method_args={'delete-local-data': delete},
                                           check=check, keys=('name',),
                                           autoconnect=autoconnect)
 
