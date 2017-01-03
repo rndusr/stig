@@ -511,6 +511,43 @@ class TorrentAPI():
                                           autoconnect=autoconnect)
 
 
+    async def move(self, torrents, path, autoconnect=True):
+        """Change torrents' location in the file system
+
+        torrents: See `torrents` method
+        path: Destination of the specified torrents
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents that were removed with the keys 'id'
+                      and 'name'
+            success: True if any torrents were found and had matching files,
+                     False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        if not os.path.isabs(path):
+            # Transmission wants an absolute path, so we convert a relative
+            # destination path starting from the default download path.
+            response = await self._request(self.rpc.session_get, autoconnect=autoconnect)
+            if not response.success:
+                return Response(torrents=(), success=False, msgs=response.msgs)
+            else:
+                download_dir = response.result['download-dir']
+                path = os.path.normpath(os.path.join(download_dir, path))
+
+        def create_info_msg(t):
+            if t['path'] != path:
+                return (True, 'Moved to %s: %s' % (path, t['name']))
+            else:
+                return (False, 'Already in %s: %s' % (path, t['name']))
+
+        return await self._torrent_action(self.rpc.torrent_set_location, torrents,
+                                          keys=('name', 'path'),
+                                          method_args={'move': True, 'location': path},
+                                          check=create_info_msg,
+                                          autoconnect=autoconnect)
+
+
     async def file_priority(self, priority, torrents, files, autoconnect=True):
         """Change download priority of individual torrent files
 
