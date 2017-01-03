@@ -82,6 +82,11 @@
    $ pip3 install stig
    #+END_SRC
 
+   The latest development version is in the ~dev~ branch.
+   #+BEGIN_SRC sh
+   $ pip3 install git+https://github.com/rndusr/stig.git@dev
+   #+END_SRC
+
 ** Requirements
    - Python >=3.5
    - [[http://www.urwid.org/][urwid]] >=1.3.0
