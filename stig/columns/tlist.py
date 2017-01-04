@@ -211,7 +211,7 @@ COLUMNS['rate-up'] = RateUp
 
 class EtaComplete(ColumnBase):
     header = {'left': 'ETA'}
-    width = 3
+    width = 5
     needed_keys = ('timespan-eta',)
 
     def get_value(self):
