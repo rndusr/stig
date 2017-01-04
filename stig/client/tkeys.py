@@ -238,9 +238,16 @@ class Timedelta(int):
             if abs_secs < TIMEDELTA_NOW:
                 return 'now'
             else:
-                for unit,amount in SECONDS:
+                for i,(unit,amount) in enumerate(SECONDS):
                     if abs_secs >= amount:
-                        return str(int(self/amount)) + unit
+                        num = self/amount
+                        # Small numbers get a sub-unit, for example '1d15h'
+                        if 1 <= num < 10 and i < len(SECONDS)-1:
+                            subunit, subamount = SECONDS[i+1]
+                            subnum = ((num%1) * amount) / subamount
+                            if subnum >= 1:
+                                return '%d%s%d%s' % (int(num), unit, int(subnum), subunit)
+                        return '%d%s' % (int(num), unit)
 
     def __bool__(self):
         """Whether delta is known"""
