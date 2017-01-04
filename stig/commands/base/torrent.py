@@ -180,7 +180,9 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
 
         {'names': ('PATH',),
-         'description': 'New location of the specified torrent(s)'},
+         'description': ('New location of the specified torrent(s).  If PATH is relative '
+                         '(does not start with "/"), it is relative to the value of the '
+                         'setting "srv.path.complete".')},
     )
 
     srvapi = ExpectedResource
