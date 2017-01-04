@@ -217,8 +217,8 @@ class SmartCmpStr(str):
 
 
 TIMEDELTA_NOW = 5
-SECONDS = (('y', 31557600),
-           ('M',  2592000),
+SECONDS = (('y', 31557600),  # 365.25 days
+           ('M',  2629800),  # 1y / 12
            ('d',    86400),
            ('h',     3600),
            ('m',       60),
