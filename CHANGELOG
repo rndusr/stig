@@ -1,2 +1,6 @@
+???-??-?? ?
+    * Add 'move' command to change torrents' download path
+
+
 2017-01-02 0.0.3a
     * Fix bug in setup.py when README.org was missing
