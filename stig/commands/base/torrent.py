@@ -219,12 +219,17 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER, PATH):
-        tfilter = self.select_torrents(TORRENT_FILTER,
-                                       allow_no_filter=False,
-                                       discover_torrent=True)
-        response = await self.make_request(self.srvapi.torrent.move(tfilter, PATH),
-                                           polling_frenzy=False)
-        return response.success
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+        else:
+            response = await self.make_request(self.srvapi.torrent.move(tfilter, PATH),
+                                               polling_frenzy=True)
+            return response.success
 
 
 
