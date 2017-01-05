@@ -147,6 +147,11 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
     provides = {'cli'}
 
 
+class AnnounceTorrentsCmd(base.AnnounceTorrentsCmdbase,
+                     mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+
+
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}

@@ -28,6 +28,11 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
     provides = {'tui'}
 
 
+class AnnounceTorrentsCmd(base.AnnounceTorrentsCmdbase,
+                          mixin.make_request, mixin.select_torrents):
+    provides = {'tui'}
+
+
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.select_torrents):
     provides = {'tui'}
