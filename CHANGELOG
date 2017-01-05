@@ -1,5 +1,6 @@
 ???-??-?? ?
     * Add 'move' command to change torrents' download path
+    * Add 'announce' command to re-announce torrents manually to tracker(s)
 
 
 2017-01-02 0.0.3a
