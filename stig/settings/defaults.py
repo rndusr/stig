@@ -154,13 +154,9 @@ DEFAULT_KEYMAP = (
     {'context': 'tabs', 'key': 'meta-0', 'action': 'tab --focus 10'},
 
     {'context': 'tabs', 'key': 'a', 'action': 'ls active'},
-    {'context': 'tabs', 'key': 'A', 'action': 'tab ls active'},
     {'context': 'tabs', 'key': 'i', 'action': 'ls isolated'},
-    {'context': 'tabs', 'key': 'I', 'action': 'tab ls isolated'},
     {'context': 'tabs', 'key': 's', 'action': 'ls stopped'},
-    {'context': 'tabs', 'key': 'S', 'action': 'tab ls stopped'},
     {'context': 'tabs', 'key': 'z', 'action': 'ls'},
-    {'context': 'tabs', 'key': 'Z', 'action': 'tab ls'},
 
     {'context': 'torrent', 'key': 'v', 'action': 'verify'},
     {'context': 'torrent', 'key': 'p', 'action': 'stop --toggle'},
