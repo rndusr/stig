@@ -213,19 +213,10 @@ HOUR = 60*MIN
 DAY = 24*HOUR
 YEAR = 365.25*DAY
 class TestTimedelta(unittest.TestCase):
-    def test_meaning_of_now(self):
-        for secs in (0, 3, -3):
-            self.assertEqual(str(tkeys.Timedelta(secs)), 'now')
-        for secs in (300, -300):
-            self.assertNotEqual(str(tkeys.Timedelta(secs)), 'now')
-
     def test_special_values(self):
+        self.assertEqual(str(tkeys.Timedelta(0)), 'now')
         self.assertEqual(str(tkeys.Timedelta(-1)), '')
         self.assertEqual(str(tkeys.Timedelta(-2)), '?')
-
-    def test_current_moment(self):
-        for i in range(5):
-            self.assertEqual(str(tkeys.Timedelta(i)), 'now')
 
     def test_even_units(self):
         for unit,char in ((1, 's'), (MIN, 'm'), (HOUR, 'h'), (DAY, 'd'), (YEAR, 'y')):
@@ -241,9 +232,15 @@ class TestTimedelta(unittest.TestCase):
 
         self.assertEqual(str(tkeys.Timedelta(10*DAY + 23*HOUR + 59*MIN + 59)), '10d')
 
-    def test_negative_months(self):
-        self.assertEqual(str(tkeys.Timedelta(-27*DAY)), '-27d')
-        self.assertEqual(str(tkeys.Timedelta(-32*DAY)), '-1M')
+    def test_negative_delta(self):
+        self.assertEqual(str(tkeys.Timedelta(-10)), '-10s')
+        self.assertEqual(str(tkeys.Timedelta(-1*60 - 45)), '-1m45s')
+        self.assertEqual(str(tkeys.Timedelta(-3*DAY - 2*HOUR)), '-3d2h')
+
+    def test_preposition_string(self):
+        self.assertEqual(tkeys.Timedelta(7 * DAY).with_preposition, 'in 7d')
+        self.assertEqual(tkeys.Timedelta(-7 * DAY).with_preposition, '7d ago')
+
 
 
 class TestTimestamp(unittest.TestCase):
