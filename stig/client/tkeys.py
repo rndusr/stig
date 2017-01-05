@@ -216,7 +216,6 @@ class SmartCmpStr(str):
 
 
 
-TIMEDELTA_NOW = 5
 SECONDS = (('y', 31557600),  # 365.25 days
            ('M',  2629800),  # 1y / 12
            ('d',    86400),
@@ -233,21 +232,34 @@ class Timedelta(int):
             return '?'
         elif self == self.NOT_APPLICABLE:
             return ''
+        elif self == 0:
+            return 'now'
+        abs_secs = abs(self)
+        for i,(unit,amount) in enumerate(SECONDS):
+            if abs_secs >= amount:
+                num = self/amount
+
+                # Small numbers get a sub-unit, for example '1d15h'
+                if 1 <= abs_secs/amount < 10 and i < len(SECONDS)-1:
+                    subunit, subamount = SECONDS[i+1]
+                    if num >= 0:
+                        subnum = abs( ((num%1) * amount) / subamount )
+                    else:
+                        subnum = abs( ((num%-1) * amount) / subamount )
+
+                    if subnum >= 1:
+                        return '%d%s%d%s' % (int(num), unit, int(subnum), subunit)
+
+                return '%d%s' % (int(num), unit)
+
+    @property
+    def with_preposition(self):
+        if self > 0:
+            return 'in %s' % self
+        elif self < 0:
+            return ('%s ago' % self)[1:]  # Remove the first char ('-')
         else:
-            abs_secs = abs(self)
-            if abs_secs < TIMEDELTA_NOW:
-                return 'now'
-            else:
-                for i,(unit,amount) in enumerate(SECONDS):
-                    if abs_secs >= amount:
-                        num = self/amount
-                        # Small numbers get a sub-unit, for example '1d15h'
-                        if 1 <= num < 10 and i < len(SECONDS)-1:
-                            subunit, subamount = SECONDS[i+1]
-                            subnum = ((num%1) * amount) / subamount
-                            if subnum >= 1:
-                                return '%d%s%d%s' % (int(num), unit, int(subnum), subunit)
-                        return '%d%s' % (int(num), unit)
+            return 'now'
 
     def __bool__(self):
         """Whether delta is known"""
