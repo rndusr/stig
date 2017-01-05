@@ -173,6 +173,7 @@ DEPENDENCIES = {
     'timestamp-active'  : ('activityDate',),
     'timestamp-done'    : ('doneDate',),
     'timespan-eta'      : ('eta',),
+    'timestamp-manual-announce-allowed': ('manualAnnounceTime',),
 
     'ratio'             : ('uploadRatio',),
     'rate-down'         : ('rateDownload',),

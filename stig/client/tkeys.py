@@ -413,6 +413,7 @@ TYPES = {
     'timestamp-active'  : Timestamp,
     'timestamp-done'    : Timestamp,
     'timespan-eta'      : Timedelta,
+    'timestamp-manual-announce-allowed': lambda v: Timestamp(v) if v > 0 else Timestamp(Timestamp.UNKNOWN),
 
     'rate-down'         : lambda v: convert.bandwidth(v, unit='byte'),
     'rate-up'           : lambda v: convert.bandwidth(v, unit='byte'),
