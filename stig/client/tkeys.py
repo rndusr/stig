@@ -267,7 +267,11 @@ class Timedelta(int):
 
 import time
 class Timestamp(float):
+    UNKNOWN = -1
+
     def __str__(self):
+        if self == self.UNKNOWN:
+            return 'sometime'
         abs_delta = abs(self - time.time())
         if abs_delta <= SECONDS[2][1]:      # 1 day: locale's time
             frmt = '%X'
@@ -279,7 +283,14 @@ class Timestamp(float):
 
     def __bool__(self):
         """Whether timestamp is just a few seconds in the past/future"""
-        return abs(self - time.time()) < TIMEDELTA_NOW
+        return self != self.UNKNOWN
+
+    @property
+    def delta(self):
+        if self == self.UNKNOWN:
+            return Timedelta(Timedelta.UNKNOWN)
+        else:
+            return Timedelta(self - time.time())
 
 
 
