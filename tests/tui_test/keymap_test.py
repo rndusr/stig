@@ -6,31 +6,49 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def test_key_creation():
-    for key,exp in (('alt-l', 'meta l'),
-                    ('<ctrl-e>', 'ctrl e'),
-                    ('<CTRL-e>', 'ctrl e'),
-                    ('<CTRL-E>', 'ctrl E'),
-                    ('<ctrl-E>', 'ctrl E'),
-                    ('del', 'delete'),
-                    ('esc', 'esc'),
-                    ('ins', 'insert'),
-                    ('return', 'enter'),
-                    ('space', ' '),
-                    ('shift-delete', 'shift delete'),
-                    ('-', '-')):
-        k = Key(key)
-        assert k == exp, print('%r != %r' % (k, exp))
+class TestKey(unittest.TestCase):
+    def test_compare_Key_with_Key(self):
+        self.assertEqual(Key('alt-l'), Key('Alt-l'))
+        self.assertEqual(Key('alt-l'), Key('meta-l'))
+        self.assertEqual(Key('alt-l'), Key('Meta-l'))
+        self.assertEqual(Key('alt-l'), Key('<alt-l>'))
+        self.assertNotEqual(Key('alt-l'), Key('alt-L'))
 
-def test_key_string():
-    for key,exp in ((Key('meta l'), 'alt-l'),
-                    (Key('delete'), 'delete'),
-                    (Key('esc'), 'escape'),
-                    (Key('ins'), 'insert'),
-                    (Key('return'), 'enter'),
-                    (Key(' '), 'space'),
-                    (Key('-'), '-')):
-        assert key.pretty == exp, print('%r != %r' % (key.pretty, exp))
+        self.assertEqual(Key('ctrl-e'), Key('Ctrl-e'))
+        self.assertEqual(Key('ctrl-e'), Key('<ctrl-e>'))
+        self.assertEqual(Key('ctrl-e'), Key('CTRL-e'))
+        self.assertNotEqual(Key('ctrl-e'), Key('ctrl-E'))
+
+        self.assertEqual(Key('space'), Key(' '))
+        self.assertEqual(Key('escape'), Key('esc'))
+        self.assertEqual(Key('home'), Key('pos1'))
+        self.assertEqual(Key('delete'), Key('del'))
+        self.assertEqual(Key('enter'), Key('return'))
+        self.assertEqual(Key('insert'), Key('ins'))
+
+    def test_compare_Key_with_urwid_key(self):
+        self.assertEqual(Key('alt-l'), 'meta l')
+        self.assertEqual(Key('space'), ' ')
+        self.assertEqual(Key('escape'), 'esc')
+        self.assertEqual(Key('pgup'), 'page up')
+        self.assertEqual(Key('pgdn'), 'page down')
+        self.assertEqual(Key('shift-delete'), 'shift delete')
+        self.assertEqual(Key('-'), '-')
+
+    def test_convert_shift_modifier(self):
+        self.assertEqual(Key('shift-E'), Key('E'))
+        self.assertEqual(Key('shift-e'), Key('E'))
+        self.assertEqual(Key('shift-ö'), Key('Ö'))
+        self.assertNotEqual(Key('shift-ö'), Key('O'))
+
+    def test_invalid_modifier(self):
+        with self.assertRaises(ValueError) as cm:
+            Key('shit-e')
+        self.assertIn('Invalid modifier', str(cm.exception))
+
+        with self.assertRaises(ValueError) as cm:
+            Key('alt-')
+        self.assertIn('Missing character', str(cm.exception))
 
 
 class TestKeyMap(unittest.TestCase):

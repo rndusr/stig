@@ -23,45 +23,79 @@ class Key(str):
     etc.
     """
 
-    _PARSE_MAP = (
-        (re.compile(r'^<(.+)>$'),                 r'\1'),
+    _INIT = (
+        (re.compile(r'^<(.+)>$'),                r'\1'),
+        (re.compile(r'^esc$', flags=re.I),       r'escape'),
+        (re.compile(r'^ $'),                     r'space'),
+        (re.compile(r'^meta', flags=re.I),       r'alt'),
+        (re.compile(r'^pos1$', flags=re.I),      r'home'),
+        (re.compile(r'^del$', flags=re.I),       r'delete'),
+        (re.compile(r'^ins$', flags=re.I),       r'insert'),
+        (re.compile(r'^return$', flags=re.I),    r'enter'),
+        (re.compile(r'^page up$', flags=re.I),   r'pgup'),
+        (re.compile(r'^page down$', flags=re.I), r'pgdn'),
+        (re.compile(r'^page dn$', flags=re.I),   r'pgdn'),
+
+        # The first part in key combos must always be the same, but the part
+        # after must be preserved. <Ctrl-l> is not the same as <Ctrl-L>.
+        (re.compile(r'^(\w+)-(\S+)$'),
+         lambda m: m.group(1).lower()+'-'+m.group(2)),
+    )
+
+    # Make key compatible to urwid
+    _TO_URWID = (
         (re.compile(r'(.+)-(.+)'),                r'\1 \2'),
         (re.compile(r'^alt', flags=re.I),         r'meta'),
         (re.compile(r'^space$', flags=re.I),      r' '),
-        (re.compile(r'^return$', flags=re.I),     r'enter'),
         (re.compile(r'^escape$', flags=re.I),     r'esc'),
         (re.compile(r'^pgup$', flags=re.I),       r'page up'),
         (re.compile(r'^pgdn$', flags=re.I),       r'page down'),
-        (re.compile(r'^pos1$', flags=re.I),       r'home'),
-        (re.compile(r'^ins$', flags=re.I),        r'insert'),
-        (re.compile(r'^del$', flags=re.I),        r'delete'),
-        (re.compile(r'^(\w+) (\S+)$'),
-         lambda m: m.group(1).lower()+' '+m.group(2)),
     )
+
+    _MODS = ('shift', 'alt', 'ctrl')
 
     def __new__(cls, key):
-        # Conform to urwid conventions
-        for regex,repl in cls._PARSE_MAP:
+        # Remove brackets (<>) around key, some renaming, etc.
+        for regex,repl in cls._INIT:
             key = regex.sub(repl, key)
-        return super().__new__(cls, key)
 
-    _PRETTIFY_MAP = (
-        (re.compile(r'^esc$'), r'escape'),
-        (re.compile(r'^ $'),   r'space'),
-        (re.compile(r'^meta'), r'alt'),
-        (re.compile(r' '),     r'-'),
-    )
+        # Convert 'X' to 'shift-x'
+        if len(key) == 1 and key.istitle():
+            key = 'shift-%s' % key.lower()
 
-    @property
-    def pretty(self):
-        """Pretty string representation"""
-        key = self
-        for regex,repl in self._PRETTIFY_MAP:
-            key = regex.sub(repl, key)
-        return key
+        # Verify modifier
+        if '-' in key:
+            mod, char = key.split('-', 1)
+            # If the modifier is '', '-' is the actual key
+            if len(mod) > 0:
+                if len(char) == 0:
+                    raise ValueError('Missing character after modifier: <%s>' % key)
+                if mod not in cls._MODS:
+                    raise ValueError('Invalid modifier: <%s>' % key)
+                if mod == 'shift':
+                    # 'shift-E' is the same as 'shift-e'
+                    key = key.lower()
+
+        # Make urwid compatible version
+        urwid_key = key
+        for regex,repl in cls._TO_URWID:
+            urwid_key = regex.sub(repl, urwid_key)
+
+        obj = super().__new__(cls, key)
+        obj.urwid = urwid_key
+        return obj
+
+    def __eq__(self, other):
+        if hasattr(other, 'urwid'):
+            return self.urwid == other.urwid
+        else:
+            return self.urwid == other or super().__eq__(other)
+
+    def __hash__(self):
+        return hash(self.urwid)
 
     def __repr__(self):
-        return '<'+str(self)+'>'
+        return '<%s>' % self
 
 
 class KeyMapped():
@@ -73,7 +107,7 @@ class KeyMapped():
                 key = sup.keypress(size, key)
             return key
 
-        # Offer key to parent's keypress()
+        # Offer key to parent's keypress() for built-in keys like up/down
         key = try_super(key)
 
         # If parent doesn't want key, check if it is mapped
@@ -162,7 +196,6 @@ class KeyMap():
             raise ValueError('Unknown context: {}'.format(context))
 
         # Find the action that is bound to key in context
-        key = Key(key)
         if key in self._contexts[context]:
             action = self._contexts[context][key]
             log.debug('Evaluated %r in context %r: %r', key, context, action)
