@@ -1,4 +1,8 @@
 ???-??-?? ?
+  Fixed bugs:
+    * Page up/page down keys working again in torrent lists
+
+  New features:
     * Add 'move' command to change torrents' download path
     * Add 'announce' command to re-announce torrents manually to tracker(s)
 
