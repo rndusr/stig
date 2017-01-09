@@ -54,35 +54,31 @@ class TestKey(unittest.TestCase):
 class TestKeyMap(unittest.TestCase):
     def test_no_callback(self):
         km = KeyMap()
-        km.bind(key='ctrl a',
+        km.bind(key='a',
                 action=lambda widget: widget.set_text('foo was called'))
         widget = km.wrap(Text)('Test Text')
-        widget.keypress((80,), 'ctrl a')
+        widget.keypress((80,), 'a')
         self.assertEqual(widget.text, 'foo was called')
 
     def test_global_callback(self):
-        called = None
         def cb(action, widget):
-            nonlocal called
-            called = action
+            widget.set_text(action)
 
         km = KeyMap(callback=cb)
-        km.bind(key='ctrl a', action='foo')
+        km.bind(key='ctrl-a', action='foo')
         widget = km.wrap(Text)('Test Text')
         widget.keypress((80,), 'ctrl a')
-        self.assertEqual(called, 'foo')
+        self.assertEqual(widget.text, 'foo')
 
     def test_individual_callback(self):
-        called = None
         def cb(action, widget):
-            nonlocal called
-            called = action
+            widget.set_text(action)
 
         km = KeyMap()
-        km.bind(key='ctrl a', action='foo')
+        km.bind(key='a', action='foo')
         widget = km.wrap(Text, callback=cb)('Test Text')
-        widget.keypress((80,), 'ctrl a')
-        self.assertEqual(called, 'foo')
+        widget.keypress((80,), 'a')
+        self.assertEqual(widget.text, 'foo')
 
     def test_key_translation(self):
         km = KeyMap()
