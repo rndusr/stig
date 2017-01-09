@@ -18,9 +18,9 @@ import re
 class Key(str):
     """Key code as string
 
-    This class prettifies urwid key codes and accepts some alternatives, for
-    example Key('del') creates Key('delete'), Key('escape') -> Key('esc'),
-    etc.
+    Do some validation and translation from urwid format to a format better
+    suited for chained keys.
+
     """
 
     _INIT = (
@@ -35,35 +35,31 @@ class Key(str):
         (re.compile(r'^page up$', flags=re.I),   r'pgup'),
         (re.compile(r'^page down$', flags=re.I), r'pgdn'),
         (re.compile(r'^page dn$', flags=re.I),   r'pgdn'),
-
+        (re.compile(r' '),                       r'-'),
         # The first part in key combos must always be the same, but the part
-        # after must be preserved. <Ctrl-l> is not the same as <Ctrl-L>.
+        # after must be preserved. <alt-l> is not the same as <alt-L>.
         (re.compile(r'^(\w+)-(\S+)$'),
          lambda m: m.group(1).lower()+'-'+m.group(2)),
     )
 
-    # Make key compatible to urwid
-    _TO_URWID = (
-        (re.compile(r'(.+)-(.+)'),                r'\1 \2'),
-        (re.compile(r'^alt', flags=re.I),         r'meta'),
-        (re.compile(r'^space$', flags=re.I),      r' '),
-        (re.compile(r'^escape$', flags=re.I),     r'esc'),
-        (re.compile(r'^pgup$', flags=re.I),       r'page up'),
-        (re.compile(r'^pgdn$', flags=re.I),       r'page down'),
-    )
-
     _MODS = ('shift', 'alt', 'ctrl')
+    _cache = {}
 
     def __new__(cls, key):
+        if key in cls._cache:
+            return cls._cache[key]
+        else:
+            orig_key = key
+
         # Remove brackets (<>) around key, some renaming, etc.
         for regex,repl in cls._INIT:
             key = regex.sub(repl, key)
 
         # Convert 'X' to 'shift-x'
-        if len(key) == 1 and key.istitle():
+        if len(key) == 1 and key.isupper():
             key = 'shift-%s' % key.lower()
 
-        # Verify modifier
+        # Validate modifier
         if '-' in key:
             mod, char = key.split('-', 1)
             # If the modifier is '', '-' is the actual key
@@ -76,13 +72,13 @@ class Key(str):
                     # 'shift-E' is the same as 'shift-e'
                     key = key.lower()
 
-        # Make urwid compatible version
-        urwid_key = key
-        for regex,repl in cls._TO_URWID:
-            urwid_key = regex.sub(repl, urwid_key)
-
         obj = super().__new__(cls, key)
-        obj.urwid = urwid_key
+        cls._cache[orig_key] = obj
+        return obj
+
+    def __repr__(self):
+        return '<%s>' % self
+
         return obj
 
     def __eq__(self, other):
