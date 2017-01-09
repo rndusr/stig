@@ -180,15 +180,16 @@ class KeyMapped():
 
         # If parent doesn't want key, check if it is mapped
         if key is not None:
-            key = self.keymap.evaluate(key,
-                                       context=self.context,
-                                       callback=self.callback,
-                                       widget=self)
-
-            # evaluate() may have resolved key to another key
-            # (e.g. 'j' -> 'down')
-            if key is not None:
-                key = try_super(key)
+            key_eval = self.keymap.evaluate(key,
+                                            context=self.context,
+                                            callback=self.callback,
+                                            widget=self)
+            if key_eval is None:
+                return None
+            elif key_eval != Key(key):
+                # evaluate() may have resolved key to another key
+                # (e.g. 'j' -> 'down')
+                key = try_super(key_eval)
 
         return key
 
