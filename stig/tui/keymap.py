@@ -79,19 +79,91 @@ class Key(str):
     def __repr__(self):
         return '<%s>' % self
 
+
+class KeyChain(tuple):
+    class COMPLETED(): pass
+    class ADVANCED(): pass
+    class ABORTED(): pass
+    class REFUSED(): pass
+
+    def __new__(cls, *keys):
+        log.debug('Making KeyChain from %r', keys)
+        obj = super().__new__(cls, (Key(k) for k in keys))
+        if len(keys) < 2:
+            raise ValueError('Not enough keys to make a chain: %s' % str(obj))
         return obj
 
-    def __eq__(self, other):
-        if hasattr(other, 'urwid'):
-            return self.urwid == other.urwid
-        else:
-            return self.urwid == other or super().__eq__(other)
+    def __init__(self, *keys):
+        self._pos = -1
 
-    def __hash__(self):
-        return hash(self.urwid)
+    def feed(self, key):
+        """Process `key`
+
+        If `key` is expected, `advance` is called.  If that completes the
+        chain, `reset` is called.
+
+        If `key` is not expected, `reset` called.
+
+        Return one of the constants:
+          - COMPLETED: chain was completed with `key`
+          - ADVANCED: chain was advanced with `key` but is not complete yet
+          - REFUSED: `key` != `next_key` and `given` is empty
+          - ABORTED: `key` != `next_key` and `given` is not empty
+        """
+        if self.next_key == key:
+            log.debug('Advancing %r with %r', self, key)
+            self.advance()
+            if self.is_complete:
+                self.reset()
+                return self.COMPLETED
+            else:
+                return self.ADVANCED
+        elif self._pos == -1:
+            return self.REFUSED
+        else:
+            # log.debug('Expected %r, got %r', self.next_key, key)
+            self.reset()
+            return self.ABORTED
+
+    def advance(self):
+        """Look for next key in chain or call `reset` if complete"""
+        if self.is_complete:
+            log.debug('Completed %r', self)
+            self.reset()
+        else:
+            self._pos += 1
+
+    def reset(self):
+        """Start looking for first key in chain"""
+        self._pos = -1
+
+    @property
+    def next_key(self):
+        """Next missing key or None if chain is already complete"""
+        return None if self.is_complete else self[self._pos+1]
+
+    @property
+    def given(self):
+        """Tuple of keys we have so far"""
+        return tuple(self) if self.is_complete else self[:self._pos+1]
+
+    @property
+    def is_complete(self):
+        """Wether there are keys missing to complete the chain"""
+        return self._pos >= len(self)-1
+
+    def __str__(self):
+        return ' '.join(repr(k) for k in self)
 
     def __repr__(self):
-        return '<%s>' % self
+        text = ['<KeyChain %s' % str(self)]
+        if self._pos > -1:
+            text.append(' given=[')
+            text.append(' '.join(repr(k) for k in self.given))
+            text.append(']')
+        text.append('>')
+        return ''.join(text)
+
 
 
 class KeyMapped():
