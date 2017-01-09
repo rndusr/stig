@@ -23,7 +23,7 @@ from .keymap import KeyMap
 keymap = KeyMap(callback=lambda cmd,widget: cmdmgr(cmd, on_error=log.error))
 for args in DEFAULT_KEYMAP:
     if args['action'][0] == '<' and args['action'][-1] == '>':
-        args['action'] = keymap.key(args['action'])
+        args['action'] = keymap.mkkey(args['action'])
     keymap.bind(**args)
 helpmgr.keymap = keymap
 

@@ -83,7 +83,7 @@ class BindCmd(metaclass=InitCommand):
         if len(ACTION) == 1 and \
            ACTION[0][0] == '<' and ACTION[0][-1] == '>':
             # ACTION is another key (e.g. 'j' -> 'down')
-            ACTION = keymap.key(ACTION[0])
+            ACTION = keymap.mkkey(ACTION[0])
 
         if context is not None and context not in KEYMAP_CONTEXTS:
             log.error('Invalid context: {!r}'.format(context))
