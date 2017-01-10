@@ -155,10 +155,19 @@ DEFAULT_KEYMAP = (
     {'context': 'tabs', 'key': 'meta-9', 'action': 'tab --focus 9'},
     {'context': 'tabs', 'key': 'meta-0', 'action': 'tab --focus 10'},
 
-    {'context': 'tabs', 'key': 'a', 'action': 'ls active'},
-    {'context': 'tabs', 'key': 'i', 'action': 'ls isolated'},
-    {'context': 'tabs', 'key': 's', 'action': 'ls stopped'},
-    {'context': 'tabs', 'key': 'z', 'action': 'ls'},
+    # List torrents with different filters
+    {'context': 'tabs', 'key': 'f a', 'action': 'ls active'},
+    {'context': 'tabs', 'key': 'f A', 'action': 'ls !active'},
+    {'context': 'tabs', 'key': 'f i', 'action': 'ls isolated'},
+    {'context': 'tabs', 'key': 'f p', 'action': 'ls paused'},
+    {'context': 'tabs', 'key': 'f P', 'action': 'ls !paused'},
+    {'context': 'tabs', 'key': 'f c', 'action': 'ls complete'},
+    {'context': 'tabs', 'key': 'f C', 'action': 'ls !complete'},
+    {'context': 'tabs', 'key': 'f u', 'action': 'ls uploading'},
+    {'context': 'tabs', 'key': 'f d', 'action': 'ls downloading'},
+    {'context': 'tabs', 'key': 'f s', 'action': 'ls seeding'},
+    {'context': 'tabs', 'key': 'f l', 'action': 'ls leeching'},
+    {'context': 'tabs', 'key': 'f .', 'action': 'ls'},
 
     {'context': 'torrent', 'key': 'v', 'action': 'verify'},
     {'context': 'torrent', 'key': 'p', 'action': 'stop --toggle'},
