@@ -156,7 +156,7 @@ class KeyChain(tuple):
         return self._pos >= len(self)-1
 
     def __str__(self):
-        return ' '.join(repr(k) for k in self)
+        return ' '.join(k for k in self)
 
     def __repr__(self):
         text = ['<KeyChain %s' % str(self)]
