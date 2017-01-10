@@ -125,8 +125,8 @@ DEFAULT_KEYMAP = (
     {'context': None, 'key': 'G', 'action': '<end>'},
     {'context': None, 'key': 'ctrl-n', 'action': '<down>'},
     {'context': None, 'key': 'ctrl-p', 'action': '<up>'},
-    {'context': None, 'key': 'ctrl-f', 'action': '<pgdn>'},
-    {'context': None, 'key': 'ctrl-b', 'action': '<pgup>'},
+    {'context': None, 'key': 'ctrl-f', 'action': '<right>'},
+    {'context': None, 'key': 'ctrl-b', 'action': '<left>'},
 
     {'context': 'main', 'key': 'q', 'action': 'quit'},
     {'context': 'main', 'key': '?', 'action': 'tab help keymap'},
