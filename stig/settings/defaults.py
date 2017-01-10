@@ -169,12 +169,13 @@ DEFAULT_KEYMAP = (
     {'context': 'tabs', 'key': 'f l', 'action': 'ls leeching'},
     {'context': 'tabs', 'key': 'f .', 'action': 'ls'},
 
-    {'context': 'torrent', 'key': 'v', 'action': 'verify'},
-    {'context': 'torrent', 'key': 'p', 'action': 'stop --toggle'},
-    {'context': 'torrent', 'key': 'P', 'action': 'start --toggle --force'},
-    {'context': 'torrent', 'key': 'A', 'action': 'announce'},
-    {'context': 'torrent', 'key': 'delete', 'action': 'remove'},
-    {'context': 'torrent', 'key': 'shift-delete', 'action': 'remove --delete-files'},
+    # Torrent actions
+    {'context': 'torrent', 'key': 't v', 'action': 'verify'},
+    {'context': 'torrent', 'key': 't p', 'action': 'stop --toggle'},
+    {'context': 'torrent', 'key': 't P', 'action': 'start --toggle --force'},
+    {'context': 'torrent', 'key': 't a', 'action': 'announce'},
+    {'context': 'torrent', 'key': 't d', 'action': 'delete'},
+    {'context': 'torrent', 'key': 't D', 'action': 'delete --delete-files'},
     {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
 
     {'context': 'file', 'key': '+', 'action': 'priority high'},
