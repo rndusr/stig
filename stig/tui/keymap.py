@@ -16,13 +16,9 @@ import re
 
 
 class Key(str):
-    """Key code as string
+    """Key or key combination as string"""
 
-    Do some validation and translation from urwid format to a format better
-    suited for chained keys.
-
-    """
-
+    # Convert some urwid key names and some other stuff
     _INIT = (
         (re.compile(r'^<(.+)>$'),                r'\1'),
         (re.compile(r'^esc$', flags=re.I),       r'escape'),
