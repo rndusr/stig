@@ -17,6 +17,7 @@ import re
 import operator
 import os
 
+from . import keymap as km
 
 class CLIEditWidget(urwid.Edit):
     """Edit widget with readline keybindings callbacks and a history"""
@@ -37,57 +38,50 @@ class CLIEditWidget(urwid.Edit):
     def keypress(self, size, key):
         size = (size[0],)
         text_before = self.get_edit_text()
-        if key in ('ctrl a',):
-            return super().keypress(size, 'home')
-        elif key in ('ctrl e',):
-            return super().keypress(size, 'end')
-        elif key in ('ctrl f',):
-            return super().keypress(size, 'right')
-        elif key in ('ctrl b',):
-            return super().keypress(size, 'left')
-
-        elif key in ('ctrl p','up'):
+        if self._command_map[key] is km.CURSOR_UP:
             self._set_history_prev()
             key = None
-        elif key in ('ctrl n','down'):
+        elif self._command_map[key] is km.CURSOR_DOWN:
             self._set_history_next()
             key = None
-        elif key in ('ctrl k',):
+        elif self._command_map[key] is km.DELETE_TO_EOL:
             self.edit_text = self.edit_text[:self.edit_pos]
             key = None
-        elif key in ('ctrl u',):
+        elif self._command_map[key] is km.DELETE_LINE:
             self.set_edit_text('')
             key = None
-        elif key in ('ctrl d',):
+        elif self._command_map[key] is km.DELETE_CHAR_UNDER_CURSOR:
             return super().keypress(size, 'delete')
-        elif key in ('meta f', 'shift right'):
+        elif self._command_map[key] is km.CURSOR_WORD_RIGHT:
             self.move_to_next_word(forward=True)
             key = None
-        elif key in ('meta b', 'shift left'):
+        elif self._command_map[key] is km.CURSOR_WORD_LEFT:
             self.move_to_next_word(forward=False)
             key = None
-        elif key in ('meta d',):
+        elif self._command_map[key] is km.DELETE_WORD_LEFT:
             start_pos = self.edit_pos
             end_pos = self.move_to_next_word(forward=True)
             if end_pos != None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             self.edit_pos = start_pos
             key = None
-        elif key in ('meta delete', 'meta backspace', 'ctrl w'):
+        elif self._command_map[key] is km.DELETE_WORD_RIGHT:
             end_pos = self.edit_pos
             start_pos = self.move_to_next_word(forward=False)
             if start_pos != None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             key = None
-        elif self._on_accept is not None and key in ('enter',):
+        elif self._on_accept is not None and self._command_map[key] is km.ACTIVATE:
             self._append_to_history(self.edit_text)
             self._on_accept(self)
             self._reset()
             key = None
-        elif self._on_cancel is not None and key in ('esc','ctrl g'):
+        elif self._on_cancel is not None and self._command_map[key] is km.CANCEL:
             self._on_cancel(self)
             self._reset()
             key = None
+        elif key == 'space':
+            return super().keypress(size, ' ')
         else:
             key = super().keypress(size, key)
         text_after = self.get_edit_text()
