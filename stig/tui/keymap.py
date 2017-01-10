@@ -42,7 +42,9 @@ class Key(str):
     _cache = {}
 
     def __new__(cls, key):
-        if key in cls._cache:
+        if isinstance(key, Key):
+            return key
+        elif key in cls._cache:
             return cls._cache[key]
         else:
             orig_key = key
