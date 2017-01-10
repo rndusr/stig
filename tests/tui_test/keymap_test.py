@@ -17,7 +17,7 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('ctrl-e'), Key('Ctrl-e'))
         self.assertEqual(Key('ctrl-e'), Key('<ctrl-e>'))
         self.assertEqual(Key('ctrl-e'), Key('CTRL-e'))
-        self.assertNotEqual(Key('ctrl-e'), Key('ctrl-E'))
+        self.assertEqual(Key('ctrl-e'), Key('ctrl-E'))
 
         self.assertEqual(Key('space'), Key(' '))
         self.assertEqual(Key('escape'), Key('esc'))
