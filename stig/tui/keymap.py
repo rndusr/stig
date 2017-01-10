@@ -60,7 +60,7 @@ class Key(str):
         # Validate modifier
         if '-' in key:
             mod, char = key.split('-', 1)
-            # If the modifier is '', '-' is the actual key
+            # No modifier means '-' is the key
             if len(mod) > 0:
                 if len(char) == 0:
                     raise ValueError('Missing character after modifier: <%s>' % key)
@@ -69,16 +69,19 @@ class Key(str):
                 elif mod in ('shift', 'ctrl'):
                     # 'shift/ctrl-E' is the same as 'shift/ctrl-e'
                     key = key.lower()
-                elif mod == 'alt' and len(char) > 1:
-                    # Key is something like 'backspace' or 'delete'
-                    key = key.lower()
+                elif mod == 'alt':
+                    if len(char) > 1:
+                        # Key is something like 'backspace' or 'delete'
+                        key = key.lower()
+                    elif len(char) == 1 and char.isupper():
+                        key = 'alt-shift-%s' % char.lower()
 
         obj = super().__new__(cls, key)
         cls._cache[orig_key] = obj
         return obj
 
     def __repr__(self):
-        return '<%s>' % self
+        return '<Key %s>' % self
 
 
 class KeyChain(tuple):
