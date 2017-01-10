@@ -121,6 +121,8 @@ DEFAULT_KEYMAP = (
     {'context': None, 'key': 'j', 'action': '<down>'},
     {'context': None, 'key': 'k', 'action': '<up>'},
     {'context': None, 'key': 'l', 'action': '<right>'},
+    {'context': None, 'key': 'g', 'action': '<home>'},
+    {'context': None, 'key': 'G', 'action': '<end>'},
     {'context': None, 'key': 'ctrl-n', 'action': '<down>'},
     {'context': None, 'key': 'ctrl-p', 'action': '<up>'},
     {'context': None, 'key': 'ctrl-f', 'action': '<pgdn>'},
