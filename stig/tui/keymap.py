@@ -64,10 +64,13 @@ class Key(str):
             if len(mod) > 0:
                 if len(char) == 0:
                     raise ValueError('Missing character after modifier: <%s>' % key)
-                if mod not in cls._MODS:
+                elif mod not in cls._MODS:
                     raise ValueError('Invalid modifier: <%s>' % key)
-                if mod == 'shift':
-                    # 'shift-E' is the same as 'shift-e'
+                elif mod in ('shift', 'ctrl'):
+                    # 'shift/ctrl-E' is the same as 'shift/ctrl-e'
+                    key = key.lower()
+                elif mod == 'alt' and len(char) > 1:
+                    # Key is something like 'backspace' or 'delete'
                     key = key.lower()
 
         obj = super().__new__(cls, key)
