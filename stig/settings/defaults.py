@@ -117,6 +117,7 @@ def init_server_defaults(cfg, settingsapi):
 
 
 DEFAULT_KEYMAP = (
+    # Use some vi and emacs keybindings
     {'context': None, 'key': 'h', 'action': '<left>'},
     {'context': None, 'key': 'j', 'action': '<down>'},
     {'context': None, 'key': 'k', 'action': '<up>'},
@@ -128,6 +129,7 @@ DEFAULT_KEYMAP = (
     {'context': None, 'key': 'ctrl-f', 'action': '<right>'},
     {'context': None, 'key': 'ctrl-b', 'action': '<left>'},
 
+    # Global TUI keys
     {'context': 'main', 'key': 'q', 'action': 'quit'},
     {'context': 'main', 'key': '?', 'action': 'tab help keymap'},
     {'context': 'main', 'key': ':', 'action': 'tui show cli'},
@@ -137,11 +139,13 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'meta-T', 'action': 'tui toggle topbar'},
     {'context': 'main', 'key': 'meta-B', 'action': 'tui toggle bottombar'},
 
+    # Bandwidth limits
     {'context': 'main', 'key': 'shift-up',    'action': 'set srv.limit.rate.down +=100kB'},
     {'context': 'main', 'key': 'shift-down',  'action': 'set srv.limit.rate.down -=100kB'},
     {'context': 'main', 'key': 'shift-right', 'action': 'set srv.limit.rate.up +=100kB'},
     {'context': 'main', 'key': 'shift-left',  'action': 'set srv.limit.rate.up -=100kB'},
 
+    # Tab management
     {'context': 'tabs', 'key': 't', 'action': 'tab'},
     {'context': 'tabs', 'key': 'd', 'action': 'tab --close'},
     {'context': 'tabs', 'key': 'meta-1', 'action': 'tab --focus 1'},
@@ -178,6 +182,7 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 't D', 'action': 'delete --delete-files'},
     {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
 
+    # Torrent file actions
     {'context': 'file', 'key': '+', 'action': 'priority high'},
     {'context': 'file', 'key': '=', 'action': 'priority normal'},
     {'context': 'file', 'key': '-', 'action': 'priority low'},
