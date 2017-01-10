@@ -57,7 +57,7 @@
 ** Configuration
    All configuration is done in ~$HOME/.config/stig/rc~.  Each line is a command
    that is called during startup.  Commands given as CLI arguments are called
-   after the rc commands.
+   after the rc commands.  For more information run ~stig help rcfile~.
 
 *** Example config
    #+BEGIN_SRC
