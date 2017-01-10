@@ -88,7 +88,6 @@ class KeyChain(tuple):
     class REFUSED(): pass
 
     def __new__(cls, *keys):
-        log.debug('Making KeyChain from %r', keys)
         obj = super().__new__(cls, (Key(k) for k in keys))
         if len(keys) < 2:
             raise ValueError('Not enough keys to make a chain: %s' % str(obj))
@@ -170,6 +169,8 @@ class KeyChain(tuple):
 class KeyMapped():
     """Mixin class that provides a keypress method"""
     def keypress(self, size, key):
+        key = Key(key)
+
         sup = super()
         def try_super(key):
             if sup.selectable():
@@ -187,7 +188,7 @@ class KeyMapped():
                                             widget=self)
             if key_eval is None:
                 return None
-            elif key_eval != Key(key):
+            elif key_eval != key:
                 # evaluate() may have resolved key to another key
                 # (e.g. 'j' -> 'down')
                 key = try_super(key_eval)
