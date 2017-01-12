@@ -250,7 +250,8 @@ class KeyMap():
     def __init__(self, callback=None):
         self._callback = callback
         self._contexts = {None: {}}
-        self._chain_started = False
+        self._keychain_partial = []
+        self._keychain_callbacks = []
 
     def bind(self, key, action, context=None):
         """Bind `key` to `action` in `context`
@@ -299,37 +300,36 @@ class KeyMap():
         log.debug('Evaluating %r in context %r for widget %r', key, context, widget)
 
         # Unless we've are already started a key chain, try to find a single-key mapping
-        if not self._chain_started:
+        if not self._keychain_partial:
             action = self._get_single_key_action(key, context)
         else:
             log.debug('Not doing single-key lookup because we\'re '
                       'trying to complete a key chain')
 
         if action is None:
-            action = self._get_keychain_action(key, context)
-            log.debug('Resolved %r to %r', key, action)
+            action = self._get_keychain_action(key, context, self._keychain_partial)
             if action is KeyChain.ADVANCED:
-                log.debug('%r was used to advance a keychain', key)
-                self._chain_started = True
-                self._run_callbacks(tuple(self._active_keychains(context)))
+                self._keychain_partial.append(key)
+                log.debug('%r was used to advance a keychain (status: %r)', key, self._keychain_partial)
+                self._run_callbacks(tuple(self._active_keychains(context, self._keychain_partial)))
                 return None
             elif action is KeyChain.ABORTED:
                 log.debug('%r was used to abort a keychain', key)
-                self._chain_started = False
+                self._reset_keychains(context, self._keychain_partial)
+                self._keychain_partial.clear()
                 self._run_callbacks(tuple())
                 return None
             elif action is KeyChain.REFUSED:
                 log.debug('%r was refused by all keychains', key)
-                self._chain_started = False
+                self._keychain_partial.clear()
                 action = None
-                self._run_callbacks(tuple())
             elif isinstance(action, Key):
                 log.debug('%r was resolved to a single key: %r', key)
-                self._chain_started = False
+                self._keychain_partial.clear()
                 self._run_callbacks(tuple())
             else:
                 log.debug('%r was used to complete a keychain', key)
-                self._chain_started = False
+                self._keychain_partial.clear()
                 self._run_callbacks(tuple())
 
         # Handle the action we found
@@ -358,39 +358,27 @@ class KeyMap():
         else:
             raise TypeError('No callback given - unable to handle {!r}'.format(action))
 
-    def _run_callbacks(self, active_keychains):
-        log.debug('Running callbacks with %r', active_keychains)
-
     def _get_single_key_action(self, key, context):
         for keymap in (self._contexts[context], self._contexts[None]):
             if key in keymap:
                 return keymap[key]
 
-    def _get_keychain_action(self, key, context):
+    def _get_keychain_action(self, key, context, partial_keys):
         # Go through all actions in this context and feed them the new key.
-        action = KeyChain.REFUSED
-        for kc,act in self._keychains(context):
+        action = KeyChain.ABORTED if partial_keys else KeyChain.REFUSED
+        for kc,act in self._keychains(context, partial_keys):
+            log.debug('   Feeding %r to %r', key, kc)
             result = kc.feed(key)
 
             # The first completed chain wins, we return its action and reset
-            # all chains in all contexts.
+            # all other chains.
             if result is KeyChain.COMPLETED:
-                self._reset_all_keychains()
+                self._reset_keychains(context, partial_keys)
                 return act
 
-            # At least one key chain was advanced, which means we want to
-            # swallow that key and not let anyone else grab it.
+            # At least this key chain was advanced.
             elif result is KeyChain.ADVANCED:
                 action = KeyChain.ADVANCED
-
-            # If any previously key fed keychain has advanced, we keep that
-            # status.  Otherwise we may abort/refuse this key.
-            elif action is not KeyChain.ADVANCED:
-                # result is either KeyChain.ABORTED or KeyChain.REFUSED.
-                if result is KeyChain.REFUSED and action is not KeyChain.ABORTED:
-                    action = KeyChain.REFUSED
-                else:
-                    action = KeyChain.ABORTED
 
         if action is KeyChain.ADVANCED:
             log.debug('At least one key chain was advanced, returning %r', action)
@@ -403,21 +391,27 @@ class KeyMap():
 
         return action
 
-    def _reset_all_keychains(self):
-        for context in self._contexts:
-            for kc,action in self._keychains(context):
-                log.debug('Resetting key chain %r', kc)
-                kc.reset()
+    def _reset_keychains(self, context, partial_keys):
+        for kc,action in self._keychains(context, partial_keys):
+            kc.reset()
 
-    def _keychains(self, context):
+    def _keychains(self, context, partial_keys):
         for kc,action in self._contexts[context].items():
-            if isinstance(kc, KeyChain):
+            if isinstance(kc, KeyChain) and kc.startswith(partial_keys):
                 yield (kc, action)
 
-    def _active_keychains(self, context):
-        for kc,action in self._keychains(context):
+    def _active_keychains(self, context, partial_keys):
+        for kc,action in self._keychains(context, partial_keys):
             if kc.is_started:
                 yield (kc, action)
+
+    def _run_callbacks(self, active_keychains):
+        log.debug('Running callbacks with %r', active_keychains)
+        for cb in self._keychain_callbacks:
+            cb(active_keychains)
+
+    def on_keychain(self, callback):
+        self._keychain_callbacks.append(callback)
 
     def wrap(self, cls, callback=None, context=None):
         """Return widget class that passes keypress()es through `evaluate`
@@ -487,8 +481,6 @@ DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
 DELETE_WORD_LEFT = 'delete word left'
 DELETE_WORD_RIGHT = 'delete word right'
 
-log.debug(command_map._command)
-
 # Remove urwid's defaults
 for key in tuple(command_map._command):
     del command_map[key]
@@ -521,5 +513,3 @@ command_map[Key('enter')]  = ACTIVATE
 command_map[Key('escape')] = CANCEL
 command_map[Key('ctrl-g')] = CANCEL
 command_map[Key('ctrl-l')] = REDRAW_SCREEN
-
-log.debug(command_map._command)
