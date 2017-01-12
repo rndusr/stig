@@ -26,11 +26,16 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('enter'), Key('return'))
         self.assertEqual(Key('insert'), Key('ins'))
 
+        self.assertEqual(Key('alt-insert'), Key('meta-ins'))
+        self.assertEqual(Key('alt-del'), Key('meta-delete'))
+        self.assertEqual(Key('shift-ctrl-enter'), Key('shift-Ctrl-RETURN'))
+
     def test_convert_shift_modifier(self):
         self.assertEqual(Key('shift-E'), Key('E'))
         self.assertEqual(Key('shift-e'), Key('E'))
         self.assertEqual(Key('shift-ö'), Key('Ö'))
-        self.assertNotEqual(Key('shift-ö'), Key('O'))
+        self.assertEqual(Key('shift-alt-ö'), Key('alt-Ö'))
+        self.assertEqual(Key('ctrl-shift-alt-ö'), Key('ctrl-alt-Ö'))
 
     def test_invalid_modifier(self):
         with self.assertRaises(ValueError) as cm:
@@ -39,16 +44,16 @@ class TestKey(unittest.TestCase):
 
         with self.assertRaises(ValueError) as cm:
             Key('alt-')
-        self.assertIn('Missing character', str(cm.exception))
+        self.assertIn('Missing key', str(cm.exception))
 
-    def test_invalid_modifier(self):
+    def test_invalid_key(self):
         with self.assertRaises(ValueError) as cm:
-            Key('shit-e')
-        self.assertIn('Invalid modifier', str(cm.exception))
+            Key('hello')
+        self.assertIn('Unknown key', str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
-            Key('alt-')
-        self.assertIn('Missing character', str(cm.exception))
+            Key('alt-hello')
+        self.assertIn('Unknown key', str(cm.exception))
 
 
 class TestKeyChain(unittest.TestCase):

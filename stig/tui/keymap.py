@@ -21,16 +21,16 @@ class Key(str):
     # Convert some urwid key names and some other stuff
     _INIT = (
         (re.compile(r'^<(.+)>$'),                r'\1'),
-        (re.compile(r'^esc$', flags=re.I),       r'escape'),
         (re.compile(r'^ $'),                     r'space'),
         (re.compile(r'^meta', flags=re.I),       r'alt'),
-        (re.compile(r'^pos1$', flags=re.I),      r'home'),
-        (re.compile(r'^del$', flags=re.I),       r'delete'),
-        (re.compile(r'^ins$', flags=re.I),       r'insert'),
-        (re.compile(r'^return$', flags=re.I),    r'enter'),
-        (re.compile(r'^page up$', flags=re.I),   r'pgup'),
-        (re.compile(r'^page down$', flags=re.I), r'pgdn'),
-        (re.compile(r'^page dn$', flags=re.I),   r'pgdn'),
+        (re.compile(r'(^|-)esc$', flags=re.I),       r'\1escape'),
+        (re.compile(r'(^|-)pos1$', flags=re.I),      r'\1home'),
+        (re.compile(r'(^|-)del$', flags=re.I),       r'\1delete'),
+        (re.compile(r'(^|-)ins$', flags=re.I),       r'\1insert'),
+        (re.compile(r'(^|-)return$', flags=re.I),    r'\1enter'),
+        (re.compile(r'(^|-)page up$', flags=re.I),   r'\1pgup'),
+        (re.compile(r'(^|-)page down$', flags=re.I), r'\1pgdn'),
+        (re.compile(r'(^|-)page dn$', flags=re.I),   r'\1pgdn'),
         (re.compile(r' '),                       r'-'),
         # The first part in key combos must always be the same, but the part
         # after must be preserved. <alt-l> is not the same as <alt-L>.
@@ -39,6 +39,9 @@ class Key(str):
     )
 
     _MODS = ('shift', 'alt', 'ctrl')
+    _FKEYS = ('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12')
+    _KEYNAMES = ('escape', 'space', 'home', 'end', 'tab', 'delete', 'backspace', 'insert',
+                 'enter', 'pgup', 'pgdn', 'left', 'right', 'up', 'down') + _FKEYS
     _cache = {}
 
     def __new__(cls, key):
@@ -53,32 +56,46 @@ class Key(str):
         for regex,repl in cls._INIT:
             key = regex.sub(repl, key)
 
-        # Convert 'X' to 'shift-x'
-        if len(key) == 1 and key.isupper():
-            key = 'shift-%s' % key.lower()
+        # Split modifiers and key
+        if '-' in key and len(key) > 1:
+            _parts = key.split('-')
+            key = _parts.pop(-1)
+            mods = set(p.lower() for p in _parts)
+            for mod in mods:
+                if mod not in cls._MODS:
+                    raise ValueError('Invalid modifier in <%s>: <%s>' % (orig_key, mod))
 
-        # Validate modifier
-        if '-' in key:
-            mod, char = key.split('-', 1)
-            # No modifier means '-' is the key
-            if len(mod) > 0:
-                if len(char) == 0:
-                    raise ValueError('Missing character after modifier: <%s>' % key)
-                elif mod not in cls._MODS:
-                    raise ValueError('Invalid modifier: <%s>' % key)
-                elif mod in ('shift', 'ctrl'):
-                    # 'shift/ctrl-E' is the same as 'shift/ctrl-e'
-                    key = key.lower()
-                elif mod == 'alt':
-                    if len(char) > 1:
-                        # Key is something like 'backspace' or 'delete'
-                        key = key.lower()
-                    elif len(char) == 1 and char.isupper():
-                        key = 'alt-shift-%s' % char.lower()
+            if len(key) == 0:
+                raise ValueError('Missing key after modifier: <%s>' % orig_key)
 
-        obj = super().__new__(cls, key)
+            # Convert <shift-x> to <X>
+            elif len(key) == 1 and 'shift' in mods:
+                key = key.upper()
+                mods.remove('shift')
+
+            # 'shift-/ctrl-E' is the same as 'shift-/ctrl-e'
+            elif 'alt' not in mods:
+                key = key.lower()
+        else:
+            mods = set()
+
+        # Validate named keys ('enter', 'delete', etc)
+        if len(key) > 1:
+            # F* key names are upper case, all others lower case
+            key = key.upper() if key in cls._FKEYS else key.lower()
+            if key not in cls._KEYNAMES:
+                raise ValueError('Unknown key name: %r' % key)
+
+        if mods:
+            keystr = '%s-%s' % ('-'.join(sorted(mods)), key)
+        else:
+            keystr = key
+        obj = super().__new__(cls, keystr)
         cls._cache[orig_key] = obj
         return obj
+
+    def __str__(self):
+        return '<%s>' % super().__str__()
 
     def __repr__(self):
         return '<Key %s>' % self
@@ -156,7 +173,7 @@ class KeyChain(tuple):
         return self._pos >= len(self)-1
 
     def __str__(self):
-        return ' '.join(k for k in self)
+        return ' '.join(str(k) for k in self)
 
     def __repr__(self):
         text = ['<KeyChain %s' % str(self)]
