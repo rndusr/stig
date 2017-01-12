@@ -172,6 +172,11 @@ class KeyChain(tuple):
         """Wether there are keys missing to complete the chain"""
         return self._pos >= len(self)-1
 
+    @property
+    def is_started(self):
+        """Wether the first character has been supplied"""
+        return self._pos > -1
+
     def __str__(self):
         return ' '.join(str(k) for k in self)
 
