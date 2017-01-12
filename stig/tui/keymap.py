@@ -364,31 +364,29 @@ class KeyMap():
 
     def _get_keychain_action(self, key, context):
         # Go through all actions in this context and feed them the new key.
-        # If that completes any one, return that action and reset the other ones.
-
-        action = None
-        for kc,action in self._keychains(context):
+        action = KeyChain.REFUSED
+        for kc,act in self._keychains(context):
             result = kc.feed(key)
 
-            # The first completed chain returns its action and resets all
-            # other chains in all contexts.
+            # The first completed chain wins, we return its action and reset
+            # all chains in all contexts.
             if result is KeyChain.COMPLETED:
                 self._reset_all_keychains()
-                return action
+                return act
 
             # At least one key chain was advanced, which means we want to
             # swallow that key and not let anyone else grab it.
             elif result is KeyChain.ADVANCED:
                 action = KeyChain.ADVANCED
 
-            # This key chain aborted, but others might still be looking
-            # for keys.
-            elif result is KeyChain.ABORTED and action is not KeyChain.ADVANCED:
-                action = KeyChain.ABORTED
-
-            # This key chain hasn't started and `key` is not the first key.
-            else:
-                action = KeyChain.REFUSED
+            # If any previously key fed keychain has advanced, we keep that
+            # status.  Otherwise we may abort/refuse this key.
+            elif action is not KeyChain.ADVANCED:
+                # result is either KeyChain.ABORTED or KeyChain.REFUSED.
+                if result is KeyChain.REFUSED and action is not KeyChain.ABORTED:
+                    action = KeyChain.REFUSED
+                else:
+                    action = KeyChain.ABORTED
 
         if action is KeyChain.ADVANCED:
             log.debug('At least one key chain was advanced, returning %r', action)
