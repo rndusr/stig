@@ -410,6 +410,11 @@ class KeyMap():
             if isinstance(kc, KeyChain):
                 yield (kc, action)
 
+    def _active_keychains(self, context):
+        for kc,action in self._keychains(context):
+            if kc.is_started:
+                yield (kc, action)
+
     def wrap(self, cls, callback=None, context=None):
         """Return widget class that passes keypress()es through `evaluate`
 
