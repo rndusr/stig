@@ -184,7 +184,7 @@ class KeyChain(tuple):
         text = ['<KeyChain %s' % str(self)]
         if self._pos > -1:
             text.append(' given=[')
-            text.append(' '.join(repr(k) for k in self.given))
+            text.append(' '.join(str(k) for k in self.given))
             text.append(']')
         text.append('>')
         return ''.join(text)
