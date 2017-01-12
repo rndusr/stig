@@ -307,20 +307,26 @@ class KeyMap():
             if action is KeyChain.ADVANCED:
                 log.debug('%r was used to advance a keychain', key)
                 self._chain_started = True
+                self._run_callbacks(tuple(self._active_keychains(context)))
                 return None
             elif action is KeyChain.ABORTED:
                 log.debug('%r was used to abort a keychain', key)
                 self._chain_started = False
+                self._run_callbacks(tuple())
                 return None
             elif action is KeyChain.REFUSED:
                 log.debug('%r was refused by all keychains', key)
                 self._chain_started = False
                 action = None
+                self._run_callbacks(tuple())
             elif isinstance(action, Key):
                 log.debug('%r was resolved to a single key: %r', key)
                 self._chain_started = False
-            elif action is not None:
+                self._run_callbacks(tuple())
+            else:
                 log.debug('%r was used to complete a keychain', key)
+                self._chain_started = False
+                self._run_callbacks(tuple())
 
         # Handle the action we found
         log.debug('Evaluated %r to action: %r', key, action)
@@ -347,6 +353,9 @@ class KeyMap():
             self._callback(action, widget)
         else:
             raise TypeError('No callback given - unable to handle {!r}'.format(action))
+
+    def _run_callbacks(self, active_keychains):
+        log.debug('Running callbacks with %r', active_keychains)
 
     def _get_single_key_action(self, key, context):
         for keymap in (self._contexts[context], self._contexts[None]):
