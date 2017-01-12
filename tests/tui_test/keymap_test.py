@@ -88,6 +88,17 @@ class TestKeyChain(unittest.TestCase):
             self.assertEqual(kc.next_key, None)  # chain is complete
             kc.advance()  # same as reset() if complete
 
+    def test_startswith(self):
+        kc = KeyChain('a', 'b', 'c')
+        self.assertEqual(kc.startswith(('a',)), True)
+        self.assertEqual(kc.startswith(('a', 'b')), True)
+        self.assertEqual(kc.startswith(('a', 'b', 'c')), True)
+        self.assertEqual(kc.startswith(('a', 'b', 'c', 'x')), False)
+        self.assertEqual(kc.startswith(('a', 'b', 'x')), False)
+        self.assertEqual(kc.startswith(('a', 'x')), False)
+        self.assertEqual(kc.startswith(('x')), False)
+        self.assertEqual(kc.startswith(()), True)
+
     def test_is_complete(self):
         kc = KeyChain('a', 'b', 'c')
         for i in range(10):

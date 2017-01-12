@@ -162,6 +162,10 @@ class KeyChain(tuple):
         """Next missing key or None if chain is already complete"""
         return None if self.is_complete else self[self._pos+1]
 
+    def startswith(self, keys):
+        """Whether this key chain starts with `keys` (sequence of Key instances)"""
+        return self[:len(keys)] == tuple(keys)
+
     @property
     def given(self):
         """Tuple of keys we have so far"""
