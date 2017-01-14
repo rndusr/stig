@@ -185,9 +185,16 @@ class TestKeyMap_with_key_chains(unittest.TestCase):
     def setUp(self):
         self.km = KeyMap(callback=self.handle_action)
         self.widget = self.km.wrap(Text)('Test Text')
+        self.widgetA = self.km.wrap(Text, context='A')('Test Text A')
+        self.widgetB = self.km.wrap(Text, context='B')('Test Text B')
+        self._action_counter = 0
 
     def handle_action(self, action, widget):
-        widget.set_text(str(action))
+        self._action_counter += 1
+        widget.set_text('%s%d' % (str(action), self._action_counter))
+
+    def status(self):
+        return (self.widget.text, self.widgetA.text, self.widgetB.text)
 
     def test_correct_chain(self):
         self.km.bind('1 2 3', 'foo')
@@ -196,7 +203,7 @@ class TestKeyMap_with_key_chains(unittest.TestCase):
         self.widget.keypress((80,), '2')
         self.assertEqual(self.widget.text, 'Test Text')
         self.widget.keypress((80,), '3')
-        self.assertEqual(self.widget.text, 'foo')
+        self.assertEqual(self.widget.text, 'foo1')
 
     def test_incorrect_chain_then_correct_chain(self):
         self.km.bind('1 2 3', 'foo')
@@ -208,43 +215,70 @@ class TestKeyMap_with_key_chains(unittest.TestCase):
         self.assertEqual(self.widget.text, 'Test Text')
         self.widget.keypress((80,), '3')
         self.assertEqual(self.widget.text, 'Test Text')
-        self.widget.keypress((80,), '1')
-        self.widget.keypress((80,), '2')
-        self.widget.keypress((80,), '3')
-        self.assertEqual(self.widget.text, 'foo')
+        for c in ('1', '2', '3'):
+            self.widget.keypress((80,), c)
+        self.assertEqual(self.widget.text, 'foo1')
 
-    def test_competing_chains(self):
-        self.km.bind('1 2 3', 'foo')
-        self.km.bind('1 2 0', 'bar')
-        self.widget.keypress((80,), '1')
-        self.widget.keypress((80,), '2')
-        self.widget.keypress((80,), '3')
-        self.assertEqual(self.widget.text, 'foo')
-        self.widget.keypress((80,), '1')
-        self.widget.keypress((80,), '2')
-        self.widget.keypress((80,), '0')
-        self.assertEqual(self.widget.text, 'bar')
-
-    def test_competing_chains_with_different_lengths(self):
-        self.km.bind('1 2 3', 'foo')
-        self.km.bind('1 2 3 4', 'bar')
-        self.widget.keypress((80,), '1')
-        self.widget.keypress((80,), '2')
-        self.widget.keypress((80,), '3')
-        self.assertEqual(self.widget.text, 'foo')
-        self.widget.keypress((80,), '1')
-        self.widget.keypress((80,), '2')
-        self.widget.keypress((80,), '3')
-        self.widget.keypress((80,), '4')
-        self.assertEqual(self.widget.text, 'foo')
-
-    def test_abort_with_bound_key_has_no_action(self):
+    def test_abort_with_bound_key_does_nothing(self):
         self.km.bind('1 2 3', 'foo')
         self.km.bind('x', 'bar')
-        self.widget.keypress((80,), '1')
-        self.widget.keypress((80,), '2')
-        self.widget.keypress((80,), 'x')
-        self.widget.keypress((80,), '3')
+        for c in ('1', '2', 'x', '3'):
+            self.widget.keypress((80,), c)
         self.assertEqual(self.widget.text, 'Test Text')
         self.widget.keypress((80,), 'x')
-        self.assertEqual(self.widget.text, 'bar')
+        self.assertEqual(self.widget.text, 'bar1')
+
+    def test_competing_chains_in_default_context(self):
+        self.km.bind('1 2 3', 'foo')
+        self.km.bind('1 2 0', 'bar')
+        for c in ('1', '2', '3'):
+            self.widget.keypress((80,), c)
+        self.assertEqual(self.widget.text, 'foo1')
+        for c in ('1', '2', '0'):
+            self.widget.keypress((80,), c)
+        self.assertEqual(self.widget.text, 'bar2')
+
+    def test_competing_chains_in_default_context_with_different_lengths(self):
+        self.km.bind('1 2 3', 'foo')
+        self.km.bind('1 2 3 4', 'bar')
+        for c in ('1', '2', '3'):
+            self.widget.keypress((80,), c)
+        self.assertEqual(self.widget.text, 'foo1')
+        for c in ('1', '2', '3'):
+            self.widget.keypress((80,), c)
+        self.assertEqual(self.widget.text, 'foo2')
+        self.widget.keypress((80,), '4')
+        self.assertEqual(self.widget.text, 'foo2')
+
+    def test_correct_contexts(self):
+        self.km.bind('1 2 3', 'foo', context='A')
+        self.km.bind('a b c', 'bar', context='B')
+        for c in ('1', '2', '3'):
+            self.widgetA.keypress((80,), c)
+        self.assertEqual(self.widgetA.text, 'foo1')
+        for c in ('a', 'b', 'c'):
+            self.widgetB.keypress((80,), c)
+        self.assertEqual(self.widgetB.text, 'bar2')
+        self.assertEqual(self.widgetA.text, 'foo1')
+
+    def test_wrong_contexts(self):
+        self.km.bind('1 2 3', 'foo', context='A')
+        self.km.bind('a b c', 'bar', context='B')
+        before = self.status()
+        for c in ('a', 'b', 'c'):
+            self.widgetA.keypress((80,), c)
+        self.assertEqual(before, self.status())
+        for c in ('1', '2', '3'):
+            self.widgetB.keypress((80,), c)
+        self.assertEqual(before, self.status())
+
+    def test_starting_one_chain_prevents_other_chains(self):
+        self.km.bind('1 2 3', 'foo', context='A')
+        self.km.bind('a b c', 'bar', context='B')
+        before = self.status()
+        self.widgetA.keypress((80,), '1')
+        # Even though the 'a b c' is sent to the correct widget, the 'a' is
+        # used up to abort the previously started '1 2 3' chain.
+        for c in ('a', 'b', 'c'):
+            self.widgetB.keypress((80,), c)
+        self.assertEqual(before, self.status())
