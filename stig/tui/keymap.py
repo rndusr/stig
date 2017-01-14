@@ -228,6 +228,8 @@ class KeyMapped():
         return True
 
 
+NOCONTEXT = object()  # Another None value
+
 class KeyMap():
     """Bind keys to actions in different contexts
 
@@ -250,8 +252,10 @@ class KeyMap():
     def __init__(self, callback=None):
         self._callback = callback
         self._contexts = {None: {}}
-        self._keychain_partial = []
+
         self._keychain_callbacks = []
+        self._keychain_partial = []
+        self._keychain_context = NOCONTEXT
 
     def bind(self, key, action, context=None):
         """Bind `key` to `action` in `context`
@@ -306,9 +310,14 @@ class KeyMap():
             log.debug('Not doing single-key lookup because we\'re '
                       'trying to complete a key chain')
 
-        if action is None:
+        # Try to advance keychains only if no keychain was started previously
+        # or if that previously started keychain was in the same context as
+        # we're in now.
+        if action is None and (self._keychain_context == NOCONTEXT or
+                               self._keychain_context == context):
             action = self._get_keychain_action(key, context, self._keychain_partial)
             if action is KeyChain.ADVANCED:
+                self._keychain_context = context    # Lock context
                 self._keychain_partial.append(key)
                 log.debug('%r was used to advance a keychain (status: %r)', key, self._keychain_partial)
                 self._run_callbacks(tuple(self._active_keychains(context, self._keychain_partial)))
@@ -316,19 +325,23 @@ class KeyMap():
             elif action is KeyChain.ABORTED:
                 log.debug('%r was used to abort a keychain', key)
                 self._reset_keychains(context, self._keychain_partial)
+                self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
                 self._run_callbacks(tuple())
                 return None
             elif action is KeyChain.REFUSED:
                 log.debug('%r was refused by all keychains', key)
+                self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
                 action = None
             elif isinstance(action, Key):
                 log.debug('%r was resolved to a single key: %r', key)
+                self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
                 self._run_callbacks(tuple())
             else:
                 log.debug('%r was used to complete a keychain', key)
+                self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
                 self._run_callbacks(tuple())
 
@@ -373,11 +386,13 @@ class KeyMap():
             # The first completed chain wins, we return its action and reset
             # all other chains.
             if result is KeyChain.COMPLETED:
+                log.debug('%r completed %r', key, kc)
                 self._reset_keychains(context, partial_keys)
                 return act
 
             # At least this key chain was advanced.
             elif result is KeyChain.ADVANCED:
+                log.debug('%r advanced %r', key, kc)
                 action = KeyChain.ADVANCED
 
         if action is KeyChain.ADVANCED:
@@ -385,7 +400,7 @@ class KeyMap():
         elif action is KeyChain.ABORTED:
             log.debug('No key chain was advanced or completed, returning %r', action)
         elif action is KeyChain.REFUSED:
-            log.debug('No key chain was started and %r did not start one, returning %r', key, action)
+            log.debug('%r did not start or advance a keychain, returning %r', key, action)
         else:
             log.debug('There should be no keychains in context %r: %r', context, tuple(self._keychains(context)))
 
