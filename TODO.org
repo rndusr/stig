@@ -66,18 +66,6 @@ questions and point out issues.
     Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
 
 
-* tui.keymap
-** TODO Chainable keybindings                                   :improvement:
-   Example: f a -> ls active
-            f p -> ls paused
-            f i -> ls isolated
-
-*** TODO Chainable keybindings                                  :improvement:
-    When the user hits the first key of a chain, a list should appear that
-    offers further keys and what they do.  But what should be displayed with
-    the keybinding 'a b c -> ls something' when the user hits a?
-
-
 * tui.logger
 ** TODO Some long log messages are not displayed                        :bug:
    To reproduce, create some log messages and change the terminal size.
