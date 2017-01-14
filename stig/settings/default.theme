@@ -34,6 +34,12 @@ log.error                  light red   on $log_bg
 log.debug                  yellow      on $log_bg
 log.dupecount              light cyan  on $log_bg
 
+$keychains_bg = dark gray
+keychains            light gray   on $keychains_bg
+keychains.keys       light gray   on $keychains_bg
+keychains.keys.next  yellow       on $keychains_bg
+keychains.action     light green  on $keychains_bg
+
 
 $list_bg.uf = black
 $list_bg.f  = dark gray

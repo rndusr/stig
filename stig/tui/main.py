@@ -32,7 +32,7 @@ from .group import Group
 from .tabs import Tabs
 from .cli import CLIEditWidget
 from .logger import LogWidget
-from .infobar import (QuickHelpWidget, ConnectionStatusWidget,
+from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
                       BandwidthStatusWidget, TorrentCountersWidget)
 
 
@@ -72,12 +72,16 @@ cli = urwid.AttrMap(_create_cli_widget(), 'cli')
 logwidget = LogWidget(maxrows=cfg['tui.log.height'].value,
                       autohide_delay=cfg['tui.log.autohide'].value)
 
+keychains = KeyChainsWidget()
+keymap.on_keychain(keychains.update)
+
 widgets = keymap.wrap(Group, context='main')(cls=urwid.Pile)
 widgets.add(name='topbar', widget=topbar, options='pack')
 widgets.add(name='main', widget=tabs)
 widgets.add(name='log', widget=logwidget, options='pack')
 widgets.add(name='cli', widget=cli, options='pack', visible=False)
 widgets.add(name='bottombar', widget=bottombar, options='pack')
+widgets.add(name='keychains', widget=keychains, options='pack')
 
 
 def unhandled_input(key):
