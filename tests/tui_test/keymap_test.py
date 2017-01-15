@@ -130,6 +130,21 @@ class TestKeyChain(unittest.TestCase):
 
 
 class TestKeyMap(unittest.TestCase):
+    def test_mkkey(self):
+        km = KeyMap()
+        self.assertEqual(km.mkkey(Key('x')), Key('x'))
+        self.assertEqual(km.mkkey(KeyChain('1', '2', '3')),
+                                  KeyChain('1', '2', '3'))
+
+        self.assertEqual(km.mkkey('x'), Key('x'))
+        self.assertEqual(km.mkkey('x y z'), KeyChain('x', 'y', 'z'))
+        self.assertEqual(km.mkkey('x+y+z'), KeyChain('x', 'y', 'z'))
+        self.assertEqual(km.mkkey('x +'), KeyChain('x', '+'))
+        self.assertEqual(km.mkkey('+ x'), KeyChain('+', 'x'))
+        self.assertEqual(km.mkkey('x y +'), KeyChain('x', 'y', '+'))
+        self.assertEqual(km.mkkey('+ y z'), KeyChain('+', 'y', 'z'))
+        self.assertEqual(km.mkkey('+ + +'), KeyChain('+', '+', '+'))
+
     def test_action_is_callback(self):
         km = KeyMap()
         km.bind(key='a',

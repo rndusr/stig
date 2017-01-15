@@ -455,6 +455,8 @@ class KeyMap():
             return string
         elif ' ' in string:
             return KeyChain(*string.split(' '))
+        elif '+' in string:
+            return KeyChain(*string.split('+'))
         else:
             return Key(string)
 
