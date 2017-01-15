@@ -1,10 +1,14 @@
 ???-??-?? ?
-  Fixed bugs:
-    * Page up/page down keys working again in torrent lists
+  IMPORTANT: Keybindings have changed; run 'stig help keys' for a list.
 
   New features:
+    * Chained keybindings (like in Emacs)
     * Add 'move' command to change torrents' download path
     * Add 'announce' command to re-announce torrents manually to tracker(s)
+    * More accurate torrent ETA ("1h28m" instead of just "1h")
+
+  Fixed bugs:
+    * Page up/down keys are working again in torrent lists
 
 
 2017-01-02 0.0.3a
