@@ -29,13 +29,15 @@ class BindCmd(metaclass=InitCommand):
                 'bind --context tabs alt-] tab --focus right',
                 'bind --context torrent alt-! start --force',
                 'bind ctrl-a tab ls active',
+                "bind 'd .' delete",
+                "bind 'd !' delete --delete-files",
                 'bind u <up>',
                 'bind d <down>')
     argspecs = (
         { 'names': ('--context','-c'),
           'description': 'Where KEY is grabbed (see CONTEXTS section)' },
         { 'names': ('KEY',),
-          'description': 'Key or key combination (see KEYS section)' },
+          'description': 'One or more keys or key combinations (see KEYS section)' },
         { 'names': ('ACTION',), 'nargs': 'REMAINDER',
           'description': ("Any command or '<KEY>' (including the brackets) "
                           'to translate one key to another') },
@@ -66,14 +68,17 @@ class BindCmd(metaclass=InitCommand):
     more_sections = {
         'CONTEXTS': __create_CONTEXTS_section,
         'KEYS': (
-            ('Single-character keys are specified as themselves (e.g. <h>, '
-             '<X>, <5>, <!>, <þ>, <¥>, etc).  Special key names are <enter>, <space>, '
-             '<tab>, <backspace>, <insert>, <delete>, <home>, <end>, <down>, <up>, '
-             '<left>, <right>, <pgup>, <pgdn> and <f1-12>.'),
+            'Single-character keys are specified as themselves (e.g. h, X, 5, !, þ, ¥, etc).',
             '',
-            ('The modifiers "ctrl", "alt" and "shift" are combined with "-" '
-             '(e.g. <alt-i>, <shift-delete>, <ctrl-a>).  <shift-x> is identical to <X>.'),
-        ),
+            ('Special key names are enter, space, tab, backspace, insert, delete, home, end, '
+             'up, down, left, right, pgup, pgdn and f1-12.'),
+            '',
+            ("The modifiers 'ctrl', 'alt' and 'shift' are separated with '-' from the key "
+             "(e.g. alt-i, shift-delete, ctrl-a).  shift-x is identical to X."),
+            '',
+            ("Chained keys are sparated by single spaces (' ') or pluses ('+') and must be "
+             "given as a single argument."),
+        )
     }
 
     tui = ExpectedResource
