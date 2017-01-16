@@ -5,5 +5,5 @@ clean:
 	rm -rf dist
 	rm -rf .cache  # py.test junk
 
-check:
+test:
 	nosetests3 --stop ./tests/
