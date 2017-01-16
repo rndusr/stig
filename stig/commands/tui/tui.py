@@ -19,6 +19,7 @@ from .. import (InitCommand, ExpectedResource)
 
 
 from ...tui import KEYMAP_CONTEXTS
+import shlex
 class BindCmd(metaclass=InitCommand):
     name = 'bind'
     provides = {'tui'}
@@ -85,16 +86,19 @@ class BindCmd(metaclass=InitCommand):
 
     def run(self, context, KEY, ACTION):
         keymap = self.tui.keymap
-        if len(ACTION) == 1 and \
-           ACTION[0][0] == '<' and ACTION[0][-1] == '>':
+
+        key = KEY
+        if len(ACTION) == 1 and ACTION[0][0] == '<' and ACTION[0][-1] == '>':
             # ACTION is another key (e.g. 'j' -> 'down')
-            ACTION = keymap.mkkey(ACTION[0])
+            action = keymap.mkkey(ACTION[0])
+        else:
+            action = ' '.join(shlex.quote(x) for x in ACTION)
 
         if context is not None and context not in KEYMAP_CONTEXTS:
             log.error('Invalid context: {!r}'.format(context))
             return False
         try:
-            keymap.bind(KEY, ACTION, context=context)
+            keymap.bind(key, action, context=context)
         except ValueError as e:
             log.error(e)
             return False
