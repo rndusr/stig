@@ -19,78 +19,86 @@ from .. import (InitCommand, ExpectedResource)
 
 
 from ...tui import KEYMAP_CONTEXTS
+import shlex
 class BindCmd(metaclass=InitCommand):
     name = 'bind'
     provides = {'tui'}
     category = 'tui'
     description = 'Bind keys to commands or other keys'
-    usage = ('bind [--context <CONTEXT>] <KEY> <COMMAND>',)
+    usage = ('bind [--context <CONTEXT>] <KEY> <ACTION>',)
     examples = ('bind --context tabs alt-[ tab --focus left',
                 'bind --context tabs alt-] tab --focus right',
                 'bind --context torrent alt-! start --force',
                 'bind ctrl-a tab ls active',
+                "bind 'd .' delete",
+                "bind 'd !' delete --delete-files",
                 'bind u <up>',
                 'bind d <down>')
     argspecs = (
         { 'names': ('--context','-c'),
           'description': 'Where KEY is grabbed (see CONTEXTS section)' },
         { 'names': ('KEY',),
-          'description': 'Key or key combination (see KEYS section)' },
-        { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
+          'description': 'One or more keys or key combinations (see KEYS section)' },
+        { 'names': ('ACTION',), 'nargs': 'REMAINDER',
           'description': ("Any command or '<KEY>' (including the brackets) "
                           'to translate one key to another') },
     )
 
     def __create_CONTEXTS_section():
         lines = [
-            ('Each key is mapped in a specific context or as a default mapping '
-             'that is used when no context wants the key.  The same key can be '
-             'mapped to different actions in different contexts.'),
+            ('Keys are mapped in contexts.  With no context given, the default '
+             'context is used.  The default context only gets the key if no '
+             'other context wants it.  The same key can be mapped to different '
+             'actions in different contexts.'),
             '',
-            'Available contexts: ' + \
-              ', '.join("'%s'" % context for context in KEYMAP_CONTEXTS),
+            'Available contexts are: ' + \
+              ', '.join('"%s"' % context for context in KEYMAP_CONTEXTS),
             '',
             'EXAMPLE',
             '\tbind --context torrent ctrl-t start',
             '\tbind --context tabs ctrl-t tab',
             '\tbind ctrl-t <left>',
             '',
-            ("\tWhen focusing a torrent, 'ctrl-t' starts the focused torrent.  "
-             "If focus is not on a torrent but still on a tab (e.g. when reading "
-             "documentation) a new tab is opened.  Otherwise (e.g. focus is on the "
-             "command prompt), 'ctrl-t' does the same as 'left'."),
+            ('\tWhen focusing a torrent, <ctrl-t> starts the focused torrent.  '
+             'If focus is not on a torrent but still on a tab (e.g. when reading '
+             'documentation) a new tab is opened.  Otherwise (e.g. focus is on the '
+             'command prompt), <ctrl-t> does the same as <left>.'),
         ]
         return lines
 
     more_sections = {
         'CONTEXTS': __create_CONTEXTS_section,
         'KEYS': (
-            ("Single-character keys are specified by typing them (e.g. 'h', "
-             "'X', '5', '!', 'þ', etc).  Special key names are 'enter', 'space', "
-             "'tab', 'backspace', 'insert', 'delete', 'home', 'end', 'down', 'up', "
-             "'left', 'right', 'pgup', 'pgdn' and 'f<1-12>'."),
+            'Single-character keys are specified as themselves (e.g. h, X, 5, !, þ, ¥, etc).',
             '',
-            ("The modifiers 'ctrl', 'alt' and 'shift' are combined with '-' "
-             "or ' ', e.g. 'alt-i', 'shift-delete', 'ctrl a', etc.  "
-             "The 'shift' modifier is only recognized for "
-             "special keys like 'delete'; 'shift-t' does not work."),
-        ),
+            ('Special key names are enter, space, tab, backspace, insert, delete, home, end, '
+             'up, down, left, right, pgup, pgdn and f1-12.'),
+            '',
+            ("The modifiers 'ctrl', 'alt' and 'shift' are separated with '-' from the key "
+             "(e.g. alt-i, shift-delete, ctrl-a).  shift-x is identical to X."),
+            '',
+            ("Chained keys are sparated by single spaces (' ') or pluses ('+') and must be "
+             "given as a single argument."),
+        )
     }
 
     tui = ExpectedResource
 
-    def run(self, context, KEY, COMMAND):
+    def run(self, context, KEY, ACTION):
         keymap = self.tui.keymap
-        if len(COMMAND) == 1 and \
-           COMMAND[0][0] == '<' and COMMAND[0][-1] == '>':
-            # COMMAND is another key (e.g. 'j' -> 'down')
-            COMMAND = keymap.key(COMMAND[0])
+
+        key = KEY
+        if len(ACTION) == 1 and ACTION[0][0] == '<' and ACTION[0][-1] == '>':
+            # ACTION is another key (e.g. 'j' -> 'down')
+            action = keymap.mkkey(ACTION[0])
+        else:
+            action = ' '.join(shlex.quote(x) for x in ACTION)
 
         if context is not None and context not in KEYMAP_CONTEXTS:
             log.error('Invalid context: {!r}'.format(context))
             return False
         try:
-            keymap.bind(KEY, COMMAND, context=context)
+            keymap.bind(key, action, context=context)
         except ValueError as e:
             log.error(e)
             return False

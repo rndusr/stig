@@ -17,6 +17,42 @@ from . import main as tui
 from ..client import constants as const
 
 
+class KeyChainsWidget(urwid.WidgetWrap):
+    def __init__(self):
+        self._pile = urwid.Pile([])
+        super().__init__(urwid.AttrMap(self._pile, 'keychains'))
+
+    def update(self, keychains):
+        self._pile.contents[:] = []
+        if not keychains:
+            return
+
+        lines = []
+        keys_col_width = 0
+        for kc,action in sorted(keychains, key=lambda x: str(x[0]).lower()):
+            given = ' '.join(kc.given)
+            current = kc.next_key
+            rest = ' '.join(kc[len(kc.given)+1:])
+            keys_col_width = max(len(' '.join((given, current, rest))), keys_col_width)
+            lines.append((given, current, rest, str(action)))
+
+        for given,current,rest,action in lines:
+            keys_widget = urwid.Text([('keychains.keys', given), ' ',
+                                      ('keychains.keys.next', current), ' ',
+                                      ('keychains.keys', rest)])
+            action_widget = urwid.Text(('keychains.action', action))
+            line_widget = urwid.Columns([(keys_col_width, keys_widget),
+                                         ('pack', urwid.Text('  -  ')),
+                                         action_widget])
+            self._pile.contents.append((line_widget, self._pile.options('pack')))
+
+    def rows(self, size, focus=False):
+        return len(self._pile.contents)
+
+    _selectable = False
+    _sizing = ['flow']
+
+
 class QuickHelpWidget(urwid.Text):
     ITEMS = (
         # Context, Command, Description

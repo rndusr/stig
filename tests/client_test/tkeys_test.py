@@ -208,38 +208,39 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(sorted_strs, exp)
 
 
+MIN = 60
+HOUR = 60*MIN
+DAY = 24*HOUR
+YEAR = 365.25*DAY
 class TestTimedelta(unittest.TestCase):
-    def test_meaning_of_now(self):
-        for secs in (0, 3, -3):
-            self.assertEqual(str(tkeys.Timedelta(secs)), 'now')
-        for secs in (300, -300):
-            self.assertNotEqual(str(tkeys.Timedelta(secs)), 'now')
-
     def test_special_values(self):
+        self.assertEqual(str(tkeys.Timedelta(0)), 'now')
         self.assertEqual(str(tkeys.Timedelta(-1)), '')
         self.assertEqual(str(tkeys.Timedelta(-2)), '?')
 
-    def test_seconds(self):
-        self.assertEqual(str(tkeys.Timedelta(10)), '10s')
+    def test_even_units(self):
+        for unit,char in ((1, 's'), (MIN, 'm'), (HOUR, 'h'), (DAY, 'd'), (YEAR, 'y')):
+            for i in range(11, 20):
+                self.assertEqual(str(tkeys.Timedelta(i * unit)), '%d%s' % (i, char))
 
-    def test_minutes(self):
-        self.assertEqual(str(tkeys.Timedelta(59)), '59s')
-        self.assertEqual(str(tkeys.Timedelta(60)), '1m')
-        self.assertEqual(str(tkeys.Timedelta(61)), '1m')
+    def test_subunits_with_small_numbers(self):
+        self.assertEqual(str(tkeys.Timedelta(1*DAY + 0*HOUR + 59*MIN + 59)), '1d')
+        self.assertEqual(str(tkeys.Timedelta(1*DAY + 23*HOUR + 59*MIN + 59)), '1d23h')
 
-    def test_hours(self):
-        self.assertEqual(str(tkeys.Timedelta(59*60)), '59m')
-        self.assertEqual(str(tkeys.Timedelta(60*60)), '1h')
-        self.assertEqual(str(tkeys.Timedelta(60*61)), '1h')
+        self.assertEqual(str(tkeys.Timedelta(9*DAY + 0*HOUR + 59*MIN + 59)), '9d')
+        self.assertEqual(str(tkeys.Timedelta(9*DAY + 23*HOUR + 59*MIN + 59)), '9d23h')
 
-    def test_days(self):
-        self.assertEqual(str(tkeys.Timedelta(23*60*60 + 59*60 + 59)), '23h')
-        self.assertEqual(str(tkeys.Timedelta(24*60*60)), '1d')
-        self.assertEqual(str(tkeys.Timedelta(24*60*60 + 1)), '1d')
+        self.assertEqual(str(tkeys.Timedelta(10*DAY + 23*HOUR + 59*MIN + 59)), '10d')
 
-    def test_negative_months(self):
-        self.assertEqual(str(tkeys.Timedelta(-27*24*60*60)), '-27d')
-        self.assertEqual(str(tkeys.Timedelta(-31*24*60*60)), '-1M')
+    def test_negative_delta(self):
+        self.assertEqual(str(tkeys.Timedelta(-10)), '-10s')
+        self.assertEqual(str(tkeys.Timedelta(-1*60 - 45)), '-1m45s')
+        self.assertEqual(str(tkeys.Timedelta(-3*DAY - 2*HOUR)), '-3d2h')
+
+    def test_preposition_string(self):
+        self.assertEqual(tkeys.Timedelta(7 * DAY).with_preposition, 'in 7d')
+        self.assertEqual(tkeys.Timedelta(-7 * DAY).with_preposition, '7d ago')
+
 
 
 class TestTimestamp(unittest.TestCase):

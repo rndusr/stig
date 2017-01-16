@@ -52,6 +52,37 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         return success
 
 
+class AnnounceTorrentsCmdbase(metaclass=InitCommand):
+    name = 'announce'
+    aliases = ('an',)
+    provides = set()
+    category = 'torrent'
+    description = 'Announce torrents to their trackers now if possible'
+    usage = ('announce <TORRENT FILTER> <TORRENT FILTER> ...',)
+    examples = ('announce tracker~example.org',)
+    argspecs = (
+        { 'names': ('TORRENT FILTER',), 'nargs': '*',
+          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+    )
+
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT_FILTER):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+        else:
+            response = await self.make_request(
+                self.srvapi.torrent.announce(tfilter),
+                polling_frenzy=False)
+            return response.success
+
+
+
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                           metaclass=InitCommand):
     name = 'list'
@@ -164,6 +195,42 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
             return await self.make_flist(tfilter, ffilter, columns)
         else:
             return self.make_flist(tfilter, ffilter, columns)
+
+
+class MoveTorrentsCmdbase(metaclass=InitCommand):
+    name = 'move'
+    aliases = ('mv',)
+    provides = set()
+    category = 'torrent'
+    description = "Change torrents' location"
+    usage = ('move [<TORRENT FILTER>] <PATH>',)
+    examples = ('move new/path',
+                'move size>50g path/to/lots/of/storage')
+    argspecs = (
+        {'names': ('TORRENT FILTER',), 'nargs': '?',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
+        {'names': ('PATH',),
+         'description': ('New location of the specified torrent(s).  If PATH is relative '
+                         '(does not start with "/"), it is relative to the value of the '
+                         'setting "srv.path.complete".')},
+    )
+
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT_FILTER, PATH):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+        else:
+            response = await self.make_request(self.srvapi.torrent.move(tfilter, PATH),
+                                               polling_frenzy=True)
+            return response.success
+
 
 
 class PriorityCmdbase(metaclass=InitCommand):

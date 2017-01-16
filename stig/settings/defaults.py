@@ -117,15 +117,19 @@ def init_server_defaults(cfg, settingsapi):
 
 
 DEFAULT_KEYMAP = (
+    # Use some vi and emacs keybindings
     {'context': None, 'key': 'h', 'action': '<left>'},
     {'context': None, 'key': 'j', 'action': '<down>'},
     {'context': None, 'key': 'k', 'action': '<up>'},
     {'context': None, 'key': 'l', 'action': '<right>'},
+    {'context': None, 'key': 'g', 'action': '<home>'},
+    {'context': None, 'key': 'G', 'action': '<end>'},
     {'context': None, 'key': 'ctrl-n', 'action': '<down>'},
     {'context': None, 'key': 'ctrl-p', 'action': '<up>'},
-    {'context': None, 'key': 'ctrl-f', 'action': '<pgdn>'},
-    {'context': None, 'key': 'ctrl-b', 'action': '<pgup>'},
+    {'context': None, 'key': 'ctrl-f', 'action': '<right>'},
+    {'context': None, 'key': 'ctrl-b', 'action': '<left>'},
 
+    # Global TUI keys
     {'context': 'main', 'key': 'q', 'action': 'quit'},
     {'context': 'main', 'key': '?', 'action': 'tab help keymap'},
     {'context': 'main', 'key': ':', 'action': 'tui show cli'},
@@ -135,12 +139,14 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'meta-T', 'action': 'tui toggle topbar'},
     {'context': 'main', 'key': 'meta-B', 'action': 'tui toggle bottombar'},
 
+    # Bandwidth limits
     {'context': 'main', 'key': 'shift-up',    'action': 'set srv.limit.rate.down +=100kB'},
     {'context': 'main', 'key': 'shift-down',  'action': 'set srv.limit.rate.down -=100kB'},
     {'context': 'main', 'key': 'shift-right', 'action': 'set srv.limit.rate.up +=100kB'},
     {'context': 'main', 'key': 'shift-left',  'action': 'set srv.limit.rate.up -=100kB'},
 
-    {'context': 'tabs', 'key': 't', 'action': 'tab'},
+    # Tab management
+    {'context': 'tabs', 'key': 'n', 'action': 'tab'},
     {'context': 'tabs', 'key': 'd', 'action': 'tab --close'},
     {'context': 'tabs', 'key': 'meta-1', 'action': 'tab --focus 1'},
     {'context': 'tabs', 'key': 'meta-2', 'action': 'tab --focus 2'},
@@ -153,22 +159,30 @@ DEFAULT_KEYMAP = (
     {'context': 'tabs', 'key': 'meta-9', 'action': 'tab --focus 9'},
     {'context': 'tabs', 'key': 'meta-0', 'action': 'tab --focus 10'},
 
-    {'context': 'tabs', 'key': 'a', 'action': 'ls active'},
-    {'context': 'tabs', 'key': 'A', 'action': 'tab ls active'},
-    {'context': 'tabs', 'key': 'i', 'action': 'ls isolated'},
-    {'context': 'tabs', 'key': 'I', 'action': 'tab ls isolated'},
-    {'context': 'tabs', 'key': 's', 'action': 'ls stopped'},
-    {'context': 'tabs', 'key': 'S', 'action': 'tab ls stopped'},
-    {'context': 'tabs', 'key': 'z', 'action': 'ls'},
-    {'context': 'tabs', 'key': 'Z', 'action': 'tab ls'},
+    # List torrents with different filters
+    {'context': 'tabs', 'key': 'f a', 'action': 'ls active'},
+    {'context': 'tabs', 'key': 'f A', 'action': 'ls !active'},
+    {'context': 'tabs', 'key': 'f i', 'action': 'ls isolated'},
+    {'context': 'tabs', 'key': 'f p', 'action': 'ls paused'},
+    {'context': 'tabs', 'key': 'f P', 'action': 'ls !paused'},
+    {'context': 'tabs', 'key': 'f c', 'action': 'ls complete'},
+    {'context': 'tabs', 'key': 'f C', 'action': 'ls !complete'},
+    {'context': 'tabs', 'key': 'f u', 'action': 'ls uploading'},
+    {'context': 'tabs', 'key': 'f d', 'action': 'ls downloading'},
+    {'context': 'tabs', 'key': 'f s', 'action': 'ls seeding'},
+    {'context': 'tabs', 'key': 'f l', 'action': 'ls leeching'},
+    {'context': 'tabs', 'key': 'f .', 'action': 'ls'},
 
-    {'context': 'torrent', 'key': 'v', 'action': 'verify'},
-    {'context': 'torrent', 'key': 'p', 'action': 'stop --toggle'},
-    {'context': 'torrent', 'key': 'P', 'action': 'start --toggle --force'},
-    {'context': 'torrent', 'key': 'delete', 'action': 'remove'},
-    {'context': 'torrent', 'key': 'shift-delete', 'action': 'remove --delete-files'},
+    # Torrent actions
+    {'context': 'torrent', 'key': 't v', 'action': 'verify'},
+    {'context': 'torrent', 'key': 't p', 'action': 'stop --toggle'},
+    {'context': 'torrent', 'key': 't P', 'action': 'start --toggle --force'},
+    {'context': 'torrent', 'key': 't a', 'action': 'announce'},
+    {'context': 'torrent', 'key': 't d', 'action': 'delete'},
+    {'context': 'torrent', 'key': 't D', 'action': 'delete --delete-files'},
     {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
 
+    # Torrent file actions
     {'context': 'file', 'key': '+', 'action': 'priority high'},
     {'context': 'file', 'key': '=', 'action': 'priority normal'},
     {'context': 'file', 'key': '-', 'action': 'priority low'},

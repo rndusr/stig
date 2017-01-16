@@ -334,11 +334,12 @@ class TorrentAPI():
         response = await self.torrents(torrents, keys=keys)
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
+        else:
+            msgs = list(response.msgs)
 
         if check is None:
             tlist = response.torrents
         else:
-            msgs = list(response.msgs)
             # Filter torrents through check function
             for t in response.torrents:
                 passed, msg = check(t)
@@ -358,7 +359,7 @@ class TorrentAPI():
                 await method(ids=tuple(t['id'] for t in tlist), **method_args)
             except ClientError as e:
                 msgs.append(e)
-                tlist.clear()
+                tlist = ()
 
         # The resulting torrents have only 'id' and 'name' keys
         tlist = tuple(Torrent({'id': t['id'], 'name': t['name']})
@@ -500,12 +501,50 @@ class TorrentAPI():
         else:
             msg = 'Removing %s (keeping files)'
 
-        def check(t):
+        def create_info_msg(t):
             return (True, msg % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_remove, torrents,
-                                          method_args={'delete-local-data':delete},
-                                          check=check, keys=('name',),
+                                          keys=('name',),
+                                          method_args={'delete-local-data': delete},
+                                          check=create_info_msg,
+                                          autoconnect=autoconnect)
+
+
+    async def move(self, torrents, path, autoconnect=True):
+        """Change torrents' location in the file system
+
+        torrents: See `torrents` method
+        path: Destination of the specified torrents
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents that were removed with the keys 'id'
+                      and 'name'
+            success: True if any torrents were found and had matching files,
+                     False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        if not os.path.isabs(path):
+            # Transmission wants an absolute path, so we convert a relative
+            # destination path starting from the default download path.
+            response = await self._request(self.rpc.session_get, autoconnect=autoconnect)
+            if not response.success:
+                return Response(torrents=(), success=False, msgs=response.msgs)
+            else:
+                download_dir = response.result['download-dir']
+                path = os.path.normpath(os.path.join(download_dir, path))
+
+        def create_info_msg(t):
+            if t['path'] != path:
+                return (True, 'Moved to %s: %s' % (path, t['name']))
+            else:
+                return (False, 'Already in %s: %s' % (path, t['name']))
+
+        return await self._torrent_action(self.rpc.torrent_set_location, torrents,
+                                          keys=('name', 'path'),
+                                          method_args={'move': True, 'location': path},
+                                          check=create_info_msg,
                                           autoconnect=autoconnect)
 
 
@@ -598,3 +637,33 @@ class TorrentAPI():
                 autoconnect=autoconnect)
         else:
             raise ValueError('Invalid priority: {!r}'.format(priority))
+
+
+    async def announce(self, torrents, autoconnect=True):
+        """Re-announce to torrents' tracker
+
+        torrents: See `torrents` method
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents with the keys 'id' and 'name'
+            success: True if any torrents were found, False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        from ..tkeys import Status
+        import time
+        def check(t):
+            if t['status'] not in (Status.SEED, Status.LEECH):
+                return (False, 'Not announcing inactive torrent: %s' % t['name'])
+            elif t['timestamp-manual-announce-allowed'] > time.time():
+                return (False, ('Not allowing manual announce until %s (in %s): %r' %
+                                (t['timestamp-manual-announce-allowed'],
+                                 t['timestamp-manual-announce-allowed'].delta, t['name'])))
+            else:
+                return (True, 'Announcing: %s' % t['name'])
+
+        return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
+                                          check=check,
+                                          keys=('name', 'status',
+                                                'timestamp-manual-announce-allowed'),
+                                          autoconnect=autoconnect)

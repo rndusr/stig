@@ -28,6 +28,11 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
     provides = {'tui'}
 
 
+class AnnounceTorrentsCmd(base.AnnounceTorrentsCmdbase,
+                          mixin.make_request, mixin.select_torrents):
+    provides = {'tui'}
+
+
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.select_torrents):
     provides = {'tui'}
@@ -63,6 +68,11 @@ class ListFilesCmd(base.ListFilesCmdbase,
         titlew = make_tab_title(title, 'tabs.filelist.unfocused', 'tabs.filelist.focused')
         self.tui.tabs.load(titlew, flistw)
         return True
+
+
+class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
+                      mixin.make_request, mixin.select_torrents):
+    provides = {'tui'}
 
 
 class PriorityCmd(base.PriorityCmdbase,

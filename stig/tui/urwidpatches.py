@@ -53,11 +53,11 @@ class ListBox_with_home_end(urwid.ListBox):
         key = super().keypress(size, key)
         if self.focus is not None:
             if key == 'home':
-                self.focus_position = next(self.body.positions())
+                self.focus_position = next(iter(self.body.positions()))
                 self._invalidate()  # Don't know why this is needed?
                 key = None
             elif key == 'end':
-                self.focus_position = next(self.body.positions(reverse=True))
+                self.focus_position = next(iter(self.body.positions(reverse=True)))
                 self._invalidate()  # Don't know why this is needed?
                 key = None
         return key

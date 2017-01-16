@@ -147,6 +147,11 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
     provides = {'cli'}
 
 
+class AnnounceTorrentsCmd(base.AnnounceTorrentsCmdbase,
+                     mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+
+
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
@@ -233,6 +238,11 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 flist.extend(sub_flist)
 
         return flist, filtered_count
+
+
+class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
+                      mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
 
 
 class PriorityCmd(base.PriorityCmdbase,

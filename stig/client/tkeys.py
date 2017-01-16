@@ -28,6 +28,7 @@ log = make_logger(__name__)
 
 from collections import abc
 from .utils import pretty_float
+import os
 
 
 from itertools import chain
@@ -216,9 +217,8 @@ class SmartCmpStr(str):
 
 
 
-TIMEDELTA_NOW = 5
-SECONDS = (('y', 31557600),
-           ('M',  2592000),
+SECONDS = (('y', 31557600),  # 365.25 days
+           ('M',  2629800),  # 1y / 12
            ('d',    86400),
            ('h',     3600),
            ('m',       60),
@@ -233,14 +233,34 @@ class Timedelta(int):
             return '?'
         elif self == self.NOT_APPLICABLE:
             return ''
+        elif self == 0:
+            return 'now'
+        abs_secs = abs(self)
+        for i,(unit,amount) in enumerate(SECONDS):
+            if abs_secs >= amount:
+                num = self/amount
+
+                # Small numbers get a sub-unit, for example '1d15h'
+                if 1 <= abs_secs/amount < 10 and i < len(SECONDS)-1:
+                    subunit, subamount = SECONDS[i+1]
+                    if num >= 0:
+                        subnum = abs( ((num%1) * amount) / subamount )
+                    else:
+                        subnum = abs( ((num%-1) * amount) / subamount )
+
+                    if subnum >= 1:
+                        return '%d%s%d%s' % (int(num), unit, int(subnum), subunit)
+
+                return '%d%s' % (int(num), unit)
+
+    @property
+    def with_preposition(self):
+        if self > 0:
+            return 'in %s' % self
+        elif self < 0:
+            return ('%s ago' % self)[1:]  # Remove the first char ('-')
         else:
-            abs_secs = abs(self)
-            if abs_secs < TIMEDELTA_NOW:
-                return 'now'
-            else:
-                for unit,amount in SECONDS:
-                    if abs_secs >= amount:
-                        return str(int(self/amount)) + unit
+            return 'now'
 
     def __bool__(self):
         """Whether delta is known"""
@@ -248,7 +268,11 @@ class Timedelta(int):
 
 import time
 class Timestamp(float):
+    UNKNOWN = -1
+
     def __str__(self):
+        if self == self.UNKNOWN:
+            return 'sometime'
         abs_delta = abs(self - time.time())
         if abs_delta <= SECONDS[2][1]:      # 1 day: locale's time
             frmt = '%X'
@@ -260,7 +284,14 @@ class Timestamp(float):
 
     def __bool__(self):
         """Whether timestamp is just a few seconds in the past/future"""
-        return abs(self - time.time()) < TIMEDELTA_NOW
+        return self != self.UNKNOWN
+
+    @property
+    def delta(self):
+        if self == self.UNKNOWN:
+            return Timedelta(Timedelta.UNKNOWN)
+        else:
+            return Timedelta(self - time.time())
 
 
 
@@ -361,7 +392,7 @@ TYPES = {
     'hash'              : str,
     'name'              : SmartCmpStr,
     'status'            : Status,
-    'path'              : SmartCmpStr,
+    'path'              : lambda path: SmartCmpStr(path.rstrip(os.sep)),
     'ratio'             : Ratio,
 
     'private'           : bool,
@@ -383,6 +414,7 @@ TYPES = {
     'timestamp-active'  : Timestamp,
     'timestamp-done'    : Timestamp,
     'timespan-eta'      : Timedelta,
+    'timestamp-manual-announce-allowed': lambda v: Timestamp(v) if v > 0 else Timestamp(Timestamp.UNKNOWN),
 
     'rate-down'         : lambda v: convert.bandwidth(v, unit='byte'),
     'rate-up'           : lambda v: convert.bandwidth(v, unit='byte'),
