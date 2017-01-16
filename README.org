@@ -9,7 +9,7 @@
      combination of criteria
    - *Tabs* with different lists, documentation, etc
    - Everything is done via *commands*, and they are invoked
-     - through *chained[fn:1] keybindings*,
+     - through *chained keybindings*,
      - by entering them in a *built-in command prompt*,
      - by providing them as *CLI arguments* in your interactive shell or in
        *scripts*,
@@ -18,9 +18,6 @@
    - *Complete built-in documentation* with ~help~ command
    - Full *API abstraction layer* makes it possible to support other torrent
      clients (probably deluge, maybe rtorrent)
-
-[fn:1] Bind multiple keypresses to an action; for example, ~f~ followed by ~a~
-lists active torrents while ~f p~ lists paused torrents.
 
 ** Examples
    Add two torrents (file and hash) and exit
