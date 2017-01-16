@@ -36,7 +36,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
             keys_col_width = max(len(' '.join((given, current, rest))), keys_col_width)
             lines.append((given, current, rest, str(action)))
 
-        for given,current,rest,action in sorted(lines):
+        for given,current,rest,action in lines:
             keys_widget = urwid.Text([('keychains.keys', given), ' ',
                                       ('keychains.keys.next', current), ' ',
                                       ('keychains.keys', rest)])
