@@ -28,6 +28,7 @@ log = make_logger(__name__)
 
 from collections import abc
 from .utils import pretty_float
+import os
 
 
 from itertools import chain
@@ -391,7 +392,7 @@ TYPES = {
     'hash'              : str,
     'name'              : SmartCmpStr,
     'status'            : Status,
-    'path'              : SmartCmpStr,
+    'path'              : lambda path: SmartCmpStr(path.rstrip(os.sep)),
     'ratio'             : Ratio,
 
     'private'           : bool,
