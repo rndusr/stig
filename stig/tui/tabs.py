@@ -143,6 +143,8 @@ class Tabs(urwid.Widget):
         `set_title` and `set_content`.
 
         Set `focus` to False to load content in background.
+
+        Return TabID of newly created tab
         """
         if position is not None:
             # Overload content in specified tab
@@ -153,13 +155,15 @@ class Tabs(urwid.Widget):
                     self.focus_id = position
                 else:
                     self.focus_position = position
+            return self.get_id(position)
         elif self.focus_position is None:
             # No tabs exist - create new tab
-            self.insert(title, widget, focus=focus)
+            return self.insert(title, widget, focus=focus)
         else:
             # Overload content in focused tab
             self.set_content(widget)
             self.set_title(title)
+            return self.get_id()
 
     def insert(self, title, widget=None, position=-1, focus=True):
         """Insert new tab
@@ -169,6 +173,8 @@ class Tabs(urwid.Widget):
         position: Where to insert the new tab; int for list-like index or
                   'right'/'left' to insert next to focused tab
         focus: True to focus the new tab, False otherwise
+
+        Return TabID of inserted tab
         """
         curpos = self.focus_position
         if position == 'right':
@@ -184,7 +190,8 @@ class Tabs(urwid.Widget):
             raise ValueError('Invalid position: {!r}'.format(position))
 
         # Insert new tab ID
-        self._ids.insert(newpos, _find_unused_id(self._ids))
+        this_id = _find_unused_id(self._ids)
+        self._ids.insert(newpos, this_id)
 
         # Insert title
         options = self._tabbar.options('pack')
@@ -192,10 +199,9 @@ class Tabs(urwid.Widget):
 
         # Insert content
         self._contents.insert(newpos, widget)
-
-        # Adjust focus
         if focus:
             self.focus_position = newpos
+        return this_id
 
     def remove(self, position=None):
         """Remove tab `position`
