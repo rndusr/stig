@@ -198,34 +198,37 @@ class TabCmd(metaclass=InitCommand):
     cmdmgr = ExpectedResource
 
     async def run(self, close, focus, COMMAND):
-        import urwid
-        tabs = self.tui.tabs
-        cmdargs = {}
-
-        if close is not False:
-            log.debug('Closing tab %r', close)
-            i = self.get_tab_index(close, tabs)
-            if i is not None:
-                tabs.remove(i)
-            else:
-                return False
-
+        # Get indexes before adding/removing tabs, which changes indexes on
+        # subsequent operations
         if focus is not None:
-            log.debug('Focusing tab %r', focus)
-            i = self.get_tab_index(focus, tabs)
-            if i is not None:
-                tabs.focus_position = i
-            else:
+            i_focus = self.get_tab_index(focus)
+            log.debug('Focusing tab %r at index %r', focus, i_focus)
+            if i_focus is None:
                 return False
+        if close is not False:
+            i_close = self.get_tab_index(close)
+            log.debug('Closing tab %r at index %r', close, i_close)
+            if i_close is None:
+                return False
+
+        tabs = self.tui.tabs
+
+        # Apply close/focus operations
+        if focus is not None:
+            tabs.focus_position = i_focus
+        if close is not False:
+            tabs.remove(i_close)
 
         # Remember which torrent is focused in current tab so we can provide
         # it to the command running in a new tab.
+        cmdargs = {}
         try:
             cmdargs['focused_torrent'] = tabs.focus.focused_torrent.torrent
         except AttributeError:
             pass
 
         if close is False and focus is None:
+            import urwid
             titlew = urwid.AttrMap(urwid.Text('Empty tab'), 'tabs.unfocused', 'tabs.focused')
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d', tabs.focus_position)
@@ -245,8 +248,9 @@ class TabCmd(metaclass=InitCommand):
         else:
             return True
 
-    @staticmethod
-    def get_tab_index(pos, tabs):
+    def get_tab_index(self, pos):
+        tabs = self.tui.tabs
+
         if pos is None:
             return tabs.focus_position
 
