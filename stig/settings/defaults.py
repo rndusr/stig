@@ -148,6 +148,7 @@ DEFAULT_KEYMAP = (
     # Tab management
     {'context': 'tabs', 'key': 'n', 'action': 'tab'},
     {'context': 'tabs', 'key': 'd', 'action': 'tab --close'},
+    {'context': 'tabs', 'key': 'D', 'action': 'tab --close --focus left'},
     {'context': 'tabs', 'key': 'meta-1', 'action': 'tab --focus 1'},
     {'context': 'tabs', 'key': 'meta-2', 'action': 'tab --focus 2'},
     {'context': 'tabs', 'key': 'meta-3', 'action': 'tab --focus 3'},
