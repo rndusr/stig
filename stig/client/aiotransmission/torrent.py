@@ -17,6 +17,8 @@ from .. import tkeys as tkeys
 from .. import utils
 from .. import base
 
+from os.path import normpath
+
 
 # Some values need to be modified to comply with our internal standards
 
@@ -204,6 +206,7 @@ _MODIFY = {
     'isolated'        : _is_isolated,
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
+    'path'            : lambda raw: normpath(raw['downloadDir']),
     'trackers'        : TrackerList,
     'files'           : _create_TorrentFileTree,
 }

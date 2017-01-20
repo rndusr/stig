@@ -392,7 +392,7 @@ TYPES = {
     'hash'              : str,
     'name'              : SmartCmpStr,
     'status'            : Status,
-    'path'              : lambda path: SmartCmpStr(path.rstrip(os.sep)),
+    'path'              : SmartCmpStr,
     'ratio'             : Ratio,
 
     'private'           : bool,
