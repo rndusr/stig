@@ -47,4 +47,4 @@ def read(filepath=DEFAULT_RCFILE):
     except PermissionError as e:
         raise RcFileError('No read permission for rc file: {}'.format(_tildify(filepath)))
 
-    return tuple(tuple(shlex.split(cmdstr)) for cmdstr in cmdstrs)
+    return tuple(cmdstrs)
