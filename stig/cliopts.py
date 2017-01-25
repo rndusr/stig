@@ -13,81 +13,82 @@ import argparse
 from collections import OrderedDict
 
 
-parser = argparse.ArgumentParser(add_help=False)
-descriptions = OrderedDict()
-def add_arg(*args, section='OPTIONS', description=None, varname=None, **kwargs):
+_parser = argparse.ArgumentParser(add_help=False)
+DESCRIPTIONS = OrderedDict()
+def _add_arg(*args, section='OPTIONS', description=None, varname=None, **kwargs):
     if description is not None:
         optstr = ','.join(args)
         if varname is not None:
             optstr += ' %s' % varname
 
-        if section not in descriptions:
-            descriptions[section] = OrderedDict()
-        descriptions[section][optstr] = description
-    parser.add_argument(*args, **kwargs)
+        if section not in DESCRIPTIONS:
+            DESCRIPTIONS[section] = OrderedDict()
+        DESCRIPTIONS[section][optstr] = description
+    _parser.add_argument(*args, **kwargs)
 
 
-add_arg('--help','-h', nargs='*', default=None,
-        section='OPTIONS',
-        description="Display help about TOPIC",
-        varname='[TOPIC]')
+_add_arg('--help','-h', nargs='*', default=None,
+         section='OPTIONS',
+         description="Display help about TOPIC",
+         varname='[TOPIC]')
 
-add_arg('--version','-v', action='store_true',
-        section='OPTIONS',
-        description="Display version number and exit")
+_add_arg('--version','-v', action='store_true',
+         section='OPTIONS',
+         description="Display version number and exit")
 
-add_arg('--tui', '-t', action='store_true',
-        section='OPTIONS',
-        description='Enforce the TUI')
-add_arg('--notui', '--no-tui', '-T', action='store_true',
-        section='OPTIONS',
-        description='Inhibit the TUI')
 
-add_arg('--rcfile', '--rc-file', '-c',
-        section='OPTIONS',
-        description='Run commands from FILE upon startup',
-        varname='FILE')
-add_arg('--norcfile', '--no-rc-file', '-C', action='store_true',
-        section='OPTIONS',
-        description='Do not run commands from any rc file')
+_add_arg('--tui', '-t', action='store_true',
+         section='OPTIONS',
+         description='Enforce the TUI')
+_add_arg('--notui', '--no-tui', '-T', action='store_true',
+         section='OPTIONS',
+         description='Inhibit the TUI')
 
-add_arg('--debug', type=lambda mods: mods.split(','), default=[],
-        section='DEVELOPER OPTIONS',
-        description=('Log debug messages from comma-separated list of MODULES'
-                     ' (e.g. "client,commands.tui")'),
-        varname='MODULES')
-add_arg('--debug-file', default=None,
-        section='DEVELOPER OPTIONS',
-        description='Log debug messages to FILE',
-        varname='FILE')
-add_arg('--profile-file', default=None,
-        section='DEVELOPER OPTIONS',
-        description='Write cProfile statistics to FILE',
-        varname='FILE')
+
+_add_arg('--rcfile', '--rc-file', '-c',
+         section='OPTIONS',
+         description='Run commands from FILE upon startup',
+         varname='FILE')
+_add_arg('--norcfile', '--no-rc-file', '-C', action='store_true',
+         section='OPTIONS',
+         description='Do not run commands from any rc file')
+
+
+_add_arg('--debug', type=lambda mods: mods.split(','), default=[],
+         section='DEVELOPER OPTIONS',
+         description=('Log debug messages from comma-separated list of MODULES'
+                      ' (e.g. "client,commands.tui")'),
+         varname='MODULES')
+_add_arg('--debug-file', default=None,
+         section='DEVELOPER OPTIONS',
+         description='Log debug messages to FILE',
+         varname='FILE')
+_add_arg('--profile-file', default=None,
+         section='DEVELOPER OPTIONS',
+         description='Write cProfile statistics to FILE',
+         varname='FILE')
 
 # Anything not specified above is a subcommand or a subcommand option.
-parser.add_argument('subcmds', nargs=argparse.REMAINDER)
-ARGS = vars(parser.parse_args())
-_SUBCMDS = ARGS.pop('subcmds')
+_parser.add_argument('subcmds', nargs=argparse.REMAINDER)
+ARGS = vars(_parser.parse_args())
+_subcmds = ARGS.pop('subcmds')
 
 # Convert -h option to 'help' command
 if ARGS['help'] is not None:
-    _SUBCMDS.append('help')
-    _SUBCMDS.extend(ARGS['help'])
+    _subcmds.append('help')
+    _subcmds.extend(ARGS['help'])
 
 # Convert -v option to 'version' command
 if ARGS['version']:
-    _SUBCMDS.append('version')
+    _subcmds.append('version')
 
 
-_CMD_SEPARATORS = (';',)
+# Assemble commands into a single string.  Arguments must be properly
+# escaped/quoted, except for command operators (&, |, ;), which are
+# interpreted by CommandManager.
+from .commands import (OPS_AND, OPS_OR, OPS_SEQ)
+_CMD_SEPARATORS = set().union(OPS_AND, OPS_OR, OPS_SEQ)
 
-def get_cmds():
-    """Return tuple of commands, each command being a tuple of arguments"""
-    cmds = [[]]
-    for arg in _SUBCMDS:
-        if arg in _CMD_SEPARATORS:
-            cmds.append([])       # Start new command
-        else:
-            cmds[-1].append(arg)  # Append arg to current command
-    return tuple(tuple(cmd) for cmd in cmds if cmd)
+import shlex
+subcmds = ' '.join(arg if arg in _CMD_SEPARATORS else shlex.quote(arg)
+                   for arg in _subcmds)
