@@ -88,9 +88,9 @@
    #+END_SRC
 
    On Arch Linux it is available on AUR as
-   *[[https://aur.archlinux.org/packages/stig][stig]]*
+   [[https://aur.archlinux.org/packages/stig][stig]]
    and the development version as
-   *[[https://aur.archlinux.org/packages/stig-git][stig-git]]*.
+   [[https://aur.archlinux.org/packages/stig-git][stig-git]].
 
 ** Requirements
    - Python >=3.5
