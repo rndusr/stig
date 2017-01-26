@@ -14,20 +14,20 @@ with open('stig/version.py') as f:
 
 from setuptools import setup, find_packages
 setup(
-    name = 'stig',
-    version = __version__,
-    license = 'GPLv3+',
-    author = 'Random User',
-    author_email = 'rndusr@posteo.de',
+    name             = 'stig',
+    version          = __version__,
+    license          = 'GPLv3+',
+    author           = 'Random User',
+    author_email     = 'rndusr@posteo.de',
 
-    description = 'TUI and CLI client for the Transmission daemon',
+    description      = 'TUI and CLI client for the Transmission daemon',
     long_description = long_description,
 
-    url = 'https://github.com/rndusr/stig',
-    keywords = 'bittorrent torrent transmission',
+    url              = 'https://github.com/rndusr/stig',
+    keywords         = 'bittorrent torrent transmission',
 
-    packages = find_packages(),
-    package_data={'stig': ['settings/default.theme']},
+    packages         = find_packages(),
+    package_data     = {'stig': ['settings/default.theme']},
 
     install_requires = [
         'urwid>=1.3.0',

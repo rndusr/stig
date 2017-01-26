@@ -87,6 +87,11 @@
    $ pip3 install git+https://github.com/rndusr/stig.git@dev
    #+END_SRC
 
+   On Arch Linux it is available on AUR as
+   *[[https://aur.archlinux.org/packages/stig][stig]]*
+   and the development version as
+   *[[https://aur.archlinux.org/packages/stig-git][stig-git]]*.
+
 ** Requirements
    - Python >=3.5
    - [[http://www.urwid.org/][urwid]] >=1.3.0
