@@ -2,6 +2,51 @@ import asynctest
 
 from stig.client.utils import Response
 from stig.client.base import TorrentBase
+from stig.commands import (InitCommand, _CommandBase)
+
+
+def make_cmdcls(defaults=True, **clsattrs):
+    assert isinstance(defaults, bool)
+    if defaults:
+        for k,v in dict(name='foo', category='catfoo',
+                        provides=('tui', 'cli'),
+                        description='bla').items():
+            if k not in clsattrs:
+                clsattrs[k] = v
+
+        if 'run' not in clsattrs:
+            clsattrs['retval'] = True
+            clsattrs['run'] = lambda self: self.retval
+
+    if 'name' in clsattrs:
+        clsname = clsattrs['name'].capitalize()+'Command'
+    else:
+        clsname = 'MockCommand'
+
+    cmdcls = InitCommand(clsname, (), clsattrs)
+    assert issubclass(cmdcls, _CommandBase)
+    return cmdcls
+
+
+class Callback():
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.calls = 0
+        self.args = []
+        self.kwargs = []
+
+    def __call__(self, *args, **kwargs):
+        self.calls += 1
+        self.args.append(args)
+        self.kwargs.append(kwargs)
+
+
+def assertIsException(obj, exccls, text):
+    assert isinstance(obj, exccls), 'Not a {!r}: {!r}'.format(exccls.__name__, exc)
+    assert text in str(obj), 'Not in {!r}: {!r}'.format(obj, text)
+    return True
 
 
 class MockAPI():
@@ -128,6 +173,6 @@ class CommandTestCase(asynctest.TestCase):
             self.assertRegex(record.message, msg[1])
 
     async def finish(self, process):
-        if process.task is not None:
-            await process.task
+        if not process.finished:
+            await process.wait_async()
         self.assertEqual(process.finished, True)
