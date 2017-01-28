@@ -251,7 +251,6 @@ class _CommandBase():
         self._exc = exception
 
         if success:
-            log.debug('%r succeeded', self)
             if self.on_success is not None:
                 log.debug('Calling success callback: %r', self.on_success)
                 self.on_success(self)
