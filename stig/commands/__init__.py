@@ -97,6 +97,14 @@ def ExpectedResource(name):
     return property(fget=_raise)
 
 
+OPS_AND = ('&',)
+OPS_OR  = ('|',)
+OPS_SEQ = (';',)
+
+def is_op(string):
+    return any(string in ops for ops in (OPS_SEQ, OPS_AND, OPS_OR))
+
+
 class CmdError(Exception): pass
 class CmdArgError(CmdError): pass
 class CmdNotFoundError(CmdError): pass
