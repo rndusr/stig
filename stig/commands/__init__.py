@@ -310,7 +310,7 @@ class _CommandBase():
     def exception(self):
         """Exception if command raised one, None otherwise"""
         # If this class is called with wrong arguments, __del__ is called
-        # befire _exc exists.
+        # before _exc exists.
         if hasattr(self, '_exc'):
             self._exc_fetched = True
             return self._exc
