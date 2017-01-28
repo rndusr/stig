@@ -13,7 +13,6 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import os
-import shlex
 
 from .defaults import DEFAULT_RCFILE
 
@@ -47,4 +46,4 @@ def read(filepath=DEFAULT_RCFILE):
     except PermissionError as e:
         raise RcFileError('No read permission for rc file: {}'.format(_tildify(filepath)))
 
-    return tuple(cmdstrs)
+    return cmdstrs

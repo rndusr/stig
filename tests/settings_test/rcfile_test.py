@@ -19,9 +19,9 @@ class TestRcfile(unittest.TestCase):
     def test_ignoring_comments_and_empty_lines(self):
         with patch('builtins.open', mock_open(read_data=_MOCK_CFG)):
             cmds = rcfile.read()
-        self.assertEqual(cmds, ('foo bar baz',
-                                'foo',
-                                'faboobarbaz'))
+        self.assertEqual(tuple(cmds), ('foo bar baz',
+                                       'foo',
+                                       'faboobarbaz'))
 
     def test_FileNotFoundError_with_default_path(self):
         with patch('builtins.open', mock_open(read_data=_MOCK_CFG)) as m:
