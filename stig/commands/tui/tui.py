@@ -189,7 +189,7 @@ class TabCmd(metaclass=InitCommand):
           'description': 'Close tab at index CLOSE or with partial tital CLOSE' },
         { 'names': ('--focus', '-f'),
           'description': ('Focus tab; FOCUS can be an index (first tab is 1), '
-                          "part of a tab title, 'left'/'-' or 'right'/'+'") },
+                          'part of a tab title, "left" or "right"') },
         { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
           'description': ('Command to run in new tab') },
     )
@@ -272,10 +272,10 @@ class TabCmd(metaclass=InitCommand):
 
         if pos.isdigit():
             return find_index(int(pos))
-        elif pos in ('left', '-'):
+        elif pos == 'left':
             if tabcount > 1:
                 return tabs.get_index(max(0, curpos-1))
-        elif pos in ('right', '+'):
+        elif pos == 'right':
             if tabcount > 1:
                 return tabs.get_index(min(tabcount-1, curpos+1))
         else:
