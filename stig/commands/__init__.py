@@ -235,13 +235,15 @@ class _CommandBase():
             exc = e
         else:
             exc = None
+        self._handle_result(success, exc)
 
+    def _handle_result(self, success, exception):
         if success:
             self._finish(success=True)
         else:
-            if exc is None:
-                exc = CmdError()
-            self._finish(success=False, exception=exc)
+            if exception is None:
+                exception = CmdError()
+            self._finish(success=False, exception=exception)
 
     def _finish(self, success, exception=None):
         if self.finished:
