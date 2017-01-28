@@ -265,7 +265,6 @@ class _CommandBase():
                 log.debug('Calling success callback: %r', self.on_success)
                 self.on_success(self)
         else:
-            log.debug('%r failed: exception=%r', self, exception)
             if self.on_error is not None:
                 log.debug('Calling error callback: %r', self.on_error)
                 self.on_error(self.exception)
