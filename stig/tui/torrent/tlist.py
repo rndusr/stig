@@ -174,12 +174,12 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        title = '%s %s' % (
-            len(self._torrents) if self._torrents is not None else '?',
-            str(self._tfilter) if self._tfilter is not None else 'unfiltered')
+        title = str(self._tfilter) if self._tfilter is not None else 'unfiltered'
         sortstr = str(self._sort)
         if sortstr is not 'name':
             title += ' {%s}' % sortstr
+        if self._torrents is not None:
+            title += ' [%s]' % len(self._torrents)
         return title
 
     @property
