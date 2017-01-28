@@ -150,7 +150,7 @@ class RcCmd(metaclass=InitCommand):
     )
     cmdmgr = ExpectedResource
 
-    def run(self, FILE):
+    async def run(self, FILE):
         from ...settings import rcfile
         from ...settings.defaults import DEFAULT_RCFILE
         import os
@@ -166,10 +166,12 @@ class RcCmd(metaclass=InitCommand):
             log.error('Loading rc file failed: {}'.format(e))
             return False
         else:
-            log.debug('Reading commands from rc file: %r', FILE)
-            log.debug(lines)
+            log.debug('Running commands from rc file: %r', FILE)
             for cmdline in lines:
-                self.cmdmgr(cmdline)
+                log.debug('  %r', cmdline)
+                success = await self.cmdmgr.run_async(cmdline)
+                if not success:
+                    return False
             return True
 
 
