@@ -236,17 +236,13 @@ class TabCmd(metaclass=InitCommand):
             log.debug('Inserted new tab at position %d', tabs.focus_position)
 
         if COMMAND:
+            cmd = ' '.join(shlex.quote(arg) for arg in COMMAND)
             log.debug('Running command in tab %d with args %s: %r',
                       tabs.focus_position,
                       ', '.join('%s=%r' % (k,v) for k,v in cmdargs.items()),
-                      COMMAND)
+                      cmd)
 
-            process = self.cmdmgr.run(COMMAND, **cmdargs)
-            # Sync processes are always finished at this point.
-            # Async processes must finish before we can report our own success.
-            if not process.finished:
-                await process.task
-            return process.success
+            return await self.cmdmgr.run_async(cmd, **cmdargs)
         else:
             return True
 
