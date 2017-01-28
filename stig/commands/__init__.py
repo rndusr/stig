@@ -198,6 +198,7 @@ class _CommandBase():
         self.on_error = on_error
         self._task = None
         self._success = None
+        self._is_async = False
         self._exc = None
         self._exc_fetched = False
 
@@ -218,10 +219,12 @@ class _CommandBase():
 
             if asyncio.iscoroutinefunction(self.run):
                 log.debug('Running async command: %r', self)
+                self._is_async = True
                 self._task = self.loop.create_task(self.run(**kwargs))
                 self._task.add_done_callback(lambda task: self._catch_exceptions(task.result))
             else:
                 log.debug('Running sync command: %r', self)
+                self._is_async = False
                 self._catch_exceptions(self.run, **kwargs)
 
     def _catch_exceptions(self, callabee, *args, **kwargs):
@@ -306,9 +309,9 @@ class _CommandBase():
         return self._success is not None
 
     @property
-    def task(self):
-        """The Task instance of a running async command (run method is async)"""
-        return self._task
+    def is_async(self):
+        """Whether this command runs asynchronously"""
+        return self._is_async
 
     def __repr__(self):
         if isinstance(self._args, abc.Sequence):
