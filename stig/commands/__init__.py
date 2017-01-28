@@ -261,10 +261,11 @@ class _CommandBase():
                 log.debug('Calling error callback: %r', self.on_error)
                 self.on_error(self.exception)
 
-    def wait(self):
-        """Wait synchronously until asynchronous command has finished
+    def wait_sync(self):
+        """Wait synchronously until this command has finished
 
-        Raises RuntimeError if loop is closed or running.
+        This uses the run_until_complete() method, so the loop must not be
+        running or closed.
         """
         if not self.finished:
             if self.loop.is_closed():
@@ -274,6 +275,17 @@ class _CommandBase():
             else:
                 log.debug('Waiting until finished: %r', self)
                 self._catch_exceptions(self.loop.run_until_complete, self._task)
+
+    async def wait_async(self):
+        """Wait asynchronously until this command has finished"""
+        if not self.finished:
+            log.debug('Waiting until finished: %r', self)
+            try:
+                success = await self._task
+            except Exception as e:
+                self._handle_result(success=False, exception=e)
+            else:
+                self._handle_result(success=success, exception=None)
 
     def __del__(self):
         """Raise stored, unraised exception"""
