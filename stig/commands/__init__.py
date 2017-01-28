@@ -486,85 +486,213 @@ class CommandManager():
             categories.add(cmd.category)
         return tuple(sorted(categories))
 
-    # TODO: With command chains, 'command' argument should be 'cmdchain' and
-    # be a string or a list of arguments.
-    def __call__(self, command, block=False, on_error=None, **kwargs):
-        """Run `command`, return its return value
 
-        command: Command name and any arguments as a sequence or string
-        block: Whether to return immediately or wait for command to finish; if
-               enabled, the asyncio event loop must be stopped and not closed
+    def _maybe_run_callbacks(self, process, on_success, on_error):
+        exc = process.exception
+        if process.success:
+            if on_success is not None:
+                on_success(process)
+            return True
+        elif on_error is not None and isinstance(exc, CmdError):
+            # A command raises an empty CmdError if its run() method returned
+            # False.  That should mean the run() method already reported any
+            # errors, so we ignore that error here.
+            if exc.args:
+                log.debug('Calling %r with %r', on_error, exc)
+                on_error(exc)
+                return False
+            else:
+                log.debug('Ignoring empty CmdError')
+                return False
+        elif exc is not None:
+            log.debug('Re-raising %r', exc)
+            raise exc
+
+    def _handle_final_process(self, process, reraise=True):
+        log.debug('Final process: %r', process)
+        if process is None:
+            return True  # Empty cmd chain
+        elif process.exception is not None:
+            if reraise:
+                raise process.exception
+            else:
+                return False
+        else:
+            return process.success
+
+    def run_sync(self, commands, on_success=None, on_error=None, **kwargs):
+        """Run `commands`, return boolean result
+
+        Use this method in non-async code. The asyncio loop must be not
+        running and not closed.
+
+        command: See `split_cmdchain`
+        block: Whether to return immediately or wait for an async command to
+               finish (if enabled, the asyncio event loop must be stopped and
+               not closed)
         on_error: Callable that gets any CmdErrors
 
         Any other keyword arguments are forwarded to the command instance
         which makes them available as attributes so the 'run' method can
-        access them via 'self'.
+        access them via its instance (self).
 
-        Any exceptions from the command are re-raised, except CmdErrors if
-        `on_error` is not None.
+        Any exceptions from the command (besides CmdErrors) are re-raised
+        unless.  If `on_error` is None, CmdErrors are also re-raised.
 
-        Returns True if the command succeeded, False if it failed, and None if
-        it is async and `block` is False.
+        Returns True if the command chain ran successfully, False if it
+        failed, and None if it is async and `block` is False.
+
         """
-        def handle_exc(exc):
-            if on_error is not None and isinstance(exc, CmdError):
-                if exc.args:
-                    # exc.args is () if cmd didn't raise any exception but
-                    # returned False.  In that case, we assume the error(s)
-                    # were already reported by the cmd itself.
-                    log.debug('Calling %r with %r', on_error, exc)
-                    on_error(exc)
+        log.debug('Running command chain synchronously: %r', commands)
+        cmdchain = self.split_cmdchain(commands)
+        process = None
+        for process in self._yield_from_cmdchain(cmdchain, **kwargs):
+            if not process.finished:
+                process.wait_sync()
+            self._maybe_run_callbacks(process, on_success, on_error)
+        return self._handle_final_process(process, reraise=not bool(on_error))
+
+    async def run_async(self, commands, on_success=None, on_error=None, **kwargs):
+        """Same as `run_sync` but for async code"""
+        log.debug('Running command chain asynchronously: %r', commands)
+        cmdchain = self.split_cmdchain(commands)
+        process = None
+        for process in self._yield_from_cmdchain(cmdchain, **kwargs):
+            if not process.finished:
+                await process.wait_async()
+            self._maybe_run_callbacks(process, on_success, on_error)
+        return self._handle_final_process(process, reraise=not bool(on_error))
+
+    def run_task(self, commands, on_success=None, on_error=None, **kwargs):
+        """Return task that runs `run_async`"""
+        log.debug('Creating command chain task: %r', commands)
+        return self.loop.create_task(self.run_async(
+            commands, on_success, on_error, **kwargs))
+
+    def _yield_from_cmdchain(self, cmdchain, **kwargs):
+        prev_process_success = True
+        prev_process_exc = None
+        for i,cmdline in enumerate(cmdchain):
+            if cmdline in OPS_AND and not prev_process_success:
+                log.debug('Previous command failed (%r) - aborting', prev_process_success)
+                break
+            elif cmdline in OPS_OR and prev_process_success:
+                log.debug('Previous command succeeded (%r) - aborting', prev_process_success)
+                break
+            elif is_op(cmdline):
+                continue
             else:
-                log.debug('Re-raising %r', exc)
-                raise exc
+                process = self._create_process(cmdline, **kwargs)
+                yield process
+                assert process.finished, 'Not finished: {!r}'.format(process)
+                prev_process_success = process.success
 
-        process = self.run(command, on_error=handle_exc, **kwargs)
-        if process is None:
-            return False  # CmdNotFoundError was handled by handle_exc()
-        else:
-            if block:
-                process.wait()
-                if process.exception is not None and on_error is None:
-                    raise process.exception
-            return process.success
+    def _create_process(self, cmdline, **kwargs):
+        """Call one command and return its instance or None on error"""
+        # We can't create a _CommandBase instance for non-existing commands,
+        # and raising/returning an exception instead of a _CommandBase
+        # instance complicates everything.
+        # This creates a rudimentary process with only the needed attributes
+        # so the caller can report success or failure as if it were a proper
+        # _CommandBase derivative.
+        def fake_process(**kwargs):
+            attrs = {'finished': True, 'success': False, 'exception': None}
+            attrs.update(kwargs)
+            def __repr__(self):
+                kws = ', '.join('%s=%r' % (k,v) for k,v in attrs.items()
+                                if k[0] != '_')
+                return '<{} {}>'.format(type(self).__name__, kws)
+            attrs['__repr__'] = __repr__
+            return type('FakeCommand', (), attrs)()
 
-    def run(self, command, on_success=None, on_error=None, **kwargs):
-        """Run `command`, return its instance"""
-        # TODO: Once command chaining is implemented:
-        #       - _split_cmds() method takes flat sequence and returns tuple
-        #         of command tuples with [;|&] between.
-        #       - New method _run_cmd_chain() takes return value of
-        #         _split_cmds() and walks through the commands with
-        #         _run_single_cmd().
-        return self._run_single_cmd(command, on_success=on_success,
-                                    on_error=on_error, **kwargs)
+        if not isinstance(cmdline, list):
+            cmdline = list(cmdline)
 
-    def _run_single_cmd(self, command, on_success=None, on_error=None, **kwargs):
-        """Call one command and return its instance or None if command not found"""
-        try:
-            cmd, cmdargs = self._split_cmd(command)
-        except CmdError as e:
-            # 'Unknown command' or 'No support for ... interface'
-            if on_error is not None:
-                on_error(e)
+        cmdname = cmdline.pop(0)
+        cmdargs = cmdline
+        cmdcls = self.get_cmdcls(cmdname, interface='ACTIVE')
+        if cmdcls is None:
+            if self.get_cmdcls(cmdname, interface='ANY') is not None:
+                # Command exists but not in active interface - we ignore it
+                log.debug('Ignoring inactive command: %r', cmdname)
+                process = fake_process(success=False)
             else:
-                raise
-        else:
-            return cmd(cmdargs, loop=self.loop, on_success=on_success, on_error=on_error, **kwargs)
-
-    def _split_cmd(self, command):
-        if isinstance(command, str):
-            command = shlex.split(command)
-        elif not isinstance(command, abc.Sequence):
-            raise TypeError('comand must be string or sequence, not {}: {!r}'
-                            .format(type(command).__name__, command))
-        cmdname = command[0]
-        cmdargs = command[1:]
-        cmd = self.get_cmdcls(cmdname, interface='ACTIVE')
-        if cmd is None:
-            raise CmdNotFoundError('Unknown command: {}'.format(cmdname))
-        elif cmd not in self.active_commands:
-            raise CmdError('{}: No support for {} interface'
+                exc = CmdNotFoundError('Unknown command: {}'.format(cmdname))
+                process = fake_process(exception=exc)
+        elif cmdcls not in self.active_commands:
+            exc = CmdError('{}: No support for {} interface'
                            .format(cmdname, self._active_interface))
+            process = fake_process(exception=exc)
         else:
-            return cmd, cmdargs
+            process = cmdcls(cmdargs, loop=self.loop, **kwargs)
+        return process
+
+    def split_cmdchain(self, commands):
+        """Yield split commands and command operators
+
+        commands: Command string or iterable
+
+        Command strings must separate commands with command operators.
+
+        Command iterables must yield command sequences (e.g. lists or tuples)
+        and command chain operators.  The first item in a command sequence is
+        the command's name and the rest is the arguments for the command.
+
+        Command operators are characters specified by the variables OPS_AND,
+        OPS_OR and OPS_SEQ surrounded by spaces (e.g. " & ").
+
+        Simple example:
+        >>> list(cmdmgr.split_cmdchain('do that & act "like this"'))
+        [ ['do', 'that'], '&', ['act', 'like this'] ]
+        """
+        if isinstance(commands, str):
+            args = shlex.split(commands)
+            cmdchain = []
+            cmd = []
+            while args:
+                arg = args.pop(0)
+                if arg in OPS_SEQ:
+                    if cmd:
+                        cmdchain.append(cmd)
+                    cmdchain.append(OPS_SEQ[0])
+                    cmd = []
+                elif arg in OPS_OR:
+                    if cmd:
+                        cmdchain.append(cmd)
+                    cmdchain.append(OPS_OR[0])
+                    cmd = []
+                elif arg in OPS_AND:
+                    if cmd:
+                        cmdchain.append(cmd)
+                    cmdchain.append(OPS_AND[0])
+                    cmd = []
+                else:
+                    cmd.append(arg)
+            if cmd:
+                cmdchain.append(cmd)
+            while cmdchain and is_op(cmdchain[-1]):
+                cmdchain.pop(-1)
+        elif not isinstance(commands, abc.Iterable):
+            raise RuntimeError('Must be string or sequence, not {!r}: {!r}'.format(
+                type(commands).__name__, commands))
+        else:
+            cmdchain = commands
+
+        for item in cmdchain:
+            self._validate_cmdchain_item(item)
+            yield item
+
+    def _validate_cmdchain_item(self, item):
+        # Test if item is of a valid type
+        if not (is_op(item) or (isinstance(item, abc.Sequence) and not isinstance(item, str) and
+                                all(isinstance(arg, str) for arg in item))):
+            raise RuntimeError('Invalid type for command chain item: {!r}'.format(item))
+
+        # Test if item is an operator after another operator
+        try:
+            prev_item = self._prev_validation_item
+        except AttributeError:
+            prev_item = None
+        self._prev_validation_item = item
+        if is_op(prev_item) and is_op(item):
+            raise CmdError('Consecutive operators: "{} {}"'.format(prev_item, item))
