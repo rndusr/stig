@@ -16,9 +16,9 @@ import urwid
 from . import urwidpatches
 
 from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
+from . import theme
+
 from ..settings.defaults import DEFAULT_KEYMAP
-
-
 from .keymap import KeyMap
 keymap = KeyMap(callback=lambda cmd,widget: cmdmgr(cmd, on_error=log.error))
 for args in DEFAULT_KEYMAP:
@@ -115,7 +115,6 @@ def run(cmds):
 
     # Don't catch theme.ParserError.  Default theme should throw exceptions to
     # stdout.
-    from . import theme
     theme.init(cfg['tui.theme'].value, urwidscreen)
 
     # Enable logging to tui widget instead of stdout/stderr
