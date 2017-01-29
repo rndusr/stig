@@ -16,9 +16,10 @@ aioloop = asyncio.get_event_loop()
 
 from . import cliopts
 from . import logging
-if cliopts.ARGS['profile_file'] is not None:
-    logging.enable_profiling(cliopts.ARGS['profile_file'])
-logging.setup(debugmods=cliopts.ARGS['debug'], filepath=cliopts.ARGS['debug_file'])
+cliargs, clicmds = cliopts.parse()
+if cliargs['profile_file'] is not None:
+    logging.enable_profiling(cliargs['profile_file'])
+logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 log = logging.make_logger()
 
@@ -63,53 +64,54 @@ cmdmgr.load_cmds_from_module(
     'stig.commands.cli', 'stig.commands.tui',
 )
 
-from .commands.cmdcache import CommandCache
-cmdcache = CommandCache(cmdmgr)
-
 
 def run():
+    from .commands.guess_ui import (guess_ui, UIGuessError)
     from . import hooks
 
     # Read commands from rc file
-    if not cliopts.ARGS['norcfile']:
+    rclines = ()
+    if not cliargs['norcfile']:
         from .settings import rcfile
         from .settings.defaults import DEFAULT_RCFILE
         try:
-            rclines = rcfile.read(cliopts.ARGS['rcfile'] or DEFAULT_RCFILE)
+            rclines = rcfile.read(cliargs['rcfile'] or DEFAULT_RCFILE)
         except rcfile.RcFileError as e:
             log.error('Loading rc file failed: {}'.format(e))
             sys.exit(1)
-        else:
-            cmdcache.add_rccmds(rclines)
-
-    # Read commands from CLI args
-    cmdcache.add_clicmds(cliopts.get_cmds())
 
     # Decide if we run as a TUI or CLI
-    if cliopts.ARGS['tui']:
+    if cliargs['tui']:
         cmdmgr.active_interface = 'tui'
-    elif cliopts.ARGS['notui']:
+    elif cliargs['notui']:
         cmdmgr.active_interface = 'cli'
     else:
-        cmdmgr.active_interface = cmdcache.guess_ui(cmdcache.clicmds)
+        try:
+            cmdmgr.active_interface = guess_ui(clicmds, cmdmgr)
+        except UIGuessError as e:
+            log.error('Unable to guess user interface')
+            log.error('Provide one of these options: --tui/-t or --no-tui/-T')
+            sys.exit(1)
 
-    # Run commands either in CLI mode or TUI mode
-    log.debug('Active interface: %r', cmdmgr.active_interface)
-    if cmdmgr.active_interface == 'cli':
-        cmds = cmdcache.select(source='rc', interface='cli') + cmdcache.clicmds
-        success = True
-        for cmd in cmds:
-            success = cmdmgr(cmd, block=True, on_error=log.error) and success
-            if not success:
-                sys.exit(1)
-
-    elif cmdmgr.active_interface == 'tui':
-        # rc file commands must run first so cli commands can override
-        # settings.
+    # Some commands need resources depending on the active UI
+    if cmdmgr.active_interface == 'tui':
         from .tui import main as tui
         cmdmgr.resources.update(tui=tui)
-        if not tui.run(cmdcache.rccmds + cmdcache.clicmds):
+
+    # If rc file commands fail, continue.  This is necessary because, for
+    # example, the TUI-only command 'tab' returns False if the active UI is
+    # 'cli', but we don't want to report that as an error.
+    for cmdline in rclines:
+        cmdmgr.run_sync(cmdline, on_error=log.error)
+
+    # Exit if CLI commands fail
+    if clicmds:
+        success = cmdmgr.run_sync(clicmds, on_error=log.error)
+        if not success:
             sys.exit(1)
+
+    if cmdmgr.active_interface == 'tui':
+        tui.run()
 
 
     # Terminate any remaining tasks

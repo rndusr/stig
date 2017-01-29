@@ -20,7 +20,7 @@ from ..settings.defaults import DEFAULT_KEYMAP
 
 
 from .keymap import KeyMap
-keymap = KeyMap(callback=lambda cmd,widget: cmdmgr(cmd, on_error=log.error))
+keymap = KeyMap(callback=lambda cmd,widget: cmdmgr.run_task(cmd, on_error=log.error))
 for args in DEFAULT_KEYMAP:
     if args['action'][0] == '<' and args['action'][-1] == '>':
         args['action'] = keymap.mkkey(args['action'])
@@ -44,7 +44,7 @@ def _create_cli_widget():
     def on_accept(widget):
         cmd = widget.get_edit_text()
         on_cancel(widget)
-        cmdmgr(cmd, on_error=log.error)
+        cmdmgr.run_task(cmd, on_error=log.error)
 
     return CLIEditWidget(':',
                          on_accept=on_accept, on_cancel=on_cancel,
@@ -97,7 +97,7 @@ urwidloop = urwid.MainLoop(widgets,
                            handle_mouse=False)
 
 
-def run(cmds):
+def run():
     """Run commands and start TUI
 
     Return False if any of the commands failed, True otherwise.
@@ -105,25 +105,17 @@ def run(cmds):
     # Load tui-specific hooks before commands run (commands may trigger hooks)
     from . import hooks
 
-    for cmd in cmds:
-        try:
-            if not cmdmgr(cmd, block=True, on_error=log.error):
-                return False
-        # Make 'quit' behave as expected
-        except urwid.ExitMainLoop:
-            return True
-
-    # Don't catch theme.ParserError.  Default theme should throw exceptions to
-    # stdout.
+    # Don't catch theme.ParserError - a broken default theme should make us
+    # croak obviously and horribly
     from . import theme
     theme.init(cfg['tui.theme'].value, urwidscreen)
 
-    # Enable logging to tui widget instead of stdout/stderr
+    # Start logging to TUI widget instead of stdout/stderr
     logwidget.enable()
 
     # If no tabs have been opened by cli or rc file, open default tab
     if len(tabs) <= 0:
-        cmdmgr('ls', on_error=log.error)
+        cmdmgr.run_sync('ls', on_error=log.error)
 
     try:
         # Start polling torrent lists, counters, bandwidth usage, etc.
