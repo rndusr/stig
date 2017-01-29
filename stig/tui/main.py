@@ -102,6 +102,10 @@ def run(cmds):
 
     Return False if any of the commands failed, True otherwise.
     """
+    # Don't catch theme.ParserError.  Default theme should throw exceptions to
+    # stdout.
+    theme.init(cfg['tui.theme'].value, urwidscreen)
+
     # Load tui-specific hooks before commands run (commands may trigger hooks)
     from . import hooks
 
@@ -112,10 +116,6 @@ def run(cmds):
         # Make 'quit' behave as expected
         except urwid.ExitMainLoop:
             return True
-
-    # Don't catch theme.ParserError.  Default theme should throw exceptions to
-    # stdout.
-    theme.init(cfg['tui.theme'].value, urwidscreen)
 
     # Enable logging to tui widget instead of stdout/stderr
     logwidget.enable()
