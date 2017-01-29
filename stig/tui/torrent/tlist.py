@@ -53,6 +53,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         self._sort = sort
         self._tfilter = tfilter
         self._columns = columns
+        self.title_updater = None
 
         self._table = Table(**TUICOLUMNS)
         self._table.columns = columns
@@ -86,8 +87,10 @@ class TorrentListWidget(urwid.WidgetWrap):
                                      tfilter=self._tfilter)
         tui.srvapi.treqpool.poll()
 
-    def _handle_tlist(self, torrents=None):
-        self._torrents = torrents
+    def _handle_tlist(self, torrents):
+        self._torrents = tuple(torrents)
+        if self.title_updater is not None:
+            self.title_updater(self.title)
         self._invalidate()
 
     def render(self, size, focus=False):
@@ -171,7 +174,9 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        title = str(self._tfilter) if self._tfilter is not None else 'all'
+        title = '%s %s' % (
+            len(self._torrents) if self._torrents is not None else '?',
+            str(self._tfilter) if self._tfilter is not None else 'unfiltered')
         sortstr = str(self._sort)
         if sortstr is not 'name':
             title += ' {%s}' % sortstr

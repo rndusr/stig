@@ -40,9 +40,19 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
 
     def make_tlist(self, tfilter, sort, columns):
         from ...tui.torrent.tlist import TorrentListWidget
+
+        def make_title_widget(text):
+            return make_tab_title(text,
+                                  'tabs.torrentlist.unfocused',
+                                  'tabs.torrentlist.focused')
+
         tlistw = TorrentListWidget(tfilter=tfilter, sort=sort, columns=columns)
-        titlew = make_tab_title(tlistw.title, 'tabs.torrentlist.unfocused', 'tabs.torrentlist.focused')
-        self.tui.tabs.load(titlew, tlistw)
+        tabid = self.tui.tabs.load(make_title_widget(tlistw.title), tlistw)
+
+        def set_tab_title(text):
+            self.tui.tabs.set_title(make_title_widget(text), position=tabid)
+        tlistw.title_updater = set_tab_title
+
         return True
 
 
