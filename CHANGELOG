@@ -1,3 +1,14 @@
+2017-??-?? 0.2.0a
+  Notable changes:
+    * Proper chaining of commands with '&', '|' and ';'
+    * Display number of torrents in tab titles
+    * Shift-d moves to left tab after closing focused tab
+    * 'tab' command no longer accepts '-'/'+' for left/right tab
+
+  Fixed bugs:
+    * 'set tui.theme path/to/theme' no longer crashes the TUI
+
+
 2017-01-16 0.1.0a
   IMPORTANT: Keybindings have changed; run 'stig help keys' for a list.
 
