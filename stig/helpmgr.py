@@ -149,26 +149,23 @@ class HelpManager():
              "However, 'ls foo | ls bar' would list 'bar' torrents only if there "
              "are no 'foo' torrents."),
             '',
-            '\tGUESSING CLI/TUI',
+            '\tGUESSING THE USER INTERFACE (CLI/TUI)',
             ("\t\tIf commands are given as command line arguments and neither "
              "'--tui' nor '--notui' are provided, {APPNAME} tries to guess "
              "whether it makes sense to start the TUI or just run the commands "
              "and exit.  For example, if you run '{APPNAME} stop foo', "
              "it is reasonable to assume that you want to run 'stop foo' and "
-             "get your shell prompt back as soon as possible.  But if you run "
-             "'{APPNAME} set srv.url foo.bar', it is very likely that you "
-             "expect the TUI to pop up."),
+             "get your shell prompt back.  But if you run '{APPNAME} set srv.url foo.bar', "
+             "you probably expect the TUI to pop up."),
              '',
-             "\t\tHere is how it works:",
-             ("\t\t\t- \tBy default, the TUI is loaded."),
-             ("\t\t\t- \tCommands in the TORRENT category (see below) "
-              "inhibit the TUI."),
+             "\t\tThis is how this works basically:",
+             ("\t\t\t- \tWithout CLI commands, the TUI is loaded."),
+             ("\t\t\t- \tCommands in the TORRENT category (see below) prevent the TUI."),
+             ("\t\t\t- \tChanging TUI settings ('(re)set tui.*') enforces the TUI."),
+             ("\t\t\t- \tChanging server settings ('(re)set srv.*') prevents the TUI."),
              ("\t\t\t- \tCommands that are exclusive to TUI or CLI "
-              "(e.g. 'tab') enforce their interface."),
-             ("\t\t\t- \tAny command that starts with 'set tui.' enforces the TUI."),
-             ("\t\t\t- \tIf applying the above rules is inconclusive, the last "
-              "command wins.  For example '{APPNAME} tab ls idle \; help' does not "
-              "load the TUI, but '{APPNAME} help \; tab ls idle' does."),
+              "(e.g. 'tab') enforce their interface.  Providing both TUI- "
+              "and CLI-only commands produces an error."),
             '',
         ]
 
