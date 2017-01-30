@@ -133,7 +133,22 @@ class HelpManager():
             ("\t\t- \tby listing them in an rc file (see 'help rcfile') "
              "and loading it with the '--rcfile' option or the 'rc' command."),
             '',
-
+            '\tCHAINING COMMANDS',
+            ("\t\tCombining commands with operators makes it possible to run "
+             "a command based on the previous command's success."),
+             "",
+             "\t\tAvailable command operators are: ",
+             "\t\t\t&/and \t- \tRun the next command if the previous command succeeded.",
+             "\t\t\t|/or \t- \tRun the next command if the previous command failed.",
+             "\t\t\t;/also \t- \tRun the next command in any case.",
+             "",
+             "\t\tCommand operators must be enclosed by spaces.",
+             "",
+            ("\t\tFor example, 'ls foo & ls bar' would list all 'foo' torrents and, "
+             "if any where found, continue to list all 'bar' torrents.  "
+             "However, 'ls foo | ls bar' would list 'bar' torrents only if there "
+             "are no 'foo' torrents."),
+            '',
             '\tGUESSING CLI/TUI',
             ("\t\tIf commands are given as command line arguments and neither "
              "'--tui' nor '--notui' are provided, {APPNAME} tries to guess "
