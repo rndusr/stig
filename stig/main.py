@@ -93,26 +93,29 @@ def run():
             log.error('Provide one of these options: --tui/-t or --no-tui/-T')
             sys.exit(1)
 
-    # Some commands need resources depending on the active UI
-    if cmdmgr.active_interface == 'tui':
+    def run_commands():
+        # If rc file commands fail, continue.  This is necessary because, for
+        # example, the TUI-only command 'tab' returns False if the active UI is
+        # 'cli', but we don't want to report that as an error.
+        for cmdline in rclines:
+            cmdmgr.run_sync(cmdline, on_error=log.error)
+
+        # Exit if CLI commands fail
+        if clicmds:
+            success = cmdmgr.run_sync(clicmds, on_error=log.error)
+            if not success:
+                return False
+        return True
+
+    # Run commands either in CLI or TUI mode
+    if cmdmgr.active_interface == 'cli':
+        if not run_commands():
+            sys.exit(1)
+    elif cmdmgr.active_interface == 'tui':
         from .tui import main as tui
         cmdmgr.resources.update(tui=tui)
-
-    # If rc file commands fail, continue.  This is necessary because, for
-    # example, the TUI-only command 'tab' returns False if the active UI is
-    # 'cli', but we don't want to report that as an error.
-    for cmdline in rclines:
-        cmdmgr.run_sync(cmdline, on_error=log.error)
-
-    # Exit if CLI commands fail
-    if clicmds:
-        success = cmdmgr.run_sync(clicmds, on_error=log.error)
-        if not success:
+        if not tui.run(run_commands):
             sys.exit(1)
-
-    if cmdmgr.active_interface == 'tui':
-        tui.run()
-
 
     # Terminate any remaining tasks
     tasks = tuple(task for task in asyncio.Task.all_tasks() if not task.done())
@@ -126,7 +129,6 @@ def run():
                 task.result()
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 pass
-
 
     aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
     aioloop.close()

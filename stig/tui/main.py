@@ -16,9 +16,9 @@ import urwid
 from . import urwidpatches
 
 from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
+from . import theme
+
 from ..settings.defaults import DEFAULT_KEYMAP
-
-
 from .keymap import KeyMap
 keymap = KeyMap(callback=lambda cmd,widget: cmdmgr.run_task(cmd, on_error=log.error))
 for args in DEFAULT_KEYMAP:
@@ -97,18 +97,24 @@ urwidloop = urwid.MainLoop(widgets,
                            handle_mouse=False)
 
 
-def run():
+def run(command_runner):
     """Run commands and start TUI
 
     Return False if any of the commands failed, True otherwise.
     """
+    # Don't catch theme.ParserError - a broken default theme should make us
+    # croak obviously and horribly
+    theme.init(cfg['tui.theme'].value, urwidscreen)
+
     # Load tui-specific hooks before commands run (commands may trigger hooks)
     from . import hooks
 
-    # Don't catch theme.ParserError - a broken default theme should make us
-    # croak obviously and horribly
-    from . import theme
-    theme.init(cfg['tui.theme'].value, urwidscreen)
+    try:
+        if not command_runner():
+            return False
+    # Make 'quit' behave as expected
+    except urwid.ExitMainLoop:
+        return True
 
     # Start logging to TUI widget instead of stdout/stderr
     logwidget.enable()
