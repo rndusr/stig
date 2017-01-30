@@ -13,36 +13,11 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 from ..settings import is_server_setting
+from ..commands import is_op as is_cmd_op
 
 
 class UIGuessError(Exception):
     pass
-
-# TODO: Use this in gues_ui()?
-def _needs_tui(cmdline, cmdmgr):
-    cmdname = cmdline[0]
-
-    # Does command even exist?
-    cmdcls = cmdmgr.get_cmdcls(cmdname, interface='ANY')
-    if cmdcls is None:
-        return False
-
-    # CLI supported?
-    clicmdcls = cmdmgr.get_cmdcls(cmdname, interface='cli')
-    if clicmdcls is None:
-        return True
-
-    # 'set tui.*' and 'reset tui.*' are treated as TUI-only commands
-    elif (cmdname == 'set' and len(cmdline) >= 3 or
-          cmdname == 'reset' and len(cmdline) >= 2):
-        setting = cmdline[1]
-        if setting.startswith('tui.'):
-            return True
-        elif is_server_setting(setting):
-            return False
-
-    return False
-
 
 def guess_ui(clicmds, cmdmgr):
     """Guess desired user interface based on CLI commands
@@ -57,15 +32,16 @@ def guess_ui(clicmds, cmdmgr):
     cli_needed = False
     guess = 'cli'
     for cmdline in cmdmgr.split_cmdchain(clicmds):
+        if is_cmd_op(cmdline):
+            continue
+
         cmdname = cmdline[0]
         debugmsg = '  %s: ' % cmdname
-
-        # TODO: Write and implement docstring
 
         tuicmd = cmdmgr.get_cmdcls(cmdname, interface='tui')
         clicmd = cmdmgr.get_cmdcls(cmdname, interface='cli')
         if tuicmd is None is clicmd:
-            continue  # Unknown command - no guess
+            debugmsg += 'unknown command - not guessing'
 
         # Does command provide only one interface?
         elif tuicmd is None:
@@ -86,13 +62,13 @@ def guess_ui(clicmds, cmdmgr):
              cmdline[0] == 'reset' and len(cmdline) >= 2:
             setting = cmdline[1]
             if setting.startswith('tui.'):
-                debugmsg += '{!r} starts with \'tui.\' - demanding TUI'.format(setting)
+                debugmsg += 'TUI setting: %r - guessing TUI' % setting
                 guess = 'tui'
             elif is_server_setting(setting):
-                debugmsg += 'is_server_setting({!r}) == True - guessing CLI'.format(setting)
+                debugmsg += 'server setting: %r - guessing CLI' % setting
                 guess = 'cli'
             else:
-                debugmsg += 'is_server_setting({!r}) == False - not guessing'.format(setting)
+                debugmsg += 'other setting: %r - not guessing' % setting
 
         elif clicmd is not None:
             debugmsg += 'CLI supported - guessing CLI'
