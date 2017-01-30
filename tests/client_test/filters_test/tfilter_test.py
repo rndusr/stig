@@ -222,6 +222,10 @@ class TestSingleTorrentFilter(unittest.TestCase):
         tids = SingleTorrentFilter('private').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,4})
 
+    def test_path_filter(self):
+        f = SingleTorrentFilter('path=/foo/bar/baz/')
+        self.assertEqual(str(f), 'path=/foo/bar/baz/')
+
 
 class TestTorrentFilter(unittest.TestCase):
     def test_parser(self):
