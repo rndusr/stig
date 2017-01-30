@@ -134,9 +134,8 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
                 except AttributeError:
                     return True
 
-        while True:
+        async def manage():
             for poller in self._existing_pollers:
-                log.debug('Managing poller: %r', poller)
                 running = poller.running
                 needed = is_needed(poller)
 
@@ -148,8 +147,20 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
                     await poller.stop()
                     if poller in self._pollers:
                         self._pollers.remove(poller)
-                    # log.debug('%d remaining pollers', len(tuple(self._existing_pollers)))
-            await self._manage_pollers_interval.sleep(5)
+
+        while True:
+            log.debug('Managing pollers:')
+            await manage()
+
+            # If a poller was added while we were managing the existing
+            # pollers, it won't get started until the next interval.  This
+            # also solves a weird bug that accumulates unused pollers when
+            # rapidly opening and closing file lists.
+            while any(not poller.running for poller in self._existing_pollers):
+                log.debug('Managing pollers again:')
+                await manage()
+
+            await self._manage_pollers_interval.sleep(10)
 
     def manage_pollers_now(self):
         self._manage_pollers_interval.interrupt()
