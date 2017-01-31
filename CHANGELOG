@@ -6,7 +6,8 @@
     * 'tab' command no longer accepts '-'/'+' for left/right tab
 
   Fixed bugs:
-    * 'set tui.theme path/to/theme' no longer crashes the TUI
+    * 'set tui.theme path/to/theme' crashed the TUI
+    * Empty file list when opened and closed rapidly
 
 
 2017-01-16 0.1.0a
