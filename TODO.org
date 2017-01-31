@@ -16,23 +16,6 @@ questions and point out issues.
 ** TODO add: --path,-p option                                   :improvement:
    The newly added torrent is downloaded to the specified path.
 
-** TODO Command chaining with &, |, ;                           :improvement:
-   Commands can be separated with '&', '|' or ';'.  Run each command
-   separately.  Stop execution if:
-    - The previous command failed and is separated with '&'
-    - The previous command succeeeded and is separated with '|'
-
-*** TODO Document how command chaining works in 'help commands'
-
-*** TODO Maybe offer alternatives to '&', '|', and ';'?
-    Ideally, the command chaining characters should be escapable, which is
-    straightforward in the built-in prompt.  But on the CLI they have meaning
-    to the shell, which means they have to be escaped twice, once so the shell
-    ignores them and then again for stig to ignore them.
-
-    Maybe offer '+', '-' and ':' as aliases? The downside would be that there
-    are more characters one would have to escape in torrent names, etc.
-
 
 * client
 ** TODO NotImplementedError                                     :improvement:
