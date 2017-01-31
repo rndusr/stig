@@ -50,14 +50,6 @@ questions and point out issues.
 
 
 * tui.logger
-** TODO Some long log messages are not displayed                        :bug:
-   To reproduce, create some log messages and change the terminal size.
-
-   ~$ stig --debug client.aiotransmission~
-
-   Some messages will appear as empty but show the message when the terminal
-   becomes large enough.
-
 ** TODO Make log widget scrollable                              :improvement:
    How to scroll?  Do we need a command for that, like ~scrollog
    up/down/pgup/pgdown~?  Is there a better way?
