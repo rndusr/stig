@@ -53,20 +53,20 @@ topbar.help.label         light cyan  on $topbar_bg
 topbar.help.space         light cyan  on $topbar_bg
 
 $bottombar_bg = dark gray
-bottombar                             light gray  on $bottombar_bg
-bottombar.important                   light red   on $bottombar_bg
-bottombar.bandwidth.up                dark green  on $bottombar_bg
-bottombar.bandwidth.up.highlighted    light green on $bottombar_bg
-bottombar.bandwidth.down              dark cyan   on $bottombar_bg
-bottombar.bandwidth.down.highlighted  light cyan  on $bottombar_bg
+bottombar                             light gray     on $bottombar_bg
+bottombar.important                   light red,bold on $bottombar_bg
+bottombar.bandwidth.up                dark green     on $bottombar_bg
+bottombar.bandwidth.up.highlighted    light green    on $bottombar_bg
+bottombar.bandwidth.down              dark cyan      on $bottombar_bg
+bottombar.bandwidth.down.highlighted  light cyan     on $bottombar_bg
 
 $log_bg = dark gray
-log                        light gray  on $log_bg
-log.timestamp              dark cyan   on $log_bg
-log.info                   light green on $log_bg
-log.error                  light red   on $log_bg
-log.debug                  yellow      on $log_bg
-log.dupecount              light cyan  on $log_bg
+log                        light gray     on $log_bg
+log.timestamp              dark cyan      on $log_bg
+log.info                   light green    on $log_bg
+log.error                  light red,bold on $log_bg
+log.debug                  yellow         on $log_bg
+log.dupecount              light cyan     on $log_bg
 
 $keychains_bg = black
 keychains            light gray   on $keychains_bg
