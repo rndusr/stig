@@ -58,7 +58,7 @@ def guess_ui(clicmds, cmdmgr):
 
         # Some 'set' commands should enforce the tui or cli, other 'set'
         # commands shouldn't care.
-        elif cmdline[0] == 'set' and len(cmdline) >= 3 or \
+        elif cmdline[0] == 'set' and len(cmdline) >= 2 or \
              cmdline[0] == 'reset' and len(cmdline) >= 2:
             setting = cmdline[1]
             if setting.startswith('tui.'):
