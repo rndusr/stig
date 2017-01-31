@@ -9,6 +9,7 @@
   Fixed bugs:
     * 'set tui.theme path/to/theme' crashed the TUI
     * Empty file list when opened and closed rapidly
+    * Long log messages are now wrapped and displayed correctly (well, almost)
 
 
 2017-01-16 0.1.0a
