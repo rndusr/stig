@@ -107,7 +107,7 @@ def read(source):
             with open(source, mode='r') as f:
                 lines = f.readlines()
         except OSError as e:
-            raise ThemeError('Unable to read from {!r}: {}'.format(source, e.strerror))
+            raise ThemeError('Unable to read {!r}: {}'.format(source, e.strerror))
     elif isinstance(source, abc.Iterable):
         lines = source
     else:
