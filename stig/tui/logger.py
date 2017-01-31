@@ -170,7 +170,7 @@ class LogEntry(urwid.WidgetWrap):
             ('pack', urwid.AttrMap(urwid.Text(' '),               'log')),
             ('pack', urwid.AttrMap(self._widgets['dupes'],        'log.dupecount')),
             ('pack', urwid.AttrMap(self._widgets['dupes_spacer'], 'log')),
-            ('pack', urwid.AttrMap(self._widgets['message'],      'log.'+style)),
+            urwid.AttrMap(self._widgets['message'], 'log.'+style),
         ], dividechars=0))
 
     @property
