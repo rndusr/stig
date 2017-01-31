@@ -22,7 +22,7 @@ from ..client.tsort import SORTERS
 
 DEFAULT_RCFILE        = user_config_dir(APPNAME) + '/rc'
 DEFAULT_HISTORY_FILE  = user_cache_dir(APPNAME)+'/history'
-DEFAULT_THEME_FILE    = os.path.dirname(__file__) + os.sep + 'default.theme'
+DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TLIST_SORT    = ('name',)
 DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
