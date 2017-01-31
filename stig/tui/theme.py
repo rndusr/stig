@@ -154,9 +154,8 @@ def reset(screen):
 
 
 class Palette(abc.Sequence):
-    """Turn list of strings into a urwid palette
+    """Read urwid palette as a list of strings
 
-    Returns the palette and the number of colors needed.
     Raises ParseError on errors during parsing (duh).
     """
 
