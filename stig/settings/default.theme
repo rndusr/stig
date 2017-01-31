@@ -1,3 +1,37 @@
+# This is the default theme for stig.
+# https://github.com/rndusr/stig
+#
+# To create your own theme, copy this file anywhere you like (name and
+# extension are irrelevant) and load it:
+#
+#     set tui.theme path/to/your/theme
+#
+# If your theme file is in the same directory as your rc file
+# ($XDG_CONFIG_HOME/stig by default), you can omit the path.
+#
+# FILE FORMAT
+#
+# Each line specifies one combination of foreground/background color and
+# optional attributes (bold, underlined, etc).  The line format is:
+#
+#    <NAME> <FOREGROUND COLOR>[,<ATTRIBUTE1>,<ATTRIBUTE2>,...] on <BACKGROUND COLOR>
+#
+# Color names: default, black, white, dark gray, light gray, dark red,
+# light red, dark green, light green, dark blue, light blue, dark magenta,
+# light magenta, dark cyan, light cyan, brown, yellow
+#
+# Attribute names: bold, underline, standout
+#
+# VARIABLES
+#
+# It is possibel to declare variables like this:
+#
+#     $<VARIABLE> = <VALUE>
+#
+# Any occurence of '$<VARIABLE>' after this declaration is replaced by
+# '<VALUE>'.
+
+
 tabs.unfocused             white        on black
 tabs.focused               black        on white
 tabs.torrentlist.unfocused dark cyan    on dark gray
