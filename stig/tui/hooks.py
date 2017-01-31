@@ -54,7 +54,7 @@ cfg['tui.log.height'].on_change(_set_log_maxrows)
 
 def _set_theme(themefile):
     try:
-        tui.theme.load(cfg['tui.theme'].value, tui.urwidscreen)
+        tui.load_theme(themefile.value)
     except tui.theme.ThemeError as e:
         raise ValueError(e)
 cfg['tui.theme'].on_change(_set_theme)

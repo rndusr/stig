@@ -36,6 +36,25 @@ from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
                       BandwidthStatusWidget, TorrentCountersWidget)
 
 
+def load_theme(themefile):
+    """Load theme from `themefile`
+
+    If `themefile` does not have a path and does not exist in the current
+    working directory, try to load it from the same path as the rc file.
+    """
+    import os
+    if os.sep not in themefile and not os.path.exists(themefile):
+        # Path is not given and file does not exist in working dir.
+        from ..settings.defaults import DEFAULT_RCFILE
+        from ..main import cliargs
+        rcfilepath = cliargs['rcfile'] or DEFAULT_RCFILE
+        themefilepath = os.path.join(os.path.dirname(rcfilepath), themefile)
+        if os.path.exists(themefilepath):
+            theme.load(themefilepath, urwidscreen)
+            return
+    theme.load(themefile, urwidscreen)
+
+
 def _create_cli_widget():
     def on_cancel(widget):
         widget.set_edit_text('')
