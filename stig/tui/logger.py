@@ -144,10 +144,6 @@ class LogWidget(urwid.WidgetWrap):
         self._listbox.body[:] = []
         self._invalidate_rows()
 
-    @property
-    def entries(self):
-        yield from self._listbox.body
-
     def selectable(self):
         return False
 
