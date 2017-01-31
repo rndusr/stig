@@ -117,7 +117,8 @@ def read(source):
 
 def register(screen, palette):
     """Register palette with screen"""
-    screen.set_terminal_properties(colors=palette.colors)
+    screen.set_terminal_properties(colors=palette.colors,
+                                   bright_is_bold=False)
     screen.register_palette(palette)
     screen.clear()
 
