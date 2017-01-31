@@ -1,10 +1,10 @@
 2017-??-?? 0.2.0a
-  Notable changes:
+  Changes:
     * Proper chaining of commands with '&', '|' and ';'
     * Display number of torrents in tab titles
     * Shift-d moves to left tab after closing focused tab
     * 'tab' command no longer accepts '-'/'+' for left/right tab
-    * Load theme from same path as rc file if no path is given
+    * default.theme file now documents how to make your own theme
 
   Fixed bugs:
     * 'set tui.theme path/to/theme' crashed the TUI
