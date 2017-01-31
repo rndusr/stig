@@ -104,7 +104,7 @@ def run(command_runner):
     """
     # Don't catch theme.ParserError - a broken default theme should make us
     # croak obviously and horribly
-    theme.init(cfg['tui.theme'].value, urwidscreen)
+    theme.init(cfg['tui.theme'].default, urwidscreen)
 
     # Load tui-specific hooks before commands run (commands may trigger hooks)
     from . import hooks
