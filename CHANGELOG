@@ -1,15 +1,16 @@
 2017-??-?? 0.2.0a
   Changes:
-    * Proper chaining of commands with '&', '|' and ';'
+    * Proper chaining of commands with '&', '|' and ';' (see 'help commands')
     * Display number of torrents in tab titles
-    * Shift-d moves to left tab after closing focused tab
-    * 'tab' command no longer accepts '-'/'+' for left/right tab
+    * <D> moves to left tab after closing focused tab
+    * 'tab' command no longer accepts -/+ for left/right tab
     * default.theme file now documents how to make your own theme
 
   Fixed bugs:
     * 'set tui.theme path/to/theme' crashed the TUI
     * Empty file list when opened and closed rapidly
-    * Long log messages are now wrapped and displayed correctly (well, almost)
+    * Long, wrapped log messages were not displayed
+    * <+> was wrongly interpreted as a key chain with two empty keys
 
 
 2017-01-16 0.1.0a
