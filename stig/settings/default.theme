@@ -213,12 +213,13 @@ torrentlist.name.queued.progress2.focused          $name.queued_fg           on 
 torrentlist.name.queued.complete.unfocused         $name.queued_fg           on $list_bg.uf
 torrentlist.name.queued.complete.focused           $name.queued_fg           on $list_bg.f
 
-torrentlist.name.stopped.progress1.unfocused       $list_bg.f,underline  on $list_bg.uf
-torrentlist.name.stopped.progress1.focused         $list_bg.uf,underline on $list_bg.f
-torrentlist.name.stopped.progress2.unfocused       $list_bg.f            on $list_bg.uf
-torrentlist.name.stopped.progress2.focused         $list_bg.uf           on $list_bg.f
-torrentlist.name.stopped.complete.unfocused        $list_bg.f            on $list_bg.uf
-torrentlist.name.stopped.complete.focused          $list_bg.uf           on $list_bg.f
+$name.stopped_fg = dark blue
+torrentlist.name.stopped.progress1.unfocused       $name.stopped_fg,underline on $list_bg.uf
+torrentlist.name.stopped.progress1.focused         $name.stopped_fg,underline on $list_bg.f
+torrentlist.name.stopped.progress2.unfocused       $name.stopped_fg           on $list_bg.uf
+torrentlist.name.stopped.progress2.focused         $name.stopped_fg           on $list_bg.f
+torrentlist.name.stopped.complete.unfocused        $name.stopped_fg           on $list_bg.uf
+torrentlist.name.stopped.complete.focused          $name.stopped_fg           on $list_bg.f
 
 $name.verifying_fg = yellow
 torrentlist.name.verifying.progress1.unfocused     $name.verifying_fg,underline on $list_bg.uf
