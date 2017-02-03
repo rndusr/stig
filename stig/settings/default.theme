@@ -31,6 +31,8 @@
 # Any occurence of '$<VARIABLE>' after this declaration is replaced by
 # '<VALUE>'.
 
+# Uncomment the next line to automatically make light colors bold.
+# light_is_bold
 
 tabs.unfocused             white        on black
 tabs.focused               black        on white

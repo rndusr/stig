@@ -118,7 +118,7 @@ def read(source):
 def register(screen, palette):
     """Register palette with screen"""
     screen.set_terminal_properties(colors=palette.colors,
-                                   bright_is_bold=False)
+                                   bright_is_bold=palette.light_is_bold)
     screen.register_palette(palette)
     screen.clear()
 
@@ -185,6 +185,7 @@ class Palette(abc.Sequence):
             else:
                 raise RuntimeError('Unsupported number of colors: {}'.format(colors))
 
+        self._light_is_bold = False
         palette = []
         variables = {}
         max_colors = 1
@@ -192,6 +193,10 @@ class Palette(abc.Sequence):
             line = line.strip()
             if len(line) < 1 or line[0] == '#':
                 # Ignore comments and empty lines
+                continue
+
+            if line == 'light_is_bold':
+                self.light_is_bold = True
                 continue
 
             # Read variable declaration
@@ -221,6 +226,15 @@ class Palette(abc.Sequence):
         self._palette = palette
         self._colors = max_colors
         self._names = tuple(entry[0] for entry in palette)
+
+    @property
+    def light_is_bold(self):
+        """Whether light colors are automatically bold"""
+        return self._light_is_bold
+
+    @light_is_bold.setter
+    def light_is_bold(self, light_is_bold):
+        self._light_is_bold = light_is_bold
 
     @property
     def colors(self):
