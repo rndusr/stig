@@ -20,6 +20,9 @@
 # light red, dark green, light green, dark blue, light blue, dark magenta,
 # light magenta, dark cyan, light cyan, brown, yellow
 #
+# You can also use RGB colors in the format "#RGB".  They will be converted to
+# the closest color in the 256-color palette.
+#
 # Attribute names: bold, underline, standout
 #
 # VARIABLES
