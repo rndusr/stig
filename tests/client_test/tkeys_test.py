@@ -101,6 +101,14 @@ class TestNumber(unittest.TestCase):
     def test_signs(self):
         self.assertEqual(tkeys.Number('-10'), -10)
         self.assertEqual(tkeys.Number('+10'), 10)
+        self.assertEqual(tkeys.Number('-10k'), -10000)
+        self.assertEqual(tkeys.Number('+10M'), 10e6)
+        n = tkeys.Number('-10GX')
+        self.assertEqual(n, -10e9)
+        self.assertEqual(n.unit, 'X')
+        n = tkeys.Number('-10Ty')
+        self.assertEqual(n, -10e12)
+        self.assertEqual(n.unit, 'y')
 
     def test_equality(self):
         self.assertEqual(tkeys.Number(0), 0)
