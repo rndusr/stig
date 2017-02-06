@@ -60,20 +60,31 @@ class SetCmdbase(metaclass=InitCommand):
          'description': 'New value'},
     )
     cfg = ExpectedResource
+    srvapi = ExpectedResource
 
     async def run(self, NAME, VALUE):
         if NAME not in self.cfg:
             log.error('Unknown setting: {}'.format(NAME))
         else:
-            typename = self.cfg[NAME].typename
-            if typename in ('list', 'set'):
+            setting = self.cfg[NAME]
+
+            # Make sure strings are strings and lists are lists
+            if setting.typename in ('list', 'set'):
                 val = utils.listify_args(VALUE)
             else:
                 val = ' '.join(VALUE)
 
-            setting = self.cfg[NAME]
+            from ...settings import is_server_setting
+            if is_server_setting(setting):
+                from ...client import ClientError
+                try:
+                    await self.srvapi.settings.update()
+                except ClientError as e:
+                    log.error(str(e))
+                    return False
+
             try:
-                # Server settings' set() methods are async
+                # Server settings' set() methods are async (maybe others too)
                 if iscoroutinefunction(setting.set):
                     await setting.set(val)
                 else:
@@ -82,4 +93,5 @@ class SetCmdbase(metaclass=InitCommand):
                 log.error(e)
             else:
                 return True
+
         return False
