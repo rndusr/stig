@@ -89,7 +89,9 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
             return super().convert(value)
 
     def validate(self, value):
-        if value not in (const.ENABLED, const.DISABLED):
+        if isinstance(value, bool) or value in (const.ENABLED, const.DISABLED):
+            pass
+        else:
             super().validate(value)  # May raise ValueError
 
 
