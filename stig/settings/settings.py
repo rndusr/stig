@@ -240,11 +240,12 @@ class IntegerValue(NumberValue):
     _numbertype = 'integer'
 
 
-TRUE = ('enable', 'enabled', 'yes', 'on', 'true', '1')
-FALSE = ('disable', 'disabled', 'no', 'off', 'false', '0')
+TRUE = ('enable', 'yes', 'on', 'true', '1')
+FALSE = ('disable', 'no', 'off', 'false', '0')
 class BooleanValue(ValueBase):
     type = bool
     typename = 'boolean'
+    valuesyntax = '[%s]' % '|'.join('/'.join((t,f)) for t,f in zip(TRUE, FALSE))
 
     def convert(self, value):
         if isinstance(value, bool):
