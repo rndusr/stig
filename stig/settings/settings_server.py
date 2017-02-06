@@ -68,6 +68,12 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
                    '%s (case is ignored)' % BooleanValue.valuesyntax)
 
     def convert(self, value):
+        def convert_bandwidth(value):
+            try:
+                return convert.bandwidth(value)
+            except ValueError as e:
+                raise ValueError('Not a {}: {!r}'.format(self.typename, value))
+
         try:
             # value may be something like 'on' or 'off'
             return BooleanValue.convert(self, value)
@@ -75,15 +81,17 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
             # Parse relative values
             if isinstance(value, str) and len(value) >= 3 and value[:2] in ('+=', '-='):
                 op = value[:2]
-                num = convert.bandwidth(value[2:].strip())
+                num = convert_bandwidth(value[2:].strip())
+
+                # Pretend current value is 0 if user wants to adjust UNLIMITED.
                 if self.value is const.UNLIMITED and op == '+=':
-                    # Act as if current value were 0 because values >= 0 are UNLIMITED.
                     return num
+
                 return super().convert(op + str(float(num)))
 
             # Parse other strings or numbers
             elif not isinstance(value, const.Constant):
-                return convert.bandwidth(value)
+                return convert_bandwidth(value)
 
             # Let parent provide the error message
             return super().convert(value)
