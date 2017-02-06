@@ -120,6 +120,8 @@ def is_server_setting(name):
     """Whether setting `name` is managed by the server"""
     if isinstance(name, ValueBase):
         name = name.name
+    else:
+        name = str(name)
 
     if name.startswith('srv.') and \
        not name.startswith('srv.timeout') and \
