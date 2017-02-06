@@ -110,6 +110,9 @@ class PathIncompleteSrvValue(PathSrvValue):
 
 def is_server_setting(name):
     """Whether setting `name` is managed by the server"""
+    if isinstance(name, ValueBase):
+        name = name.name
+
     if name.startswith('srv.') and \
        not name.startswith('srv.timeout') and \
        not name.startswith('srv.url'):
