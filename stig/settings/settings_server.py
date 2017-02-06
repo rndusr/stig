@@ -89,10 +89,7 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
 
     def validate(self, value):
         if value not in (const.ENABLED, const.DISABLED):
-            try:
-                super().validate(value)
-            except ValueError as e:
-                raise ValueError('{!r}'.format(e))
+            super().validate(value)  # May raise ValueError
 
 
 class PathSrvValue(SrvValueBase, PathValue):
