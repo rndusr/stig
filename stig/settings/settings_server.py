@@ -64,7 +64,8 @@ class SrvValueBase(ValueBase):
 
 class RateLimitSrvValue(SrvValueBase, NumberValue):
     typename = 'number or bool'
-    valuesyntax = '[+=|-=]<NUMBER>[k|M|G|T|Ki|Mi|Gi|Ti][b|B] or [on|off]'
+    valuesyntax = ('[+=|-=]<NUMBER>[k|M|G|T|Ki|Mi|Gi|Ti][b|B] or '
+                   '%s (case is ignored)' % BooleanValue.valuesyntax)
 
     def convert(self, value):
         try:
