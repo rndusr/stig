@@ -116,10 +116,10 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
             ("If invoked as a command line argument and the output does not "
              "go to a TTY (i.e. the terminal size can't be determined), "
              "the output is optimized for scripting.  Numbers are "
-             "unformatted, columns are separated by '|' and headers are "
-             "not printed."),
+             "unformatted, columns are separated by a horizontal tab "
+             "character ('\\t') and headers are not printed."),
             "",
-            ("To enforce human-readable, formatted output, set the environment"
+            ("To enforce human-readable, formatted output, set the environment "
              "variables COLUMNS and LINES."),
             "",
             "\t$ \tCOLUMNS=80 LINES=24 {APPNAME} ls | less -R"

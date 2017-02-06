@@ -52,7 +52,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
             row.append(cell)
         rows.append(row)
 
-    delimiter = '|' if TERMSIZE.columns is None else '│'
+    delimiter = '\t' if TERMSIZE.columns is None else '│'
 
     # Whether to print for a human or for a machine to read our output
     pretty_output = TERMSIZE.columns is not None
