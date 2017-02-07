@@ -68,7 +68,8 @@ def guess_ui(clicmds, cmdmgr):
                 debugmsg += 'server setting: %r - guessing CLI' % setting
                 guess = 'cli'
             else:
-                debugmsg += 'other setting: %r - not guessing' % setting
+                debugmsg += 'other setting: %r - guessing TUI' % setting
+                guess = 'tui'
 
         elif clicmd is not None:
             debugmsg += 'CLI supported - guessing CLI'
