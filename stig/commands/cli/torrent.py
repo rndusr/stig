@@ -25,7 +25,7 @@ from ...utils import strwidth
 from ...columns.tlist import COLUMNS as TLIST_COLUMNS
 from ...columns.flist import COLUMNS as FLIST_COLUMNS
 from ...columns.flist import create_directory_data
-
+from ...columns.plist import COLUMNS as PLIST_COLUMNS
 
 
 def _print_table(items, columns_wanted, COLUMN_SPECS):
@@ -238,6 +238,27 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 flist.extend(sub_flist)
 
         return flist, filtered_count
+
+
+class ListPeersCmd(base.ListPeersCmdbase,
+                   mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+    srvapi = ExpectedResource
+    async def make_plist(self, tfilter, columns):
+        response = await self.make_request(
+            self.srvapi.torrent.torrents(tfilter, keys=('name', 'peers')),
+            quiet=True)
+        torrents = response.torrents
+
+        if len(torrents) < 1:
+            return False
+
+        peerlist = []
+        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+            peerlist.extend(torrent['peers'])
+
+        _print_table(peerlist, columns, PLIST_COLUMNS)
+        return True
 
 
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
