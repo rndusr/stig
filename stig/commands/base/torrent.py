@@ -154,7 +154,7 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
     aliases = ('fls', 'lsf')
     provides = set()
     category = 'torrent'
-    description = 'List torrent files'
+    description = 'List files of torrent(s)'
     usage = ('filelist [<OPTIONS>]',
              'filelist [<OPTIONS>] [<TORRENT FILTER>] [<FILE FILTER>]')
     examples = ('filelist',
