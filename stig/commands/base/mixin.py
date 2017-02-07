@@ -58,3 +58,17 @@ class get_flist_columns():
             if arg not in COLUMNS:
                 raise ValueError('Unknown column name: {}'.format(arg))
         return args
+
+
+class get_plist_columns():
+    def get_plist_columns(self, args):
+        """Check if each item in iterable `args` is a valid peer list column
+
+        Raise ValueError or return the same iterable.
+        """
+        from ...columns.plist import COLUMNS
+        args = utils.listify_args(args)
+        for arg in args:
+            if arg not in COLUMNS:
+                raise ValueError('Unknown column name: {}'.format(arg))
+        return args
