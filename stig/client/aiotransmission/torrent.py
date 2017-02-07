@@ -140,11 +140,26 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
 class TrackerList(tuple):
     def __new__(cls, raw_torrent):
-        trackers = raw_torrent['trackers']
         return super().__new__(cls,
             ({'id': tracker['id'],
               'url-announce': utils.split_url(tracker['announce'])}
-             for tracker in trackers)
+             for tracker in raw_torrent['trackers'])
+        )
+
+
+
+from ..tkeys import Percent
+from ..tkeys import convert
+class PeerList(tuple):
+    def __new__(cls, raw_torrent):
+        return super().__new__(cls,
+            ({'ip': peer['address'],
+              'port': peer['port'],
+              'progress': Percent(peer['progress']*100),
+              'rate-up': convert.bandwidth(peer['rateToPeer'], unit='byte'),
+              'rate-down': convert.bandwidth(peer['rateToClient'], unit='byte'),
+              'client': peer['clientName']}
+             for peer in raw_torrent['peers'])
         )
 
 
@@ -189,6 +204,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
+    'peers'             : ('peers',),
 
     # 'files' is called once to initialize file names and sizes by
     # api_torrent.TorrentAPI._get_torrents_by_ids when files are requested.
@@ -208,6 +224,7 @@ _MODIFY = {
     'timespan-eta'    : _modify_eta,
     'path'            : lambda raw: normpath(raw['downloadDir']),
     'trackers'        : TrackerList,
+    'peers'           : PeerList,
     'files'           : _create_TorrentFileTree,
 }
 
