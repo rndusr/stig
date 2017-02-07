@@ -14,6 +14,7 @@
 from .main import (cfg, srvapi)
 from .columns.tlist import COLUMNS as TCOLUMNS
 from .columns.flist import COLUMNS as FCOLUMNS
+from .columns.plist import COLUMNS as PCOLUMNS
 
 
 def _set_rpc_timeout(timeout):
@@ -31,6 +32,9 @@ def _set_bandwidth_unit(unit):
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
     TCOLUMNS['rate-up'].set_unit(u)
     TCOLUMNS['rate-down'].set_unit(u)
+
+    PCOLUMNS['rate-up'].set_unit(u)
+    PCOLUMNS['rate-down'].set_unit(u)
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 _set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TCOLUMNS[...].set_unit()
 
