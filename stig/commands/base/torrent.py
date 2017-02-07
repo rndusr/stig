@@ -82,6 +82,18 @@ class AnnounceTorrentsCmdbase(metaclass=InitCommand):
             return response.success
 
 
+def _make_SCRIPTING_doc(cmdname):
+    return ( ("If invoked as a command line argument and the output does not "
+              "go to a TTY (i.e. the terminal size can't be determined), "
+              "the output is optimized for scripting.  Numbers are "
+              "unformatted, columns are separated by a horizontal tab "
+              "character ('\\t') and headers are not printed."),
+             "",
+             ("To enforce human-readable, formatted output, set the environment "
+              "variables COLUMNS and LINES."),
+             "",
+             "\t$ \tCOLUMNS=80 LINES=24 {{APPNAME}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
+
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                           metaclass=InitCommand):
@@ -112,18 +124,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                           "(see 'help tlist.columns' for available columns)") },
     )
     more_sections = {
-        'SCRIPTING': (
-            ("If invoked as a command line argument and the output does not "
-             "go to a TTY (i.e. the terminal size can't be determined), "
-             "the output is optimized for scripting.  Numbers are "
-             "unformatted, columns are separated by a horizontal tab "
-             "character ('\\t') and headers are not printed."),
-            "",
-            ("To enforce human-readable, formatted output, set the environment "
-             "variables COLUMNS and LINES."),
-            "",
-            "\t$ \tCOLUMNS=80 LINES=24 {APPNAME} ls | less -R"
-        ),
+        'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
     cfg = ExpectedResource
@@ -171,7 +172,9 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
           'description': ('Comma-separated list of column names '
                           "(see 'help flist.columns' for available columns)") },
     )
-    more_sections = {'SCRIPTING': ListTorrentsCmdbase.more_sections['SCRIPTING']}
+    more_sections = {
+        'SCRIPTING': _make_SCRIPTING_doc(name),
+    }
 
     cfg = ExpectedResource
 
