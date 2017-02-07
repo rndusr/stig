@@ -387,6 +387,7 @@ def _ensure_TorrentFileTree(obj):
     else:
         raise RuntimeError('Not a TorrentFileTreeBase instance: {!r}'.format(obj))
 
+
 TYPES = {
     'id'                : int,
     'hash'              : str,
@@ -428,4 +429,5 @@ TYPES = {
 
     'trackers'          : tuple,
     'files'             : _ensure_TorrentFileTree,
+    'peers'             : tuple,
 }
