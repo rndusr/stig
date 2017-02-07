@@ -18,6 +18,7 @@ from appdirs import (user_cache_dir, user_config_dir)
 from .. import APPNAME
 from ..columns.tlist import COLUMNS as TCOLUMNS
 from ..columns.flist import COLUMNS as FCOLUMNS
+from ..columns.plist import COLUMNS as PCOLUMNS
 from ..client.tsort import SORTERS
 
 DEFAULT_RCFILE        = user_config_dir(APPNAME) + '/rc'
@@ -29,6 +30,7 @@ DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
                          'eta', 'peers-connected', 'peers-seeding', 'rate-down',
                          'rate-up')
 DEFAULT_FLIST_COLUMNS = ('priority', 'name', 'progress', 'downloaded', 'size')
+DEFAULT_PLIST_COLUMNS = ('progress', 'rate-up', 'rate-down', 'ip', 'port', 'client')
 
 
 from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
@@ -66,6 +68,9 @@ def init_defaults(cfg):
                  options=tuple(FCOLUMNS),
                  description='List of columns in new torrent file lists'),
 
+        SetValue('plist.columns', default=DEFAULT_PLIST_COLUMNS,
+                 options=tuple(PCOLUMNS),
+                 description='List of columns in new peer lists'),
 
         PathValue('tui.theme', default=DEFAULT_THEME_FILE,
                   description='Path to theme file'),
