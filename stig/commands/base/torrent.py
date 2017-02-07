@@ -200,6 +200,50 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
             return self.make_flist(tfilter, ffilter, columns)
 
 
+class ListPeersCmdbase(mixin.get_plist_columns, metaclass=InitCommand):
+    name = 'peerlist'
+    aliases = ('pls', 'lsp')
+    provides = set()
+    category = 'torrent'
+    description = 'List connected peers of torrent(s)'
+    usage = ('peerlist [<OPTIONS>]',
+             'peerlist [<OPTIONS>] [<TORRENT FILTER>]')
+    examples = ('peerlist',
+                "peerlist some_torrent")
+    argspecs = (
+        {'names': ('TORRENT FILTER',), 'nargs': '?',
+         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
+        { 'names': ('--columns', '-c'),
+          'default_description': "current value of 'plist.columns' setting",
+          'description': ('Comma-separated list of column names '
+                          "(see 'help plist.columns' for available columns)") },
+    )
+    more_sections = {
+        'SCRIPTING': _make_SCRIPTING_doc(name),
+    }
+
+    cfg = ExpectedResource
+
+    async def run(self, TORRENT_FILTER, columns):
+        columns = self.cfg['plist.columns'].value if columns is None else columns
+        try:
+            columns = self.get_plist_columns(columns)
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=True,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+
+        log.debug('Listing peers of %s torrents', tfilter)
+
+        if asyncio.iscoroutinefunction(self.make_plist):
+            return await self.make_plist(tfilter, columns)
+        else:
+            return self.make_plist(tfilter, columns)
+
+
 class MoveTorrentsCmdbase(metaclass=InitCommand):
     name = 'move'
     aliases = ('mv',)
