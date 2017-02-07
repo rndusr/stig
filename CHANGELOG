@@ -3,8 +3,10 @@
     * Instead of '|', the commands 'list' and 'filelist' use horizontal tab
       characters ('\t') as column delimiters in machine-readable output
 
-  Improvements:
-    * 
+  Other changes:
+    * New theme option 'bright_is_bold'
+    * Paused torrents are blue instead of dark gray, which seems to have
+      better contrast in most color schemes
 
   Fixed bugs:
     * Setting 'srv.limit.rate.up/down' to boolean values displayed an error
