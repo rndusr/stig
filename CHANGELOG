@@ -4,13 +4,19 @@
       characters ('\t') as column delimiters in machine-readable output
 
   Other changes:
+    * New comand: 'peerlist'
     * New theme option 'bright_is_bold'
     * Paused torrents are blue instead of dark gray, which seems to have
       better contrast in most color schemes
 
   Fixed bugs:
+    * With no torrent lists open, stig would become unresponsive due to an
+      endless loop
     * Setting 'srv.limit.rate.up/down' to boolean values displayed an error
       about 'off' not being a number
+    * Headers of columns of variable width (e.g. torrent name) weren't fully
+      underlined when placed at the very right of the table (not fully solved
+      yet but better than before)
 
 
 2017-02-01 0.2.0a
