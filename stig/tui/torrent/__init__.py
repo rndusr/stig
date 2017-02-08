@@ -35,8 +35,7 @@ class Style():
 
         for mode in modes:
             self._attribs[mode+'.focused'] = self.dotify(prefix, mode, 'focused')
-            if focusable:
-                self._attribs[mode+'.unfocused'] = self.dotify(prefix, mode, 'unfocused')
+            self._attribs[mode+'.unfocused'] = self.dotify(prefix, mode, 'unfocused')
 
     def attrs(self, mode=None, focused=False):
         """Get attributes as specified in the urwid palette
