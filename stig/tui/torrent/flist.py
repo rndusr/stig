@@ -26,7 +26,6 @@ for col in TUICOLUMNS.values():
     COLUMNS_FOCUS_MAP.update(col.style.focus_map)
 
 
-
 class FileWidget(urwid.WidgetWrap):
     def __init__(self, tfile, row):
         self._widgets = row.widgets

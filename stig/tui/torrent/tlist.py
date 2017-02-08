@@ -23,8 +23,6 @@ COLUMNS_FOCUS_MAP = {}
 for col in TUICOLUMNS.values():
     COLUMNS_FOCUS_MAP.update(col.style.focus_map)
 
-from . import hooks
-
 
 class TorrentListItemWidget(urwid.WidgetWrap):
     def __init__(self, torrent, cells):

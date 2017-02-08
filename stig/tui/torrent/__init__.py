@@ -99,3 +99,6 @@ class CellWidgetBase(urwid.WidgetWrap):
 
     def get_mode(self):
         return None
+
+
+from . import hooks
