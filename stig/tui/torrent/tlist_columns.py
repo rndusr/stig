@@ -25,8 +25,6 @@ from ...columns.tlist import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 
-import os
-PATHSEP = os.sep
 class Path(_COLUMNS['path'], CellWidgetBase):
     width = 20
     style = Style(prefix='torrentlist.tpath', focusable=True,
