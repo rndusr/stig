@@ -156,7 +156,7 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
             # pollers, it won't get started until the next interval.  This
             # also solves a weird bug that accumulates unused pollers when
             # rapidly opening and closing file lists.
-            while any(not poller.running for poller in self._existing_pollers):
+            while any(not poller.running for poller in self._pollers):
                 log.debug('Managing pollers again:')
                 await manage()
 
