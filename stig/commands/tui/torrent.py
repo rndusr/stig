@@ -80,6 +80,27 @@ class ListFilesCmd(base.ListFilesCmdbase,
         return True
 
 
+class ListPeersCmd(base.ListPeersCmdbase,
+                   mixin.make_request, mixin.select_torrents):
+    provides = {'tui'}
+    tui = ExpectedResource
+    srvapi = ExpectedResource
+
+    async def make_plist(self, tfilter, columns):
+        from ...tui.torrent.plist import PeerListWidget
+        plistw = PeerListWidget(self.srvapi, tfilter, columns)
+
+        if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
+            # tfilter is a torrent ID - resolve it to a name for the title
+            response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
+            title = strcrop(response.torrents[0]['name'], 30, tail='…')
+        else:
+            title = str(tfilter or 'all')
+        titlew = make_tab_title(title, 'tabs.peerlist.unfocused', 'tabs.peerlist.focused')
+        self.tui.tabs.load(titlew, plistw)
+        return True
+
+
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
