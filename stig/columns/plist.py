@@ -33,7 +33,7 @@ COLUMNS['client'] = Client
 
 class IPAddress(ColumnBase):
     header = {'left': 'IP'}
-    align = 'left'
+    align = 'right'
     width = 15
 
     def get_value(self):
