@@ -153,14 +153,14 @@ from ..tkeys import convert
 class PeerList(tuple):
     def __new__(cls, raw_torrent):
         return super().__new__(cls,
-            ({'id': hash((raw_torrent['id'], peer['address'], peer['port'], peer['clientName'])),
-              'ip': peer['address'],
-              'port': peer['port'],
-              'progress': Percent(peer['progress']*100),
-              'rate-up': convert.bandwidth(peer['rateToPeer'], unit='byte'),
-              'rate-down': convert.bandwidth(peer['rateToClient'], unit='byte'),
-              'client': peer['clientName']}
-             for peer in raw_torrent['peers'])
+            ({'id': hash((raw_torrent['id'], raw_peer['address'], raw_peer['port'])),
+              'ip': raw_peer['address'],
+              'port': raw_peer['port'],
+              'progress': Percent(raw_peer['progress']*100),
+              'rate-up': convert.bandwidth(raw_peer['rateToPeer'], unit='byte'),
+              'rate-down': convert.bandwidth(raw_peer['rateToClient'], unit='byte'),
+              'client': raw_peer['clientName']}
+             for raw_peer in raw_torrent['peers'])
         )
 
 
