@@ -95,3 +95,33 @@ class RateUp(ColumnBase):
         cls.header['right'] = '%s/s' % unit
 
 COLUMNS['rate-up'] = RateUp
+
+
+class ETA(ColumnBase):
+    header = {'left': 'ETA'}
+    width = 5
+
+    def get_value(self):
+        return self.data['eta']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+COLUMNS['eta'] = ETA
+
+
+class EstimatedPeerRate(ColumnBase):
+    header = {'left': 'Est', 'right': '?/s'}
+    width = 7
+
+    def get_value(self):
+        return self.data['peer-rate-est']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = '%s/s' % unit
+
+COLUMNS['peer-rate-est'] = EstimatedPeerRate
