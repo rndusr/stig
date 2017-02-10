@@ -148,7 +148,14 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
                     if poller in self._pollers:
                         self._pollers.remove(poller)
 
+        # To estimate peer download rates, we have to keep track of all the
+        # peers' progresses, and we need to prune that data from time to
+        # time. It's a bit dirty to put this here, but managing another task
+        # just for this isn't much better.
+        from .tkeys import gc_peer_progress_data
         while True:
+            gc_peer_progress_data()
+
             log.debug('Managing pollers:')
             await manage()
 
