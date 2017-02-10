@@ -12,7 +12,6 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-
 from .. import tkeys as tkeys
 from .. import utils
 from .. import base
@@ -36,7 +35,7 @@ def _modify_eta(raw_torrent):
         return tkeys.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
         return tkeys.Timedelta.UNKNOWN
-    return  seconds
+    return seconds
 
 def _count_seeds(raw_torrent):
     trackerStats = raw_torrent['trackerStats']
@@ -72,6 +71,7 @@ _STATUS_MAP = {
     5: tkeys.Status.SEED_Q,
     6: tkeys.Status.SEED,
 }
+
 
 
 def _create_TorrentFileTree(raw_torrent):
@@ -147,19 +147,29 @@ class TrackerList(tuple):
         )
 
 
-
 from ..tkeys import Percent
 from ..tkeys import convert
 class PeerList(tuple):
     def __new__(cls, raw_torrent):
+        def make_peer(raw_torrent, raw_peer):
+            peer = {'id': hash((raw_torrent['id'], raw_peer['address'], raw_peer['port'])),
+                    'ip': raw_peer['address'],
+                    'port': raw_peer['port'],
+                    'progress': Percent(raw_peer['progress']*100),
+                    'rate-up': convert.bandwidth(raw_peer['rateToPeer'], unit='byte'),
+                    'rate-down': convert.bandwidth(raw_peer['rateToClient'], unit='byte'),
+                    'client': raw_peer['clientName']}
+
+            peer['peer-rate-est'] = tkeys.guess_peer_rate_down(
+                peer['id'], peer['progress']/100, raw_torrent['totalSize'],
+                unit='byte')
+
+            peer['eta'] = tkeys.guess_peer_eta(peer['peer-rate-est'], peer['progress']/100,
+                                               raw_torrent['totalSize'])
+            return peer
+
         return super().__new__(cls,
-            ({'id': hash((raw_torrent['id'], raw_peer['address'], raw_peer['port'])),
-              'ip': raw_peer['address'],
-              'port': raw_peer['port'],
-              'progress': Percent(raw_peer['progress']*100),
-              'rate-up': convert.bandwidth(raw_peer['rateToPeer'], unit='byte'),
-              'rate-down': convert.bandwidth(raw_peer['rateToClient'], unit='byte'),
-              'client': raw_peer['clientName']}
+            (make_peer(raw_torrent, raw_peer)
              for raw_peer in raw_torrent['peers'])
         )
 
@@ -205,7 +215,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
-    'peers'             : ('peers',),
+    'peers'             : ('peers', 'totalSize'),
 
     # 'files' is called once to initialize file names and sizes by
     # api_torrent.TorrentAPI._get_torrents_by_ids when files are requested.
