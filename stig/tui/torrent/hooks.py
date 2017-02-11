@@ -12,12 +12,17 @@
 from ...main import cfg
 from .tlist_columns import TUICOLUMNS as TCOLUMNS
 from .flist_columns import TUICOLUMNS as FCOLUMNS
+from .plist_columns import TUICOLUMNS as PCOLUMNS
 
 
 def _set_bandwidth_unit(unit):
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
     TCOLUMNS['rate-up'].set_unit(u)
     TCOLUMNS['rate-down'].set_unit(u)
+
+    PCOLUMNS['rate-up'].set_unit(u)
+    PCOLUMNS['rate-down'].set_unit(u)
+    PCOLUMNS['peer-rate-est'].set_unit(u)
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 
 

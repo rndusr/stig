@@ -69,6 +69,10 @@ class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
     def get_mode(self):
         return 'highlighted' if self.value > 0 else None
 
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['rate-down'].header['right']
+
 TUICOLUMNS['rate-down'] = RateDown
 
 
@@ -81,7 +85,27 @@ class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
     def get_mode(self):
         return 'highlighted' if self.value > 0 else None
 
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['rate-up'].header['right']
+
 TUICOLUMNS['rate-up'] = RateUp
+
+
+class EstimatedPeerRate(_COLUMNS['peer-rate-est'], CellWidgetBase):
+    style = Style(prefix='peerlist.peer-rate-est', focusable=False,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['peer-rate-est'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value > 0 else None
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['peer-rate-est'].header['right']
+
+TUICOLUMNS['peer-rate-est'] = EstimatedPeerRate
 
 
 class ETA(_COLUMNS['eta'], CellWidgetBase):
@@ -94,15 +118,3 @@ class ETA(_COLUMNS['eta'], CellWidgetBase):
         return 'highlighted' if self.value > 0 else None
 
 TUICOLUMNS['eta'] = ETA
-
-
-class EstimatedPeerRate(_COLUMNS['peer-rate-est'], CellWidgetBase):
-    style = Style(prefix='peerlist.peer-rate-est', focusable=False,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['peer-rate-est'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value > 0 else None
-
-TUICOLUMNS['peer-rate-est'] = EstimatedPeerRate

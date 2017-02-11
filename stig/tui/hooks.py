@@ -62,8 +62,9 @@ cfg['tui.theme'].on_change(_set_theme)
 def _refresh_tlists(value):
     from .torrent.tlist import TorrentListWidget
     from .torrent.flist import FileListWidget
+    from .torrent.plist import PeerListWidget
     for widget in tui.tabs:
-        if isinstance(widget, (TorrentListWidget, FileListWidget)):
+        if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
     tui.srvapi.poll()
 cfg['unit.bandwidth'].on_change(_refresh_tlists)
