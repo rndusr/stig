@@ -333,7 +333,7 @@ def guess_peer_rate_down(peer_id, peer_progress, torrent_size, unit):
             samples.append((time.monotonic(), peer_progress))
 
         # We need at least 2 samples
-        if len(samples) >= 3:
+        if len(samples) >= 2:
             # We only need timestamp and progress of first and last sample
             t_first, p_first = samples[0]
             t_last, p_last = samples[-1]
