@@ -299,7 +299,7 @@ import time
 from collections import defaultdict
 _PEER_PROGRESS_DATA = defaultdict(lambda: [])
 MAX_SAMPLES = 10
-MAX_SAMPLE_AGE = 300
+MAX_SAMPLE_AGE = 600
 def gc_peer_progress_data():
     for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
         # Keep only the most recent samples
