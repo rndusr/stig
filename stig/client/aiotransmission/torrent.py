@@ -160,12 +160,11 @@ class PeerList(tuple):
                     'rate-down': convert.bandwidth(raw_peer['rateToClient'], unit='byte'),
                     'client': raw_peer['clientName']}
 
-            peer['peer-rate-est'] = tkeys.guess_peer_rate_down(
-                peer['id'], peer['progress']/100, raw_torrent['totalSize'],
-                unit='byte')
-
-            peer['eta'] = tkeys.guess_peer_eta(peer['peer-rate-est'], peer['progress']/100,
+            peer_rate_est = tkeys.guess_peer_rate_down(peer['id'], peer['progress']/100,
+                                                       raw_torrent['totalSize'])
+            peer['eta'] = tkeys.guess_peer_eta(peer_rate_est, peer['progress']/100,
                                                raw_torrent['totalSize'])
+            peer['peer-rate-est'] = convert.bandwidth(peer_rate_est, unit='byte')
             return peer
 
         return super().__new__(cls,

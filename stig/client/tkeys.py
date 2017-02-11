@@ -304,27 +304,18 @@ def gc_peer_progress_data():
     for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
         # Keep only the most recent samples
         while len(samples) > MAX_SAMPLES:
-            log.debug('%r: Removing excess progress state: %r', peer_id, samples[0])
             samples.pop(0)
 
         # Also remove samples that are too old
         while samples and (samples[0][0] + MAX_SAMPLE_AGE) < time.monotonic():
-            log.debug('%r: Removing outdated progress state: %r', peer_id, samples[0])
             samples.pop(0)
 
         # Remove peer if there are no samples left
         if not samples:
-            log.debug('%r: Removing empty peer: %r', peer_id, peer_id)
             del _PEER_PROGRESS_DATA[peer_id]
 
-    log.debug('Peers left:')
-    for peer_id,samples in _PEER_PROGRESS_DATA.items():
-        log.debug('  %s: %d smpls: %d - %d', peer_id, len(samples),
-                  samples[0][0], samples[-1][0])
 
-
-def guess_peer_rate_down(peer_id, peer_progress, torrent_size, unit):
-    peer_rate = 0
+def guess_peer_rate_down(peer_id, peer_progress, torrent_size):
     if peer_progress < 1:
         samples = _PEER_PROGRESS_DATA[peer_id]
 
@@ -344,9 +335,8 @@ def guess_peer_rate_down(peer_id, peer_progress, torrent_size, unit):
             # progress is smaller than the previous one)
             if p_diff > 0:
                 size_diff = torrent_size * p_diff  # How much was downloaded in t_diff seconds
-                peer_rate = size_diff / t_diff
-
-    return convert.bandwidth(peer_rate, unit=unit)
+                return size_diff / t_diff
+    return 0
 
 
 def guess_peer_eta(peer_rate, peer_progress, torrent_size):
