@@ -44,7 +44,7 @@ COLUMNS['ip'] = IPAddress
 
 class Port(ColumnBase):
     header = {'left': 'Port'}
-    align = 'left'
+    align = 'right'
     width = 5
 
     def get_value(self):
