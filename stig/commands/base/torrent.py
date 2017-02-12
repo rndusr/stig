@@ -239,7 +239,8 @@ class ListPeersCmdbase(mixin.get_plist_columns, metaclass=InitCommand):
 
         # Unless we're listing peers of exactly one torrent, specified by its
         # ID, automatically add the 'torrentname' column.
-        if not isinstance(tfilter, abc.Sequence) or len(tfilter) != 1:
+        if 'torrentname' not in columns and \
+           (not isinstance(tfilter, abc.Sequence) or len(tfilter) != 1):
             columns = ('torrentname',) + columns
 
         log.debug('Listing peers of %s torrents', tfilter)
