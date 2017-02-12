@@ -188,9 +188,9 @@ class TabCmd(metaclass=InitCommand):
                 'tab -f 3 ls active',
                 'tab -c')
     argspecs = (
-            { 'names': ('--background', '-b'), 'default': False,
+        { 'names': ('--background', '-b'), 'default': False,
           'action': 'store_true',
-          'description': 'Opens tab in background, instead of focusing it'},
+          'description': 'Opens tab in background, instead of focusing it' },
         { 'names': ('--close', '-c'), 'nargs': '?', 'const': None, 'default': False,
           'description': 'Close tab at index CLOSE or with partial tital CLOSE' },
         { 'names': ('--focus', '-f'),
