@@ -15,6 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 import asyncio
+from collections import abc
 
 from .. import (InitCommand, ExpectedResource)
 from . import mixin
@@ -235,6 +236,11 @@ class ListPeersCmdbase(mixin.get_plist_columns, metaclass=InitCommand):
         except ValueError as e:
             log.error(e)
             return False
+
+        # Unless we're listing peers of exactly one torrent, specified by its
+        # ID, automatically add the 'torrentname' column.
+        if not isinstance(tfilter, abc.Sequence) or len(tfilter) != 1:
+            columns = ('torrentname',) + columns
 
         log.debug('Listing peers of %s torrents', tfilter)
 
