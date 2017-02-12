@@ -147,12 +147,12 @@ class TrackerList(tuple):
         )
 
 
-from ..tkeys import Percent
-from ..tkeys import convert
+from ..tkeys import (Percent, SmartCmpStr, convert)
 class PeerList(tuple):
     def __new__(cls, raw_torrent):
         def make_peer(raw_torrent, raw_peer):
             peer = {'id': hash((raw_torrent['id'], raw_peer['address'], raw_peer['port'])),
+                    'torrentname': SmartCmpStr(raw_torrent['name']),
                     'ip': raw_peer['address'],
                     'port': raw_peer['port'],
                     'progress': Percent(raw_peer['progress']*100),
