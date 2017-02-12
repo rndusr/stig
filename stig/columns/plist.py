@@ -20,6 +20,17 @@ from . import ColumnBase
 COLUMNS = {}
 
 
+class TorrentName(ColumnBase):
+    header = {'left': 'Torrent'}
+    align = 'left'
+    width = 20
+
+    def get_value(self):
+        return self.data['torrentname']
+
+COLUMNS['torrentname'] = TorrentName
+
+
 class Client(ColumnBase):
     header = {'left': 'Client'}
     align = 'left'
