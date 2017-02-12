@@ -180,13 +180,17 @@ class TabCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Open, close and focus tabs'
-    usage = ('tab [--close] [--focus <TITLE OR INDEX>] [<COMMAND>]',)
+    usage = ('tab [--close] [--focus <TITLE OR INDEX>] [--background] [<COMMAND>]',)
     examples = ('tab',
                 'tab ls active',
+                'tab -b ls active',
                 'tab -f active',
                 'tab -f 3 ls active',
                 'tab -c')
     argspecs = (
+            { 'names': ('--background', '-b'), 'default': False,
+          'action': 'store_true',
+          'description': 'Opens tab in background, instead of focusing it'},
         { 'names': ('--close', '-c'), 'nargs': '?', 'const': None, 'default': False,
           'description': 'Close tab at index CLOSE or with partial tital CLOSE' },
         { 'names': ('--focus', '-f'),
@@ -199,7 +203,7 @@ class TabCmd(metaclass=InitCommand):
     tui = ExpectedResource
     cmdmgr = ExpectedResource
 
-    async def run(self, close, focus, COMMAND):
+    async def run(self, close, focus, background, COMMAND):
         # Get indexes before adding/removing tabs, which changes indexes on
         # subsequent operations
         if focus is not None:
@@ -214,6 +218,7 @@ class TabCmd(metaclass=InitCommand):
                 return False
 
         tabs = self.tui.tabs
+        old_index = tabs.focus_position
 
         # Apply close/focus operations
         if focus is not None:
@@ -242,8 +247,13 @@ class TabCmd(metaclass=InitCommand):
                       ', '.join('%s=%r' % (k,v) for k,v in cmdargs.items()),
                       cmd)
 
-            return await self.cmdmgr.run_async(cmd, **cmdargs)
+            cmd = await self.cmdmgr.run_async(cmd, **cmdargs)
+            if background:
+                tabs.focus_position = old_index
+            return cmd
         else:
+            if background:
+                tabs.focus_position = old_index
             return True
 
     def get_tab_index(self, pos):
