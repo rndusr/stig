@@ -13,20 +13,11 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import blinker
+from functools import reduce
+import operator
 
 from .poll import RequestPoller
 
-
-def _sum(*items):
-    """`sum` implementation that can add any type of objects without a starting value"""
-    if not items:
-        return items
-    else:
-        items = list(items)
-        result = items.pop(0)
-        while items:
-            result += items.pop(0)
-        return result
 
 
 class TorrentRequestPool():
@@ -87,9 +78,9 @@ class TorrentRequestPool():
                 # No subscribers or at least one subscriber wants all torrents
                 kwargs['torrents'] = None
             else:
-                kwargs['torrents'] = _sum(*all_filters)
+                kwargs['torrents'] = reduce(operator.__add__, all_filters)
 
-            kwargs['keys'] = _sum(*self._keys.values())
+            kwargs['keys'] = reduce(operator.__add__, self._keys.values())
             # Filters also need certain keys
             for f in all_filters:
                 if f is not None:
