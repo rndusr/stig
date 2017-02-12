@@ -188,6 +188,7 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 't d', 'action': 'delete'},
     {'context': 'torrent', 'key': 't D', 'action': 'delete --delete-files'},
     {'context': 'torrent', 'key': 'enter', 'action': 'tab filelist'},
+    {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab peerlist'},
 
     # Torrent file actions
     {'context': 'file', 'key': '+', 'action': 'priority high'},
