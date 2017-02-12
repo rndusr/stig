@@ -31,7 +31,7 @@ DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
                          'rate-up')
 DEFAULT_FLIST_COLUMNS = ('priority', 'name', 'progress', 'downloaded', 'size')
 DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'peer-rate-est',
-                         'eta', 'ip', 'port', 'client')
+                         'eta', 'client', 'ip', 'port')
 
 
 from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
