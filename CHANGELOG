@@ -8,6 +8,8 @@
     * New theme option 'bright_is_bold'
     * Paused torrents are blue instead of dark gray, which seems to have
       better contrast in most color schemes
+    * Tab command gets new '--background' option to open tabs without focusing
+      them
 
   Fixed bugs:
     * With no torrent lists open, stig would become unresponsive due to an
