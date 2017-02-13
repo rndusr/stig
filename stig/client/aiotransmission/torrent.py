@@ -147,29 +147,16 @@ class TrackerList(tuple):
         )
 
 
-from ..tkeys import (Percent, SmartCmpStr, convert)
 class PeerList(tuple):
     def __new__(cls, raw_torrent):
-        def make_peer(raw_torrent, raw_peer):
-            peer = {'id': hash((raw_torrent['id'], raw_peer['address'], raw_peer['port'])),
-                    'torrentname': SmartCmpStr(raw_torrent['name']),
-                    'ip': raw_peer['address'],
-                    'port': raw_peer['port'],
-                    'progress': Percent(raw_peer['progress']*100),
-                    'rate-up': convert.bandwidth(raw_peer['rateToPeer'], unit='byte'),
-                    'rate-down': convert.bandwidth(raw_peer['rateToClient'], unit='byte'),
-                    'client': raw_peer['clientName']}
-
-            peer_rate_est = tkeys.guess_peer_rate_down(peer['id'], peer['progress']/100,
-                                                       raw_torrent['totalSize'])
-            peer['eta'] = tkeys.guess_peer_eta(peer_rate_est, peer['progress']/100,
-                                               raw_torrent['totalSize'])
-            peer['peer-rate-est'] = convert.bandwidth(peer_rate_est, unit='byte')
-            return peer
-
+        TorrentPeer = tkeys.TorrentPeer
         return super().__new__(cls,
-            (make_peer(raw_torrent, raw_peer)
-             for raw_peer in raw_torrent['peers'])
+            (TorrentPeer(tid=raw_torrent['id'], tname=raw_torrent['name'],
+                         tsize=raw_torrent['totalSize'],
+                         ip=p['address'], port=p['port'], client=p['clientName'],
+                         progress=p['progress']*100,
+                         rate_up=p['rateToPeer'], rate_down=p['rateToClient'])
+             for p in raw_torrent['peers'])
         )
 
 

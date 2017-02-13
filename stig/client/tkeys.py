@@ -296,61 +296,6 @@ class Timestamp(float):
 
 
 
-import time
-from collections import defaultdict
-_PEER_PROGRESS_DATA = defaultdict(lambda: [])
-MAX_SAMPLES = 10
-MAX_SAMPLE_AGE = 600
-def gc_peer_progress_data():
-    for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
-        # Keep only the most recent samples
-        while len(samples) > MAX_SAMPLES:
-            samples.pop(0)
-
-        # Also remove samples that are too old
-        while samples and (samples[0][0] + MAX_SAMPLE_AGE) < time.monotonic():
-            samples.pop(0)
-
-        # Remove peer if there are no samples left
-        if not samples:
-            del _PEER_PROGRESS_DATA[peer_id]
-
-
-def guess_peer_rate_down(peer_id, peer_progress, torrent_size):
-    if peer_progress < 1:
-        samples = _PEER_PROGRESS_DATA[peer_id]
-
-        # Don't add the same progress twice
-        if not samples or peer_progress != samples[-1][1]:
-            samples.append((time.monotonic(), peer_progress))
-
-        # We need at least 2 samples
-        if len(samples) >= 2:
-            # We only need timestamp and progress of first and last sample
-            t_first, p_first = samples[0]
-            t_last, p_last = samples[-1]
-            p_diff = p_last - p_first
-            t_diff = t_last - t_first
-
-            # Sometimes peers seem to lie about their progress (e.g. current
-            # progress is smaller than the previous one)
-            if p_diff > 0:
-                size_diff = torrent_size * p_diff  # How much was downloaded in t_diff seconds
-                return size_diff / t_diff
-    return 0
-
-
-def guess_peer_eta(peer_rate, peer_progress, torrent_size):
-    if peer_progress == 1:
-        return Timedelta(Timedelta.NOT_APPLICABLE)
-    elif peer_rate <= 0:
-        return Timedelta(Timedelta.UNKNOWN)
-    else:
-        size_remaining = torrent_size - (torrent_size * peer_progress)
-        return Timedelta(size_remaining / peer_rate)
-
-
-
 from functools import total_ordering
 @total_ordering
 class TorrentFilePriority(str):
@@ -431,7 +376,6 @@ class TorrentFile(abc.Mapping):
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
 
-
 # Because 'convert' needs Number, which is specified in this file, it must be
 # imported AFTER Number exists to avoid a circular import.
 from . import convert
@@ -442,6 +386,110 @@ def _ensure_TorrentFileTree(obj):
         return obj
     else:
         raise RuntimeError('Not a TorrentFileTreeBase instance: {!r}'.format(obj))
+
+
+
+
+import time
+from collections import defaultdict
+_PEER_PROGRESS_DATA = defaultdict(lambda: [])
+MAX_SAMPLES = 5
+MAX_SAMPLE_AGE = 600
+def gc_peer_progress_data():
+    for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
+        # Keep only the most recent samples
+        while len(samples) > MAX_SAMPLES:
+            samples.pop(0)
+
+        # Also remove samples that are too old
+        while samples and (samples[0][0] + MAX_SAMPLE_AGE) < time.monotonic():
+            samples.pop(0)
+
+        # Remove peer if there are no samples left
+        if not samples:
+            del _PEER_PROGRESS_DATA[peer_id]
+
+def _guess_peer_rate_and_eta(peer_progress, peer_id, torrent_size):
+    rate = 0
+    if peer_progress < 1:
+        samples = _PEER_PROGRESS_DATA[peer_id]
+
+        # Don't add the same progress twice
+        if not samples or peer_progress != samples[-1][1]:
+            samples.append((time.monotonic(), peer_progress))
+
+        log.debug('samples: %r', samples)
+
+        # We need at least 2 samples
+        if len(samples) >= 2:
+            # We only need timestamp and progress of first and last sample
+            t_first, p_first = samples[0]
+            t_last, p_last = samples[-1]
+            p_diff = p_last - p_first
+            t_diff = t_last - t_first
+
+            # Sometimes peers seem to lie about their progress (e.g. current
+            # progress is smaller than the previous one)
+            if p_diff > 0:
+                size_diff = torrent_size * p_diff  # How much was downloaded in t_diff seconds
+                rate = size_diff / t_diff
+
+    eta = Timedelta.UNKNOWN
+    if rate is not 0:
+        if peer_progress == 1:
+            eta = Timedelta.NOT_APPLICABLE
+        elif rate > 0:
+            size_remaining = torrent_size - (torrent_size * peer_progress)
+            eta = size_remaining / rate
+
+    return rate, eta
+
+class TorrentPeer(abc.Mapping):
+    TYPES = {
+        'id'        : lambda val: val,
+        'tid'       : lambda val: val,
+        'tname'     : SmartCmpStr,
+        'tsize'     : lambda val: convert.size(val, unit='byte'),
+        'ip'        : str,
+        'port'      : int,
+        'client'    : SmartCmpStr,
+        'progress'  : Percent,
+        'rate-up'   : lambda val: convert.bandwidth(val, unit='byte'),
+        'rate-down' : lambda val: convert.bandwidth(val, unit='byte'),
+        'eta'       : Timedelta,
+        'rate-est'  : lambda val: convert.bandwidth(val, unit='byte'),
+    }
+
+    _VALUES = {
+        'id' : lambda p: hash((p['tid'], p['ip'], p['port'])),
+    }
+
+    def __init__(self, tid, tname, tsize, ip, port, client, progress, rate_up, rate_down):
+        self._dct = {'tid': tid, 'tname': tname, 'tsize': tsize,
+                     'ip': ip, 'port': port, 'client': client, 'progress': progress,
+                     'rate-up': rate_up, 'rate-down': rate_down}
+        self._cache = {}
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            if key in ('eta', 'rate-est'):
+                rate, eta = _guess_peer_rate_and_eta(
+                    self['progress']/100, self['id'], self['tsize'])
+                self._cache['rate-est'] = self.TYPES['rate-est'](rate)
+                self._cache['eta'] = self.TYPES['eta'](eta)
+
+            else:
+                if key in self._VALUES:
+                    val = self._VALUES[key](self._dct)
+                else:
+                    val = self._dct[key]
+                self._cache[key] = self.TYPES[key](val)
+        return self._cache[key]
+
+    def __repr__(self): return '<{} {}@{}>'.format(type(self).__name__, self['ip'], self['progress'])
+    def __iter__(self): return iter(self.TYPES)
+    def __len__(self): return len(self.TYPES)
+
 
 
 TYPES = {
