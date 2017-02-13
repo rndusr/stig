@@ -85,14 +85,24 @@ class TestNumber(unittest.TestCase):
         self.assertEqual(n.unit, 'F')
 
     def test_parsing_Number_instance(self):
-        n = tkeys.Number('1MB')
-        self.assertEqual(n, 1e6)
-        self.assertEqual(n.unit, 'B')
-        self.assertEqual(n.prefix, 'metric')
-        nn = tkeys.Number(n)
-        self.assertEqual(nn, 1e6)
-        self.assertEqual(nn.unit, 'B')
-        self.assertEqual(nn.prefix, 'metric')
+        for prefix in ('binary', 'metric'):
+            orig = tkeys.Number('1MB', prefix=prefix)
+
+            n = tkeys.Number(orig)
+            self.assertEqual(n, 1e6)
+            self.assertEqual(n.unit, orig.unit)
+            self.assertEqual(n.prefix, orig.prefix)
+
+            for new_prefix in ('metric', 'binary'):
+                n1 = tkeys.Number(orig, prefix=new_prefix)
+                self.assertEqual(n1, 1e6)
+                self.assertEqual(n1.unit, orig.unit)
+                self.assertEqual(n1.prefix, new_prefix)
+
+                n2 = tkeys.Number(orig, unit='b')
+                self.assertEqual(n2, 1e6)
+                self.assertEqual(n2.unit, 'b')
+                self.assertEqual(n2.prefix, orig.prefix)
 
     def test_not_a_number(self):
         with self.assertRaises(ValueError):

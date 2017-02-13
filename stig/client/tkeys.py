@@ -49,7 +49,8 @@ class Number(float):
 
     def __new__(cls, num, prefix='metric', unit=None):
         if isinstance(num, cls):
-            return num
+            return cls(float(num), prefix or num.prefix, unit or num.unit)
+
         elif isinstance(num, str):
             match = cls._REGEX.match(num)
             if match is None:
