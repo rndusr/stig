@@ -418,8 +418,6 @@ def _guess_peer_rate_and_eta(peer_progress, peer_id, torrent_size):
         if not samples or peer_progress != samples[-1][1]:
             samples.append((time.monotonic(), peer_progress))
 
-        log.debug('samples: %r', samples)
-
         # We need at least 2 samples
         if len(samples) >= 2:
             # We only need timestamp and progress of first and last sample
