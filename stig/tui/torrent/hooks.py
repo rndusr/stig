@@ -22,7 +22,7 @@ def _set_bandwidth_unit(unit):
 
     PCOLUMNS['rate-up'].set_unit(u)
     PCOLUMNS['rate-down'].set_unit(u)
-    PCOLUMNS['peer-rate-est'].set_unit(u)
+    PCOLUMNS['rate-est'].set_unit(u)
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 
 

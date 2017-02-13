@@ -26,7 +26,7 @@ class TorrentName(ColumnBase):
     width = 20
 
     def get_value(self):
-        return self.data['torrentname']
+        return self.data['tname']
 
 COLUMNS['torrentname'] = TorrentName
 
@@ -126,7 +126,7 @@ class EstimatedPeerRate(ColumnBase):
     width = 7
 
     def get_value(self):
-        return self.data['peer-rate-est']
+        return self.data['rate-est']
 
     def get_raw(self):
         return int(self.get_value())
@@ -135,4 +135,4 @@ class EstimatedPeerRate(ColumnBase):
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
 
-COLUMNS['peer-rate-est'] = EstimatedPeerRate
+COLUMNS['rate-est'] = EstimatedPeerRate

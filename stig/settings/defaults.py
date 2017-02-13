@@ -30,7 +30,7 @@ DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
                          'eta', 'peers-connected', 'peers-seeding', 'rate-down',
                          'rate-up')
 DEFAULT_FLIST_COLUMNS = ('priority', 'name', 'progress', 'downloaded', 'size')
-DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'peer-rate-est',
+DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
                          'eta', 'client', 'ip', 'port')
 
 

@@ -332,11 +332,11 @@ peerlist.rate-up.header                       $rate-up_fg,underline on $plist_bg
 peerlist.rate-up.unfocused                    $rate-up_fg           on $plist_bg
 peerlist.rate-up.highlighted.unfocused        $rate-up_hl           on $plist_bg
 
-$peer-rate-est_fg = dark green
-$peer-rate-est_hl = light green
-peerlist.peer-rate-est.header                 $peer-rate-est_fg,underline on $plist_bg
-peerlist.peer-rate-est.unfocused              $peer-rate-est_fg           on $plist_bg
-peerlist.peer-rate-est.highlighted.unfocused  $peer-rate-est_hl           on $plist_bg
+$rate-est_fg = dark green
+$rate-est_hl = light green
+peerlist.rate-est.header                      $rate-est_fg,underline on $plist_bg
+peerlist.rate-est.unfocused                   $rate-est_fg           on $plist_bg
+peerlist.rate-est.highlighted.unfocused       $rate-est_hl           on $plist_bg
 
 $eta_fg = brown
 $eta_hl = yellow
