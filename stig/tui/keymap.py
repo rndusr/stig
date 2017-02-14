@@ -82,7 +82,8 @@ class Key(str):
         # Validate named keys ('enter', 'delete', etc)
         if len(key) > 1:
             # F* key names are upper case, all others lower case
-            key = key.upper() if key in cls._FKEYS else key.lower()
+            key_upper = key.upper()
+            key = key_upper if key_upper in cls._FKEYS else key.lower()
             if key not in cls._KEYNAMES:
                 raise ValueError('Unknown key name: %r' % key)
 
