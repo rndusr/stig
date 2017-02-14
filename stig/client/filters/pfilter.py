@@ -32,7 +32,7 @@ class SingleTorrentPeerFilter(Filter):
             lambda p: p['rate-down'] > 0,
             aliases=('dl',),
             description='Peers we are downloading from'),
-        'complete': BoolFilterSpec(
+        'seeding': BoolFilterSpec(
             lambda p: p['progress'] >= 100,
             aliases=('done',),
             description='Peers that have downloaded all data'),
