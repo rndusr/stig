@@ -14,9 +14,10 @@ from .constants import *
 
 from .utils import Response
 
+from .tsort import TorrentSorter
 from .filters.tfilter import TorrentFilter
 from .filters.ffilter import TorrentFileFilter
-from .tsort import TorrentSorter
+from .filters.pfilter import TorrentPeerFilter
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
