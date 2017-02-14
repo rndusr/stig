@@ -169,7 +169,7 @@ class Filter():
             else:
                 self._filter_func = f.make_filter_func(self._OPERATORS[op], value)
 
-        elif value is op is None:
+        elif value is op is None and self.DEFAULT_FILTER is not None:
             # `name` is no known filter - default to DEFAULT_FILTER with operator '~'.
             value = name
             op = '~'
