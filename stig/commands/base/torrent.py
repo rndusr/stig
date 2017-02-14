@@ -210,7 +210,8 @@ class ListPeersCmdbase(mixin.get_plist_columns, mixin.get_peer_filter, metaclass
     usage = ('peerlist [<OPTIONS>]',
              'peerlist [<OPTIONS>] [<TORRENT FILTER>] [<PEER FILTER>]')
     examples = ('peerlist',
-                "peerlist some_torrent")
+                "peerlist some_torrent",
+                "peerlist some_torrent ip=127.0.0.1")
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '?',
          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
