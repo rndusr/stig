@@ -39,7 +39,8 @@ class Key(str):
     )
 
     _MODS = ('shift', 'alt', 'ctrl')
-    _FKEYS = ('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12')
+    _FKEYS = ('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+              'F13', 'F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20')
     _KEYNAMES = ('escape', 'space', 'home', 'end', 'tab', 'delete', 'backspace', 'insert',
                  'enter', 'pgup', 'pgdn', 'left', 'right', 'up', 'down') + _FKEYS
     _cache = {}
