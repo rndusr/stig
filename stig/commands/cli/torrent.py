@@ -244,7 +244,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
                    mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
     srvapi = ExpectedResource
-    async def make_plist(self, tfilter, columns):
+    async def make_plist(self, tfilter, pfilter, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilter, keys=('name', 'peers')),
             quiet=True)
@@ -253,12 +253,24 @@ class ListPeersCmd(base.ListPeersCmdbase,
         if len(torrents) < 1:
             return False
 
+        if pfilter is None:
+            filter_peers = lambda peers: peers
+        else:
+            filter_peers = lambda peers: pfilter.apply(peers)
+
         peerlist = []
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
-            peerlist.extend(torrent['peers'])
+            peerlist.extend(filter_peers(torrent['peers']))
 
-        _print_table(peerlist, columns, PLIST_COLUMNS)
-        return True
+        if peerlist:
+            _print_table(peerlist, columns, PLIST_COLUMNS)
+            return True
+        else:
+            if str(tfilter) != 'all':
+                log.error('No matching peers in {} torrents: {}'.format(tfilter, pfilter))
+            else:
+                log.error('No matching peers: {}'.format(pfilter))
+            return False
 
 
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,

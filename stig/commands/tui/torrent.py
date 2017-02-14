@@ -86,9 +86,9 @@ class ListPeersCmd(base.ListPeersCmdbase,
     tui = ExpectedResource
     srvapi = ExpectedResource
 
-    async def make_plist(self, tfilter, columns):
+    async def make_plist(self, tfilter, pfilter, columns):
         from ...tui.torrent.plist import PeerListWidget
-        plistw = PeerListWidget(self.srvapi, tfilter, columns)
+        plistw = PeerListWidget(self.srvapi, tfilter, pfilter, columns)
 
         if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
             # tfilter is a torrent ID - resolve it to a name for the title
@@ -96,6 +96,8 @@ class ListPeersCmd(base.ListPeersCmdbase,
             title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
             title = str(tfilter or 'all')
+            if pfilter:
+                title += ' %s' % pfilter
         titlew = make_tab_title(title, 'tabs.peerlist.unfocused', 'tabs.peerlist.focused')
         self.tui.tabs.load(titlew, plistw)
         return True

@@ -33,7 +33,15 @@ class PeerListItemWidget(urwid.WidgetWrap):
 
 
 class PeerListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tfilter, columns):
+    def __init__(self, srvapi, tfilter, pfilter, columns):
+        if pfilter is not None:
+            def filter_peers(peers):
+                yield from pfilter.apply(peers)
+        else:
+            def filter_peers(peers):
+                yield from peers
+        self._maybe_filter_peers = filter_peers
+
         self._torrents = ()
         self._initialized = False
 
@@ -68,7 +76,7 @@ class PeerListWidget(urwid.WidgetWrap):
 
         def peers_combined(torrents):
             for t in sorted(torrents, key=lambda t: t['name'].lower()):
-                yield from t['peers']
+                yield from self._maybe_filter_peers(t['peers'])
 
         walker = self._listbox.body
         pdict = {p['id']:p for p in peers_combined(self._torrents)}
