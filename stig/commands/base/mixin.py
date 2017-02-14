@@ -32,6 +32,20 @@ class get_torrent_sorter():
             return TorrentSorter(utils.listify_args(args))
 
 
+class get_peer_filter():
+    def get_peer_filter(self, FILTER):
+        """Return TorrentPeerFilter instance or None
+
+        If `FILTER` evaluates to True, it is passed to TorrentPeerFilter and
+        the resulting object is returned.
+
+        If `FILTER` evaluates to False, None is returned.
+        """
+        if FILTER:
+            from ...client import TorrentPeerFilter
+            return TorrentPeerFilter(FILTER)
+
+
 class get_tlist_columns():
     def get_tlist_columns(self, args):
         """Check if each item in iterable `args` is a valid torrent list column
