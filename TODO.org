@@ -2,9 +2,6 @@ This is list a of rough ideas.  Feel free to contribute your own, ask/answer
 questions and point out issues.
 
 * commands
-** TODO tab: Add --background,-b option                         :improvement:
-   If given, the new or specified tab should not be focused.
-
 ** TODO New command: sort                                       :improvement:
    Sort torrents in the focused list or in another tab (--focus,-f).  Check if
    tab actually contains a torrent list and not a help page, for example.
