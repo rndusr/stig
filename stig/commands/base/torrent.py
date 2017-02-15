@@ -110,6 +110,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                 'ls seeds<10',
                 'ls active&tracker~example.org',
                 'ls active|idle&tracker~example')
+
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '*',
          'description': 'Filter expression (see `help filter`)'},
@@ -117,14 +118,31 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'tlist.sort' setting",
           'description': ('Comma-separated list of sort orders '
-                          "(see 'sort' command for available sort orders)") },
+                          "(see SORT ORDERS section for a list)") },
 
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'tlist.columns' setting",
           'description': ('Comma-separated list of column names '
-                          "(see 'help tlist.columns' for available columns)") },
+                          "(see COLUMNS section for a list)") },
     )
+
+    def _make_SORT_ORDERS_doc():
+        from ...client.sorters.tsorter import SORTERS
+        return (('The following sort orders can be specified with the --sort option '
+                 'or the "tlist.sort" setting:'),
+                '',
+                '\t%s' % ', '.join(sorted(SORTERS)))
+
+    def _make_COLUMNS_doc():
+        from ...columns.tlist import COLUMNS
+        return (('The following columns can be specified with the --columns option '
+                 'or the "tlist.columns" setting:'),
+                '',
+                '\t%s' % ', '.join(sorted(COLUMNS)))
+
     more_sections = {
+        'COLUMNS': _make_COLUMNS_doc(),
+        'SORT ORDERS': _make_SORT_ORDERS_doc(),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
