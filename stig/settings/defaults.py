@@ -19,7 +19,7 @@ from .. import APPNAME
 from ..columns.tlist import COLUMNS as TCOLUMNS
 from ..columns.flist import COLUMNS as FCOLUMNS
 from ..columns.plist import COLUMNS as PCOLUMNS
-from ..client.tsort import SORTERS
+from ..client.sorters.tsorter import SORTERS as TSORTERS
 
 DEFAULT_RCFILE        = user_config_dir(APPNAME) + '/rc'
 DEFAULT_HISTORY_FILE  = user_cache_dir(APPNAME)+'/history'
@@ -41,13 +41,13 @@ class TorrentSortValue(SetValue):
     """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
     def __init__(self, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.options = tuple(SORTERS)
+        self.options = tuple(TSORTERS)
 
     def validate(self, names):
         for name in names:
             if name[0] == '!':
                 name = name[1:]
-            if name not in SORTERS:
+            if name not in TSORTERS:
                 raise ValueError('Invalid sort order: {!r}'.format(name))
 
 

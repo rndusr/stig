@@ -371,7 +371,7 @@ class HelpManager():
     @property
     def sort(self):
         """Provide help text for arguments to TorrentSorter"""
-        from .client.tsort import SORTERS
+        from .client.sorters.tsorter import SORTERS
         lines = [
             'SORTING TORRENTS',
             ('\tCommands with a SORT argument accept one of the sort orders '
