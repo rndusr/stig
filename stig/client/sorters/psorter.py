@@ -25,7 +25,7 @@ SORTSPECS = {
                             description='IP address (alphabetically)'),
     'port':       _SortSpec(lambda t: t['port'],
                             description='port number'),
-    'client':     _SortSpec(lambda t: t['client'],
+    'client':     _SortSpec(lambda t: t['client'].lower(),
                             description='client name'),
     'progress':   _SortSpec(lambda t: t['progress'],
                             description='downloading progress'),
@@ -35,10 +35,12 @@ SORTSPECS = {
                             description='download rate (from your perspective)'),
     'rate':       _SortSpec(lambda t: t['rate-up'] + t['rate-down'],
                             description='combined download and upload rate'),
-    'eta':        _SortSpec(lambda t: t['eta'],
+    'eta':        _SortSpec(lambda t: int(t['eta']),
                             description='estimated time they need to finish'),
     'rate-est':   _SortSpec(lambda t: t['rate-est'],
                             description='estimated overall download rate'),
+    'name':       _SortSpec(lambda t: t['tname'].lower(),
+                            description='torrent name'),
 }
 
 
