@@ -130,7 +130,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         # Sort torrents
         if self._sort is not None:
             self._sort.apply(walker,
-                            torrent_getter=lambda tw: tw.torrent,
+                            item_getter=lambda tw: tw.torrent,
                             inplace=True)
 
         # If necessary, re-focus previously focused torrent

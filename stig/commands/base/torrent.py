@@ -127,11 +127,11 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
     )
 
     def _make_SORT_ORDERS_doc():
-        from ...client.sorters.tsorter import SORTERS
+        from ...client.sorters.tsorter import SORTSPECS
         return (('The following sort orders can be specified with the --sort option '
                  'or the "tlist.sort" setting:'),
                 '',
-                '\t%s' % ', '.join(sorted(SORTERS)))
+                '\t%s' % ', '.join(sorted(SORTSPECS)))
 
     def _make_COLUMNS_doc():
         from ...columns.tlist import COLUMNS

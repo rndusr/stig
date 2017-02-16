@@ -371,7 +371,7 @@ class HelpManager():
     @property
     def sort(self):
         """Provide help text for arguments to TorrentSorter"""
-        from .client.sorters.tsorter import SORTERS
+        from .client.sorters.tsorter import SORTSPECS
         lines = [
             'SORTING TORRENTS',
             ('\tCommands with a SORT argument accept one of the sort orders '
@@ -386,7 +386,7 @@ class HelpManager():
              'sort orders are applied.'),
         ]
         lines += ['', '\tSORT ORDERS']
-        for sname,s in sorted(SORTERS.items()):
+        for sname,s in sorted(SORTSPECS.items()):
             snames = ', '.join((sname,) + s.aliases)
             lines.append('\t\t{} \t{}'.format(snames, s.description))
         return finalize_lines(lines)
