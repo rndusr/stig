@@ -72,6 +72,7 @@ SORTSPECS = {
 
 class TorrentSorter(SorterBase):
     SORTSPECS = SORTSPECS
+    DEFAULT_SORTSPECNAME = 'name'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
