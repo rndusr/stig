@@ -15,6 +15,8 @@ from .constants import *
 from .utils import Response
 
 from .sorters.tsorter import TorrentSorter
+from .sorters.psorter import TorrentPeerSorter
+
 from .filters.tfilter import TorrentFilter
 from .filters.ffilter import TorrentFileFilter
 from .filters.pfilter import TorrentPeerFilter
