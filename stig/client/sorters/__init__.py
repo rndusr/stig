@@ -16,6 +16,11 @@ from functools import partial
 
 
 class SortSpecBase():
+    def __init__(self, *keyfuncs, description, aliases=()):
+        self._keyfuncs = keyfuncs
+        self.description = description
+        self.aliases = aliases
+
     def __call__(self, items, reverse=False, inplace=False, item_getter=lambda item: item):
         if not items:
             return items

@@ -15,11 +15,10 @@ log = make_logger(__name__)
 from . import (SortSpecBase, SorterBase)
 
 class _SortSpec(SortSpecBase):
-    def __init__(self, *keyfuncs, needed_keys, description, aliases=()):
-        self._keyfuncs = keyfuncs
+    def __init__(self, *args, description='', needed_keys=(), **kwargs):
+        description = 'Sort torrents by %s' % description
+        super().__init__(*args, description=description, **kwargs)
         self.needed_keys = needed_keys
-        self.description = 'Sort torrents by ' + description
-        self.aliases = aliases
 
 
 SORTSPECS = {
