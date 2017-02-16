@@ -32,6 +32,20 @@ class get_torrent_sorter():
             return TorrentSorter(utils.listify_args(args))
 
 
+class get_peer_sorter():
+    def get_peer_sorter(self, args):
+        """Return TorrentPeerSorter instance or None
+
+        If `args` evaluates to True, it is passed to TorrentPeerSorter and the
+        result is returned.
+
+        If `args` evaluates to False, None is returned.
+        """
+        if args:
+            from ...client import TorrentPeerSorter
+            return TorrentPeerSorter(utils.listify_args(args))
+
+
 class get_peer_filter():
     def get_peer_filter(self, FILTER):
         """Return TorrentPeerFilter instance or None

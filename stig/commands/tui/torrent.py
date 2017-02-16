@@ -86,9 +86,10 @@ class ListPeersCmd(base.ListPeersCmdbase,
     tui = ExpectedResource
     srvapi = ExpectedResource
 
-    async def make_plist(self, tfilter, pfilter, columns):
+    async def make_plist(self, tfilter, pfilter, sort, columns):
         from ...tui.torrent.plist import PeerListWidget
-        plistw = PeerListWidget(self.srvapi, tfilter, pfilter, columns)
+        plistw = PeerListWidget(self.srvapi, tfilter=tfilter, pfilter=pfilter,
+                                sort=sort, columns=columns)
 
         if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
             # tfilter is a torrent ID - resolve it to a name for the title

@@ -219,7 +219,8 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
             return self.make_flist(tfilter, ffilter, columns)
 
 
-class ListPeersCmdbase(mixin.get_plist_columns, mixin.get_peer_filter, metaclass=InitCommand):
+class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
+                       mixin.get_peer_filter, metaclass=InitCommand):
     name = 'peerlist'
     aliases = ('pls', 'lsp')
     provides = set()
@@ -237,6 +238,11 @@ class ListPeersCmdbase(mixin.get_plist_columns, mixin.get_peer_filter, metaclass
         { 'names': ('PEER FILTER',), 'nargs': '?',
           'description': 'Filter expression (see `help filter`)' },
 
+        { 'names': ('--sort', '-s'),
+          'default_description': "current value of 'plist.sort' setting",
+          'description': ('Comma-separated list of sort orders '
+                          "(see SORT ORDERS section for a list)") },
+
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'plist.columns' setting",
           'description': ('Comma-separated list of column names '
@@ -248,14 +254,15 @@ class ListPeersCmdbase(mixin.get_plist_columns, mixin.get_peer_filter, metaclass
 
     cfg = ExpectedResource
 
-    async def run(self, TORRENT_FILTER, PEER_FILTER, columns):
+    async def run(self, TORRENT_FILTER, PEER_FILTER, sort, columns):
         columns = self.cfg['plist.columns'].value if columns is None else columns
         try:
-            columns = self.get_plist_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
                                            discover_torrent=True)
             pfilter = self.get_peer_filter(PEER_FILTER)
+            sort    = self.get_peer_sorter(sort)
+            columns = self.get_plist_columns(columns)
         except ValueError as e:
             log.error(e)
             return False
@@ -269,9 +276,9 @@ class ListPeersCmdbase(mixin.get_plist_columns, mixin.get_peer_filter, metaclass
         log.debug('Listing %s peers of %s torrents', pfilter, tfilter)
 
         if asyncio.iscoroutinefunction(self.make_plist):
-            return await self.make_plist(tfilter, pfilter, columns)
+            return await self.make_plist(tfilter, pfilter, sort, columns)
         else:
-            return self.make_plist(tfilter, pfilter, columns)
+            return self.make_plist(tfilter, pfilter, sort, columns)
 
 
 class MoveTorrentsCmdbase(metaclass=InitCommand):

@@ -244,7 +244,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
                    mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
     srvapi = ExpectedResource
-    async def make_plist(self, tfilter, pfilter, columns):
+    async def make_plist(self, tfilter, pfilter, sort, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilter, keys=('name', 'peers')),
             quiet=True)
@@ -261,6 +261,8 @@ class ListPeersCmd(base.ListPeersCmdbase,
         peerlist = []
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
             peerlist.extend(filter_peers(torrent['peers']))
+
+        sort.apply(peerlist, inplace=True)
 
         if peerlist:
             _print_table(peerlist, columns, PLIST_COLUMNS)

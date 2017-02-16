@@ -31,9 +31,15 @@ class PeerListItemWidget(urwid.WidgetWrap):
     def pid(self):
         return self._peer['id']
 
+    @property
+    def peer(self):
+        return self._peer
+
 
 class PeerListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tfilter, pfilter, columns):
+    def __init__(self, srvapi, tfilter, pfilter, columns, sort=None):
+        self._sort = sort
+
         if pfilter is not None:
             def filter_peers(peers):
                 yield from pfilter.apply(peers)
@@ -101,6 +107,12 @@ class PeerListWidget(urwid.WidgetWrap):
             self._table.register(pid)
             row = urwid.AttrMap(self._table.get_row(pid), attr_map='peerlist')
             walker.append(PeerListItemWidget(pdict[pid], row))
+
+        # Sort peers
+        if self._sort is not None:
+            self._sort.apply(walker,
+                            item_getter=lambda pw: pw.peer,
+                            inplace=True)
 
     def clear(self):
         """Remove all list items"""
