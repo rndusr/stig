@@ -20,14 +20,13 @@ from .utils import (natsortkey, striplines, expandtabs)
 
 from .cliopts import DESCRIPTIONS
 
-MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filter', 'sort', 'rcfile')
+MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filter', 'rcfile')
 
 ALIASES = {
     'command': 'commands', 'cmds': 'commands', 'cmd': 'commands',
     'setting': 'settings', 'config': 'settings', 'cfg': 'settings',
     'keys': 'keymap', 'keybindings': 'keymap',
     'filters': 'filter', 'filtering': 'filter',
-    'sorting': 'sort',
 }
 
 
@@ -366,29 +365,6 @@ class HelpManager():
             for fname,f in sorted(filt.COMPARATIVE_FILTERS.items()):
                 lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
 
-        return finalize_lines(lines)
-
-    @property
-    def sort(self):
-        """Provide help text for arguments to TorrentSorter"""
-        from .client.sorters.tsorter import SORTSPECS
-        lines = [
-            'SORTING TORRENTS',
-            ('\tCommands with a SORT argument accept one of the sort orders '
-             'listed below to sort torrents.'),
-            '',
-            '\tMultiple sort orders are separated with "," (e.g. "name,tracker").',
-            '',
-            ('\tSorting is reversed (descending instead of ascending) by '
-             'prepending "!" (e.g. "!rate").'),
-            '',
-            ('\tTorrents are sorted alphabetically first before any other '
-             'sort orders are applied.'),
-        ]
-        lines += ['', '\tSORT ORDERS']
-        for sname,s in sorted(SORTSPECS.items()):
-            snames = ', '.join((sname,) + s.aliases)
-            lines.append('\t\t{} \t{}'.format(snames, s.description))
         return finalize_lines(lines)
 
     @property
