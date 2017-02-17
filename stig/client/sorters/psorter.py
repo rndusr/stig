@@ -20,30 +20,27 @@ class _SortSpec(SortSpecBase):
         super().__init__(*args, description=description, **kwargs)
 
 
-SORTSPECS = {
-    'ip':         _SortSpec(lambda t: t['ip'],
-                            description='IP address (alphabetically)'),
-    'port':       _SortSpec(lambda t: t['port'],
-                            description='port number'),
-    'client':     _SortSpec(lambda t: t['client'].lower(),
-                            description='client name'),
-    'progress':   _SortSpec(lambda t: t['progress'],
-                            description='downloading progress'),
-    'rate-up':    _SortSpec(lambda t: t['rate-up'],
-                            description='upload rate (from your perspective)'),
-    'rate-down':  _SortSpec(lambda t: t['rate-down'],
-                            description='download rate (from your perspective)'),
-    'rate':       _SortSpec(lambda t: t['rate-up'] + t['rate-down'],
-                            description='combined download and upload rate'),
-    'eta':        _SortSpec(lambda t: int(t['eta']),
-                            description='estimated time they need to finish'),
-    'rate-est':   _SortSpec(lambda t: t['rate-est'],
-                            description='estimated overall download rate'),
-    'name':       _SortSpec(lambda t: t['tname'].lower(),
-                            description='torrent name'),
-}
-
-
 class TorrentPeerSorter(SorterBase):
-    SORTSPECS = SORTSPECS
+    SORTSPECS = {
+        'ip':         _SortSpec(lambda t: t['ip'],
+                                description='IP address (alphabetically)'),
+        'port':       _SortSpec(lambda t: t['port'],
+                                description='port number'),
+        'client':     _SortSpec(lambda t: t['client'].lower(),
+                                description='client name'),
+        'progress':   _SortSpec(lambda t: t['progress'],
+                                description='downloading progress'),
+        'rate-up':    _SortSpec(lambda t: t['rate-up'],
+                                description='upload rate (from your perspective)'),
+        'rate-down':  _SortSpec(lambda t: t['rate-down'],
+                                description='download rate (from your perspective)'),
+        'rate':       _SortSpec(lambda t: t['rate-up'] + t['rate-down'],
+                                description='combined download and upload rate'),
+        'eta':        _SortSpec(lambda t: int(t['eta']),
+                                description='estimated time they need to finish'),
+        'rate-est':   _SortSpec(lambda t: t['rate-est'],
+                                description='estimated overall download rate'),
+        'name':       _SortSpec(lambda t: t['tname'].lower(),
+                                description='torrent name'),
+    }
     DEFAULT_SORTSPECNAME = 'ip'
