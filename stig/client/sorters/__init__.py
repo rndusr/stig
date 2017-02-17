@@ -55,7 +55,7 @@ class SorterBase():
         self._sortfuncs = []
         strings = []         # String representations of sortspecs
         for sortstring in sortstrings:
-            if sortstring[0] == '!':
+            if sortstring[0] in ('!', '.'):
                 sortspecname, reverse = sortstring[1:], True
             else:
                 sortspecname, reverse = sortstring, False
