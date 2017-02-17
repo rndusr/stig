@@ -27,11 +27,11 @@ DEFAULT_HISTORY_FILE  = user_cache_dir(APPNAME)+'/history'
 DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TLIST_SORT    = ('name',)
-DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
-                         'eta', 'peers-connected', 'peers-seeding', 'rate-down',
-                         'rate-up')
-DEFAULT_FLIST_COLUMNS = ('priority', 'name', 'progress', 'downloaded', 'size')
 DEFAULT_PLIST_SORT    = ('name', '!rate')
+DEFAULT_TLIST_COLUMNS = ('ratio', 'size', 'downloaded', 'uploaded',
+                         'peers-seeding', 'peers-connected', 'eta',
+                         'progress', 'rate-down', 'rate-up', 'name')
+DEFAULT_FLIST_COLUMNS = ('priority', 'progress', 'downloaded', 'size', 'name')
 DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
                          'eta', 'client', 'ip', 'port')
 
