@@ -99,6 +99,9 @@ class ListPeersCmd(base.ListPeersCmdbase,
             title = str(tfilter or 'all')
             if pfilter:
                 title += ' %s' % pfilter
+            if sort:
+                title += ' {%s}' % sort
+
         titlew = make_tab_title(title, 'tabs.peerlist.unfocused', 'tabs.peerlist.focused')
         self.tui.tabs.load(titlew, plistw)
         return True
