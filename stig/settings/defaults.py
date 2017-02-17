@@ -19,7 +19,8 @@ from .. import APPNAME
 from ..columns.tlist import COLUMNS as TCOLUMNS
 from ..columns.flist import COLUMNS as FCOLUMNS
 from ..columns.plist import COLUMNS as PCOLUMNS
-from ..client.sorters.tsorter import SORTSPECS as TSORTSPECS
+from ..client.sorters.tsorter import TorrentSorter
+from ..client.sorters.psorter import TorrentPeerSorter
 
 DEFAULT_RCFILE        = user_config_dir(APPNAME) + '/rc'
 DEFAULT_HISTORY_FILE  = user_cache_dir(APPNAME)+'/history'
@@ -30,6 +31,7 @@ DEFAULT_TLIST_COLUMNS = ('name', 'ratio', 'size', 'downloaded', 'uploaded',
                          'eta', 'peers-connected', 'peers-seeding', 'rate-down',
                          'rate-up')
 DEFAULT_FLIST_COLUMNS = ('priority', 'name', 'progress', 'downloaded', 'size')
+DEFAULT_PLIST_SORT    = ('name', '!rate')
 DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
                          'eta', 'client', 'ip', 'port')
 
@@ -37,18 +39,14 @@ DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
 from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
                        PathValue, ListValue, SetValue, OptionValue)
 
-class TorrentSortValue(SetValue):
+class SortOrderValue(SetValue):
     """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
-    def __init__(self, *args, options=None, **kwargs):
+    def __init__(self, sortercls, *args, options=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.options = tuple(TSORTSPECS)
+        self.options = tuple(sortercls.SORTSPECS)
 
     def validate(self, names):
-        for name in names:
-            if name[0] == '!':
-                name = name[1:]
-            if name not in TSORTSPECS:
-                raise ValueError('Invalid sort order: {!r}'.format(name))
+        super().validate(name.strip('!.') for name in names)
 
 
 def init_defaults(cfg):
@@ -62,16 +60,18 @@ def init_defaults(cfg):
         SetValue('tlist.columns', default=DEFAULT_TLIST_COLUMNS,
                  options=tuple(TCOLUMNS),
                  description='List of columns in new torrent lists'),
-        TorrentSortValue('tlist.sort', default=DEFAULT_TLIST_SORT,
-                 description='List of torrent sort orders'),
-
-        SetValue('flist.columns', default=DEFAULT_FLIST_COLUMNS,
-                 options=tuple(FCOLUMNS),
-                 description='List of columns in new torrent file lists'),
+        SortOrderValue(TorrentSorter, 'tlist.sort', default=DEFAULT_TLIST_SORT,
+                       description='List of torrent sort orders'),
 
         SetValue('plist.columns', default=DEFAULT_PLIST_COLUMNS,
                  options=tuple(PCOLUMNS),
                  description='List of columns in new peer lists'),
+        SortOrderValue(TorrentPeerSorter, 'plist.sort', default=DEFAULT_PLIST_SORT,
+                       description='List of peer sort orders'),
+
+        SetValue('flist.columns', default=DEFAULT_FLIST_COLUMNS,
+                 options=tuple(FCOLUMNS),
+                 description='List of columns in new torrent file lists'),
 
         PathValue('tui.theme', default=DEFAULT_THEME_FILE,
                   description='Path to theme file'),
