@@ -95,6 +95,36 @@ def _make_SCRIPTING_doc(cmdname):
              "",
              "\t$ \tCOLUMNS=80 LINES=24 {{APPNAME}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
 
+def _make_SORT_ORDERS_doc(sortercls, option, setting, append=()):
+    doc = [('The following sort orders can be specified with the {option} option '
+            'or the "{setting}" setting:').format(option=option, setting=setting),
+            '']
+
+    for sname,s in sorted(sortercls.SORTSPECS.items()):
+        snames = ', '.join((sname,) + s.aliases)
+        doc.append('\t{}\t - \t{}'.format(snames, s.description))
+
+    doc.extend(('',
+                'Multiple sort orders are separated with "," without spaces.',
+                '',
+                'Sorting is reversed if the sort order is prepended by "!" or ".".',
+                '',
+                ('If "%s" is not given explicitly, it is always prepended to '
+                 'the list of sort orders.') % sortercls.DEFAULT_SORTSPECNAME))
+    if append:
+        doc.extend(('',) + append)
+    return tuple(doc)
+
+
+def _make_COLUMNS_doc(columnspecs, option, setting, append=()):
+    return (('The following columns can be specified with the {option} option '
+             'or the "{setting}" setting:').format(option=option, setting=setting),
+            '',
+            '\t%s' % ', '.join(sorted(columnspecs)),
+            '',
+            'Columns are separated with "," without spaces.') \
+            + append
+
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                           metaclass=InitCommand):
@@ -118,31 +148,19 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'tlist.sort' setting",
           'description': ('Comma-separated list of sort orders '
-                          "(see SORT ORDERS section for a list)") },
+                          "(see SORT ORDERS section)") },
 
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'tlist.columns' setting",
           'description': ('Comma-separated list of column names '
-                          "(see COLUMNS section for a list)") },
+                          "(see COLUMNS section)") },
     )
 
-    def _make_SORT_ORDERS_doc():
-        from ...client.sorters.tsorter import SORTSPECS
-        return (('The following sort orders can be specified with the --sort option '
-                 'or the "tlist.sort" setting:'),
-                '',
-                '\t%s' % ', '.join(sorted(SORTSPECS)))
-
-    def _make_COLUMNS_doc():
-        from ...columns.tlist import COLUMNS
-        return (('The following columns can be specified with the --columns option '
-                 'or the "tlist.columns" setting:'),
-                '',
-                '\t%s' % ', '.join(sorted(COLUMNS)))
-
+    from ...columns.tlist import COLUMNS
+    from ...client.sorters.tsorter import TorrentSorter
     more_sections = {
-        'COLUMNS': _make_COLUMNS_doc(),
-        'SORT ORDERS': _make_SORT_ORDERS_doc(),
+        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'tlist.columns'),
+        'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentSorter, '--sort', 'tlist.sort'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
@@ -189,9 +207,12 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'flist.columns' setting",
           'description': ('Comma-separated list of column names '
-                          "(see 'help flist.columns' for available columns)") },
+                          "(see COLUMNS section)") },
     )
+
+    from ...columns.flist import COLUMNS
     more_sections = {
+        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'flist.columns'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
@@ -241,14 +262,22 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'plist.sort' setting",
           'description': ('Comma-separated list of sort orders '
-                          "(see SORT ORDERS section for a list)") },
+                          "(see SORT ORDERS section)") },
 
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'plist.columns' setting",
           'description': ('Comma-separated list of column names '
-                          "(see 'help plist.columns' for available columns)") },
+                          "(see COLUMNS section)") },
     )
+
+    from ...columns.plist import COLUMNS
+    from ...client.sorters.psorter import TorrentPeerSorter
     more_sections = {
+        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'plist.columns', append=(
+            '',
+            'The "torrentname" column is added automatically if multiple '
+            'torrents could be listed potentially.')),
+        'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentPeerSorter, '--sort', 'plist.sort'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
@@ -256,6 +285,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
 
     async def run(self, TORRENT_FILTER, PEER_FILTER, sort, columns):
         columns = self.cfg['plist.columns'].value if columns is None else columns
+        sort = self.cfg['plist.sort'].value if sort is None else sort
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
