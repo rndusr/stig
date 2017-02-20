@@ -36,7 +36,7 @@ class TorrentPeerSorter(SorterBase):
                                 description='download rate (from your perspective)'),
         'rate':       _SortSpec(lambda t: t['rate-up'] + t['rate-down'],
                                 description='combined download and upload rate'),
-        'eta':        _SortSpec(lambda t: int(t['eta']),
+        'eta':        _SortSpec(lambda t: t['eta'],
                                 description='estimated time they need to finish'),
         'rate-est':   _SortSpec(lambda t: t['rate-est'],
                                 description='estimated overall download rate'),
