@@ -6,9 +6,6 @@ questions and point out issues.
    Sort torrents or peers in the focused list.  Check if tab actually contains
    a sortable list and not something like a help page.
 
-** TODO add: --path,-p option                                   :improvement:
-   The newly added torrent is downloaded to the specified path.
-
 ** TODO New command: interactive                                :improvement:
    Take an arbitrary amount of (option, prompt) pairs and any command.  The
    command contains placeholders.  First, for each (option, prompt) pair, the
@@ -19,6 +16,9 @@ questions and point out issues.
 
    This is mostly useful for better keybindings in the TUI, but it may also
    have benefits on the CLI.
+
+** TODO add: --path,-p option                                   :improvement:
+   The newly added torrent is downloaded to the specified path.
 
 
 * client
