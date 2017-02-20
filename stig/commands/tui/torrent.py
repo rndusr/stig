@@ -108,7 +108,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
 
 
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
-                      mixin.make_request, mixin.select_torrents):
+                      mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
 
 
