@@ -274,6 +274,18 @@ class TestTimedelta(unittest.TestCase):
         for _ in range(10):
             self.assertEqual(sorted(shuffle(lst)), lst)
 
+    def test_bool(self):
+        import random
+        for td in (tkeys.Timedelta(random.randint(-1e10, 1e10) * MIN),
+                   tkeys.Timedelta(random.randint(-1e10, 1e10) * HOUR),
+                   tkeys.Timedelta(random.randint(-1e10, 1e10) * DAY)):
+            self.assertEqual(bool(td), True)
+
+        for td in (tkeys.Timedelta(tkeys.Timedelta.UNKNOWN),
+                   tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)):
+            self.assertEqual(bool(td), False)
+
+
 
 class TestTimestamp(unittest.TestCase):
     def strftime(self, format, timestamp):
