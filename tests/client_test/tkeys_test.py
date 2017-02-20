@@ -233,8 +233,8 @@ YEAR = 365.25*DAY
 class TestTimedelta(unittest.TestCase):
     def test_special_values(self):
         self.assertEqual(str(tkeys.Timedelta(0)), 'now')
-        self.assertEqual(str(tkeys.Timedelta(-1)), '')
-        self.assertEqual(str(tkeys.Timedelta(-2)), '?')
+        self.assertEqual(str(tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)), '')
+        self.assertEqual(str(tkeys.Timedelta(tkeys.Timedelta.UNKNOWN)), '?')
 
     def test_even_units(self):
         for unit,char in ((1, 's'), (MIN, 'm'), (HOUR, 'h'), (DAY, 'd'), (YEAR, 'y')):
