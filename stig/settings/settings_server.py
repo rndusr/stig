@@ -90,7 +90,7 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
                 return super().convert(op + str(float(num)))
 
             # Parse other strings or numbers
-            elif not isinstance(value, const.Constant):
+            elif not const.is_constant(value):
                 return convert_bandwidth(value)
 
             # Let parent provide the error message
