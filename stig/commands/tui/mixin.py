@@ -23,10 +23,7 @@ class polling_frenzy():
     aioloop = ExpectedResource
 
     def polling_frenzy(self, duration=2, short_interval=0.5):
-        """Reduce polling interval for a few seconds
-
-        This affects TorrentListWidgets and FileListWidgets.
-        """
+        """Reduce polling interval to `short_interval` for `duration` seconds"""
         srvapi = self.srvapi
         if srvapi.interval > 1:
             import asyncio
