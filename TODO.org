@@ -13,6 +13,17 @@ questions and point out issues.
 ** TODO add: --path,-p option                                   :improvement:
    The newly added torrent is downloaded to the specified path.
 
+** TODO New command: interactive                                :improvement:
+   Take an arbitrary amount of (option, prompt) pairs and any command.  The
+   command contains placeholders.  First, for each (option, prompt) pair, the
+   user has to supply a value.  Each placeholder is then replaced with its
+   value and the command is executed if all placeholders are filled.
+
+   Example: interactive dest:Destination -- mv {dest}
+
+   This is mostly useful for better keybindings in the TUI, but it may also
+   have benefits on the CLI.
+
 
 * client
 ** TODO NotImplementedError                                     :improvement:
