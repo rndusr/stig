@@ -42,7 +42,7 @@ class make_request():
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
         utils.log_msgs(log, response.msgs, quiet)
-        if response.success and polling_frenzy and hasattr(self, 'polling_frenzy'):
+        if response.success and polling_frenzy:
             self.polling_frenzy()
         return response
 
