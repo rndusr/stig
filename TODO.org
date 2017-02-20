@@ -3,8 +3,8 @@ questions and point out issues.
 
 * commands
 ** TODO New command: sort                                       :improvement:
-   Sort torrents in the focused list or in another tab (--focus,-f).  Check if
-   tab actually contains a torrent list and not a help page, for example.
+   Sort torrents or peers in the focused list.  Check if tab actually contains
+   a sortable list and not something like a help page.
 
 ** TODO New command: columns                                    :improvement:
    Set the columns in the focused list or in another tab (--focus,-f).  Check
