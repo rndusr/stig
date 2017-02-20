@@ -226,16 +226,21 @@ SECONDS = (('y', 31557600),  # 365.25 days
            ('s',        1))
 
 class Timedelta(int):
-    NOT_APPLICABLE = -1
-    UNKNOWN = -2
+    # To sort unknown and not applicable Timedeltas below the rest, these
+    # constants have really large values that are very likely never going to
+    # be of any use anyway.
+    UNKNOWN        = 1e300
+    NOT_APPLICABLE = 1e301
+    assert UNKNOWN != NOT_APPLICABLE
 
     def __str__(self):
         if self == self.UNKNOWN:
             return '?'
         elif self == self.NOT_APPLICABLE:
             return ''
-        elif self == 0:
+        elif -1 < self < 1:
             return 'now'
+
         abs_secs = abs(self)
         for i,(unit,amount) in enumerate(SECONDS):
             if abs_secs >= amount:
@@ -265,7 +270,8 @@ class Timedelta(int):
 
     def __bool__(self):
         """Whether delta is known"""
-        return self >= 0
+        return self not in (self.UNKNOWN, self.NOT_APPLICABLE)
+
 
 import time
 class Timestamp(float):
