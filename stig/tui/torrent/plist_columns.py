@@ -125,6 +125,6 @@ class ETA(_COLUMNS['eta'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        return 'highlighted' if self.value > 0 else None
+        return 'highlighted' if bool(self.value) else None
 
 TUICOLUMNS['eta'] = ETA

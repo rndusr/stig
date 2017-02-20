@@ -171,7 +171,7 @@ class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        return 'highlighted' if self.value > 0 else ''
+        return 'highlighted' if bool(self.value) else ''
 
 TUICOLUMNS['eta'] = EtaComplete
 
