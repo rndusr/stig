@@ -259,6 +259,20 @@ class TestTimedelta(unittest.TestCase):
         self.assertEqual(tkeys.Timedelta(7 * DAY).with_preposition, 'in 7d')
         self.assertEqual(tkeys.Timedelta(-7 * DAY).with_preposition, '7d ago')
 
+    def test_sorting(self):
+        lst = [tkeys.Timedelta(-2 * HOUR),
+               tkeys.Timedelta(2 * MIN),
+               tkeys.Timedelta(3 * MIN),
+               tkeys.Timedelta(1 * DAY),
+               tkeys.Timedelta(tkeys.Timedelta.UNKNOWN),
+               tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)]
+
+        import random
+        def shuffle(l):
+            return random.sample(l, k=len(l))
+
+        for _ in range(10):
+            self.assertEqual(sorted(shuffle(lst)), lst)
 
 
 class TestTimestamp(unittest.TestCase):
