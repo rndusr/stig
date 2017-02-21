@@ -28,6 +28,8 @@ class TorrentPeerSorter(SorterBase):
                                 description='port number'),
         'client':     _SortSpec(lambda t: t['client'].lower(),
                                 description='client name'),
+        'country':     _SortSpec(lambda t: t['country'].lower(),
+                                 description='country'),
         'progress':   _SortSpec(lambda t: t['progress'],
                                 description='downloading progress'),
         'rate-up':    _SortSpec(lambda t: t['rate-up'],
