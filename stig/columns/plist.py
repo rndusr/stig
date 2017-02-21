@@ -42,6 +42,17 @@ class Client(ColumnBase):
 COLUMNS['client'] = Client
 
 
+class Country(ColumnBase):
+    header = {'left': 'Country'}
+    align = 'right'
+    width = 7
+
+    def get_value(self):
+        return self.data['country']
+
+COLUMNS['country'] = Country
+
+
 class IPAddress(ColumnBase):
     header = {'left': 'IP'}
     align = 'right'
