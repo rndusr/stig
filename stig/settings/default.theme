@@ -343,3 +343,7 @@ $eta_hl = yellow
 peerlist.eta.header                           $eta_fg,underline on $plist_bg
 peerlist.eta.unfocused                        $eta_fg           on $plist_bg
 peerlist.eta.highlighted.unfocused            $eta_hl           on $plist_bg
+
+$country_fg = dark red
+peerlist.country.header                       $country_fg,underline on $plist_bg
+peerlist.country.unfocused                    $country_fg           on $plist_bg
