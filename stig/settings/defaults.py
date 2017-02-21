@@ -32,8 +32,14 @@ DEFAULT_TLIST_COLUMNS = ('ratio', 'size', 'downloaded', 'uploaded',
                          'peers-seeding', 'peers-connected', 'eta',
                          'progress', 'rate-down', 'rate-up', 'name')
 DEFAULT_FLIST_COLUMNS = ('priority', 'progress', 'downloaded', 'size', 'name')
-DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
-                         'eta', 'client', 'ip', 'port')
+
+from ..client.geoip import GEOIP_AVAILABLE
+if GEOIP_AVAILABLE:
+    DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
+                             'eta', 'ip', 'port', 'country', 'client')
+else:
+    DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
+                             'eta', 'ip', 'port', 'client')
 
 
 from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
