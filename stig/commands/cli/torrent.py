@@ -268,10 +268,20 @@ class ListPeersCmd(base.ListPeersCmdbase,
             _print_table(peerlist, columns, PLIST_COLUMNS)
             return True
         else:
-            if str(tfilter) != 'all':
-                log.error('No matching peers in {} torrents: {}'.format(tfilter, pfilter))
+            filter_is_relevant = lambda f: f and str(f) != 'all'
+
+            if filter_is_relevant(pfilter):
+                errmsg = 'No matching peers'
             else:
-                log.error('No matching peers: {}'.format(pfilter))
+                errmsg = 'No peers'
+
+            if filter_is_relevant(tfilter):
+                errmsg += ' in {} torrents'.format(tfilter)
+
+            if filter_is_relevant(pfilter):
+                errmsg += ': {}'.format(pfilter)
+
+            log.error(errmsg)
             return False
 
 
