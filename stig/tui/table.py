@@ -96,7 +96,7 @@ class Table():
 class ColumnHeaderWidget(urwid.WidgetWrap):
     """Column widget with left and right text"""
 
-    def __init__(self, left='', right=' '):
+    def __init__(self, left='', right=''):
         self._left = urwid.Text(left, wrap='clip')
         self._right = urwid.Text(right, wrap='clip')
         widget = urwid.Columns([self._left, ('pack', self._right)],
