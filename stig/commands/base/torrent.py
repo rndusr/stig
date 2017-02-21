@@ -275,7 +275,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
     more_sections = {
         'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'plist.columns', append=(
             '',
-            'The "torrentname" column is added automatically if multiple '
+            'The "name" column is added automatically if multiple '
             'torrents could be listed potentially.')),
         'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentPeerSorter, '--sort', 'plist.sort'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
@@ -298,10 +298,10 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
             return False
 
         # Unless we're listing peers of exactly one torrent, specified by its
-        # ID, automatically add the 'torrentname' column.
-        if 'torrentname' not in columns and \
+        # ID, automatically add the 'name' column.
+        if 'name' not in columns and \
            (not isinstance(tfilter, abc.Sequence) or len(tfilter) != 1):
-            columns = ('torrentname',) + columns
+            columns = ('name',) + columns
 
         log.debug('Listing %s peers of %s torrents', pfilter, tfilter)
 

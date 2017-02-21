@@ -20,14 +20,14 @@ from ...columns.plist import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 
-class TorrentName(_COLUMNS['torrentname'], CellWidgetBase):
+class TorrentName(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
-    style = Style(prefix='peerlist.torrentname', focusable=False,
+    style = Style(prefix='peerlist.name', focusable=False,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['torrentname'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['torrentname'] = TorrentName
+TUICOLUMNS['name'] = TorrentName
 
 
 class Client(_COLUMNS['client'], CellWidgetBase):
