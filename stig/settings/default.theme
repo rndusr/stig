@@ -298,9 +298,9 @@ peerlist                                      default              on $plist_bg
 peerlist.focused                              default              on $plist_bg
 peerlist.header                               light gray,underline on $plist_bg
 
-$torrentname_fg = light gray
-peerlist.torrentname.header                   $torrentname_fg,underline on $plist_bg
-peerlist.torrentname.unfocused                $torrentname_fg           on $plist_bg
+$name_fg = light gray
+peerlist.name.header                          $name_fg,underline on $plist_bg
+peerlist.name.unfocused                       $name_fg           on $plist_bg
 
 $ip_fg = light gray
 peerlist.ip.header                            $ip_fg,underline on $plist_bg
