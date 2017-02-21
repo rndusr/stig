@@ -20,6 +20,16 @@ from ...columns.plist import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 
+class TorrentName(_COLUMNS['torrentname'], CellWidgetBase):
+    width = ('weight', 100)
+    style = Style(prefix='peerlist.torrentname', focusable=False,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['torrentname'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['torrentname'] = TorrentName
+
+
 class Client(_COLUMNS['client'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='peerlist.client', focusable=False,
@@ -30,14 +40,14 @@ class Client(_COLUMNS['client'], CellWidgetBase):
 TUICOLUMNS['client'] = Client
 
 
-class TorrentName(_COLUMNS['torrentname'], CellWidgetBase):
-    width = ('weight', 100)
-    style = Style(prefix='peerlist.torrentname', focusable=False,
+class Country(_COLUMNS['country'], CellWidgetBase):
+    width = 7
+    style = Style(prefix='peerlist.country', focusable=False,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['torrentname'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['country'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['torrentname'] = TorrentName
+TUICOLUMNS['country'] = Country
 
 
 class IPAddress(_COLUMNS['ip'], CellWidgetBase):
@@ -102,6 +112,18 @@ class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
 TUICOLUMNS['rate-up'] = RateUp
 
 
+class ETA(_COLUMNS['eta'], CellWidgetBase):
+    style = Style(prefix='peerlist.eta', focusable=False,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['eta'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if bool(self.value) else None
+
+TUICOLUMNS['eta'] = ETA
+
+
 class EstimatedPeerRate(_COLUMNS['rate-est'], CellWidgetBase):
     style = Style(prefix='peerlist.rate-est', focusable=False,
                   extras=('header',), modes=('highlighted',))
@@ -116,15 +138,3 @@ class EstimatedPeerRate(_COLUMNS['rate-est'], CellWidgetBase):
         cls.header.original_widget.right = _COLUMNS['rate-est'].header['right']
 
 TUICOLUMNS['rate-est'] = EstimatedPeerRate
-
-
-class ETA(_COLUMNS['eta'], CellWidgetBase):
-    style = Style(prefix='peerlist.eta', focusable=False,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['eta'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if bool(self.value) else None
-
-TUICOLUMNS['eta'] = ETA
