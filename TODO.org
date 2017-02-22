@@ -2,6 +2,30 @@ This is list a of rough ideas.  Feel free to contribute your own, ask/answer
 questions and point out issues.
 
 * commands
+** TODO Allow selecting multiple torrents for action            :improvement:
+   The user should be able to mark and unmark torrents with space.
+     - Add a new column that displays a single character if the torrent is
+       selected.
+     - Make command 'select' which takes one argument: 'add'/'+',
+       'remove'/'-', 'all'/'*' or 'none'/'0'.  Executing the command does what
+       the argument says to the focused torrent (in case of 'add'/'remove') or
+       adds/removes all torrents in the current list to the selection (in case
+       of 'none'/'0').  It should also accept a FILTER argument.
+
+*** TODO Show number of selected torrents
+    The best place would probably in the bottom bar.  Either implement that in
+    tui.infobar.TorrentCountersWidget or create a new widget.
+
+*** TODO All torrent commands should use torrent selection
+    Commands like stop, start, verify, etc should apply to
+      - all marked torrents if any torrents are marked.
+      - the focused torrent if any torrent is focused.
+      - the torrents selected by FILTER argument(s).
+    Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
+
+** TODO New command: unbind                                     :improvement:
+   Remove previously defined keybinding
+
 ** TODO New command: sort                                       :improvement:
    Sort torrents or peers in the focused list.  Check if tab actually contains
    a sortable list and not something like a help page.
@@ -29,28 +53,6 @@ questions and point out issues.
 *** TODO NotImplementedError callbacks
     Figure out how to avoid tons of ~try: ... except NotImplementedError as e:
     log.error(e)~.  Maybe with a callback somewhere?
-
-
-** TODO Allow selecting multiple torrents for action
-   The user should be able to mark and unmark torrents with space.
-     - Add a new column that displays a single character if the torrent is
-       selected.
-     - Make command 'select' which takes one argument: 'add'/'+',
-       'remove'/'-', 'all'/'*' or 'none'/'0'.  Executing the command does what
-       the argument says to the focused torrent (in case of 'add'/'remove') or
-       adds/removes all torrents in the current list to the selection (in case
-       of 'none'/'0').  It should also accept a FILTER argument.
-
-*** TODO Show number of selected torrents
-    The best place would probably in the bottom bar.  Either implement that in
-    tui.infobar.TorrentCountersWidget or create a new widget.
-
-*** TODO All torrent commands should use torrent selection
-    Commands like stop, start, verify, etc should apply to
-      - all marked torrents if any torrents are marked.
-      - the focused torrent if any torrent is focused.
-      - the torrents selected by FILTER argument(s).
-    Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
 
 
 * tui.logger
