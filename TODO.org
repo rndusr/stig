@@ -2,7 +2,8 @@ This is list a of rough ideas.  Feel free to contribute your own, ask/answer
 questions and point out issues.
 
 * commands
-** TODO Allow selecting multiple torrents for action            :improvement:
+
+** TODO Allow selecting multiple torrents for action
    The user should be able to mark and unmark torrents with space.
      - Add a new column that displays a single character if the torrent is
        selected.
@@ -23,14 +24,14 @@ questions and point out issues.
       - the torrents selected by FILTER argument(s).
     Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
 
-** TODO New command: unbind                                     :improvement:
+** TODO New command: unbind
    Remove previously defined keybinding
 
-** TODO New command: sort                                       :improvement:
+** TODO New command: sort
    Sort torrents or peers in the focused list.  Check if tab actually contains
    a sortable list and not something like a help page.
 
-** TODO New command: interactive                                :improvement:
+** TODO New command: interactive
    Take an arbitrary amount of (option, prompt) pairs and any command.  The
    command contains placeholders.  First, for each (option, prompt) pair, the
    user has to supply a value.  Each placeholder is then replaced with its
@@ -41,12 +42,21 @@ questions and point out issues.
    This is mostly useful for better keybindings in the TUI, but it may also
    have benefits on the CLI.
 
-** TODO add: --path,-p option                                   :improvement:
+** TODO add: --path,-p option
    The newly added torrent is downloaded to the specified path.
 
 
+* torrent list
+
+** TODO Add tracker column
+   Use the domain without the TLD part.
+
+** TODO Add status column
+
+
 * client
-** TODO NotImplementedError                                     :improvement:
+
+** TODO NotImplementedError
    The classes exported by `client` should derive from base classes that raise
    NotImplementedError in all undefined methods and properties.
 
@@ -56,18 +66,17 @@ questions and point out issues.
 
 
 * tui.logger
-** TODO Make log widget scrollable                              :improvement:
+
+** TODO Make log widget scrollable
    How to scroll?  Do we need a command for that, like ~scrollog
    up/down/pgup/pgdown~?  Is there a better way?
 
 
 * tui.tabs
-** TODO New tab not always rendered                                     :bug:
+
+** TODO New tab not always rendered
    If no tab exists and a new one is created, it isn't rendered until
    something else happens, like opening the command prompt.
-
-
-
 
 
 #+STARTUP: showeverything
