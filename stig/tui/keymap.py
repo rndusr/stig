@@ -284,15 +284,25 @@ class KeyMap():
         log.debug('%s: Mapped %r -> %r', context, key, action)
 
     def unbind(self, key, context=None):
-        """Unbind `key` in `context`"""
+        """Unbind `key` in `context`
+
+        Key chains starting with `key` are also removed.
+        """
         key = self.mkkey(key)
         if context not in self._contexts:
             raise ValueError('Unknown context: {!r}'.format(context))
-        elif key not in self._contexts[context]:
-            raise ValueError('Key not mapped in context {!r}: {!r}'.format(context, key))
-        else:
+        elif key in self._contexts[context]:
             del self._contexts[context][key]
             log.debug('Unmapped %r [%s]', key, context)
+        else:
+            key_removed = False
+            for k in tuple(self._contexts[context]):
+                if isinstance(k, KeyChain) and k.startswith(key):
+                    del self._contexts[context][k]
+                    log.debug('Unmapped %r [%s]', k, context)
+                    key_removed = True
+            if not key_removed:
+                raise ValueError('Key not mapped in context {!r}: {}'.format(context, key))
 
     def evaluate(self, key, context=None, callback=None, widget=None):
         """Run action that is bound to `key` in `context`
