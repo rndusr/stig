@@ -92,6 +92,10 @@ class Key(str):
             keystr = '%s-%s' % ('-'.join(sorted(mods)), key)
         else:
             keystr = key
+
+        if len(key) < 1:
+            raise ValueError('No key specified')
+
         obj = super().__new__(cls, keystr)
         cls._cache[orig_key] = obj
         return obj
