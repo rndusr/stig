@@ -476,19 +476,22 @@ class KeyMap():
         else:
             return Key(string)
 
-    def keys(self, action, context=None):
-        """Yield keys that are mapped to actions that start with `action`
+    def keys(self, match_func=None, context=None):
+        """Yield all keys where `match_func(key, action)` evaluates to True
 
         If `context` is not None, yield only keys mapped in that context.
         """
+        def is_match(key, action):
+            return match_func is None or match_func(key, action)
+
         if context is not None:
             for k,a in self._contexts[context].items():
-                if a.startswith(action):
+                if is_match(k, a):
                     yield k
         else:
             for context in self.contexts:
                 for k,a in self._contexts[context].items():
-                    if a.startswith(action):
+                    if is_match(k, a):
                         yield k
 
     def map(self, context=None):
