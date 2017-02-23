@@ -55,6 +55,10 @@ class TestKey(unittest.TestCase):
             Key('alt-hello')
         self.assertIn('Unknown key', str(cm.exception))
 
+        with self.assertRaises(ValueError) as cm:
+            Key('')
+        self.assertIn('No key', str(cm.exception))
+
 
 class TestKeyChain(unittest.TestCase):
     def test_advance(self):
