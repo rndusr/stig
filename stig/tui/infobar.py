@@ -64,7 +64,7 @@ class QuickHelpWidget(urwid.Text):
     def __init__(self):
         texts = []
         for context,cmd,label in self.ITEMS:
-            keys = tuple(tui.keymap.keys(cmd, context))
+            keys = tuple(tui.keymap.keys(lambda key,action: action == cmd, context))
             texts.extend([
                 ('topbar.help.key',    str(keys[0])),
                 ('topbar.help.equals', ' '),
