@@ -134,6 +134,21 @@ class TestKeyChain(unittest.TestCase):
 
 
 class TestKeyMap(unittest.TestCase):
+    def test_unbind(self):
+        km = KeyMap()
+        km.bind(key='a', action='foo')
+        self.assertIn(Key('a'), km.keys())
+        km.unbind(key='a')
+        self.assertNotIn(Key('a'), km.keys())
+
+        km.bind(key='b', action='foo')
+        with self.assertRaises(ValueError):
+            km.unbind(key='c')
+
+        km.bind(key='d', action='foo')
+        with self.assertRaises(ValueError):
+            km.unbind(key='d', context='bar')
+
     def test_mkkey(self):
         km = KeyMap()
         self.assertEqual(km.mkkey(Key('x')), Key('x'))
@@ -214,6 +229,20 @@ class TestKeyMap_with_key_chains(unittest.TestCase):
 
     def status(self):
         return (self.widget.text, self.widgetA.text, self.widgetB.text)
+
+    def test_unbind(self):
+        kc = '1 2 3'
+        for keys in ('1', '1 2', '1 2 3'):
+            self.km.bind(kc, 'foo')
+            self.assertIn(KeyChain('1', '2', '3'), self.km.keys())
+            self.km.unbind(keys)
+            self.assertNotIn(KeyChain('1', '2', '3'), self.km.keys())
+
+        for keys in ('1 3', '1 2 4', '1 2 3 4', '2', '3', '2 1', '3 2 1'):
+            self.km.bind(kc, 'foo')
+            self.assertIn(KeyChain('1', '2', '3'), self.km.keys())
+            with self.assertRaises(ValueError):
+                self.km.unbind(keys)
 
     def test_correct_chain(self):
         self.km.bind('1 2 3', 'foo')
