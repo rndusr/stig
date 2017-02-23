@@ -456,9 +456,9 @@ class KeyMap():
         if isinstance(string, (Key, KeyChain)):
             return string
         elif ' ' in string:
-            return KeyChain(*string.split(' '))
+            return KeyChain(*string.strip().split(' '))
         elif '+' in string and len(string) >= 3:
-            return KeyChain(*string.split('+'))
+            return KeyChain(*string.strip().split('+'))
         else:
             return Key(string)
 
