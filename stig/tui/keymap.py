@@ -462,6 +462,7 @@ class KeyMap():
                      'context': context,
                      'callback': staticmethod(callback)})
 
+    _KEY_SPLIT_SPACE = re.compile(r' +')
     def mkkey(self, string):
         """Create Key or KeyChain instance from `string`
 
@@ -470,7 +471,8 @@ class KeyMap():
         if isinstance(string, (Key, KeyChain)):
             return string
         elif ' ' in string:
-            return KeyChain(*string.strip().split(' '))
+            keys = (key for key in self._KEY_SPLIT_SPACE.split(string) if key)
+            return KeyChain(*keys)
         elif '+' in string and len(string) >= 3:
             return KeyChain(*string.strip().split('+'))
         else:
