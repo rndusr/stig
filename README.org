@@ -103,6 +103,9 @@
    - [[https://pypi.python.org/pypi/GeoIP][GeoIP]] (optional; shows country codes in peer lists)
 
 ** Contributing
+   Development happens in the ~dev~ branch while ~master~ is the current
+   stable release.
+
    If you want to contribute code and get stuck, don't know where to even
    begin, or just to make sure you're not duplicating someone else's efforts,
    open an issue.
