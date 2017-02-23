@@ -106,6 +106,42 @@ class BindCmd(metaclass=InitCommand):
             return True
 
 
+class UnbindCmd(metaclass=InitCommand):
+    name = 'unbind'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Unbind keys so pressing them has no effect'
+    usage = ('unbind [--context <CONTEXT>] <KEY> <KEY> <KEY> ...',)
+    examples = ('unbind --context main ctrl-l',
+                'unbind --context torrent <t>')
+    argspecs = (
+        { 'names': ('--context','-c'),
+          'description': 'Where KEY is grabbed (see "bind" command)' },
+        { 'names': ('KEY',), 'nargs': 'REMAINDER',
+          'description': 'Keys or key combinations (see "bind" command)' },
+    )
+
+    tui = ExpectedResource
+
+    def run(self, context, KEY):
+        keymap = self.tui.keymap
+
+        if context is not None and context not in KEYMAP_CONTEXTS:
+            log.error('Invalid context: {!r}'.format(context))
+            return False
+
+        success = True
+        for key in KEY:
+            try:
+                keymap.unbind(key, context=context)
+            except ValueError as e:
+                log.error(e)
+                success = False
+            else:
+                success = success and True
+        return success
+
+
 class ClearLogCmd(metaclass=InitCommand):
     name = 'clearlog'
     provides = {'tui'}
