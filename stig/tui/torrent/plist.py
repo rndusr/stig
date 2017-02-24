@@ -37,9 +37,10 @@ class PeerListItemWidget(urwid.WidgetWrap):
 
 
 class PeerListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tfilter, pfilter, columns, sort=None):
+    def __init__(self, srvapi, tfilter, pfilter, columns, sort=None, title=None):
         self._sort = sort
 
+        # Create peer filter generator
         if pfilter is not None:
             def filter_peers(peers):
                 yield from pfilter.apply(peers)
@@ -48,7 +49,21 @@ class PeerListWidget(urwid.WidgetWrap):
                 yield from peers
         self._maybe_filter_peers = filter_peers
 
-        self._torrents = ()
+        # Create the fixed part of the title (everything minus the number of peers listed)
+        # If title is not given, create one from filter and sort order
+        if title is None:
+            # tfilter is either None or an actual TorrentFilter instance
+            title = str(tfilter or 'all')
+        if pfilter:
+            title += ' %s' % pfilter
+        if sort is not None:
+            sortstr = str(sort)
+            if sortstr is not self._sort.DEFAULT_SORT:
+                title += ' {%s}' % sortstr
+        self._title_base = title
+        self.title_updater = None
+
+        self._peers = ()
         self._initialized = False
 
         self._table = Table(**TUICOLUMNS)
@@ -69,24 +84,25 @@ class PeerListWidget(urwid.WidgetWrap):
         if response is None or not response.torrents:
             self.clear()
         else:
-            self._torrents = response.torrents
+            def peers_combined(torrents):
+                for t in torrents:
+                    yield from self._maybe_filter_peers(t['peers'])
+            self._peers = {p['id']:p for p in peers_combined(response.torrents)}
+
+        if self.title_updater is not None:
+            self.title_updater(self.title)
+
         self._invalidate()
 
     def render(self, size, focus=False):
-        if self._torrents is not None:
+        if self._peers is not None:
             self._update_listitems()
-            self._torrents = None
+            self._peers = None
         return super().render(size, focus)
 
     def _update_listitems(self):
-
-        def peers_combined(torrents):
-            for t in sorted(torrents, key=lambda t: t['name'].lower()):
-                yield from self._maybe_filter_peers(t['peers'])
-
+        pdict = self._peers
         walker = self._listbox.body
-        pdict = {p['id']:p for p in peers_combined(self._torrents)}
-
         dead_pws = []
         for pw in walker:  # pw = PeerListItemWidget
             pid = pw.pid
@@ -119,3 +135,17 @@ class PeerListWidget(urwid.WidgetWrap):
         self._table.clear()
         self._listbox.body[:] = []
         self._listbox._invalidate()
+
+    @property
+    def title(self):
+        title = [self._title_base]
+
+        # If this method was called before rendering, the contents of the
+        # listbox widget are inaccurate and we have to use self._peers.  But
+        # if we're called after rendering, self._peers is reset to None.
+        if self._peers is not None:
+            title.append('[%d]' % len(self._peers))
+        else:
+            title.append('[%d]' % len(self._listbox.body))
+
+        return ' '.join(title)

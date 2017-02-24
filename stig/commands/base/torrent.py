@@ -110,7 +110,7 @@ def _make_SORT_ORDERS_doc(sortercls, option, setting, append=()):
                 'Sorting is reversed if the sort order is prepended by "!" or ".".',
                 '',
                 ('If "%s" is not given explicitly, it is always prepended to '
-                 'the list of sort orders.') % sortercls.DEFAULT_SORTSPECNAME))
+                 'the list of sort orders.') % sortercls.DEFAULT_SORT))
     if append:
         doc.extend(('',) + append)
     return tuple(doc)

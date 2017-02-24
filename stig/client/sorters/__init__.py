@@ -39,7 +39,7 @@ class SortSpecBase():
 
 class SorterBase():
     SORTSPECS = NotImplemented
-    DEFAULT_SORTSPECNAME = None
+    DEFAULT_SORT = None
 
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls)
@@ -76,8 +76,8 @@ class SorterBase():
 
         # Unless we already sort by name, default to sorting by name first and
         # then by all other sort orders
-        if self.DEFAULT_SORTSPECNAME is not None:
-            default_sortspec = self.SORTSPECS[self.DEFAULT_SORTSPECNAME]
+        if self.DEFAULT_SORT is not None:
+            default_sortspec = self.SORTSPECS[self.DEFAULT_SORT]
             if default_sortspec not in self._sortspecs:
                 self._sortfuncs.insert(0, default_sortspec)
                 self._sortspecs.insert(0, default_sortspec)

@@ -72,7 +72,7 @@ class TorrentSorter(SorterBase):
                                   needed_keys=('trackers',),
                                   description='domain of first tracker'),
     }
-    DEFAULT_SORTSPECNAME = 'name'
+    DEFAULT_SORT = 'name'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

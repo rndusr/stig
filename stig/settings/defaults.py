@@ -36,10 +36,10 @@ DEFAULT_FLIST_COLUMNS = ('priority', 'progress', 'downloaded', 'size', 'name')
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:
     DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
-                             'eta', 'ip', 'port', 'country', 'client')
+                             'eta', 'ip', 'country', 'client')
 else:
     DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
-                             'eta', 'ip', 'port', 'client')
+                             'eta', 'ip', 'client')
 
 
 from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
