@@ -90,6 +90,8 @@ class FileTreeDecorator(ArrowTree):
                     if v.nodetype == 'leaf':
                         if not self._file_is_filtered(v):
                             tree.append((v, None))
+                            nonlocal fcount
+                            fcount += 1
                         else:
                             filtered_count += 1
                     elif v.nodetype == 'parent':
@@ -101,6 +103,7 @@ class FileTreeDecorator(ArrowTree):
                 node['name'] = create_directory_name(node['name'], filtered_count)
                 return (node, tree or None)
 
+        fcount = 0
         forest = []  # Multiple trees as siblings
         for t in sorted(torrents, key=lambda t: t['name'].lower()):
             filetree = t['files']
@@ -110,6 +113,7 @@ class FileTreeDecorator(ArrowTree):
             tree = create_tree(rootnode, filetree[rootnodename])
             if tree is not None:
                 forest.append(tree)
+        self.filecount = fcount
         return forest
 
     def decorate(self, pos, data, is_first=True):
