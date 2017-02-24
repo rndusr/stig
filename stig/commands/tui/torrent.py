@@ -87,23 +87,29 @@ class ListPeersCmd(base.ListPeersCmdbase,
     srvapi = ExpectedResource
 
     async def make_plist(self, tfilter, pfilter, sort, columns):
-        from ...tui.torrent.plist import PeerListWidget
-        plistw = PeerListWidget(self.srvapi, tfilter=tfilter, pfilter=pfilter,
-                                sort=sort, columns=columns)
 
         if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
             # tfilter is a torrent ID - resolve it to a name for the title
             response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
             title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
-            title = str(tfilter or 'all')
-            if pfilter:
-                title += ' %s' % pfilter
-            if sort:
-                title += ' {%s}' % sort
+            title = None
 
-        titlew = make_tab_title(title, 'tabs.peerlist.unfocused', 'tabs.peerlist.focused')
-        self.tui.tabs.load(titlew, plistw)
+        from ...tui.torrent.plist import PeerListWidget
+        plistw = PeerListWidget(self.srvapi, tfilter=tfilter, pfilter=pfilter,
+                                sort=sort, columns=columns, title=title)
+
+        def make_title_widget(text):
+            return make_tab_title(text,
+                                  'tabs.peerlist.unfocused',
+                                  'tabs.peerlist.focused')
+
+        tabid = self.tui.tabs.load(make_title_widget(plistw.title), plistw)
+
+        def set_tab_title(text):
+            self.tui.tabs.set_title(make_title_widget(text), position=tabid)
+        plistw.title_updater = set_tab_title
+
         return True
 
 
