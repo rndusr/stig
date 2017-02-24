@@ -1,7 +1,7 @@
 2017-??-?? ?.?.?
   Other changes:
     * New command: 'unbind'
-    * Display peer count in titles of peer list tabs
+    * Display the amount of listed items in peer/file list tab titles
 
   Fixed bugs:
     * 'version' command produces proper return code
