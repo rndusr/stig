@@ -73,4 +73,5 @@ class VersionCmdbase(metaclass=InitCommand):
     description = 'Show {} version'.format(APPNAME)
 
     def run(self):
-        log.info('{} version: {}'.format(APPNAME, __version__))
+        log.info('{} version {}'.format(APPNAME, __version__))
+        return True
