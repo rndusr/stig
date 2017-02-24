@@ -172,13 +172,21 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        title = str(self._tfilter) if self._tfilter is not None else 'unfiltered'
+        title = [str(self._tfilter) if self._tfilter is not None else 'all']
         sortstr = str(self._sort)
-        if sortstr is not 'name':
-            title += ' {%s}' % sortstr
+        if sortstr is not self._sort.DEFAULT_SORT:
+            title.append(sortstr)
+
+        # If this method was called before rendering, the contents of the
+        # listbox widget are inaccurate and we have to use self._torrents.
+        # But if we're called after rendering, self._torrents is reset to
+        # None.
         if self._torrents is not None:
-            title += ' [%s]' % len(self._torrents)
-        return title
+            title.append('[%d]' % len(self._torrents))
+        else:
+            title.append('[%d]' % len(self._listbox.body))
+
+        return ' '.join(title)
 
     @property
     def id(self):
