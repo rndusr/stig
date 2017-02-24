@@ -313,8 +313,11 @@ class FilterChain():
         """Whether `obj` matches this filter chain"""
         # All filters in an AND_chain must match for the AND_chain to
         # match.  At least one AND_chain must match.
-        return any(all(f.match(obj) for f in AND_chain)
-                   for AND_chain in self._filterchains)
+        if len(self._filterchains) < 1:
+            return True
+        else:
+            return any(all(f.match(obj) for f in AND_chain)
+                       for AND_chain in self._filterchains)
 
     @property
     def needed_keys(self):
