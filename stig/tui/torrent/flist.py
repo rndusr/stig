@@ -160,10 +160,21 @@ class FileTreeDecorator(ArrowTree):
 
 
 class FileListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tfilter, ffilter, columns):
+    def __init__(self, srvapi, tfilter, ffilter, columns, title=None):
         self._ffilter = ffilter
         self._torrents = ()
         self._initialized = False
+
+        # Create the fixed part of the title (everything minus the number of files listed)
+        # If title is not given, create one from filters
+        if title is None:
+            tfilter_str = str(tfilter or 'all')
+            if ffilter is None:
+                title = tfilter_str
+            else:
+                title = '%s files of %s torrents' % (ffilter, tfilter_str)
+        self._title_base = title
+        self.title_updater = None
 
         self._table = Table(**TUICOLUMNS)
         self._table.columns = columns
@@ -183,30 +194,26 @@ class FileListWidget(urwid.WidgetWrap):
         if response is None or not response.torrents:
             self.clear()
         else:
-            self._torrents = response.torrents
+            if self._initialized:
+                self._update_listitems(response.torrents)
+            else:
+                self._init_listitems(response.torrents)
+        if self.title_updater is not None:
+            self.title_updater(self.title)
         self._invalidate()
 
-    def render(self, size, focus=False):
-        if self._torrents is not None:
-            if self._initialized:
-                self._update_listitems()
-            else:
-                self._init_listitems()
-            self._torrents = None
-        return super().render(size, focus)
-
-    def _init_listitems(self):
+    def _init_listitems(self, torrents):
         self.clear()
-        if self._torrents:
-            self._filetree = FileTreeDecorator(self._torrents, tui.keymap,
+        if torrents:
+            self._filetree = FileTreeDecorator(torrents, tui.keymap,
                                                self._table, self._ffilter)
             self._listbox.body = urwidtrees.widgets.TreeListWalker(self._filetree)
             self._listbox._invalidate()
             self._initialized = True
 
-    def _update_listitems(self):
-        if self._torrents:
-            self._filetree.update(self._torrents)
+    def _update_listitems(self, torrents):
+        if torrents:
+            self._filetree.update(torrents)
 
     def clear(self):
         """Remove all list items"""
@@ -214,6 +221,13 @@ class FileListWidget(urwid.WidgetWrap):
         self._listbox.body = urwid.SimpleListWalker([])
         self._listbox._invalidate()
         self._initialized = False
+
+    @property
+    def title(self):
+        if hasattr(self, '_filetree'):
+            return '%s [%d]' % (self._title_base, self._filetree.filecount)
+        else:
+            return '%s [0]' % self._title_base
 
     def update(self):
         """Call `clear` and then poll immediately"""
