@@ -45,4 +45,4 @@ class TorrentPeerSorter(SorterBase):
         'name':       _SortSpec(lambda t: t['tname'].lower(),
                                 description='torrent name'),
     }
-    DEFAULT_SORTSPECNAME = 'ip'
+    DEFAULT_SORT = 'ip'
