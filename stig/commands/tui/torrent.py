@@ -63,20 +63,27 @@ class ListFilesCmd(base.ListFilesCmdbase,
     srvapi = ExpectedResource
 
     async def make_flist(self, tfilter, ffilter, columns):
-        from ...tui.torrent.flist import FileListWidget
-        flistw = FileListWidget(self.srvapi, tfilter, ffilter, columns)
-
         if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
             # tfilter is a torrent ID - resolve it to a name for the title
             response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
             title = strcrop(response.torrents[0]['name'], 30, tail='…')
         else:
-            if ffilter is None:
-                title = str(tfilter)
-            else:
-                title = '%s files of %s torrents' % (ffilter, tfilter)
-        titlew = make_tab_title(title, 'tabs.filelist.unfocused', 'tabs.filelist.focused')
-        self.tui.tabs.load(titlew, flistw)
+            title = None
+
+        from ...tui.torrent.flist import FileListWidget
+        flistw = FileListWidget(self.srvapi, tfilter, ffilter, columns, title=title)
+
+        def make_title_widget(text):
+            return make_tab_title(text,
+                                  'tabs.filelist.unfocused',
+                                  'tabs.filelist.focused')
+
+        tabid = self.tui.tabs.load(make_title_widget(flistw.title), flistw)
+
+        def set_tab_title(text):
+            self.tui.tabs.set_title(make_title_widget(text), position=tabid)
+        flistw.title_updater = set_tab_title
+
         return True
 
 
@@ -87,7 +94,6 @@ class ListPeersCmd(base.ListPeersCmdbase,
     srvapi = ExpectedResource
 
     async def make_plist(self, tfilter, pfilter, sort, columns):
-
         if isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
             # tfilter is a torrent ID - resolve it to a name for the title
             response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
