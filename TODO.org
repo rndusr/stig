@@ -24,9 +24,6 @@ questions and point out issues.
       - the torrents selected by FILTER argument(s).
     Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
 
-** TODO New command: unbind
-   Remove previously defined keybinding
-
 ** TODO New command: sort
    Sort torrents or peers in the focused list.  Check if tab actually contains
    a sortable list and not something like a help page.
@@ -44,6 +41,17 @@ questions and point out issues.
 
 ** TODO add: --path,-p option
    The newly added torrent is downloaded to the specified path.
+
+** TODO New command: rate
+   Usage: rate up|down <RATE> [<TORRENT FILTER>]
+
+   First, implement a new async method that sets the up/down rates of individual
+   torrents in client.aiotransmission.api_torrent.  Use client.convert.bandwidth
+   to parse numbers with units and unit prefixes correctly (e.g. '1kB').  See
+   client.aiotransmission.api_settings.*rate_limit* for inspiration.
+
+   If TORRENT FILTER is not given, simply set the setting
+   'srv.limit.rate.up/down' to RATE.
 
 
 * torrent list
