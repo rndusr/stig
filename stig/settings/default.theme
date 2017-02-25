@@ -88,10 +88,10 @@ torrentlist                                        default              on $tlis
 torrentlist.focused                                default              on $tlist_bg.f
 torrentlist.header                                 light gray,underline on $tlist_bg.uf
 
-$tpath_fg = light gray
-torrentlist.tpath.header                           $tpath_fg,underline on $tlist_bg.uf
-torrentlist.tpath.unfocused                        $tpath_fg           on $tlist_bg.uf
-torrentlist.tpath.focused                          $tpath_fg           on $tlist_bg.f
+$path_fg = light gray
+torrentlist.path.header                            $path_fg,underline on $tlist_bg.uf
+torrentlist.path.unfocused                         $path_fg           on $tlist_bg.uf
+torrentlist.path.focused                           $path_fg           on $tlist_bg.f
 
 $progress_fg = dark blue
 $progress_hl = light blue

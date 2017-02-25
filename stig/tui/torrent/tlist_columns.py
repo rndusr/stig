@@ -27,7 +27,7 @@ TUICOLUMNS = {}
 
 class Path(_COLUMNS['path'], CellWidgetBase):
     width = 20
-    style = Style(prefix='torrentlist.tpath', focusable=True,
+    style = Style(prefix='torrentlist.path', focusable=True,
                   extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['path'].header),
                            style.attrs('header'))
