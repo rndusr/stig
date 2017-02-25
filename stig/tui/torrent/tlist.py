@@ -47,6 +47,14 @@ class TorrentListItemWidget(urwid.WidgetWrap):
     def torrent(self):
         return self._torrent
 
+    @property
+    def is_marked(self):
+        return self._cells.marked.is_marked
+
+    @is_marked.setter
+    def is_marked(self, is_marked):
+        self._cells.marked.is_marked = bool(is_marked)
+
 
 class TorrentListWidget(urwid.WidgetWrap):
     def __init__(self, sort=None, tfilter=None, columns=[]):
@@ -61,6 +69,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         self._torrents = ()
         self._walker = urwid.SimpleFocusListWalker([])
         self._listbox = urwid.ListBox(self._walker)
+        self._marked = []
 
         pile = urwid.Pile([
             ('pack', urwid.AttrMap(self._table.headers, 'torrentlist.header')),
@@ -196,3 +205,13 @@ class TorrentListWidget(urwid.WidgetWrap):
     @property
     def focused_torrent(self):
         return self._listbox.focus
+
+    def toggle_mark(self):
+        if self.focused_torrent is not None:
+            twidget = self.focused_torrent
+            if twidget.is_marked:
+                twidget.is_marked = False
+                self._marked.remove(twidget)
+            else:
+                twidget.is_marked = True
+                self._marked.append(twidget)
