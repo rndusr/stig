@@ -26,10 +26,30 @@ from ...columns.tlist import COLUMNS as _COLUMNS
 TUICOLUMNS = {}
 
 class Marked(_COLUMNS['marked'], CellWidgetBase):
+    header = {'left': 'x'}
+    width = 1
+    needed_keys = ()
     style = Style(prefix='torrentlist.marked', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['marked'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**header),
                            style.attrs('header'))
+
+    _marked_char = 'x'
+    _unmarked_char = ' '
+
+    @property
+    def is_marked(self):
+        return self.text.text == self._marked_char
+
+    @is_marked.setter
+    def is_marked(self, is_marked):
+        if self.is_marked:
+            self.text.set_text(self._unmarked_char)
+        else:
+            self.text.set_text(self._marked_char)
+
+    def update(self, torrent):
+        pass  # Ignore updated torrent data
 
 TUICOLUMNS['marked'] = Marked
 
