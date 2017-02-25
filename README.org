@@ -54,12 +54,12 @@
    $ stig tab ls 'path~/foo/&rate-up<10k' \; tab ls 'size<500M|seeds>=1k' --sort 'size,!seeds'
    #+END_SRC
 
-** Configuration
+** Configuration and Scripting
    All configuration is done in ~$HOME/.config/stig/rc~.  Each line is a command
    that is called during startup.  Commands given as CLI arguments are called
-   after the rc commands.  For more information run ~stig help rcfile~.
+   after the rc commands.
 
-*** Example config
+*** Example ~$HOME/.config/stig/rc~
    #+BEGIN_SRC
    # Host that runs Transmission daemon
    set srv.url otherhost:123
@@ -74,6 +74,18 @@
    tab ls active --sort !progress,path,!rate
    tab ls paused --sort !progress --columns name,progress,ratio,size
    tab ls isolated --sort tracker --columns name,path
+   #+END_SRC
+
+   You can have different rc files and run them either with ~stig -c
+   path/to/file~ or by using the shebang ~#!/path/to/stig -Tc~ (~-T~ disables
+   the TUI; don't forget to ~chmod +x~) to turn them into executables.
+
+*** Example maintenance script
+   #+BEGIN_SRC
+   #!/home/ich/.local/bin/stig -Tc
+   rm path=/path/to/torrents/trash
+   pause seeds>100
+   start seeds<20&size>10G|seeds<50&size>20G
    #+END_SRC
 
 ** Installation
