@@ -25,6 +25,15 @@ from ...columns.tlist import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 
+class Marked(_COLUMNS['marked'], CellWidgetBase):
+    style = Style(prefix='torrentlist.marked', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['marked'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['marked'] = Marked
+
+
 class Path(_COLUMNS['path'], CellWidgetBase):
     width = 20
     style = Style(prefix='torrentlist.path', focusable=True,

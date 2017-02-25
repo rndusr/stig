@@ -233,3 +233,16 @@ class TorrentName(ColumnBase):
         return self.data['name']
 
 COLUMNS['name'] = TorrentName
+
+
+class Marked(ColumnBase):
+    header = {'left': 'x'}
+    width = 1
+    needed_keys = ()
+    interfaces = ('tui',)
+    is_marked = False
+
+    def get_value(self):
+        return 'x' if self.is_marked else ''
+
+COLUMNS['marked'] = Marked
