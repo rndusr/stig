@@ -615,7 +615,7 @@ class CommandManager():
             if self.get_cmdcls(cmdname, interface='ANY') is not None:
                 # Command exists but not in active interface - we ignore it
                 log.debug('Ignoring inactive command: %r', cmdname)
-                process = fake_process(success=False)
+                process = fake_process(success=None)
             else:
                 exc = CmdNotFoundError('Unknown command: {}'.format(cmdname))
                 process = fake_process(exception=exc)

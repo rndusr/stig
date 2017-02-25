@@ -590,7 +590,7 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
         def do_test(cmdchain, success, success_calls, error_calls, true_calls, false_calls,
                     true_args, false_args):
             succ = self.cmdmgr.run_sync(cmdchain, on_success=self.cb_success,
-                                           on_error=self.cb_error)
+                                        on_error=self.cb_error)
             self.assertEqual(succ, success)
             self.assertEqual(self.cb_success.calls, success_calls)
             self.assertEqual(self.cb_error.calls, error_calls)
@@ -604,23 +604,23 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
             self.true_cb.reset()
             self.false_cb.reset()
 
-        # Calls to 'false' are ignored and evaluate to False in the command chain
+        # Calls to 'false' are ignored and evaluate to None in the command chain
         self.cmdmgr.active_interface = 'T'
-        do_test('true ; false', False, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
+        do_test('true ; false', None, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
         do_test('false ; true', True, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('true & false', False, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('false & true', False, 0, 0, 0, 0, [], [])
+        do_test('true & false', None, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
+        do_test('false & true', None, 0, 0, 0, 0, [], [])
         do_test('true | false', True, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
         do_test('false | true', True, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
 
-        # Calls to 'true' are ignored and evaluate to False in the command chain
+        # Calls to 'true' are ignored and evaluate to None in the command chain
         self.cmdmgr.active_interface = 'F'
         do_test('true ; false', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('false ; true', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('true & false', False, 0, 0, 0, 0, [], [])
+        do_test('false ; true', None, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
+        do_test('true & false', None, 0, 0, 0, 0, [], [])
         do_test('false & true', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
         do_test('true | false', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('false | true', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
+        do_test('false | true', None, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
 
 
     @asynctest.ignore_loop

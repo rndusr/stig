@@ -94,11 +94,13 @@ def run():
             sys.exit(1)
 
     def run_commands():
-        # If rc file commands fail, continue.  This is necessary because, for
-        # example, the TUI-only command 'tab' returns False if the active UI is
-        # 'cli', but we don't want to report that as an error.
         for cmdline in rclines:
-            cmdmgr.run_sync(cmdline, on_error=log.error)
+            success = cmdmgr.run_sync(cmdline, on_error=log.error)
+            # Ignored commands return None, which we consider a success here
+            # because TUI commands like 'tab' in the rc file should have no
+            # effect at all when in CLI mode.
+            if success is False:
+                return False
 
         # Exit if CLI commands fail
         if clicmds:
