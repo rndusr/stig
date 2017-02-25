@@ -9,15 +9,15 @@
      combination of criteria
    - *Tabs* with different lists, documentation, etc
    - Everything is done via *commands*, and they are invoked
-     - through *chained keybindings*,
+     - through single- or multi-key *keybindings*,
      - by entering them in a *built-in command prompt*,
      - by providing them as *CLI arguments* in your interactive shell or in
        *scripts*,
      - or by listing them in an *rc file*.
-   - *Themes* with 16 and 256 colors
+   - Support for *themes* with 16 and 256 colors
    - *Complete built-in documentation* with ~help~ command
-   - Full *API abstraction layer* makes it possible to support other torrent
-     clients (probably deluge, maybe rtorrent)
+   - Full *API abstraction layer* makes it possible to add support for other
+     BitTorrent clients with RPC interfaces
 
 ** Examples
    Add two torrents (file and hash) and exit
