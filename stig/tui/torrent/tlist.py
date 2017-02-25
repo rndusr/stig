@@ -30,10 +30,12 @@ class TorrentListItemWidget(urwid.WidgetWrap):
         self._tid = torrent['id']
         self._cells = cells
         self.update(torrent)
-        super().__init__(urwid.AttrMap(cells, 'torrentlist', 'torrentlist.focused'))
+        row = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=COLUMNS_FOCUS_MAP),
+                            'torrentlist', 'torrentlist.focused')
+        super().__init__(row)
 
     def update(self, torrent):
-        for widget in self._cells.original_widget.widgets:
+        for widget in self._cells.widgets:
             widget.update(torrent)
         self._torrent = torrent
 
@@ -123,8 +125,7 @@ class TorrentListWidget(urwid.WidgetWrap):
             widgetcls = tui.keymap.wrap(TorrentListItemWidget, context='torrent')
             for tid in tdict:
                 self._table.register(tid)
-                row = urwid.AttrMap(self._table.get_row(tid),
-                                    attr_map=None, focus_map=COLUMNS_FOCUS_MAP)
+                row = self._table.get_row(tid)
                 walker.append(widgetcls(tdict[tid], row))
 
         # Sort torrents
