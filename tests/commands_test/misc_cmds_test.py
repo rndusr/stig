@@ -119,13 +119,13 @@ class TestSetCmd(CommandTestCase):
         process = SetCmd(['some.list', 'alice,bob,bert'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.list'].value, ('alice', 'bob', 'bert'))
+        self.assertEqual(self.cfg['some.list'].value, ['alice', 'bob', 'bert'])
 
     async def test_setting_space_separated_list(self):
         process = SetCmd(['some.list', 'alice', 'bert'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.list'].value, ('alice', 'bert'))
+        self.assertEqual(self.cfg['some.list'].value, ['alice', 'bert'])
 
     async def test_setting_raises_error(self):
         def sabotaged_set_func(value):

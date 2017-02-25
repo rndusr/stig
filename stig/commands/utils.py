@@ -65,7 +65,7 @@ def listify_args(args):
     else:
         # args is something else
         args = (str(args).strip())
-    return tuple(arg for arg in args if arg)
+    return [arg for arg in args if arg]
 
 
 def log_msgs(logger, msgs, quiet=False):
