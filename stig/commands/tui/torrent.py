@@ -39,13 +39,18 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     tui = ExpectedResource
 
     def make_tlist(self, tfilter, sort, columns):
-        from ...tui.torrent.tlist import TorrentListWidget
+        try:
+            columns = self.get_tlist_columns(columns, interface='tui')
+        except ValueError as e:
+            log.error(e)
+            return False
 
         def make_title_widget(text):
             return make_tab_title(text,
                                   'tabs.torrentlist.unfocused',
                                   'tabs.torrentlist.focused')
 
+        from ...tui.torrent.tlist import TorrentListWidget
         tlistw = TorrentListWidget(tfilter=tfilter, sort=sort, columns=columns)
         tabid = self.tui.tabs.load(make_title_widget(tlistw.title), tlistw)
 

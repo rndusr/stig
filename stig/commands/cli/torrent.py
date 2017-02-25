@@ -157,6 +157,12 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
     async def make_tlist(self, tfilter, sort, columns):
+        try:
+            columns = self.get_tlist_columns(columns, interface='cli')
+        except ValueError as e:
+            log.error(e)
+            return False
+
         # Get wanted torrents and sort them
         if tfilter is None:
             keys = set(sort.needed_keys)

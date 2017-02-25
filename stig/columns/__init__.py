@@ -15,6 +15,7 @@ class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
     align = 'right'
+    interfaces = ('cli', 'tui')
 
     def __init__(self, data=None):
         self.data = data if data is not None else {}

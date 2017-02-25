@@ -61,17 +61,24 @@ class get_peer_filter():
 
 
 class get_tlist_columns():
-    def get_tlist_columns(self, args):
-        """Check if each item in iterable `args` is a valid torrent list column
+    def get_tlist_columns(self, columns, interface=None):
+        """Check if each item in iterable `columns` is a valid torrent list column name
 
-        Raise ValueError or return the same iterable.
+        If `interface` is not None, also remove all columns that don't have
+        `interface` in their `interfaces` attribute.
+
+        Raise ValueError or return a new list of `columns`.
         """
         from ...columns.tlist import COLUMNS
-        args = utils.listify_args(args)
-        for arg in args:
-            if arg not in COLUMNS:
-                raise ValueError('Unknown column name: {}'.format(arg))
-        return args
+        cols = utils.listify_args(columns)
+        for col in tuple(cols):
+            if col not in COLUMNS:
+                raise ValueError('Unknown column name: {}'.format(col))
+            elif interface is not None and interface not in COLUMNS[col].interfaces:
+                log.debug('Removing column %r because it does not support %r',
+                          col, interface)
+                cols.remove(col)
+        return cols
 
 
 class get_flist_columns():

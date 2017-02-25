@@ -174,7 +174,6 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                                            allow_no_filter=True,
                                            discover_torrent=False)
             sort = self.get_torrent_sorter(sort)
-            columns = self.get_tlist_columns(columns)
         except ValueError as e:
             log.error(e)
             return False
