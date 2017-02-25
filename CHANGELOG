@@ -1,4 +1,7 @@
 2017-??-?? ?.?.?
+  Breaking changes:
+    * In color themes, 'torrentlist.tpath' is now called 'torrentlist.path'
+
   Other changes:
     * New command: 'unbind'
     * Display the amount of listed items in peer/file list tab titles
