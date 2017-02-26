@@ -185,7 +185,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         title = [str(self._tfilter) if self._tfilter is not None else 'all']
         sortstr = str(self._sort)
         if sortstr is not self._sort.DEFAULT_SORT:
-            title.append(sortstr)
+            title.append('{%s}' % sortstr)
 
         # If this method was called before rendering, the contents of the
         # listbox widget are inaccurate and we have to use self._torrents.
