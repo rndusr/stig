@@ -130,9 +130,9 @@ from types import SimpleNamespace
 def MockSettings():
     cfg = {'srv.url': SimpleNamespace(value='http://localhost:9091',
                                       typename='string'),
-           'tlist.sort': SimpleNamespace(value=['name'],
+           'sort.torrents': SimpleNamespace(value=['name'],
                                          typename='list'),
-           'tlist.columns': SimpleNamespace(value=['name', 'rate-down', 'rate-up'],
+           'columns.torrents': SimpleNamespace(value=['name', 'rate-down', 'rate-up'],
                                             typename='list'),
            'some.string': SimpleNamespace(value='foo',
                                           typename='string'),

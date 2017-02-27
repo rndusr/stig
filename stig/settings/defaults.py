@@ -63,21 +63,20 @@ def init_defaults(cfg):
                     description=('Number of seconds before connecting '
                                  'to Transmission daemon fails')),
 
-        SetValue('tlist.columns', default=DEFAULT_TLIST_COLUMNS,
+        SetValue('columns.torrents', default=DEFAULT_TLIST_COLUMNS,
                  options=tuple(TCOLUMNS),
                  description='List of columns in new torrent lists'),
-        SortOrderValue(TorrentSorter, 'tlist.sort', default=DEFAULT_TLIST_SORT,
-                       description='List of torrent sort orders'),
-
-        SetValue('plist.columns', default=DEFAULT_PLIST_COLUMNS,
+        SetValue('columns.peers', default=DEFAULT_PLIST_COLUMNS,
                  options=tuple(PCOLUMNS),
                  description='List of columns in new peer lists'),
-        SortOrderValue(TorrentPeerSorter, 'plist.sort', default=DEFAULT_PLIST_SORT,
-                       description='List of peer sort orders'),
-
-        SetValue('flist.columns', default=DEFAULT_FLIST_COLUMNS,
+        SetValue('columns.files', default=DEFAULT_FLIST_COLUMNS,
                  options=tuple(FCOLUMNS),
                  description='List of columns in new torrent file lists'),
+
+        SortOrderValue(TorrentSorter, 'sort.torrents', default=DEFAULT_TLIST_SORT,
+                       description='List of torrent list sort orders'),
+        SortOrderValue(TorrentPeerSorter, 'sort.peers', default=DEFAULT_PLIST_SORT,
+                       description='List of peer list sort orders'),
 
         PathValue('tui.theme', default=DEFAULT_THEME_FILE,
                   description='Path to theme file'),

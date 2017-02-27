@@ -146,12 +146,12 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
          'description': 'Filter expression (see `help filter`)'},
 
         { 'names': ('--sort', '-s'),
-          'default_description': "current value of 'tlist.sort' setting",
+          'default_description': "current value of 'sort.torrents' setting",
           'description': ('Comma-separated list of sort orders '
                           "(see SORT ORDERS section)") },
 
         { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'tlist.columns' setting",
+          'default_description': "current value of 'columns.torrents' setting",
           'description': ('Comma-separated list of column names '
                           "(see COLUMNS section)") },
     )
@@ -159,16 +159,16 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
     from ...columns.tlist import COLUMNS
     from ...client.sorters.tsorter import TorrentSorter
     more_sections = {
-        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'tlist.columns'),
-        'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentSorter, '--sort', 'tlist.sort'),
+        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'columns.torrents'),
+        'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentSorter, '--sort', 'sort.torrents'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, sort, columns):
-        sort = self.cfg['tlist.sort'].value if sort is None else sort
-        columns = self.cfg['tlist.columns'].value if columns is None else columns
+        sort = self.cfg['sort.torrents'].value if sort is None else sort
+        columns = self.cfg['columns.torrents'].value if columns is None else columns
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
@@ -204,21 +204,21 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
           'description': 'Filter expression (see `help filter`)' },
 
         { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'flist.columns' setting",
+          'default_description': "current value of 'columns.files' setting",
           'description': ('Comma-separated list of column names '
                           "(see COLUMNS section)") },
     )
 
     from ...columns.flist import COLUMNS
     more_sections = {
-        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'flist.columns'),
+        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'columns.files'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, FILE_FILTER, columns):
-        columns = self.cfg['flist.columns'].value if columns is None else columns
+        columns = self.cfg['columns.files'].value if columns is None else columns
         try:
             columns = self.get_flist_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
@@ -259,12 +259,12 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
           'description': 'Filter expression (see `help filter`)' },
 
         { 'names': ('--sort', '-s'),
-          'default_description': "current value of 'plist.sort' setting",
+          'default_description': "current value of 'sort.peers' setting",
           'description': ('Comma-separated list of sort orders '
                           "(see SORT ORDERS section)") },
 
         { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'plist.columns' setting",
+          'default_description': "current value of 'columns.peers' setting",
           'description': ('Comma-separated list of column names '
                           "(see COLUMNS section)") },
     )
@@ -272,19 +272,19 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
     from ...columns.plist import COLUMNS
     from ...client.sorters.psorter import TorrentPeerSorter
     more_sections = {
-        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'plist.columns', append=(
+        'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'columns.peers', append=(
             '',
             'The "name" column is added automatically if multiple '
             'torrents could be listed potentially.')),
-        'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentPeerSorter, '--sort', 'plist.sort'),
+        'SORT ORDERS': _make_SORT_ORDERS_doc(TorrentPeerSorter, '--sort', 'sort.peers'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
     }
 
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, PEER_FILTER, sort, columns):
-        columns = self.cfg['plist.columns'].value if columns is None else columns
-        sort = self.cfg['plist.sort'].value if sort is None else sort
+        columns = self.cfg['columns.peers'].value if columns is None else columns
+        sort = self.cfg['sort.peers'].value if sort is None else sort
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
