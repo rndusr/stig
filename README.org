@@ -68,7 +68,7 @@
    set tui.poll 10
 
    # Default columns in torrent lists
-   set tlist.columns name ratio rate-up rate-down
+   set columns.torrents name ratio rate-up rate-down
 
    # Open a few tabs
    tab ls active --sort !progress,path,!rate
