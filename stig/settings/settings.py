@@ -147,10 +147,13 @@ class ValueBase():
             raise ValueError('Not a {}'.format(self.typename))
 
     def __eq__(self, other):
-        return self.value == other.value
+        if isinstance(other, type(self)):
+            return self.value == other.value
+        else:
+            return self.value == other
 
     def __ne__(self, other):
-        return self.value != other.value
+        return not self.__eq__(other)
 
     def str(self, value=None, default=False):
         """Return prettily stringified value
