@@ -29,6 +29,7 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('alt-insert'), Key('meta-ins'))
         self.assertEqual(Key('alt-del'), Key('meta-delete'))
         self.assertEqual(Key('shift-ctrl-enter'), Key('shift-Ctrl-RETURN'))
+        self.assertEqual(Key('alt-space'), Key('meta  '))
 
     def test_convert_shift_modifier(self):
         self.assertEqual(Key('shift-E'), Key('E'))

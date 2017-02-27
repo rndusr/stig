@@ -20,9 +20,9 @@ class Key(str):
 
     # Convert some urwid key names and some other stuff
     _INIT = (
-        (re.compile(r'^<(.+)>$'),                r'\1'),
-        (re.compile(r'^ $'),                     r'space'),
-        (re.compile(r'^meta', flags=re.I),       r'alt'),
+        (re.compile(r'^<(.+)>$'),                    r'\1'),
+        (re.compile(r'^(.*) $'),                     r'\1space'),
+        (re.compile(r'^meta', flags=re.I),           r'alt'),
         (re.compile(r'(^|-)esc$', flags=re.I),       r'\1escape'),
         (re.compile(r'(^|-)pos1$', flags=re.I),      r'\1home'),
         (re.compile(r'(^|-)del$', flags=re.I),       r'\1delete'),
@@ -31,7 +31,7 @@ class Key(str):
         (re.compile(r'(^|-)page up$', flags=re.I),   r'\1pgup'),
         (re.compile(r'(^|-)page down$', flags=re.I), r'\1pgdn'),
         (re.compile(r'(^|-)page dn$', flags=re.I),   r'\1pgdn'),
-        (re.compile(r' '),                       r'-'),
+        (re.compile(r' '),                           r'-'),
         # The first part in key combos must always be the same, but the part
         # after must be preserved. <alt-l> is not the same as <alt-L>.
         (re.compile(r'^(\w+)-(\S+)$'),
