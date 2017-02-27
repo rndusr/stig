@@ -1,6 +1,12 @@
 2017-??-?? ?.?.?
   Breaking changes:
     * In color themes, 'torrentlist.tpath' is now called 'torrentlist.path'
+    * The following settings have been renamed:
+      - tlist.columns -> columns.torrents
+      - plist.columns -> columns.peers
+      - flist.columns -> columns.files
+      - tlist.sort -> sort.torrents
+      - plist.sort -> sort.peers
 
   Other changes:
     * New command: 'unbind'
