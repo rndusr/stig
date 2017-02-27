@@ -69,7 +69,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         self._torrents = ()
         self._walker = urwid.SimpleFocusListWalker([])
         self._listbox = urwid.ListBox(self._walker)
-        self._marked = []
+        self._marked = set()
 
         pile = urwid.Pile([
             ('pack', urwid.AttrMap(self._table.headers, 'torrentlist.header')),
@@ -206,12 +206,36 @@ class TorrentListWidget(urwid.WidgetWrap):
     def focused_torrent(self):
         return self._listbox.focus
 
-    def toggle_mark(self):
-        if self.focused_torrent is not None:
-            twidget = self.focused_torrent
-            if twidget.is_marked:
-                twidget.is_marked = False
-                self._marked.remove(twidget)
+    @property
+    def focus_position(self):
+        return self._listbox.focus_position
+
+    @focus_position.setter
+    def focus_position(self, focus_position):
+        self._listbox.focus_position = min(focus_position, len(self._listbox.body)-1)
+
+    def mark(self, toggle=False, all=False):
+        """Mark the currently focused item or all items"""
+        self._set_mark(True, toggle=toggle, all=all)
+
+    def unmark(self, toggle=False, all=False):
+        """Unmark the currently focused item or all items"""
+        self._set_mark(False, toggle=toggle, all=all)
+
+    def _set_mark(self, mark, toggle=False, all=False):
+        if toggle and self.focused_torrent is not None:
+            mark = not self.focused_torrent.is_marked
+
+        for widget in self._select_items_for_marking(all):
+            widget.is_marked = mark
+            if mark:
+                self._marked.add(widget)
             else:
-                twidget.is_marked = True
-                self._marked.append(twidget)
+                self._marked.discard(widget)
+
+    def _select_items_for_marking(self, all):
+        if self.focused_torrent is not None:
+            if all:
+                yield from self._listbox.body
+            else:
+                yield self.focused_torrent
