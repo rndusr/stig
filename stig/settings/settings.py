@@ -210,6 +210,8 @@ class NumberValue(ValueBase):
     valuesyntax = '[+=|-=]<NUMBER>'
 
     def __init__(self, *args, min=None, max=None, **kwargs):
+        if min is not None and max is not None:
+            assert min <= max, 'minimum must be smaller or equal than maximum'
         self._min = min
         self._max = max
         super().__init__(*args, **kwargs)
