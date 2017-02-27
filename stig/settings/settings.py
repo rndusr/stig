@@ -182,7 +182,39 @@ class ValueBase():
 
 class StringValue(ValueBase):
     type = str
-    typename = 'string'
+    @property
+    def typename(self):
+        text = 'string'
+        if ((self._minlen == 1 or self._minlen == None) and
+            (self._maxlen == 1 or self._maxlen == None)):
+            chrstr = 'character'
+        else:
+            chrstr = 'characters'
+        if self._minlen is not None and self._maxlen is not None:
+            if self._minlen == self._maxlen:
+                text += ' of {} {}'.format(self._minlen, chrstr)
+            else:
+                text += ' of {} to {} {}'.format(self._minlen, self._maxlen, chrstr)
+        elif self._minlen is not None:
+            text += ' of at least {} {}'.format(self._minlen, chrstr)
+        elif self._maxlen is not None:
+            text += ' of at most {} {}'.format(self._maxlen, chrstr)
+        return text
+
+    def __init__(self, *args, minlen=None, maxlen=None, **kwargs):
+        if minlen is not None and maxlen is not None:
+            assert minlen <= maxlen, 'minimum string length must be <= maximum'
+        assert minlen is None or minlen >= 0, 'minimum string length must be >= 0'
+        assert maxlen is None or maxlen >= 0, 'maximum string length must be >= 0'
+        self._minlen = minlen
+        self._maxlen = maxlen
+        super().__init__(*args, **kwargs)
+
+    def validate(self, string):
+        if self._maxlen is not None and len(string) > self._maxlen:
+            raise ValueError('Too long (maximum length is {})'.format(self._maxlen))
+        if self._minlen is not None and len(string) < self._minlen:
+            raise ValueError('Too short (minimum length is {})'.format(self._minlen))
 
 
 class PathValue(StringValue):
