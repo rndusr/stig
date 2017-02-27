@@ -159,11 +159,16 @@ class ValueBase():
         default: Whether to return current or default value
         """
         if default:
-            return str(self.default)
+            text = str(self.default)
         elif value is not None:
-            return str(value)
+            text = str(value)
         else:
-            return str(self.value)
+            text = str(self.value)
+
+        if text and text[0] == ' ' or text[-1] == ' ':
+            return repr(text)
+        else:
+            return text
 
     def __str__(self):
         return self.str()
