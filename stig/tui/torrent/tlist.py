@@ -13,6 +13,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 import urwid
+from collections import abc
 
 from .. import main as tui
 
@@ -84,7 +85,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         keys = []
         if self._sort is not None:
             keys.extend(self._sort.needed_keys)
-        if self._tfilter is not None:
+        if hasattr(self._tfilter, 'needed_keys'):
             keys.extend(self._tfilter.needed_keys)
         for colname in self._columns:
             keys.extend(TUICOLUMNS[colname].needed_keys)
@@ -184,7 +185,12 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        title = [str(self._tfilter) if self._tfilter is not None else 'all']
+        if self._tfilter is None:
+            title = ['<all>']
+        elif isinstance(self._tfilter, abc.Sequence):
+            title = ['<handpicked>']
+        else:
+            title = [str(self._tfilter)]
         sortstr = str(self._sort)
         if sortstr is not self._sort.DEFAULT_SORT:
             title.append('{%s}' % sortstr)
