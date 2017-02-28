@@ -100,10 +100,10 @@ def init_defaults(cfg):
         OptionValue('unitprefix.size', default='metric', options=('metric', 'binary'),
                     description=("Unit prefix for sizes ('metric' or 'binary')")),
 
-        StringValue('tui.marked', default='✔', minlen=1, maxlen=1,
+        StringValue('tui.marked.on', default='✔', minlen=1, maxlen=1,
                     description=('Character displayed in "marked" column for marked '
                                  'list items (see "mark" command)')),
-        StringValue('tui.unmarked', default=' ', minlen=1, maxlen=1,
+        StringValue('tui.marked.off', default=' ', minlen=1, maxlen=1,
                     description=('Character displayed in "marked" column for unmarked '
                                  'list items (see "mark" command)')),
     )
