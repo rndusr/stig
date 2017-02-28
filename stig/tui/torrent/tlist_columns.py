@@ -25,8 +25,9 @@ from ...columns.tlist import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 
+
 class Marked(_COLUMNS['marked'], CellWidgetBase):
-    header = {'left': 'x'}
+    header = {'left': 'X'}
     width = 1
     needed_keys = ()
     style = Style(prefix='torrentlist.marked', focusable=True,
@@ -34,19 +35,31 @@ class Marked(_COLUMNS['marked'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**header),
                            style.attrs('header'))
 
-    _marked_char = 'x'
-    _unmarked_char = ' '
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text.set_text(self._unmarked_char)
+        self._is_marked = False
+
+    @classmethod
+    def set_marked_char(cls, char):
+        cls._marked_char = str(char)
+        cls.header.original_widget.left = cls._marked_char
+
+    @classmethod
+    def set_unmarked_char(cls, char):
+        cls._unmarked_char = str(char)
 
     @property
     def is_marked(self):
-        return self.text.text == self._marked_char
+        return self._is_marked
 
     @is_marked.setter
     def is_marked(self, is_marked):
-        if self.is_marked:
-            self.text.set_text(self._unmarked_char)
-        else:
+        if is_marked:
             self.text.set_text(self._marked_char)
+        else:
+            self.text.set_text(self._unmarked_char)
+        self._is_marked = is_marked
 
     def update(self, torrent):
         pass  # Ignore updated torrent data
