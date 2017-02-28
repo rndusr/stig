@@ -241,3 +241,8 @@ class TorrentListWidget(urwid.WidgetWrap):
                 yield from self._listbox.body
             else:
                 yield self.focused_torrent
+
+    def refresh_marks(self):
+        """Redraw the "marked" column in all rows"""
+        for widget in self._listbox.body:
+            widget.is_marked = widget.is_marked
