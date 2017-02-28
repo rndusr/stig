@@ -126,8 +126,10 @@ class TorrentListWidget(urwid.WidgetWrap):
                 dead_tws.append(tw)
 
         # Remove list items that don't exist in self._torrents anymore
+        marked = self._marked
         for tw in dead_tws:
             walker.remove(tw)
+            marked.discard(tw)  # List items are also stored in self._marked
 
         # Any torrents that haven't been used to update an existing torrent are new
         if tdict:
