@@ -142,6 +142,72 @@ class UnbindCmd(metaclass=InitCommand):
         return success
 
 
+class MarkCmd(metaclass=InitCommand):
+    name = 'mark'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Select torrents or files for an action'
+    usage = ('mark [<OPTIONS>]',)
+    argspecs = (
+        { 'names': ('--focus-next','-n'), 'action': 'store_true',
+          'description': 'Move focus forward after marking or toggling' },
+        { 'names': ('--toggle','-t'), 'action': 'store_true',
+          'description': 'Mark if unmarked, unmark if marked' },
+        { 'names': ('--all','-a'), 'action': 'store_true',
+          'description': 'Mark or toggle all items' },
+    )
+    more_sections = {
+        'NOTES': (('The column "marked" must be in the "columns.*" settings. Otherwise '
+                   'marked list items are indistinguishable from unmarked ones.'),
+                  '',
+                  ('The character that is displayed in the "marked" column is '
+                   'specified by the settings "tui.marked.on" and "tui.marked.off".')),
+    }
+
+    tui = ExpectedResource
+
+    def run(self, focus_next, toggle, all):
+        widget = self.tui.tabs.focus
+        if not hasattr(widget, 'mark'):
+            log.error('Nothing to mark here.')
+            return False
+        else:
+            widget.mark(toggle=toggle, all=all)
+            if focus_next:
+                widget.focus_position += 1
+            return True
+
+
+class UnmarkCmd(metaclass=InitCommand):
+    name = 'unmark'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Deselect torrents or files for an action'
+    usage = ('unmark [<OPTIONS>]',)
+    argspecs = (
+        { 'names': ('--focus-next','-n'), 'action': 'store_true',
+          'description': 'Move focus forward after unmarking or toggling' },
+        { 'names': ('--toggle','-t'), 'action': 'store_true',
+          'description': 'Mark if unmarked, unmark if marked' },
+        { 'names': ('--all','-a'), 'action': 'store_true',
+          'description': 'Unmark or toggle all items' },
+    )
+    more_sections = MarkCmd.more_sections
+
+    tui = ExpectedResource
+
+    def run(self, focus_next, toggle, all):
+        widget = self.tui.tabs.focus
+        if not hasattr(widget, 'unmark'):
+            log.error('Nothing to unmark here.')
+            return False
+        else:
+            widget.unmark(toggle=toggle, all=all)
+            if focus_next:
+                widget.focus_position += 1
+            return True
+
+
 class ClearLogCmd(metaclass=InitCommand):
     name = 'clearlog'
     provides = {'tui'}
