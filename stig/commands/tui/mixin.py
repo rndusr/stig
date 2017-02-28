@@ -73,12 +73,21 @@ class select_torrents():
             from ...client import TorrentFilter
             return TorrentFilter(FILTER)
         else:
+            tabwidget = self.tui.tabs.focus
+            from ...tui.torrent.tlist import TorrentListWidget
+            if isinstance(tabwidget, TorrentListWidget):
+                tids = tuple(twidget.tid for twidget in tabwidget.marked)
+                if tids:
+                    return tids
+
             if discover_torrent:
                 tid = self._find_torrent_id()
                 if tid is not None:
                     return (tid,)
+
             if allow_no_filter:
                 return None
+
             else:
                 raise ValueError('No torrent specified')
 
