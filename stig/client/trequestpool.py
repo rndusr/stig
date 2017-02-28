@@ -13,11 +13,12 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import blinker
-from functools import reduce
 import operator
+from functools import reduce
+from collections import abc
 
 from .poll import RequestPoller
-
+from .filters.tfilter import TorrentFilter
 
 
 class TorrentRequestPool():
@@ -47,6 +48,9 @@ class TorrentRequestPool():
         keys: Wanted Torrent keys
         tfilter: None for all torrents or TorrentFilter instance
         """
+        if isinstance(tfilter, abc.Sequence):
+            tfilter = TorrentFilter('|'.join('id=%s' % tid for tid in tfilter))
+
         log.debug('Registering subscriber: %s', sid)
         event = blinker.signal(sid)
         event.connect(callback)
@@ -120,11 +124,11 @@ class TorrentRequestPool():
                     log.debug('Running callback: %r', event.name)
                     if filter is None:
                         # Subscriber wants all torrents
-                        event.send(tlist)
+                        this_tlist = tlist
                     else:
                         # Subscriber wants filtered torrents
                         this_tlist = filter.apply(tlist)
-                        event.send(this_tlist)
+                    event.send(this_tlist)
 
         # Remove dead subscribers
         for eventname in dead_subscribers:
