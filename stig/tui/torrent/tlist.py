@@ -224,6 +224,11 @@ class TorrentListWidget(urwid.WidgetWrap):
         """Unmark the currently focused item or all items"""
         self._set_mark(False, toggle=toggle, all=all)
 
+    @property
+    def marked(self):
+        """Generator that yields TorrentListItemWidgets"""
+        yield from self._marked
+
     def _set_mark(self, mark, toggle=False, all=False):
         if toggle and self.focused_torrent is not None:
             mark = not self.focused_torrent.is_marked
