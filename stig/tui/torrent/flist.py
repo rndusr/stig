@@ -28,12 +28,12 @@ for col in TUICOLUMNS.values():
 
 class FileWidget(urwid.WidgetWrap):
     def __init__(self, tfile, row):
-        self._widgets = row.widgets
+        self._cells = row
         super().__init__(urwid.AttrMap(row, 'filelist', 'filelist.focused'))
         self.update(tfile)
 
     def update(self, tfile):
-        for widget in self._widgets:
+        for widget in self._cells.widgets:
             widget.update(tfile)
         self._tfile = tfile
 
@@ -44,6 +44,14 @@ class FileWidget(urwid.WidgetWrap):
     @property
     def file_id(self):
         return self._tfile['id']
+
+    @property
+    def is_marked(self):
+        return self._cells.marked.is_marked
+
+    @is_marked.setter
+    def is_marked(self, is_marked):
+        self._cells.marked.is_marked = bool(is_marked)
 
 
 from urwidtrees.decoration import ArrowTree
