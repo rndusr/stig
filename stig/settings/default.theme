@@ -252,17 +252,22 @@ torrentlist.name.initializing.complete.focused     $name.initializing_fg        
 
 $flist_bg.uf = black
 $flist_bg.f  = dark gray
-filelist                                 default              on $flist_bg.uf
-filelist.focused                         default              on $flist_bg.f
-filelist.header                          light gray,underline on $flist_bg.uf
+filelist                                   default              on $flist_bg.uf
+filelist.focused                           default              on $flist_bg.f
+filelist.header                            light gray,underline on $flist_bg.uf
+
+$marked_fg = white
+filelist.marked.header                     $marked_fg,underline on $tlist_bg.uf
+filelist.marked.unfocused                  $marked_fg           on $tlist_bg.uf
+filelist.marked.focused                    $marked_fg           on $tlist_bg.f
 
 $file_fg = light gray
 $folder_fg = white
-filelist.name.header                     light gray,underline on $flist_bg.uf
-filelist.name.file.unfocused             $file_fg           on $flist_bg.uf
-filelist.name.file.focused               $file_fg           on $flist_bg.f
-filelist.name.folder.unfocused           $folder_fg         on $flist_bg.uf
-filelist.name.folder.focused             $folder_fg         on $flist_bg.f
+filelist.name.header                       light gray,underline on $flist_bg.uf
+filelist.name.file.unfocused               $file_fg           on $flist_bg.uf
+filelist.name.file.focused                 $file_fg           on $flist_bg.f
+filelist.name.folder.unfocused             $folder_fg         on $flist_bg.uf
+filelist.name.folder.focused               $folder_fg         on $flist_bg.f
 
 $size_fg = dark magenta
 filelist.size.header                       $size_fg,underline on $flist_bg.uf
