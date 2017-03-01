@@ -93,6 +93,11 @@ class Priority(ColumnBase):
 COLUMNS['priority'] = Priority
 
 
+class Marked(ColumnBase):
+    interfaces = ('tui',)
+
+COLUMNS['marked'] = Marked
+
 
 
 class TorrentFileDirectory(dict):
