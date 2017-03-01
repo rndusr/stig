@@ -17,8 +17,17 @@ from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
 from ...columns.flist import COLUMNS as _COLUMNS
 
-
 TUICOLUMNS = {}
+
+from .tlist_columns import Marked as MarkedTorrentList
+class MarkedFileList(MarkedTorrentList):
+    style = Style(prefix='filelist.marked', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(),
+                           style.attrs('header'))
+
+TUICOLUMNS['marked'] = MarkedFileList
+
 
 class Filename(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
