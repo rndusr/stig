@@ -193,20 +193,22 @@ DEFAULT_KEYMAP = (
     {'context': 'tabs', 'key': 'f .', 'action': 'ls'},
 
     # Torrent actions
-    {'context': 'torrent', 'key': 't v', 'action': 'verify'},
-    {'context': 'torrent', 'key': 't p', 'action': 'stop --toggle'},
-    {'context': 'torrent', 'key': 't P', 'action': 'start --toggle --force'},
-    {'context': 'torrent', 'key': 't a', 'action': 'announce'},
-    {'context': 'torrent', 'key': 't d', 'action': 'delete'},
-    {'context': 'torrent', 'key': 't D', 'action': 'delete --delete-files'},
+    {'context': 'torrent', 'key': 't v',       'action': 'verify'},
+    {'context': 'torrent', 'key': 't p',       'action': 'stop --toggle'},
+    {'context': 'torrent', 'key': 't P',       'action': 'start --toggle --force'},
+    {'context': 'torrent', 'key': 't a',       'action': 'announce'},
+    {'context': 'torrent', 'key': 't d',       'action': 'delete'},
+    {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files'},
     {'context': 'torrent', 'key': 'enter',     'action': 'tab filelist'},
     {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab peerlist'},
     {'context': 'torrent', 'key': 'space',     'action': 'mark --toggle --focus-next'},
-    {'context': 'torrent', 'key': 'alt-space', 'action': 'unmark --toggle --all'},
+    {'context': 'torrent', 'key': 'alt-space', 'action': 'mark --toggle --all'},
 
     # Torrent file actions
-    {'context': 'file', 'key': '+', 'action': 'priority high'},
-    {'context': 'file', 'key': '=', 'action': 'priority normal'},
-    {'context': 'file', 'key': '-', 'action': 'priority low'},
-    {'context': 'file', 'key': '0', 'action': 'priority shun'},
+    {'context': 'file', 'key': '+',         'action': 'priority high'},
+    {'context': 'file', 'key': '=',         'action': 'priority normal'},
+    {'context': 'file', 'key': '-',         'action': 'priority low'},
+    {'context': 'file', 'key': '0',         'action': 'priority shun'},
+    {'context': 'file', 'key': 'space',     'action': 'mark --toggle --focus-next'},
+    {'context': 'file', 'key': 'alt-space', 'action': 'mark --toggle --all'},
 )
