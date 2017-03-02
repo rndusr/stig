@@ -271,17 +271,17 @@ class FileListWidget(urwid.WidgetWrap):
     @property
     def focused_torrent_id(self):
         """Torrent ID of the focused file's torrent"""
-        focus = self._listbox.focus
-        if focus is not None:
-            return focus.original_widget.torrent_id
+        focused = self.focused_file
+        if focused is not None:
+            return focused.torrent_id
 
     @property
     def focused_file_ids(self):
         """File IDs of the focused files in a tuple"""
-        focus = self._listbox.focus
-        if focus is not None:
+        focused = self.focused_file
+        if focused is not None:
             # The focused widget in the list can be a file or a directory.  If
             # it's a directory, the 'file_id' property returns the IDs of all
             # the contained files recursively.
-            fid = focus.original_widget.file_id
+            fid = focused.file_id
             return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
