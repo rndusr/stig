@@ -144,7 +144,16 @@ class select_files():
     def _find_file_ids(self):
         focused_widget = self.tui.tabs.focus
 
+        if hasattr(focused_widget, 'marked'):
+            tfids = tuple((fwidget.torrent_id, fwidget.file_id)
+                          for fwidget in focused_widget.marked
+                          if isinstance(fwidget.file_id, int))
+            if tfids:
+                return tfids
+
         # Get torrent ID from widget in focused tab
         if hasattr(focused_widget, 'focused_file_ids') and \
            focused_widget.focused_file_ids is not None:
-            return focused_widget.focused_file_ids
+            log.debug(focused_widget.focused_file_ids)
+            return tuple((focused_widget.focused_torrent_id, fid)
+                         for fid in focused_widget.focused_file_ids)
