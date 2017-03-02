@@ -248,6 +248,27 @@ class FileListWidget(urwid.WidgetWrap):
         self._poller.poll()
 
     @property
+    def focus_position(self):
+        positions = tuple(self._filetree.positions())
+        return positions.index(self._listbox.focus_position)
+
+    @focus_position.setter
+    def focus_position(self, focus_position):
+        positions = tuple(self._filetree.positions())
+        i = min(focus_position, len(positions)-1)
+        try:
+            self._listbox.focus_position = positions[i]
+        except KeyError:
+            pass
+
+    @property
+    def focused_file(self):
+        """Focused FileWidget instance"""
+        focused = self._listbox.focus
+        if focused is not None:
+            return focused.original_widget
+
+    @property
     def focused_torrent_id(self):
         """Torrent ID of the focused file's torrent"""
         focus = self._listbox.focus
