@@ -98,6 +98,7 @@ cfg['unitprefix.size'].on_change(_refresh_tlists)
 
 def _set_tui_marked_char(methodname, setting):
     getattr(TCOLUMNS['marked'], methodname)(setting.value)
+    getattr(FCOLUMNS['marked'], methodname)(setting.value)
 
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget)):
