@@ -9,8 +9,10 @@
       - plist.sort -> sort.peers
 
   Other changes:
-    * New command: 'unbind'
-    * Display the amount of listed items in peer/file list tab titles
+    * New commands 'mark' and 'unmark' select multiple torrents/files for an
+      action
+    * New command 'unbind' to remove any keybinding
+    * Display the number of items in peer/file list tab titles
 
   Fixed bugs:
     * Key combination <alt-space> did not work
