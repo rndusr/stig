@@ -166,6 +166,11 @@ class FileTreeDecorator(ArrowTree):
                                                  filtered_count=filtered_count)
                     widgets[node_id].update(data)
 
+    @property
+    def widgets(self):
+        """Yield all file and directory widgets in this tree"""
+        yield from self._widgets.values()
+
 
 class FileListWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tfilter, ffilter, columns, title=None):
