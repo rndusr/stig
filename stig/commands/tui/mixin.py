@@ -84,7 +84,7 @@ class select_torrents():
             else:
                 raise ValueError('No torrent specified')
 
-    def _find_torrent_id(self):
+    def _find_torrent_ids(self):
         focused_widget = self.tui.tabs.focus
 
         # Get torrent ID from attribute set by 'tab' command (this happens if
