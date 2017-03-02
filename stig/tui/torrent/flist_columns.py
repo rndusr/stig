@@ -17,16 +17,16 @@ from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
 from ...columns.flist import COLUMNS as _COLUMNS
 
+
 TUICOLUMNS = {}
 
-from .tlist_columns import Marked as MarkedTorrentList
-class MarkedFileList(MarkedTorrentList):
-    style = Style(prefix='filelist.marked', focusable=True,
-                  extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(),
-                           style.attrs('header'))
 
-TUICOLUMNS['marked'] = MarkedFileList
+from .common_columns import MarkedBase
+class Marked(MarkedBase):
+    style = Style(prefix='filelist.marked', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(), style.attrs('header'))
+
+TUICOLUMNS['marked'] = Marked
 
 
 class Filename(_COLUMNS['name'], CellWidgetBase):
