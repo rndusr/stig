@@ -74,7 +74,7 @@ class select_torrents():
             return TorrentFilter(FILTER)
         else:
             if discover_torrent:
-                tids = self._find_torrent_id()
+                tids = self._find_torrent_ids()
                 if tids is not None:
                     return tids
 
