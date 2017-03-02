@@ -553,8 +553,8 @@ class TorrentAPI():
 
         priority: 'high', 'low', 'normal' or 'shun'
         torrents: See `torrents` method
-        files: TorrentFileFilter object (or its string representation),
-               sequence of file IDs or None for all files
+        files: TorrentFileFilter object (or its string representation), sequence
+               of (torrent ID, file ID) tuples or None for all files
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
@@ -584,8 +584,9 @@ class TorrentAPI():
             elif isinstance(files, TorrentFileFilter):
                 filter_files = lambda ftree: tuple(files.apply(ftree.files))
             elif isinstance(files, abc.Sequence) and \
-                 all(isinstance(fid, int) for fid in files):
-                filter_files = lambda ftree: tuple(f for f in ftree.files if f['id'] in files)
+                 all(isinstance(tid, int) and isinstance(fid, int) for tid,fid in files):
+                filter_files = lambda ftree: tuple(f for f in ftree.files
+                                                   if (f['tid'],f['id']) in files)
             else:
                 raise ValueError("Invalid 'files' argument: {!r}".format(files))
 
