@@ -176,6 +176,7 @@ class FileListWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tfilter, ffilter, columns, title=None):
         self._ffilter = ffilter
         self._torrents = ()
+        self._marked = set()
         self._initialized = False
 
         # Create the fixed part of the title (everything minus the number of files listed)
@@ -285,3 +286,42 @@ class FileListWidget(urwid.WidgetWrap):
             # the contained files recursively.
             fid = focused.file_id
             return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
+
+    def mark(self, toggle=False, all=False):
+        """Mark the currently focused item or all items"""
+        self._set_mark(True, toggle=toggle, all=all)
+
+    def unmark(self, toggle=False, all=False):
+        """Unmark the currently focused item or all items"""
+        self._set_mark(False, toggle=toggle, all=all)
+
+    @property
+    def marked(self):
+        """Generator that yields FileWidgets"""
+        yield from self._marked
+
+    def _set_mark(self, mark, toggle=False, all=False):
+        focused = self.focused_file
+
+        if toggle and focused is not None:
+            mark = not focused.is_marked
+
+        for widget in self._select_items_for_marking(all):
+            widget.is_marked = mark
+            if mark:
+                self._marked.add(widget)
+            else:
+                self._marked.discard(widget)
+
+    def _select_items_for_marking(self, all):
+        focused = self.focused_file
+        if focused is not None:
+            if all:
+                yield from self._filetree.widgets
+            else:
+                yield focused
+
+    def refresh_marks(self):
+        """Redraw the "marked" column in all rows"""
+        for widget in self._filetree.widgets:
+            widget.is_marked = widget.is_marked
