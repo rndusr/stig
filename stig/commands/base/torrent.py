@@ -391,9 +391,6 @@ class PriorityCmdbase(metaclass=InitCommand):
             log.error(e)
             return False
 
-        log.debug('Setting file download priority to %s for %s files of %s torrents',
-                  priority, ffilter, tfilter)
-
         if not isinstance(tfilter, tuple):
             # tfilter must be TorrentFilter instance, which means the user
             # specified a filter and will be informed about the matches.
@@ -413,6 +410,13 @@ class PriorityCmdbase(metaclass=InitCommand):
             # We're operating on the focused file and success is indiciated by
             # the updated file list, so no info message necessary.
             quiet = True
+
+        # If ffilter is a tuple, it is a tuple of (torrent_id, file_id) tuples.
+        # In that case, we overload tfilter with the torrent_ids from ffilter.
+        if isinstance(ffilter, tuple):
+            tfilter = tuple(set(ids[0] for ids in ffilter))
+        log.debug('Setting file download priority to %s for %s files of %s torrents',
+                  priority, ffilter, tfilter)
 
         response = await self.make_request(
             self.srvapi.torrent.file_priority(priority, tfilter, ffilter),
