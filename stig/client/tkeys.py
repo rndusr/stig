@@ -417,7 +417,11 @@ def gc_peer_progress_data():
 
 def _guess_peer_rate_and_eta(peer_progress, peer_id, torrent_size):
     rate = 0
-    if peer_progress < 1:
+    if peer_progress >= 1:
+        # Peer has already downloaded everything
+        eta = Timedelta.NOT_APPLICABLE
+    else:
+        eta = Timedelta.UNKNOWN
         samples = _PEER_PROGRESS_DATA[peer_id]
 
         # Don't add the same progress twice
@@ -432,19 +436,12 @@ def _guess_peer_rate_and_eta(peer_progress, peer_id, torrent_size):
             p_diff = p_last - p_first
             t_diff = t_last - t_first
 
-            # Sometimes peers seem to lie about their progress (e.g. current
-            # progress is smaller than the previous one)
+            # It's possible progress goes down, e.g. if a peer deletes a file
             if p_diff > 0:
-                size_diff = torrent_size * p_diff  # How much was downloaded in t_diff seconds
+                size_diff = torrent_size * p_diff
                 rate = size_diff / t_diff
-
-    eta = Timedelta.UNKNOWN
-    if rate is not 0:
-        if peer_progress == 1:
-            eta = Timedelta.NOT_APPLICABLE
-        elif rate > 0:
-            size_remaining = torrent_size - (torrent_size * peer_progress)
-            eta = size_remaining / rate
+                size_remaining = torrent_size - (torrent_size * peer_progress)
+                eta = size_remaining / rate
 
     return rate, eta
 
