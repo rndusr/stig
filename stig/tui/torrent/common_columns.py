@@ -49,3 +49,6 @@ class MarkedBase(_COLUMNS['marked'], CellWidgetBase):
 
     def update(self, data):
         pass  # Ignore update data
+
+    def __repr__(self):
+        return '<{} {}>'.format(type(self).__name__, 'on' if self._is_marked else 'off')
