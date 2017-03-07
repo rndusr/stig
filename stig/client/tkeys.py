@@ -309,21 +309,21 @@ class Timestamp(float):
 from functools import total_ordering
 @total_ordering
 class TorrentFilePriority(str):
-    _INT2STR = {-1:'low', 0:'normal', 1:'high', -2:'shun'}
-    _STR2INT = {'low':-1, 'normal':0, 'high':1, 'shun':-2}
+    INT2STR = {-1:'low', 0:'normal', 1:'high', -2:'shun'}
+    STR2INT = {'low':-1, 'normal':0, 'high':1, 'shun':-2}
 
     def __new__(cls, prio):
         if isinstance(prio, int):
-            if prio not in cls._INT2STR:
+            if prio not in cls.INT2STR:
                 raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, prio))
-            obj = super().__new__(cls, cls._INT2STR[prio])
+            obj = super().__new__(cls, cls.INT2STR[prio])
         else:
-            if prio not in cls._STR2INT:
+            if prio not in cls.STR2INT:
                 raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, prio))
             obj = super().__new__(cls, prio)
         return obj
 
-    def __int__(self): return self._STR2INT[self]
+    def __int__(self): return self.STR2INT[self]
     def __lt__(self, other): return int(self) < int(other)
     def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
@@ -355,7 +355,8 @@ class TorrentFile(abc.Mapping):
         'size-total'      : lambda raw: raw['size-total'],
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
-        'priority'        : lambda raw: -2 if not raw['is-wanted'] else raw['priority'],
+        'priority'        : lambda raw: (TorrentFilePriority.STR2INT['shun']
+                                         if not raw['is-wanted'] else raw['priority']),
         'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
     }
 
