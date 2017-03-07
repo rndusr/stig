@@ -120,6 +120,10 @@ class Number(float):
     def __divmod__(self, other): return type(self)(super().__divmod__(other))
     def __pow__(self, other): return type(self)(super().__pow__(other))
 
+# Because 'convert' needs Number, which is specified in this file, it must be
+# imported AFTER Number exists to avoid a circular import.
+from . import convert
+
 
 class Percent(float):
     """Float with a pretty string representation"""
@@ -382,9 +386,6 @@ class TorrentFile(abc.Mapping):
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
 
-# Because 'convert' needs Number, which is specified in this file, it must be
-# imported AFTER Number exists to avoid a circular import.
-from . import convert
 
 from . import base
 def _ensure_TorrentFileTree(obj):
