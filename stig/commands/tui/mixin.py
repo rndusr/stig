@@ -94,14 +94,14 @@ class select_torrents():
 
         # Get torrent IDs from marks
         if hasattr(focused_widget, 'marked'):
-            tids = tuple(twidget.tid for twidget in focused_widget.marked)
+            tids = tuple(twidget.torrent_id for twidget in focused_widget.marked)
             if tids:
                 return tids
 
         # Get torrent ID from widget in focused tab (e.g. torrent lists)
         if hasattr(focused_widget, 'focused_torrent') and \
            focused_widget.focused_torrent is not None:
-            return (focused_widget.focused_torrent.tid,)
+            return (focused_widget.focused_torrent.torrent_id,)
 
         # Get torrent ID from widget in focused tab (e.g. file lists)
         if hasattr(focused_widget, 'focused_torrent_id') and \

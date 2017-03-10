@@ -41,7 +41,7 @@ class TorrentListItemWidget(urwid.WidgetWrap):
         self._torrent = torrent
 
     @property
-    def tid(self):
+    def torrent_id(self):
         return self._tid
 
     @property
@@ -117,7 +117,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         tdict = {t['id']:t for t in self._torrents}
         dead_tws = []
         for tw in walker:  # tw = TorrentListItemWidget
-            tid = tw.tid
+            tid = tw.torrent_id
             try:
                 # Update existing torrent widget with new data
                 tw.update(tdict[tid])
@@ -148,10 +148,10 @@ class TorrentListWidget(urwid.WidgetWrap):
 
         # If necessary, re-focus previously focused torrent
         if focused_torrent is not None and self.focused_torrent is not None and \
-           focused_torrent.tid != self.focused_torrent.tid:
-            focused_tid = focused_torrent.tid
+           focused_torrent.torrent_id != self.focused_torrent.torrent_id:
+            focused_tid = focused_torrent.torrent_id
             for i,tw in enumerate(walker):
-                if tw.tid == focused_tid:
+                if tw.torrent_id == focused_tid:
                     self._listbox.focus_position = i
                     break
 
