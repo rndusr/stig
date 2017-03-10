@@ -20,6 +20,8 @@ TUICOLUMNS = {}
 class MarkedBase(_COLUMNS['marked'], CellWidgetBase):
     width = 1
     needed_keys = ()
+    _marked_char = '#'
+    _unmarked_char = ' '
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
