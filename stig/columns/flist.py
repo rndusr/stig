@@ -101,6 +101,8 @@ COLUMNS['marked'] = Marked
 
 
 class TorrentFileDirectory(dict):
+    nodetype = 'parent'
+
     def __hash__(self):
         return hash(self['path'])
 
