@@ -15,6 +15,7 @@ log = make_logger(__name__)
 import urwid
 import urwidtrees
 from collections import abc
+import builtins
 
 from .. import main as tui
 from ..table import Table
@@ -330,25 +331,54 @@ class FileListWidget(urwid.WidgetWrap):
         yield from self._marked
 
     def _set_mark(self, mark, toggle=False, all=False):
-        focused = self.focused_file
+        if toggle:
+            focused = self.focused_file
+            if focused is not None:
+                mark = not focused.is_marked
 
-        if toggle and focused is not None:
-            mark = not focused.is_marked
+        def get_widget(pos):
+            return self._listbox.contents[pos][0].original_widget
 
-        for widget in self._select_items_for_marking(all):
-            widget.is_marked = mark
-            if mark:
-                self._marked.add(widget)
-            else:
-                self._marked.discard(widget)
+        def mark_leaves(pos, mark):
+            get_widget(pos).is_marked = mark
 
-    def _select_items_for_marking(self, all):
-        focused = self.focused_file
-        if focused is not None:
-            if all:
-                yield from self._filetree.widgets
-            else:
-                yield focused
+            for subpos,widget in self.all_children(pos):
+                if widget.nodetype == 'leaf':
+                    widget.is_marked = mark
+                    if mark:
+                        self._marked.add(widget)
+                    else:
+                        self._marked.discard(widget)
+
+                elif widget.nodetype == 'parent':
+                    mark_leaves(subpos, mark)
+
+        # First we mark all leaves recursively.
+        if all:
+            mark_leaves(next(self._filetree.positions()), mark)
+        else:
+            mark_leaves(self._listbox.focus_position, mark)
+        assert builtins.all(m.nodetype == 'leaf' for m in self._marked)
+
+        # A parent node is marked only if all its children are marked.  To check
+        # that, we walk through every ancestor up to the top and check all its
+        # children.  There is no need to check the children of other parent
+        # nodes (uncles, great uncles, etc) because they should already be
+        # marked properly from previous runs.
+
+        def all_children_marked(pos):
+            marked = True
+            childpos = self._filetree.first_child_position(pos)
+            while childpos is not None:
+                marked = marked and get_widget(childpos).is_marked
+                childpos = self._filetree.next_sibling_position(childpos)
+            return marked
+
+        parpos = self._filetree.parent_position(self._listbox.focus_position)
+        while parpos is not None:
+            parwidget = get_widget(parpos)
+            parwidget.is_marked = all_children_marked(parpos)
+            parpos = self._filetree.parent_position(parpos)
 
     def refresh_marks(self):
         """Redraw the "marked" column in all rows"""
