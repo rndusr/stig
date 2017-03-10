@@ -53,6 +53,11 @@ class FileWidget(urwid.WidgetWrap):
     def is_marked(self, is_marked):
         self._cells.marked.is_marked = bool(is_marked)
 
+    @property
+    def nodetype(self):
+        """'parent' or 'leaf'"""
+        return self._tfile.nodetype
+
 
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
