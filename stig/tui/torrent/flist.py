@@ -355,7 +355,10 @@ class FileListWidget(urwid.WidgetWrap):
 
         # First we mark all leaves recursively.
         if all:
-            mark_leaves(next(self._filetree.positions()), mark)
+            # Top ancestor node positions are (0,), (1,), (3,) etc
+            for pos in self._filetree.positions():
+                if len(pos) == 1:
+                    mark_leaves(pos, mark)
         else:
             mark_leaves(self._listbox.focus_position, mark)
         assert builtins.all(m.nodetype == 'leaf' for m in self._marked)
