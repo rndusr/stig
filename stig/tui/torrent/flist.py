@@ -58,6 +58,9 @@ class FileWidget(urwid.WidgetWrap):
         """'parent' or 'leaf'"""
         return self._tfile.nodetype
 
+    def __repr__(self):
+        return '<{} {!r}>'.format(type(self).__name__, self._tfile['name'])
+
 
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
