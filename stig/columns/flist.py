@@ -141,7 +141,6 @@ def create_directory_data(name, tree, filtered_count=0):
     data['id'] = frozenset(tf['id'] for tf in tfiles)
     return TorrentFileDirectory(data)
 
-
 def create_directory_name(name, filtered_count):
     if filtered_count > 0:
         return '%s (%d file%s filtered)' % (name, filtered_count,
