@@ -295,6 +295,27 @@ class FileListWidget(urwid.WidgetWrap):
             fid = focused.file_id
             return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
 
+    def all_children(self, pos):
+        """Yield (position, widget) tuples of all sub-nodes (leaves and parents)"""
+        ft = self._filetree
+        lb = self._listbox
+        def recurse(subpos):
+            widget = lb.contents[subpos][0].original_widget
+            if ft.is_leaf(subpos):
+                yield (subpos, widget)
+            else:
+                # Yield sub-parent nodes, but not the starting node that was
+                # passed to us
+                if subpos != pos:
+                    yield (subpos, widget)
+
+                new_subpos = ft.first_child_position(subpos)
+                while new_subpos is not None:
+                    yield from recurse(new_subpos)
+                    new_subpos = ft.next_sibling_position(new_subpos)
+
+        yield from recurse(pos)
+
     def mark(self, toggle=False, all=False):
         """Mark the currently focused item or all items"""
         self._set_mark(True, toggle=toggle, all=all)
