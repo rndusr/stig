@@ -3,26 +3,19 @@ questions and point out issues.
 
 * commands
 
-** TODO Allow selecting multiple torrents for action
-   The user should be able to mark and unmark torrents with space.
-     - Add a new column that displays a single character if the torrent is
-       selected.
-     - Make command 'select' which takes one argument: 'add'/'+',
-       'remove'/'-', 'all'/'*' or 'none'/'0'.  Executing the command does what
-       the argument says to the focused torrent (in case of 'add'/'remove') or
-       adds/removes all torrents in the current list to the selection (in case
-       of 'none'/'0').  It should also accept a FILTER argument.
+** TODO tab: --title,-t or --name,-n option
+   Let the user specify a tab title
 
-*** TODO Show number of selected torrents
+** TODO tab: Allow negative indexes to count from the right
+   The first tab from the right would be -1, the second -2, etc.
+
+** TODO Show number of selected torrents/files
     The best place would probably in the bottom bar.  Either implement that in
     tui.infobar.TorrentCountersWidget or create a new widget.
 
-*** TODO All torrent commands should use torrent selection
-    Commands like stop, start, verify, etc should apply to
-      - all marked torrents if any torrents are marked.
-      - the focused torrent if any torrent is focused.
-      - the torrents selected by FILTER argument(s).
-    Use the 'make_selection' mixin in commands/base/(cli|tui)/mixin.py.
+    Another place could be the column header for the 'marked' column.  With no
+    torrents marked, show 'tui.marked.on', otherwise the number of marked
+    torrents.  But that would widen the column to at least 3 characters.
 
 ** TODO New command: sort
    Sort torrents or peers in the focused list.  Check if tab actually contains
@@ -62,6 +55,13 @@ questions and point out issues.
 ** TODO Add status column
 
 
+* tui.logger
+
+** TODO Make log widget scrollable
+   How to scroll?  Do we need a command for that, like ~scrollog
+   up/down/pgup/pgdown~?  Is there a better way?
+
+
 * client
 
 ** TODO NotImplementedError
@@ -73,14 +73,12 @@ questions and point out issues.
     log.error(e)~.  Maybe with a callback somewhere?
 
 
-* tui.logger
-
-** TODO Make log widget scrollable
-   How to scroll?  Do we need a command for that, like ~scrollog
-   up/down/pgup/pgdown~?  Is there a better way?
-
-
 * tui.tabs
+
+** TODO The rightmost tab is hidden unless it fits completely
+   If enough tabs are open so that they don't fit in the tab bar anymore, the
+   rightmost one is completely removed from the list even if it fits almost.
+   That looks like there are no more tabs on the right.
 
 ** TODO New tab not always rendered
    If no tab exists and a new one is created, it isn't rendered until
