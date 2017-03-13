@@ -14,12 +14,15 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
+from ..utils import stralign
+
 
 class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
     align = 'right'
     interfaces = ('cli', 'tui')
+    may_have_wide_chars = False
 
     def __init__(self, data=None):
         self.data = data if data is not None else {}
@@ -38,22 +41,25 @@ class ColumnBase():
         align the returned string (`align` attribute must be 'left' or
         'right').
         """
-        text = str(self.get_value())
-        if not isinstance(self.width, int):
-            return text
+        width = self.width
+        align = self.align
+        string = str(self.get_value())
+        if not isinstance(width, int):
+            return string
         else:
-            return self._crop_and_align(text, self.width, self.align)
+            # Crop string or fill it with spaces and align to left/right
+            if self.may_have_wide_chars:
+                return stralign(string, width, align)
 
-    def _crop_and_align(self, string, width, side):
-        if len(string) > width:
-            string = string[:width]
+            if len(string) > width:
+                string = string[:width]
 
-        if side == 'right':
-            return string.rjust(width)
-        elif side == 'left':
-            return string.ljust(width)
-        else:
-            raise TypeError("side argument must be 'left' or 'right', not {!r}".format(side))
+            if align == 'right':
+                return string.rjust(width)
+            elif align == 'left':
+                return string.ljust(width)
+            else:
+                raise TypeError("'align' attribute must be 'left' or 'right', not {!r}".format(align))
 
     def __repr__(self):
         if self.data:

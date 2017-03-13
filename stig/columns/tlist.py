@@ -231,6 +231,7 @@ class TorrentName(ColumnBase):
     width = None
     needed_keys = ('name',)
     align = 'left'
+    may_have_wide_chars = True
 
     def get_value(self):
         return self.data['name']

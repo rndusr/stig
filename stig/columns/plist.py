@@ -24,6 +24,7 @@ class TorrentName(ColumnBase):
     header = {'left': 'Torrent'}
     align = 'left'
     width = None
+    may_have_wide_chars = True
 
     def get_value(self):
         return self.data['tname']

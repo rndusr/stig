@@ -15,7 +15,6 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 from . import ColumnBase
-from ..utils import stralign
 
 
 COLUMNS = {}
@@ -24,12 +23,10 @@ class Filename(ColumnBase):
     header = {'left': 'Filename'}
     align = 'left'
     width = None
+    may_have_wide_chars = True
 
     def get_value(self):
         return self.data['name']
-
-    def _crop_and_align(self, name, width, side):
-        return stralign(name, width, side)
 
 COLUMNS['name'] = Filename
 
