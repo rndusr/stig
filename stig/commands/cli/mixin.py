@@ -70,3 +70,11 @@ class select_files():
                 return None
             else:
                 raise ValueError('No torrent specified')
+
+
+class only_supported_columns():
+    def only_supported_columns(self, columns):
+        """Remove columns from list `columns` that don't support the CLI"""
+        from ...columns.flist import COLUMNS as FLIST_COLUMNS
+        return tuple(col for col in columns
+                     if 'cli' in FLIST_COLUMNS[col].interfaces)

@@ -186,7 +186,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
 
 
 class ListFilesCmd(base.ListFilesCmdbase,
-                   mixin.make_request, mixin.select_torrents, mixin.select_files):
+                   mixin.make_request, mixin.select_torrents, mixin.select_files,
+                   mixin.only_supported_columns):
     provides = {'cli'}
     srvapi = ExpectedResource
     async def make_flist(self, tfilter, ffilter, columns):
@@ -204,7 +205,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             filelist.extend(files)
 
         if filelist:
-            _print_table(filelist, columns, FLIST_COLUMNS)
+            _print_table(filelist, self.only_supported_columns(columns), FLIST_COLUMNS)
             return True
         else:
             if str(tfilter) != 'all':
