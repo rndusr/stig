@@ -11,6 +11,10 @@
 
 """Column specifications for tables"""
 
+from ..logging import make_logger
+log = make_logger(__name__)
+
+
 class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
