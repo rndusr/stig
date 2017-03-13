@@ -158,15 +158,12 @@ class AnnounceTorrentsCmd(base.AnnounceTorrentsCmdbase,
 
 
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
-                      mixin.make_request, mixin.select_torrents):
+                      mixin.make_request, mixin.select_torrents,
+                      mixin.only_supported_columns):
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
     async def make_tlist(self, tfilter, sort, columns):
-        try:
-            columns = self.get_tlist_columns(columns, interface='cli')
-        except ValueError as e:
-            log.error(e)
-            return False
+        columns = self.only_supported_columns(columns, TLIST_COLUMNS)
 
         # Get wanted torrents and sort them
         if tfilter is None:

@@ -39,11 +39,9 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     tui = ExpectedResource
 
     def make_tlist(self, tfilter, sort, columns):
-        try:
-            columns = self.get_tlist_columns(columns, interface='tui')
-        except ValueError as e:
-            log.error(e)
-            return False
+        # Enforce 'marked' column
+        if 'marked' not in columns:
+            columns.insert(0, 'marked')
 
         def make_title_widget(text):
             return make_tab_title(text,

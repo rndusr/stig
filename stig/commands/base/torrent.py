@@ -170,6 +170,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
         sort = self.cfg['sort.torrents'].value if sort is None else sort
         columns = self.cfg['columns.torrents'].value if columns is None else columns
         try:
+            columns = self.get_tlist_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
                                            discover_torrent=False)
