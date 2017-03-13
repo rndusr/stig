@@ -73,8 +73,7 @@ class select_files():
 
 
 class only_supported_columns():
-    def only_supported_columns(self, columns):
+    def only_supported_columns(self, columns, specs):
         """Remove columns from list `columns` that don't support the CLI"""
-        from ...columns.flist import COLUMNS as FLIST_COLUMNS
-        return tuple(col for col in columns
-                     if 'cli' in FLIST_COLUMNS[col].interfaces)
+        return [col for col in columns
+                if 'cli' in specs[col].interfaces]

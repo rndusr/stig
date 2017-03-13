@@ -205,7 +205,8 @@ class ListFilesCmd(base.ListFilesCmdbase,
             filelist.extend(files)
 
         if filelist:
-            _print_table(filelist, self.only_supported_columns(columns), FLIST_COLUMNS)
+            columns = self.only_supported_columns(columns, FLIST_COLUMNS)
+            _print_table(filelist, columns, FLIST_COLUMNS)
             return True
         else:
             if str(tfilter) != 'all':
