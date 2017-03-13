@@ -75,6 +75,10 @@ class ListFilesCmd(base.ListFilesCmdbase,
         else:
             title = None
 
+        # Enforce 'marked' column
+        if 'marked' not in columns:
+            columns.insert(0, 'marked')
+
         from ...tui.torrent.flist import FileListWidget
         flistw = FileListWidget(self.srvapi, tfilter, ffilter, columns, title=title)
 
