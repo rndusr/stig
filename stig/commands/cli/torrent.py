@@ -83,8 +83,8 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
     def shrink_and_expand_to_fit():
         log.debug('TTY width is %dx%d', TERMSIZE.columns, TERMSIZE.lines)
 
-        def get_colwidth(colindex):
-            # Get maximum column width (width of widest cell in all rows)
+        def get_max_colwidth(colindex):
+            # Return width of widest cell in all rows
             return max(strwidth(row[colindex].get_string())
                        for row in rows)
 
@@ -95,23 +95,25 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
                 cell.width = width
 
         def widest_columns():
-            # Column indexes sorted by column width
+            # List of columns sorted by width
             return sorted(range(len(columns_wanted)),
-                          key=lambda colindex: get_colwidth(colindex),
+                          key=lambda colindex: get_max_colwidth(colindex),
                           reverse=True)
 
         # Expand column widths to make all cell values fit
         for colindex in range(len(columns_wanted)):
-            colwidth = get_colwidth(colindex)
+            colwidth = get_max_colwidth(colindex)
             set_colwidth(colindex, colwidth)
 
         # Rows should have identical column widths from now on, so we can
         # use the first row to check our progress.
-        while strwidth(assemble_line(rows[0])) > TERMSIZE.columns:
-            excess = strwidth(assemble_line(rows[0])) - TERMSIZE.columns
+        current_line = assemble_line(rows[0])
+        current_width = strwidth(current_line)
+        while current_width > TERMSIZE.columns:
+            excess = current_width - TERMSIZE.columns
             widest = widest_columns()
-            widest_0 = get_colwidth(widest[0])
-            widest_1 = get_colwidth(widest[1])
+            widest_0 = get_max_colwidth(widest[0])
+            widest_1 = get_max_colwidth(widest[1])
 
             # Shorten widest column by difference to second widest column
             # (leaving them at the same width), but not by more than `excess`
@@ -122,6 +124,9 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
             # before checking again.
             shorten_by = max(1, min(excess, widest_0 - widest_1))
             set_colwidth(widest[0], widest_0 - shorten_by)
+
+            current_line = assemble_line(rows[0])
+            current_width = strwidth(current_line)
 
     if rows:
         if not pretty_output:
