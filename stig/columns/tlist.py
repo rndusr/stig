@@ -242,5 +242,4 @@ COLUMNS['name'] = TorrentName
 class Marked(ColumnBase):
     interfaces = ('tui',)
 
-
 COLUMNS['marked'] = Marked
