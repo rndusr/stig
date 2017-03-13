@@ -91,7 +91,7 @@ class get_flist_columns():
         cols = utils.listify_args(columns)
         for col in cols:
             if col not in COLUMNS:
-                raise ValueError('Unknown column name: {}'.format(arg))
+                raise ValueError('Unknown column name: {}'.format(col))
         return cols
 
 
