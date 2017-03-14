@@ -73,7 +73,7 @@ class Style():
 #       share the remaining width using ('weight', x), giving some of them
 #       (e.g. name) more space than others (e.g. path).
 class CellWidgetBase(urwid.WidgetWrap):
-    style = collections.defaultdict(lambda key: 'default')
+    style = collections.defaultdict(lambda: 'default')
     header = urwid.Padding(urwid.Text('NO HEADER SPECIFIED'))
     width = ('weight', 100)
     align = 'right'
