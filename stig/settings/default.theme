@@ -175,6 +175,11 @@ torrentlist.rate-up.focused                        $rate-up_fg           on $tli
 torrentlist.rate-up.highlighted.unfocused          $rate-up_hl           on $tlist_bg.uf
 torrentlist.rate-up.highlighted.focused            $rate-up_hl           on $tlist_bg.f
 
+$tracker_fg = light gray
+torrentlist.tracker.header                         $tracker_fg,underline on $tlist_bg.uf
+torrentlist.tracker.unfocused                      $tracker_fg           on $tlist_bg.uf
+torrentlist.tracker.focused                        $tracker_fg           on $tlist_bg.f
+
 
 $name.idle_fg = light gray
 torrentlist.name.header                            $name.idle_fg,underline on $tlist_bg.uf

@@ -239,6 +239,21 @@ class TorrentName(ColumnBase):
 COLUMNS['name'] = TorrentName
 
 
+class Tracker(ColumnBase):
+    header = {'left': 'Tracker'}
+    width = 10
+    needed_keys = ('trackers',)
+    align = 'left'
+
+    def get_value(self):
+        if len(self.data['trackers']) > 0:
+            return self.data['trackers'][0]['url-announce'].domain
+        else:
+            return ''
+
+COLUMNS['tracker'] = Tracker
+
+
 class Marked(ColumnBase):
     interfaces = ('tui',)
 

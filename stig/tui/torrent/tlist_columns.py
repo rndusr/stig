@@ -185,6 +185,15 @@ class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
 TUICOLUMNS['eta'] = EtaComplete
 
 
+class Tracker(_COLUMNS['tracker'], CellWidgetBase):
+    style = Style(prefix='torrentlist.tracker', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['tracker'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['tracker'] = Tracker
+
+
 class TorrentName(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),
