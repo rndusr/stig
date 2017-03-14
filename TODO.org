@@ -64,6 +64,10 @@ questions and point out issues.
 
 * client
 
+** TODO Better moving average for peer download rate estimation
+   Maybe this one?
+   https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+
 ** TODO NotImplementedError
    The classes exported by `client` should derive from base classes that raise
    NotImplementedError in all undefined methods and properties.
