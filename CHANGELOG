@@ -13,6 +13,7 @@
       action
     * New command 'unbind' to remove any keybinding
     * Display the number of items in peer/file list tab titles
+    * New column 'tracker' in torrent lists
 
   Fixed bugs:
     * Key combination <alt-space> did not work
