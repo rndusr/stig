@@ -142,7 +142,7 @@ class TrackerList(tuple):
     def __new__(cls, raw_torrent):
         return super().__new__(cls,
             ({'id': tracker['id'],
-              'url-announce': utils.split_url(tracker['announce'])}
+              'url-announce': utils.URL(tracker['announce'])}
              for tracker in raw_torrent['trackers'])
         )
 

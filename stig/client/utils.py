@@ -67,25 +67,28 @@ class Response(SimpleNamespace):
         super().__init__(success=bool(success), msgs=tuple(msgs), **kwargs)
 
 
-from urllib.parse import urlsplit
-class split_url():
-    """Works like `urllib.parse.urlsplit` but with a 'domain' attribute"""
-    def __new__(cls, url):
-        obj = super().__new__(cls)
-
-        # Use urlsplit to get most fields
+from urllib.parse import (urlsplit, urlunsplit)
+class URL():
+    """Provide the same attributes as `urllib.parse.urlsplit` plus 'domain'"""
+    def __init__(self, url):
         url = urlsplit(url)
-        for attr in dir(url):
-            if not attr.startswith('_'):
-                setattr(obj, attr, getattr(url, attr))
+        for attr in ('scheme', 'netloc', 'path', 'query', 'fragment'):
+            setattr(self, attr, getattr(url, attr))
 
         # Find domain
         if url.hostname.count('.') <= 1:
-            obj.domain = url.hostname
+            setattr(self, 'domain', url.hostname)
         else:
             parts = url.hostname.split('.')
-            obj.domain = '.'.join(parts[-2:])
-        return obj
+            setattr(self, 'domain', '.'.join(parts[-2:]))
+
+        self._url = url
+
+    def __str__(self):
+        return urlunsplit(self._url)
+
+    def __repr__(self):
+        return '<URL %s>' % self
 
 
 def pretty_float(n):
