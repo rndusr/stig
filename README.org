@@ -76,9 +76,10 @@
    tab ls isolated --sort tracker --columns name,path
    #+END_SRC
 
-   You can have different rc files and run them either with ~stig -c
-   path/to/file~ or by using the shebang ~#!/path/to/stig -Tc~ (~-T~ disables
-   the TUI, ~-c~ specifies the rc file) to turn them into executables.
+   You can have different rc files and run them either with
+   ~stig -c path/to/file~ or by using the shebang ~#!/path/to/stig -Tc~
+   (~-T~ disables the TUI, ~-c~ specifies the rc file) to turn them into
+   executables.
 
 *** Example maintenance script
    #+BEGIN_SRC
