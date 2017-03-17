@@ -215,7 +215,7 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
                   modes=('idle.progress1', 'idle.progress2', 'idle.complete',
                          'stopped.progress1', 'stopped.progress2', 'stopped.complete',
                          'isolated.progress1', 'isolated.progress2', 'isolated.complete',
-                         'initializing.progress1', 'initializing.progress2', 'initializing.complete',
+                         'discovering.progress1', 'discovering.progress2', 'discovering.complete',
                          'verifying.progress1', 'verifying.progress2', 'verifying.complete',
                          'downloading.progress1', 'downloading.progress2', 'downloading.complete',
                          'uploading.progress1', 'uploading.progress2', 'uploading.complete',
