@@ -165,8 +165,9 @@ class Status(tuple):
 
     def __new__(cls, statuses):
         ORDER = cls.ORDER
-        if any(s not in ORDER for s in statuses):
-            raise ValueError('Invalid status string: {!r}'.format(status))
+        for status in statuses:
+            if status not in ORDER:
+                raise ValueError('Invalid status string: {!r}'.format(status))
         else:
             obj = super().__new__(cls, statuses)
             obj._sort_index = ORDER.index(statuses[0])
