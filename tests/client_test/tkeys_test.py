@@ -196,34 +196,30 @@ class TestRatio(unittest.TestCase):
         self.assertEqual(str(tkeys.Ratio(47.86123)), '47.9')
         self.assertEqual(str(tkeys.Ratio(100.5)), '100')
 
+
 class TestStatus(unittest.TestCase):
     def test_string(self):
-        self.assertEqual(tkeys.Status(tkeys.Status.STOPPED), tkeys.Status.STOPPED)
-        self.assertEqual(tkeys.Status(tkeys.Status.VERIFY_Q), tkeys.Status.VERIFY_Q)
-        self.assertEqual(tkeys.Status(tkeys.Status.VERIFY), tkeys.Status.VERIFY)
-        self.assertEqual(tkeys.Status(tkeys.Status.LEECH_Q), tkeys.Status.LEECH_Q)
-        self.assertEqual(tkeys.Status(tkeys.Status.LEECH), tkeys.Status.LEECH)
-        self.assertEqual(tkeys.Status(tkeys.Status.SEED_Q), tkeys.Status.SEED_Q)
-        self.assertEqual(tkeys.Status(tkeys.Status.SEED), tkeys.Status.SEED)
+        for s in (tkeys.Status.VERIFY, tkeys.Status.DOWNLOAD,
+                  tkeys.Status.UPLOAD, tkeys.Status.INIT, tkeys.Status.CONNECTED,
+                  tkeys.Status.QUEUED, tkeys.Status.SEED, tkeys.Status.IDLE,
+                  tkeys.Status.STOPPED):
+            self.assertEqual(tkeys.Status((s,)), (s,))
+
         with self.assertRaises(ValueError):
-            tkeys.Status('foo')
+            tkeys.Status(('uploading', 'foo', 'isolated'))
 
     def test_sort(self):
-        statuses = [
-            tkeys.Status(tkeys.Status.LEECH),
-            tkeys.Status(tkeys.Status.LEECH_Q),
-            tkeys.Status(tkeys.Status.SEED),
-            tkeys.Status(tkeys.Status.SEED_Q),
-            tkeys.Status(tkeys.Status.STOPPED),
-            tkeys.Status(tkeys.Status.VERIFY),
-            tkeys.Status(tkeys.Status.VERIFY_Q),
-        ]
-        sorted_strs = [str(s) for s in sorted(statuses)]
-        exp = [tkeys.Status(tkeys.Status.VERIFY), tkeys.Status(tkeys.Status.VERIFY_Q),
-               tkeys.Status(tkeys.Status.LEECH), tkeys.Status(tkeys.Status.LEECH_Q),
-               tkeys.Status(tkeys.Status.SEED), tkeys.Status(tkeys.Status.SEED_Q),
-               tkeys.Status(tkeys.Status.STOPPED)]
-        self.assertEqual(sorted_strs, exp)
+        statuses = [tkeys.Status.UPLOAD, tkeys.Status.CONNECTED,
+                    tkeys.Status.SEED, tkeys.Status.INIT, tkeys.Status.VERIFY,
+                    tkeys.Status.DOWNLOAD, tkeys.Status.STOPPED,
+                    tkeys.Status.IDLE, tkeys.Status.QUEUED]
+        sort = sorted([tkeys.Status((s,)) for s in statuses])
+        exp = [(tkeys.Status.VERIFY,), (tkeys.Status.DOWNLOAD,),
+               (tkeys.Status.UPLOAD,), (tkeys.Status.INIT,),
+               (tkeys.Status.CONNECTED,), (tkeys.Status.QUEUED,),
+               (tkeys.Status.SEED,), (tkeys.Status.IDLE,),
+               (tkeys.Status.STOPPED,)]
+        self.assertEqual(sort, exp)
 
 
 MIN = 60
