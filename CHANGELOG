@@ -1,3 +1,12 @@
+2017-??-?? ?.?.?
+  Breaking changes:
+    * In color themes, 'torrentlist.name.initializing*' is now called
+      'torrentlist.name.discovering*'
+
+  Other changes:
+    * New column 'status' in torrent lists
+
+
 2017-03-16 0.4.0a
   Breaking changes:
     * In color themes, 'torrentlist.tpath' is now called 'torrentlist.path'
