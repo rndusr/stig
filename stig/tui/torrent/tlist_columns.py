@@ -194,6 +194,21 @@ class Tracker(_COLUMNS['tracker'], CellWidgetBase):
 TUICOLUMNS['tracker'] = Tracker
 
 
+class Status(_COLUMNS['status'], CellWidgetBase):
+    style = Style(prefix='torrentlist.status', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        if self.value in ('idle', 'stopped', 'queued'):
+            return ''
+        else:
+            return 'highlighted'
+
+TUICOLUMNS['status'] = Status
+
+
 class TorrentName(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),

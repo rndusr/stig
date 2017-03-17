@@ -239,6 +239,17 @@ class TorrentName(ColumnBase):
 COLUMNS['name'] = TorrentName
 
 
+class Status(ColumnBase):
+    header = {'left': 'Status'}
+    width = 11
+    needed_keys = ('status',)
+
+    def get_value(self):
+        return self.data['status'][0]
+
+COLUMNS['status'] = Status
+
+
 class Tracker(ColumnBase):
     header = {'left': 'Tracker'}
     width = 10
