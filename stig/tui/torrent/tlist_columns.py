@@ -209,7 +209,7 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
     needed_keys = ('name', 'status', '%downloaded', '%verified', '%metadata',
-                   'isolated', 'rate-up', 'rate-down', 'peers-connected')
+                   'rate-up', 'rate-down', 'peers-connected')
 
     def __init__(self, *args, **kwargs):
         self.status = ('', 'idle', 0)
@@ -244,23 +244,24 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
     @staticmethod
     def make_status(t):
         progress = t['%downloaded']
-        if t['status'] == 'stopped':
+        Status = type(t['status'])
+        if Status.STOPPED in t['status']:
             mode = 'stopped'
-        elif t['isolated']:
+        elif Status.ISOLATED in t['status']:
             mode = 'isolated'
-        elif t['%metadata'] < 1:
-            mode = 'initializing'
+        elif Status.INIT in t['status']:
+            mode = 'discovering'
             progress = t['%metadata']
-        elif 'verify' in t['status']:
+        elif Status.VERIFY in t['status']:
             mode = 'verifying'
             progress = t['%verified']
-        elif t['rate-down'] > 0 and t['status'] == 'leeching':
+        elif Status.DOWNLOAD in t['status']:
             mode = 'downloading'
-        elif t['status'] == 'leeching pending':
-            mode = 'queued'
-        elif t['rate-up'] > 0:
+        elif Status.UPLOAD in t['status']:
             mode = 'uploading'
-        elif t['peers-connected'] > 0:
+        elif Status.QUEUED in t['status']:
+            mode = 'queued'
+        elif Status.CONNECTED in t['status']:
             mode = 'connected'
         else:
             mode = 'idle'

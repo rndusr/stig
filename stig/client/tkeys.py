@@ -147,29 +147,35 @@ class SeedCount(Number):
         return '?' if self == self.UNKNOWN else super().__str__()
 
 
-class Status(str):
+class Status(tuple):
     """A Torrent's status as string"""
-    VERIFY   = 'verifying'
-    VERIFY_Q = 'verifying pending'
-    LEECH    = 'leeching'
-    LEECH_Q  = 'leeching pending'
-    SEED     = 'seeding'
-    SEED_Q   = 'seeding pending'
-    STOPPED  = 'stopped'
-    ORDER = (VERIFY, VERIFY_Q, LEECH, LEECH_Q, SEED, SEED_Q, STOPPED)
 
-    def __new__(cls, status):
-        if status not in cls.ORDER:
+    VERIFY    = 'verifying'
+    DOWNLOAD  = 'downloading'
+    UPLOAD    = 'uploading'
+    INIT      = 'discovering'
+    CONNECTED = 'connected'
+    ISOLATED  = 'isolated'
+    QUEUED    = 'queued'
+    SEED      = 'seed'
+    IDLE      = 'idle'
+    STOPPED   = 'stopped'
+    ORDER = (VERIFY, DOWNLOAD, UPLOAD, INIT, CONNECTED,
+             ISOLATED, QUEUED, SEED, IDLE, STOPPED)
+
+    def __new__(cls, statuses):
+        ORDER = cls.ORDER
+        if any(s not in ORDER for s in statuses):
             raise ValueError('Invalid status string: {!r}'.format(status))
         else:
-            obj = super().__new__(cls, status)
-            obj._index = cls.ORDER.index(status)
+            obj = super().__new__(cls, statuses)
+            obj._sort_index = ORDER.index(statuses[0])
             return obj
 
-    def __lt__(self, other): return self._index < other._index
-    def __le__(self, other): return self._index <= other._index
-    def __gt__(self, other): return self._index > other._index
-    def __ge__(self, other): return self._index >= other._index
+    def __lt__(self, other): return self._sort_index < other._sort_index
+    def __le__(self, other): return self._sort_index <= other._sort_index
+    def __gt__(self, other): return self._sort_index > other._sort_index
+    def __ge__(self, other): return self._sort_index >= other._sort_index
 
 
 import operator
@@ -511,7 +517,6 @@ TYPES = {
 
     'private'           : bool,
     'stalled'           : bool,
-    'isolated'          : bool,
 
     '%downloaded'       : Percent,
     '%metadata'         : Percent,

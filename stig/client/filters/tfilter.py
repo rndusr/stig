@@ -32,68 +32,80 @@ def _make_filter_desc(text):
     return text
 
 
+from ..tkeys import Status
+_STATUS_VERIFY    = Status.VERIFY
+_STATUS_DOWNLOAD  = Status.DOWNLOAD
+_STATUS_UPLOAD    = Status.UPLOAD
+_STATUS_INIT      = Status.INIT
+_STATUS_CONNECTED = Status.CONNECTED
+_STATUS_ISOLATED  = Status.ISOLATED
+_STATUS_QUEUED    = Status.QUEUED
+_STATUS_SEED      = Status.SEED
+_STATUS_IDLE      = Status.IDLE
+_STATUS_STOPPED   = Status.STOPPED
 
 class SingleTorrentFilter(Filter):
     DEFAULT_FILTER = 'name'
 
     # Filters without arguments
     BOOLEAN_FILTERS = {
-        # '...' is replaced with 'Torrents that are'
-        'active': BoolFilterSpec(
-            lambda t: t['peers-connected'] > 0 or t['status'] == 'verifying',
-            description='Torrents connected to peers or being verified',
-            needed_keys=('peers-connected', 'status')),
         'all': BoolFilterSpec(
             lambda t: True,
             description='All torrents',
             needed_keys=(),
             aliases=('*',)),
-        'complete': BoolFilterSpec(
+
+        'leeching': BoolFilterSpec(
+            lambda t: t['%downloaded'] < 100,
+            description='unstopped Torrents downloading or waiting for seeds',
+            needed_keys=('%downloaded',),
+            aliases=('incomplete',)),
+        'seeding': BoolFilterSpec(
             lambda t: t['%downloaded'] >= 100,
-            description='Torrents with all wanted files complete',
-            needed_keys=('%downloaded',)),
+            description='unstopped Torrents with all wanted files downloaded',
+            needed_keys=('%downloaded',),
+            aliases=('complete',)),
+        'stopped': BoolFilterSpec(
+            lambda t: _STATUS_STOPPED in t['status'],
+            description='Torrents not allowed to up- or download',
+            needed_keys=('status',),
+            aliases=('paused',)),
+
+        'active': BoolFilterSpec(
+            lambda t: t['peers-connected'] > 0 or _STATUS_VERIFY in t['status'],
+            description='Torrents connected to peers or being verified',
+            needed_keys=('peers-connected', 'status')),
         'downloading': BoolFilterSpec(
             lambda t: t['rate-down'] > 0,
             description='Torrents using download bandwidth',
             needed_keys=('rate-down',)),
-        'idle': BoolFilterSpec(
-            lambda t: t['stalled'],
-            description='Torrents not down- or uploading but not stopped',
-            needed_keys=('stalled',)),
-        'isolated': BoolFilterSpec(
-            lambda t: t['isolated'],
-            description='Torrents that cannot discover new peers in any way',
-            needed_keys=('isolated',)),
-        'leeching': BoolFilterSpec(
-            lambda t: t['status'] == 'leeching',
-            description='Torrents downloading or waiting for seeds',
-            needed_keys=('status',)),
-        'private': BoolFilterSpec(
-            lambda t: t['private'],
-            description='Torrents that are only connectable through trackers',
-            needed_keys=('private',)),
-        'public': BoolFilterSpec(
-            lambda t: not t['private'],
-            description='Torrents connectable through DHT and/or PEX',
-            needed_keys=('private',)),
-        'seeding': BoolFilterSpec(
-            lambda t: t['status'] == 'seeding',
-            description='Torrents that are complete and shared on request',
-            needed_keys=('status',)),
-        'stopped': BoolFilterSpec(
-            lambda t: t['status'] == 'stopped',
-            description='Torrents not allowed to up- or download',
-            needed_keys=('status',),
-            aliases=('paused',)),
         'uploading': BoolFilterSpec(
             lambda t: t['rate-up'] > 0,
             description='Torrents using upload bandwidth',
             needed_keys=('rate-up',)),
         'verifying': BoolFilterSpec(
-            lambda t: t['status'] == 'verifying',
+            lambda t: _STATUS_VERIFY in t['status'],
             description='Torrents being verified or queued for verification',
             needed_keys=('status',),
             aliases=('checking',)),
+        'idle': BoolFilterSpec(
+            lambda t: (_STATUS_IDLE in t['status'] and
+                       _STATUS_STOPPED not in t['status']),
+            description='unstopped Torrents not using any bandwidth',
+            needed_keys=('status',)),
+        'isolated': BoolFilterSpec(
+            lambda t: _STATUS_ISOLATED in t['status'],
+            description='Torrents that cannot discover new peers in any way',
+            needed_keys=('status',)),
+
+        'private': BoolFilterSpec(
+            lambda t: t['private'],
+            description='Torrents only connectable through trackers',
+            needed_keys=('private',)),
+        'public': BoolFilterSpec(
+            lambda t: not t['private'],
+            description='Torrents connectable through DHT and/or PEX',
+            needed_keys=('private',)),
     }
 
 

@@ -68,7 +68,7 @@ class StatusAPI():
         # 'session-stats' provides some counters, but not enough, so we
         # request a minimalistic torrent list.
         self._poller_tcount = RequestPoller(srvapi.torrent.torrents,
-                                            keys=('rate-down', 'rate-up', 'isolated'),
+                                            keys=('rate-down', 'rate-up', 'status'),
                                             autoconnect=False,
                                             interval=interval,
                                             loop=srvapi.loop)
@@ -99,7 +99,7 @@ class StatusAPI():
         else:
             tlist = response.torrents
             self._tcounts.isolated = len(tuple(filter(
-                lambda t: t['isolated'],
+                lambda t: t['status'].ISOLATED in t['status'],
                 tlist)))
             self._tcounts.downloading = len(tuple(filter(
                 lambda t: t['rate-down'] > 0,

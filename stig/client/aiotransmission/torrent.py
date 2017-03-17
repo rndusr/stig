@@ -27,6 +27,7 @@ def _modify_ratio(raw_torrent):
     ratio = raw_torrent['uploadRatio']
     return tkeys.Ratio.UNKNOWN if ratio in (-1, -2) else ratio
 
+
 def _modify_eta(raw_torrent):
     #define TR_ETA_NOT_AVAIL -1
     #define TR_ETA_UNKNOWN -2
@@ -37,12 +38,14 @@ def _modify_eta(raw_torrent):
         return tkeys.Timedelta.UNKNOWN
     return seconds
 
+
 def _count_seeds(raw_torrent):
     trackerStats = raw_torrent['trackerStats']
     if trackerStats:
         return max(t['seederCount'] for t in trackerStats)
     else:
         return tkeys.SeedCount.UNKNOWN
+
 
 def _is_isolated(raw_torrent):
     """Return whether this torrent can find any peers via trackers or DHT"""
@@ -62,16 +65,46 @@ def _is_isolated(raw_torrent):
             return False
     return True  # No way to find any peers
 
-_STATUS_MAP = {
-    0: tkeys.Status.STOPPED,
-    1: tkeys.Status.VERIFY_Q,
-    2: tkeys.Status.VERIFY,
-    3: tkeys.Status.LEECH_Q,
-    4: tkeys.Status.LEECH,
-    5: tkeys.Status.SEED_Q,
-    6: tkeys.Status.SEED,
-}
 
+def _make_status(t):
+    Status = tkeys.Status
+    statuses = []
+
+    # RPC values for 'status' field:
+    # TR_STATUS_STOPPED        = 0, /* Torrent is stopped */
+    # TR_STATUS_CHECK_WAIT     = 1, /* Queued to check files */
+    # TR_STATUS_CHECK          = 2, /* Checking files */
+    # TR_STATUS_DOWNLOAD_WAIT  = 3, /* Queued to download */
+    # TR_STATUS_DOWNLOAD       = 4, /* Downloading */
+    # TR_STATUS_SEED_WAIT      = 5, /* Queued to seed */
+    t_status = t['status']
+    if t_status == 0:
+        statuses.append(Status.STOPPED)
+    elif t_status in (1, 2):
+        statuses.append(Status.VERIFY)
+    if t_status in (1, 3, 5):
+        statuses.append(Status.QUEUED)
+
+    if Status.STOPPED not in statuses:
+        if _is_isolated(t):
+            statuses.append(Status.ISOLATED)
+        if t['metadataPercentComplete'] < 1:
+            statuses.append(Status.INIT)
+
+        if Status.QUEUED not in statuses:
+            if t['peersConnected'] > 0:
+                if t['rateDownload'] > 0:
+                    statuses.append(Status.DOWNLOAD)
+                if t['rateUpload'] > 0:
+                    statuses.append(Status.UPLOAD)
+                statuses.append(Status.CONNECTED)
+
+    if all(x not in statuses for x in (Status.UPLOAD,
+                                       Status.DOWNLOAD,
+                                       Status.VERIFY)):
+        statuses.append(Status.IDLE)
+
+    return statuses
 
 
 def _create_TorrentFileTree(raw_torrent):
@@ -165,12 +198,13 @@ DEPENDENCIES = {
     'id'                : ('id',),
     'hash'              : ('hashString',),
     'name'              : ('name',),
-    'status'            : ('status',),
+    'ratio'             : ('uploadRatio',),
+    'status'            : ('status', 'metadataPercentComplete', 'rateDownload',
+                           'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'              : ('downloadDir',),
 
     'private'           : ('isPrivate',),
     'stalled'           : ('isStalled',),
-    'isolated'          : ('trackerStats', 'isPrivate'),
 
     '%downloaded'       : ('percentDone',),
     '%metadata'         : ('metadataPercentComplete',),
@@ -189,7 +223,6 @@ DEPENDENCIES = {
     'timespan-eta'      : ('eta',),
     'timestamp-manual-announce-allowed': ('manualAnnounceTime',),
 
-    'ratio'             : ('uploadRatio',),
     'rate-down'         : ('rateDownload',),
     'rate-up'           : ('rateUpload',),
 
@@ -214,9 +247,8 @@ _MODIFY = {
     '%downloaded'     : lambda raw: raw['percentDone']*100,
     '%metadata'       : lambda raw: raw['metadataPercentComplete']*100,
     '%verified'       : lambda raw: raw['recheckProgress']*100,
-    'status'          : lambda raw: _STATUS_MAP[raw['status']],
+    'status'          : _make_status,
     'peers-seeding'   : _count_seeds,
-    'isolated'        : _is_isolated,
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
     'path'            : lambda raw: normpath(raw['downloadDir']),
