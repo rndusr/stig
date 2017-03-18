@@ -13,12 +13,9 @@ log = logging.getLogger(__name__)
 
 
 FAKE_TORRENTS = (
-    Torrent({'id': 1, 'name': 'foo', 'status': 3, 'isStalled': False,
-             'rateDownload': 50, 'rateUpload': 100, 'totalSize': 10e3}),
-    Torrent({'id': 2, 'name': 'bar', 'status': 0, 'isStalled': True,
-             'rateDownload': 0, 'rateUpload': 0, 'totalSize': 10e6}),
-    Torrent({'id': 3, 'name': 'baz', 'status': 6, 'isStalled': True,
-             'rateDownload': 0, 'rateUpload': 0, 'totalSize': 10e9})
+    Torrent({'id': 1, 'name': 'foo', 'rateDownload': 50, 'rateUpload': 100, 'totalSize': 10e3, 'isPrivate': False}),
+    Torrent({'id': 2, 'name': 'bar', 'rateDownload': 0, 'rateUpload': 0, 'totalSize': 10e6, 'isPrivate': True}),
+    Torrent({'id': 3, 'name': 'baz', 'rateDownload': 0, 'rateUpload': 0, 'totalSize': 10e9, 'isPrivate': True})
 )
 
 
@@ -112,7 +109,7 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
                                 tfilter=(foo+bar).tfilter,
                                 keys=(foo+bar).keys_needed)
 
-        baz = Subscriber('idle', 'id', 'status', 'size-total')
+        baz = Subscriber('private', 'id', 'size-total')
         self.rp.register('baz', baz.callback, keys=baz.keys, tfilter=baz.tfilter)
         await self.advance(self.rp.interval)
         self.assert_api_request(calls=4,
@@ -140,7 +137,7 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
 
         foo = Subscriber('name~foo', 'name', 'rate-down')
         bar = Subscriber('name~bar', 'name', 'rate-up')
-        baz = Subscriber('idle', 'id', 'status', 'size-total')
+        baz = Subscriber('private', 'id', 'size-total')
         self.rp.register('foo', foo.callback, keys=foo.keys, tfilter=foo.tfilter)
         self.rp.register('bar', bar.callback, keys=bar.keys, tfilter=bar.tfilter)
         self.rp.register('baz', baz.callback, keys=baz.keys, tfilter=baz.tfilter)
@@ -171,7 +168,7 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
 
         foo = Subscriber('name~foo', 'name', 'rate-down')
         bar = Subscriber('name~bar', 'name', 'rate-up')
-        baz = Subscriber('idle', 'id', 'status', 'size-total')
+        baz = Subscriber('private', 'id', 'size-total')
         self.rp.register('foo', foo.callback, keys=foo.keys, tfilter=foo.tfilter)
         self.rp.register('bar', bar.callback, keys=bar.keys, tfilter=bar.tfilter)
         self.rp.register('baz', baz.callback, keys=baz.keys, tfilter=baz.tfilter)
