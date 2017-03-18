@@ -34,8 +34,10 @@ class Test_is_isolated(unittest.TestCase):
 
 class TestTorrentFields(unittest.TestCase):
     def test_handpicked_fields(self):
-        testcase = ('id', 'hash', 'name', 'isolated', 'id', 'id', 'id')
-        expect = ('id', 'hashString', 'name', 'isPrivate', 'trackerStats')
+        testcase = ('id', 'hash', 'name', 'status', 'id', 'id', 'id')
+        expect = ('id', 'hashString', 'name', 'status',
+                  'metadataPercentComplete', 'rateDownload', 'rateUpload',
+                  'peersConnected', 'trackerStats', 'isPrivate')
         self.assertEqual(sorted(torrent.TorrentFields(*testcase)),
                          sorted(expect))
 

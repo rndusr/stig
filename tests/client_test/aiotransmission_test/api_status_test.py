@@ -1,5 +1,6 @@
 from stig.client.aiotransmission.api_status import StatusAPI
 from stig.client import constants as const
+from stig.client.tkeys import Status
 
 import resources_aiotransmission as rsrc
 
@@ -67,9 +68,9 @@ class TestStatusAPI(asynctest.TestCase):
         }
 
         self.torrent.fake_tlist = SimpleNamespace(
-            torrents=({'isolated': True, 'rate-up': 0, 'rate-down': 0},
-                      {'isolated': False, 'rate-up': 0, 'rate-down': 456},
-                      {'isolated': False, 'rate-up': 123, 'rate-down': 456}),
+            torrents=({'status': Status((Status.ISOLATED,)), 'rate-up': 0, 'rate-down': 0},
+                      {'status': Status((Status.DOWNLOAD,)), 'rate-up': 0, 'rate-down': 456},
+                      {'status': Status((Status.DOWNLOAD, Status.UPLOAD)), 'rate-up': 123, 'rate-down': 456}),
         )
 
     async def test_attributes(self):
