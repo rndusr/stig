@@ -106,7 +106,7 @@ class SingleTorrentFilter(Filter):
 
         'private': BoolFilterSpec(
             lambda t: t['private'],
-            description='Torrents only connectable through trackers',
+            description='Torrents connectable through trackers only',
             needed_keys=('private',)),
         'public': BoolFilterSpec(
             lambda t: not t['private'],
