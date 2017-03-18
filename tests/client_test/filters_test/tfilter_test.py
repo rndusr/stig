@@ -6,19 +6,19 @@ import unittest
 
 tlist = (
     Torrent({'id': 1, 'name': 'Foo', 'downloadDir': '/some/path/to/torrents',
-             'isStalled': True, 'isPrivate': False, 'status': 6, 'percentDone': 1,
+             'isPrivate': False, 'status': 6, 'percentDone': 1,
              'peersConnected': 0, 'rateUpload': 0, 'rateDownload': 0, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
     Torrent({'id': 2, 'name': 'Bar123', 'downloadDir': '/some/path/to/torrents',
-             'isStalled': False, 'isPrivate': True, 'status': 4, 'percentDone': 0.0235,
+             'isPrivate': True, 'status': 4, 'percentDone': 0.0235,
              'peersConnected': 3, 'rateUpload': 58e3, 'rateDownload': 384e3, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
     Torrent({'id': 3, 'name': 'Fim', 'downloadDir': '/other/path/to/torrents',
-             'isStalled': False, 'isPrivate': False, 'status': 4, 'percentDone': 0.95,
+             'isPrivate': False, 'status': 4, 'percentDone': 0.95,
              'peersConnected': 1, 'rateUpload': 137e3, 'rateDownload': 0, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
     Torrent({'id': 4, 'name': 'FooF', 'downloadDir': '/completely/different/path/to/torrents',
-             'isStalled': True, 'isPrivate': True, 'status': 0, 'percentDone': 0.48,
+             'isPrivate': True, 'status': 0, 'percentDone': 0.48,
              'peersConnected': 0, 'rateUpload': 0, 'rateDownload': 0, 'downloadedEver': 583239,
              'metadataPercentComplete': 1, 'trackerStats': []}),
 )

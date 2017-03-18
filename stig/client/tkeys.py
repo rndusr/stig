@@ -518,12 +518,10 @@ TYPES = {
     'id'                : int,
     'hash'              : str,
     'name'              : SmartCmpStr,
+    'ratio'             : Ratio,
     'status'            : Status,
     'path'              : SmartCmpStr,
-    'ratio'             : Ratio,
-
     'private'           : bool,
-    'stalled'           : bool,
 
     '%downloaded'       : Percent,
     '%metadata'         : Percent,
@@ -553,6 +551,6 @@ TYPES = {
     'size-corrupt'      : lambda v: convert.size(v, unit='byte'),
 
     'trackers'          : tuple,
-    'files'             : _ensure_TorrentFileTree,
     'peers'             : tuple,
+    'files'             : _ensure_TorrentFileTree,
 }

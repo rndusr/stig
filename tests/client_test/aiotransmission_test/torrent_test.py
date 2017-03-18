@@ -55,13 +55,13 @@ class TestTorrentFields(unittest.TestCase):
                              torrent.TorrentFields(*f2))
 
     def test_adding(self):
-        f1 = torrent.TorrentFields('name', 'stalled')
+        f1 = torrent.TorrentFields('name', 'path')
         f2 = torrent.TorrentFields('name', 'ratio')
         f3 = torrent.TorrentFields('hash', 'status')
-        self.assertEqual(f1+f2, torrent.TorrentFields('name', 'stalled', 'ratio'))
-        self.assertEqual(f1+f3, torrent.TorrentFields('name', 'stalled', 'hash', 'status'))
+        self.assertEqual(f1+f2, torrent.TorrentFields('name', 'path', 'ratio'))
+        self.assertEqual(f1+f3, torrent.TorrentFields('name', 'path', 'hash', 'status'))
         self.assertEqual(f2+f3, torrent.TorrentFields('name', 'ratio', 'hash', 'status'))
-        self.assertEqual(f1+f2+f3, torrent.TorrentFields('name', 'stalled', 'ratio', 'hash', 'status'))
+        self.assertEqual(f1+f2+f3, torrent.TorrentFields('name', 'path', 'ratio', 'hash', 'status'))
 
 
 class TestTorrent(unittest.TestCase):

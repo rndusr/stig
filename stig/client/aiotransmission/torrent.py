@@ -214,9 +214,7 @@ DEPENDENCIES = {
     'status'            : ('status', 'metadataPercentComplete', 'rateDownload',
                            'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'              : ('downloadDir',),
-
     'private'           : ('isPrivate',),
-    'stalled'           : ('isStalled',),
 
     '%downloaded'       : ('percentDone',),
     '%metadata'         : ('metadataPercentComplete',),
