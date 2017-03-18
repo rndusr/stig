@@ -61,10 +61,13 @@ class SingleTorrentFilter(Filter):
             needed_keys=('%downloaded',),
             aliases=('incomplete',)),
         'seeding': BoolFilterSpec(
-            lambda t: t['%downloaded'] >= 100,
+            lambda t: t['%downloaded'] >= 100 and _STATUS_STOPPED not in t['status'],
             description='unstopped Torrents with all wanted files downloaded',
-            needed_keys=('%downloaded',),
-            aliases=('complete',)),
+            needed_keys=('%downloaded', 'status')),
+        'complete': BoolFilterSpec(
+            lambda t: t['%downloaded'] >= 100,
+            description='Torrents with all wanted files downloaded',
+            needed_keys=('%downloaded',)),
         'stopped': BoolFilterSpec(
             lambda t: _STATUS_STOPPED in t['status'],
             description='Torrents not allowed to up- or download',
