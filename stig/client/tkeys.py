@@ -130,6 +130,12 @@ class Percent(float):
     def __str__(self):
         return pretty_float(self)
 
+def _calc_percent(a, b):
+    try:
+        return a / b * 100
+    except ZeroDivisionError:
+        return 0
+
 
 class Ratio(Number):
     """A Torrent's upload/download ratio as a float"""
@@ -364,7 +370,7 @@ class TorrentFile(abc.Mapping):
         'is-wanted'       : lambda raw: raw['is-wanted'],
         'priority'        : lambda raw: (TorrentFilePriority.STR2INT['shun']
                                          if not raw['is-wanted'] else raw['priority']),
-        'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
+        'progress'        : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
 
     def __init__(self, tid, id, name, path, size_total, size_downloaded, is_wanted, priority):

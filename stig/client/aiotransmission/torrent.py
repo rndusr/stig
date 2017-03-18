@@ -109,15 +109,22 @@ def _make_status(t):
 
 def _create_TorrentFileTree(raw_torrent):
     filelist = raw_torrent['fileStats']
-    # Combine 'files' and 'fileStats' fields and add the 'id' field, which
-    # is the index in the list provided by Transmission.
-    if 'files' in raw_torrent:
-        for i,(f1,f2) in enumerate(zip(filelist, raw_torrent['files'])):
-            f1['id'] = i
-            f1.update(f2)
+    if not filelist:
+        # filelist is empty if torrent was added by hash and metadata isn't
+        # downloaded yet.
+        filelist = [{'name': raw_torrent['name'], 'priority': 0, 'length': 0,
+                     'wanted': True, 'id': 0, 'bytesCompleted': 0}]
     else:
-        for i,f in enumerate(filelist):
-            f['id'] = i
+        # Combine 'files' and 'fileStats' fields and add the 'id' field, which
+        # is the index in the list provided by Transmission.
+        if 'files' in raw_torrent:
+            for i,(f1,f2) in enumerate(zip(filelist, raw_torrent['files'])):
+                f1['id'] = i
+                f1.update(f2)
+        else:
+            for i,f in enumerate(filelist):
+                f['id'] = i
+
     return TorrentFileTree(raw_torrent['id'], entries=filelist)
 
 import os
@@ -157,6 +164,11 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
     def update(self, fileStats):
         def update_files(ftree, fileStats):
+            if not fileStats:
+                # If fileStats is empty (e.g. no metadata yet), there is a dummy
+                # entry in ftree created by _create_TorrentFileTree().
+                return
+
             for entry in ftree.values():
                 if isinstance(entry, tkeys.TorrentFile):
                     # File ID is its index in the list provided by
