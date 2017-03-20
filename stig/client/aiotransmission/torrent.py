@@ -301,20 +301,21 @@ class Torrent(base.TorrentBase):
         old.update(raw_torrent)
 
     def __getitem__(self, key):
-        if key not in self._cache:
+        cache = self._cache
+        if key not in cache:
+            raw = self._raw
             if key in _MODIFY:
                 # Modifier gets the whole raw torrent
-                value = _MODIFY[key](self._raw)
+                value = _MODIFY[key](raw)
             else:
                 fields = DEPENDENCIES[key]
                 assert len(fields) == 1
                 try:
-                    value = self._raw[fields[0]]
+                    value = raw[fields[0]]
                 except KeyError:
-                    log.debug('%r not in %s', fields[0], tuple(self._raw))
                     raise KeyError(key)
-            self._cache[key] = tkeys.TYPES[key](value)
-        return self._cache[key]
+            cache[key] = tkeys.TYPES[key](value)
+        return cache[key]
 
     def __contains__(self, key):
         deps = DEPENDENCIES
