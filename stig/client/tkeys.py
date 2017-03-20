@@ -201,7 +201,7 @@ class SmartCmpStr(str):
         # http://www.unicode.org/faq/char_combmark.html
         return super().__new__(cls, unicodedata.normalize('NFC', string))
 
-    def __cmp(self, other, op):
+    def __cmp(self, op, other):
         if not isinstance(other, str):
             return NotImplemented
 
@@ -222,13 +222,13 @@ class SmartCmpStr(str):
         else:
             return op(s, o)
 
-    def __lt__(self, other): return self.__cmp(other, operator.lt)
-    def __le__(self, other): return self.__cmp(other, operator.le)
-    def __eq__(self, other): return self.__cmp(other, operator.eq)
-    def __ne__(self, other): return self.__cmp(other, operator.ne)
-    def __gt__(self, other): return self.__cmp(other, operator.gt)
-    def __ge__(self, other): return self.__cmp(other, operator.ge)
-    def __contains__(self, other): return self.__cmp(other, operator.contains)
+    def __lt__(self, other): return self.__cmp(operator.lt, other)
+    def __le__(self, other): return self.__cmp(operator.le, other)
+    def __eq__(self, other): return self.__cmp(operator.eq, other)
+    def __ne__(self, other): return self.__cmp(operator.ne, other)
+    def __gt__(self, other): return self.__cmp(operator.gt, other)
+    def __ge__(self, other): return self.__cmp(operator.ge, other)
+    def __contains__(self, other): return self.__cmp(operator.contains, other)
 
     def __hash__(self):
         return super().__hash__()
