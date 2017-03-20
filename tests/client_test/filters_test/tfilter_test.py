@@ -9,7 +9,7 @@ tlist = (
              'isPrivate': False, 'status': 6, 'percentDone': 1,
              'peersConnected': 0, 'rateUpload': 0, 'rateDownload': 0, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
-    Torrent({'id': 2, 'name': 'Bar123', 'downloadDir': '/some/path/to/torrents',
+    Torrent({'id': 2, 'name': 'Bar123', 'downloadDir': '/some/path/to/torrents/',
              'isPrivate': True, 'status': 4, 'percentDone': 0.0235,
              'peersConnected': 3, 'rateUpload': 58e3, 'rateDownload': 384e3, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
@@ -216,19 +216,21 @@ class TestSingleTorrentFilter(unittest.TestCase):
         tids = SingleTorrentFilter('downloading').apply(tlist, key='id')
         self.assertEqual(set(tids), {2,})
         tids = SingleTorrentFilter('uploading').apply(tlist, key='id')
-        self.assertEqual(set(tids), {2,3})
+        self.assertEqual(set(tids), {2, 3})
         tids = SingleTorrentFilter('active').apply(tlist, key='id')
-        self.assertEqual(set(tids), {2,3})
+        self.assertEqual(set(tids), {2, 3})
 
     def test_private_filter(self):
         tids = SingleTorrentFilter('public').apply(tlist, key='id')
-        self.assertEqual(set(tids), {1,3})
+        self.assertEqual(set(tids), {1, 3})
         tids = SingleTorrentFilter('private').apply(tlist, key='id')
-        self.assertEqual(set(tids), {2,4})
+        self.assertEqual(set(tids), {2, 4})
 
     def test_path_filter(self):
-        f = SingleTorrentFilter('path=/foo/bar/baz/')
-        self.assertEqual(str(f), 'path=/foo/bar/baz/')
+        f = SingleTorrentFilter('path=/some/path/to/torrents/')
+        self.assertEqual(f, SingleTorrentFilter('path=/some/path/to/torrents'))
+        tids = f.apply(tlist, key='id')
+        self.assertEqual(set(tids), {1, 2})
 
 
 class TestTorrentFilter(unittest.TestCase):
@@ -327,10 +329,10 @@ class TestTorrentFilter(unittest.TestCase):
         f3 = f1+f2
         self.assertEqual(f3, TorrentFilter('name=foo|active'))
 
-        f1 = TorrentFilter('name~foo&private|path~/other/')
+        f1 = TorrentFilter('name~foo&private|path~other')
         f2 = TorrentFilter('active&private|public&!complete')
         f3 = f1+f2
-        self.assertEqual(str(f3), ('~foo&private|path~/other/|'
+        self.assertEqual(str(f3), ('~foo&private|path~other|'
                                    'active&private|public&!complete'))
 
         f1 = TorrentFilter('public&active')

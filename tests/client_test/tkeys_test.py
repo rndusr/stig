@@ -186,6 +186,13 @@ class TestSmartCmpStr(unittest.TestCase):
         self.assertTrue('OO' in tkeys.SmartCmpStr('FOO'))
 
 
+class TestPath(unittest.TestCase):
+    def test_eq_ne(self):
+        self.assertTrue(tkeys.Path('/foo/bar/') == tkeys.Path('/foo/bar'))
+        self.assertTrue(tkeys.Path('/foo/bar/./../bar/') == tkeys.Path('/foo/bar'))
+        self.assertTrue(tkeys.Path('foo/bar') != tkeys.Path('/foo/bar'))
+
+
 class TestRatio(unittest.TestCase):
     def test_string(self):
         self.assertEqual(tkeys.Ratio(0), 0)
