@@ -261,7 +261,6 @@ _MODIFY = {
     'peers-seeding'   : _count_seeds,
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
-    'path'            : lambda raw: normpath(raw['downloadDir']),
     'trackers'        : TrackerList,
     'peers'           : PeerList,
     'files'           : _create_TorrentFileTree,

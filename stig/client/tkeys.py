@@ -234,6 +234,17 @@ class SmartCmpStr(str):
         return super().__hash__()
 
 
+class Path(SmartCmpStr):
+    def __new__(cls, path):
+        return super().__new__(cls, os.path.normpath(path))
+
+    def __repr__(self):
+        return '<{} {!r}>'.format(type(self).__name__, str(self))
+
+    def __hash__(self):
+        return super().__hash__()
+
+
 
 SECONDS = (('y', 31557600),  # 365.25 days
            ('M',  2629800),  # 1y / 12
@@ -352,7 +363,7 @@ class TorrentFile(abc.Mapping):
         'tid'             : int,
         'id'              : int,
         'name'            : SmartCmpStr,
-        'path'            : SmartCmpStr,
+        'path'            : Path,
         'size-total'      : lambda val: convert.size(val, unit='byte'),
         'size-downloaded' : lambda val: convert.size(val, unit='byte'),
         'is-wanted'       : bool,
@@ -520,7 +531,7 @@ TYPES = {
     'name'              : SmartCmpStr,
     'ratio'             : Ratio,
     'status'            : Status,
-    'path'              : SmartCmpStr,
+    'path'              : Path,
     'private'           : bool,
 
     '%downloaded'       : Percent,
