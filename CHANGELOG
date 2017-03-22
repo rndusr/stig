@@ -1,3 +1,8 @@
+2017-03-22 0.4.1a
+  Fixed bugs:
+    * Marking files resulted in a crash
+
+
 2017-03-16 0.4.0a
   Breaking changes:
     * In color themes, 'torrentlist.tpath' is now called 'torrentlist.path'
