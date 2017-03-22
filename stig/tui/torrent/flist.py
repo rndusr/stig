@@ -301,7 +301,7 @@ class FileListWidget(urwid.WidgetWrap):
         ft = self._filetree
         lb = self._listbox
         def recurse(subpos):
-            widget = lb.contents[subpos][0].original_widget
+            widget = lb.body[subpos].original_widget
             if ft.is_leaf(subpos):
                 yield (subpos, widget)
             else:
@@ -337,7 +337,7 @@ class FileListWidget(urwid.WidgetWrap):
                 mark = not focused.is_marked
 
         def get_widget(pos):
-            return self._listbox.contents[pos][0].original_widget
+            return self._listbox.body[pos].original_widget
 
         def mark_leaves(pos, mark):
             get_widget(pos).is_marked = mark
