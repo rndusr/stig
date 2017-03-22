@@ -167,6 +167,8 @@ class Palette(abc.Sequence):
     def __init__(self, lines):
         def apply_variables(string, variables):
             for name,value in sorted(variables.items(), key=lambda k: len(k[0]), reverse=True):
+                while value[0] == '$':
+                    value = variables[value[1:]]
                 string = string.replace('$'+name, value)
             return string
 
