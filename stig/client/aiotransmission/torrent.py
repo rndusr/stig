@@ -99,6 +99,9 @@ def _make_status(t):
                     statuses.append(Status.UPLOAD)
                 statuses.append(Status.CONNECTED)
 
+            if t['percentDone'] >= 1:
+                statuses.append(Status.SEED)
+
     if all(x not in statuses for x in (Status.UPLOAD,
                                        Status.DOWNLOAD,
                                        Status.VERIFY)):
@@ -211,7 +214,7 @@ DEPENDENCIES = {
     'hash'              : ('hashString',),
     'name'              : ('name',),
     'ratio'             : ('uploadRatio',),
-    'status'            : ('status', 'metadataPercentComplete', 'rateDownload',
+    'status'            : ('status', 'percentDone', 'metadataPercentComplete', 'rateDownload',
                            'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'              : ('downloadDir',),
     'private'           : ('isPrivate',),
