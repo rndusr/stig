@@ -353,7 +353,6 @@ class FileListWidget(urwid.WidgetWrap):
                 elif widget.nodetype == 'parent':
                     mark_leaves(subpos, mark)
 
-        # First we mark all leaves recursively.
         if all:
             # Top ancestor node positions are (0,), (1,), (3,) etc
             for pos in self._filetree.positions():
