@@ -36,23 +36,26 @@ from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
                       BandwidthStatusWidget, TorrentCountersWidget)
 
 
-def load_theme(themefile):
-    """Load theme from `themefile`
+def load_theme(themeobj):
+    """Load theme from `themeobj`
 
-    If `themefile` does not have a path and does not exist in the current
-    working directory, try to load it from the same path as the rc file.
+    themeobj: See `theme.load`
+
+    If `themeobj` is a string, does not have a path and does not exist in the
+    current working directory, try to load it from the same path as the rc file.
     """
     import os
-    if os.sep not in themefile and not os.path.exists(themefile):
+    if isinstance(themeobj, str) and \
+       os.sep not in themeobj and not os.path.exists(themeobj):
         # Path is not given and file does not exist in working dir.
         from ..settings.defaults import DEFAULT_RCFILE
         from ..main import cliargs
         rcfilepath = cliargs['rcfile'] or DEFAULT_RCFILE
-        themefilepath = os.path.join(os.path.dirname(rcfilepath), themefile)
+        themefilepath = os.path.join(os.path.dirname(rcfilepath), themeobj)
         if os.path.exists(themefilepath):
             theme.load(themefilepath, urwidscreen)
             return
-    theme.load(themefile, urwidscreen)
+    theme.load(themeobj, urwidscreen)
 
 
 def _create_cli_widget():
@@ -69,8 +72,10 @@ def _create_cli_widget():
                          on_accept=on_accept, on_cancel=on_cancel,
                          history_file=cfg['tui.cli.history'].value)
 
+
 def _greedy_spacer():
     return urwid.Padding(urwid.Text(''))
+
 
 topbar = Group(cls=urwid.Columns)
 topbar.add(name='host',   widget=ConnectionStatusWidget(), options='pack')
