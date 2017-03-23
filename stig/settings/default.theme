@@ -190,7 +190,51 @@ torrentlist.tracker.unfocused                      $tracker_fg           on $tli
 torrentlist.tracker.focused                        $tracker_fg           on $tlist_bg.f
 
 
-$name.idle_fg = light gray
+$status.idle_fg        = light gray
+$status.downloading_fg = dark cyan
+$status.uploading_fg   = dark green
+$status.connected_fg   = dark magenta
+$status.seeding_fg     = light gray
+$status.stopped_fg     = dark blue
+$status.queued_fg      = brown
+$status.isolated_fg    = dark red
+$status.verifying_fg   = yellow
+$status.discovering_fg = light blue
+
+torrentlist.status.header                   $status.idle_fg,underline on $tlist_bg.uf
+
+torrentlist.status.idle.unfocused           $status.idle_fg        on $tlist_bg.uf
+torrentlist.status.idle.focused             $status.idle_fg        on $tlist_bg.f
+
+torrentlist.status.uploading.unfocused      $status.uploading_fg   on $tlist_bg.uf
+torrentlist.status.uploading.focused        $status.uploading_fg   on $tlist_bg.f
+
+torrentlist.status.downloading.unfocused    $status.downloading_fg on $tlist_bg.uf
+torrentlist.status.downloading.focused      $status.downloading_fg on $tlist_bg.f
+
+torrentlist.status.connected.unfocused      $status.connected_fg   on $tlist_bg.uf
+torrentlist.status.connected.focused        $status.connected_fg   on $tlist_bg.f
+
+torrentlist.status.seeding.unfocused        $status.seeding_fg     on $tlist_bg.uf
+torrentlist.status.seeding.focused          $status.seeding_fg     on $tlist_bg.f
+
+torrentlist.status.stopped.unfocused        $status.stopped_fg     on $tlist_bg.uf
+torrentlist.status.stopped.focused          $status.stopped_fg     on $tlist_bg.f
+
+torrentlist.status.isolated.unfocused       $status.isolated_fg    on $tlist_bg.uf
+torrentlist.status.isolated.focused         $status.isolated_fg    on $tlist_bg.f
+
+torrentlist.status.queued.unfocused         $status.queued_fg      on $tlist_bg.uf
+torrentlist.status.queued.focused           $status.queued_fg      on $tlist_bg.f
+
+torrentlist.status.verifying.unfocused      $status.verifying_fg   on $tlist_bg.uf
+torrentlist.status.verifying.focused        $status.verifying_fg   on $tlist_bg.f
+
+torrentlist.status.discovering.unfocused    $status.discovering_fg on $tlist_bg.uf
+torrentlist.status.discovering.focused      $status.discovering_fg on $tlist_bg.f
+
+
+$name.idle_fg = $status.idle_fg
 torrentlist.name.header                            $name.idle_fg,underline on $tlist_bg.uf
 torrentlist.name.idle.progress1.unfocused          $name.idle_fg,underline on $tlist_bg.uf
 torrentlist.name.idle.progress1.focused            $name.idle_fg,underline on $tlist_bg.f
@@ -199,7 +243,7 @@ torrentlist.name.idle.progress2.focused            $name.idle_fg           on $t
 torrentlist.name.idle.complete.unfocused           $name.idle_fg           on $tlist_bg.uf
 torrentlist.name.idle.complete.focused             $name.idle_fg           on $tlist_bg.f
 
-$name.uploading_fg = dark green
+$name.uploading_fg = $status.uploading_fg
 torrentlist.name.uploading.progress1.unfocused     $name.uploading_fg,underline on $tlist_bg.uf
 torrentlist.name.uploading.progress1.focused       $name.uploading_fg,underline on $tlist_bg.f
 torrentlist.name.uploading.progress2.unfocused     $name.uploading_fg           on $tlist_bg.uf
@@ -207,7 +251,7 @@ torrentlist.name.uploading.progress2.focused       $name.uploading_fg           
 torrentlist.name.uploading.complete.unfocused      $name.uploading_fg           on $tlist_bg.uf
 torrentlist.name.uploading.complete.focused        $name.uploading_fg           on $tlist_bg.f
 
-$name.downloading_fg = dark cyan
+$name.downloading_fg = $status.downloading_fg
 torrentlist.name.downloading.progress1.unfocused   $name.downloading_fg,underline on $tlist_bg.uf
 torrentlist.name.downloading.progress1.focused     $name.downloading_fg,underline on $tlist_bg.f
 torrentlist.name.downloading.progress2.unfocused   $name.downloading_fg           on $tlist_bg.uf
@@ -215,7 +259,7 @@ torrentlist.name.downloading.progress2.focused     $name.downloading_fg         
 torrentlist.name.downloading.complete.unfocused    $name.downloading_fg           on $tlist_bg.uf
 torrentlist.name.downloading.complete.focused      $name.downloading_fg           on $tlist_bg.f
 
-$name.isolated_fg = dark red
+$name.isolated_fg = $status.isolated_fg
 torrentlist.name.isolated.progress1.unfocused      $name.isolated_fg,underline on $tlist_bg.uf
 torrentlist.name.isolated.progress1.focused        $name.isolated_fg,underline on $tlist_bg.f
 torrentlist.name.isolated.progress2.unfocused      $name.isolated_fg           on $tlist_bg.uf
@@ -223,7 +267,7 @@ torrentlist.name.isolated.progress2.focused        $name.isolated_fg           o
 torrentlist.name.isolated.complete.unfocused       $name.isolated_fg           on $tlist_bg.uf
 torrentlist.name.isolated.complete.focused         $name.isolated_fg           on $tlist_bg.f
 
-$name.connected_fg = dark magenta
+$name.connected_fg = $status.connected_fg
 torrentlist.name.connected.progress1.unfocused     $name.connected_fg,underline on $tlist_bg.uf
 torrentlist.name.connected.progress1.focused       $name.connected_fg,underline on $tlist_bg.f
 torrentlist.name.connected.progress2.unfocused     $name.connected_fg           on $tlist_bg.uf
@@ -231,7 +275,7 @@ torrentlist.name.connected.progress2.focused       $name.connected_fg           
 torrentlist.name.connected.complete.unfocused      $name.connected_fg           on $tlist_bg.uf
 torrentlist.name.connected.complete.focused        $name.connected_fg           on $tlist_bg.f
 
-$name.queued_fg = brown
+$name.queued_fg = $status.queued_fg
 torrentlist.name.queued.progress1.unfocused        $name.queued_fg,underline on $tlist_bg.uf
 torrentlist.name.queued.progress1.focused          $name.queued_fg,underline on $tlist_bg.f
 torrentlist.name.queued.progress2.unfocused        $name.queued_fg           on $tlist_bg.uf
@@ -239,7 +283,7 @@ torrentlist.name.queued.progress2.focused          $name.queued_fg           on 
 torrentlist.name.queued.complete.unfocused         $name.queued_fg           on $tlist_bg.uf
 torrentlist.name.queued.complete.focused           $name.queued_fg           on $tlist_bg.f
 
-$name.stopped_fg = dark blue
+$name.stopped_fg = $status.stopped_fg
 torrentlist.name.stopped.progress1.unfocused       $name.stopped_fg,underline on $tlist_bg.uf
 torrentlist.name.stopped.progress1.focused         $name.stopped_fg,underline on $tlist_bg.f
 torrentlist.name.stopped.progress2.unfocused       $name.stopped_fg           on $tlist_bg.uf
@@ -247,7 +291,7 @@ torrentlist.name.stopped.progress2.focused         $name.stopped_fg           on
 torrentlist.name.stopped.complete.unfocused        $name.stopped_fg           on $tlist_bg.uf
 torrentlist.name.stopped.complete.focused          $name.stopped_fg           on $tlist_bg.f
 
-$name.verifying_fg = yellow
+$name.verifying_fg = $status.verifying_fg
 torrentlist.name.verifying.progress1.unfocused     $name.verifying_fg,underline on $tlist_bg.uf
 torrentlist.name.verifying.progress1.focused       $name.verifying_fg,underline on $tlist_bg.f
 torrentlist.name.verifying.progress2.unfocused     $name.verifying_fg           on $tlist_bg.uf
@@ -255,13 +299,14 @@ torrentlist.name.verifying.progress2.focused       $name.verifying_fg           
 torrentlist.name.verifying.complete.unfocused      $name.verifying_fg           on $tlist_bg.uf
 torrentlist.name.verifying.complete.focused        $name.verifying_fg           on $tlist_bg.f
 
-$name.discovering_fg = light blue
+$name.discovering_fg = $status.discovering_fg
 torrentlist.name.discovering.progress1.unfocused   $name.discovering_fg,underline on $tlist_bg.uf
 torrentlist.name.discovering.progress1.focused     $name.discovering_fg,underline on $tlist_bg.f
 torrentlist.name.discovering.progress2.unfocused   $name.discovering_fg           on $tlist_bg.uf
 torrentlist.name.discovering.progress2.focused     $name.discovering_fg           on $tlist_bg.f
 torrentlist.name.discovering.complete.unfocused    $name.discovering_fg           on $tlist_bg.uf
 torrentlist.name.discovering.complete.focused      $name.discovering_fg           on $tlist_bg.f
+
 
 
 $flist_bg.uf = black

@@ -16,11 +16,15 @@ this, write a new class that derives from CellWidgetBase and register it in
 the COLUMNS dictionary to make it available.
 """
 
+from ...logging import make_logger
+log = make_logger(__name__)
+
 import urwid
 
 from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
 from ...columns.tlist import COLUMNS as _COLUMNS
+from ...client import tkeys
 
 
 TUICOLUMNS = {}
@@ -196,15 +200,27 @@ TUICOLUMNS['tracker'] = Tracker
 
 class Status(_COLUMNS['status'], CellWidgetBase):
     style = Style(prefix='torrentlist.status', focusable=True,
-                  extras=('header',), modes=('highlighted',))
+                  extras=('header',),
+                  modes=('idle', 'downloading', 'uploading', 'connected', 'seeding',
+                         'stopped', 'queued', 'isolated', 'verifying', 'discovering'))
+
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
                            style.attrs('header'))
 
+    MODE_MAP = {
+        tkeys.Status.IDLE      : 'idle',
+        tkeys.Status.DOWNLOAD  : 'downloading',
+        tkeys.Status.UPLOAD    : 'uploading',
+        tkeys.Status.CONNECTED : 'connected',
+        tkeys.Status.SEED      : 'seeding',
+        tkeys.Status.STOPPED   : 'stopped',
+        tkeys.Status.QUEUED    : 'queued',
+        tkeys.Status.ISOLATED  : 'isolated',
+        tkeys.Status.VERIFY    : 'verifying',
+        tkeys.Status.INIT      : 'discovering',
+    }
     def get_mode(self):
-        if self.value in ('idle', 'stopped', 'queued'):
-            return ''
-        else:
-            return 'highlighted'
+        return self.MODE_MAP[self.value]
 
 TUICOLUMNS['status'] = Status
 
@@ -281,5 +297,7 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
         else:
             mode = 'idle'
         return (t['name'], mode, progress)
+
+
 
 TUICOLUMNS['name'] = TorrentName
