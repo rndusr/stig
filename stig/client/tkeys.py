@@ -156,16 +156,16 @@ class SeedCount(Number):
 class Status(tuple):
     """A Torrent's status as string"""
 
-    VERIFY    = 'verifying'
+    IDLE      = 'idle'
     DOWNLOAD  = 'downloading'
     UPLOAD    = 'uploading'
-    INIT      = 'discovering'
     CONNECTED = 'connected'
-    ISOLATED  = 'isolated'
-    QUEUED    = 'queued'
-    SEED      = 'seed'
-    IDLE      = 'idle'
+    SEED      = 'seeding'
     STOPPED   = 'stopped'
+    QUEUED    = 'queued'
+    ISOLATED  = 'isolated'
+    VERIFY    = 'verifying'
+    INIT      = 'discovering'
     ORDER = (VERIFY, DOWNLOAD, UPLOAD, INIT, CONNECTED,
              ISOLATED, QUEUED, SEED, IDLE, STOPPED)
 
