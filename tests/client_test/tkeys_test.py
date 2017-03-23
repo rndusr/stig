@@ -212,9 +212,6 @@ class TestStatus(unittest.TestCase):
                   tkeys.Status.STOPPED):
             self.assertEqual(tkeys.Status((s,)), (s,))
 
-        with self.assertRaises(ValueError):
-            tkeys.Status(('uploading', 'foo', 'isolated'))
-
     def test_sort(self):
         statuses = [tkeys.Status.UPLOAD, tkeys.Status.CONNECTED,
                     tkeys.Status.SEED, tkeys.Status.INIT, tkeys.Status.VERIFY,
@@ -224,8 +221,8 @@ class TestStatus(unittest.TestCase):
         exp = [(tkeys.Status.VERIFY,), (tkeys.Status.DOWNLOAD,),
                (tkeys.Status.UPLOAD,), (tkeys.Status.INIT,),
                (tkeys.Status.CONNECTED,), (tkeys.Status.QUEUED,),
-               (tkeys.Status.SEED,), (tkeys.Status.IDLE,),
-               (tkeys.Status.STOPPED,)]
+               (tkeys.Status.IDLE,), (tkeys.Status.STOPPED,),
+               (tkeys.Status.SEED,)]
         self.assertEqual(sort, exp)
 
 
