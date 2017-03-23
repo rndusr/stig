@@ -167,22 +167,20 @@ class Status(tuple):
     VERIFY    = 'verifying'
     INIT      = 'discovering'
     ORDER = (VERIFY, DOWNLOAD, UPLOAD, INIT, CONNECTED,
-             ISOLATED, QUEUED, SEED, IDLE, STOPPED)
+             ISOLATED, QUEUED, IDLE, STOPPED, SEED)
 
-    def __new__(cls, statuses):
-        ORDER = cls.ORDER
-        for status in statuses:
-            if status not in ORDER:
-                raise ValueError('Invalid status string: {!r}'.format(status))
-        else:
-            obj = super().__new__(cls, statuses)
-            obj._sort_index = ORDER.index(statuses[0])
-            return obj
+    def __lt__(self, other):
+        return self.ORDER.index(self[0]) < self.ORDER.index(other[0])
 
-    def __lt__(self, other): return self._sort_index < other._sort_index
-    def __le__(self, other): return self._sort_index <= other._sort_index
-    def __gt__(self, other): return self._sort_index > other._sort_index
-    def __ge__(self, other): return self._sort_index >= other._sort_index
+    def __le__(self, other):
+        return self.ORDER.index(self[0]) <= self.ORDER.index(other[0])
+
+    def __gt__(self, other):
+        return self.ORDER.index(self[0]) > self.ORDER.index(other[0])
+
+    def __ge__(self, other):
+        return self.ORDER.index(self[0]) >= self.ORDER.index(other[0])
+
 
 
 import operator
