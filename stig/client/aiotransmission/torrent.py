@@ -25,7 +25,12 @@ def _modify_ratio(raw_torrent):
     #define TR_RATIO_NA  -1
     #define TR_RATIO_INF -2
     ratio = raw_torrent['uploadRatio']
-    return tkeys.Ratio.UNKNOWN if ratio in (-1, -2) else ratio
+    if ratio == -1:
+        return tkeys.Ratio.NOT_APPLICABLE
+    elif ratio == -2:
+        return tkeys.Ratio.UNKNOWN
+    else:
+        return ratio
 
 
 def _modify_eta(raw_torrent):
@@ -36,7 +41,8 @@ def _modify_eta(raw_torrent):
         return tkeys.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
         return tkeys.Timedelta.UNKNOWN
-    return seconds
+    else:
+        return seconds
 
 
 def _count_seeds(raw_torrent):

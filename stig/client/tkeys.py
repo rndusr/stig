@@ -140,9 +140,12 @@ def _calc_percent(a, b):
 class Ratio(Number):
     """A Torrent's upload/download ratio as a float"""
     UNKNOWN = -1
+    NOT_APPLICABLE = -2
     def __str__(self):
         if self == self.UNKNOWN:
             return '?'
+        elif self == self.NOT_APPLICABLE:
+            return ''
         else:
             return pretty_float(self)
 
