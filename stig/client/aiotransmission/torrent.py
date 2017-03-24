@@ -45,6 +45,15 @@ def _modify_eta(raw_torrent):
         return seconds
 
 
+def _modify_timestamp(raw_torrent, key):
+    # I couldn't find any documentation on this, but 0 seems to mean "not applicable"?
+    seconds = raw_torrent[key]
+    if seconds == 0:
+        return tkeys.Timestamp.NOT_APPLICABLE
+    else:
+        return seconds
+
+
 def _count_seeds(raw_torrent):
     trackerStats = raw_torrent['trackerStats']
     if trackerStats:
@@ -238,8 +247,8 @@ DEPENDENCIES = {
     'time-created'      : ('dateCreated',),
     'time-added'        : ('addedDate',),
     'time-started'      : ('startDate',),
-    'time-active'       : ('activityDate',),
-    'time-done'         : ('doneDate',),
+    'time-activity'     : ('activityDate',),
+    'time-completed'    : ('doneDate',),
     'time-manual-announce-allowed': ('manualAnnounceTime',),
 
     'rate-down'         : ('rateDownload',),
@@ -270,6 +279,12 @@ _MODIFY = {
     'peers-seeding'   : _count_seeds,
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
+    'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated'),
+    'time-added'      : lambda raw: _modify_timestamp(raw, 'addedDate'),
+    'time-started'    : lambda raw: _modify_timestamp(raw, 'startDate'),
+    'time-activity'   : lambda raw: _modify_timestamp(raw, 'activityDate'),
+    'time-completed'  : lambda raw: _modify_timestamp(raw, 'doneDate'),
+    'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
     'trackers'        : TrackerList,
     'peers'           : PeerList,
     'files'           : _create_TorrentFileTree,

@@ -302,29 +302,34 @@ class Timedelta(int):
 
 
 import time
-class Timestamp(float):
-    UNKNOWN = -1
+class Timestamp(int):
+    # See Timedelta class for an explanation of these values.
+    UNKNOWN        = 1e10    # ~3.1k years
+    NOT_APPLICABLE = 1e10+1  # ~31k years
 
     def __str__(self):
         if self == self.UNKNOWN:
-            return 'sometime'
+            return '?'
+        elif self == self.NOT_APPLICABLE:
+            return ''
+
         abs_delta = abs(self - time.time())
-        if abs_delta <= SECONDS[2][1]:      # 1 day: locale's time
-            frmt = '%X'
-        elif abs_delta <= SECONDS[2][1]*2:  # 2 days: locale's date and time
-            frmt = '%x %X'
-        else:                               # locale's date
-            frmt = '%x'
+        if abs_delta <= SECONDS[2][1]:  # <= 1 day
+            frmt = '%H:%M'
+        else:
+            frmt = '%Y-%m-%d'
         return time.strftime(frmt, time.localtime(self))
 
     def __bool__(self):
         """Whether timestamp is just a few seconds in the past/future"""
-        return self != self.UNKNOWN
+        return self != self.UNKNOWN and self != self.NOT_APPLICABLE
 
     @property
     def delta(self):
         if self == self.UNKNOWN:
             return Timedelta(Timedelta.UNKNOWN)
+        elif self == self.NOT_APPLICABLE:
+            return Timedelta(Timedelta.NOT_APPLICABLE)
         else:
             return Timedelta(self - time.time())
 
@@ -547,9 +552,9 @@ TYPES = {
     'time-created'      : Timestamp,
     'time-added'        : Timestamp,
     'time-started'      : Timestamp,
-    'time-active'       : Timestamp,
-    'time-done'         : Timestamp,
-    'time-manual-announce-allowed': lambda v: Timestamp(v) if v > 0 else Timestamp(Timestamp.UNKNOWN),
+    'time-activity'     : Timestamp,
+    'time-completed'    : Timestamp,
+    'time-manual-announce-allowed': Timestamp,
 
     'rate-down'         : lambda v: convert.bandwidth(v, unit='byte'),
     'rate-up'           : lambda v: convert.bandwidth(v, unit='byte'),
