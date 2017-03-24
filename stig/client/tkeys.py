@@ -267,7 +267,7 @@ class Timedelta(int):
             return '?'
         elif self == self.NOT_APPLICABLE:
             return ''
-        elif -1 < self < 1:
+        elif self == 0:
             return 'now'
 
         abs_secs = abs(self)
