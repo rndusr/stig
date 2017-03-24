@@ -293,10 +293,38 @@ class TestTimestamp(unittest.TestCase):
 
     def test_string(self):
         now = time.time()
-        self.assertEqual(str(tkeys.Timestamp(now)), self.strftime('%X', now))
-        tomorrow = now + 24*60*60 + 1
-        self.assertEqual(str(tkeys.Timestamp(tomorrow)),
-                         self.strftime('%x %X', tomorrow))
-        nextweek = now + 7*24*60*60 + 1
-        self.assertEqual(str(tkeys.Timestamp(nextweek)),
-                         self.strftime('%x', nextweek))
+        self.assertEqual(str(tkeys.Timestamp(now)), self.strftime('%H:%M', now))
+        later_today = now + 20*60*60
+        self.assertEqual(str(tkeys.Timestamp(later_today)),
+                         self.strftime('%H:%M', later_today))
+        next_week = now + 7*24*60*60
+        self.assertEqual(str(tkeys.Timestamp(next_week)),
+                         self.strftime('%Y-%m-%d', next_week))
+
+    def test_bool(self):
+        import random
+        for td in (tkeys.Timestamp(random.randint(-1e10, 1e10) * MIN),
+                   tkeys.Timestamp(random.randint(-1e10, 1e10) * HOUR),
+                   tkeys.Timestamp(random.randint(-1e10, 1e10) * DAY)):
+            self.assertEqual(bool(td), True)
+
+        for td in (tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
+                   tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE)):
+            self.assertEqual(bool(td), False)
+
+    def test_sorting(self):
+        now = time.time()
+        lst = [tkeys.Timestamp(now + (-2 * HOUR)),
+               tkeys.Timestamp(now + (2 * MIN)),
+               tkeys.Timestamp(now + (3 * MIN)),
+               tkeys.Timestamp(now + (1 * DAY)),
+               tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
+               tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE)]
+
+        import random
+        def shuffle(l):
+            return random.sample(l, k=len(l))
+
+        for _ in range(10):
+            self.assertEqual(sorted(shuffle(lst)), lst)
+
