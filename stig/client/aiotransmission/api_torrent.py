@@ -656,15 +656,15 @@ class TorrentAPI():
         def check(t):
             if t['status'].STOPPED in t['status']:
                 return (False, 'Not announcing inactive torrent: %s' % t['name'])
-            elif t['timestamp-manual-announce-allowed'] > time.time():
+            elif t['time-manual-announce-allowed'] > time.time():
                 return (False, ('Not allowing manual announce until %s (in %s): %r' %
-                                (t['timestamp-manual-announce-allowed'],
-                                 t['timestamp-manual-announce-allowed'].delta, t['name'])))
+                                (t['time-manual-announce-allowed'],
+                                 t['time-manual-announce-allowed'].delta, t['name'])))
             else:
                 return (True, 'Announcing: %s' % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
                                           check=check,
                                           keys=('name', 'status',
-                                                'timestamp-manual-announce-allowed'),
+                                                'time-manual-announce-allowed'),
                                           autoconnect=autoconnect)

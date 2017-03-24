@@ -71,4 +71,4 @@ class TestTorrent(unittest.TestCase):
                'doneDate': 18902394873, 'recheckProgress': 0.4832}
         t = torrent.Torrent(raw)
         self.assertEqual(set(t), {'id', 'name', 'rate-down', 'hash',
-                                  'timestamp-done', '%verified'})
+                                  'time-done', '%verified'})
