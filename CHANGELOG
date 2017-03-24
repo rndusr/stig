@@ -1,10 +1,11 @@
 2017-??-?? ?.?.?
   Breaking changes:
-    * In color themes, 'torrentlist.name.initializing*' is now called
-      'torrentlist.name.discovering*'
+    * In color themes, 'torrentlist.name.initializing...' is now called
+      'torrentlist.name.discovering...'
 
   Other changes:
-    * New torrent list column: 'status'
+    * New torrent list columns: 'status', 'created', 'added', 'started',
+      'activity', 'completed'
     * New file filter: 'path'
     * Torrent paths and the paths of torrent files are now normalized so that
       'foo/bar/baz' is equal to 'foo/./bar/../bar/baz//'
