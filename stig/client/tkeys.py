@@ -333,6 +333,10 @@ class Timestamp(int):
         else:
             return Timedelta(self - time.time())
 
+    @property
+    def in_future(self):
+        return self > time.time()
+
 
 
 from functools import total_ordering
