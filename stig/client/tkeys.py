@@ -256,11 +256,10 @@ SECONDS = (('y', 31557600),  # 365.25 days
 
 class Timedelta(int):
     # To sort unknown and not applicable Timedeltas below the rest, these
-    # constants have really large values that are very likely never going to
-    # be of any use anyway.
-    UNKNOWN        = 1e300
-    NOT_APPLICABLE = 1e301
-    assert UNKNOWN != NOT_APPLICABLE
+    # constants have large values that are very likely never encountered as
+    # actual values.
+    UNKNOWN        = 1e10    # ~3.1k years
+    NOT_APPLICABLE = 1e10+1  # ~31k years
 
     def __str__(self):
         if self == self.UNKNOWN:
