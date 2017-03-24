@@ -54,6 +54,22 @@ def _modify_timestamp(raw_torrent, key):
         return seconds
 
 
+import time
+def _modify_timestamp_completed(raw_torrent):
+    seconds = raw_torrent['doneDate']
+    if seconds == 0:
+        if raw_torrent['eta'] >= 0:
+            # timestamp is in the future
+            return time.time() + raw_torrent['eta']
+        elif raw_torrent['percentDone'] < 1:
+            return tkeys.Timestamp.UNKNOWN
+        else:
+            return tkeys.Timestamp.NOT_APPLICABLE
+    else:
+        # timestamp is in the past
+        return seconds
+
+
 def _count_seeds(raw_torrent):
     trackerStats = raw_torrent['trackerStats']
     if trackerStats:
@@ -248,7 +264,7 @@ DEPENDENCIES = {
     'time-added'        : ('addedDate',),
     'time-started'      : ('startDate',),
     'time-activity'     : ('activityDate',),
-    'time-completed'    : ('doneDate',),
+    'time-completed'    : ('doneDate', 'percentDone', 'eta'),
     'time-manual-announce-allowed': ('manualAnnounceTime',),
 
     'rate-down'         : ('rateDownload',),
@@ -283,7 +299,7 @@ _MODIFY = {
     'time-added'      : lambda raw: _modify_timestamp(raw, 'addedDate'),
     'time-started'    : lambda raw: _modify_timestamp(raw, 'startDate'),
     'time-activity'   : lambda raw: _modify_timestamp(raw, 'activityDate'),
-    'time-completed'  : lambda raw: _modify_timestamp(raw, 'doneDate'),
+    'time-completed'  : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
     'trackers'        : TrackerList,
     'peers'           : PeerList,
