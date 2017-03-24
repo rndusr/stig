@@ -68,7 +68,7 @@ class TestTorrent(unittest.TestCase):
     def test_contains(self):
         raw = {'id': 123, 'name': 'Fake torrent',
                'rateDownload': 10000, 'hashString': 'foobar',
-               'doneDate': 18902394873, 'recheckProgress': 0.4832}
+               'dateCreated': 18902394873, 'recheckProgress': 0.4832}
         t = torrent.Torrent(raw)
         self.assertEqual(set(t), {'id', 'name', 'rate-down', 'hash',
-                                  'time-completed', '%verified'})
+                                  'time-created', '%verified'})
