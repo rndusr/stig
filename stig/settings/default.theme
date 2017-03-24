@@ -189,6 +189,34 @@ torrentlist.tracker.header                         $tracker_fg,underline on $tli
 torrentlist.tracker.unfocused                      $tracker_fg           on $tlist_bg.uf
 torrentlist.tracker.focused                        $tracker_fg           on $tlist_bg.f
 
+$created_fg = light gray
+torrentlist.created.header                         $created_fg,underline on $tlist_bg.uf
+torrentlist.created.unfocused                      $created_fg           on $tlist_bg.uf
+torrentlist.created.focused                        $created_fg           on $tlist_bg.f
+
+$added_fg = light gray
+torrentlist.added.header                           $added_fg,underline on $tlist_bg.uf
+torrentlist.added.unfocused                        $added_fg           on $tlist_bg.uf
+torrentlist.added.focused                          $added_fg           on $tlist_bg.f
+
+$started_fg = light gray
+torrentlist.started.header                         $started_fg,underline on $tlist_bg.uf
+torrentlist.started.unfocused                      $started_fg           on $tlist_bg.uf
+torrentlist.started.focused                        $started_fg           on $tlist_bg.f
+
+$activity_fg = light gray
+torrentlist.activity.header                        $activity_fg,underline on $tlist_bg.uf
+torrentlist.activity.unfocused                     $activity_fg           on $tlist_bg.uf
+torrentlist.activity.focused                       $activity_fg           on $tlist_bg.f
+
+$completed_fg = light gray
+$completed_hl = white
+torrentlist.completed.header                       $completed_fg,underline on $tlist_bg.uf
+torrentlist.completed.unfocused                    $completed_fg           on $tlist_bg.uf
+torrentlist.completed.focused                      $completed_fg           on $tlist_bg.f
+torrentlist.completed.highlighted.unfocused        $completed_hl           on $tlist_bg.uf
+torrentlist.completed.highlighted.focused          $completed_hl           on $tlist_bg.f
+
 
 $status.idle_fg        = light gray
 $status.downloading_fg = dark cyan

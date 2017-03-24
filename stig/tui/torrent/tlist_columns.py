@@ -189,6 +189,46 @@ class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
 TUICOLUMNS['eta'] = EtaComplete
 
 
+class TimeCreated(_COLUMNS['created'], CellWidgetBase):
+    style = Style(prefix='torrentlist.created', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['created'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['created'] = TimeCreated
+
+class TimeAdded(_COLUMNS['added'], CellWidgetBase):
+    style = Style(prefix='torrentlist.added', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['added'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['added'] = TimeAdded
+
+class TimeStarted(_COLUMNS['started'], CellWidgetBase):
+    style = Style(prefix='torrentlist.started', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['started'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['started'] = TimeStarted
+
+class TimeActive(_COLUMNS['activity'], CellWidgetBase):
+    style = Style(prefix='torrentlist.activity', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['activity'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['activity'] = TimeActive
+
+class TimeCompleted(_COLUMNS['completed'], CellWidgetBase):
+    style = Style(prefix='torrentlist.completed', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['completed'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value.in_future else ''
+
+TUICOLUMNS['completed'] = TimeCompleted
+
+
 class Tracker(_COLUMNS['tracker'], CellWidgetBase):
     style = Style(prefix='torrentlist.tracker', focusable=True,
                   extras=('header',))
