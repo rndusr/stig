@@ -335,7 +335,7 @@ class Timestamp(int):
 
     @property
     def in_future(self):
-        return self > time.time()
+        return bool(self) and self > time.time()
 
 
 
