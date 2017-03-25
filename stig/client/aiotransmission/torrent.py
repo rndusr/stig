@@ -45,11 +45,11 @@ def _modify_eta(raw_torrent):
         return seconds
 
 
-def _modify_timestamp(raw_torrent, key):
+def _modify_timestamp(raw_torrent, key, zero_means=tkeys.Timestamp.UNKNOWN):
     # I couldn't find any documentation on this, but 0 seems to mean "not applicable"?
     seconds = raw_torrent[key]
     if seconds == 0:
-        return tkeys.Timestamp.NOT_APPLICABLE
+        return zero_means
     else:
         return seconds
 
@@ -295,10 +295,14 @@ _MODIFY = {
     'peers-seeding'   : _count_seeds,
     'ratio'           : _modify_ratio,
     'timespan-eta'    : _modify_eta,
-    'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated'),
-    'time-added'      : lambda raw: _modify_timestamp(raw, 'addedDate'),
-    'time-started'    : lambda raw: _modify_timestamp(raw, 'startDate'),
-    'time-activity'   : lambda raw: _modify_timestamp(raw, 'activityDate'),
+    'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated',
+                                                      zero_means=tkeys.Timestamp.UNKNOWN),
+    'time-added'      : lambda raw: _modify_timestamp(raw, 'addedDate',
+                                                      zero_means=tkeys.Timestamp.UNKNOWN),
+    'time-started'    : lambda raw: _modify_timestamp(raw, 'startDate',
+                                                      zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+    'time-activity'   : lambda raw: _modify_timestamp(raw, 'activityDate',
+                                                      zero_means=tkeys.Timestamp.NOT_APPLICABLE),
     'time-completed'  : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
     'trackers'        : TrackerList,
