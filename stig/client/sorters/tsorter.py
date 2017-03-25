@@ -32,7 +32,7 @@ class TorrentSorter(SorterBase):
                                   description='download location'),
         'status':       _SortSpec(lambda t: t['status'],
                                   needed_keys=('status',),
-                                  description='status (downloading, seeding, verifying, etc.)'),
+                                  description='current status (idle, uploading, verifying, etc.)'),
         'size':         _SortSpec(lambda t: t['size-final'],
                                   needed_keys=('size-final',),
                                   description='number of bytes of all wanted files'),
