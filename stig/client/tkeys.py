@@ -104,15 +104,25 @@ class Number(float):
         return '<{} {}, prefix={!r}, unit={!r}>'.format(type(self).__name__, float(self),
                                                         self.prefix, self.unit)
 
-    def __add__(self, other): return type(self)(super().__add__(other))
-    def __sub__(self, other): return type(self)(super().__sub__(other))
-    def __mul__(self, other): return type(self)(super().__mul__(other))
-    def __div__(self, other): return type(self)(super().__div__(other))
-    def __truediv__(self, other): return type(self)(super().__truediv__(other))
-    def __floordiv__(self, other): return type(self)(super().__floordiv__(other))
-    def __mod__(self, other): return type(self)(super().__mod__(other))
-    def __divmod__(self, other): return type(self)(super().__divmod__(other))
-    def __pow__(self, other): return type(self)(super().__pow__(other))
+    # Arithmetic operations return Number instances with unit and prefix preserved
+    def __add__(self, other):
+        return type(self)(super().__add__(other), unit=self.unit, prefix=self.prefix)
+    def __sub__(self, other):
+        return type(self)(super().__sub__(other), unit=self.unit, prefix=self.prefix)
+    def __mul__(self, other):
+        return type(self)(super().__mul__(other), unit=self.unit, prefix=self.prefix)
+    def __div__(self, other):
+        return type(self)(super().__div__(other), unit=self.unit, prefix=self.prefix)
+    def __truediv__(self, other):
+        return type(self)(super().__truediv__(other), unit=self.unit, prefix=self.prefix)
+    def __floordiv__(self, other):
+        return type(self)(super().__floordiv__(other), unit=self.unit, prefix=self.prefix)
+    def __mod__(self, other):
+        return type(self)(super().__mod__(other), unit=self.unit, prefix=self.prefix)
+    def __divmod__(self, other):
+        return type(self)(super().__divmod__(other), unit=self.unit, prefix=self.prefix)
+    def __pow__(self, other):
+        return type(self)(super().__pow__(other), unit=self.unit, prefix=self.prefix)
 
 # Because 'convert' needs Number, which is specified in this file, it must be
 # imported AFTER Number exists to avoid a circular import.
