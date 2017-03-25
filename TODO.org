@@ -47,14 +47,6 @@ questions and point out issues.
    'srv.limit.rate.up/down' to RATE.
 
 
-* torrent list
-
-** TODO Add tracker column
-   Use the domain without the TLD part.
-
-** TODO Add status column
-
-
 * tui.logger
 
 ** TODO Make log widget scrollable
