@@ -85,13 +85,7 @@ class Number(float):
 
     @property
     def with_unit(self):
-        s = None
-        for prefix,size in self._prefixes:
-            if self >= size:
-                s = '%s%s' % (pretty_float(self/size), prefix)
-                break
-        if s is None:
-            s = pretty_float(self)
+        s = self.without_unit
         if self.unit is not None:
             s += self.unit
         return s
