@@ -128,6 +128,26 @@ class TestNumber(unittest.TestCase):
         self.assertNotEqual(tkeys.Number(1000), 1000.0001)
         self.assertNotEqual(tkeys.Number(1024), tkeys.Number(1023))
 
+    def test_arithmetic_operation_returns_Number_instance(self):
+        n = tkeys.Number(5) * 3000
+        self.assertIsInstance(n, tkeys.Number)
+
+    def test_arithmetic_operation_copies_unit(self):
+        n = tkeys.Number(5, unit='X') / 3000
+        self.assertEqual(n.unit, 'X')
+
+    def test_arithmetic_operation_copies_prefix(self):
+        for prfx in ('metric', 'binary'):
+            n = tkeys.Number(5, prefix=prfx) - 3000
+            self.assertEqual(n.prefix, prfx)
+
+    def test_arithmetic_operation_copies_from_first_value(self):
+        for prfx in ('metric', 'binary'):
+            n = tkeys.Number(5,    unit='X', prefix=prfx) \
+              * tkeys.Number(3000, unit='z', prefix='metric')
+            self.assertEqual(n.unit, 'X')
+            self.assertEqual(n.prefix, prfx)
+
 
 class TestPercent(unittest.TestCase):
     def test_string(self):
