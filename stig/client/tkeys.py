@@ -297,9 +297,8 @@ class Timedelta(int):
 
 import time
 class Timestamp(int):
-    # See Timedelta class for an explanation of these values.
-    UNKNOWN        = 1e10    # ~3.1k years
-    NOT_APPLICABLE = 1e10+1  # ~31k years
+    UNKNOWN        = -1
+    NOT_APPLICABLE = -2
 
     def __str__(self):
         if self == self.UNKNOWN:
