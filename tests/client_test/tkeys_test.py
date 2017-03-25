@@ -264,6 +264,7 @@ class TestTimedelta(unittest.TestCase):
                tkeys.Timedelta(2 * MIN),
                tkeys.Timedelta(3 * MIN),
                tkeys.Timedelta(1 * DAY),
+               tkeys.Timedelta(2.5 * YEAR),
                tkeys.Timedelta(tkeys.Timedelta.UNKNOWN),
                tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)]
 
@@ -314,12 +315,13 @@ class TestTimestamp(unittest.TestCase):
 
     def test_sorting(self):
         now = time.time()
-        lst = [tkeys.Timestamp(now + (-2 * HOUR)),
+        lst = [tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE),
+               tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
+               tkeys.Timestamp(now + (-2 * HOUR)),
                tkeys.Timestamp(now + (2 * MIN)),
                tkeys.Timestamp(now + (3 * MIN)),
                tkeys.Timestamp(now + (1 * DAY)),
-               tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
-               tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE)]
+               tkeys.Timestamp(now + (2.5 * YEAR))]
 
         import random
         def shuffle(l):
