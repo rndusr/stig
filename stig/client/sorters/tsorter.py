@@ -35,7 +35,7 @@ class TorrentSorter(SorterBase):
                                   description='status (downloading, seeding, verifying, etc.)'),
         'size':         _SortSpec(lambda t: t['size-final'],
                                   needed_keys=('size-final',),
-                                  description='size when complete'),
+                                  description='number of bytes of all wanted files'),
         'peers':        _SortSpec(lambda t: t['peers-connected'],
                                   needed_keys=('peers-connected',),
                                   description='connected peers'),
