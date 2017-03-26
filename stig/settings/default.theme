@@ -135,14 +135,6 @@ torrentlist.uploaded.focused                       $uploaded_fg             on $
 torrentlist.uploaded.highlighted.unfocused         $uploaded_hl             on $tlist_bg.uf
 torrentlist.uploaded.highlighted.focused           $uploaded_hl             on $tlist_bg.f
 
-$eta_fg = brown
-$eta_hl = yellow
-torrentlist.eta.header                             $eta_fg,underline on $tlist_bg.uf
-torrentlist.eta.unfocused                          $eta_fg           on $tlist_bg.uf
-torrentlist.eta.focused                            $eta_fg           on $tlist_bg.f
-torrentlist.eta.highlighted.unfocused              $eta_hl           on $tlist_bg.uf
-torrentlist.eta.highlighted.focused                $eta_hl           on $tlist_bg.f
-
 $peers-connected_fg = light gray
 $peers-connected_hl = white
 torrentlist.peers-connected.header                 $peers-connected_fg,underline on $tlist_bg.uf
@@ -180,33 +172,41 @@ torrentlist.tracker.header                         $tracker_fg,underline on $tli
 torrentlist.tracker.unfocused                      $tracker_fg           on $tlist_bg.uf
 torrentlist.tracker.focused                        $tracker_fg           on $tlist_bg.f
 
-$created_fg = light gray
+$created_fg = brown
 torrentlist.created.header                         $created_fg,underline on $tlist_bg.uf
 torrentlist.created.unfocused                      $created_fg           on $tlist_bg.uf
 torrentlist.created.focused                        $created_fg           on $tlist_bg.f
 
-$added_fg = light gray
+$added_fg = brown
 torrentlist.added.header                           $added_fg,underline on $tlist_bg.uf
 torrentlist.added.unfocused                        $added_fg           on $tlist_bg.uf
 torrentlist.added.focused                          $added_fg           on $tlist_bg.f
 
-$started_fg = light gray
+$started_fg = brown
 torrentlist.started.header                         $started_fg,underline on $tlist_bg.uf
 torrentlist.started.unfocused                      $started_fg           on $tlist_bg.uf
 torrentlist.started.focused                        $started_fg           on $tlist_bg.f
 
-$activity_fg = light gray
+$activity_fg = brown
 torrentlist.activity.header                        $activity_fg,underline on $tlist_bg.uf
 torrentlist.activity.unfocused                     $activity_fg           on $tlist_bg.uf
 torrentlist.activity.focused                       $activity_fg           on $tlist_bg.f
 
-$completed_fg = light gray
-$completed_hl = white
+$completed_fg = brown
+$completed_hl = yellow
 torrentlist.completed.header                       $completed_fg,underline on $tlist_bg.uf
 torrentlist.completed.unfocused                    $completed_fg           on $tlist_bg.uf
 torrentlist.completed.focused                      $completed_fg           on $tlist_bg.f
 torrentlist.completed.highlighted.unfocused        $completed_hl           on $tlist_bg.uf
 torrentlist.completed.highlighted.focused          $completed_hl           on $tlist_bg.f
+
+$eta_fg = brown
+$eta_hl = yellow
+torrentlist.eta.header                             $eta_fg,underline on $tlist_bg.uf
+torrentlist.eta.unfocused                          $eta_fg           on $tlist_bg.uf
+torrentlist.eta.focused                            $eta_fg           on $tlist_bg.f
+torrentlist.eta.highlighted.unfocused              $eta_hl           on $tlist_bg.uf
+torrentlist.eta.highlighted.focused                $eta_hl           on $tlist_bg.f
 
 
 $status.idle_fg        = light gray
