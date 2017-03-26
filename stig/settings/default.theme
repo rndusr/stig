@@ -98,15 +98,6 @@ torrentlist.marked.header                          $marked_fg,underline on $tlis
 torrentlist.marked.unfocused                       $marked_fg           on $tlist_bg.uf
 torrentlist.marked.focused                         $marked_fg           on $tlist_bg.f
 
-# Make 'status' of variable color and copy that for 'name'
-$status_fg = light gray
-$status_hl = white
-torrentlist.status.header                          $status_fg,underline on $tlist_bg.uf
-torrentlist.status.unfocused                       $status_fg           on $tlist_bg.uf
-torrentlist.status.focused                         $status_fg           on $tlist_bg.f
-torrentlist.status.highlighted.unfocused           $status_hl           on $tlist_bg.uf
-torrentlist.status.highlighted.focused             $status_hl           on $tlist_bg.f
-
 $progress_fg = dark blue
 $progress_hl = light blue
 torrentlist.progress.header                        $progress_fg,underline on $tlist_bg.uf
