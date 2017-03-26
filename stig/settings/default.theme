@@ -88,37 +88,6 @@ torrentlist                                        default              on $tlis
 torrentlist.focused                                default              on $tlist_bg.f
 torrentlist.header                                 light gray,underline on $tlist_bg.uf
 
-$path_fg = light gray
-torrentlist.path.header                            $path_fg,underline on $tlist_bg.uf
-torrentlist.path.unfocused                         $path_fg           on $tlist_bg.uf
-torrentlist.path.focused                           $path_fg           on $tlist_bg.f
-
-$marked_fg = white
-torrentlist.marked.header                          $marked_fg,underline on $tlist_bg.uf
-torrentlist.marked.unfocused                       $marked_fg           on $tlist_bg.uf
-torrentlist.marked.focused                         $marked_fg           on $tlist_bg.f
-
-$progress_fg = dark blue
-$progress_hl = light blue
-torrentlist.progress.header                        $progress_fg,underline on $tlist_bg.uf
-torrentlist.progress.unfocused                     $progress_fg           on $tlist_bg.uf
-torrentlist.progress.focused                       $progress_fg           on $tlist_bg.f
-torrentlist.progress.highlighted.unfocused         $progress_hl           on $tlist_bg.uf
-torrentlist.progress.highlighted.focused           $progress_hl           on $tlist_bg.f
-
-$ratio_fg = dark blue
-$ratio_hl = light blue
-torrentlist.ratio.header                           $ratio_fg,underline on $tlist_bg.uf
-torrentlist.ratio.unfocused                        $ratio_fg           on $tlist_bg.uf
-torrentlist.ratio.focused                          $ratio_fg           on $tlist_bg.f
-torrentlist.ratio.highlighted.unfocused            $ratio_hl           on $tlist_bg.uf
-torrentlist.ratio.highlighted.focused              $ratio_hl           on $tlist_bg.f
-
-$size_fg = dark magenta
-torrentlist.size.header                            $size_fg,underline on $tlist_bg.uf
-torrentlist.size.unfocused                         $size_fg           on $tlist_bg.uf
-torrentlist.size.focused                           $size_fg           on $tlist_bg.f
-
 $downloaded_fg = dark cyan
 $downloaded_hl = light cyan
 torrentlist.downloaded.header                      $downloaded_fg,underline on $tlist_bg.uf
@@ -134,6 +103,16 @@ torrentlist.uploaded.unfocused                     $uploaded_fg             on $
 torrentlist.uploaded.focused                       $uploaded_fg             on $tlist_bg.f
 torrentlist.uploaded.highlighted.unfocused         $uploaded_hl             on $tlist_bg.uf
 torrentlist.uploaded.highlighted.focused           $uploaded_hl             on $tlist_bg.f
+
+$marked_fg = white
+torrentlist.marked.header                          $marked_fg,underline on $tlist_bg.uf
+torrentlist.marked.unfocused                       $marked_fg           on $tlist_bg.uf
+torrentlist.marked.focused                         $marked_fg           on $tlist_bg.f
+
+$path_fg = light gray
+torrentlist.path.header                            $path_fg,underline on $tlist_bg.uf
+torrentlist.path.unfocused                         $path_fg           on $tlist_bg.uf
+torrentlist.path.focused                           $path_fg           on $tlist_bg.f
 
 $peers-connected_fg = light gray
 $peers-connected_hl = white
@@ -151,6 +130,14 @@ torrentlist.peers-seeding.focused                  $peers-seeding_fg           o
 torrentlist.peers-seeding.highlighted.unfocused    $peers-seeding_hl           on $tlist_bg.uf
 torrentlist.peers-seeding.highlighted.focused      $peers-seeding_hl           on $tlist_bg.f
 
+$progress_fg = dark blue
+$progress_hl = light blue
+torrentlist.progress.header                        $progress_fg,underline on $tlist_bg.uf
+torrentlist.progress.unfocused                     $progress_fg           on $tlist_bg.uf
+torrentlist.progress.focused                       $progress_fg           on $tlist_bg.f
+torrentlist.progress.highlighted.unfocused         $progress_hl           on $tlist_bg.uf
+torrentlist.progress.highlighted.focused           $progress_hl           on $tlist_bg.f
+
 $rate-down_fg = dark cyan
 $rate-down_hl = light cyan
 torrentlist.rate-down.header                       $rate-down_fg,underline on $tlist_bg.uf
@@ -167,30 +154,38 @@ torrentlist.rate-up.focused                        $rate-up_fg           on $tli
 torrentlist.rate-up.highlighted.unfocused          $rate-up_hl           on $tlist_bg.uf
 torrentlist.rate-up.highlighted.focused            $rate-up_hl           on $tlist_bg.f
 
+$ratio_fg = dark blue
+$ratio_hl = light blue
+torrentlist.ratio.header                           $ratio_fg,underline on $tlist_bg.uf
+torrentlist.ratio.unfocused                        $ratio_fg           on $tlist_bg.uf
+torrentlist.ratio.focused                          $ratio_fg           on $tlist_bg.f
+torrentlist.ratio.highlighted.unfocused            $ratio_hl           on $tlist_bg.uf
+torrentlist.ratio.highlighted.focused              $ratio_hl           on $tlist_bg.f
+
+$size_fg = dark magenta
+torrentlist.size.header                            $size_fg,underline on $tlist_bg.uf
+torrentlist.size.unfocused                         $size_fg           on $tlist_bg.uf
+torrentlist.size.focused                           $size_fg           on $tlist_bg.f
+
 $tracker_fg = light gray
 torrentlist.tracker.header                         $tracker_fg,underline on $tlist_bg.uf
 torrentlist.tracker.unfocused                      $tracker_fg           on $tlist_bg.uf
 torrentlist.tracker.focused                        $tracker_fg           on $tlist_bg.f
-
-$created_fg = brown
-torrentlist.created.header                         $created_fg,underline on $tlist_bg.uf
-torrentlist.created.unfocused                      $created_fg           on $tlist_bg.uf
-torrentlist.created.focused                        $created_fg           on $tlist_bg.f
 
 $added_fg = brown
 torrentlist.added.header                           $added_fg,underline on $tlist_bg.uf
 torrentlist.added.unfocused                        $added_fg           on $tlist_bg.uf
 torrentlist.added.focused                          $added_fg           on $tlist_bg.f
 
-$started_fg = brown
-torrentlist.started.header                         $started_fg,underline on $tlist_bg.uf
-torrentlist.started.unfocused                      $started_fg           on $tlist_bg.uf
-torrentlist.started.focused                        $started_fg           on $tlist_bg.f
-
 $activity_fg = brown
 torrentlist.activity.header                        $activity_fg,underline on $tlist_bg.uf
 torrentlist.activity.unfocused                     $activity_fg           on $tlist_bg.uf
 torrentlist.activity.focused                       $activity_fg           on $tlist_bg.f
+
+$created_fg = brown
+torrentlist.created.header                         $created_fg,underline on $tlist_bg.uf
+torrentlist.created.unfocused                      $created_fg           on $tlist_bg.uf
+torrentlist.created.focused                        $created_fg           on $tlist_bg.f
 
 $completed_fg = brown
 $completed_hl = yellow
@@ -207,6 +202,11 @@ torrentlist.eta.unfocused                          $eta_fg           on $tlist_b
 torrentlist.eta.focused                            $eta_fg           on $tlist_bg.f
 torrentlist.eta.highlighted.unfocused              $eta_hl           on $tlist_bg.uf
 torrentlist.eta.highlighted.focused                $eta_hl           on $tlist_bg.f
+
+$started_fg = brown
+torrentlist.started.header                         $started_fg,underline on $tlist_bg.uf
+torrentlist.started.unfocused                      $started_fg           on $tlist_bg.uf
+torrentlist.started.focused                        $started_fg           on $tlist_bg.f
 
 
 $status.idle_fg        = light gray
