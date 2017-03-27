@@ -108,6 +108,7 @@ def _make_status(t):
     # TR_STATUS_DOWNLOAD_WAIT  = 3, /* Queued to download */
     # TR_STATUS_DOWNLOAD       = 4, /* Downloading */
     # TR_STATUS_SEED_WAIT      = 5, /* Queued to seed */
+    # TR_STATUS_SEED           = 6  /* Seeding */
     t_status = t['status']
     if t_status == 0:
         statuses.append(Status.STOPPED)
