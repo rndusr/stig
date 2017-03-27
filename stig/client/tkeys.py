@@ -265,25 +265,32 @@ class Timedelta(int):
     UNKNOWN        = 1e10    # ~3.1k years
     NOT_APPLICABLE = 1e10+1  # ~31k years
 
+    _FROM_STRING_REGEX = re.compile((r'(\d+(?:\.\d+|)[' +
+                                     r''.join(unit for unit,secs in SECONDS) +
+                                     r']?)'), flags=re.IGNORECASE)
     @classmethod
     def from_string(cls, string):
-        s = string.replace(' ', '')
+        string = string.replace(' ', '')
+        if len(string) < 1:
+            raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, string))
 
-        if len(s) < 1:
-            raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, s))
+        secs_total = 0
+        for s in cls._FROM_STRING_REGEX.split(string):
+            if len(s) < 1:
+                continue
+            elif not cls._FROM_STRING_REGEX.match(s):
+                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, s))
+            elif s[-1].isdigit():
+                # No unit specified
+                secs_total += float(s)
+            else:
+                unit, num = s[-1], s[:-1]
+                for unit_,secs in SECONDS:
+                    if unit == unit_:
+                        secs_total += float(num) * secs
+                        break
 
-        elif (all(c in '1234567890.' for c in string) and
-              string[0].isdigit() and string[-1].isdigit()):
-            # No unit specified
-            return cls(s)
-
-        else:
-            unit = s[-1]
-            num = s[:-1]
-            for unit_,secs in SECONDS:
-                if unit == unit_:
-                    return cls(float(num) * secs)
-            return cls(float(num))
+        return cls(secs_total)
 
     def __str__(self):
         if self == self.UNKNOWN:
