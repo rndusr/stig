@@ -324,6 +324,10 @@ class Timedelta(int):
         """Whether delta is known"""
         return self not in (self.UNKNOWN, self.NOT_APPLICABLE)
 
+    @property
+    def is_known(self):
+        return bool(self)
+
 
 import time
 class Timestamp(int):
