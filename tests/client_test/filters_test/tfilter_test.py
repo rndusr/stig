@@ -6,19 +6,19 @@ import unittest
 
 tlist = (
     Torrent({'id': 1, 'name': 'Foo', 'downloadDir': '/some/path/to/torrents',
-             'isPrivate': False, 'status': 6, 'percentDone': 1,
+             'isPrivate': False, 'status': 6, 'percentDone': 1, 'eta': -1,
              'peersConnected': 0, 'rateUpload': 0, 'rateDownload': 0, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
     Torrent({'id': 2, 'name': 'Bar123', 'downloadDir': '/some/path/to/torrents/',
-             'isPrivate': True, 'status': 4, 'percentDone': 0.0235,
+             'isPrivate': True, 'status': 4, 'percentDone': 0.0235, 'eta': 84600,
              'peersConnected': 3, 'rateUpload': 58e3, 'rateDownload': 384e3, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
     Torrent({'id': 3, 'name': 'Fim', 'downloadDir': '/other/path/to/torrents',
-             'isPrivate': False, 'status': 4, 'percentDone': 0.95,
+             'isPrivate': False, 'status': 4, 'percentDone': 0.95, 'eta': 3600,
              'peersConnected': 1, 'rateUpload': 137e3, 'rateDownload': 0, 'downloadedEver': 0,
              'metadataPercentComplete': 1, 'trackerStats': []}),
     Torrent({'id': 4, 'name': 'FooF', 'downloadDir': '/completely/different/path/to/torrents',
-             'isPrivate': True, 'status': 0, 'percentDone': 0.48,
+             'isPrivate': True, 'status': 0, 'percentDone': 0.48, 'eta': -2,
              'peersConnected': 0, 'rateUpload': 0, 'rateDownload': 0, 'downloadedEver': 583239,
              'metadataPercentComplete': 1, 'trackerStats': []}),
 )
@@ -231,6 +231,12 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(f, SingleTorrentFilter('path=/some/path/to/torrents'))
         tids = f.apply(tlist, key='id')
         self.assertEqual(set(tids), {1, 2})
+
+    def test_eta_filter_larger_smaller(self):
+        tids = SingleTorrentFilter('eta>1h').apply(tlist, key='id')
+        self.assertEqual(set(tids), {2,})
+        tids = SingleTorrentFilter('eta>=1h').apply(tlist, key='id')
+        self.assertEqual(set(tids), {2, 3})
 
 
 class TestTorrentFilter(unittest.TestCase):
