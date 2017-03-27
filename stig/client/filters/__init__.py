@@ -33,9 +33,10 @@ class BoolFilterSpec():
 class CmpFilterSpec(BoolFilterSpec):
     """Comparative filter specification"""
 
-    def __init__(self, *args, value_type, **kwargs):
+    def __init__(self, *args, value_type, value_convert=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.value_type = value_type
+        self.value_convert = value_convert or value_type
 
     def make_filter_func(self, operator, value):
         def func(obj):
@@ -79,9 +80,10 @@ class Filter():
 
         # Convert value to proper type
         target_type = cls.COMPARATIVE_FILTERS[name].value_type
+        str2target_type = cls.COMPARATIVE_FILTERS[name].value_convert
         if type(value) is not target_type:
             try:
-                value = target_type(value)
+                value = str2target_type(value)
             except ValueError:
                 raise ValueError('Invalid value for filter {!r}: {!r}'.format(name, value))
 
