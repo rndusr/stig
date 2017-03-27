@@ -38,8 +38,9 @@ class CmpFilterSpec(BoolFilterSpec):
         self.value_type = value_type
 
     def make_filter_func(self, operator, value):
-        func = self.filter_function
-        return lambda obj: func(obj, operator, value)
+        def func(obj):
+            return self.filter_function(obj, operator, value)
+        return func
 
 
 class Filter():
