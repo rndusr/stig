@@ -255,20 +255,20 @@ class TestTimedelta(unittest.TestCase):
         for s, i, s_exp in (('0', 0, 'now'),
                             ('0d', 0, 'now'),
                             ('600', 600, '10m'),
+                            ('1m270s', 330, '5m30s'),
+                            ('1m270', 330, '5m30s'),
                             ('600m', 36000, '10h'),
-                            ('1h', 3600, '1h'),
+                            ('1h10m', 4200, '1h10m'),
+                            ('1h10m2d', 4200+(2*24*3600), '2d1h'),
                             ('24.5h', 3600*24.5, '1d'),
-                            ('370d', 3600*24*370, '1y')):
+                            ('1y370d', YEAR+(DAY*370), '2y')):
             t = tkeys.Timedelta.from_string(s)
             self.assertEqual(t, i)
             self.assertEqual(str(t), s_exp)
 
-        with self.assertRaises(ValueError) as cm:
-            tkeys.Timedelta.from_string('')
-        with self.assertRaises(ValueError) as cm:
-            tkeys.Timedelta.from_string('x')
-        with self.assertRaises(ValueError) as cm:
-            tkeys.Timedelta.from_string('1.2.3')
+        for string in ('', 'x', '?m', '1.2.3', '5g10s', '1y2x10d'):
+            with self.assertRaises(ValueError) as cm:
+                tkeys.Timedelta.from_string(string)
 
     def test_special_values(self):
         self.assertEqual(str(tkeys.Timedelta(0)), 'now')
