@@ -20,11 +20,20 @@ from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 from ..tkeys import TYPES as VALUETYPES
 def _make_cmp_filter(key, aliases, description):
-    filterfunc = lambda t, op, v, key=key: op(t[key], v)
+    def filterfunc(t, op, v, key=key):
+        return op(t[key], v)
+
+    value_type = VALUETYPES[key]
+    if hasattr(value_type, 'from_string'):
+        value_convert = value_type.from_string
+    else:
+        value_convert = value_type
+
     return CmpFilterSpec(filterfunc,
                          description=_make_filter_desc(description),
                          needed_keys=(key,), aliases=aliases,
-                         value_type=VALUETYPES[key])
+                         value_type=value_type,
+                         value_convert=value_convert)
 
 def _make_filter_desc(text):
     if text.startswith('...'):
