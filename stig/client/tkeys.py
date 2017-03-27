@@ -265,6 +265,26 @@ class Timedelta(int):
     UNKNOWN        = 1e10    # ~3.1k years
     NOT_APPLICABLE = 1e10+1  # ~31k years
 
+    @classmethod
+    def from_string(cls, string):
+        s = string.replace(' ', '')
+
+        if len(s) < 1:
+            raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, s))
+
+        elif (all(c in '1234567890.' for c in string) and
+              string[0].isdigit() and string[-1].isdigit()):
+            # No unit specified
+            return cls(s)
+
+        else:
+            unit = s[-1]
+            num = s[:-1]
+            for unit_,secs in SECONDS:
+                if unit == unit_:
+                    return cls(float(num) * secs)
+            return cls(float(num))
+
     def __str__(self):
         if self == self.UNKNOWN:
             return '?'
