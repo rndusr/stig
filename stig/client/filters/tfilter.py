@@ -152,6 +152,14 @@ class SingleTorrentFilter(Filter):
             needed_keys=('trackers',),
             value_type=str,
         ),
+
+        'eta': CmpFilterSpec(
+            lambda t, op, v: t['timespan-eta'].is_known and op(t['timespan-eta'], v),
+            description=_make_filter_desc('... the estimated time for torrent to finish'),
+            needed_keys=('timespan-eta',),
+            value_type=VALUETYPES['timespan-eta'],
+            value_convert=VALUETYPES['timespan-eta'].from_string,
+        ),
     }
 
 
