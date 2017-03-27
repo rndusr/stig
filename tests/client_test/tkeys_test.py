@@ -251,6 +251,25 @@ HOUR = 60*MIN
 DAY = 24*HOUR
 YEAR = 365.25*DAY
 class TestTimedelta(unittest.TestCase):
+    def test_from_string(self):
+        for s, i, s_exp in (('0', 0, 'now'),
+                            ('0d', 0, 'now'),
+                            ('600', 600, '10m'),
+                            ('600m', 36000, '10h'),
+                            ('1h', 3600, '1h'),
+                            ('24.5h', 3600*24.5, '1d'),
+                            ('370d', 3600*24*370, '1y')):
+            t = tkeys.Timedelta.from_string(s)
+            self.assertEqual(t, i)
+            self.assertEqual(str(t), s_exp)
+
+        with self.assertRaises(ValueError) as cm:
+            tkeys.Timedelta.from_string('')
+        with self.assertRaises(ValueError) as cm:
+            tkeys.Timedelta.from_string('x')
+        with self.assertRaises(ValueError) as cm:
+            tkeys.Timedelta.from_string('1.2.3')
+
     def test_special_values(self):
         self.assertEqual(str(tkeys.Timedelta(0)), 'now')
         self.assertEqual(str(tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)), '')
