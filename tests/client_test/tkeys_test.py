@@ -331,13 +331,36 @@ class TestTimestamp(unittest.TestCase):
     def strftime(self, format, timestamp):
         return time.strftime(format, time.localtime(timestamp))
 
+    def strptime(self, string):
+        tstruct = time.strptime(string, '%Y-%m-%d %H:%M:%S')
+        return time.mktime(tstruct)
+
+    now = time.time()
+    year = time.localtime(now).tm_year
+    month = time.localtime(now).tm_mon
+    day = time.localtime(now).tm_mday
+
+    def test_from_string(self):
+        for s,s_exp in (('2017-01-01', '2017-01-01 00:00:00'),
+                        ('     02-02', '%04d-02-02 00:00:00' % self.year),
+                        ('        03', '%04d-%02d-03 00:00:00' % (self.year, self.month)),
+                        ('      2015', '2015-%02d-%02d 00:00:00' % (self.month, self.day)),
+                        ('   2015-10', '2015-10-%02d 00:00:00' % self.day),
+
+                        ('      04:00', '%04d-%02d-%02d 04:00:00' % (self.year, self.month, self.day)),
+                        ('   20 05:50', '%04d-%02d-20 05:50:00' % (self.year, self.month)),
+                        ('06-16 06:06', '%04d-06-16 06:06:00' % (self.year)),
+                        ('2021-12-31 23:59:59', '2021-12-31 23:59:59')):
+            t = tkeys.Timestamp.from_string(s)
+            t_exp = self.strptime(s_exp)
+            self.assertEqual(t, t_exp)
+
     def test_string(self):
-        now = time.time()
-        self.assertEqual(str(tkeys.Timestamp(now)), self.strftime('%H:%M', now))
-        later_today = now + 20*60*60
+        self.assertEqual(str(tkeys.Timestamp(self.now)), self.strftime('%H:%M', self.now))
+        later_today = self.now + 20*60*60
         self.assertEqual(str(tkeys.Timestamp(later_today)),
                          self.strftime('%H:%M', later_today))
-        next_week = now + 7*24*60*60
+        next_week = self.now + 7*24*60*60
         self.assertEqual(str(tkeys.Timestamp(next_week)),
                          self.strftime('%Y-%m-%d', next_week))
 
@@ -353,14 +376,13 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(bool(td), False)
 
     def test_sorting(self):
-        now = time.time()
         lst = [tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE),
                tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
-               tkeys.Timestamp(now + (-2 * HOUR)),
-               tkeys.Timestamp(now + (2 * MIN)),
-               tkeys.Timestamp(now + (3 * MIN)),
-               tkeys.Timestamp(now + (1 * DAY)),
-               tkeys.Timestamp(now + (2.5 * YEAR))]
+               tkeys.Timestamp(self.now + (-2 * HOUR)),
+               tkeys.Timestamp(self.now + (2 * MIN)),
+               tkeys.Timestamp(self.now + (3 * MIN)),
+               tkeys.Timestamp(self.now + (1 * DAY)),
+               tkeys.Timestamp(self.now + (2.5 * YEAR))]
 
         import random
         def shuffle(l):
