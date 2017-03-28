@@ -31,8 +31,9 @@ setup(
 
     install_requires = [
         'urwid>=1.3.0',
-        'aiohttp>=0.22.5',
         'urwidtrees>=1.0.3dev0',
+        'aiohttp>=0.22.5',
+        'python-dateutil'
         'appdirs',
         'blinker',
     ],
