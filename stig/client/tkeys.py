@@ -360,7 +360,7 @@ class Timestamp(int):
         return time.strftime(frmt, time.localtime(self))
 
     def __bool__(self):
-        """Whether timestamp is just a few seconds in the past/future"""
+        """Whether timestamp known"""
         return self != self.UNKNOWN and self != self.NOT_APPLICABLE
 
     @property
