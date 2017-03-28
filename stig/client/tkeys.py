@@ -337,9 +337,14 @@ class Timedelta(int):
 
 
 import time
+from dateutil import parser as dtparser
 class Timestamp(int):
     UNKNOWN        = -1
     NOT_APPLICABLE = -2
+
+    @classmethod
+    def from_string(cls, string):
+        return cls(dtparser.parse(string).timestamp())
 
     def __str__(self):
         if self == self.UNKNOWN:
