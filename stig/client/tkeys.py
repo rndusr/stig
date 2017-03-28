@@ -364,6 +364,10 @@ class Timestamp(int):
         return self != self.UNKNOWN and self != self.NOT_APPLICABLE
 
     @property
+    def is_known(self):
+        return bool(self)
+
+    @property
     def delta(self):
         if self == self.UNKNOWN:
             return Timedelta(Timedelta.UNKNOWN)
