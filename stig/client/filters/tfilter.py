@@ -155,10 +155,45 @@ class SingleTorrentFilter(Filter):
 
         'eta': CmpFilterSpec(
             lambda t, op, v: t['timespan-eta'].is_known and op(t['timespan-eta'], v),
-            description=_make_filter_desc('... the estimated time for torrent to finish'),
+            description=_make_filter_desc('... estimated time for torrent to finish'),
             needed_keys=('timespan-eta',),
             value_type=VALUETYPES['timespan-eta'],
             value_convert=VALUETYPES['timespan-eta'].from_string,
+        ),
+        'created': CmpFilterSpec(
+            lambda t, op, v: t['time-created'].is_known and op(t['time-created'], v),
+            description=_make_filter_desc('... time torrent was created'),
+            needed_keys=('time-created',),
+            value_type=VALUETYPES['time-created'],
+            value_convert=VALUETYPES['time-created'].from_string,
+        ),
+        'added': CmpFilterSpec(
+            lambda t, op, v: t['time-added'].is_known and op(t['time-added'], v),
+            description=_make_filter_desc('... time torrent was added'),
+            needed_keys=('time-added',),
+            value_type=VALUETYPES['time-added'],
+            value_convert=VALUETYPES['time-added'].from_string,
+        ),
+        'started': CmpFilterSpec(
+            lambda t, op, v: t['time-started'].is_known and op(t['time-started'], v),
+            description=_make_filter_desc('... last time torrent was started'),
+            needed_keys=('time-started',),
+            value_type=VALUETYPES['time-started'],
+            value_convert=VALUETYPES['time-started'].from_string,
+        ),
+        'activity': CmpFilterSpec(
+            lambda t, op, v: t['time-activity'].is_known and op(t['time-activity'], v),
+            description=_make_filter_desc('... last time torrent was active'),
+            needed_keys=('time-activity',),
+            value_type=VALUETYPES['time-activity'],
+            value_convert=VALUETYPES['time-activity'].from_string,
+        ),
+        'completed': CmpFilterSpec(
+            lambda t, op, v: t['time-completed'].is_known and op(t['time-completed'], v),
+            description=_make_filter_desc('... time all wanted files where downloaded'),
+            needed_keys=('time-completed',),
+            value_type=VALUETYPES['time-completed'],
+            value_convert=VALUETYPES['time-completed'].from_string,
         ),
     }
 
