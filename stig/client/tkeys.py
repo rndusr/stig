@@ -337,14 +337,72 @@ class Timedelta(int):
 
 
 import time
-from dateutil import parser as dtparser
 class Timestamp(int):
     UNKNOWN        = -1
     NOT_APPLICABLE = -2
 
+    _FORMATS_DATE = (('%Y',       ('tm_year',)),
+                     ('%Y-%m',    ('tm_year', 'tm_mon')),
+                     ('%Y-%m-%d', ('tm_year', 'tm_mon', 'tm_mday')),
+                     ('%d',       ('tm_mday',)),
+                     ('%m-%d',    ('tm_mon', 'tm_mday')))
+    _FORMATS_TIME = (('%H:%M', ('tm_hour', 'tm_min')),)
+
+    # Create all combinations of date, time and date+time formats, keeping track
+    # of the values they specify
+    _FORMATS = []
+    for date_frmt,date_given in _FORMATS_DATE:
+        _FORMATS.append((date_frmt, date_given))
+        for time_frmt,time_given in _FORMATS_TIME:
+            _FORMATS.append((time_frmt, time_given))
+            given = date_given + time_given
+            _FORMATS.append(('%s %s' % (date_frmt, time_frmt), given))
+            _FORMATS.append(('%s %s' % (time_frmt, date_frmt), given))
+
     @classmethod
     def from_string(cls, string):
-        return cls(dtparser.parse(string).timestamp())
+        string = string.strip().replace('  ', ' ')
+
+        def fill_in_missing_values(t, given):
+            # Today with seconds set to 0
+            t_now = time.localtime()
+            t_now = time.struct_time((t_now.tm_year, t_now.tm_mon, t_now.tm_mday,
+                                      t_now.tm_hour, t_now.tm_min, 0,
+                                      t_now.tm_wday, t_now.tm_yday, -1))
+
+            # THISYEAR-01-01 00:00:00
+            t_default = time.struct_time((t_now.tm_year, 1, 1, 0, 0, 0, 0, 1, -1))
+
+            names = ('tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min',
+                     'tm_sec', 'tm_wday', 'tm_yday', 'tm_isdst')
+            args = []
+
+            # Copy values from `t` if they are in `given`, otherwise from
+            # `t_now` or `t_default`.
+            for name in names:
+                if name in given:
+                    args.append(getattr(t, name))
+                else:
+                    if names.index(given[0]) > names.index(name):
+                        args.append(getattr(t_now, name))
+                    else:
+                        args.append(getattr(t_default, name))
+            return time.struct_time(args)
+
+        t = None
+        for frmt, given in cls._FORMATS:
+            try:
+                t = time.strptime(string, frmt)
+            except ValueError:
+                pass
+            else:
+                t = fill_in_missing_values(t, given)
+                break
+
+        if t is None:
+            raise ValueError('Invalid format: %r' % string)
+        else:
+            return cls(time.mktime(t))
 
     def __str__(self):
         if self == self.UNKNOWN:

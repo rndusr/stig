@@ -341,19 +341,25 @@ class TestTimestamp(unittest.TestCase):
     day = time.localtime(now).tm_mday
 
     def test_from_string(self):
-        for s,s_exp in (('2017-01-01', '2017-01-01 00:00:00'),
-                        ('     02-02', '%04d-02-02 00:00:00' % self.year),
-                        ('        03', '%04d-%02d-03 00:00:00' % (self.year, self.month)),
-                        ('      2015', '2015-%02d-%02d 00:00:00' % (self.month, self.day)),
-                        ('   2015-10', '2015-10-%02d 00:00:00' % self.day),
-
-                        ('      04:00', '%04d-%02d-%02d 04:00:00' % (self.year, self.month, self.day)),
-                        ('   20 05:50', '%04d-%02d-20 05:50:00' % (self.year, self.month)),
-                        ('06-16 06:06', '%04d-06-16 06:06:00' % (self.year)),
-                        ('2021-12-31 23:59:59', '2021-12-31 23:59:59')):
+        for s,s_exp in (('      2015', '2015-01-01 00:00:00'),
+                        ('   2105-02', '2105-02-01 00:00:00'),
+                        ('2051-03-10', '2051-03-10 00:00:00'),
+                        ('     04-11', '%04d-04-11 00:00:00' % self.year),
+                        ('        17', '%04d-%02d-17 00:00:00' % (self.year, self.month)),
+                        ('           05:30', '%04d-%02d-%02d 05:30:00' % (self.year, self.month, self.day)),
+                        ('        09 06:12', '%04d-%02d-09 06:12:00' % (self.year, self.month)),
+                        ('     06-16 06:40', '%04d-06-16 06:40:00' % (self.year)),
+                        ('2021-12-31 23:59', '2021-12-31 23:59:00'),
+                        ('2001-10    19:04', '2001-10-01 19:04:00'),
+                        ('2014       07:43', '2014-01-01 07:43:00')):
             t = tkeys.Timestamp.from_string(s)
             t_exp = self.strptime(s_exp)
             self.assertEqual(t, t_exp)
+
+        with self.assertRaises(ValueError) as cm:
+            tkeys.Timestamp.from_string('foo')
+        self.assertIn('Invalid format', str(cm.exception))
+        self.assertIn('foo', str(cm.exception))
 
     def test_string(self):
         self.assertEqual(str(tkeys.Timestamp(self.now)), self.strftime('%H:%M', self.now))
