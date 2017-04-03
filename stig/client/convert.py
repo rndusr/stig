@@ -28,15 +28,23 @@ class _DataCountConverter():
     UNITS_L2S = {'bit': 'b', 'byte': 'B', 'b': 'b', 'B': 'B'}
     UNITS_S2L = {'b': 'bit', 'B': 'byte', 'bit': 'bit', 'byte': 'byte'}
 
+    def from_string(self, string):
+        """Parse number of bytes/bits from `string`
+
+        `string` must be of the format "NUMBER[UNIT PREFIX][UNIT]".  UNIT PREFIX
+        is something like 'M' (mega) or 'Mi' (mebi). UNIT must be 'b' (bits) or
+        'B' (bytes). If UNIT is not given, NUMBER is assumed to be in bytes.
+
+        Raises ValueError if unit is invalid.
+        """
+        return self(Number.from_string(string))
+
     def __call__(self, num, unit=None):
         """Make Number from `num`
 
-        `num` can be a number (int, float) or a string.  If it's a string, it
-        can specify the unit ('b' for bits, 'B' for bytes), in which case the
-        `unit` argument is ignored.
-
-        If `unit` is not specified, it defaults to whatever the `unit`
-        property is currently set to.
+        The returned Number object is converted to bytes or bits depending on
+        the value of the `unit` property.  If no unit is specified, it defaults
+        to the value of the `unit` property.
         """
         n = Number(num, prefix=self._prefix, unit=self.UNITS_L2S.get(unit, None))
         unit = n.unit

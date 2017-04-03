@@ -47,30 +47,33 @@ class Number(float):
                         '|)(.*?)$',
                         flags=re.IGNORECASE)
 
+    @classmethod
+    def from_string(cls, string, prefix='metric', unit=None):
+        match = cls._REGEX.match(string)
+        if match is None:
+            raise ValueError('Not a number: {!r}'.format(string))
+        else:
+            num_str = match.group(1)
+            unit = match.group(3) or unit
+            prfx = match.group(2)
+            num = float(num_str)
+            if prfx:
+                all_prfxs = cls._ALL_PREFIXES_DCT
+                prfx_lower = prfx.lower()
+                if prfx_lower in all_prfxs:
+                    num *= all_prfxs[prfx_lower]
+
+            prfx_len = len(prfx)
+            if prfx_len == 2:
+                prefix = 'binary'
+            elif prfx_len == 1:
+                prefix = 'metric'
+
+            return cls(num, prefix, unit)
+
     def __new__(cls, num, prefix='metric', unit=None):
         if isinstance(num, cls):
             return cls(float(num), prefix or num.prefix, unit or num.unit)
-
-        elif isinstance(num, str):
-            match = cls._REGEX.match(num)
-            if match is None:
-                raise ValueError('Not a number: {!r}'.format(num))
-            else:
-                num_str = match.group(1)
-                unit = match.group(3) or unit
-                prfx = match.group(2)
-                num = float(num_str)
-                if prfx:
-                    all_prfxs = cls._ALL_PREFIXES_DCT
-                    prfx_lower = prfx.lower()
-                    if prfx_lower in all_prfxs:
-                        num *= all_prfxs[prfx_lower]
-
-                prfx_len = len(prfx)
-                if prfx_len == 2:
-                    prefix = 'binary'
-                elif prfx_len == 1:
-                    prefix = 'metric'
 
         obj = super().__new__(cls, num)
         if prefix == 'binary':
