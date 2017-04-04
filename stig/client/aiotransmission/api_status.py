@@ -137,7 +137,7 @@ class StatusAPI():
     def rate_down(self):
         """Total download rate or `constants.DISCONNECTED`"""
         if 'downloadSpeed' in self._session_stats:
-            return convert.bandwidth(self._session_stats['downloadSpeed'], unit='byte')
+            return convert.bandwidth(self._session_stats['downloadSpeed'])
         else:
             return const.DISCONNECTED
 
@@ -145,6 +145,6 @@ class StatusAPI():
     def rate_up(self):
         """Total upload rate or `constants.DISCONNECTED`"""
         if 'downloadSpeed' in self._session_stats:
-            return convert.bandwidth(self._session_stats['uploadSpeed'], unit='byte')
+            return convert.bandwidth(self._session_stats['uploadSpeed'])
         else:
             return const.DISCONNECTED
