@@ -62,7 +62,7 @@ class TestNumber(unittest.TestCase):
                               ('23.3Mi', 23.3*pow(1024, 2)),
                               ('23.4G',  23.4*pow(1000, 3)),
                               ('23.5Ti', 23.5*pow(1024, 4)) ):
-            n = tkeys.Number(string)
+            n = tkeys.Number.from_string(string)
             self.assertEqual(n, num)
             self.assertEqual(str(n), string)
 
@@ -73,20 +73,20 @@ class TestNumber(unittest.TestCase):
                               ('23.3MiX', 23.3*pow(1024, 2)),
                               ('23.4GX',  23.4*pow(1000, 3)),
                               ('23.5TiX', 23.5*pow(1024, 4)) ):
-            n = tkeys.Number(string)
+            n = tkeys.Number.from_string(string)
             self.assertEqual(n, num)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.with_unit, string)
             self.assertEqual(n.without_unit, string[:-1])
 
     def test_parsing_conflicting_units(self):
-        n = tkeys.Number('123kF', unit='B')
+        n = tkeys.Number.from_string('123kF', unit='B')
         self.assertEqual(n, 123000)
         self.assertEqual(n.unit, 'F')
 
     def test_parsing_Number_instance(self):
         for prefix in ('binary', 'metric'):
-            orig = tkeys.Number('1MB', prefix=prefix)
+            orig = tkeys.Number.from_string('1MB', prefix=prefix)
 
             n = tkeys.Number(orig)
             self.assertEqual(n, 1e6)
@@ -106,17 +106,17 @@ class TestNumber(unittest.TestCase):
 
     def test_not_a_number(self):
         with self.assertRaises(ValueError):
-            tkeys.Number('foo')
+            tkeys.Number.from_string('foo')
 
     def test_signs(self):
-        self.assertEqual(tkeys.Number('-10'), -10)
-        self.assertEqual(tkeys.Number('+10'), 10)
-        self.assertEqual(tkeys.Number('-10k'), -10000)
-        self.assertEqual(tkeys.Number('+10M'), 10e6)
-        n = tkeys.Number('-10GX')
+        self.assertEqual(tkeys.Number.from_string('-10'), -10)
+        self.assertEqual(tkeys.Number.from_string('+10'), 10)
+        self.assertEqual(tkeys.Number.from_string('-10k'), -10000)
+        self.assertEqual(tkeys.Number.from_string('+10M'), 10e6)
+        n = tkeys.Number.from_string('-10GX')
         self.assertEqual(n, -10e9)
         self.assertEqual(n.unit, 'X')
-        n = tkeys.Number('-10Ty')
+        n = tkeys.Number.from_string('-10Ty')
         self.assertEqual(n, -10e12)
         self.assertEqual(n.unit, 'y')
 
