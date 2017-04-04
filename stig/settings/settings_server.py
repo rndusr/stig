@@ -70,7 +70,7 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
     def convert(self, value):
         def convert_bandwidth(value):
             try:
-                return convert.bandwidth(value)
+                return convert.bandwidth.from_string(value)
             except ValueError as e:
                 raise ValueError('Not a {}: {!r}'.format(self.typename, value))
 
