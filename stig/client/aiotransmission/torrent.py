@@ -279,6 +279,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
+    'error'             : ('errorString',),
     'peers'             : ('peers', 'totalSize'),
 
     # 'files' is called once to initialize file names and sizes by
@@ -295,6 +296,7 @@ _MODIFY = {
     'status'          : _make_status,
     'peers-seeding'   : _count_seeds,
     'ratio'           : _modify_ratio,
+
     'timespan-eta'    : _modify_eta,
     'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated',
                                                       zero_means=tkeys.Timestamp.UNKNOWN),
@@ -306,6 +308,7 @@ _MODIFY = {
                                                       zero_means=tkeys.Timestamp.NOT_APPLICABLE),
     'time-completed'  : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
+
     'trackers'        : TrackerList,
     'peers'           : PeerList,
     'files'           : _create_TorrentFileTree,

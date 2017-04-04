@@ -675,6 +675,7 @@ TYPES = {
     'size-corrupt'      : convert.size,
 
     'trackers'          : tuple,
+    'error'             : str,
     'peers'             : tuple,
     'files'             : _ensure_TorrentFileTree,
 }
