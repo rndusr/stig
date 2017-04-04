@@ -181,7 +181,7 @@ DEFAULT_KEYMAP = (
     # List torrents with different filters
     {'context': 'tabs', 'key': 'f a', 'action': 'ls active'},
     {'context': 'tabs', 'key': 'f A', 'action': 'ls !active'},
-    {'context': 'tabs', 'key': 'f i', 'action': 'ls isolated'},
+    {'context': 'tabs', 'key': 'f i', 'action': 'ls isolated --columns name,tracker,error'},
     {'context': 'tabs', 'key': 'f p', 'action': 'ls paused'},
     {'context': 'tabs', 'key': 'f P', 'action': 'ls !paused'},
     {'context': 'tabs', 'key': 'f c', 'action': 'ls complete'},
