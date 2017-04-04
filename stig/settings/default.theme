@@ -172,6 +172,11 @@ torrentlist.tracker.header                         $tracker_fg,underline on $tli
 torrentlist.tracker.unfocused                      $tracker_fg           on $tlist_bg.uf
 torrentlist.tracker.focused                        $tracker_fg           on $tlist_bg.f
 
+$error_fg = light red
+torrentlist.error.header                           $error_fg,underline on $tlist_bg.uf
+torrentlist.error.unfocused                        $error_fg           on $tlist_bg.uf
+torrentlist.error.focused                          $error_fg           on $tlist_bg.f
+
 $added_fg = brown
 torrentlist.added.header                           $added_fg,underline on $tlist_bg.uf
 torrentlist.added.unfocused                        $added_fg           on $tlist_bg.uf

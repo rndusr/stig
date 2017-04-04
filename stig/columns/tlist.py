@@ -265,6 +265,18 @@ class Tracker(ColumnBase):
 COLUMNS['tracker'] = Tracker
 
 
+class Error(ColumnBase):
+    header = {'left': 'Error'}
+    width = ('weight', 300)
+    needed_keys = ('error',)
+    align = 'left'
+
+    def get_value(self):
+        return self.data['error']
+
+COLUMNS['error'] = Error
+
+
 class Marked(ColumnBase):
     interfaces = ('tui',)
 

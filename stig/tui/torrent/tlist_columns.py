@@ -238,6 +238,15 @@ class Tracker(_COLUMNS['tracker'], CellWidgetBase):
 TUICOLUMNS['tracker'] = Tracker
 
 
+class Error(_COLUMNS['error'], CellWidgetBase):
+    style = Style(prefix='torrentlist.error', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['error'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['error'] = Error
+
+
 class Status(_COLUMNS['status'], CellWidgetBase):
     style = Style(prefix='torrentlist.status', focusable=True,
                   extras=('header',),
