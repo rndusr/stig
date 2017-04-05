@@ -43,6 +43,20 @@ class CmpFilterSpec(BoolFilterSpec):
             return self.filter_function(obj, operator, value)
         return func
 
+def make_cmp_filter(types, key, description, aliases=()):
+    def filterfunc(obj, op, val, key=key):
+        return op(obj[key], val)
+
+    kwargs = {'description' : description,
+              'needed_keys' : (key,),
+              'aliases'     : aliases,
+              'value_type'  : types[key]}
+
+    if hasattr(kwargs['value_type'], 'from_string'):
+        kwargs['value_convert'] = kwargs['value_type'].from_string
+
+    return CmpFilterSpec(filterfunc, **kwargs)
+
 
 class Filter():
     """Match sequences of objects against a single filter"""

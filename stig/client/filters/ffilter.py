@@ -12,7 +12,10 @@
 """Filtering TorrentFiles by various values"""
 
 from ..tkeys import (TorrentFile, TorrentFilePriority)
-from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from . import (BoolFilterSpec, make_cmp_filter, Filter, FilterChain)
+
+def _make_cmp_filter(*args, **kwargs):
+    return make_cmp_filter(TorrentFile.TYPES, *args, **kwargs)
 
 
 class SingleTorrentFileFilter(Filter):
@@ -33,34 +36,18 @@ class SingleTorrentFileFilter(Filter):
     }
 
     COMPARATIVE_FILTERS = {
-        'name': CmpFilterSpec(
-            lambda f, op, v: op(f['name'], v),
-            description='Match VALUE against file name',
-            value_type=TorrentFile.TYPES['name']),
-        'path': CmpFilterSpec(
-            lambda f, op, v: op(f['path'], v),
-            description='Match VALUE against path in torrent',
-            value_type=TorrentFile.TYPES['path']),
-        'size': CmpFilterSpec(
-            lambda f, op, v: op(f['size-total'], v),
-            aliases=(),
-            description='Match VALUE against file size',
-            value_type=TorrentFile.TYPES['size-total']),
-        'downloaded': CmpFilterSpec(
-            lambda f, op, v: op(f['size-downloaded'], v),
-            aliases=('down',),
-            description='Match VALUE against number of downloaded bytes',
-            value_type=TorrentFile.TYPES['size-downloaded']),
-        '%downloaded': CmpFilterSpec(
-            lambda f, op, v: op(f['progress'], v),
-            aliases=('%down',),
-            description='Match VALUE against percentage of downloaded bytes',
-            value_type=TorrentFile.TYPES['progress']),
-        'priority': CmpFilterSpec(
-            lambda f, op, v: op(f['priority'], v),
-            aliases=('prio',),
-            description='Match VALUE against download priority (low, normal, high or shun)',
-            value_type=TorrentFile.TYPES['priority']),
+        'name': _make_cmp_filter('name', 'Match VALUE against file name'),
+        'path': _make_cmp_filter('path', 'Match VALUE against path in torrent'),
+        'size': _make_cmp_filter('size-total', 'Match VALUE against file size'),
+        'downloaded': _make_cmp_filter('size-downloaded',
+                                       'Match VALUE against number of downloaded bytes',
+                                       aliases=('down',)),
+        '%downloaded': _make_cmp_filter('progress',
+                                        'Match VALUE against percentage of downloaded bytes',
+                                        aliases=('%down',)),
+        'priority': _make_cmp_filter('priority',
+                                     'Match VALUE against download priority (low, normal, high or shun)',
+                                     aliases=('prio',)),
     }
 
 
