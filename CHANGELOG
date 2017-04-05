@@ -5,9 +5,11 @@
 
   Other changes:
     * New torrent list columns: 'status', 'created', 'added', 'started',
-      'activity', 'completed'
+      'activity', 'completed', 'error'
     * New sort orders: 'created', 'added', 'started', 'activity', 'completed'
     * New file filter: 'path'
+    * Listing isolated torrents with <f> <i> now lists only 'name', 'tracker'
+      and 'error' columns
     * Torrent paths and torrent file paths are now normalized so that
       'foo/bar/baz' is equal to 'foo/bar/baz/' and even 'foo/./bar/../bar/baz//'
 
