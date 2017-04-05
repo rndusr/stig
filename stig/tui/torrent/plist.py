@@ -54,8 +54,8 @@ class PeerListWidget(urwid.WidgetWrap):
         if title is None:
             # tfilter is either None or an actual TorrentFilter instance
             title = str(tfilter or 'all')
-        if pfilter:
-            title += ' %s' % pfilter
+            if pfilter:
+                title += ' %s' % pfilter
         if sort is not None:
             sortstr = str(sort)
             if sortstr is not self._sort.DEFAULT_SORT:
