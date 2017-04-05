@@ -42,7 +42,7 @@ class Number(float):
                           for prefix,size in chain.from_iterable(zip(_PREFIXES_BINARY,
                                                                      _PREFIXES_METRIC)))
     _ALL_PREFIXES_DCT = dict(_ALL_PREFIXES)
-    _REGEX = re.compile('^([-+]?\d+(?:\.\d+|)) ?(' +\
+    _REGEX = re.compile('^([-+]?\d*(?:\.\d+|)) ?(' +\
                         '|'.join(p[0] for p in _ALL_PREFIXES) + \
                         '|)(.*?)$',
                         flags=re.IGNORECASE)
