@@ -58,10 +58,11 @@ class TorrentListItemWidget(urwid.WidgetWrap):
 
 
 class TorrentListWidget(urwid.WidgetWrap):
-    def __init__(self, sort=None, tfilter=None, columns=[]):
+    def __init__(self, sort=None, tfilter=None, columns=[], title=None):
         self._sort = sort
         self._tfilter = tfilter
         self._columns = columns
+        self._title_base = title
         self.title_updater = None
 
         self._table = Table(**TUICOLUMNS)
@@ -185,12 +186,16 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        if self._tfilter is None:
-            title = ['<all>']
-        elif isinstance(self._tfilter, abc.Sequence):
-            title = ['<handpicked>']
+        if self._title_base is None:
+            if self._tfilter is None:
+                title = ['<all>']
+            elif isinstance(self._tfilter, abc.Sequence):
+                title = ['<handpicked>']
+            else:
+                title = [str(self._tfilter)]
         else:
-            title = [str(self._tfilter)]
+            title = [self._title_base]
+
         sortstr = str(self._sort)
         if sortstr is not self._sort.DEFAULT_SORT:
             title.append('{%s}' % sortstr)
