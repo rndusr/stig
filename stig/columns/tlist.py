@@ -239,6 +239,17 @@ class TorrentName(ColumnBase):
 COLUMNS['name'] = TorrentName
 
 
+class Status(ColumnBase):
+    header = {'left': 'Status'}
+    width = 11
+    needed_keys = ('status',)
+
+    def get_value(self):
+        return self.data['status'][0]
+
+COLUMNS['status'] = Status
+
+
 class Tracker(ColumnBase):
     header = {'left': 'Tracker'}
     width = 10
@@ -254,7 +265,71 @@ class Tracker(ColumnBase):
 COLUMNS['tracker'] = Tracker
 
 
+class Error(ColumnBase):
+    header = {'left': 'Error'}
+    width = ('weight', 300)
+    needed_keys = ('error',)
+    align = 'left'
+
+    def get_value(self):
+        return self.data['error']
+
+COLUMNS['error'] = Error
+
+
 class Marked(ColumnBase):
     interfaces = ('tui',)
 
 COLUMNS['marked'] = Marked
+
+
+class TimeBase(ColumnBase):
+    width = 10
+
+    def get_raw(self):
+        return int(self.get_value())
+
+class TimeCreated(TimeBase):
+    header = {'left': 'Created'}
+    needed_keys = ('time-created',)
+
+    def get_value(self):
+        return self.data['time-created']
+
+COLUMNS['created'] = TimeCreated
+
+class TimeAdded(TimeBase):
+    header = {'left': 'Added'}
+    needed_keys = ('time-added',)
+
+    def get_value(self):
+        return self.data['time-added']
+
+COLUMNS['added'] = TimeAdded
+
+class TimeStarted(TimeBase):
+    header = {'left': 'Started'}
+    needed_keys = ('time-started',)
+
+    def get_value(self):
+        return self.data['time-started']
+
+COLUMNS['started'] = TimeStarted
+
+class TimeActivity(TimeBase):
+    header = {'left': 'Activity'}
+    needed_keys = ('time-activity',)
+
+    def get_value(self):
+        return self.data['time-activity']
+
+COLUMNS['activity'] = TimeActivity
+
+class TimeCompleted(TimeBase):
+    header = {'left': 'Completed'}
+    needed_keys = ('time-completed',)
+
+    def get_value(self):
+        return self.data['time-completed']
+
+COLUMNS['completed'] = TimeCompleted

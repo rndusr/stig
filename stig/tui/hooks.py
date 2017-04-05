@@ -84,16 +84,16 @@ def _set_theme(themefile):
 cfg['tui.theme'].on_change(_set_theme)
 
 
-def _refresh_tlists(value):
+def _refresh_lists(value):
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
     tui.srvapi.poll()
 
-cfg['unit.bandwidth'].on_change(_refresh_tlists)
-cfg['unit.size'].on_change(_refresh_tlists)
-cfg['unitprefix.bandwidth'].on_change(_refresh_tlists)
-cfg['unitprefix.size'].on_change(_refresh_tlists)
+cfg['unit.bandwidth'].on_change(_refresh_lists)
+cfg['unit.size'].on_change(_refresh_lists)
+cfg['unitprefix.bandwidth'].on_change(_refresh_lists)
+cfg['unitprefix.size'].on_change(_refresh_lists)
 
 
 def _set_tui_marked_char(methodname, setting):

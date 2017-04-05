@@ -34,8 +34,10 @@ class Test_is_isolated(unittest.TestCase):
 
 class TestTorrentFields(unittest.TestCase):
     def test_handpicked_fields(self):
-        testcase = ('id', 'hash', 'name', 'isolated', 'id', 'id', 'id')
-        expect = ('id', 'hashString', 'name', 'isPrivate', 'trackerStats')
+        testcase = ('id', 'hash', 'name', 'status', 'id', 'id', 'id')
+        expect = ('id', 'hashString', 'name', 'status', 'percentDone',
+                  'metadataPercentComplete', 'rateDownload', 'rateUpload',
+                  'peersConnected', 'trackerStats', 'isPrivate')
         self.assertEqual(sorted(torrent.TorrentFields(*testcase)),
                          sorted(expect))
 
@@ -53,20 +55,20 @@ class TestTorrentFields(unittest.TestCase):
                              torrent.TorrentFields(*f2))
 
     def test_adding(self):
-        f1 = torrent.TorrentFields('name', 'stalled')
+        f1 = torrent.TorrentFields('name', 'path')
         f2 = torrent.TorrentFields('name', 'ratio')
         f3 = torrent.TorrentFields('hash', 'status')
-        self.assertEqual(f1+f2, torrent.TorrentFields('name', 'stalled', 'ratio'))
-        self.assertEqual(f1+f3, torrent.TorrentFields('name', 'stalled', 'hash', 'status'))
+        self.assertEqual(f1+f2, torrent.TorrentFields('name', 'path', 'ratio'))
+        self.assertEqual(f1+f3, torrent.TorrentFields('name', 'path', 'hash', 'status'))
         self.assertEqual(f2+f3, torrent.TorrentFields('name', 'ratio', 'hash', 'status'))
-        self.assertEqual(f1+f2+f3, torrent.TorrentFields('name', 'stalled', 'ratio', 'hash', 'status'))
+        self.assertEqual(f1+f2+f3, torrent.TorrentFields('name', 'path', 'ratio', 'hash', 'status'))
 
 
 class TestTorrent(unittest.TestCase):
     def test_contains(self):
         raw = {'id': 123, 'name': 'Fake torrent',
                'rateDownload': 10000, 'hashString': 'foobar',
-               'doneDate': 18902394873, 'recheckProgress': 0.4832}
+               'dateCreated': 18902394873, 'recheckProgress': 0.4832}
         t = torrent.Torrent(raw)
         self.assertEqual(set(t), {'id', 'name', 'rate-down', 'hash',
-                                  'timestamp-done', '%verified'})
+                                  'time-created', '%verified'})

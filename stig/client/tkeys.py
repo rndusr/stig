@@ -47,30 +47,33 @@ class Number(float):
                         '|)(.*?)$',
                         flags=re.IGNORECASE)
 
+    @classmethod
+    def from_string(cls, string, prefix='metric', unit=None):
+        match = cls._REGEX.match(string)
+        if match is None:
+            raise ValueError('Not a number: {!r}'.format(string))
+        else:
+            num_str = match.group(1)
+            unit = match.group(3) or unit
+            prfx = match.group(2)
+            num = float(num_str)
+            if prfx:
+                all_prfxs = cls._ALL_PREFIXES_DCT
+                prfx_lower = prfx.lower()
+                if prfx_lower in all_prfxs:
+                    num *= all_prfxs[prfx_lower]
+
+            prfx_len = len(prfx)
+            if prfx_len == 2:
+                prefix = 'binary'
+            elif prfx_len == 1:
+                prefix = 'metric'
+
+            return cls(num, prefix, unit)
+
     def __new__(cls, num, prefix='metric', unit=None):
         if isinstance(num, cls):
             return cls(float(num), prefix or num.prefix, unit or num.unit)
-
-        elif isinstance(num, str):
-            match = cls._REGEX.match(num)
-            if match is None:
-                raise ValueError('Not a number: {!r}'.format(num))
-            else:
-                num_str = match.group(1)
-                unit = match.group(3) or unit
-                prfx = match.group(2)
-                num = float(num_str)
-                if prfx:
-                    all_prfxs = cls._ALL_PREFIXES_DCT
-                    prfx_lower = prfx.lower()
-                    if prfx_lower in all_prfxs:
-                        num *= all_prfxs[prfx_lower]
-
-                prfx_len = len(prfx)
-                if prfx_len == 2:
-                    prefix = 'binary'
-                elif prfx_len == 1:
-                    prefix = 'metric'
 
         obj = super().__new__(cls, num)
         if prefix == 'binary':
@@ -85,13 +88,7 @@ class Number(float):
 
     @property
     def with_unit(self):
-        s = None
-        for prefix,size in self._prefixes:
-            if self >= size:
-                s = '%s%s' % (pretty_float(self/size), prefix)
-                break
-        if s is None:
-            s = pretty_float(self)
+        s = self.without_unit
         if self.unit is not None:
             s += self.unit
         return s
@@ -110,15 +107,25 @@ class Number(float):
         return '<{} {}, prefix={!r}, unit={!r}>'.format(type(self).__name__, float(self),
                                                         self.prefix, self.unit)
 
-    def __add__(self, other): return type(self)(super().__add__(other))
-    def __sub__(self, other): return type(self)(super().__sub__(other))
-    def __mul__(self, other): return type(self)(super().__mul__(other))
-    def __div__(self, other): return type(self)(super().__div__(other))
-    def __truediv__(self, other): return type(self)(super().__truediv__(other))
-    def __floordiv__(self, other): return type(self)(super().__floordiv__(other))
-    def __mod__(self, other): return type(self)(super().__mod__(other))
-    def __divmod__(self, other): return type(self)(super().__divmod__(other))
-    def __pow__(self, other): return type(self)(super().__pow__(other))
+    # Arithmetic operations return Number instances with unit and prefix preserved
+    def __add__(self, other):
+        return type(self)(super().__add__(other), unit=self.unit, prefix=self.prefix)
+    def __sub__(self, other):
+        return type(self)(super().__sub__(other), unit=self.unit, prefix=self.prefix)
+    def __mul__(self, other):
+        return type(self)(super().__mul__(other), unit=self.unit, prefix=self.prefix)
+    def __div__(self, other):
+        return type(self)(super().__div__(other), unit=self.unit, prefix=self.prefix)
+    def __truediv__(self, other):
+        return type(self)(super().__truediv__(other), unit=self.unit, prefix=self.prefix)
+    def __floordiv__(self, other):
+        return type(self)(super().__floordiv__(other), unit=self.unit, prefix=self.prefix)
+    def __mod__(self, other):
+        return type(self)(super().__mod__(other), unit=self.unit, prefix=self.prefix)
+    def __divmod__(self, other):
+        return type(self)(super().__divmod__(other), unit=self.unit, prefix=self.prefix)
+    def __pow__(self, other):
+        return type(self)(super().__pow__(other), unit=self.unit, prefix=self.prefix)
 
 # Because 'convert' needs Number, which is specified in this file, it must be
 # imported AFTER Number exists to avoid a circular import.
@@ -130,13 +137,22 @@ class Percent(float):
     def __str__(self):
         return pretty_float(self)
 
+def _calc_percent(a, b):
+    try:
+        return a / b * 100
+    except ZeroDivisionError:
+        return 0
+
 
 class Ratio(Number):
     """A Torrent's upload/download ratio as a float"""
     UNKNOWN = -1
+    NOT_APPLICABLE = -2
     def __str__(self):
         if self == self.UNKNOWN:
             return '?'
+        elif self == self.NOT_APPLICABLE:
+            return ''
         else:
             return pretty_float(self)
 
@@ -147,29 +163,34 @@ class SeedCount(Number):
         return '?' if self == self.UNKNOWN else super().__str__()
 
 
-class Status(str):
+class Status(tuple):
     """A Torrent's status as string"""
-    VERIFY   = 'verifying'
-    VERIFY_Q = 'verifying pending'
-    LEECH    = 'leeching'
-    LEECH_Q  = 'leeching pending'
-    SEED     = 'seeding'
-    SEED_Q   = 'seeding pending'
-    STOPPED  = 'stopped'
-    ORDER = (VERIFY, VERIFY_Q, LEECH, LEECH_Q, SEED, SEED_Q, STOPPED)
 
-    def __new__(cls, status):
-        if status not in cls.ORDER:
-            raise ValueError('Invalid status string: {!r}'.format(status))
-        else:
-            obj = super().__new__(cls, status)
-            obj._index = cls.ORDER.index(status)
-            return obj
+    IDLE      = 'idle'
+    DOWNLOAD  = 'downloading'
+    UPLOAD    = 'uploading'
+    CONNECTED = 'connected'
+    SEED      = 'seeding'
+    STOPPED   = 'stopped'
+    QUEUED    = 'queued'
+    ISOLATED  = 'isolated'
+    VERIFY    = 'verifying'
+    INIT      = 'discovering'
+    ORDER = (VERIFY, DOWNLOAD, UPLOAD, INIT, CONNECTED,
+             ISOLATED, QUEUED, IDLE, STOPPED, SEED)
 
-    def __lt__(self, other): return self._index < other._index
-    def __le__(self, other): return self._index <= other._index
-    def __gt__(self, other): return self._index > other._index
-    def __ge__(self, other): return self._index >= other._index
+    def __lt__(self, other):
+        return self.ORDER.index(self[0]) < self.ORDER.index(other[0])
+
+    def __le__(self, other):
+        return self.ORDER.index(self[0]) <= self.ORDER.index(other[0])
+
+    def __gt__(self, other):
+        return self.ORDER.index(self[0]) > self.ORDER.index(other[0])
+
+    def __ge__(self, other):
+        return self.ORDER.index(self[0]) >= self.ORDER.index(other[0])
+
 
 
 import operator
@@ -188,7 +209,7 @@ class SmartCmpStr(str):
         # http://www.unicode.org/faq/char_combmark.html
         return super().__new__(cls, unicodedata.normalize('NFC', string))
 
-    def __cmp(self, other, op):
+    def __cmp(self, op, other):
         if not isinstance(other, str):
             return NotImplemented
 
@@ -209,13 +230,24 @@ class SmartCmpStr(str):
         else:
             return op(s, o)
 
-    def __lt__(self, other): return self.__cmp(other, operator.lt)
-    def __le__(self, other): return self.__cmp(other, operator.le)
-    def __eq__(self, other): return self.__cmp(other, operator.eq)
-    def __ne__(self, other): return self.__cmp(other, operator.ne)
-    def __gt__(self, other): return self.__cmp(other, operator.gt)
-    def __ge__(self, other): return self.__cmp(other, operator.ge)
-    def __contains__(self, other): return self.__cmp(other, operator.contains)
+    def __lt__(self, other): return self.__cmp(operator.lt, other)
+    def __le__(self, other): return self.__cmp(operator.le, other)
+    def __eq__(self, other): return self.__cmp(operator.eq, other)
+    def __ne__(self, other): return self.__cmp(operator.ne, other)
+    def __gt__(self, other): return self.__cmp(operator.gt, other)
+    def __ge__(self, other): return self.__cmp(operator.ge, other)
+    def __contains__(self, other): return self.__cmp(operator.contains, other)
+
+    def __hash__(self):
+        return super().__hash__()
+
+
+class Path(SmartCmpStr):
+    def __new__(cls, path):
+        return super().__new__(cls, os.path.normpath(path))
+
+    def __repr__(self):
+        return '<{} {!r}>'.format(type(self).__name__, str(self))
 
     def __hash__(self):
         return super().__hash__()
@@ -231,18 +263,44 @@ SECONDS = (('y', 31557600),  # 365.25 days
 
 class Timedelta(int):
     # To sort unknown and not applicable Timedeltas below the rest, these
-    # constants have really large values that are very likely never going to
-    # be of any use anyway.
-    UNKNOWN        = 1e300
-    NOT_APPLICABLE = 1e301
-    assert UNKNOWN != NOT_APPLICABLE
+    # constants have large values that are very likely never encountered as
+    # actual values.
+    UNKNOWN        = 1e10    # ~3.1k years
+    NOT_APPLICABLE = 1e10+1  # ~31k years
+
+    _FROM_STRING_REGEX = re.compile((r'(\d+(?:\.\d+|)[' +
+                                     r''.join(unit for unit,secs in SECONDS) +
+                                     r']?)'), flags=re.IGNORECASE)
+    @classmethod
+    def from_string(cls, string):
+        string = string.replace(' ', '')
+        if len(string) < 1:
+            raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, string))
+
+        secs_total = 0
+        for s in cls._FROM_STRING_REGEX.split(string):
+            if len(s) < 1:
+                continue
+            elif not cls._FROM_STRING_REGEX.match(s):
+                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, s))
+            elif s[-1].isdigit():
+                # No unit specified
+                secs_total += float(s)
+            else:
+                unit, num = s[-1], s[:-1]
+                for unit_,secs in SECONDS:
+                    if unit == unit_:
+                        secs_total += float(num) * secs
+                        break
+
+        return cls(secs_total)
 
     def __str__(self):
         if self == self.UNKNOWN:
             return '?'
         elif self == self.NOT_APPLICABLE:
             return ''
-        elif -1 < self < 1:
+        elif self == 0:
             return 'now'
 
         abs_secs = abs(self)
@@ -276,33 +334,112 @@ class Timedelta(int):
         """Whether delta is known"""
         return self not in (self.UNKNOWN, self.NOT_APPLICABLE)
 
+    @property
+    def is_known(self):
+        return bool(self)
+
 
 import time
-class Timestamp(float):
-    UNKNOWN = -1
+class Timestamp(int):
+    UNKNOWN        = -1
+    NOT_APPLICABLE = -2
+
+    _FORMATS_DATE = (('%Y',       ('tm_year',)),
+                     ('%Y-%m',    ('tm_year', 'tm_mon')),
+                     ('%Y-%m-%d', ('tm_year', 'tm_mon', 'tm_mday')),
+                     ('%d',       ('tm_mday',)),
+                     ('%m-%d',    ('tm_mon', 'tm_mday')))
+    _FORMATS_TIME = (('%H:%M', ('tm_hour', 'tm_min')),)
+
+    # Create all combinations of date, time and date+time formats, keeping track
+    # of the values they specify
+    _FORMATS = []
+    for date_frmt,date_given in _FORMATS_DATE:
+        _FORMATS.append((date_frmt, date_given))
+        for time_frmt,time_given in _FORMATS_TIME:
+            _FORMATS.append((time_frmt, time_given))
+            given = date_given + time_given
+            _FORMATS.append(('%s %s' % (date_frmt, time_frmt), given))
+            _FORMATS.append(('%s %s' % (time_frmt, date_frmt), given))
+
+    @classmethod
+    def from_string(cls, string):
+        string = string.strip().replace('  ', ' ')
+
+        def fill_in_missing_values(t, given):
+            # Today with seconds set to 0
+            t_now = time.localtime()
+            t_now = time.struct_time((t_now.tm_year, t_now.tm_mon, t_now.tm_mday,
+                                      t_now.tm_hour, t_now.tm_min, 0,
+                                      t_now.tm_wday, t_now.tm_yday, -1))
+
+            # THISYEAR-01-01 00:00:00
+            t_default = time.struct_time((t_now.tm_year, 1, 1, 0, 0, 0, 0, 1, -1))
+
+            names = ('tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min',
+                     'tm_sec', 'tm_wday', 'tm_yday', 'tm_isdst')
+            args = []
+
+            # Copy values from `t` if they are in `given`, otherwise from
+            # `t_now` or `t_default`.
+            for name in names:
+                if name in given:
+                    args.append(getattr(t, name))
+                else:
+                    if names.index(given[0]) > names.index(name):
+                        args.append(getattr(t_now, name))
+                    else:
+                        args.append(getattr(t_default, name))
+            return time.struct_time(args)
+
+        t = None
+        for frmt, given in cls._FORMATS:
+            try:
+                t = time.strptime(string, frmt)
+            except ValueError:
+                pass
+            else:
+                t = fill_in_missing_values(t, given)
+                break
+
+        if t is None:
+            raise ValueError('Invalid format: %r' % string)
+        else:
+            return cls(time.mktime(t))
 
     def __str__(self):
         if self == self.UNKNOWN:
-            return 'sometime'
+            return '?'
+        elif self == self.NOT_APPLICABLE:
+            return ''
+
         abs_delta = abs(self - time.time())
-        if abs_delta <= SECONDS[2][1]:      # 1 day: locale's time
-            frmt = '%X'
-        elif abs_delta <= SECONDS[2][1]*2:  # 2 days: locale's date and time
-            frmt = '%x %X'
-        else:                               # locale's date
-            frmt = '%x'
+        if abs_delta <= SECONDS[2][1]:  # <= 1 day
+            frmt = '%H:%M'
+        else:
+            frmt = '%Y-%m-%d'
         return time.strftime(frmt, time.localtime(self))
 
     def __bool__(self):
-        """Whether timestamp is just a few seconds in the past/future"""
-        return self != self.UNKNOWN
+        """Whether timestamp known"""
+        return self != self.UNKNOWN and self != self.NOT_APPLICABLE
+
+    @property
+    def is_known(self):
+        return bool(self)
 
     @property
     def delta(self):
         if self == self.UNKNOWN:
             return Timedelta(Timedelta.UNKNOWN)
+        elif self == self.NOT_APPLICABLE:
+            return Timedelta(Timedelta.NOT_APPLICABLE)
         else:
             return Timedelta(self - time.time())
+
+    @property
+    def in_future(self):
+        return bool(self) and self > time.time()
 
 
 
@@ -339,9 +476,9 @@ class TorrentFile(abc.Mapping):
         'tid'             : int,
         'id'              : int,
         'name'            : SmartCmpStr,
-        'path'            : SmartCmpStr,
-        'size-total'      : lambda val: convert.size(val, unit='byte'),
-        'size-downloaded' : lambda val: convert.size(val, unit='byte'),
+        'path'            : Path,
+        'size-total'      : convert.size,
+        'size-downloaded' : convert.size,
         'is-wanted'       : bool,
         'priority'        : TorrentFilePriority,
         'progress'        : Percent,
@@ -357,7 +494,7 @@ class TorrentFile(abc.Mapping):
         'is-wanted'       : lambda raw: raw['is-wanted'],
         'priority'        : lambda raw: (TorrentFilePriority.STR2INT['shun']
                                          if not raw['is-wanted'] else raw['priority']),
-        'progress'        : lambda raw: raw['size-downloaded'] / raw['size-total'] * 100,
+        'progress'        : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
 
     def __init__(self, tid, id, name, path, size_total, size_downloaded, is_wanted, priority):
@@ -456,16 +593,16 @@ class TorrentPeer(abc.Mapping):
         'id'        : lambda val: val,
         'tid'       : lambda val: val,
         'tname'     : SmartCmpStr,
-        'tsize'     : lambda val: convert.size(val, unit='byte'),
+        'tsize'     : convert.size,
         'ip'        : str,
         'port'      : int,
         'client'    : SmartCmpStr,
         'country'   : str,
         'progress'  : Percent,
-        'rate-up'   : lambda val: convert.bandwidth(val, unit='byte'),
-        'rate-down' : lambda val: convert.bandwidth(val, unit='byte'),
+        'rate-up'   : convert.bandwidth,
+        'rate-down' : convert.bandwidth,
         'eta'       : Timedelta,
-        'rate-est'  : lambda val: convert.bandwidth(val, unit='byte'),
+        'rate-est'  : convert.bandwidth,
     }
 
     _VALUES = {
@@ -505,13 +642,10 @@ TYPES = {
     'id'                : int,
     'hash'              : str,
     'name'              : SmartCmpStr,
-    'status'            : Status,
-    'path'              : SmartCmpStr,
     'ratio'             : Ratio,
-
+    'status'            : Status,
+    'path'              : Path,
     'private'           : bool,
-    'stalled'           : bool,
-    'isolated'          : bool,
 
     '%downloaded'       : Percent,
     '%metadata'         : Percent,
@@ -522,25 +656,26 @@ TYPES = {
     'peers-downloading' : Number,
     'peers-seeding'     : SeedCount,
 
-    'timestamp-created' : Timestamp,
-    'timestamp-added'   : Timestamp,
-    'timestamp-started' : Timestamp,
-    'timestamp-active'  : Timestamp,
-    'timestamp-done'    : Timestamp,
     'timespan-eta'      : Timedelta,
-    'timestamp-manual-announce-allowed': lambda v: Timestamp(v) if v > 0 else Timestamp(Timestamp.UNKNOWN),
+    'time-created'      : Timestamp,
+    'time-added'        : Timestamp,
+    'time-started'      : Timestamp,
+    'time-activity'     : Timestamp,
+    'time-completed'    : Timestamp,
+    'time-manual-announce-allowed': Timestamp,
 
-    'rate-down'         : lambda v: convert.bandwidth(v, unit='byte'),
-    'rate-up'           : lambda v: convert.bandwidth(v, unit='byte'),
+    'rate-down'         : convert.bandwidth,
+    'rate-up'           : convert.bandwidth,
 
-    'size-final'        : lambda v: convert.size(v, unit='byte'),
-    'size-total'        : lambda v: convert.size(v, unit='byte'),
-    'size-downloaded'   : lambda v: convert.size(v, unit='byte'),
-    'size-uploaded'     : lambda v: convert.size(v, unit='byte'),
-    'size-available'    : lambda v: convert.size(v, unit='byte'),
-    'size-corrupt'      : lambda v: convert.size(v, unit='byte'),
+    'size-final'        : convert.size,
+    'size-total'        : convert.size,
+    'size-downloaded'   : convert.size,
+    'size-uploaded'     : convert.size,
+    'size-available'    : convert.size,
+    'size-corrupt'      : convert.size,
 
     'trackers'          : tuple,
-    'files'             : _ensure_TorrentFileTree,
+    'error'             : str,
     'peers'             : tuple,
+    'files'             : _ensure_TorrentFileTree,
 }

@@ -16,11 +16,15 @@ this, write a new class that derives from CellWidgetBase and register it in
 the COLUMNS dictionary to make it available.
 """
 
+from ...logging import make_logger
+log = make_logger(__name__)
+
 import urwid
 
 from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
 from ...columns.tlist import COLUMNS as _COLUMNS
+from ...client import tkeys
 
 
 TUICOLUMNS = {}
@@ -185,6 +189,46 @@ class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
 TUICOLUMNS['eta'] = EtaComplete
 
 
+class TimeCreated(_COLUMNS['created'], CellWidgetBase):
+    style = Style(prefix='torrentlist.created', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['created'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['created'] = TimeCreated
+
+class TimeAdded(_COLUMNS['added'], CellWidgetBase):
+    style = Style(prefix='torrentlist.added', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['added'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['added'] = TimeAdded
+
+class TimeStarted(_COLUMNS['started'], CellWidgetBase):
+    style = Style(prefix='torrentlist.started', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['started'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['started'] = TimeStarted
+
+class TimeActive(_COLUMNS['activity'], CellWidgetBase):
+    style = Style(prefix='torrentlist.activity', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['activity'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['activity'] = TimeActive
+
+class TimeCompleted(_COLUMNS['completed'], CellWidgetBase):
+    style = Style(prefix='torrentlist.completed', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['completed'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value.in_future else ''
+
+TUICOLUMNS['completed'] = TimeCompleted
+
+
 class Tracker(_COLUMNS['tracker'], CellWidgetBase):
     style = Style(prefix='torrentlist.tracker', focusable=True,
                   extras=('header',))
@@ -194,13 +238,49 @@ class Tracker(_COLUMNS['tracker'], CellWidgetBase):
 TUICOLUMNS['tracker'] = Tracker
 
 
+class Error(_COLUMNS['error'], CellWidgetBase):
+    style = Style(prefix='torrentlist.error', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['error'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['error'] = Error
+
+
+class Status(_COLUMNS['status'], CellWidgetBase):
+    style = Style(prefix='torrentlist.status', focusable=True,
+                  extras=('header',),
+                  modes=('idle', 'downloading', 'uploading', 'connected', 'seeding',
+                         'stopped', 'queued', 'isolated', 'verifying', 'discovering'))
+
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
+                           style.attrs('header'))
+
+    MODE_MAP = {
+        tkeys.Status.IDLE      : 'idle',
+        tkeys.Status.DOWNLOAD  : 'downloading',
+        tkeys.Status.UPLOAD    : 'uploading',
+        tkeys.Status.CONNECTED : 'connected',
+        tkeys.Status.SEED      : 'seeding',
+        tkeys.Status.STOPPED   : 'stopped',
+        tkeys.Status.QUEUED    : 'queued',
+        tkeys.Status.ISOLATED  : 'isolated',
+        tkeys.Status.VERIFY    : 'verifying',
+        tkeys.Status.INIT      : 'discovering',
+    }
+    def get_mode(self):
+        return self.MODE_MAP[self.value]
+
+TUICOLUMNS['status'] = Status
+
+
 class TorrentName(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),
                   modes=('idle.progress1', 'idle.progress2', 'idle.complete',
                          'stopped.progress1', 'stopped.progress2', 'stopped.complete',
                          'isolated.progress1', 'isolated.progress2', 'isolated.complete',
-                         'initializing.progress1', 'initializing.progress2', 'initializing.complete',
+                         'discovering.progress1', 'discovering.progress2', 'discovering.complete',
                          'verifying.progress1', 'verifying.progress2', 'verifying.complete',
                          'downloading.progress1', 'downloading.progress2', 'downloading.complete',
                          'uploading.progress1', 'uploading.progress2', 'uploading.complete',
@@ -209,7 +289,7 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
     needed_keys = ('name', 'status', '%downloaded', '%verified', '%metadata',
-                   'isolated', 'rate-up', 'rate-down', 'peers-connected')
+                   'rate-up', 'rate-down', 'peers-connected')
 
     def __init__(self, *args, **kwargs):
         self.status = ('', 'idle', 0)
@@ -244,26 +324,29 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
     @staticmethod
     def make_status(t):
         progress = t['%downloaded']
-        if t['status'] == 'stopped':
+        Status = type(t['status'])
+        if Status.STOPPED in t['status']:
             mode = 'stopped'
-        elif t['isolated']:
+        elif Status.ISOLATED in t['status']:
             mode = 'isolated'
-        elif t['%metadata'] < 1:
-            mode = 'initializing'
+        elif Status.INIT in t['status']:
+            mode = 'discovering'
             progress = t['%metadata']
-        elif 'verify' in t['status']:
+        elif Status.VERIFY in t['status']:
             mode = 'verifying'
             progress = t['%verified']
-        elif t['rate-down'] > 0 and t['status'] == 'leeching':
+        elif Status.DOWNLOAD in t['status']:
             mode = 'downloading'
-        elif t['status'] == 'leeching pending':
-            mode = 'queued'
-        elif t['rate-up'] > 0:
+        elif Status.UPLOAD in t['status']:
             mode = 'uploading'
-        elif t['peers-connected'] > 0:
+        elif Status.QUEUED in t['status']:
+            mode = 'queued'
+        elif Status.CONNECTED in t['status']:
             mode = 'connected'
         else:
             mode = 'idle'
         return (t['name'], mode, progress)
+
+
 
 TUICOLUMNS['name'] = TorrentName

@@ -25,7 +25,13 @@ def _modify_ratio(raw_torrent):
     #define TR_RATIO_NA  -1
     #define TR_RATIO_INF -2
     ratio = raw_torrent['uploadRatio']
-    return tkeys.Ratio.UNKNOWN if ratio in (-1, -2) else ratio
+    if ratio == -1:
+        return tkeys.Ratio.NOT_APPLICABLE
+    elif ratio == -2:
+        return tkeys.Ratio.UNKNOWN
+    else:
+        return ratio
+
 
 def _modify_eta(raw_torrent):
     #define TR_ETA_NOT_AVAIL -1
@@ -35,7 +41,34 @@ def _modify_eta(raw_torrent):
         return tkeys.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
         return tkeys.Timedelta.UNKNOWN
-    return seconds
+    else:
+        return seconds
+
+
+def _modify_timestamp(raw_torrent, key, zero_means=tkeys.Timestamp.UNKNOWN):
+    # I couldn't find any documentation on this, but 0 seems to mean "not applicable"?
+    seconds = raw_torrent[key]
+    if seconds == 0:
+        return zero_means
+    else:
+        return seconds
+
+
+import time
+def _modify_timestamp_completed(raw_torrent):
+    seconds = raw_torrent['doneDate']
+    if seconds == 0:
+        if raw_torrent['eta'] >= 0:
+            # timestamp is in the future
+            return time.time() + raw_torrent['eta']
+        elif raw_torrent['percentDone'] < 1:
+            return tkeys.Timestamp.UNKNOWN
+        else:
+            return tkeys.Timestamp.NOT_APPLICABLE
+    else:
+        # timestamp is in the past
+        return seconds
+
 
 def _count_seeds(raw_torrent):
     trackerStats = raw_torrent['trackerStats']
@@ -43,6 +76,7 @@ def _count_seeds(raw_torrent):
         return max(t['seederCount'] for t in trackerStats)
     else:
         return tkeys.SeedCount.UNKNOWN
+
 
 def _is_isolated(raw_torrent):
     """Return whether this torrent can find any peers via trackers or DHT"""
@@ -62,29 +96,70 @@ def _is_isolated(raw_torrent):
             return False
     return True  # No way to find any peers
 
-_STATUS_MAP = {
-    0: tkeys.Status.STOPPED,
-    1: tkeys.Status.VERIFY_Q,
-    2: tkeys.Status.VERIFY,
-    3: tkeys.Status.LEECH_Q,
-    4: tkeys.Status.LEECH,
-    5: tkeys.Status.SEED_Q,
-    6: tkeys.Status.SEED,
-}
 
+def _make_status(t):
+    Status = tkeys.Status
+    statuses = []
+
+    # RPC values for 'status' field:
+    # TR_STATUS_STOPPED        = 0, /* Torrent is stopped */
+    # TR_STATUS_CHECK_WAIT     = 1, /* Queued to check files */
+    # TR_STATUS_CHECK          = 2, /* Checking files */
+    # TR_STATUS_DOWNLOAD_WAIT  = 3, /* Queued to download */
+    # TR_STATUS_DOWNLOAD       = 4, /* Downloading */
+    # TR_STATUS_SEED_WAIT      = 5, /* Queued to seed */
+    # TR_STATUS_SEED           = 6  /* Seeding */
+    t_status = t['status']
+    if t_status == 0:
+        statuses.append(Status.STOPPED)
+    elif t_status in (1, 2):
+        statuses.append(Status.VERIFY)
+    if t_status in (1, 3, 5):
+        statuses.append(Status.QUEUED)
+
+    if Status.STOPPED not in statuses:
+        if _is_isolated(t):
+            statuses.append(Status.ISOLATED)
+        if t['metadataPercentComplete'] < 1:
+            statuses.append(Status.INIT)
+
+        if Status.QUEUED not in statuses:
+            if t['peersConnected'] > 0:
+                if t['rateDownload'] > 0:
+                    statuses.append(Status.DOWNLOAD)
+                if t['rateUpload'] > 0:
+                    statuses.append(Status.UPLOAD)
+                statuses.append(Status.CONNECTED)
+
+            if t['percentDone'] >= 1:
+                statuses.append(Status.SEED)
+
+    if all(x not in statuses for x in (Status.UPLOAD,
+                                       Status.DOWNLOAD,
+                                       Status.VERIFY)):
+        statuses.append(Status.IDLE)
+
+    return statuses
 
 
 def _create_TorrentFileTree(raw_torrent):
     filelist = raw_torrent['fileStats']
-    # Combine 'files' and 'fileStats' fields and add the 'id' field, which
-    # is the index in the list provided by Transmission.
-    if 'files' in raw_torrent:
-        for i,(f1,f2) in enumerate(zip(filelist, raw_torrent['files'])):
-            f1['id'] = i
-            f1.update(f2)
+    if not filelist:
+        # filelist is empty if torrent was added by hash and metadata isn't
+        # downloaded yet.
+        filelist = [{'name': raw_torrent['name'], 'priority': 0, 'length': 0,
+                     'wanted': True, 'id': 0, 'bytesCompleted': 0}]
     else:
-        for i,f in enumerate(filelist):
-            f['id'] = i
+        # Combine 'files' and 'fileStats' fields and add the 'id' field, which
+        # is the index in the list provided by Transmission.
+        if 'files' in raw_torrent:
+            for i,(f1,f2) in enumerate(zip(filelist, raw_torrent['files'])):
+                f1['id'] = i
+                f1.update(f2)
+        else:
+            for i,f in enumerate(filelist):
+                f['id'] = i
+
     return TorrentFileTree(raw_torrent['id'], entries=filelist)
 
 import os
@@ -124,6 +199,11 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
     def update(self, fileStats):
         def update_files(ftree, fileStats):
+            if not fileStats:
+                # If fileStats is empty (e.g. no metadata yet), there is a dummy
+                # entry in ftree created by _create_TorrentFileTree().
+                return
+
             for entry in ftree.values():
                 if isinstance(entry, tkeys.TorrentFile):
                     # File ID is its index in the list provided by
@@ -165,12 +245,11 @@ DEPENDENCIES = {
     'id'                : ('id',),
     'hash'              : ('hashString',),
     'name'              : ('name',),
-    'status'            : ('status',),
+    'ratio'             : ('uploadRatio',),
+    'status'            : ('status', 'percentDone', 'metadataPercentComplete', 'rateDownload',
+                           'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'              : ('downloadDir',),
-
     'private'           : ('isPrivate',),
-    'stalled'           : ('isStalled',),
-    'isolated'          : ('trackerStats', 'isPrivate'),
 
     '%downloaded'       : ('percentDone',),
     '%metadata'         : ('metadataPercentComplete',),
@@ -181,15 +260,14 @@ DEPENDENCIES = {
     'peers-downloading' : ('peersGettingFromUs',),
     'peers-seeding'     : ('trackerStats',),
 
-    'timestamp-created' : ('dateCreated',),
-    'timestamp-added'   : ('addedDate',),
-    'timestamp-started' : ('startDate',),
-    'timestamp-active'  : ('activityDate',),
-    'timestamp-done'    : ('doneDate',),
     'timespan-eta'      : ('eta',),
-    'timestamp-manual-announce-allowed': ('manualAnnounceTime',),
+    'time-created'      : ('dateCreated',),
+    'time-added'        : ('addedDate',),
+    'time-started'      : ('startDate',),
+    'time-activity'     : ('activityDate',),
+    'time-completed'    : ('doneDate', 'percentDone', 'eta'),
+    'time-manual-announce-allowed': ('manualAnnounceTime',),
 
-    'ratio'             : ('uploadRatio',),
     'rate-down'         : ('rateDownload',),
     'rate-up'           : ('rateUpload',),
 
@@ -201,6 +279,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
+    'error'             : ('errorString',),
     'peers'             : ('peers', 'totalSize'),
 
     # 'files' is called once to initialize file names and sizes by
@@ -214,12 +293,22 @@ _MODIFY = {
     '%downloaded'     : lambda raw: raw['percentDone']*100,
     '%metadata'       : lambda raw: raw['metadataPercentComplete']*100,
     '%verified'       : lambda raw: raw['recheckProgress']*100,
-    'status'          : lambda raw: _STATUS_MAP[raw['status']],
+    'status'          : _make_status,
     'peers-seeding'   : _count_seeds,
-    'isolated'        : _is_isolated,
     'ratio'           : _modify_ratio,
+
     'timespan-eta'    : _modify_eta,
-    'path'            : lambda raw: normpath(raw['downloadDir']),
+    'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated',
+                                                      zero_means=tkeys.Timestamp.UNKNOWN),
+    'time-added'      : lambda raw: _modify_timestamp(raw, 'addedDate',
+                                                      zero_means=tkeys.Timestamp.UNKNOWN),
+    'time-started'    : lambda raw: _modify_timestamp(raw, 'startDate',
+                                                      zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+    'time-activity'   : lambda raw: _modify_timestamp(raw, 'activityDate',
+                                                      zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+    'time-completed'  : lambda raw: _modify_timestamp_completed(raw),
+    'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
+
     'trackers'        : TrackerList,
     'peers'           : PeerList,
     'files'           : _create_TorrentFileTree,
@@ -259,20 +348,21 @@ class Torrent(base.TorrentBase):
         old.update(raw_torrent)
 
     def __getitem__(self, key):
-        if key not in self._cache:
+        cache = self._cache
+        if key not in cache:
+            raw = self._raw
             if key in _MODIFY:
                 # Modifier gets the whole raw torrent
-                value = _MODIFY[key](self._raw)
+                value = _MODIFY[key](raw)
             else:
                 fields = DEPENDENCIES[key]
                 assert len(fields) == 1
                 try:
-                    value = self._raw[fields[0]]
+                    value = raw[fields[0]]
                 except KeyError:
-                    log.debug('%r not in %s', fields[0], tuple(self._raw))
                     raise KeyError(key)
-            self._cache[key] = tkeys.TYPES[key](value)
-        return self._cache[key]
+            cache[key] = tkeys.TYPES[key](value)
+        return cache[key]
 
     def __contains__(self, key):
         deps = DEPENDENCIES

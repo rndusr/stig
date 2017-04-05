@@ -380,7 +380,7 @@ class TorrentAPI():
             msgs: list of strings/`ClientError`s caused by the request
         """
         def check(t):
-            if t['status'] == 'stopped':
+            if t['status'].STOPPED in t['status']:
                 return (False, 'Already stopped: ' + t['name'])
             else:
                 return (True, 'Stopping ' + t['name'])
@@ -404,7 +404,7 @@ class TorrentAPI():
             msgs: list of strings/`ClientError`s caused by the request
         """
         def check(t):
-            if t['status'] == 'stopped':
+            if t['status'].STOPPED in t['status']:
                 return (True, 'Starting ' + t['name'])
             else:
                 return (False, 'Already started: ' + t['name'])
@@ -438,7 +438,7 @@ class TorrentAPI():
 
         stopped, running = [], []
         for t in response.torrents:
-            if t['status'] == 'stopped':
+            if t['status'].STOPPED in t['status']:
                 stopped.append(t)
             else:
                 running.append(t)
@@ -471,10 +471,11 @@ class TorrentAPI():
             msgs: list of strings/`ClientError`s caused by the request
         """
         def check(t):
-            if t['status'] == 'verifying':
-                return (False, 'Already verifying: ' + t['name'])
-            elif t['status'] == 'verifying pending':
-                return (False, 'Already queued for verification: ' + t['name'])
+            if t['status'].VERIFY in t['status']:
+                if t['status'].QUEUED in t['status']:
+                    return (False, 'Already queued for verification: ' + t['name'])
+                else:
+                    return (False, 'Already verifying: ' + t['name'])
             else:
                 return (True, 'Verifying ' + t['name'])
 
@@ -651,20 +652,19 @@ class TorrentAPI():
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        from ..tkeys import Status
         import time
         def check(t):
-            if t['status'] not in (Status.SEED, Status.LEECH):
+            if t['status'].STOPPED in t['status']:
                 return (False, 'Not announcing inactive torrent: %s' % t['name'])
-            elif t['timestamp-manual-announce-allowed'] > time.time():
+            elif t['time-manual-announce-allowed'] > time.time():
                 return (False, ('Not allowing manual announce until %s (in %s): %r' %
-                                (t['timestamp-manual-announce-allowed'],
-                                 t['timestamp-manual-announce-allowed'].delta, t['name'])))
+                                (t['time-manual-announce-allowed'],
+                                 t['time-manual-announce-allowed'].delta, t['name'])))
             else:
                 return (True, 'Announcing: %s' % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
                                           check=check,
                                           keys=('name', 'status',
-                                                'timestamp-manual-announce-allowed'),
+                                                'time-manual-announce-allowed'),
                                           autoconnect=autoconnect)

@@ -62,7 +62,7 @@ class TestNumber(unittest.TestCase):
                               ('23.3Mi', 23.3*pow(1024, 2)),
                               ('23.4G',  23.4*pow(1000, 3)),
                               ('23.5Ti', 23.5*pow(1024, 4)) ):
-            n = tkeys.Number(string)
+            n = tkeys.Number.from_string(string)
             self.assertEqual(n, num)
             self.assertEqual(str(n), string)
 
@@ -73,20 +73,20 @@ class TestNumber(unittest.TestCase):
                               ('23.3MiX', 23.3*pow(1024, 2)),
                               ('23.4GX',  23.4*pow(1000, 3)),
                               ('23.5TiX', 23.5*pow(1024, 4)) ):
-            n = tkeys.Number(string)
+            n = tkeys.Number.from_string(string)
             self.assertEqual(n, num)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.with_unit, string)
             self.assertEqual(n.without_unit, string[:-1])
 
     def test_parsing_conflicting_units(self):
-        n = tkeys.Number('123kF', unit='B')
+        n = tkeys.Number.from_string('123kF', unit='B')
         self.assertEqual(n, 123000)
         self.assertEqual(n.unit, 'F')
 
     def test_parsing_Number_instance(self):
         for prefix in ('binary', 'metric'):
-            orig = tkeys.Number('1MB', prefix=prefix)
+            orig = tkeys.Number.from_string('1MB', prefix=prefix)
 
             n = tkeys.Number(orig)
             self.assertEqual(n, 1e6)
@@ -106,17 +106,17 @@ class TestNumber(unittest.TestCase):
 
     def test_not_a_number(self):
         with self.assertRaises(ValueError):
-            tkeys.Number('foo')
+            tkeys.Number.from_string('foo')
 
     def test_signs(self):
-        self.assertEqual(tkeys.Number('-10'), -10)
-        self.assertEqual(tkeys.Number('+10'), 10)
-        self.assertEqual(tkeys.Number('-10k'), -10000)
-        self.assertEqual(tkeys.Number('+10M'), 10e6)
-        n = tkeys.Number('-10GX')
+        self.assertEqual(tkeys.Number.from_string('-10'), -10)
+        self.assertEqual(tkeys.Number.from_string('+10'), 10)
+        self.assertEqual(tkeys.Number.from_string('-10k'), -10000)
+        self.assertEqual(tkeys.Number.from_string('+10M'), 10e6)
+        n = tkeys.Number.from_string('-10GX')
         self.assertEqual(n, -10e9)
         self.assertEqual(n.unit, 'X')
-        n = tkeys.Number('-10Ty')
+        n = tkeys.Number.from_string('-10Ty')
         self.assertEqual(n, -10e12)
         self.assertEqual(n.unit, 'y')
 
@@ -127,6 +127,26 @@ class TestNumber(unittest.TestCase):
         self.assertEqual(tkeys.Number(1024), tkeys.Number(1024))
         self.assertNotEqual(tkeys.Number(1000), 1000.0001)
         self.assertNotEqual(tkeys.Number(1024), tkeys.Number(1023))
+
+    def test_arithmetic_operation_returns_Number_instance(self):
+        n = tkeys.Number(5) * 3000
+        self.assertIsInstance(n, tkeys.Number)
+
+    def test_arithmetic_operation_copies_unit(self):
+        n = tkeys.Number(5, unit='X') / 3000
+        self.assertEqual(n.unit, 'X')
+
+    def test_arithmetic_operation_copies_prefix(self):
+        for prfx in ('metric', 'binary'):
+            n = tkeys.Number(5, prefix=prfx) - 3000
+            self.assertEqual(n.prefix, prfx)
+
+    def test_arithmetic_operation_copies_from_first_value(self):
+        for prfx in ('metric', 'binary'):
+            n = tkeys.Number(5,    unit='X', prefix=prfx) \
+              * tkeys.Number(3000, unit='z', prefix='metric')
+            self.assertEqual(n.unit, 'X')
+            self.assertEqual(n.prefix, prfx)
 
 
 class TestPercent(unittest.TestCase):
@@ -186,6 +206,13 @@ class TestSmartCmpStr(unittest.TestCase):
         self.assertTrue('OO' in tkeys.SmartCmpStr('FOO'))
 
 
+class TestPath(unittest.TestCase):
+    def test_eq_ne(self):
+        self.assertTrue(tkeys.Path('/foo/bar/') == tkeys.Path('/foo/bar'))
+        self.assertTrue(tkeys.Path('/foo/bar/./../bar/') == tkeys.Path('/foo/bar'))
+        self.assertTrue(tkeys.Path('foo/bar') != tkeys.Path('/foo/bar'))
+
+
 class TestRatio(unittest.TestCase):
     def test_string(self):
         self.assertEqual(tkeys.Ratio(0), 0)
@@ -196,34 +223,27 @@ class TestRatio(unittest.TestCase):
         self.assertEqual(str(tkeys.Ratio(47.86123)), '47.9')
         self.assertEqual(str(tkeys.Ratio(100.5)), '100')
 
+
 class TestStatus(unittest.TestCase):
     def test_string(self):
-        self.assertEqual(tkeys.Status(tkeys.Status.STOPPED), tkeys.Status.STOPPED)
-        self.assertEqual(tkeys.Status(tkeys.Status.VERIFY_Q), tkeys.Status.VERIFY_Q)
-        self.assertEqual(tkeys.Status(tkeys.Status.VERIFY), tkeys.Status.VERIFY)
-        self.assertEqual(tkeys.Status(tkeys.Status.LEECH_Q), tkeys.Status.LEECH_Q)
-        self.assertEqual(tkeys.Status(tkeys.Status.LEECH), tkeys.Status.LEECH)
-        self.assertEqual(tkeys.Status(tkeys.Status.SEED_Q), tkeys.Status.SEED_Q)
-        self.assertEqual(tkeys.Status(tkeys.Status.SEED), tkeys.Status.SEED)
-        with self.assertRaises(ValueError):
-            tkeys.Status('foo')
+        for s in (tkeys.Status.VERIFY, tkeys.Status.DOWNLOAD,
+                  tkeys.Status.UPLOAD, tkeys.Status.INIT, tkeys.Status.CONNECTED,
+                  tkeys.Status.QUEUED, tkeys.Status.SEED, tkeys.Status.IDLE,
+                  tkeys.Status.STOPPED):
+            self.assertEqual(tkeys.Status((s,)), (s,))
 
     def test_sort(self):
-        statuses = [
-            tkeys.Status(tkeys.Status.LEECH),
-            tkeys.Status(tkeys.Status.LEECH_Q),
-            tkeys.Status(tkeys.Status.SEED),
-            tkeys.Status(tkeys.Status.SEED_Q),
-            tkeys.Status(tkeys.Status.STOPPED),
-            tkeys.Status(tkeys.Status.VERIFY),
-            tkeys.Status(tkeys.Status.VERIFY_Q),
-        ]
-        sorted_strs = [str(s) for s in sorted(statuses)]
-        exp = [tkeys.Status(tkeys.Status.VERIFY), tkeys.Status(tkeys.Status.VERIFY_Q),
-               tkeys.Status(tkeys.Status.LEECH), tkeys.Status(tkeys.Status.LEECH_Q),
-               tkeys.Status(tkeys.Status.SEED), tkeys.Status(tkeys.Status.SEED_Q),
-               tkeys.Status(tkeys.Status.STOPPED)]
-        self.assertEqual(sorted_strs, exp)
+        statuses = [tkeys.Status.UPLOAD, tkeys.Status.CONNECTED,
+                    tkeys.Status.SEED, tkeys.Status.INIT, tkeys.Status.VERIFY,
+                    tkeys.Status.DOWNLOAD, tkeys.Status.STOPPED,
+                    tkeys.Status.IDLE, tkeys.Status.QUEUED]
+        sort = sorted([tkeys.Status((s,)) for s in statuses])
+        exp = [(tkeys.Status.VERIFY,), (tkeys.Status.DOWNLOAD,),
+               (tkeys.Status.UPLOAD,), (tkeys.Status.INIT,),
+               (tkeys.Status.CONNECTED,), (tkeys.Status.QUEUED,),
+               (tkeys.Status.IDLE,), (tkeys.Status.STOPPED,),
+               (tkeys.Status.SEED,)]
+        self.assertEqual(sort, exp)
 
 
 MIN = 60
@@ -231,6 +251,25 @@ HOUR = 60*MIN
 DAY = 24*HOUR
 YEAR = 365.25*DAY
 class TestTimedelta(unittest.TestCase):
+    def test_from_string(self):
+        for s, i, s_exp in (('0', 0, 'now'),
+                            ('0d', 0, 'now'),
+                            ('600', 600, '10m'),
+                            ('1m270s', 330, '5m30s'),
+                            ('1m270', 330, '5m30s'),
+                            ('600m', 36000, '10h'),
+                            ('1h10m', 4200, '1h10m'),
+                            ('1h10m2d', 4200+(2*24*3600), '2d1h'),
+                            ('24.5h', 3600*24.5, '1d'),
+                            ('1y370d', YEAR+(DAY*370), '2y')):
+            t = tkeys.Timedelta.from_string(s)
+            self.assertEqual(t, i)
+            self.assertEqual(str(t), s_exp)
+
+        for string in ('', 'x', '?m', '1.2.3', '5g10s', '1y2x10d'):
+            with self.assertRaises(ValueError) as cm:
+                tkeys.Timedelta.from_string(string)
+
     def test_special_values(self):
         self.assertEqual(str(tkeys.Timedelta(0)), 'now')
         self.assertEqual(str(tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)), '')
@@ -264,6 +303,7 @@ class TestTimedelta(unittest.TestCase):
                tkeys.Timedelta(2 * MIN),
                tkeys.Timedelta(3 * MIN),
                tkeys.Timedelta(1 * DAY),
+               tkeys.Timedelta(2.5 * YEAR),
                tkeys.Timedelta(tkeys.Timedelta.UNKNOWN),
                tkeys.Timedelta(tkeys.Timedelta.NOT_APPLICABLE)]
 
@@ -291,12 +331,69 @@ class TestTimestamp(unittest.TestCase):
     def strftime(self, format, timestamp):
         return time.strftime(format, time.localtime(timestamp))
 
+    def strptime(self, string):
+        tstruct = time.strptime(string, '%Y-%m-%d %H:%M:%S')
+        return time.mktime(tstruct)
+
+    now = time.time()
+    year = time.localtime(now).tm_year
+    month = time.localtime(now).tm_mon
+    day = time.localtime(now).tm_mday
+
+    def test_from_string(self):
+        for s,s_exp in (('      2015', '2015-01-01 00:00:00'),
+                        ('   2105-02', '2105-02-01 00:00:00'),
+                        ('2051-03-10', '2051-03-10 00:00:00'),
+                        ('     04-11', '%04d-04-11 00:00:00' % self.year),
+                        ('        17', '%04d-%02d-17 00:00:00' % (self.year, self.month)),
+                        ('           05:30', '%04d-%02d-%02d 05:30:00' % (self.year, self.month, self.day)),
+                        ('        09 06:12', '%04d-%02d-09 06:12:00' % (self.year, self.month)),
+                        ('     06-16 06:40', '%04d-06-16 06:40:00' % (self.year)),
+                        ('2021-12-31 23:59', '2021-12-31 23:59:00'),
+                        ('2001-10    19:04', '2001-10-01 19:04:00'),
+                        ('2014       07:43', '2014-01-01 07:43:00')):
+            t = tkeys.Timestamp.from_string(s)
+            t_exp = self.strptime(s_exp)
+            self.assertEqual(t, t_exp)
+
+        with self.assertRaises(ValueError) as cm:
+            tkeys.Timestamp.from_string('foo')
+        self.assertIn('Invalid format', str(cm.exception))
+        self.assertIn('foo', str(cm.exception))
+
     def test_string(self):
-        now = time.time()
-        self.assertEqual(str(tkeys.Timestamp(now)), self.strftime('%X', now))
-        tomorrow = now + 24*60*60 + 1
-        self.assertEqual(str(tkeys.Timestamp(tomorrow)),
-                         self.strftime('%x %X', tomorrow))
-        nextweek = now + 7*24*60*60 + 1
-        self.assertEqual(str(tkeys.Timestamp(nextweek)),
-                         self.strftime('%x', nextweek))
+        self.assertEqual(str(tkeys.Timestamp(self.now)), self.strftime('%H:%M', self.now))
+        later_today = self.now + 20*60*60
+        self.assertEqual(str(tkeys.Timestamp(later_today)),
+                         self.strftime('%H:%M', later_today))
+        next_week = self.now + 7*24*60*60
+        self.assertEqual(str(tkeys.Timestamp(next_week)),
+                         self.strftime('%Y-%m-%d', next_week))
+
+    def test_bool(self):
+        import random
+        for td in (tkeys.Timestamp(random.randint(-1e10, 1e10) * MIN),
+                   tkeys.Timestamp(random.randint(-1e10, 1e10) * HOUR),
+                   tkeys.Timestamp(random.randint(-1e10, 1e10) * DAY)):
+            self.assertEqual(bool(td), True)
+
+        for td in (tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
+                   tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE)):
+            self.assertEqual(bool(td), False)
+
+    def test_sorting(self):
+        lst = [tkeys.Timestamp(tkeys.Timestamp.NOT_APPLICABLE),
+               tkeys.Timestamp(tkeys.Timestamp.UNKNOWN),
+               tkeys.Timestamp(self.now + (-2 * HOUR)),
+               tkeys.Timestamp(self.now + (2 * MIN)),
+               tkeys.Timestamp(self.now + (3 * MIN)),
+               tkeys.Timestamp(self.now + (1 * DAY)),
+               tkeys.Timestamp(self.now + (2.5 * YEAR))]
+
+        import random
+        def shuffle(l):
+            return random.sample(l, k=len(l))
+
+        for _ in range(10):
+            self.assertEqual(sorted(shuffle(lst)), lst)
+

@@ -81,6 +81,7 @@ def init(palette, screen):
     set_default(palette)
     register(screen, palette)
 
+
 def load(palette, screen):
     """Same as `init`, but with validation
 
@@ -100,7 +101,7 @@ def read(source):
     Returns list of string lines.
     Raises TypeError or OSError.
     """
-    if hasattr(source, 'read') and callable(source.readlines):
+    if hasattr(source, 'readlines') and callable(source.readlines):
         lines = source.readlines()
     elif isinstance(source, str):
         try:
@@ -166,6 +167,8 @@ class Palette(abc.Sequence):
     def __init__(self, lines):
         def apply_variables(string, variables):
             for name,value in sorted(variables.items(), key=lambda k: len(k[0]), reverse=True):
+                while value[0] == '$':
+                    value = variables[value[1:]]
                 string = string.replace('$'+name, value)
             return string
 

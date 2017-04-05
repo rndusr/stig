@@ -1,3 +1,23 @@
+2017-04-05 0.5.0a
+  Breaking changes:
+    * In color themes, 'torrentlist.name.initializing...' is now called
+      'torrentlist.name.discovering...'
+
+  Other changes:
+    * New torrent list columns: 'status', 'created', 'added', 'started',
+      'activity', 'completed', 'error'
+    * New sort orders: 'created', 'added', 'started', 'activity', 'completed'
+    * New file filter: 'path'
+    * Listing isolated torrents with <f> <i> now lists only 'name', 'tracker'
+      and 'error' columns
+    * Torrent paths and torrent file paths are now normalized so that
+      'foo/bar/baz' is equal to 'foo/bar/baz/' and even 'foo/./bar/../bar/baz//'
+
+  Fixed bugs:
+    * Listing files crashed if file list was empty (e.g. when torrent was added
+      by magnet link and metadata wasn't downloaded yet)
+
+
 2017-03-22 0.4.1a
   Fixed bugs:
     * Marking files resulted in a crash

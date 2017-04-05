@@ -137,7 +137,10 @@ def create_directory_data(name, tree, filtered_count=0):
     data['name'] = create_directory_name(name, filtered_count)
 
     progress_cls = type(tfiles[0]['progress'])
-    data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
+    try:
+        data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
+    except ZeroDivisionError:
+        data['progress'] = progress_cls(0)
     data['tid'] = tfiles[0]['tid']
     data['path'] = tree.path
     data['id'] = frozenset(tf['id'] for tf in tfiles)
