@@ -282,7 +282,7 @@ class TabCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Open, close and focus tabs'
-    usage = ('tab [--close] [--focus <TITLE OR INDEX>] [--background] [<COMMAND>]',)
+    usage = ('tab [<OPTIONS>] [<COMMAND>]',)
     examples = ('tab',
                 'tab ls active',
                 'tab -b ls active',
@@ -298,6 +298,8 @@ class TabCmd(metaclass=InitCommand):
         { 'names': ('--focus', '-f'),
           'description': ('Focus tab; FOCUS can be an index (first tab is 1), '
                           'part of a tab title, "left" or "right"') },
+        { 'names': ('--title', '-t'),
+          'description': 'Manually set tab title instead of generating one' },
         { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
           'description': ('Command to run in new tab') },
     )
@@ -305,7 +307,7 @@ class TabCmd(metaclass=InitCommand):
     tui = ExpectedResource
     cmdmgr = ExpectedResource
 
-    async def run(self, close, focus, background, COMMAND):
+    async def run(self, close, focus, background, title, COMMAND):
         # Get indexes before adding/removing tabs, which changes indexes on
         # subsequent operations
         if focus is not None:
@@ -330,7 +332,7 @@ class TabCmd(metaclass=InitCommand):
 
         # Remember which torrent is focused in current tab so we can provide
         # it to the command running in a new tab.
-        cmdargs = {}
+        cmdargs = {'title': title} if title else {}
         try:
             cmdargs['focused_torrent'] = tabs.focus.focused_torrent.torrent
         except AttributeError:
@@ -350,13 +352,18 @@ class TabCmd(metaclass=InitCommand):
                       cmd)
 
             cmd = await self.cmdmgr.run_async(cmd, **cmdargs)
-            if background:
-                tabs.focus_position = old_index
-            return cmd
+            retval = cmd
         else:
-            if background:
-                tabs.focus_position = old_index
-            return True
+            retval = True
+
+        if title is not None:
+            titlew = urwid.AttrMap(urwid.Text(str(title)), 'tabs.unfocused', 'tabs.focused')
+            tabs.set_title(titlew)
+
+        if background:
+            tabs.focus_position = old_index
+
+        return retval
 
     def get_tab_index(self, pos):
         tabs = self.tui.tabs
