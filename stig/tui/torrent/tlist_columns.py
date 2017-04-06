@@ -60,16 +60,16 @@ class PeersConnected(_COLUMNS['peers-connected'], CellWidgetBase):
 TUICOLUMNS['peers-connected'] = PeersConnected
 
 
-class PeersSeeding(_COLUMNS['peers-seeding'], CellWidgetBase):
-    style = Style(prefix='torrentlist.peers-seeding', focusable=True,
+class Seeds(_COLUMNS['seeds'], CellWidgetBase):
+    style = Style(prefix='torrentlist.seeds', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['peers-seeding'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['seeds'].header),
                            style.attrs('header'))
 
     def get_mode(self):
         return 'highlighted' if self.value < 5 else ''
 
-TUICOLUMNS['peers-seeding'] = PeersSeeding
+TUICOLUMNS['seeds'] = Seeds
 
 
 class Progress(_COLUMNS['progress'], CellWidgetBase):

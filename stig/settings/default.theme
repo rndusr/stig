@@ -122,13 +122,13 @@ torrentlist.peers-connected.focused                $peers-connected_fg          
 torrentlist.peers-connected.highlighted.unfocused  $peers-connected_hl           on $tlist_bg.uf
 torrentlist.peers-connected.highlighted.focused    $peers-connected_hl           on $tlist_bg.f
 
-$peers-seeding_fg = light gray
-$peers-seeding_hl = white
-torrentlist.peers-seeding.header                   $peers-seeding_fg,underline on $tlist_bg.uf
-torrentlist.peers-seeding.unfocused                $peers-seeding_fg           on $tlist_bg.uf
-torrentlist.peers-seeding.focused                  $peers-seeding_fg           on $tlist_bg.f
-torrentlist.peers-seeding.highlighted.unfocused    $peers-seeding_hl           on $tlist_bg.uf
-torrentlist.peers-seeding.highlighted.focused      $peers-seeding_hl           on $tlist_bg.f
+$seeds_fg = light gray
+$seeds_hl = white
+torrentlist.seeds.header                           $seeds_fg,underline on $tlist_bg.uf
+torrentlist.seeds.unfocused                        $seeds_fg           on $tlist_bg.uf
+torrentlist.seeds.focused                          $seeds_fg           on $tlist_bg.f
+torrentlist.seeds.highlighted.unfocused            $seeds_hl           on $tlist_bg.uf
+torrentlist.seeds.highlighted.focused              $seeds_hl           on $tlist_bg.f
 
 $progress_fg = dark blue
 $progress_hl = light blue

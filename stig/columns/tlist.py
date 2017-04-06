@@ -73,7 +73,7 @@ class PeersConnected(ColumnBase):
 COLUMNS['peers-connected'] = PeersConnected
 
 
-class PeersSeeding(ColumnBase):
+class Seeds(ColumnBase):
     header = {'left': 'Seeds'}
     width = 5
     needed_keys = ('peers-seeding',)
@@ -84,7 +84,7 @@ class PeersSeeding(ColumnBase):
     def get_raw(self):
         return int(self.get_value())
 
-COLUMNS['peers-seeding'] = PeersSeeding
+COLUMNS['seeds'] = Seeds
 
 
 class Progress(ColumnBase):
