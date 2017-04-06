@@ -114,13 +114,13 @@ torrentlist.path.header                            $path_fg,underline on $tlist_
 torrentlist.path.unfocused                         $path_fg           on $tlist_bg.uf
 torrentlist.path.focused                           $path_fg           on $tlist_bg.f
 
-$peers-connected_fg = light gray
-$peers-connected_hl = white
-torrentlist.peers-connected.header                 $peers-connected_fg,underline on $tlist_bg.uf
-torrentlist.peers-connected.unfocused              $peers-connected_fg           on $tlist_bg.uf
-torrentlist.peers-connected.focused                $peers-connected_fg           on $tlist_bg.f
-torrentlist.peers-connected.highlighted.unfocused  $peers-connected_hl           on $tlist_bg.uf
-torrentlist.peers-connected.highlighted.focused    $peers-connected_hl           on $tlist_bg.f
+$connections_fg = light gray
+$connections_hl = white
+torrentlist.connections.header                     $connections_fg,underline on $tlist_bg.uf
+torrentlist.connections.unfocused                  $connections_fg           on $tlist_bg.uf
+torrentlist.connections.focused                    $connections_fg           on $tlist_bg.f
+torrentlist.connections.highlighted.unfocused      $connections_hl           on $tlist_bg.uf
+torrentlist.connections.highlighted.focused        $connections_hl           on $tlist_bg.f
 
 $seeds_fg = light gray
 $seeds_hl = white

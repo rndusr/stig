@@ -59,7 +59,7 @@ class Path(ColumnBase):
 COLUMNS['path'] = Path
 
 
-class PeersConnected(ColumnBase):
+class Connections(ColumnBase):
     header = {'left': 'Conn'}
     width = 5
     needed_keys = ('peers-connected',)
@@ -70,7 +70,7 @@ class PeersConnected(ColumnBase):
     def get_raw(self):
         return int(self.get_value())
 
-COLUMNS['peers-connected'] = PeersConnected
+COLUMNS['connections'] = Connections
 
 
 class Seeds(ColumnBase):
