@@ -157,6 +157,23 @@ class Uploaded(_COLUMNS['uploaded'], CellWidgetBase):
 TUICOLUMNS['uploaded'] = Uploaded
 
 
+class BytesAvailable(_COLUMNS['available'], CellWidgetBase):
+    style = Style(prefix='torrentlist.available', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['available'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        if self.data['size-available'] < self.data['size-final']:
+            return 'highlighted'
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['available'].header['right']
+
+TUICOLUMNS['available'] = BytesAvailable
+
+
 class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
     style = Style(prefix='torrentlist.rate-down', focusable=True,
                   extras=('header',), modes=('highlighted',))

@@ -190,6 +190,24 @@ class Uploaded(ColumnBase):
 COLUMNS['uploaded'] = Uploaded
 
 
+class BytesAvailable(ColumnBase):
+    header = {'left': 'Avail', 'right': '?'}
+    width = 7
+    needed_keys = ('size-available', 'size-final')
+
+    def get_value(self):
+        return self.data['size-available']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = unit
+
+COLUMNS['available'] = BytesAvailable
+
+
 class RateDown(ColumnBase):
     header = {'left': 'Dn', 'right': '?/s'}
     width = 6

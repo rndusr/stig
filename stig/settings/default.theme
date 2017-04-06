@@ -104,6 +104,14 @@ torrentlist.uploaded.focused                       $uploaded_fg             on $
 torrentlist.uploaded.highlighted.unfocused         $uploaded_hl             on $tlist_bg.uf
 torrentlist.uploaded.highlighted.focused           $uploaded_hl             on $tlist_bg.f
 
+$available_fg = dark blue
+$available_hl = light blue
+torrentlist.available.header                       $available_fg,underline   on $tlist_bg.uf
+torrentlist.available.unfocused                    $available_fg             on $tlist_bg.uf
+torrentlist.available.focused                      $available_fg             on $tlist_bg.f
+torrentlist.available.highlighted.unfocused        $available_hl             on $tlist_bg.uf
+torrentlist.available.highlighted.focused          $available_hl             on $tlist_bg.f
+
 $marked_fg = white
 torrentlist.marked.header                          $marked_fg,underline on $tlist_bg.uf
 torrentlist.marked.unfocused                       $marked_fg           on $tlist_bg.uf
