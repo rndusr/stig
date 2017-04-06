@@ -25,7 +25,7 @@ class BindCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Bind keys to commands or other keys'
-    usage = ('bind [--context <CONTEXT>] <KEY> <ACTION>',)
+    usage = ('bind [<OPTIONS>] <KEY> <ACTION>',)
     examples = ('bind --context tabs alt-[ tab --focus left',
                 'bind --context tabs alt-] tab --focus right',
                 'bind --context torrent alt-! start --force',
@@ -111,7 +111,7 @@ class UnbindCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Unbind keys so pressing them has no effect'
-    usage = ('unbind [--context <CONTEXT>] <KEY> <KEY> <KEY> ...',)
+    usage = ('unbind [<OPTIONS>] <KEY> <KEY> <KEY> ...',)
     examples = ('unbind --context main ctrl-l',
                 'unbind --context torrent <t>')
     argspecs = (
@@ -243,7 +243,7 @@ class RcCmd(metaclass=InitCommand):
     provides = {'tui'}
     description = 'Run commands in rc file'
     usage = ('rc <FILE>',)
-    examples = ('rc rc.example.org   # Load $XDG_CONFIG_HOME/.config/{APPNAME}/rc.example.org',)
+    examples = ('rc rc.example   # Load $XDG_CONFIG_HOME/.config/{APPNAME}/rc.example',)
     argspecs = (
         {'names': ('FILE',),
          'description': ('Path to rc file; if FILE does not start with '

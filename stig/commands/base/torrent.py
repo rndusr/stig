@@ -27,7 +27,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Download torrents'
-    usage = ('add <TORRENT> <TORRENT> <TORRENT> ... [<OPTIONS>]',)
+    usage = ('add [<OPTIONS>] <TORRENT> <TORRENT> <TORRENT> ...',)
     examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
                 'add --stopped http://example.org/something.torrent')
     argspecs = (
@@ -59,7 +59,8 @@ class AnnounceTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Announce torrents to their trackers now if possible'
-    usage = ('announce <TORRENT FILTER> <TORRENT FILTER> ...',)
+    usage = ('announce',
+             'announce <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('announce tracker~example.org',)
     argspecs = (
         { 'names': ('TORRENT FILTER',), 'nargs': '*',
@@ -133,8 +134,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
     provides = set()
     category = 'torrent'
     description = 'List torrents'
-    usage = ('list [<OPTIONS>]',
-             'list [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]')
+    usage = ('list [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]',)
     examples = ('ls active',
                 'ls !active',
                 'ls seeds<10',
@@ -195,8 +195,8 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
     usage = ('filelist [<OPTIONS>]',
              'filelist [<OPTIONS>] [<TORRENT FILTER>] [<FILE FILTER>]')
     examples = ('filelist',
-                "filelist A.Torrent.with.Files",
-                "filelist A.Torrent.with.Files priority=low")
+                'filelist size<100MB',
+                'filelist A.Torrent.with.Files priority=low')
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '?',
          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
@@ -250,8 +250,8 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
     usage = ('peerlist [<OPTIONS>]',
              'peerlist [<OPTIONS>] [<TORRENT FILTER>] [<PEER FILTER>]')
     examples = ('peerlist',
-                "peerlist some_torrent",
-                "peerlist some_torrent ip=127.0.0.1")
+                'peerlist downloading',
+                'peerlist some_torrent ip=127.0.0.1')
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '?',
          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
@@ -356,7 +356,7 @@ class PriorityCmdbase(metaclass=InitCommand):
     usage = ('priority <PRIORITY>',
              'priority <PRIORITY> [<TORRENT FILTER>] [<FILE FILTER>]')
     examples = ('priority low',
-                'priority high "some torrent" size>12M')
+                'priority high "that torrent" size>12M')
     argspecs = (
         { 'names': ('PRIORITY',),
           'description': ("File priority; must be low/normal/high/shun, "
@@ -434,7 +434,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     usage = ('remove [<OPTIONS>]',
              'remove [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]')
     examples = ('remove',
-                'remove "some torrent" another\ torrent and_this_torrent',
+                'remove "stupid torrent" silly\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '*',
