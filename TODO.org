@@ -3,9 +3,6 @@ questions and point out issues.
 
 * commands
 
-** TODO tab: --title,-t or --name,-n option
-   Let the user specify a tab title
-
 ** TODO tab: Allow negative indexes to count from the right
    The first tab from the right would be -1, the second -2, etc.
 
