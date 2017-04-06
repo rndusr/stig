@@ -538,7 +538,7 @@ def _ensure_TorrentFileTree(obj):
 import time
 from collections import defaultdict
 _PEER_PROGRESS_DATA = defaultdict(lambda: [])
-MAX_SAMPLES = 5
+MAX_SAMPLES = 10
 MAX_SAMPLE_AGE = 3600
 def gc_peer_progress_data():
     for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
