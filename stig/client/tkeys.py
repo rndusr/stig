@@ -650,6 +650,7 @@ TYPES = {
     '%downloaded'       : Percent,
     '%metadata'         : Percent,
     '%verified'         : Percent,
+    '%available'        : Percent,
 
     'peers-connected'   : Number,
     'peers-uploading'   : Number,

@@ -78,6 +78,11 @@ def _count_seeds(raw_torrent):
         return tkeys.SeedCount.UNKNOWN
 
 
+def _availability(raw_torrent):
+    have = raw_torrent['haveValid'] + raw_torrent['haveUnchecked']
+    return have / raw_torrent['sizeWhenDone'] * 100
+
+
 def _is_isolated(raw_torrent):
     """Return whether this torrent can find any peers via trackers or DHT"""
     if not raw_torrent['isPrivate']:
@@ -254,6 +259,7 @@ DEPENDENCIES = {
     '%downloaded'       : ('percentDone',),
     '%metadata'         : ('metadataPercentComplete',),
     '%verified'         : ('recheckProgress',),
+    '%available'        : ('haveValid', 'haveUnchecked', 'desiredAvailable', 'sizeWhenDone'),
 
     'peers-connected'   : ('peersConnected',),
     'peers-uploading'   : ('peersSendingToUs',),
@@ -293,6 +299,7 @@ _MODIFY = {
     '%downloaded'     : lambda raw: raw['percentDone']*100,
     '%metadata'       : lambda raw: raw['metadataPercentComplete']*100,
     '%verified'       : lambda raw: raw['recheckProgress']*100,
+    '%available'      : _availability,
     'status'          : _make_status,
     'peers-seeding'   : _count_seeds,
     'ratio'           : _modify_ratio,
