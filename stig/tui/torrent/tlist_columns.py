@@ -84,6 +84,18 @@ class Progress(_COLUMNS['progress'], CellWidgetBase):
 TUICOLUMNS['progress'] = Progress
 
 
+class Available(_COLUMNS['available'], CellWidgetBase):
+    style = Style(prefix='torrentlist.available', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['available'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < 100 else ''
+
+TUICOLUMNS['%available'] = Available
+
+
 class Ratio(_COLUMNS['ratio'], CellWidgetBase):
     style = Style(prefix='torrentlist.ratio', focusable=True,
                   extras=('header',), modes=('highlighted',))
