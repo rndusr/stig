@@ -78,9 +78,17 @@ def _count_seeds(raw_torrent):
         return tkeys.SeedCount.UNKNOWN
 
 
-def _availability(raw_torrent):
+def _percent_available(raw_torrent):
     have = raw_torrent['haveValid'] + raw_torrent['haveUnchecked']
     return have / raw_torrent['sizeWhenDone'] * 100
+
+
+def _bytes_available(raw_torrent):
+    if raw_torrent['leftUntilDone'] > 0:
+        return max(raw_torrent['desiredAvailable'],
+                   raw_torrent['haveValid'] + raw_torrent['haveUnchecked'])
+    else:
+        return tkeys.BytesAvailable.NOT_APPLICABLE
 
 
 def _is_isolated(raw_torrent):
@@ -281,7 +289,7 @@ DEPENDENCIES = {
     'size-total'        : ('totalSize',),
     'size-downloaded'   : ('downloadedEver',),
     'size-uploaded'     : ('uploadedEver',),
-    'size-available'    : ('desiredAvailable',),
+    'size-available'    : ('desiredAvailable', 'leftUntilDone', 'haveValid', 'haveUnchecked'),
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
@@ -299,10 +307,11 @@ _MODIFY = {
     '%downloaded'     : lambda raw: raw['percentDone']*100,
     '%metadata'       : lambda raw: raw['metadataPercentComplete']*100,
     '%verified'       : lambda raw: raw['recheckProgress']*100,
-    '%available'      : _availability,
+    '%available'      : _percent_available,
     'status'          : _make_status,
     'peers-seeding'   : _count_seeds,
     'ratio'           : _modify_ratio,
+    'size-available'  : _bytes_available,
 
     'timespan-eta'    : _modify_eta,
     'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated',

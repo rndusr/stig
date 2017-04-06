@@ -163,6 +163,12 @@ class SeedCount(Number):
         return '?' if self == self.UNKNOWN else super().__str__()
 
 
+class BytesAvailable(Number):
+    NOT_APPLICABLE = -1
+    def __str__(self):
+        return '' if self == self.NOT_APPLICABLE else super().__str__()
+
+
 class Status(tuple):
     """A Torrent's status as string"""
 
@@ -672,7 +678,7 @@ TYPES = {
     'size-total'        : convert.size,
     'size-downloaded'   : convert.size,
     'size-uploaded'     : convert.size,
-    'size-available'    : convert.size,
+    'size-available'    : BytesAvailable,
     'size-corrupt'      : convert.size,
 
     'trackers'          : tuple,
