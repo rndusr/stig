@@ -1,3 +1,14 @@
+2017-??-?? ?.?.?
+  Breaking changes:
+
+  Other changes:
+    * Custom tab titles with "tab -t 'my title'"
+    * Allow missing leading zero for numbers < 1 (e.g. ".14" -> 0.14)
+
+  Fixed bugs:
+    * File filter 'size' refused to parse numbers like '100MB'
+
+
 2017-04-05 0.5.0a
   Breaking changes:
     * In color themes, 'torrentlist.name.initializing...' is now called
