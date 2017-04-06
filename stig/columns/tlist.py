@@ -108,7 +108,7 @@ class Progress(ColumnBase):
 COLUMNS['progress'] = Progress
 
 
-class Available(ColumnBase):
+class PercentAvailable(ColumnBase):
     header = {'left': 'Avail', 'right': '%'}
     width = 7
     needed_keys = ('%available',)
@@ -119,7 +119,7 @@ class Available(ColumnBase):
     def get_raw(self):
         return float(self.get_value()) / 100
 
-COLUMNS['%available'] = Available
+COLUMNS['%available'] = PercentAvailable
 
 
 class Ratio(ColumnBase):

@@ -138,13 +138,13 @@ torrentlist.progress.focused                       $progress_fg           on $tl
 torrentlist.progress.highlighted.unfocused         $progress_hl           on $tlist_bg.uf
 torrentlist.progress.highlighted.focused           $progress_hl           on $tlist_bg.f
 
-$available_fg = dark blue
-$available_hl = light blue
-torrentlist.available.header                       $available_fg,underline on $tlist_bg.uf
-torrentlist.available.unfocused                    $available_fg           on $tlist_bg.uf
-torrentlist.available.focused                      $available_fg           on $tlist_bg.f
-torrentlist.available.highlighted.unfocused        $available_hl           on $tlist_bg.uf
-torrentlist.available.highlighted.focused          $available_hl           on $tlist_bg.f
+$%available_fg = dark blue
+$%available_hl = light blue
+torrentlist.%available.header                      $%available_fg,underline on $tlist_bg.uf
+torrentlist.%available.unfocused                   $%available_fg           on $tlist_bg.uf
+torrentlist.%available.focused                     $%available_fg           on $tlist_bg.f
+torrentlist.%available.highlighted.unfocused       $%available_hl           on $tlist_bg.uf
+torrentlist.%available.highlighted.focused         $%available_hl           on $tlist_bg.f
 
 $rate-down_fg = dark cyan
 $rate-down_hl = light cyan
