@@ -111,10 +111,14 @@ COLUMNS['progress'] = Progress
 class PercentAvailable(ColumnBase):
     header = {'left': 'Avail', 'right': '%'}
     width = 7
-    needed_keys = ('%available',)
+    needed_keys = ('%available', 'peers-seeding')
 
     def get_value(self):
-        return self.data['%available']
+        data = self.data
+        if data['peers-seeding'] > 0:
+            return type(data['%available'])(100)
+        else:
+            return data['%available']
 
     def get_raw(self):
         return float(self.get_value()) / 100
@@ -193,10 +197,14 @@ COLUMNS['uploaded'] = Uploaded
 class BytesAvailable(ColumnBase):
     header = {'left': 'Avail', 'right': '?'}
     width = 7
-    needed_keys = ('size-available', 'size-final')
+    needed_keys = ('size-available', 'size-final', 'peers-seeding')
 
     def get_value(self):
-        return self.data['size-available']
+        data = self.data
+        if data['peers-seeding'] > 0:
+            return data['size-final']
+        else:
+            return data['size-available']
 
     def get_raw(self):
         return int(self.get_value())

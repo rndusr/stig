@@ -78,17 +78,14 @@ def _count_seeds(raw_torrent):
         return tkeys.SeedCount.UNKNOWN
 
 
-def _percent_available(raw_torrent):
-    have = raw_torrent['haveValid'] + raw_torrent['haveUnchecked']
-    return have / raw_torrent['sizeWhenDone'] * 100
-
-
 def _bytes_available(raw_torrent):
-    if raw_torrent['leftUntilDone'] > 0:
-        return max(raw_torrent['desiredAvailable'],
-                   raw_torrent['haveValid'] + raw_torrent['haveUnchecked'])
-    else:
-        return tkeys.BytesAvailable.NOT_APPLICABLE
+    return (raw_torrent['desiredAvailable'] +
+            raw_torrent['haveValid'] +
+            raw_torrent['haveUnchecked'])
+
+def _percent_available(raw_torrent):
+    return _bytes_available(raw_torrent) / raw_torrent['sizeWhenDone'] * 100
+
 
 
 def _is_isolated(raw_torrent):
@@ -289,7 +286,7 @@ DEPENDENCIES = {
     'size-total'        : ('totalSize',),
     'size-downloaded'   : ('downloadedEver',),
     'size-uploaded'     : ('uploadedEver',),
-    'size-available'    : ('desiredAvailable', 'leftUntilDone', 'haveValid', 'haveUnchecked'),
+    'size-available'    : ('leftUntilDone', 'desiredAvailable', 'haveValid', 'haveUnchecked'),
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),

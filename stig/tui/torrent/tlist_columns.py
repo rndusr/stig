@@ -164,7 +164,7 @@ class BytesAvailable(_COLUMNS['available'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        if self.data['size-available'] < self.data['size-final']:
+        if self.value < self.data['size-final']:
             return 'highlighted'
 
     @classmethod
