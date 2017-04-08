@@ -2,11 +2,13 @@
   Breaking changes:
     * Column 'peers-seeding' is now called 'seeds'
     * Column 'peers-connected' is now called 'connections'
+    * Peer sort order 'name' is now called 'torrent'
 
   Other changes:
     * Custom tab titles with "tab -t 'My Title'"
     * New columns: 'available', '%available'
     * Allow missing leading zero for numbers < 1 (e.g. ".14" -> 0.14)
+    * Smaller space between tab titles
 
   Fixed bugs:
     * File filter 'size' refused to parse numbers like '100MB'
