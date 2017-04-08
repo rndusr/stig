@@ -42,7 +42,7 @@ class TorrentPeerSorter(SorterBase):
                                 description='estimated time they need to finish'),
         'rate-est':   _SortSpec(lambda t: t['rate-est'],
                                 description='estimated overall download rate'),
-        'name':       _SortSpec(lambda t: t['tname'].lower(),
+        'torrent':    _SortSpec(lambda t: t['tname'].lower(),
                                 description='torrent name'),
     }
     DEFAULT_SORT = 'ip'
