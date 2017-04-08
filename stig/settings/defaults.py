@@ -27,7 +27,7 @@ DEFAULT_HISTORY_FILE  = user_cache_dir(APPNAME)+'/history'
 DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TLIST_SORT    = ('name',)
-DEFAULT_PLIST_SORT    = ('name',)
+DEFAULT_PLIST_SORT    = ('torrent',)
 DEFAULT_TLIST_COLUMNS = ('marked', 'ratio', 'size', 'downloaded', 'uploaded',
                          'seeds', 'connections', 'status', 'eta', 'progress',
                          'rate-down', 'rate-up', 'name')
