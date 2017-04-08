@@ -145,7 +145,17 @@ def run(command_runner):
 
     # If no tabs have been opened by cli or rc file, open default tab
     if len(tabs) <= 0:
-        cmdmgr.run_sync('ls', on_error=log.error)
+        for cmd in ('tab ls active|incomplete',
+                    ('tab ls downloading -c size,downloaded,progress,'
+                     'rate-down,completed,eta,path,name'),
+                    ('tab ls uploading -c size,uploaded,ratio,'
+                     'rate-up,connections,seeds,tracker,path,name -s ratio'),
+                    'tab ls stopped -c size,progress,seeds,activity,path,name',
+                    'tab ls isolated -c error,tracker,path,name -s tracker',
+                    'tab ls -c size,ratio,seeds,status,tracker,path,name,activity',
+                    'tab -t peers lsp -s eta,torrent',):
+            cmdmgr.run_sync(cmd, on_error=log.error)
+        tabs.focus_position = 0
 
     try:
         # Start polling torrent lists, counters, bandwidth usage, etc.
