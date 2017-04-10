@@ -109,16 +109,17 @@ class Tabs(urwid.Widget):
             if position in self._ids:
                 return self._ids.index(position)
             else:
-                e = IndexError('No tab with ID: {}'.format(position))
-                e.value = position
-                raise e
+                raise IndexError('No tab with ID: {}'.format(position))
         else:
             i = self.focus_position if position is None else position
-            if i is not None and not 0 <= i < len(self._contents):
-                e = IndexError('No tab at position: {}'.format(position))
-                e.value = position
-                raise e
-        return i
+            c_len = len(self._contents)
+            if i is not None:
+                if i < 0:
+                    if i >= -c_len:
+                        return self.get_index(c_len + i)
+                elif i < c_len:
+                    return i
+                raise IndexError('No tab at position: {}'.format(position))
 
     def get_id(self, position=None):
         """Return unique TabID of tab at `position` or None if there are no tabs
