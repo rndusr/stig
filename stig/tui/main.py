@@ -143,6 +143,8 @@ def run(command_runner):
     # Start logging to TUI widget instead of stdout/stderr
     logwidget.enable()
 
+    topbar.help.update()
+
     # If no tabs have been opened by cli or rc file, open default tab
     if len(tabs) <= 0:
         for cmd in ( 'tab ls -c size,ratio,seeds,status,tracker,path,name,activity',
