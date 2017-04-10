@@ -55,29 +55,35 @@ class KeyChainsWidget(urwid.WidgetWrap):
 
 class QuickHelpWidget(urwid.Text):
     def __init__(self):
+        super().__init__('')
+
+    def update(self):
         def get_key(cmd, context=None):
             """Return shortest key sequence that executes `cmd`"""
             keys = tuple(tui.keymap.keys(lambda key,action: action.startswith(cmd), context))
-            return sorted(keys, key=lambda k: len(k))[0]
+            if keys:
+                return sorted(keys, key=lambda k: len(k))[0]
 
         def get_first_key(cmd, context=None):
             """Same as `get_key`, but return only first key if key sequence"""
-            keys = tuple(tui.keymap.keys(lambda key,action: action.startswith(cmd), context))
-            keyseq = sorted(keys, key=lambda k: len(k))[0]
-            return keyseq[0]
+            key = get_key(cmd, context)
+            if isinstance(key, tuple):  # key is a key sequence
+                return key[0]
+            else:
+                return key
 
-        def make_entry(label, key):
-            return [('topbar.help.key',    str(key)),
-                    ('topbar.help.equals', ' '),
-                    ('topbar.help.label',  label),
-                    ('topbar.help.space',  '   ')]
+        def maybe_add_entry(items, label, key):
+            if key is not None:
+                items.append([('topbar.help.key',    str(key)),
+                              ('topbar.help.equals', ' '),
+                              ('topbar.help.label',  label),
+                              ('topbar.help.space',  '   ')])
 
-        texts = [
-            make_entry('Prompt', get_key('tui show cli', context='main')),
-            make_entry('Quit', get_key('quit', context='main')),
-            make_entry('Help', get_first_key('tab help', context='main')),
-        ]
-        super().__init__(texts)
+        items = []
+        maybe_add_entry(items, 'Prompt', get_key('tui show cli', context='main'))
+        maybe_add_entry(items, 'Quit', get_key('quit', context='main'))
+        maybe_add_entry(items, 'Help', get_first_key('tab help', context='main'))
+        self.set_text(items)
 
 
 class ConnectionStatusWidget(urwid.WidgetWrap):
