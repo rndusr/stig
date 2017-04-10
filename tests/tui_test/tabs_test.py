@@ -45,12 +45,19 @@ class TestTabs(unittest.TestCase):
     def test_get_index_by_existing_index(self):
         self.assertEqual(self.tabs.get_index(1), 1)
         self.assertEqual(self.tabs.get_index(0), 0)
+        self.assertEqual(self.tabs.get_index(-1), 1)
+        self.assertEqual(self.tabs.get_index(-2), 0)
 
     def test_get_index_by_nonexisting_index(self):
         with self.assertRaises(IndexError) as cm:
             self.tabs.get_index(2)
         self.assertIn('position', str(cm.exception))
         self.assertIn('2', str(cm.exception))
+
+        with self.assertRaises(IndexError) as cm:
+            self.tabs.get_index(-3)
+        self.assertIn('position', str(cm.exception))
+        self.assertIn('-3', str(cm.exception))
 
     def test_get_index_by_existing_tabid(self):
         tabids = self.tabs.get_id(0), self.tabs.get_id(1)
