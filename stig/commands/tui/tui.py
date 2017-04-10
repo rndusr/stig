@@ -371,11 +371,12 @@ class TabCmd(metaclass=InitCommand):
         if pos is None:
             return tabs.focus_position
 
-        def find_index(i):
+        def find_index(pos):
+            i = pos-1 if pos > 0 else pos
             try:
-                return tabs.get_index(i-1)
+                return tabs.get_index(i)
             except IndexError as e:
-                log.error('No tab at position: {}'.format(e.value+1))
+                log.error('No tab at position: {}'.format(pos))
 
         def find_title(string):
             for i,title in enumerate(tabs.titles):
@@ -387,16 +388,17 @@ class TabCmd(metaclass=InitCommand):
         curpos = tabs.focus_position
         curpos = 1 if curpos is None else curpos
 
-        if pos.isdigit():
+        try:
             return find_index(int(pos))
-        elif pos == 'left':
-            if tabcount > 1:
-                return tabs.get_index(max(0, curpos-1))
-        elif pos == 'right':
-            if tabcount > 1:
-                return tabs.get_index(min(tabcount-1, curpos+1))
-        else:
-            return find_title(pos)
+        except ValueError:
+            if pos == 'left':
+                if tabcount > 1:
+                    return tabs.get_index(max(0, curpos-1))
+            elif pos == 'right':
+                if tabcount > 1:
+                    return tabs.get_index(min(tabcount-1, curpos+1))
+            else:
+                return find_title(pos)
 
 
 class TUICmd(metaclass=InitCommand):
