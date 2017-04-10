@@ -149,8 +149,14 @@ DEFAULT_KEYMAP = (
 
     # Global TUI keys
     {'context': 'main', 'key': 'q', 'action': 'quit'},
-    {'context': 'main', 'key': '?', 'action': 'tab help keymap'},
     {'context': 'main', 'key': ':', 'action': 'tui show cli'},
+
+    {'context': 'main', 'key': 'F1+c', 'action': 'tab help commands'},
+    {'context': 'main', 'key': 'F1+s', 'action': 'tab help settings'},
+    {'context': 'main', 'key': 'F1+k', 'action': 'tab help keymap'},
+    {'context': 'main', 'key': 'F1+f', 'action': 'tab help filtering'},
+    {'context': 'main', 'key': 'F1+r', 'action': 'tab help rcfile'},
+
     {'context': 'main', 'key': 'ctrl-l', 'action': 'clearlog'},
     {'context': 'main', 'key': 'meta-L', 'action': 'tui toggle log'},
     {'context': 'main', 'key': 'meta-M', 'action': 'tui toggle main'},
