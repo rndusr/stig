@@ -29,8 +29,8 @@ DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 DEFAULT_TLIST_SORT    = ('name',)
 DEFAULT_PLIST_SORT    = ('torrent',)
 DEFAULT_TLIST_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
-                         'eta', 'status', 'progress', 'rate-down', 'rate-up',
-                         'name')
+                         'seeds', 'connections', 'status', 'eta', 'progress',
+                         'rate-down', 'rate-up', 'name')
 DEFAULT_FLIST_COLUMNS = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
 
 from ..client.geoip import GEOIP_AVAILABLE
