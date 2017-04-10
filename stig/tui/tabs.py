@@ -12,6 +12,8 @@
 import urwid
 import collections
 
+from ..utils import strwidth
+
 
 class TabID(int):
     def __repr__(self):
@@ -26,7 +28,6 @@ def _find_unused_id(existing_ids):
         for id_candidate in range(0, max(existing_ids)+2):
             if id_candidate not in existing_ids:
                 return TabID(id_candidate)
-    raise RuntimeError('How did you get here?')
 
 
 class Tabs(urwid.Widget):
@@ -39,21 +40,21 @@ class Tabs(urwid.Widget):
 
         contents: Iterable of dictionaries or iterables that match the
                   arguments of the `insert` method
-        tabbar: Columns object that is used to display tab titles or any
+        tabbar: GridFlow object that is used to display tab titles or any
                 object with an 'original_widget' attribute (e.g. AttrMap) that
-                returns a Columns object
+                returns a GridFlow object
         """
         if tabbar is None:
-            self._tabbar = urwid.Columns([], dividechars=1)
+            self._tabbar = urwid.GridFlow([], 20, 1, 0, 'left')
             self._tabbar_render = self._tabbar.render
         elif hasattr(tabbar, 'original_widget'):
             self._tabbar = tabbar.original_widget
             self._tabbar_render = tabbar.render
-        elif isinstance(tabbar, urwid.Columns):
+        elif isinstance(tabbar, urwid.GridFlow):
             self._tabbar = tabbar
             self._tabbar_render = self._tabbar.render
         else:
-            raise ValueError('tabbar must be Columns, not {}: {!r}'
+            raise ValueError('tabbar must be GridFlow, not {}: {!r}'
                              .format(type(tabbar).__name__, tabbar))
 
         self._ids = []
@@ -79,10 +80,10 @@ class Tabs(urwid.Widget):
 
         # Render tab bar and add it to combinelist.  The tab bar is always
         # rendered as focused to highlight the focused tab.
-        canvas = self._tabbar_render((cols,), True)
+        canvas = self._tabbar_render((cols,), focus=True)
         combinelist.append((canvas, position, True))
         if rows is not None:
-            rows -= 1  # Account for title bar
+            rows -= self._tabbar.rows((cols,))
 
         # Render and add content of currently selected tab
         current_widget = self._contents[position]
@@ -134,7 +135,7 @@ class Tabs(urwid.Widget):
     def load(self, title, widget=None, position=None, focus=True):
         """Set content at `position`, in focused tab or in new tab
 
-        If `position` is not None, is forwarded to `set_title`/`set_content`
+        If `position` is not None, it is forwarded to `set_title`/`set_content`
         together with `title`/`widget`.
 
         If no tabs exist, a new tab is created with `title` and `widget`.  If
@@ -195,14 +196,23 @@ class Tabs(urwid.Widget):
         self._ids.insert(newpos, this_id)
 
         # Insert title
-        options = self._tabbar.options('pack')
-        self._tabbar.contents.insert(newpos, (title, options))
+        self._tabbar.contents.insert(newpos, self._make_title(title))
 
         # Insert content
         self._contents.insert(newpos, widget)
         if focus:
             self.focus_position = newpos
         return this_id
+
+    def _make_title(self, title):
+        if hasattr(title, 'text'):
+            opts = ('given', strwidth(title.text))
+        elif hasattr(title, 'original_widget') and \
+             hasattr(title.original_widget, 'text'):
+            opts = ('given', strwidth(title.original_widget.text))
+        else:
+            opts = ()
+        return (title, self._tabbar.options(*opts))
 
     def remove(self, position=None):
         """Remove tab `position`
@@ -234,13 +244,14 @@ class Tabs(urwid.Widget):
     def set_title(self, title, position=None):
         """Change the title widget of a tab
 
-        title: New title widget
+        title: New title widget; should be a Text object optionally wrapped by
+               AttrMap
         position: Index (int), ID (TabID) or None (focused tab)
 
         Raises IndexError if tab can't be found.
         """
         i = self.get_index(position)
-        self._tabbar.contents[i] = (title, self._tabbar.options('pack'))
+        self._tabbar.contents[i] = self._make_title(title)
 
     def get_content(self, position=None):
         """Return tab content widget at `position`

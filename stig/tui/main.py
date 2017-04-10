@@ -83,7 +83,7 @@ topbar.add(name='spacer', widget=urwid.AttrMap(_greedy_spacer(), 'topbar'))
 topbar.add(name='help',   widget=QuickHelpWidget(), options='pack')
 
 tabs = keymap.wrap(Tabs, context='tabs')(
-    tabbar=urwid.AttrMap(urwid.Columns([], dividechars=1), 'tabs.unfocused')
+    tabbar=urwid.AttrMap(urwid.GridFlow([], 30, h_sep=1, v_sep=0, align='left'), 'tabs.unfocused')
 )
 
 bottombar = Group(cls=urwid.Columns)
