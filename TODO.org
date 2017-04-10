@@ -3,9 +3,6 @@ questions and point out issues.
 
 * commands
 
-** TODO tab: Allow negative indexes to count from the right
-   The first tab from the right would be -1, the second -2, etc.
-
 ** TODO Show number of selected torrents/files
     The best place would probably in the bottom bar.  Either implement that in
     tui.infobar.TorrentCountersWidget or create a new widget.
