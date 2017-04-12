@@ -87,7 +87,6 @@ def _percent_available(raw_torrent):
     return _bytes_available(raw_torrent) / raw_torrent['sizeWhenDone'] * 100
 
 
-
 def _is_isolated(raw_torrent):
     """Return whether this torrent can find any peers via trackers or DHT"""
     if not raw_torrent['isPrivate']:
@@ -105,6 +104,27 @@ def _is_isolated(raw_torrent):
         else:
             return False
     return True  # No way to find any peers
+
+
+def _find_tracker_error(raw_torrent):
+    error = raw_torrent['error']
+    if error == 1:
+        return 'Tracker warning: %s' % raw_torrent['errorString']
+    elif error == 2:
+        return 'Tracker error: %s' % raw_torrent['errorString']
+    elif error == 3:
+        return raw_torrent['errorString']
+
+    # The fields 'error' and 'errorString' are not necessarily set when
+    # _is_isolated returns True. (Not sure why that happens. Reproduce by
+    # setting a tracker domain to 127.0.0.1 in /etc/hosts to provoke an error.)
+    trackerStats = raw_torrent['trackerStats']
+    for tracker in trackerStats:
+        msg = tracker['lastAnnounceResult']
+        if msg != 'Success':
+            return msg
+
+    return ''
 
 
 def _make_status(t):
@@ -290,7 +310,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
 
     'trackers'          : ('trackers',),
-    'error'             : ('errorString',),
+    'error'             : ('errorString', 'error'),
     'peers'             : ('peers', 'totalSize'),
 
     # 'files' is called once to initialize file names and sizes by
@@ -323,6 +343,7 @@ _MODIFY = {
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
     'trackers'        : TrackerList,
+    'error'           : _find_tracker_error,
     'peers'           : PeerList,
     'files'           : _create_TorrentFileTree,
 }
