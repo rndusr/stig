@@ -19,10 +19,10 @@ from .. import base
 
 # Some values need to be modified to comply with our internal standards
 
-def _modify_ratio(raw_torrent):
+def _modify_ratio(t):
     #define TR_RATIO_NA  -1
     #define TR_RATIO_INF -2
-    ratio = raw_torrent['uploadRatio']
+    ratio = t['uploadRatio']
     if ratio == -1:
         return tkeys.Ratio.NOT_APPLICABLE
     elif ratio == -2:
@@ -31,10 +31,10 @@ def _modify_ratio(raw_torrent):
         return ratio
 
 
-def _modify_eta(raw_torrent):
+def _modify_eta(t):
     #define TR_ETA_NOT_AVAIL -1
     #define TR_ETA_UNKNOWN -2
-    seconds = raw_torrent['eta']
+    seconds = t['eta']
     if seconds == -1:
         return tkeys.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
@@ -43,9 +43,9 @@ def _modify_eta(raw_torrent):
         return seconds
 
 
-def _modify_timestamp(raw_torrent, key, zero_means=tkeys.Timestamp.UNKNOWN):
+def _modify_timestamp(t, key, zero_means=tkeys.Timestamp.UNKNOWN):
     # I couldn't find any documentation on this, but 0 seems to mean "not applicable"?
-    seconds = raw_torrent[key]
+    seconds = t[key]
     if seconds == 0:
         return zero_means
     else:
@@ -53,13 +53,13 @@ def _modify_timestamp(raw_torrent, key, zero_means=tkeys.Timestamp.UNKNOWN):
 
 
 import time
-def _modify_timestamp_completed(raw_torrent):
-    seconds = raw_torrent['doneDate']
+def _modify_timestamp_completed(t):
+    seconds = t['doneDate']
     if seconds == 0:
-        if raw_torrent['eta'] >= 0:
+        if t['eta'] >= 0:
             # timestamp is in the future
-            return time.time() + raw_torrent['eta']
-        elif raw_torrent['percentDone'] < 1:
+            return time.time() + t['eta']
+        elif t['percentDone'] < 1:
             return tkeys.Timestamp.UNKNOWN
         else:
             return tkeys.Timestamp.NOT_APPLICABLE
@@ -68,30 +68,28 @@ def _modify_timestamp_completed(raw_torrent):
         return seconds
 
 
-def _count_seeds(raw_torrent):
-    trackerStats = raw_torrent['trackerStats']
+def _count_seeds(t):
+    trackerStats = t['trackerStats']
     if trackerStats:
         return max(t['seederCount'] for t in trackerStats)
     else:
         return tkeys.SeedCount.UNKNOWN
 
 
-def _bytes_available(raw_torrent):
-    return (raw_torrent['desiredAvailable'] +
-            raw_torrent['haveValid'] +
-            raw_torrent['haveUnchecked'])
+def _bytes_available(t):
+    return t['desiredAvailable'] + t['haveValid'] + t['haveUnchecked']
 
-def _percent_available(raw_torrent):
-    return _bytes_available(raw_torrent) / raw_torrent['sizeWhenDone'] * 100
+def _percent_available(t):
+    return _bytes_available(t) / t['sizeWhenDone'] * 100
 
 
-def _is_isolated(raw_torrent):
+def _is_isolated(t):
     """Return whether this torrent can find any peers via trackers or DHT"""
-    if not raw_torrent['isPrivate']:
+    if not t['isPrivate']:
         return False  # DHT is used
 
     # Torrent has trackers?
-    trackerStats = raw_torrent['trackerStats']
+    trackerStats = t['trackerStats']
     if trackerStats:
         # Did we try to connect to a tracker?
         if any(tracker['hasAnnounced'] for tracker in trackerStats):
@@ -104,19 +102,19 @@ def _is_isolated(raw_torrent):
     return True  # No way to find any peers
 
 
-def _find_tracker_error(raw_torrent):
-    error = raw_torrent['error']
+def _find_tracker_error(t):
+    error = t['error']
     if error == 1:
-        return 'Tracker warning: %s' % raw_torrent['errorString']
+        return 'Tracker warning: %s' % t['errorString']
     elif error == 2:
-        return 'Tracker error: %s' % raw_torrent['errorString']
+        return 'Tracker error: %s' % t['errorString']
     elif error == 3:
-        return raw_torrent['errorString']
+        return t['errorString']
 
     # The fields 'error' and 'errorString' are not necessarily set when
     # _is_isolated returns True. (Not sure why that happens. Reproduce by
     # setting a tracker domain to 127.0.0.1 in /etc/hosts to provoke an error.)
-    trackerStats = raw_torrent['trackerStats']
+    trackerStats = t['trackerStats']
     for tracker in trackerStats:
         msg = tracker['lastAnnounceResult']
         if msg != 'Success':
@@ -170,25 +168,25 @@ def _make_status(t):
     return statuses
 
 
-def _create_TorrentFileTree(raw_torrent):
-    filelist = raw_torrent['fileStats']
+def _create_TorrentFileTree(t):
+    filelist = t['fileStats']
     if not filelist:
         # filelist is empty if torrent was added by hash and metadata isn't
         # downloaded yet.
-        filelist = [{'name': raw_torrent['name'], 'priority': 0, 'length': 0,
+        filelist = [{'name': t['name'], 'priority': 0, 'length': 0,
                      'wanted': True, 'id': 0, 'bytesCompleted': 0}]
     else:
         # Combine 'files' and 'fileStats' fields and add the 'id' field, which
         # is the index in the list provided by Transmission.
-        if 'files' in raw_torrent:
-            for i,(f1,f2) in enumerate(zip(filelist, raw_torrent['files'])):
+        if 'files' in t:
+            for i,(f1,f2) in enumerate(zip(filelist, t['files'])):
                 f1['id'] = i
                 f1.update(f2)
         else:
             for i,f in enumerate(filelist):
                 f['id'] = i
 
-    return TorrentFileTree(raw_torrent['id'], entries=filelist)
+    return TorrentFileTree(t['id'], entries=filelist)
 
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
@@ -247,24 +245,24 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
 
 class TrackerList(tuple):
-    def __new__(cls, raw_torrent):
+    def __new__(cls, t):
         return super().__new__(cls,
             ({'id': tracker['id'],
               'url-announce': utils.URL(tracker['announce'])}
-             for tracker in raw_torrent['trackers'])
+             for tracker in t['trackers'])
         )
 
 
 class PeerList(tuple):
-    def __new__(cls, raw_torrent):
+    def __new__(cls, t):
         TorrentPeer = tkeys.TorrentPeer
         return super().__new__(cls,
-            (TorrentPeer(tid=raw_torrent['id'], tname=raw_torrent['name'],
-                         tsize=raw_torrent['totalSize'],
+            (TorrentPeer(tid=t['id'], tname=t['name'],
+                         tsize=t['totalSize'],
                          ip=p['address'], port=p['port'], client=p['clientName'],
                          progress=p['progress']*100,
                          rate_up=p['rateToPeer'], rate_down=p['rateToClient'])
-             for p in raw_torrent['peers'])
+             for p in t['peers'])
         )
 
 
