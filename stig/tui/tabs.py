@@ -9,6 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ..logging import make_logger
+log = make_logger(__name__)
+
 import urwid
 import collections
 
@@ -77,24 +80,19 @@ class Tabs(urwid.Widget):
     def __init__(self, *contents, tabbar=None):
         """Create new Tabs widget
 
-        contents: Iterable of dictionaries or iterables that match the
-                  arguments of the `insert` method
-        tabbar: GridFlow object that is used to display tab titles or any
-                object with an 'original_widget' attribute (e.g. AttrMap) that
-                returns a GridFlow object
+        contents: Iterable of dictionaries or iterables that match the arguments
+                  of the `insert` method
+        tabbar: TabBar instance that is used to display tab titles or any object
+                with a 'base_widget' attribute (e.g. AttrMap) that returns a
+                TabBar object
         """
         if tabbar is None:
-            self._tabbar = urwid.GridFlow([], 20, 1, 0, 'left')
-            self._tabbar_render = self._tabbar.render
-        elif hasattr(tabbar, 'original_widget'):
-            self._tabbar = tabbar.original_widget
-            self._tabbar_render = tabbar.render
-        elif isinstance(tabbar, urwid.GridFlow):
-            self._tabbar = tabbar
-            self._tabbar_render = self._tabbar.render
-        else:
-            raise ValueError('tabbar must be GridFlow, not {}: {!r}'
+            self._tabbar = TabBar()
+        elif not isinstance(tabbar, urwid.Widget):
+            raise ValueError('tabbar must be TabBar instance, not {}: {!r}'
                              .format(type(tabbar).__name__, tabbar))
+        else:
+            self._tabbar = tabbar
 
         self._ids = []
         self._contents = urwid.MonitoredFocusList()
@@ -114,25 +112,24 @@ class Tabs(urwid.Widget):
             # No contents - return empty canvas
             return urwid.SolidCanvas(' ', cols, rows)
 
+        if rows is not None:
+            size_content = (cols, rows - self._tabbar.rows((cols,)))
+        else:
+            size_content = (cols,)
+
         combinelist = []
         position = self._contents.focus
 
-        # Render tab bar and add it to combinelist.  The tab bar is always
-        # rendered as focused to highlight the focused tab.
-        canvas = self._tabbar_render((cols,), focus=True)
+        # Always render tab titles as focused to highlight the focused tab
+        canvas = self._tabbar.render((cols,), focus=True)
         combinelist.append((canvas, position, True))
-        if rows is not None:
-            rows -= self._tabbar.rows((cols,))
 
         # Render and add content of currently selected tab
         current_widget = self._contents[position]
         if current_widget is None:
-            canvas = urwid.SolidCanvas(' ', cols, rows)
+            canvas = urwid.SolidCanvas(' ', *size_content)
         else:
-            if rows is not None:
-                canvas = current_widget.render((cols,rows), focus)
-            else:
-                canvas = current_widget.render((cols,), focus)
+            canvas = current_widget.render(size_content, focus)
         combinelist.append((canvas, position, focus))
         return urwid.CanvasCombine(combinelist)
 
@@ -235,23 +232,13 @@ class Tabs(urwid.Widget):
         self._ids.insert(newpos, this_id)
 
         # Insert title
-        self._tabbar.contents.insert(newpos, self._make_title(title))
+        self._tabbar.base_widget.insert(newpos, title)
 
         # Insert content
         self._contents.insert(newpos, widget)
         if focus:
             self.focus_position = newpos
         return this_id
-
-    def _make_title(self, title):
-        if hasattr(title, 'text'):
-            opts = ('given', strwidth(title.text))
-        elif hasattr(title, 'original_widget') and \
-             hasattr(title.original_widget, 'text'):
-            opts = ('given', strwidth(title.original_widget.text))
-        else:
-            opts = ()
-        return (title, self._tabbar.options(*opts))
 
     def remove(self, position=None):
         """Remove tab `position`
@@ -262,8 +249,8 @@ class Tabs(urwid.Widget):
         """
         i = self.get_index(position)
         del self._ids[i]
-        del self._tabbar.contents[i]
         del self._contents[i]
+        del self._tabbar.base_widget[i]
 
     def clear(self):
         """Remove all tabs"""
@@ -278,7 +265,7 @@ class Tabs(urwid.Widget):
         Raises IndexError if tab can't be found.
         """
         i = self.get_index(position)
-        return self._tabbar.contents[i][0]
+        return self._tabbar.base_widget[i]
 
     def set_title(self, title, position=None):
         """Change the title widget of a tab
@@ -290,7 +277,7 @@ class Tabs(urwid.Widget):
         Raises IndexError if tab can't be found.
         """
         i = self.get_index(position)
-        self._tabbar.contents[i] = self._make_title(title)
+        self._tabbar.base_widget[i] = title
 
     def get_content(self, position=None):
         """Return tab content widget at `position`
@@ -328,7 +315,7 @@ class Tabs(urwid.Widget):
     @focus_position.setter
     def focus_position(self, position):
         if 0 <= position < len(self._contents):
-            self._tabbar.contents.focus = position
+            self._tabbar.base_widget.focus = position
             self._contents.focus = position
         else:
             raise IndexError('No tab at position: {!r}'.format(position))
@@ -344,7 +331,7 @@ class Tabs(urwid.Widget):
     def focus_id(self, tabid):
         i = self.get_index(tabid)
         if 0 <= i < len(self._contents):
-            self._tabbar.contents.focus = i
+            self._tabbar.base_widget.focus = i
             self._contents.focus = i
         else:
             raise IndexError('No tab with ID: {}'.format(tabid))
@@ -358,8 +345,7 @@ class Tabs(urwid.Widget):
     @property
     def titles(self):
         """Yields all tab title widgets"""
-        for w in self._tabbar.contents:
-            yield w[0]
+        yield from self._tabbar.base_widget
 
     def __len__(self):
         return len(self._contents)
