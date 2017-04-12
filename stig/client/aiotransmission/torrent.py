@@ -16,8 +16,6 @@ from .. import tkeys as tkeys
 from .. import utils
 from .. import base
 
-from os.path import normpath
-
 
 # Some values need to be modified to comply with our internal standards
 
