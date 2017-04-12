@@ -30,6 +30,45 @@ def _find_unused_id(existing_ids):
                 return TabID(id_candidate)
 
 
+class TabBar(urwid.GridFlow):
+    def __init__(self, spacing=1, default_width=20):
+        return super().__init__([], default_width, spacing, 0, 'left')
+
+    def render(self, size, focus=False):
+        return super().render(size, focus=True)
+
+    def __getitem__(self, pos):
+        return self.contents[pos][0]
+
+    def __setitem__(self, pos, widget):
+        self.contents[pos] = self._make_title(widget)
+
+    def __delitem__(self, pos):
+        del self.contents[pos]
+
+    def insert(self, pos, widget):
+        self.contents.insert(pos, self._make_title(widget))
+
+    def _make_title(self, widget):
+        if hasattr(widget.base_widget, 'text'):
+            opts = ('given', strwidth(widget.base_widget.text))
+        else:
+            opts = ()
+        return (widget, self.options(*opts))
+
+    @property
+    def focus(self):
+        return self.contents.focus
+
+    @focus.setter
+    def focus(self, pos):
+        self.contents.focus = pos
+
+    def __iter__(self):
+        for w in self.contents:
+            yield w[0]
+
+
 class Tabs(urwid.Widget):
     """Organize multiple widgets in tabs"""
 
