@@ -536,25 +536,22 @@ def _ensure_TorrentFileTree(obj):
 
 
 import time
-from collections import defaultdict
-_PEER_PROGRESS_DATA = defaultdict(lambda: [])
+from collections import (defaultdict, deque)
 MAX_SAMPLES = 10
-MAX_SAMPLE_AGE = 3600
+MAX_SAMPLE_AGE = 5*3600
+_PEER_PROGRESS_DATA = defaultdict(lambda: deque(maxlen=MAX_SAMPLES))
+
 def gc_peer_progress_data():
     for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
-        # Keep only the most recent samples
-        while len(samples) > MAX_SAMPLES:
-            samples.pop(0)
-
-        # Also remove samples that are too old
+        # Remove samples that are too old
         while samples and (samples[0][0] + MAX_SAMPLE_AGE) < time.monotonic():
-            samples.pop(0)
+            samples.popleft()
 
-        # Remove peer if there are no samples left
+        # Remove deque if there are no samples left
         if not samples:
             del _PEER_PROGRESS_DATA[peer_id]
 
-def _guess_peer_rate_and_eta(peer_progress, peer_id, torrent_size):
+def _guess_peer_rate_and_eta(peer_id, peer_progress, torrent_size):
     rate = 0
     if peer_progress >= 1:
         # Peer has already downloaded everything
@@ -619,8 +616,7 @@ class TorrentPeer(abc.Mapping):
     def __getitem__(self, key):
         if key not in self._cache:
             if key in ('eta', 'rate-est'):
-                rate, eta = _guess_peer_rate_and_eta(
-                    self['progress']/100, self['id'], self['tsize'])
+                rate, eta = _guess_peer_rate_and_eta(self['id'], self['progress']/100, self['tsize'])
                 self._cache['rate-est'] = self.TYPES['rate-est'](rate)
                 self._cache['eta'] = self.TYPES['eta'](eta)
 
