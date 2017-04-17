@@ -15,6 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from collections import abc
+from functools import partial
 
 from ..base import torrent as base
 from . import mixin
@@ -41,10 +42,9 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         if 'marked' not in columns:
             columns.insert(0, 'marked')
 
-        def make_titlew(text):
-            return make_tab_title_widget(text,
-                                         'tabs.torrentlist.unfocused',
-                                         'tabs.torrentlist.focused')
+        make_titlew = partial(make_tab_title_widget,
+                              attr_unfocused='tabs.torrentlist.unfocused',
+                              attr_focused='tabs.torrentlist.focused')
 
         title_str = await self.generate_tab_title(tfilter)
 
@@ -71,10 +71,9 @@ class ListFilesCmd(base.ListFilesCmdbase,
         if 'marked' not in columns:
             columns.insert(0, 'marked')
 
-        def make_titlew(text):
-            return make_tab_title_widget(text,
-                                         'tabs.filelist.unfocused',
-                                         'tabs.filelist.focused')
+        make_titlew = partial(make_tab_title_widget,
+                              attr_unfocused='tabs.filelist.unfocused',
+                              attr_focused='tabs.filelist.focused')
 
         title_str = await self.generate_tab_title(tfilter)
 
@@ -97,10 +96,9 @@ class ListPeersCmd(base.ListPeersCmdbase,
     srvapi = ExpectedResource
 
     async def make_plist(self, tfilter, pfilter, sort, columns):
-        def make_titlew(text):
-            return make_tab_title_widget(text,
-                                         'tabs.peerlist.unfocused',
-                                         'tabs.peerlist.focused')
+        make_titlew = partial(make_tab_title_widget,
+                              attr_unfocused='tabs.peerlist.unfocused',
+                              attr_focused='tabs.peerlist.focused')
 
         title_str = await self.generate_tab_title(tfilter)
 
