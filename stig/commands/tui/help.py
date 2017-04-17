@@ -17,7 +17,7 @@ log = make_logger(__name__)
 
 from ..base import help as base
 from .. import ExpectedResource
-from . import make_tab_title
+from . import make_tab_title_widget
 
 
 class HelpCmd(base.HelpCmdbase):
@@ -27,9 +27,9 @@ class HelpCmd(base.HelpCmdbase):
     def display_help(self, topics, lines):
         import urwid
         if hasattr(self, 'title'):
-            titlew = make_tab_title(str(self.title), 'tabs.help.unfocused', 'tabs.help.focused')
+            titlew = make_tab_title_widget(str(self.title), 'tabs.help.unfocused', 'tabs.help.focused')
         else:
-            titlew = make_tab_title(','.join(topics), 'tabs.help.unfocused', 'tabs.help.focused')
+            titlew = make_tab_title_widget(','.join(topics), 'tabs.help.unfocused', 'tabs.help.focused')
         lines = [urwid.Text(l) for l in lines]
         helpw = urwid.ListBox(urwid.SimpleListWalker(lines))
         self.tui.tabs.load(titlew, helpw)

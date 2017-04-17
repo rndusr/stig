@@ -11,9 +11,11 @@
 
 """Commands for the TUI"""
 
-def make_tab_title(text, attr_unfocused, attr_focused):
+
+def make_tab_title_widget(text, attr_unfocused, attr_focused):
     import urwid
     return urwid.AttrMap(urwid.Text(text), attr_unfocused, attr_focused)
+
 
 from .config import *
 from .help import *
