@@ -594,7 +594,7 @@ class TorrentPeer(abc.Mapping):
         'ip'        : str,
         'port'      : int,
         'client'    : SmartCmpStr,
-        'country'   : str,
+        'country'   : SmartCmpStr,
         'progress'  : Percent,
         'rate-up'   : convert.bandwidth,
         'rate-down' : convert.bandwidth,

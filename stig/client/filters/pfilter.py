@@ -43,6 +43,10 @@ class SingleTorrentPeerFilter(Filter):
             lambda p, op, v: op(p['client'], v),
             description='Match VALUE against peer client',
             value_type=TorrentPeer.TYPES['client']),
+        'country': CmpFilterSpec(
+            lambda p, op, v: op(p['country'], v),
+            description='Match VALUE against peer country',
+            value_type=TorrentPeer.TYPES['country']),
         'ip': CmpFilterSpec(
             lambda p, op, v: op(p['ip'], v),
             description='Match VALUE against peer IP address',
