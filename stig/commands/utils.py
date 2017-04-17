@@ -73,6 +73,8 @@ def log_msgs(logger, msgs, quiet=False):
 
     `msgs` is an iterable of strings or exceptions.  Strings are logged to
     level INFO, exceptions are logged to level ERROR.
+
+    If `quiet` evaluates to True, INFO messages are not logged.
     """
     for msg in msgs:
         if isinstance(msg, str):
