@@ -15,6 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 
+from . import make_tab_title_widget
 from .. import (InitCommand, ExpectedResource)
 
 
@@ -339,10 +340,9 @@ class TabCmd(metaclass=InitCommand):
             pass
 
         if close is False and focus is None:
-            import urwid
-            titlew = urwid.AttrMap(urwid.Text('Empty tab'), 'tabs.unfocused', 'tabs.focused')
+            titlew = make_tab_title_widget(title or 'Empty tab', 'tabs.unfocused', 'tabs.focused')
             tabs.insert(titlew, position='right')
-            log.debug('Inserted new tab at position %d', tabs.focus_position)
+            log.debug('Inserted new tab at position %d: %r', tabs.focus_position, titlew.base_widget.text)
 
         if COMMAND:
             cmd = ' '.join(shlex.quote(arg) for arg in COMMAND)
@@ -355,10 +355,6 @@ class TabCmd(metaclass=InitCommand):
             retval = cmd
         else:
             retval = True
-
-        if title is not None:
-            titlew = urwid.AttrMap(urwid.Text(str(title)), 'tabs.unfocused', 'tabs.focused')
-            tabs.set_title(titlew)
 
         if background:
             tabs.focus_position = old_index
