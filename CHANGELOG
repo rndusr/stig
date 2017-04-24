@@ -1,16 +1,18 @@
-2017-??-?? ?.?.?
+2017-04-24 0.6.0a
   Breaking changes:
     * Column 'peers-seeding' is now called 'seeds'
     * Column 'peers-connected' is now called 'connections'
     * Peer sort order 'name' is now called 'torrent'
 
   Other changes:
-    * Custom tab titles with "tab -t 'My Title'"
+    * Custom tab titles with `tab -t 'My Title'
     * New columns: 'available', '%available'
-    * Create several tabs instead of just one if no rc file is found
+    * New peer filter: 'country'
+    * With no default rc file present, create several tabs with different lists
+      instead of just one with all torrents
     * Negative tab focus positions (e.g. `tab --close -1` deletes the rightmost tab)
     * Default torrent list columns have changed (see `stig help columns.torrents`)
-    * Allow missing leading zero for numbers < 1 (e.g. ".14" -> 0.14)
+    * Allow missing leading zero for float numbers < 1 (e.g. ".14" -> 0.14)
     * Smaller space between tab titles
 
   Fixed bugs:
