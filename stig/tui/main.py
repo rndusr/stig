@@ -14,9 +14,58 @@ log = make_logger(__name__)
 
 import urwid
 from . import urwidpatches
-
 from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
-from . import theme
+
+
+#
+# Keybindings
+#
+
+from urwid import (command_map, REDRAW_SCREEN, CURSOR_UP, CURSOR_DOWN,
+                   CURSOR_LEFT, CURSOR_RIGHT, CURSOR_PAGE_UP, CURSOR_PAGE_DOWN,
+                   CURSOR_MAX_LEFT, CURSOR_MAX_RIGHT, ACTIVATE)
+CANCEL = 'cancel'
+CURSOR_WORD_LEFT = 'cursor word left'
+CURSOR_WORD_RIGHT = 'cursor word right'
+DELETE_TO_EOL = 'delete to end of line'
+DELETE_LINE = 'delete line'
+DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
+DELETE_WORD_LEFT = 'delete word left'
+DELETE_WORD_RIGHT = 'delete word right'
+
+# Remove urwid's defaults
+for key in tuple(command_map._command):
+    del command_map[key]
+
+from .keymap import Key
+command_map[Key('pgup')]   = CURSOR_PAGE_UP
+command_map[Key('pgdn')]   = CURSOR_PAGE_DOWN
+command_map[Key('ctrl-b')] = CURSOR_PAGE_UP
+command_map[Key('ctrl-f')] = CURSOR_PAGE_DOWN
+
+command_map[Key('up')]     = CURSOR_UP
+command_map[Key('down')]   = CURSOR_DOWN
+command_map[Key('left')]   = CURSOR_LEFT
+command_map[Key('right')]  = CURSOR_RIGHT
+command_map[Key('meta-b')] = CURSOR_WORD_LEFT
+command_map[Key('meta-f')] = CURSOR_WORD_RIGHT
+
+command_map[Key('home')]   = CURSOR_MAX_LEFT
+command_map[Key('end')]    = CURSOR_MAX_RIGHT
+command_map[Key('ctrl-a')] = CURSOR_MAX_LEFT
+command_map[Key('ctrl-e')] = CURSOR_MAX_RIGHT
+
+command_map[Key('ctrl-k')] = DELETE_TO_EOL
+command_map[Key('ctrl-u')] = DELETE_LINE
+command_map[Key('ctrl-d')] = DELETE_CHAR_UNDER_CURSOR
+command_map[Key('meta-d')] = DELETE_WORD_LEFT
+command_map[Key('meta-backspace')] = DELETE_WORD_RIGHT
+command_map[Key('ctrl-w')] = DELETE_WORD_RIGHT
+
+command_map[Key('enter')]  = ACTIVATE
+command_map[Key('escape')] = CANCEL
+command_map[Key('ctrl-g')] = CANCEL
+command_map[Key('ctrl-l')] = REDRAW_SCREEN
 
 from ..settings.defaults import DEFAULT_KEYMAP
 from .keymap import KeyMap
@@ -28,13 +77,17 @@ for args in DEFAULT_KEYMAP:
 helpmgr.keymap = keymap
 
 
+#
+# Widgets
+#
+
 from .group import Group
 from .tabs import (Tabs, TabBar)
 from .cli import CLIEditWidget
 from .logger import LogWidget
 from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
                       BandwidthStatusWidget, TorrentCountersWidget)
-
+from . import theme
 
 def load_theme(themeobj):
     """Load theme from `themeobj`
