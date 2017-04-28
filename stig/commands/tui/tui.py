@@ -440,12 +440,12 @@ class TUICmd(metaclass=InitCommand):
             except AttributeError as e:
                 log.error('Unknown TUI element: %r', '.'.join(current_path))
 
-        if widget is not None:
-            action = getattr(widget, ACTION)
-            log.debug('%sing %s in %s', ACTION.capitalize(), target_name, widget)
-            try:
-                action(target_name)
-                success = True
-            except ValueError as e:
-                log.error(e)
+            if widget is not None:
+                action = getattr(widget, ACTION)
+                log.debug('%sing %s in %s', ACTION.capitalize(), target_name, widget)
+                try:
+                    action(target_name)
+                    success = True
+                except ValueError as e:
+                    log.error(e)
         return success
