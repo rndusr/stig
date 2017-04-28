@@ -37,9 +37,6 @@ class TabBar(urwid.GridFlow):
     def __init__(self, spacing=1, default_width=20):
         return super().__init__([], default_width, spacing, 0, 'left')
 
-    def render(self, size, focus=False):
-        return super().render(size, focus=True)
-
     def __getitem__(self, pos):
         return self.contents[pos][0]
 
