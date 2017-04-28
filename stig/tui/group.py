@@ -335,30 +335,3 @@ class Group(urwid.WidgetWrap):
             return False
         else:
             return True
-
-    def keypress(self, size, key):
-        if self.focus is None:
-            return key
-
-        if self.focus.selectable():
-            key = self.focus.keypress(size, key)
-
-        if key is not None:
-            # Child widgets don't want key.
-            # Move focus to next/previous selectable widget.
-            if isinstance(self._main, urwid.Columns) and key == 'left' or \
-               isinstance(self._main, urwid.Pile)    and key == 'up':
-                if self.focus_selectable(forward=False):
-                    key = None
-            elif isinstance(self._main, urwid.Columns) and key == 'right' or \
-                 isinstance(self._main, urwid.Pile)    and key == 'down':
-                if self.focus_selectable(forward=True):
-                    key = None
-
-        return key
-
-    def selectable(self):
-        for item in self._items:
-            if item['widget'].selectable() and self.visible(item['name']):
-                return True
-        return False
