@@ -63,3 +63,14 @@ class ListBox_with_home_end(urwid.ListBox):
         return key
 
 urwid.ListBox = ListBox_with_home_end
+
+
+# Add more actions for key bindings
+urwid.CURSOR_WORD_LEFT = 'cursor word left'
+urwid.CURSOR_WORD_RIGHT = 'cursor word right'
+urwid.DELETE_TO_EOL = 'delete to end of line'
+urwid.DELETE_LINE = 'delete line'
+urwid.DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
+urwid.DELETE_WORD_LEFT = 'delete word left'
+urwid.DELETE_WORD_RIGHT = 'delete word right'
+urwid.CANCEL = 'cancel'

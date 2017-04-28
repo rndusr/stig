@@ -38,45 +38,45 @@ class CLIEditWidget(urwid.Edit):
     def keypress(self, size, key):
         size = (size[0],)
         text_before = self.get_edit_text()
-        if self._command_map[key] is km.CURSOR_UP:
+        if self._command_map[key] is urwid.CURSOR_UP:
             self._set_history_prev()
             key = None
-        elif self._command_map[key] is km.CURSOR_DOWN:
+        elif self._command_map[key] is urwid.CURSOR_DOWN:
             self._set_history_next()
             key = None
-        elif self._command_map[key] is km.DELETE_TO_EOL:
+        elif self._command_map[key] is urwid.DELETE_TO_EOL:
             self.edit_text = self.edit_text[:self.edit_pos]
             key = None
-        elif self._command_map[key] is km.DELETE_LINE:
+        elif self._command_map[key] is urwid.DELETE_LINE:
             self.set_edit_text('')
             key = None
-        elif self._command_map[key] is km.DELETE_CHAR_UNDER_CURSOR:
+        elif self._command_map[key] is urwid.DELETE_CHAR_UNDER_CURSOR:
             return super().keypress(size, 'delete')
-        elif self._command_map[key] is km.CURSOR_WORD_RIGHT:
+        elif self._command_map[key] is urwid.CURSOR_WORD_RIGHT:
             self.move_to_next_word(forward=True)
             key = None
-        elif self._command_map[key] is km.CURSOR_WORD_LEFT:
+        elif self._command_map[key] is urwid.CURSOR_WORD_LEFT:
             self.move_to_next_word(forward=False)
             key = None
-        elif self._command_map[key] is km.DELETE_WORD_LEFT:
+        elif self._command_map[key] is urwid.DELETE_WORD_LEFT:
             start_pos = self.edit_pos
             end_pos = self.move_to_next_word(forward=True)
             if end_pos != None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             self.edit_pos = start_pos
             key = None
-        elif self._command_map[key] is km.DELETE_WORD_RIGHT:
+        elif self._command_map[key] is urwid.DELETE_WORD_RIGHT:
             end_pos = self.edit_pos
             start_pos = self.move_to_next_word(forward=False)
             if start_pos != None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             key = None
-        elif self._on_accept is not None and self._command_map[key] is km.ACTIVATE:
+        elif self._on_accept is not None and self._command_map[key] is urwid.ACTIVATE:
             self._append_to_history(self.edit_text)
             self._on_accept(self)
             self._reset()
             key = None
-        elif self._on_cancel is not None and self._command_map[key] is km.CANCEL:
+        elif self._on_cancel is not None and self._command_map[key] is urwid.CANCEL:
             self._on_cancel(self)
             self._reset()
             key = None
