@@ -13,7 +13,7 @@
 
 import urwid
 
-# Workaround until this bug is resolved:
+# Limit the impact of the high CPU load bug
 # https://github.com/urwid/urwid/pull/86
 # https://github.com/urwid/urwid/issues/90
 from distutils.version import LooseVersion
@@ -21,10 +21,10 @@ if LooseVersion(urwid.__version__) <= LooseVersion('1.3.1'):
     urwid.AsyncioEventLoop._idle_emulation_delay = 1/25
 
 
-# Raise UnicodeDecodeError properly.
+# Raise UnicodeDecodeError properly
 # https://github.com/urwid/urwid/pull/92
 # https://github.com/urwid/urwid/pull/196
-class AsyncioEventLoop_withfixedraise(urwid.AsyncioEventLoop):
+class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
     def _exception_handler(self, loop, context):
         exc = context.get('exception')
         if exc:
@@ -44,25 +44,28 @@ class AsyncioEventLoop_withfixedraise(urwid.AsyncioEventLoop):
         if self._exc_info:
             raise self._exc_info
 
-urwid.AsyncioEventLoop = AsyncioEventLoop_withfixedraise
+urwid.AsyncioEventLoop = AsyncioEventLoop_patched
 
 
-# Tell ListBox to move to first/last item on 'home'/'end' keys.
-class ListBox_with_home_end(urwid.ListBox):
+class ListBox_patched(urwid.ListBox):
+    # Add support for home/end keys
+    # https://github.com/urwid/urwid/pull/229
     def keypress(self, size, key):
         key = super().keypress(size, key)
         if self.focus is not None:
             if key == 'home':
                 self.focus_position = next(iter(self.body.positions()))
-                self._invalidate()  # Don't know why this is needed?
-                key = None
+                self.set_focus_valign('top')
+                self._invalidate()
+                return None
             elif key == 'end':
                 self.focus_position = next(iter(self.body.positions(reverse=True)))
-                self._invalidate()  # Don't know why this is needed?
-                key = None
+                self.set_focus_valign('bottom')
+                self._invalidate()
+                return None
         return key
 
-urwid.ListBox = ListBox_with_home_end
+urwid.ListBox = ListBox_patched
 
 
 # Add more actions for key bindings
