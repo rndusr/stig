@@ -30,22 +30,20 @@ class _TorrentCache():
         self._tdict = {}  # Map torrent IDs to Torrent objects
 
     def update(self, raw_torrents):
-        import time ; start = time.time()
-
-        rtdict = {rt['id']:rt for rt in raw_torrents}
+        # import time ; start = time.time()
         tdict = self._tdict
-
-        # Add or update torrents
-        for tid,t in rtdict.items():
+        for rt in raw_torrents:
+            tid = rt['id']
             if tid in tdict:
-                # log.debug('Updating torrent #%d', tid)
-                tdict[tid].update(t)
+                # Update existing torrent
+                # log.debug('Updating torrent #%d, %d keys: %s', tid, len(rt), tuple(rt))
+                tdict[tid].update(rt)
             else:
-                # log.debug('Adding torrent #%d', tid)
-                tdict[tid] = Torrent(t)
-
-        log.debug('Updated %d cached torrents in %.3fms',
-                  len(tdict), (time.time()-start)*1000)
+                # Add new torrent
+                # log.debug('Adding torrent #%d, %d keys: %s', tid, len(rt), tuple(rt))
+                tdict[tid] = Torrent(rt)
+        # log.debug('Updated %d cached with %d new torrents in %.3fms',
+        #           len(tdict), len(raw_torrents), (time.time()-start)*1000)
 
     def purge(self, existing_tids):
         """Remove torrents with IDs that are not in `existing_ids`"""
