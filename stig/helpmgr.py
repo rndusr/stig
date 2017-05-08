@@ -16,7 +16,7 @@ log = make_logger(__name__)
 
 from collections import abc
 from . import (APPNAME, __version__)
-from .utils import (natsortkey, striplines, expandtabs)
+from .utils import (striplines, expandtabs)
 
 from .cliopts import DESCRIPTIONS
 
@@ -297,8 +297,12 @@ class HelpManager():
                     lines.append('{} KEYBINDINGS'.format(context.upper()))
 
                 keymap = ((key, stringify(action)) for key,action in km.map(context))
-                for key, action in sorted(keymap, key=lambda pair: natsortkey(pair[1])):
-                    lines.append('\t{}  \t{}'.format(action, key))
+
+                # Sort by command
+                from natsort import (natsort_keygen, natsorted, ns)
+                get_cmd = natsort_keygen(key=lambda pair: pair[1], alg=ns.IGNORECASE)
+                for key, action in natsorted(keymap, key=get_cmd):
+                    lines.append('\t{}  \t{}'.format(key, action))
                 lines.append('')
         return finalize_lines(lines)
 
