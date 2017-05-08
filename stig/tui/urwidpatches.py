@@ -13,6 +13,17 @@
 
 import urwid
 
+# Add more actions for key bindings
+urwid.CURSOR_WORD_LEFT = 'cursor word left'
+urwid.CURSOR_WORD_RIGHT = 'cursor word right'
+urwid.DELETE_TO_EOL = 'delete to end of line'
+urwid.DELETE_LINE = 'delete line'
+urwid.DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
+urwid.DELETE_WORD_LEFT = 'delete word left'
+urwid.DELETE_WORD_RIGHT = 'delete word right'
+urwid.CANCEL = 'cancel'
+
+
 # Limit the impact of the high CPU load bug
 # https://github.com/urwid/urwid/pull/86
 # https://github.com/urwid/urwid/issues/90
@@ -65,15 +76,37 @@ class ListBox_patched(urwid.ListBox):
                 return None
         return key
 
+
+    # Add support for ScrollBar
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._rows_max = None
+
+    def _invalidate(self):
+        super()._invalidate()
+        self._rows_max = None
+
+    def get_scrollpos(self, size, focus=False):
+        """Current scrolling position
+
+        Lower limit is 0, upper limit is the highest index of `body`.
+        """
+        middle, top, bottom = self.calculate_visible(size, focus)
+        if middle is None:
+            return 0
+        else:
+            offset_rows, _, focus_pos, _, _ = middle
+            maxcol, maxrow = size
+            flow_size = (maxcol,)
+            widgets_above_focus = tuple(w for w in self.body[:focus_pos])
+            rows_above_focus = sum(w.rows(flow_size) for w in widgets_above_focus)
+            rows_above_top = rows_above_focus - offset_rows
+            return rows_above_top
+
+    def rows_max(self, size, focus=False):
+        if self._rows_max is None:
+            flow_size = (size[0],)
+            self._rows_max = sum(w.rows(flow_size) for w in self.body)
+        return self._rows_max
+
 urwid.ListBox = ListBox_patched
-
-
-# Add more actions for key bindings
-urwid.CURSOR_WORD_LEFT = 'cursor word left'
-urwid.CURSOR_WORD_RIGHT = 'cursor word right'
-urwid.DELETE_TO_EOL = 'delete to end of line'
-urwid.DELETE_LINE = 'delete line'
-urwid.DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
-urwid.DELETE_WORD_LEFT = 'delete word left'
-urwid.DELETE_WORD_RIGHT = 'delete word right'
-urwid.CANCEL = 'cancel'
