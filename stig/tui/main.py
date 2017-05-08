@@ -30,6 +30,8 @@ urwid.command_map[Key('pgup')]   = urwid.CURSOR_PAGE_UP
 urwid.command_map[Key('pgdn')]   = urwid.CURSOR_PAGE_DOWN
 urwid.command_map[Key('ctrl-b')] = urwid.CURSOR_PAGE_UP
 urwid.command_map[Key('ctrl-f')] = urwid.CURSOR_PAGE_DOWN
+urwid.command_map[Key('b')]      = urwid.CURSOR_PAGE_UP
+urwid.command_map[Key('space')]  = urwid.CURSOR_PAGE_DOWN
 
 urwid.command_map[Key('up')]     = urwid.CURSOR_UP
 urwid.command_map[Key('down')]   = urwid.CURSOR_DOWN
