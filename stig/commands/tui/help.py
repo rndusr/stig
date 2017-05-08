@@ -26,13 +26,16 @@ class HelpCmd(base.HelpCmdbase):
 
     def display_help(self, topics, lines):
         import urwid
+        from ...tui.scroll import (Scrollable, ScrollBar)
+
         if hasattr(self, 'title'):
             titlew = make_tab_title_widget(str(self.title), 'tabs.help.unfocused', 'tabs.help.focused')
         else:
             titlew = make_tab_title_widget(','.join(topics), 'tabs.help.unfocused', 'tabs.help.focused')
-        lines = [urwid.Text(l) for l in lines]
-        helpw = urwid.ListBox(urwid.SimpleListWalker(lines))
-        self.tui.tabs.load(titlew, helpw)
+
+        textw = urwid.AttrMap(Scrollable(urwid.Text('\n'.join(lines))), 'helptext')
+        contentw = urwid.AttrMap(ScrollBar(textw), 'scrollbar')
+        self.tui.tabs.load(titlew, contentw)
 
 
 class VersionCmd(base.VersionCmdbase):
