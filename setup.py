@@ -35,6 +35,7 @@ setup(
         'aiohttp>=0.22.5',
         'appdirs',
         'blinker',
+        'natsort',
     ],
 
     entry_points = { 'console_scripts': [ 'stig = stig:run' ] },
