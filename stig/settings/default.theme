@@ -37,6 +37,10 @@
 # Uncomment the next line to automatically make light colors bold.
 # light_is_bold
 
+cli         black      on light gray
+scrollbar   light gray on dark gray
+helptext    light gray on black
+
 tabs.unfocused             white        on black
 tabs.focused               black        on white
 tabs.torrentlist.unfocused dark cyan    on dark gray
@@ -47,8 +51,6 @@ tabs.peerlist.unfocused    dark green   on dark gray
 tabs.peerlist.focused      black        on dark green
 tabs.help.unfocused        yellow       on dark gray
 tabs.help.focused          black        on yellow
-
-cli                        black on light gray
 
 $topbar_bg = dark blue
 topbar                    light gray  on $topbar_bg
