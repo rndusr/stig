@@ -156,6 +156,7 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'F1+k', 'action': 'tab help keymap'},
     {'context': 'main', 'key': 'F1+f', 'action': 'tab help filtering'},
     {'context': 'main', 'key': 'F1+r', 'action': 'tab help rcfile'},
+    {'context': 'main', 'key': '?',    'action': '<F1>'},
 
     {'context': 'main', 'key': 'ctrl-l', 'action': 'clearlog'},
     {'context': 'main', 'key': 'meta-L', 'action': 'tui toggle log'},
