@@ -10,18 +10,6 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import unicodedata
-import re
-
-
-def natsortkey(key):
-    """Provide this as the 'key' argument to `list.sort`, `sorted`, etc.
-
-    Pilfered from
-    <https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/>
-    and adapted.
-    """
-    convert = lambda text: int(text) if isinstance(text, str) and text.isdigit() else text
-    return [convert(c) for c in re.split('([0-9]+)', key)]
 
 
 def striplines(lines):
