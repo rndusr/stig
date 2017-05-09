@@ -208,6 +208,7 @@ class Scrollable(urwid.WidgetDecoration):
 
     def set_scrollpos(self, position):
         self._trim_top = int(position)
+        self._invalidate()
 
     def rows_max(self, size, focus=False):
         """Return the number of rows for `size`"""
