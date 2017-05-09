@@ -253,6 +253,7 @@ class ScrollBar(urwid.WidgetDecoration):
         self._trough_char = trough_char
         self.scrollbar_side = side
         self.scrollbar_width = max(1, width)
+        self._original_widget_size = None
 
     def render(self, size, focus=False):
         maxcol, maxrow = size
@@ -262,10 +263,11 @@ class ScrollBar(urwid.WidgetDecoration):
         ow_rows_max = ow_base.rows_max(size, focus)
         if ow_rows_max <= maxrow:
             # Canvas fits without scrolling - no scrollbar needed
+            self._original_widget_size = size
             return ow.render(size, focus)
 
         sb_width = self._scrollbar_width
-        ow_size = (maxcol-sb_width, maxrow)
+        self._original_widget_size = ow_size = (maxcol-sb_width, maxrow)
         ow_canv = ow.render(ow_size, focus)
 
         pos = ow_base.get_scrollpos(ow_size, focus)
@@ -343,14 +345,7 @@ class ScrollBar(urwid.WidgetDecoration):
         raise ValueError('Not compatible to be wrapped by ScrollBar: %r' % w)
 
     def keypress(self, size, key):
-        maxcol, maxrow = size
-        ow_rows_max = self.scrolling_base_widget.rows_max(size)
-        if ow_rows_max <= maxrow:
-            # original_widget fits without scrolling
-            return self._original_widget.keypress(size, key)
-        else:
-            size_minus_scrollbar = (maxcol-1, maxrow)
-            return self._original_widget.keypress(size_minus_scrollbar, key)
+        return self._original_widget.keypress(self._original_widget_size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
         # TODO: Add support for moving the thumb with the mouse.
