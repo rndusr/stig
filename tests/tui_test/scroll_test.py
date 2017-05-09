@@ -46,7 +46,7 @@ class TestScrollable(unittest.TestCase):
             Scrollable(urwid.Text('\n'.join(TEXT), wrap='clip')),
         )
 
-    def check(self, widget, size, text):
+    def check(self, widget, size, text, cursor_pos=()):
         maxcol, maxrow = size
         canv = widget.render(size, focus=True)
         self.assertEqual((canv.cols(), canv.rows()), size)
@@ -54,6 +54,10 @@ class TestScrollable(unittest.TestCase):
         content = tuple(get_widget_text(row) for row in canv.content())
         content_exp = tuple(text)
         self.assertEqual(content, content_exp)
+
+        if cursor_pos != ():
+            self.assertEqual(canv.cursor, cursor_pos)
+
 
     def test_empty_widget(self):
         for w in (Scrollable(urwid.Text('')),
@@ -205,6 +209,49 @@ class TestScrollable(unittest.TestCase):
         self.check(w, size, text=('t7'.ljust(size[0]),
                                   't8'.ljust(size[0])))
 
+    def test_mouse_event(self):
+        w = Scrollable(
+            urwid.Pile([urwid.Text('t1'),
+                        urwid.Text('t2'),
+                        urwid.Edit('', 'eXXX'),
+                        urwid.Text('t3'),
+                        urwid.Edit('', 'eYYY'),
+                        urwid.Text('t4'),
+                        urwid.Text('t5')])
+        )
+        size = (10, 2)
+        self.check(w, size, cursor_pos=None, text=('t1'.ljust(size[0]),
+                                                   't2'.ljust(size[0])))
+
+        size = (10, 5)
+        self.check(w, size, cursor_pos=(4, 2), text=('t1'.ljust(size[0]),
+                                                     't2'.ljust(size[0]),
+                                                     'eXXX'.ljust(size[0]),
+                                                     't3'.ljust(size[0]),
+                                                     'eYYY'.ljust(size[0])))
+
+        w.mouse_event(size, 'mouse press', button=1, col=2, row=4, focus=True)
+        self.check(w, size, cursor_pos=(2, 4), text=('t1'.ljust(size[0]),
+                                                     't2'.ljust(size[0]),
+                                                     'eXXX'.ljust(size[0]),
+                                                     't3'.ljust(size[0]),
+                                                     'eYYY'.ljust(size[0])))
+
+        w.set_scrollpos(2)
+        w.mouse_event(size, 'mouse press', button=1, col=3, row=2, focus=True)
+        self.check(w, size, cursor_pos=(3, 2), text=('eXXX'.ljust(size[0]),
+                                                     't3'.ljust(size[0]),
+                                                     'eYYY'.ljust(size[0]),
+                                                     't4'.ljust(size[0]),
+                                                     't5'.ljust(size[0])))
+
+        w.mouse_event(size, 'mouse press', button=1, col=4, row=0, focus=True)
+        self.check(w, size, cursor_pos=(4, 0), text=('eXXX'.ljust(size[0]),
+                                                     't3'.ljust(size[0]),
+                                                     'eYYY'.ljust(size[0]),
+                                                     't4'.ljust(size[0]),
+                                                     't5'.ljust(size[0])))
+
 
 
 class TestScrollBarWithScrollable(unittest.TestCase):
@@ -216,13 +263,16 @@ class TestScrollBarWithScrollable(unittest.TestCase):
         self.scrollbar = ScrollBar(self.scrollable,
                                    thumb_char='#', trough_char='|')
 
-    def check(self, widget, size, text):
+    def check(self, widget, size, text, cursor_pos=()):
         canv = widget.render(size, focus=True)
         self.assertEqual((canv.cols(), canv.rows()), size)
 
         content = tuple(get_widget_text(row) for row in canv.content())
         content_exp = tuple(text)
         self.assertEqual(content, content_exp)
+
+        if cursor_pos != ():
+            self.assertEqual(canv.cursor, cursor_pos)
 
 
     def test_empty_widget(self):
@@ -299,7 +349,49 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                          'six'.ljust(size[0]-1)     + '|'))
 
 
-class TestScrollBarWithListBox(unittest.TestCase):
+    def test_mouse_event(self):
+        scrl = Scrollable(
+            urwid.Pile([urwid.Text('t1'),
+                        urwid.Text('t2'),
+                        urwid.Edit('', 'eXXX'),
+                        urwid.Text('t3'),
+                        urwid.Edit('', 'eYYY'),
+                        urwid.Text('t4'),
+                        urwid.Text('t5')])
+        )
+        sb = ScrollBar(scrl, thumb_char='#', trough_char='|')
+
+        size = (10, 5)
+        self.check(sb, size, cursor_pos=(4, 2), text=('t1'.ljust(size[0]-1)   + '#',
+                                                      't2'.ljust(size[0]-1)   + '#',
+                                                      'eXXX'.ljust(size[0]-1) + '#',
+                                                      't3'.ljust(size[0]-1)   + '#',
+                                                      'eYYY'.ljust(size[0]-1) + '|'))
+
+        sb.mouse_event(size, 'mouse press', button=1, col=1, row=4, focus=True)
+        self.check(sb, size, cursor_pos=(1, 4), text=('t1'.ljust(size[0]-1)   + '#',
+                                                      't2'.ljust(size[0]-1)   + '#',
+                                                      'eXXX'.ljust(size[0]-1) + '#',
+                                                      't3'.ljust(size[0]-1)   + '#',
+                                                      'eYYY'.ljust(size[0]-1) + '|'))
+
+        scrl.set_scrollpos(2)
+        self.check(sb, size, cursor_pos=(1, 2), text=('eXXX'.ljust(size[0]-1) + '|',
+                                                      't3'.ljust(size[0]-1)   + '#',
+                                                      'eYYY'.ljust(size[0]-1) + '#',
+                                                      't4'.ljust(size[0]-1)   + '#',
+                                                      't5'.ljust(size[0]-1)   + '#'))
+
+        sb.mouse_event(size, 'mouse press', button=1, col=3, row=0, focus=True)
+        self.check(sb, size, cursor_pos=(3, 0), text=('eXXX'.ljust(size[0]-1) + '|',
+                                                      't3'.ljust(size[0]-1)   + '#',
+                                                      'eYYY'.ljust(size[0]-1) + '#',
+                                                      't4'.ljust(size[0]-1)   + '#',
+                                                      't5'.ljust(size[0]-1)   + '#'))
+
+
+
+class TestListBox_scrolling_API(unittest.TestCase):
     def mk_test_subjects(self, *listbox_items):
         from stig.tui.urwidpatches import ListBox_patched
         listbox = ListBox_patched(
