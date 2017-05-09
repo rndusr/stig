@@ -348,5 +348,20 @@ class ScrollBar(urwid.WidgetDecoration):
         return self._original_widget.keypress(self._original_widget_size, key)
 
     def mouse_event(self, size, event, button, col, row, focus):
-        # TODO: Add support for moving the thumb with the mouse.
+        ow = self._original_widget
+        ow_size = self._original_widget_size
+        handled = False
+        if hasattr(ow, 'mouse_event'):
+            handled = ow.mouse_event(ow_size, event, button, col, row, focus)
+
+        if not handled and hasattr(ow, 'set_scrollpos'):
+            if button == 4: # scroll wheel up
+                pos = ow.get_scrollpos(ow_size)
+                ow.set_scrollpos(pos - 1)
+                return True
+            elif button == 5: # scroll wheel down
+                pos = ow.get_scrollpos(ow_size)
+                ow.set_scrollpos(pos + 1)
+                return True
+
         return False
