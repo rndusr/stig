@@ -232,13 +232,18 @@ class ScrollBar(urwid.WidgetDecoration):
 
     def __init__(self, widget, thumb_char='\u2588', trough_char=' ',
                  side=SCROLLBAR_RIGHT, width=1):
-        """Box widget that adds a scrollbar to box widget `widget`
+        """Box widget that adds a scrollbar to `widget`
+
+        `widget` must be a box widget with the following methods:
+          - `get_scrollpos` takes the arguments `size` and `focus` and returns
+            the index of the first visible row.
+          - `set_scrollpos` (optional) takes the index of the first visible row.
+          - `rows_max` takes `size` and `focus` and returns the total number of
+            rows `widget` can render.
 
         `thumb_char` is the character used for the scrollbar handle.
         `trough_char` is used for the space above and below the handle.
-
         `side` must be 'left' or 'right'.
-
         `width` specifies the number of columns the scrollbar uses.
         """
         if BOX not in widget.sizing():
