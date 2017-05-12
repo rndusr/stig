@@ -253,7 +253,7 @@ class ScrollBar(urwid.WidgetDecoration):
         self._trough_char = trough_char
         self.scrollbar_side = side
         self.scrollbar_width = max(1, width)
-        self._original_widget_size = None
+        self._original_widget_size = (0, 0)
 
     def render(self, size, focus=False):
         maxcol, maxrow = size
