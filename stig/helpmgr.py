@@ -199,21 +199,27 @@ class HelpManager():
         cmd = self._cmdmgr[name]
 
         def takes_value(argspec):
-            if 'nargs' in argspec:
-                nargs = argspec['nargs']
-                if nargs in ('+', '*', '?'):
-                    return True
-                elif isinstance(nargs, int) and nargs > 0:
-                    return True
-            return False
+            if argspec.get('action') in ('store_true', 'store_false', 'store_const'):
+                return False  # Boolean option
+            if 'nargs' not in argspec:
+                return True
+            nargs = argspec['nargs']
+            return not isinstance(nargs, int) or nargs > 0
 
         def arg_dest(argspec):
             if 'metavar' in argspec:
-                return argspec['metavar'].upper()
+                dest = argspec['metavar'].upper()
             elif 'dest' in argspec:
-                return argspec['dest'].upper()
+                dest = argspec['dest'].upper()
             elif argspec['names'][0][0] == '-':
-                return argspec['names'][0].lstrip('-').upper()
+                dest = argspec['names'][0].lstrip('-').upper()
+            else:
+                return None
+
+            if 'nargs' in argspec and argspec['nargs'] in ('*', '?'):
+                return '[<%s>]' % dest
+            else:
+                return '<%s>' % dest
 
         lines = [cmd.name.upper()]
 
@@ -235,7 +241,7 @@ class HelpManager():
                 if takes_value(argspec):
                     dest = arg_dest(argspec)
                     if dest is not None:
-                        argline += ' <' + dest + '>'
+                        argline += ' %s' % dest
 
                 argline += '  \t' + argspec['description']
 
