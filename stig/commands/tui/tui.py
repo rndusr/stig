@@ -411,8 +411,8 @@ class TUICmd(metaclass=InitCommand):
     argspecs = (
         { 'names': ('ACTION',), 'choices': ('show', 'hide', 'toggle'),
           'description': '"show", "hide" or "toggle"' },
-        { 'names': ('ELEMENTS',), 'nargs': '+',
-          'description': ('Name(s) of TUI elements; '
+        { 'names': ('ELEMENT',), 'nargs': '+',
+          'description': ('Name of TUI elements; '
                           'see ELEMENT NAMES section for a list') },
     )
 
@@ -426,11 +426,11 @@ class TUICmd(metaclass=InitCommand):
 
     tui = ExpectedResource
 
-    def run(self, ACTION, ELEMENTS):
+    def run(self, ACTION, ELEMENT):
         widgets = self.tui.widgets
         widget = None
         success = False
-        for element in ELEMENTS:
+        for element in ELEMENT:
             # Resolve path
             path = element.split('.')
             target_name = path.pop(-1)
