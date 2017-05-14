@@ -1,3 +1,16 @@
+2017-??-?? ?.?.?a
+  Breaking changes:
+
+  Other changes:
+    * Passive scrollbars to indicate scroll position
+    * Scroll one page up/down with <space>/<b>
+    * New 'tab' command option --close-all closes all tabs
+    * <?> is now an alias for <F1>
+
+  Fixed bugs:
+    * 'tui' command can hide/show/toggle multiple elements, as documented
+
+
 2017-04-24 0.6.0a
   Breaking changes:
     * Column 'peers-seeding' is now called 'seeds'
