@@ -11,6 +11,7 @@
 
 import urwid
 
+from ..scroll import ScrollBar
 from ..table import Table
 from .plist_columns import TUICOLUMNS
 
@@ -70,11 +71,15 @@ class PeerListWidget(urwid.WidgetWrap):
         self._table.columns = columns
 
         self._listbox = urwid.ListBox(urwid.SimpleListWalker([]))
+        listbox_sb = urwid.AttrMap(
+            ScrollBar(urwid.AttrMap(self._listbox, 'peerlist')),
+            'scrollbar'
+        )
         pile = urwid.Pile([
             ('pack', urwid.AttrMap(self._table.headers, 'peerlist.header')),
-            self._listbox
+            listbox_sb
         ])
-        super().__init__(urwid.AttrMap(pile, 'peerlist'))
+        super().__init__(pile)
 
         self._poller = srvapi.create_poller(
             srvapi.torrent.torrents, tfilter, keys=('peers', 'name', 'id'))
