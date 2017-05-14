@@ -17,6 +17,7 @@ from collections import abc
 
 from .. import main as tui
 
+from ..scroll import ScrollBar
 from ..table import Table
 from .tlist_columns import TUICOLUMNS
 
@@ -73,11 +74,15 @@ class TorrentListWidget(urwid.WidgetWrap):
         self._listbox = urwid.ListBox(self._walker)
         self._marked = set()
 
+        listbox_sb = urwid.AttrMap(
+            ScrollBar(urwid.AttrMap(self._listbox, 'torrentlist')),
+            'scrollbar'
+        )
         pile = urwid.Pile([
             ('pack', urwid.AttrMap(self._table.headers, 'torrentlist.header')),
-            self._listbox
+            listbox_sb
         ])
-        super().__init__(urwid.AttrMap(pile, 'torrentlist'))
+        super().__init__(pile)
 
         self._register_request()
 
