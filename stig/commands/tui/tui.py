@@ -291,11 +291,12 @@ class TabCmd(metaclass=InitCommand):
                 'tab -f 3 ls active',
                 'tab -c')
     argspecs = (
-        { 'names': ('--background', '-b'), 'default': False,
-          'action': 'store_true',
+        { 'names': ('--background', '-b'), 'default': False, 'action': 'store_true',
           'description': 'Opens tab in background, instead of focusing it' },
         { 'names': ('--close', '-c'), 'nargs': '?', 'const': None, 'default': False,
-          'description': 'Close tab at index CLOSE or with partial tital CLOSE' },
+          'description': 'Close tab at index or with partial title CLOSE' },
+        { 'names': ('--close-all', '-ca'), 'default': False, 'action': 'store_true',
+          'description': 'Close all tabs' },
         { 'names': ('--focus', '-f'),
           'description': ('Focus tab; FOCUS can be an index (first tab is 1), '
                           'part of a tab title, "left" or "right"') },
@@ -308,7 +309,7 @@ class TabCmd(metaclass=InitCommand):
     tui = ExpectedResource
     cmdmgr = ExpectedResource
 
-    async def run(self, close, focus, background, title, COMMAND):
+    async def run(self, close, close_all, focus, background, title, COMMAND):
         # Get indexes before adding/removing tabs, which changes indexes on
         # subsequent operations
         if focus is not None:
@@ -328,7 +329,9 @@ class TabCmd(metaclass=InitCommand):
         # Apply close/focus operations
         if focus is not None:
             tabs.focus_position = i_focus
-        if close is not False:
+        if close_all is not False:
+            tabs.clear()
+        elif close is not False:
             tabs.remove(i_close)
 
         # Remember which torrent is focused in current tab so we can provide
@@ -339,7 +342,7 @@ class TabCmd(metaclass=InitCommand):
         except AttributeError:
             pass
 
-        if close is False and focus is None:
+        if close is False and close_all is False and focus is None:
             titlew = make_tab_title_widget(title or 'Empty tab', 'tabs.unfocused', 'tabs.focused')
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d: %r', tabs.focus_position, titlew.base_widget.text)
