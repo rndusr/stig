@@ -18,6 +18,7 @@ from collections import abc
 import builtins
 
 from .. import main as tui
+from ..scroll import ScrollBar
 from ..table import Table
 from .flist_columns import TUICOLUMNS
 from ...columns.flist import (create_directory_data, create_directory_name)
@@ -203,11 +204,16 @@ class FileListWidget(urwid.WidgetWrap):
         self._table.columns = columns
 
         self._listbox = urwid.ListBox(urwid.SimpleListWalker([]))
+
+        listbox_sb = urwid.AttrMap(
+            ScrollBar(urwid.AttrMap(self._listbox, 'filelist')),
+            'scrollbar'
+        )
         pile = urwid.Pile([
             ('pack', urwid.AttrMap(self._table.headers, 'filelist.header')),
-            self._listbox
+            listbox_sb
         ])
-        super().__init__(urwid.AttrMap(pile, 'filelist'))
+        super().__init__(pile)
 
         self._poller = srvapi.create_poller(
             srvapi.torrent.torrents, tfilter, keys=('files', 'name'))
