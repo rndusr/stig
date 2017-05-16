@@ -98,7 +98,19 @@ class ListBox_patched(urwid.ListBox):
             offset_rows, _, focus_pos, _, _ = middle
             maxcol, maxrow = size
             flow_size = (maxcol,)
-            widgets_above_focus = tuple(w for w in self.body[:focus_pos])
+
+            body = self.body
+            if hasattr(body, 'positions'):
+                # For body[pos], pos can be anything, not just an int.  In that
+                # case, the positions() method returns an interable of valid
+                # positions.
+                positions = tuple(self.body.positions())
+                focus_index = positions.index(focus_pos)
+                widgets_above_focus = (body[pos] for pos in positions[:focus_index])
+            else:
+                # Treat body like a normal list
+                widgets_above_focus = (w for w in body[:focus_pos])
+
             rows_above_focus = sum(w.rows(flow_size) for w in widgets_above_focus)
             rows_above_top = rows_above_focus - offset_rows
             return rows_above_top
@@ -106,7 +118,11 @@ class ListBox_patched(urwid.ListBox):
     def rows_max(self, size, focus=False):
         if self._rows_max is None:
             flow_size = (size[0],)
-            self._rows_max = sum(w.rows(flow_size) for w in self.body)
+            body = self.body
+            if hasattr(body, 'positions'):
+                self._rows_max = sum(body[pos].rows(flow_size) for pos in body.positions())
+            else:
+                self._rows_max = sum(w.rows(flow_size) for w in self.body)
         return self._rows_max
 
 urwid.ListBox = ListBox_patched
