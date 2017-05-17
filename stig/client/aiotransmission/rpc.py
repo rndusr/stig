@@ -67,6 +67,10 @@ class TransmissionURL():
             urldict['path'] = self._DEFAULT.path
         self.url = urldict
 
+    @property
+    def has_auth(self):
+        return bool(self.url['username'] and self.url['password'])
+
     def str(self, path=False, scheme=False, port=False, password=False):
         urlfmt = ''
         if self.url['username'] is not None:
@@ -250,7 +254,7 @@ class TransmissionRPC():
                 if not self.connected:
                     log.debug('Connecting to %s (timeout=%ss)', self.url, self.timeout)
                     session_args = {'loop': self.loop}
-                    if self.__url.username or self.__url.password:
+                    if self.__url.has_auth:
                         session_args['auth'] = aiohttp.BasicAuth(self.__url.username,
                                                                  self.__url.password)
                     self.__session = aiohttp.ClientSession(**session_args)
