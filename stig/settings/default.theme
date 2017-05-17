@@ -53,13 +53,13 @@ tabs.help.unfocused        yellow       on dark gray
 tabs.help.focused          black        on yellow
 
 $topbar_bg = dark blue
-topbar                    light gray  on $topbar_bg
-topbar.host.connected     light green on $topbar_bg
-topbar.host.disconnected  light red   on $topbar_bg
-topbar.help.key           light cyan  on $topbar_bg
-topbar.help.equals        light cyan  on $topbar_bg
-topbar.help.label         light cyan  on $topbar_bg
-topbar.help.space         light cyan  on $topbar_bg
+topbar                    light gray    on $topbar_bg
+topbar.host.connected     light green   on $topbar_bg
+topbar.host.disconnected  black         on light red
+topbar.help.key           light cyan    on $topbar_bg
+topbar.help.equals        light cyan    on $topbar_bg
+topbar.help.label         light cyan    on $topbar_bg
+topbar.help.space         light cyan    on $topbar_bg
 
 $bottombar_bg = dark gray
 bottombar                             light gray     on $bottombar_bg
