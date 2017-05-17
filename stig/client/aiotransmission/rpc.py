@@ -68,13 +68,13 @@ class TransmissionURL():
         self.url = urldict
 
     def str(self, path=False, scheme=False, port=False, password=False):
-        if None not in (self.url['username'], self.url['password']):
-            if password:
-                urlfmt = '{username}:{password}@{hostname}'
-            else:
-                urlfmt = '{username}@{hostname}'
-        else:
-            urlfmt = '{hostname}'
+        urlfmt = ''
+        if self.url['username'] is not None:
+            urlfmt += '{username}'
+            if password and self.url['password'] is not None:
+                urlfmt += ':{password}'
+            urlfmt += '@'
+        urlfmt += '{hostname}'
         if scheme:
             urlfmt = '{scheme}://' + urlfmt
         if port:
