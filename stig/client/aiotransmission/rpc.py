@@ -57,6 +57,9 @@ class TransmissionURL():
         except Exception:
             raise URLParserError(url)
 
+        if urldict['username'] is not None and urldict['password'] is None:
+            raise URLParserError('Missing password: %r' % url)
+
         # Some more defaults
         if urldict['port'] is None:
             urldict['port'] = self._DEFAULT.port
