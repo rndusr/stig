@@ -57,8 +57,8 @@ class SortOrderValue(SetValue):
 
 def init_defaults(cfg):
     cfg.load(
-        StringValue('srv.url', default='http://localhost:9091',
-                    description='URL of the Transmission RPC interface'),
+        StringValue('srv.url', default='localhost:9091',
+                    description='URL of the Transmission RPC interface ([USER:PASSWORD@]HOST[:PORT])'),
         NumberValue('srv.timeout', default=10, min=0,
                     description=('Number of seconds before connecting '
                                  'to Transmission daemon fails')),
