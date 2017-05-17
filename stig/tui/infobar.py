@@ -93,6 +93,7 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
         super().__init__(self._attrmap)
         srvapi.rpc.on('connected', self._handle_connected)
         srvapi.rpc.on('disconnected', self._handle_disconnected)
+        srvapi.rpc.on('error', self._handle_error)
 
     def _handle_connected(self, url):
         self._text.set_text('{}:{} Transmission {}'.format(url.hostname, url.port, srvapi.rpc.version))
@@ -100,6 +101,10 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
 
     def _handle_disconnected(self, url):
         self._text.set_text(str(url))
+        self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
+
+    def _handle_error(self, url, error):
+        self._text.set_text(str(error))  # error should also contain url
         self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
 
 
