@@ -54,7 +54,7 @@ class TorrentRequestPool():
         log.debug('Registering subscriber: %s', sid)
         event = blinker.signal(sid)
         event.connect(callback)
-        self._keys[event] = keys
+        self._keys[event] = tuple(keys)
         self._tfilters[event] = tfilter
 
         # It's possible that a currently ongoing request doesn't collect the
