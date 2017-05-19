@@ -37,6 +37,19 @@ class generate_tab_title():
             return None
 
 
+class get_torrent_id():
+    async def get_torrent_id(self, tfilter):
+        if isinstance(tfilter, abc.Sequence) and len(tfilter) >= 1:
+            return tfilter[0]
+        else:
+            request = self.srvapi.torrent.torrents(tfilter, keys=('name', 'id'))
+            response = await self.make_request(request, polling_frenzy=False, quiet=True)
+            if response.success:
+                from ...client import TorrentSorter
+                torrents = TorrentSorter(('name',)).apply(response.torrents)
+                return torrents[0]['id']
+
+
 class polling_frenzy():
     aioloop = ExpectedResource
 
