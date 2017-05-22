@@ -17,7 +17,7 @@ log = make_logger(__name__)
 
 from ..base import help as base
 from .. import ExpectedResource
-from . import make_tab_title_widget
+from .utils import make_tab_title_widget
 
 
 class HelpCmd(base.HelpCmdbase):

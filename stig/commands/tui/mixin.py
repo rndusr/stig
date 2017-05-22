@@ -16,7 +16,6 @@ log = make_logger(__name__)
 
 from .. import ExpectedResource
 from .. import utils
-from ...utils import strcrop
 
 from collections import abc
 
@@ -30,7 +29,7 @@ class generate_tab_title():
             # tfilter is a torrent ID - resolve it to a name for the title
             response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
             if response.success:
-                return strcrop(response.torrents[0]['name'], 30, tail='…')
+                return response.torrents[0]['name']
             else:
                 return 'Could not find torrent with ID %s' % tfilter[0]
         else:

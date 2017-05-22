@@ -9,9 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Commands for the TUI"""
 
-from .config import *
-from .help import *
-from .torrent import *
-from .tui import *
+def make_tab_title_widget(text, attr_unfocused, attr_focused):
+    import urwid
+    from ...utils import strcrop
+    from ...tui.main import MAX_TAB_TITLE_WIDTH
+    text_cropped = strcrop(text, MAX_TAB_TITLE_WIDTH, tail='…')
+    return urwid.AttrMap(urwid.Text(text_cropped), attr_unfocused, attr_focused)

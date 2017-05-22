@@ -20,7 +20,7 @@ from functools import partial
 from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
-from . import make_tab_title_widget
+from .utils import make_tab_title_widget
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -54,7 +54,10 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         tabid = self.tui.tabs.load(make_titlew(tlistw.title), tlistw)
 
         def set_tab_title(text):
-            self.tui.tabs.set_title(make_titlew(text), position=tabid)
+            from ...utils import strcrop
+            text_cropped = strcrop(text, self.tui.MAX_TAB_TITLE_WIDTH, tail='…')
+
+            self.tui.tabs.set_title(make_titlew(text_cropped), position=tabid)
         tlistw.title_updater = set_tab_title
 
         return True
