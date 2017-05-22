@@ -97,7 +97,7 @@ def init_defaults(cfg):
 
         OptionValue('unit.size', default='byte', options=('bit', 'byte'),
                     description="Unit for sizes ('bit' or 'byte')"),
-        OptionValue('unitprefix.size', default='metric', options=('metric', 'binary'),
+        OptionValue('unitprefix.size', default='binary', options=('metric', 'binary'),
                     description=("Unit prefix for sizes ('metric' or 'binary')")),
 
         StringValue('tui.marked.on', default='✔', minlen=1, maxlen=1,
