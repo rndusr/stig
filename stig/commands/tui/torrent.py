@@ -53,11 +53,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
                                    title=title_str)
         tabid = self.tui.tabs.load(make_titlew(tlistw.title), tlistw)
 
-        def set_tab_title(text):
-            from ...utils import strcrop
-            text_cropped = strcrop(text, self.tui.MAX_TAB_TITLE_WIDTH, tail='…')
-
-            self.tui.tabs.set_title(make_titlew(text_cropped), position=tabid)
+        def set_tab_title(text, count):
+            self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
         tlistw.title_updater = set_tab_title
 
         return True
@@ -85,8 +82,8 @@ class ListFilesCmd(base.ListFilesCmdbase,
                                 title=title_str)
         tabid = self.tui.tabs.load(make_titlew(flistw.title), flistw)
 
-        def set_tab_title(text):
-            self.tui.tabs.set_title(make_titlew(text), position=tabid)
+        def set_tab_title(text, count):
+            self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
         flistw.title_updater = set_tab_title
 
         return True
@@ -110,9 +107,38 @@ class ListPeersCmd(base.ListPeersCmdbase,
                                 sort=sort, columns=columns, title=title_str)
         tabid = self.tui.tabs.load(make_titlew(plistw.title), plistw)
 
+        def set_tab_title(text, count):
+            self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
+        plistw.title_updater = set_tab_title
+
+        return True
+
+
+class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
+                        mixin.select_torrents, mixin.make_request,
+                        mixin.generate_tab_title, mixin.get_torrent_id):
+    provides = {'tui'}
+    tui = ExpectedResource
+
+    async def show_details(self, tfilter):
+        tid = await self.get_torrent_id(tfilter)
+        if tid is None:
+            return False
+
+        make_titlew = partial(make_tab_title_widget,
+                              attr_unfocused='tabs.torrentdetails.unfocused',
+                              attr_focused='tabs.torrentdetails.focused')
+
+        title_str = await self.generate_tab_title(tfilter)
+        from ...tui.torrent.tdetails import TorrentDetailsWidget
+        TorrentDetailsWidget_keymapped = self.tui.keymap.wrap(TorrentDetailsWidget,
+                                                              context='torrent')
+        detailsw = TorrentDetailsWidget_keymapped(self.srvapi, tid, title=title_str)
+        tabid = self.tui.tabs.load(make_titlew(detailsw.title), detailsw)
+
         def set_tab_title(text):
             self.tui.tabs.set_title(make_titlew(text), position=tabid)
-        plistw.title_updater = set_tab_title
+        detailsw.title_updater = set_tab_title
 
         return True
 

@@ -311,6 +311,37 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
             return self.make_plist(tfilter, pfilter, sort, columns)
 
 
+class TorrentDetailsCmdbase(metaclass=InitCommand):
+    name = 'details'
+    aliases = ('info',)
+    provides = set()
+    category = 'torrent'
+    description = 'Display detailed torrent information'
+    usage = ('details',)
+    examples = ('details id=71',)
+    argspecs = (
+        { 'names': ('TORRENT FILTER',), 'nargs': '?',
+          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+    )
+
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT_FILTER):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+        else:
+            log.debug('Showing details of torrent %r', tfilter)
+            if asyncio.iscoroutinefunction(self.show_details):
+                return await self.show_details(tfilter)
+            else:
+                return self.show_details(tfilter)
+
+
 class MoveTorrentsCmdbase(metaclass=InitCommand):
     name = 'move'
     aliases = ('mv',)
