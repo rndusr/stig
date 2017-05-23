@@ -189,19 +189,21 @@ class TorrentAPI():
         if not autoconnect and not self.rpc.connected:
             return None
 
-        # The 'files' RPC field only returns static information (variable
-        # information is in 'filestats'), and since all Torrent values are
-        # cached anyway, we only have to request it once.
-        if 'files' in keys and not self._tcache.files_initialized(ids):
+        if keys == 'ALL':
+            fields = TorrentFields(keys)
+        else:
+            fields = TorrentFields(*keys)
+
+        # The 'files' RPC field only returns static information while variable
+        # information is in 'filestats'. Since all Torrent values are cached
+        # anyway, we only have to request 'files' once if 'fileStats' is
+        # requested.
+        if 'fileStats' in fields and not self._tcache.files_initialized(ids):
             log.debug('Initializing files for torrents: %s', ids)
             response = await self._request_torrents(('files',), ids)
             if not response.success:
                 return Response(success=False, torrents=(), msgs=response.msgs)
 
-        if keys == 'ALL':
-            fields = TorrentFields(keys)
-        else:
-            fields = TorrentFields(*keys)
         tlist = ()
         msgs = []
         success = False
