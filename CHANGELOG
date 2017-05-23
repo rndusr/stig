@@ -1,5 +1,7 @@
 2017-??-?? ?.?.?a
   Breaking changes:
+    * By default, <enter> no longer opens a torrent's file list but its details
+      instead.  File lists are no opened with <alt-enter>.
 
   Other changes:
     * Passive scrollbars to indicate scroll position
