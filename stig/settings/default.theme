@@ -41,16 +41,18 @@ cli         black      on light gray
 scrollbar   light gray on dark gray
 helptext    light gray on black
 
-tabs.unfocused             white        on black
-tabs.focused               black        on white
-tabs.torrentlist.unfocused dark cyan    on dark gray
-tabs.torrentlist.focused   black        on dark cyan
-tabs.filelist.unfocused    dark magenta on dark gray
-tabs.filelist.focused      black        on dark magenta
-tabs.peerlist.unfocused    dark green   on dark gray
-tabs.peerlist.focused      black        on dark green
-tabs.help.unfocused        yellow       on dark gray
-tabs.help.focused          black        on yellow
+tabs.unfocused                white        on black
+tabs.focused                  black        on white
+tabs.torrentlist.unfocused    dark cyan    on dark gray
+tabs.torrentlist.focused      black        on dark cyan
+tabs.torrentdetails.unfocused light blue   on dark gray
+tabs.torrentdetails.focused   black        on light blue
+tabs.filelist.unfocused       dark magenta on dark gray
+tabs.filelist.focused         black        on dark magenta
+tabs.peerlist.unfocused       dark green   on dark gray
+tabs.peerlist.focused         black        on dark green
+tabs.help.unfocused           yellow       on dark gray
+tabs.help.focused             black        on yellow
 
 $topbar_bg = dark blue
 topbar                    light gray    on $topbar_bg
@@ -348,6 +350,10 @@ torrentlist.name.discovering.progress2.unfocused   $name.discovering_fg         
 torrentlist.name.discovering.progress2.focused     $name.discovering_fg           on $tlist_bg.f
 torrentlist.name.discovering.complete.unfocused    $name.discovering_fg           on $tlist_bg.uf
 torrentlist.name.discovering.complete.focused      $name.discovering_fg           on $tlist_bg.f
+
+
+
+torrentdetails light gray on black
 
 
 
