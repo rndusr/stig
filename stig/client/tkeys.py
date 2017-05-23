@@ -642,6 +642,13 @@ TYPES = {
     'status'            : Status,
     'path'              : Path,
     'private'           : bool,
+    'comment'           : SmartCmpStr,
+    'creator'           : SmartCmpStr,
+    'magnetlink'        : str,
+
+    'count-pieces'      : Number,
+    'count-files'       : Number,
+    'count-files-wanted': Number,
 
     '%downloaded'       : Percent,
     '%metadata'         : Percent,
@@ -669,7 +676,9 @@ TYPES = {
     'size-downloaded'   : convert.size,
     'size-uploaded'     : convert.size,
     'size-available'    : convert.size,
+    'size-left'         : convert.size,
     'size-corrupt'      : convert.size,
+    'size-piece'        : convert.size,
 
     'trackers'          : tuple,
     'error'             : str,

@@ -76,6 +76,13 @@ def _count_seeds(t):
         return tkeys.SeedCount.UNKNOWN
 
 
+def _count_files(t):
+    return len(t['fileStats'])
+
+def _count_files_wanted(t):
+    return sum(1 for f in t['fileStats'] if f['wanted'])
+
+
 def _bytes_available(t):
     return t['desiredAvailable'] + t['haveValid'] + t['haveUnchecked']
 
@@ -276,6 +283,13 @@ DEPENDENCIES = {
                            'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'              : ('downloadDir',),
     'private'           : ('isPrivate',),
+    'comment'           : ('comment',),
+    'creator'           : ('creator',),
+    'magnetlink'        : ('magnetLink',),
+
+    'count-pieces'      : ('pieceCount',),
+    'count-files'       : ('fileStats',),
+    'count-files-wanted': ('fileStats',),
 
     '%downloaded'       : ('percentDone',),
     '%metadata'         : ('metadataPercentComplete',),
@@ -303,7 +317,9 @@ DEPENDENCIES = {
     'size-downloaded'   : ('downloadedEver',),
     'size-uploaded'     : ('uploadedEver',),
     'size-available'    : ('leftUntilDone', 'desiredAvailable', 'haveValid', 'haveUnchecked'),
+    'size-left'         : ('leftUntilDone',),
     'size-corrupt'      : ('corruptEver',),
+    'size-piece'        : ('pieceSize',),
 
     'trackers'          : ('trackers',),
     'error'             : ('errorString', 'error'),
@@ -317,31 +333,33 @@ DEPENDENCIES = {
 # Map our keys to callables that adjust the raw RPC values or create new
 # values from existing RPC values.
 _MODIFY = {
-    '%downloaded'     : lambda raw: raw['percentDone']*100,
-    '%metadata'       : lambda raw: raw['metadataPercentComplete']*100,
-    '%verified'       : lambda raw: raw['recheckProgress']*100,
-    '%available'      : _percent_available,
-    'status'          : _make_status,
-    'peers-seeding'   : _count_seeds,
-    'ratio'           : _modify_ratio,
-    'size-available'  : _bytes_available,
+    '%downloaded'       : lambda raw: raw['percentDone']*100,
+    '%metadata'         : lambda raw: raw['metadataPercentComplete']*100,
+    '%verified'         : lambda raw: raw['recheckProgress']*100,
+    '%available'        : _percent_available,
+    'status'            : _make_status,
+    'peers-seeding'     : _count_seeds,
+    'ratio'             : _modify_ratio,
+    'count-files'       : _count_files,
+    'count-files-wanted': _count_files_wanted,
+    'size-available'    : _bytes_available,
 
-    'timespan-eta'    : _modify_eta,
-    'time-created'    : lambda raw: _modify_timestamp(raw, 'dateCreated',
+    'timespan-eta'      : _modify_eta,
+    'time-created'      : lambda raw: _modify_timestamp(raw, 'dateCreated',
                                                       zero_means=tkeys.Timestamp.UNKNOWN),
-    'time-added'      : lambda raw: _modify_timestamp(raw, 'addedDate',
+    'time-added'        : lambda raw: _modify_timestamp(raw, 'addedDate',
                                                       zero_means=tkeys.Timestamp.UNKNOWN),
-    'time-started'    : lambda raw: _modify_timestamp(raw, 'startDate',
+    'time-started'      : lambda raw: _modify_timestamp(raw, 'startDate',
                                                       zero_means=tkeys.Timestamp.NOT_APPLICABLE),
-    'time-activity'   : lambda raw: _modify_timestamp(raw, 'activityDate',
+    'time-activity'     : lambda raw: _modify_timestamp(raw, 'activityDate',
                                                       zero_means=tkeys.Timestamp.NOT_APPLICABLE),
-    'time-completed'  : lambda raw: _modify_timestamp_completed(raw),
+    'time-completed'    : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
-    'trackers'        : TrackerList,
-    'error'           : _find_tracker_error,
-    'peers'           : PeerList,
-    'files'           : _create_TorrentFileTree,
+    'trackers'          : TrackerList,
+    'error'             : _find_tracker_error,
+    'peers'             : PeerList,
+    'files'             : _create_TorrentFileTree,
 }
 
 class Torrent(base.TorrentBase):
