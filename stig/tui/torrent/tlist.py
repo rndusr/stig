@@ -106,7 +106,8 @@ class TorrentListWidget(urwid.WidgetWrap):
     def _handle_tlist(self, torrents):
         self._torrents = tuple(torrents)
         if self.title_updater is not None:
-            self.title_updater(self.title)
+            # First argument can be cropped if too long, second argument is fixed
+            self.title_updater(self.title, ' [%d]' % self.count)
         self._invalidate()
 
     def render(self, size, focus=False):
@@ -205,16 +206,19 @@ class TorrentListWidget(urwid.WidgetWrap):
         if sortstr is not self._sort.DEFAULT_SORT:
             title.append('{%s}' % sortstr)
 
+        return ' '.join(title)
+
+    @property
+    def count(self):
+        """Number of listed torrents"""
         # If this method was called before rendering, the contents of the
         # listbox widget are inaccurate and we have to use self._torrents.
         # But if we're called after rendering, self._torrents is reset to
         # None.
         if self._torrents is not None:
-            title.append('[%d]' % len(self._torrents))
+            return len(self._torrents)
         else:
-            title.append('[%d]' % len(self._listbox.body))
-
-        return ' '.join(title)
+            return len(self._listbox.body)
 
     @property
     def id(self):

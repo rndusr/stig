@@ -95,7 +95,8 @@ class PeerListWidget(urwid.WidgetWrap):
             self._peers = {p['id']:p for p in peers_combined(response.torrents)}
 
         if self.title_updater is not None:
-            self.title_updater(self.title)
+            # First argument can be cropped if too long, second argument is fixed
+            self.title_updater(self.title, ' [%d]' % self.count)
 
         self._invalidate()
 
@@ -143,14 +144,15 @@ class PeerListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        title = [self._title_base]
+        return self._title_base
 
+    @property
+    def count(self):
+        """Number of listed peers"""
         # If this method was called before rendering, the contents of the
         # listbox widget are inaccurate and we have to use self._peers.  But
         # if we're called after rendering, self._peers is reset to None.
         if self._peers is not None:
-            title.append('[%d]' % len(self._peers))
+            return len(self._peers)
         else:
-            title.append('[%d]' % len(self._listbox.body))
-
-        return ' '.join(title)
+            return len(self._listbox.body)

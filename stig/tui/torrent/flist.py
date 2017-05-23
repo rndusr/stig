@@ -228,7 +228,8 @@ class FileListWidget(urwid.WidgetWrap):
             else:
                 self._init_listitems(response.torrents)
         if self.title_updater is not None:
-            self.title_updater(self.title)
+            # First argument can be cropped if too long, second argument is fixed
+            self.title_updater(self.title, ' [%d]' % self.count)
         self._invalidate()
 
     def _init_listitems(self, torrents):
@@ -253,10 +254,12 @@ class FileListWidget(urwid.WidgetWrap):
 
     @property
     def title(self):
-        if hasattr(self, '_filetree'):
-            return '%s [%d]' % (self._title_base, self._filetree.filecount)
-        else:
-            return '%s [0]' % self._title_base
+        return self._title_base
+
+    @property
+    def count(self):
+        """Number of listed peers"""
+        return self._filetree.filecount if hasattr(self, '_filetree') else 0
 
     def update(self):
         """Call `clear` and then poll immediately"""
