@@ -474,8 +474,9 @@ class TorrentFields(tuple):
                    'uploadLimit', 'uploadLimitMode', 'uploadLimited', 'uploadRatio',
                    'webseedsSendingToUs',
 
-                   # Lists
-                   'files', 'fileStats', 'peers', 'peersFrom', 'pieces', 'priorities',
+                   # Lists ('files' is handled internally in api_torrent -
+                   # request 'fileStats' instead)
+                   'fileStats', 'peers', 'peersFrom', 'pieces', 'priorities',
                    'trackers', 'trackerStats', 'wanted', 'webseeds')
 
     _ALL_FIELDS = tuple(set(field
