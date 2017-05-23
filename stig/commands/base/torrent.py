@@ -156,7 +156,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                           "(see COLUMNS section)") },
     )
 
-    from ...columns.tlist import COLUMNS
+    from ...views.tlist import COLUMNS
     from ...client.sorters.tsorter import TorrentSorter
     more_sections = {
         'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'columns.torrents'),
@@ -210,7 +210,7 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
                           "(see COLUMNS section)") },
     )
 
-    from ...columns.flist import COLUMNS
+    from ...views.flist import COLUMNS
     more_sections = {
         'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'columns.files'),
         'SCRIPTING': _make_SCRIPTING_doc(name),
@@ -270,7 +270,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
                           "(see COLUMNS section)") },
     )
 
-    from ...columns.plist import COLUMNS
+    from ...views.plist import COLUMNS
     from ...client.sorters.psorter import TorrentPeerSorter
     more_sections = {
         'COLUMNS': _make_COLUMNS_doc(COLUMNS, '--columns', 'columns.peers', append=(

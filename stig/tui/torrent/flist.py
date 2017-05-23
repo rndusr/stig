@@ -21,7 +21,7 @@ from .. import main as tui
 from ..scroll import ScrollBar
 from ..table import Table
 from .flist_columns import TUICOLUMNS
-from ...columns.flist import (create_directory_data, create_directory_name)
+from ...views.flist import (create_directory_data, create_directory_name)
 
 COLUMNS_FOCUS_MAP = {}
 for col in TUICOLUMNS.values():

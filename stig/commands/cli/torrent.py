@@ -22,10 +22,10 @@ from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
 from ...utils import strwidth
-from ...columns.tlist import COLUMNS as TLIST_COLUMNS
-from ...columns.flist import COLUMNS as FLIST_COLUMNS
-from ...columns.flist import create_directory_data
-from ...columns.plist import COLUMNS as PLIST_COLUMNS
+from ...views.tlist import COLUMNS as TLIST_COLUMNS
+from ...views.flist import COLUMNS as FLIST_COLUMNS
+from ...views.flist import create_directory_data
+from ...views.plist import COLUMNS as PLIST_COLUMNS
 
 
 def _print_table(items, columns_wanted, COLUMN_SPECS):

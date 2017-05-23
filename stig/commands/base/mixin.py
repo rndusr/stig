@@ -69,7 +69,7 @@ class get_tlist_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...columns.tlist import COLUMNS
+        from ...views.tlist import COLUMNS
         cols = utils.listify_args(columns)
         for col in tuple(cols):
             if col not in COLUMNS:
@@ -87,7 +87,7 @@ class get_flist_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...columns.flist import COLUMNS
+        from ...views.flist import COLUMNS
         cols = utils.listify_args(columns)
         for col in cols:
             if col not in COLUMNS:
@@ -101,7 +101,7 @@ class get_plist_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...columns.plist import COLUMNS
+        from ...views.plist import COLUMNS
         cols = utils.listify_args(columns)
         for col in cols:
             if col not in COLUMNS:

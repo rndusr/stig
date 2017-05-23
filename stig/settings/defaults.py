@@ -16,9 +16,9 @@ import os
 from appdirs import (user_cache_dir, user_config_dir)
 
 from .. import APPNAME
-from ..columns.tlist import COLUMNS as TCOLUMNS
-from ..columns.flist import COLUMNS as FCOLUMNS
-from ..columns.plist import COLUMNS as PCOLUMNS
+from ..views.tlist import COLUMNS as TCOLUMNS
+from ..views.flist import COLUMNS as FCOLUMNS
+from ..views.plist import COLUMNS as PCOLUMNS
 from ..client.sorters.tsorter import TorrentSorter
 from ..client.sorters.psorter import TorrentPeerSorter
 

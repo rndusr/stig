@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""TUI and CLI specs for torrent list columns"""
+"""TUI and CLI specs for peer list columns"""
 
 from ..logging import make_logger
 log = make_logger(__name__)

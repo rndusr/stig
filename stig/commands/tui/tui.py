@@ -343,7 +343,9 @@ class TabCmd(metaclass=InitCommand):
             pass
 
         if close is False and close_all is False and focus is None:
-            titlew = make_tab_title_widget(title or 'Empty tab', 'tabs.unfocused', 'tabs.focused')
+            titlew = make_tab_title_widget(title or 'Empty tab',
+                                           attr_unfocused='tabs.unfocused',
+                                           attr_focused='tabs.focused')
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d: %r', tabs.focus_position, titlew.base_widget.text)
 

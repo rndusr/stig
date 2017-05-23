@@ -12,9 +12,9 @@
 """General hooks that are always needed regardless of the interface"""
 
 from .main import (cfg, srvapi)
-from .columns.tlist import COLUMNS as TCOLUMNS
-from .columns.flist import COLUMNS as FCOLUMNS
-from .columns.plist import COLUMNS as PCOLUMNS
+from .views.tlist import COLUMNS as TCOLUMNS
+from .views.flist import COLUMNS as FCOLUMNS
+from .views.plist import COLUMNS as PCOLUMNS
 
 
 def _set_rpc_timeout(timeout):
