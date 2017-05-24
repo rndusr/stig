@@ -311,7 +311,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
             return self.make_plist(tfilter, pfilter, sort, columns)
 
 
-class TorrentDetailsCmdbase(metaclass=InitCommand):
+class TorrentDetailsCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
     name = 'details'
     aliases = ('info',)
     provides = set()

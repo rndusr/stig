@@ -14,8 +14,19 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from collections import abc
 
 from .. import utils
+
+
+class get_torrent_id():
+    async def get_torrent_id(self, tfilter):
+        request = self.srvapi.torrent.torrents(tfilter, keys=('name', 'id'))
+        response = await self.make_request(request, polling_frenzy=False, quiet=True)
+        if response.success:
+            from ...client import TorrentSorter
+            torrents = TorrentSorter(('name',)).apply(response.torrents)
+            return torrents[0]['id']
 
 
 class get_torrent_sorter():

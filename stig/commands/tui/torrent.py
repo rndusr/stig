@@ -116,7 +116,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
 
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                         mixin.select_torrents, mixin.make_request,
-                        mixin.generate_tab_title, mixin.get_torrent_id):
+                        mixin.generate_tab_title):
     provides = {'tui'}
     tui = ExpectedResource
 
