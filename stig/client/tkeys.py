@@ -420,6 +420,10 @@ class Timestamp(int):
             frmt = '%Y-%m-%d'
         return time.strftime(frmt, time.localtime(self))
 
+    @property
+    def full(self):
+        return time.strftime('%Y-%m-%d %H:%M', time.localtime(self))
+
     def __bool__(self):
         """Whether timestamp known"""
         return self != self.UNKNOWN and self != self.NOT_APPLICABLE
