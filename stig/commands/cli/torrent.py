@@ -55,7 +55,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
     delimiter = '\t' if TERMSIZE.columns is None else '│'
 
     # Whether to print for a human or for a machine to read our output
-    pretty_output = TERMSIZE.columns is not None
+    pretty_output = all(x is not None for x in (TERMSIZE.columns, TERMSIZE.lines))
 
     def assemble_line(row):
         line = []
