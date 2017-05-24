@@ -655,6 +655,7 @@ TYPES = {
     'count-files-wanted': Number,
 
     '%downloaded'       : Percent,
+    '%uploaded'         : Percent,
     '%metadata'         : Percent,
     '%verified'         : Percent,
     '%available'        : Percent,

@@ -286,6 +286,7 @@ DEPENDENCIES = {
     'count-files-wanted': ('fileStats',),
 
     '%downloaded'       : ('percentDone',),
+    '%uploaded'         : ('totalSize', 'uploadedEver'),
     '%metadata'         : ('metadataPercentComplete',),
     '%verified'         : ('recheckProgress',),
     '%available'        : ('haveValid', 'haveUnchecked', 'desiredAvailable', 'sizeWhenDone'),
@@ -327,9 +328,10 @@ DEPENDENCIES = {
 # Map our keys to callables that adjust the raw RPC values or create new
 # values from existing RPC values.
 _MODIFY = {
-    '%downloaded'       : lambda raw: raw['percentDone']*100,
-    '%metadata'         : lambda raw: raw['metadataPercentComplete']*100,
-    '%verified'         : lambda raw: raw['recheckProgress']*100,
+    '%downloaded'       : lambda raw: raw['percentDone'] * 100,
+    '%uploaded'         : lambda raw: raw['uploadedEver'] / raw['totalSize'] * 100,
+    '%metadata'         : lambda raw: raw['metadataPercentComplete'] * 100,
+    '%verified'         : lambda raw: raw['recheckProgress'] * 100,
     '%available'        : _percent_available,
     'status'            : _make_status,
     'peers-seeding'     : _count_seeds,
