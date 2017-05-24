@@ -54,18 +54,12 @@ def _modify_timestamp(t, key, zero_means=tkeys.Timestamp.UNKNOWN):
 
 import time
 def _modify_timestamp_completed(t):
-    seconds = t['doneDate']
-    if seconds == 0:
-        if t['eta'] >= 0:
-            # timestamp is in the future
-            return time.time() + t['eta']
-        elif t['percentDone'] < 1:
-            return tkeys.Timestamp.UNKNOWN
-        else:
-            return tkeys.Timestamp.NOT_APPLICABLE
+    if t['percentDone'] >= 1:
+        return t['doneDate']            # Timestamp is in the past
+    elif t['eta'] <= 0:
+        return tkeys.Timestamp.UNKNOWN  # Torrent is paused
     else:
-        # timestamp is in the past
-        return seconds
+        return time.time() + t['eta']   # Timestamp is in the future
 
 
 def _count_seeds(t):
