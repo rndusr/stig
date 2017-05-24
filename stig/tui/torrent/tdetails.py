@@ -66,10 +66,15 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
             sections.append(section)
             self._sections[section.title] = section
 
-        grid = urwid.GridFlow([], cell_width=1, h_sep=1, v_sep=0, align='left')
+        def add_title(title, section):
+            header = urwid.Columns([('pack', urwid.Text('──┤ %s ├' % title)),
+                                    urwid.Divider('─')])
+            return urwid.Pile([('pack', header), section])
+
+        grid = urwid.GridFlow([], cell_width=1, h_sep=3, v_sep=1, align='left')
         for section in sections:
             opts = grid.options('given', section.width)
-            section_wrapped = urwid.LineBox(section, title=section.title)
+            section_wrapped = add_title(section.title, section)
             grid.contents.append((section_wrapped, opts))
 
         grid_sb = urwid.AttrMap(
