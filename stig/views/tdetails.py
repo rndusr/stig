@@ -17,9 +17,9 @@ log = make_logger(__name__)
 
 def _torrent_size_hr(t):
     if t['size-total'] == t['size-final']:
-        return '%s' % t['size-total']
+        return '%s' % t['size-total'].with_unit
     else:
-        return '%s (%s wanted)' % (t['size-total'], t['size-final'])
+        return '%s (%s wanted)' % (t['size-total'].with_unit, t['size-final'].with_unit)
 
 def _torrent_size_mr(t):
     return '%d\t%d' % (t['size-total'], t['size-final'])
