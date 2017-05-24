@@ -15,71 +15,132 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 
-def _torrent_size(size_total, size_final):
-    if size_total == size_final:
-        return '%s' % size_total
+def _torrent_size_hr(t):
+    if t['size-total'] == t['size-final']:
+        return '%s' % t['size-total']
     else:
-        return '%s (%s wanted)' % (size_total, size_final)
+        return '%s (%s wanted)' % (t['size-total'], t['size-final'])
 
-def _torrent_files(count_files, count_files_wanted):
-    return '%d (%d wanted)' % (count_files, count_files_wanted)
+def _torrent_size_mr(t):
+    return '%d\t%d' % (t['size-total'], t['size-final'])
 
-def _torrent_pieces(count_pieces, size_pieces):
-    return '%d * %s' % (count_pieces, size_pieces.with_unit)
 
-def _status_uploaded(size_uploaded, size_total):
-    return '%s (%d %%)' % (size_uploaded.with_unit, size_uploaded / size_total * 100)
+def _torrent_files_hr(t):
+    return '%d (%d wanted)' % (t['count-files'], t['count-files-wanted'])
 
-def _status_downloaded(size_downloaded, size_final, size_left, percent_downloaded, eta):
-    info = ['%s %%' % percent_downloaded]
-    if percent_downloaded < 100:
-        if eta:
-            info.append('%s / %s left' % (size_left.with_unit, eta))
+def _torrent_files_mr(t):
+    return '%d\t%d' % (t['count-files'], t['count-files-wanted'])
+
+
+def _torrent_pieces_hr(t):
+    return '%d * %s' % (t['count-pieces'], t['size-piece'].with_unit)
+
+def _torrent_pieces_mr(t):
+    return '%d\t%d' % (t['count-pieces'], t['size-piece'])
+
+
+def _torrent_private_hr(t):
+    return ('yes (decentralized peer discovery is disabled for this torrent)'
+            if t['private'] else
+            'no (decentralized peer discovery allowed if enabled globally)')
+
+def _torrent_private_mr(t):
+    return 'yes' if t['private'] else 'no'
+
+
+def _status_uploaded_hr(t):
+    return '%s (%.2f %%)' % (t['size-uploaded'].with_unit, t['%uploaded'])
+
+def _status_uploaded_mr(t):
+    return '%d\t%f' % (t['size-uploaded'], t['%uploaded'] / 100)
+
+
+def _status_downloaded_hr(t):
+    info = ['%.2f %%' % t['%downloaded']]
+    if t['%downloaded'] < 100:
+        if t['timespan-eta']:
+            info.append('%s / %s left' % (t['size-left'].with_unit, t['timespan-eta']))
         else:
-            info.append('%s left' % size_left.with_unit)
-    return '%s (%s)' % (size_downloaded.with_unit, ', '.join(info))
+            info.append('%s left' % t['size-left'].with_unit)
+    return '%s (%s)' % (t['size-downloaded'].with_unit, ', '.join(info))
 
-def _status_completed(time_completed):
-    if time_completed.in_future:
-        return '%s (in %s)' % (time_completed, time_completed.delta)
+def _status_downloaded_mr(t):
+    return '%d\t%f\t%d\t%d' % (t['size-downloaded'],
+                               t['%downloaded'] / 100, t['size-left'],
+                               t['timespan-eta'])
+
+
+def _status_available_hr(t):
+    return '%s (%.2f %%)' % (t['size-available'].with_unit, t['%available'])
+
+def _status_available_mr(t):
+    return '%d\t%f' % (t['size-available'], t['%available'])
+
+
+def _status_completed_hr(t):
+    if t['time-completed'].in_future:
+        return '%s (in %s)' % (t['time-completed'].full, t['time-completed'].delta)
     else:
-        return '%s' % time_completed
+        return '%s' % t['time-completed'].full
+
+def _status_completed_mr(t):
+    return '%d' % t['time-completed']
 
 
-SECTIONS = {
-    'torrent':
+def _status_isolated_hr(t):
+    status = t['status']
+    return ('yes (torrent can\'t discover new peers)'
+            if status.ISOLATED in status else
+            'no (torrent can discover new peers)')
+
+def _status_isolated_mr(t):
+    status = t['status']
+    return 'yes' if status.ISOLATED in status else 'no'
+
+
+class Item():
+    def __init__(self, label, needed_keys, human_readable=None, machine_readable=None):
+        self.label = label
+        self.needed_keys = needed_keys
+        if human_readable is None:
+            self.human_readable = lambda torrent, key=needed_keys[0]: str(torrent[key])
+        else:
+            self.human_readable = human_readable
+        if machine_readable is None:
+            self.machine_readable = self.human_readable
+        else:
+            self.machine_readable = machine_readable
+
+SECTIONS = (
     {'title': 'Torrent', 'width': 60, 'items': (
-        {'label': 'Name',       'keys': ('name',)},
-        {'label': 'ID',         'keys': ('id',)},
-        {'label': 'Hash',       'keys': ('hash',)},
-        {'label': 'Size',       'keys': ('size-total', 'size-final'), 'func': _torrent_size},
-        {'label': 'Files',      'keys': ('count-files', 'count-files-wanted'), 'func': _torrent_files},
-        {'label': 'Pieces',     'keys': ('count-pieces', 'size-piece'), 'func': _torrent_pieces},
-        {'label': 'Private',    'keys': ('private',),
-         'func': lambda private: ('yes (decentralized peer discovery is disabled for this torrent)'
-                                  if private else
-                                  'no (decentralized peer discovery allowed if enabled globally)')},
-        {'label': 'Comment',    'keys': ('comment',)},
-        {'label': 'Creator',    'keys': ('creator',)},
-        {'label': 'Created',    'keys': ('time-created',)},
-        {'label': 'Added',      'keys': ('time-added',)},
-        {'label': 'Started',    'keys': ('time-started',)},
-        {'label': 'Completed',  'keys': ('time-completed',), 'func': _status_completed},
-        {'label': 'Active',     'keys': ('time-activity',)},
+        Item('Name',       ('name',)),
+        Item('ID',         ('id',)),
+        Item('Hash',       ('hash',)),
+        Item('Size',       ('size-total', 'size-final'), _torrent_size_hr, _torrent_size_mr),
+        Item('Files',      ('count-files', 'count-files-wanted'), _torrent_files_hr, _torrent_files_mr),
+        Item('Pieces',     ('count-pieces', 'size-piece'), _torrent_pieces_hr, _torrent_pieces_mr),
+        Item('Private',    ('private',), _torrent_private_hr, _torrent_private_mr),
+        Item('Comment',    ('comment',)),
+        Item('Creator',    ('creator',)),
+        Item('Created',    ('time-created',),   lambda t: t['time-created'].full,  lambda t: int(t['time-created'])),
+        Item('Added',      ('time-added',),     lambda t: t['time-added'].full,    lambda t: int(t['time-added'])),
+        Item('Started',    ('time-started',),   lambda t: t['time-started'].full,  lambda t: int(t['time-started'])),
+        Item('Completed',  ('time-completed',), _status_completed_hr, _status_completed_mr),
+        Item('Active',     ('time-activity',),  lambda t: t['time-activity'].full, lambda t: int(t['time-activity'])),
     )},
 
-    'status':
     {'title': 'Status', 'width': 60, 'items': (
-        {'label': 'Downloaded', 'func': _status_downloaded,
-         'keys': ('size-downloaded', 'size-final', 'size-left', '%downloaded', 'timespan-eta')},
-        {'label': 'Uploaded', 'func': _status_uploaded,
-         'keys': ('size-uploaded', 'size-total')},
-        # {'label': 'Available', 'func': _status_available,
-        # 'keys': ('size-downloaded', 'size-final', 'size-left', '%downloaded', 'timespan-eta')},
+        Item('Downloaded', ('size-downloaded', 'size-left', '%downloaded', 'timespan-eta'),
+          _status_downloaded_hr, _status_downloaded_mr),
+        Item('Uploaded', ('size-uploaded', 'size-total', '%uploaded'),
+             _status_uploaded_hr, _status_uploaded_mr),
+        Item('Availability', ('%available', 'size-available'),
+             _status_available_hr, _status_available_mr),
 
-        {'label': 'Seeding peers',     'keys': ('peers-seeding',)},
-        {'label': 'Connected peers',   'keys': ('peers-connected',)},
-        {'label': 'Uploading peers',   'keys': ('peers-uploading',)},
-        {'label': 'Downloading peers', 'keys': ('peers-downloading',)},
+        Item('Isolated',          ('status',), _status_isolated_hr, _status_isolated_mr),
+        Item('Seeding peers',     ('peers-seeding',)),
+        Item('Connected peers',   ('peers-connected',)),
+        Item('Uploading peers',   ('peers-uploading',)),
+        Item('Downloading peers', ('peers-downloading',)),
     )},
-}
+)

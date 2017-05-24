@@ -38,37 +38,20 @@ def mksection(title, width, items):
                                            value_w]))
                 needed_keys.update(item.needed_keys)
             self._value_widgets = value_widgets
-            self.needed_keys = tuple(needed_keys)
+            self.needed_keys = needed_keys
             super().__init__(urwid.Pile(rows))
 
         def update(self, torrent):
             for item,value_w in self._value_widgets.items():
-                args = tuple(torrent[key] for key in item.needed_keys)
-                log.debug('Updating %r = %r -> %r', item.label, value_w.text, args)
-                value_s = item.func(*args)
-                value_w.set_text(value_s)
-
-        # def render(self, size, focus=False):
-        #     log.debug('Rendering %r: size=%r', self, size)
-        #     return super().render(size, focus)
+                value_w.set_text(item.human_readable(torrent))
 
     return Section
 
 
-class SectionItem():
-    """A 'KEY: VALUE' pair, e.g. 'Name: A Torrent Named Foo'"""
-    def __init__(self, label, keys, func=str):
-        self.label = label
-        self.needed_keys = keys
-        self.func = func
-
-
 _sections = []
 from ...views.tdetails import SECTIONS
-for section in SECTIONS.values():
-    sectionw = mksection(section['title'], section['width'],
-                         items=tuple(SectionItem(**item)
-                                     for item in section['items']))
+for section in SECTIONS:
+    sectionw = mksection(**section)
     _sections.append(sectionw)
 
 
@@ -96,15 +79,13 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
         super().__init__(grid_sb)
 
         # Register new request in request pool
-        keys = sum((w.needed_keys for w in sections), ('name',))
-        log.debug('Polling keys for %s: %s', tid, keys)
+        keys = set(('name',)).union(key for w in sections for key in w.needed_keys)
         self._poller = srvapi.create_poller(srvapi.torrent.torrents, (tid,), keys=keys)
         self._poller.on_response(self._handle_response)
 
     def _handle_response(self, response):
         if response is not None and response.success:
             torrent = response.torrents[0]
-            # log.debug('got update: %r', torrent)
             for w in self._sections.values():
                 w.update(torrent)
 
@@ -117,7 +98,3 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
     @property
     def title(self):
         return self._title or ''
-
-    # def render(self, size, focus=False):
-    #     log.debug('Rendering %r: size=%r', self, size)
-    #     return super().render(size, focus)
