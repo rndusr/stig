@@ -14,48 +14,50 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
+from functools import partial
 
-def _torrent_size_hr(t):
+
+def _size_hr(t):
     if t['size-total'] == t['size-final']:
         return '%s' % t['size-total'].with_unit
     else:
         return '%s (%s wanted)' % (t['size-total'].with_unit, t['size-final'].with_unit)
 
-def _torrent_size_mr(t):
+def _size_mr(t):
     return '%d\t%d' % (t['size-total'], t['size-final'])
 
 
-def _torrent_files_hr(t):
+def _files_hr(t):
     return '%d (%d wanted)' % (t['count-files'], t['count-files-wanted'])
 
-def _torrent_files_mr(t):
+def _files_mr(t):
     return '%d\t%d' % (t['count-files'], t['count-files-wanted'])
 
 
-def _torrent_pieces_hr(t):
+def _pieces_hr(t):
     return '%d * %s' % (t['count-pieces'], t['size-piece'].with_unit)
 
-def _torrent_pieces_mr(t):
+def _pieces_mr(t):
     return '%d\t%d' % (t['count-pieces'], t['size-piece'])
 
 
-def _torrent_private_hr(t):
+def _private_hr(t):
     return ('yes (decentralized peer discovery is disabled for this torrent)'
             if t['private'] else
             'no (decentralized peer discovery allowed if enabled globally)')
 
-def _torrent_private_mr(t):
+def _private_mr(t):
     return 'yes' if t['private'] else 'no'
 
 
-def _status_uploaded_hr(t):
+def _uploaded_hr(t):
     return '%s (%.2f %%)' % (t['size-uploaded'].with_unit, t['%uploaded'])
 
-def _status_uploaded_mr(t):
+def _uploaded_mr(t):
     return '%d\t%f' % (t['size-uploaded'], t['%uploaded'] / 100)
 
 
-def _status_downloaded_hr(t):
+def _downloaded_hr(t):
     info = ['%.2f %%' % t['%downloaded']]
     if t['%downloaded'] < 100:
         if t['timespan-eta']:
@@ -64,38 +66,39 @@ def _status_downloaded_hr(t):
             info.append('%s left' % t['size-left'].with_unit)
     return '%s (%s)' % (t['size-downloaded'].with_unit, ', '.join(info))
 
-def _status_downloaded_mr(t):
+def _downloaded_mr(t):
     return '%d\t%f\t%d\t%d' % (t['size-downloaded'],
                                t['%downloaded'] / 100, t['size-left'],
                                t['timespan-eta'])
 
 
-def _status_available_hr(t):
+def _available_hr(t):
     return '%s (%.2f %%)' % (t['size-available'].with_unit, t['%available'])
 
-def _status_available_mr(t):
+def _available_mr(t):
     return '%d\t%f' % (t['size-available'], t['%available'])
 
 
-def _status_completed_hr(t):
-    if t['time-completed'].in_future:
-        return '%s (in %s)' % (t['time-completed'].full, t['time-completed'].delta)
-    else:
-        return '%s' % t['time-completed'].full
-
-def _status_completed_mr(t):
-    return '%d' % t['time-completed']
-
-
-def _status_isolated_hr(t):
+def _isolated_hr(t):
     status = t['status']
     return ('yes (torrent can\'t discover new peers)'
             if status.ISOLATED in status else
             'no (torrent can discover new peers)')
 
-def _status_isolated_mr(t):
+def _isolated_mr(t):
     status = t['status']
     return 'yes' if status.ISOLATED in status else 'no'
+
+
+def _date_hr(key, t):
+    date = t[key]
+    if abs(date.delta) < 5:
+        return 'now'
+    return '%s (%s)' % (date.full, date.delta.with_preposition)
+
+def _date_mr(key, t):
+    date = t[key]
+    return '%d\t%d' % (date, date.delta)
 
 
 class Item():
@@ -111,36 +114,41 @@ class Item():
         else:
             self.machine_readable = machine_readable
 
+
 SECTIONS = (
     {'title': 'Torrent', 'width': 60, 'items': (
         Item('Name',       ('name',)),
         Item('ID',         ('id',)),
         Item('Hash',       ('hash',)),
-        Item('Size',       ('size-total', 'size-final'), _torrent_size_hr, _torrent_size_mr),
-        Item('Files',      ('count-files', 'count-files-wanted'), _torrent_files_hr, _torrent_files_mr),
-        Item('Pieces',     ('count-pieces', 'size-piece'), _torrent_pieces_hr, _torrent_pieces_mr),
-        Item('Private',    ('private',), _torrent_private_hr, _torrent_private_mr),
+        Item('Size',       ('size-total', 'size-final'), _size_hr, _size_mr),
+        Item('Files',      ('count-files', 'count-files-wanted'), _files_hr, _files_mr),
+        Item('Pieces',     ('count-pieces', 'size-piece'), _pieces_hr, _pieces_mr),
+        Item('Private',    ('private',), _private_hr, _private_mr),
         Item('Comment',    ('comment',)),
         Item('Creator',    ('creator',)),
-        Item('Created',    ('time-created',),   lambda t: t['time-created'].full,  lambda t: int(t['time-created'])),
-        Item('Added',      ('time-added',),     lambda t: t['time-added'].full,    lambda t: int(t['time-added'])),
-        Item('Started',    ('time-started',),   lambda t: t['time-started'].full,  lambda t: int(t['time-started'])),
-        Item('Completed',  ('time-completed',), _status_completed_hr, _status_completed_mr),
-        Item('Active',     ('time-activity',),  lambda t: t['time-activity'].full, lambda t: int(t['time-activity'])),
     )},
 
-    {'title': 'Status', 'width': 60, 'items': (
-        Item('Downloaded', ('size-downloaded', 'size-left', '%downloaded', 'timespan-eta'),
-          _status_downloaded_hr, _status_downloaded_mr),
-        Item('Uploaded', ('size-uploaded', 'size-total', '%uploaded'),
-             _status_uploaded_hr, _status_uploaded_mr),
-        Item('Availability', ('%available', 'size-available'),
-             _status_available_hr, _status_available_mr),
+    {'title': 'Status', 'width': 51, 'items': (
+        Item('Location',   ('path',),),
+        Item('Available',  ('%available', 'size-available'), _available_hr, _available_mr),
+        Item('Downloaded', ('size-downloaded', 'size-left', '%downloaded', 'timespan-eta'), _downloaded_hr, _downloaded_mr),
+        Item('Uploaded',   ('size-uploaded', 'size-total', '%uploaded'), _uploaded_hr, _uploaded_mr),
+        Item('Ratio',      ('ratio',)),
+        Item('Isolated',   ('status',), _isolated_hr, _isolated_mr),
+    )},
 
-        Item('Isolated',          ('status',), _status_isolated_hr, _status_isolated_mr),
+    {'title': 'Peers', 'width': 25, 'items': (
         Item('Seeding peers',     ('peers-seeding',)),
         Item('Connected peers',   ('peers-connected',)),
         Item('Uploading peers',   ('peers-uploading',)),
         Item('Downloading peers', ('peers-downloading',)),
+    )},
+
+    {'title': 'Dates', 'width': 39, 'items': (
+        Item('Created',    ('time-created',),   partial(_date_hr, 'time-created'),   partial(_date_mr, 'time-created')),
+        Item('Added',      ('time-added',),     partial(_date_hr, 'time-added'),     partial(_date_mr, 'time-added')),
+        Item('Started',    ('time-started',),   partial(_date_hr, 'time-started'),   partial(_date_mr, 'time-started')),
+        Item('Completed',  ('time-completed',), partial(_date_hr, 'time-completed'), partial(_date_mr, 'time-completed')),
+        Item('Active',     ('time-activity',),  partial(_date_hr, 'time-activity'),  partial(_date_mr, 'time-activity')),
     )},
 )
