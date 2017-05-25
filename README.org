@@ -9,8 +9,8 @@
      combination of criteria
    - *Tabs* with different lists, documentation, etc
    - Everything is done via *commands*, and they are invoked
-     - through single- or multi-key *keybindings*,
-     - by entering them in a *built-in command prompt*,
+     - through single- or multi-key (think emacs) *keybindings*,
+     - by entering them in a *command prompt* (think vi),
      - by providing them as *CLI arguments* in your interactive shell or in
        *scripts*,
      - or by listing them in an *rc file*.
