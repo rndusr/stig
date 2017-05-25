@@ -295,6 +295,56 @@ class ListPeersCmd(base.ListPeersCmdbase,
             return False
 
 
+class TorrentsDetailsCmd(base.TorrentDetailsCmdbase,
+                      mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+
+    async def show_details(self, tfilter):
+        tid = await self.get_torrent_id(tfilter)
+        if tid is None:
+            return False
+
+        from ...views.tdetails import SECTIONS
+        needed_keys = set(('name',))
+        for _section in SECTIONS:
+            for _item in _section['items']:
+                needed_keys.update(_item.needed_keys)
+
+        response = await self.make_request(
+            self.srvapi.torrent.torrents((tid,), keys=needed_keys),
+            quiet=True)
+        if len(response.torrents) < 1:
+            return False
+        else:
+            torrent = response.torrents[0]
+
+        # Whether to print for a human or for a machine to read our output
+        if TERMSIZE.columns is None:
+            self._machine_readable(torrent)
+        else:
+            self._human_readable(torrent)
+        return True
+
+    def _human_readable(self, torrent):
+        from ...views.tdetails import SECTIONS
+
+        label_width = max(len(item.label)
+                          for section in SECTIONS
+                          for item in section['items'])
+
+        for section in SECTIONS:
+            log.info('\033[1m' + section['title'].upper() + '\033[0m')
+            for item in section['items']:
+                log.info('  %s: %s', item.label.rjust(label_width), item.human_readable(torrent))
+
+    def _machine_readable(self, torrent):
+        from ...views.tdetails import SECTIONS
+
+        for section in SECTIONS:
+            for item in section['items']:
+                log.info('%s\t%s', item.label.lower(), item.machine_readable(torrent))
+
+
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
