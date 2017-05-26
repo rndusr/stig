@@ -19,7 +19,7 @@ from functools import partial
 
 from ..base import torrent as base
 from . import mixin
-from .. import ExpectedResource
+from .. import (ExpectedResource, InitCommand)
 from .utils import make_tab_title_widget
 
 
@@ -141,6 +141,72 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
         detailsw.title_updater = set_tab_title
 
         return True
+
+
+class SortCmdbase(metaclass=InitCommand):
+    name = 'sort'
+    aliases = ()
+    provides = {'tui'}
+    category = 'torrent'
+    description = "Sort lists of torrents or peers"
+    usage = ('sort [<OPTIONS>] [<ORDER> <ORDER> <ORDER> ...]',)
+    examples = ('sort tracker status !rate-down',
+                'sort --add eta')
+    argspecs = (
+        {'names': ('ORDER',), 'nargs': '*',
+         'description': 'How to sort list items (see SORT ORDERS section)'},
+
+        {'names': ('--add', '-a'), 'action': 'store_true',
+         'description': 'Append ORDERs to current list of sort orders instead of replacing it'},
+
+        {'names': ('--reset', '-r'), 'action': 'store_true',
+         'description': 'Go back to sort order that was used when list was created'},
+    )
+
+    def _list_sort_orders(title, sortercls):
+        return (title,) + \
+            tuple('\t{}\t - \t{}'.format(', '.join((sname,) + s.aliases), s.description)
+                  for sname,s in sorted(sortercls.SORTSPECS.items()))
+
+    from ...client.sorters.tsorter import TorrentSorter
+    from ...client.sorters.psorter import TorrentPeerSorter
+    more_sections = {
+        'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) + \
+                       ('',) + \
+                       _list_sort_orders('PEER LISTS', TorrentPeerSorter)
+    }
+
+    tui = ExpectedResource
+
+    async def run(self, add, reset, ORDER):
+        current_tab = self.tui.tabs.focus
+
+        if reset:
+            current_tab.sort = None
+
+        if ORDER:
+            # Find appropriate sorter class for focused list
+            from ...tui.torrent.tlist import TorrentListWidget
+            from ...tui.torrent.plist import PeerListWidget
+            if isinstance(current_tab, TorrentListWidget):
+                sortcls = self.TorrentSorter
+            elif isinstance(current_tab, PeerListWidget):
+                sortcls = self.TorrentPeerSorter
+            else:
+                log.error('Current tab does not contain a torrent or peer list.')
+                return False
+
+            try:
+                new_sort = sortcls(ORDER)
+            except ValueError as e:
+                log.error(e)
+                return False
+
+            if add:
+                current_tab.sort += new_sort
+            else:
+                current_tab.sort = new_sort
+            return True
 
 
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
