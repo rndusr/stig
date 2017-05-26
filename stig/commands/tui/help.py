@@ -29,9 +29,13 @@ class HelpCmd(base.HelpCmdbase):
         from ...tui.scroll import (Scrollable, ScrollBar)
 
         if hasattr(self, 'title'):
-            titlew = make_tab_title_widget(str(self.title), 'tabs.help.unfocused', 'tabs.help.focused')
+            titlew = make_tab_title_widget(str(self.title),
+                                           attr_unfocused='tabs.help.unfocused',
+                                           attr_focused='tabs.help.focused')
         else:
-            titlew = make_tab_title_widget(','.join(topics), 'tabs.help.unfocused', 'tabs.help.focused')
+            titlew = make_tab_title_widget(','.join(topics),
+                                           attr_unfocused='tabs.help.unfocused',
+                                           attr_focused='tabs.help.focused')
 
         textw = urwid.AttrMap(Scrollable(urwid.Text('\n'.join(lines))), 'helptext')
         contentw = urwid.AttrMap(ScrollBar(textw), 'scrollbar')
