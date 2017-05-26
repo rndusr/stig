@@ -19,7 +19,7 @@ from . import make_tab_title_widget
 from .. import (InitCommand, ExpectedResource)
 
 
-from ...tui import KEYMAP_CONTEXTS
+from ...tui.main import KEYMAP_CONTEXTS
 import shlex
 class BindCmd(metaclass=InitCommand):
     name = 'bind'

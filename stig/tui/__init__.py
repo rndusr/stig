@@ -8,5 +8,3 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
-
-KEYMAP_CONTEXTS = ('main', 'tabs', 'torrent')
