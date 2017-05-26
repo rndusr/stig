@@ -73,7 +73,7 @@ helpmgr.keymap = keymap
 # Widgets
 #
 
-MAX_TAB_TITLE_WIDTH = 30
+MAX_TAB_TITLE_WIDTH = 50
 
 from .group import Group
 from .tabs import (Tabs, TabBar)
