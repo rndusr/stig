@@ -61,6 +61,7 @@ class TorrentListItemWidget(urwid.WidgetWrap):
 class TorrentListWidget(urwid.WidgetWrap):
     def __init__(self, sort=None, tfilter=None, columns=[], title=None):
         self._sort = sort
+        self._sort_orig = sort
         self._tfilter = tfilter
         self._columns = columns
         self._title_base = title
@@ -174,21 +175,18 @@ class TorrentListWidget(urwid.WidgetWrap):
         self.clear()
         tui.srvapi.treqpool.poll()
 
-    def set(self, columns=None, tfilter=None, sort=None):
-        update_request = False
-        old_id = self.id
-        if columns is not None:
-            self._table.columns = columns
-            update_request = True
-        if tfilter is not None:
-            self._tfilter = tfilter
-            update_request = True
-        if sort is not None:
+    @property
+    def sort(self):
+        return self._sort
+
+    @sort.setter
+    def sort(self, sort):
+        tui.srvapi.treqpool.remove(self.id)
+        if sort is None:
+            self._sort = self._sort_orig
+        else:
             self._sort = sort
-            update_request = True
-        if update_request:
-            tui.srvapi.treqpool.remove(old_id)
-            self._register_request()
+        self._register_request()
 
     @property
     def title(self):
