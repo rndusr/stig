@@ -72,7 +72,7 @@ class SorterBase():
                 self._sortfuncs.append(partial(sortspec, reverse=reverse))
                 strings.append(('!' if reverse else '') + sortspecname)
 
-        self._str = ','.join(strings)
+        self._strings = tuple(strings)
 
         # Unless we already sort by name, default to sorting by name first and
         # then by all other sort orders
@@ -104,8 +104,15 @@ class SorterBase():
         if not inplace:
             return items
 
+    def __add__(self, other):
+        cls = type(self)
+        if not isinstance(other, cls):
+            return NotImplemented
+        else:
+            return cls(self._strings + other._strings)
+
     def __str__(self):
-        return self._str
+        return ','.join(self._strings)
 
     def __repr__(self):
         return '<{} {}>'.format(type(self).__name__, str(self))
