@@ -65,7 +65,7 @@ class SorterBase():
                 sortspecname = self._aliases[sortspecname]
 
             if sortspecname not in self.SORTSPECS:
-                raise ValueError('Unknown sort order: {}'.format(sortspecname))
+                raise ValueError('Unknown sort order: {!r}'.format(sortspecname))
             else:
                 sortspec = self.SORTSPECS[sortspecname]
                 self._sortspecs.append(sortspec)
