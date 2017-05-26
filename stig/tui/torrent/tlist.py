@@ -72,7 +72,7 @@ class TorrentListWidget(urwid.WidgetWrap):
 
         self._torrents = ()
         self._walker = urwid.SimpleFocusListWalker([])
-        self._listbox = urwid.ListBox(self._walker)
+        self._listbox = tui.keymap.wrap(urwid.ListBox, context='torrentlist')(self._walker)
         self._marked = set()
 
         listbox_sb = urwid.AttrMap(
