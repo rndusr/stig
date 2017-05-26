@@ -40,6 +40,7 @@ class PeerListItemWidget(urwid.WidgetWrap):
 class PeerListWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tfilter, pfilter, columns, sort=None, title=None):
         self._sort = sort
+        self._sort_orig = sort
 
         # Create peer filter generator
         if pfilter is not None:
@@ -50,18 +51,7 @@ class PeerListWidget(urwid.WidgetWrap):
                 yield from peers
         self._maybe_filter_peers = filter_peers
 
-        # Create the fixed part of the title (everything minus the number of peers listed)
-        # If title is not given, create one from filter and sort order
-        if title is None:
-            # tfilter is either None or an actual TorrentFilter instance
-            title = str(tfilter or 'all')
-            if pfilter:
-                title += ' %s' % pfilter
-        if sort is not None:
-            sortstr = str(sort)
-            if sortstr is not self._sort.DEFAULT_SORT:
-                title += ' {%s}' % sortstr
-        self._title_base = title
+        self._title = title
         self.title_updater = None
 
         self._peers = ()
@@ -143,8 +133,35 @@ class PeerListWidget(urwid.WidgetWrap):
         self._listbox._invalidate()
 
     @property
+    def sort(self):
+        """TorrentPeerSorter object (set to `None` to restore original sort order)"""
+        return self._sort
+
+    @sort.setter
+    def sort(self, sort):
+        if sort is None:
+            self._sort = self._sort_orig
+        else:
+            self._sort = sort
+        self._poller.poll()
+
+    @property
     def title(self):
-        return self._title_base
+        # Create the fixed part of the title (everything minus the number of peers listed)
+        # If title is not given, create one from filter and sort order
+        if self._title is None:
+            # tfilter is either None or an actual TorrentFilter instance
+            title = str(tfilter or 'all')
+            if pfilter:
+                title += ' %s' % pfilter
+        else:
+            title = self._title
+
+        if self._sort is not None:
+            sortstr = str(self._sort)
+            if sortstr is not self._sort.DEFAULT_SORT:
+                title += ' {%s}' % sortstr
+        return title
 
     @property
     def count(self):
