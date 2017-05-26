@@ -33,6 +33,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
     argspecs = (
         { 'names': ('TORRENT',), 'nargs': '+',
           'description': 'Link or path to torrent file, magnet link or hash' },
+
         { 'names': ('--stopped','-s'), 'action': 'store_true',
           'description': 'Do not start downloading the added torrent' },
     )
@@ -377,7 +378,6 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
             return response.success
 
 
-
 class PriorityCmdbase(metaclass=InitCommand):
     name = 'priority'
     aliases = ('prio',)
@@ -392,8 +392,10 @@ class PriorityCmdbase(metaclass=InitCommand):
         { 'names': ('PRIORITY',),
           'description': ("File priority; must be low/normal/high/shun, "
                           "l/n/h/s or -/./+/0")},
+
         {'names': ('TORRENT FILTER',), 'nargs': '?',
          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
         { 'names': ('FILE FILTER',), 'nargs': '?',
          'description': 'Filter expression (see `help filter`) or focused file in the TUI'},
     )
@@ -512,6 +514,7 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '*',
          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+
         { 'names': ('--force','-f'), 'action': 'store_true',
           'description': 'Ignore download queue' },
         ARGSPEC_TOGGLE,
