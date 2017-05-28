@@ -161,6 +161,9 @@ class SortCmdbase(metaclass=InitCommand):
 
         {'names': ('--reset', '-r'), 'action': 'store_true',
          'description': 'Go back to sort order that was used when list was created'},
+
+        {'names': ('--none', '-n'), 'action': 'store_true',
+         'description': 'Remove all sort orders from the list'},
     )
 
     def _list_sort_orders(title, sortercls):
@@ -178,10 +181,13 @@ class SortCmdbase(metaclass=InitCommand):
 
     tui = ExpectedResource
 
-    async def run(self, add, reset, ORDER):
+    async def run(self, add, reset, none, ORDER):
         current_tab = self.tui.tabs.focus
 
         if reset:
+            current_tab.sort = 'RESET'
+
+        if none:
             current_tab.sort = None
 
         if ORDER:

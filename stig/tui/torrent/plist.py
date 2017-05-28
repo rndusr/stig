@@ -141,7 +141,7 @@ class PeerListWidget(urwid.WidgetWrap):
 
     @sort.setter
     def sort(self, sort):
-        if sort is None:
+        if sort == 'RESET':
             self._sort = self._sort_orig
         else:
             self._sort = sort

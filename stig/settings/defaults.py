@@ -218,7 +218,8 @@ DEFAULT_KEYMAP = (
     {'context': 'torrentlist', 'key': 's Z',       'action': 'sort --add !size'},
     {'context': 'torrentlist', 'key': 's t',       'action': 'sort --add tracker'},
     {'context': 'torrentlist', 'key': 's T',       'action': 'sort --add !tracker'},
-    {'context': 'torrentlist', 'key': 's .',       'action': 'sort --reset'},
+    {'context': 'torrentlist', 'key': 's ,',       'action': 'sort --reset'},
+    {'context': 'torrentlist', 'key': 's .',       'action': 'sort --none'},
 
     # Torrent actions
     {'context': 'torrent', 'key': 't v',       'action': 'verify'},
@@ -249,7 +250,8 @@ DEFAULT_KEYMAP = (
     {'context': 'peerlist', 'key': 's S',       'action': 'sort --add !rate-est'},
     {'context': 'peerlist', 'key': 's t',       'action': 'sort --add torrent'},
     {'context': 'peerlist', 'key': 's T',       'action': 'sort --add !torrent'},
-    {'context': 'peerlist', 'key': 's .',       'action': 'sort --reset'},
+    {'context': 'peerlist', 'key': 's ,',       'action': 'sort --reset'},
+    {'context': 'peerlist', 'key': 's .',       'action': 'sort --none'},
 
     # Torrent file actions
     {'context': 'file', 'key': '+',         'action': 'priority high'},

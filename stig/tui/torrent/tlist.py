@@ -182,7 +182,7 @@ class TorrentListWidget(urwid.WidgetWrap):
     @sort.setter
     def sort(self, sort):
         tui.srvapi.treqpool.remove(self.id)
-        if sort is None:
+        if sort == 'RESET':
             self._sort = self._sort_orig
         else:
             self._sort = sort
@@ -200,9 +200,10 @@ class TorrentListWidget(urwid.WidgetWrap):
         else:
             title = [self._title_base]
 
-        sortstr = str(self._sort)
-        if sortstr is not self._sort.DEFAULT_SORT:
-            title.append('{%s}' % sortstr)
+        if self._sort is not None:
+            sortstr = str(self._sort)
+            if sortstr is not self._sort.DEFAULT_SORT:
+                title.append('{%s}' % sortstr)
 
         return ' '.join(title)
 
