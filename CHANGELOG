@@ -1,11 +1,12 @@
 2017-??-?? ?.?.?a
   Breaking changes:
-    * By default, <enter> no longer opens a torrent's file list but its details
-      instead.  File lists are now opened with <alt-enter>.
+    * File lists are now opened with <alt-enter> instead of <enter>
 
   Other changes:
-    * New command 'details' displays detailed information about a single torrent
-    * New command 'sort' changes the sort order of existing torrent and peer lists
+    * New command 'details' (bound to <enter> by default) displays detailed
+      information about a single torrent
+    * New command 'sort' changes the sort order of existing torrent and peer
+      lists (bound to <s> by default)
     * Scrollbars to indicate scroll position
     * Scroll one page up/down with <space>/<b>
     * New 'tab' command option --close-all closes all tabs
