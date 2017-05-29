@@ -10,10 +10,16 @@
     * Scrollbars to indicate scroll position
     * Scroll one page up/down with <space>/<b>
     * New 'tab' command option --close-all closes all tabs
+    * New 'unbind' command option --all removes all keybindings
+    * New keybindings contexts: 'torrentlist', 'filelist', 'peerlist'
     * <?> is now an alias for <F1>
+    * Quick help in top bar now reacts to changed keybindings even after the
+      initial start
+    * Sort orders are deduplicated
 
   Fixed bugs:
     * 'tui' command can hide/show/toggle multiple elements, as documented
+    * Keybinding context 'file' was not documented in help for 'bind' command
 
 
 2017-04-24 0.6.0a
