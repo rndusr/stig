@@ -53,7 +53,7 @@ class BindCmd(metaclass=InitCommand):
              'actions in different contexts.'),
             '',
             'Available contexts are: ' + \
-              ', '.join('"%s"' % context for context in KEYMAP_CONTEXTS),
+              ', '.join('%s' % context for context in KEYMAP_CONTEXTS),
             '',
             'EXAMPLE',
             '\tbind --context torrent ctrl-t start',
