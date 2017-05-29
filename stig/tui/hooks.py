@@ -109,3 +109,9 @@ cfg['tui.marked.off'].on_change(partial(_set_tui_marked_char, 'set_unmarked_char
 
 _set_tui_marked_char('set_marked_char', cfg['tui.marked.on'])
 _set_tui_marked_char('set_unmarked_char', cfg['tui.marked.off'])
+
+
+def _update_quickhelp(keymap):
+    tui.topbar.help.update()
+
+tui.keymap.on_bind_unbind(_update_quickhelp)
