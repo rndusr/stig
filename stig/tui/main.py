@@ -21,7 +21,7 @@ from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
 # Keybindings
 #
 
-KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'peerlist')
+KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'filelist', 'file', 'peerlist')
 
 # Remove urwid's defaults
 for key in tuple(urwid.command_map._command):
