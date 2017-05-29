@@ -114,7 +114,7 @@ class UnbindCmd(metaclass=InitCommand):
     description = 'Unbind keys so pressing them has no effect'
     usage = ('unbind [<OPTIONS>] <KEY> <KEY> <KEY> ...',)
     examples = ('unbind --context main ctrl-l',
-                'unbind --context torrent <t>')
+                'unbind q')
     argspecs = (
         { 'names': ('--context','-c'),
           'description': 'Where KEY is grabbed (see "bind" command)' },
