@@ -51,10 +51,13 @@ class SorterBase():
         return obj
 
     def __init__(self, sortstrings=()):
-        self._sortspecs = []
-        self._sortfuncs = []
+        sortspecs = []
+        sortfuncs = []
         strings = []         # String representations of sortspecs
-        for sortstring in sortstrings:
+
+        # Go through items in reverse because to want to deduplicate sort orders
+        # while keeping the most recent one.
+        for sortstring in reversed(sortstrings):
             if sortstring[0] in ('!', '.'):
                 sortspecname, reverse = sortstring[1:], True
             else:
@@ -68,19 +71,22 @@ class SorterBase():
                 raise ValueError('Unknown sort order: {!r}'.format(sortspecname))
             else:
                 sortspec = self.SORTSPECS[sortspecname]
-                self._sortspecs.append(sortspec)
-                self._sortfuncs.append(partial(sortspec, reverse=reverse))
-                strings.append(('!' if reverse else '') + sortspecname)
-
+                if sortspec not in sortspecs:
+                    sortfunc = partial(sortspec, reverse=reverse)
+                    sortspecs.insert(0, sortspec)
+                    sortfuncs.insert(0, sortfunc)
+                    strings.insert(0, ('!' if reverse else '') + sortspecname)
         self._strings = tuple(strings)
 
-        # Unless we already sort by name, default to sorting by name first and
-        # then by all other sort orders
+        # Unless we already sort by DEFAULT_SORT, insert it as the first one.
         if self.DEFAULT_SORT is not None:
             default_sortspec = self.SORTSPECS[self.DEFAULT_SORT]
-            if default_sortspec not in self._sortspecs:
-                self._sortfuncs.insert(0, default_sortspec)
-                self._sortspecs.insert(0, default_sortspec)
+            if default_sortspec not in sortspecs:
+                sortfuncs.insert(0, default_sortspec)
+                sortspecs.insert(0, default_sortspec)
+
+        self._sortspecs = sortspecs
+        self._sortfuncs = sortfuncs
 
     def apply(self, items, inplace=False, item_getter=lambda item: item):
         """Sort sequence `items`
