@@ -260,6 +260,7 @@ class KeyMap():
         self._default_callback = callback
         self._contexts = {None: {}}
 
+        self._bindunbind_callbacks = blinker.Signal()
         self._keychain_callbacks = blinker.Signal()
         self._keychain_partial = []
         self._keychain_context = NOCONTEXT
@@ -283,6 +284,7 @@ class KeyMap():
             self._contexts[context] = {}
         self._contexts[context][key] = action
         log.debug('%s: Mapped %r -> %r', context, key, action)
+        self._bindunbind_callbacks.send(self)
 
     def unbind(self, key, context=None):
         """Unbind `key` in `context`
@@ -304,6 +306,7 @@ class KeyMap():
                     key_removed = True
             if not key_removed:
                 raise ValueError('Key not mapped in context {!r}: {}'.format(context, key))
+        self._bindunbind_callbacks.send(self)
 
     def evaluate(self, key, context=None, callback=None, widget=None):
         """Run action that is bound to `key` in `context`
@@ -443,6 +446,9 @@ class KeyMap():
 
     def on_keychain(self, callback):
         self._keychain_callbacks.connect(callback, weak=True)
+
+    def on_bind_unbind(self, callback):
+        self._bindunbind_callbacks.connect(callback, weak=True)
 
     def wrap(self, cls, callback=None, context=None):
         """Return widget class that passes keypress()es through `evaluate`
