@@ -265,6 +265,14 @@ class KeyMap():
         self._keychain_partial = []
         self._keychain_context = NOCONTEXT
 
+    def clear(self):
+        """Remove all keybindings"""
+        contexts = self._contexts
+        for context in contexts:
+            log.debug('Removing all keybindings in context: %r', context)
+            contexts[context] = {}
+        self._bindunbind_callbacks.send(self)
+
     def bind(self, key, action, context=None):
         """Bind `key` to `action` in `context`
 
