@@ -118,14 +118,19 @@ class UnbindCmd(metaclass=InitCommand):
     argspecs = (
         { 'names': ('--context','-c'),
           'description': 'Where KEY is grabbed (see "bind" command)' },
+        { 'names': ('--all','-a'), 'action': 'store_true',
+          'description': 'Remove all existing keybindings, including defaults' },
         { 'names': ('KEY',), 'nargs': 'REMAINDER',
           'description': 'Keys or key combinations (see "bind" command)' },
     )
 
     tui = ExpectedResource
 
-    def run(self, context, KEY):
+    def run(self, context, all, KEY):
         keymap = self.tui.keymap
+
+        if all:
+            keymap.clear()
 
         if context is not None and context not in KEYMAP_CONTEXTS:
             log.error('Invalid context: {!r}'.format(context))
