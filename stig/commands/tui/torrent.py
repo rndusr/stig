@@ -208,7 +208,7 @@ class SortCmdbase(metaclass=InitCommand):
                 log.error(e)
                 return False
 
-            if add:
+            if add and current_tab.sort is not None:
                 current_tab.sort += new_sort
             else:
                 current_tab.sort = new_sort
