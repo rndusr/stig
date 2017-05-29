@@ -13,6 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import re
+import blinker
 
 
 class Key(str):
@@ -259,7 +260,7 @@ class KeyMap():
         self._default_callback = callback
         self._contexts = {None: {}}
 
-        self._keychain_callbacks = []
+        self._keychain_callbacks = blinker.Signal()
         self._keychain_partial = []
         self._keychain_context = NOCONTEXT
 
@@ -438,11 +439,10 @@ class KeyMap():
 
     def _run_callbacks(self, active_keychains):
         log.debug('Running callbacks with %r', active_keychains)
-        for cb in self._keychain_callbacks:
-            cb(active_keychains)
+        self._keychain_callbacks.send(active_keychains)
 
     def on_keychain(self, callback):
-        self._keychain_callbacks.append(callback)
+        self._keychain_callbacks.connect(callback, weak=True)
 
     def wrap(self, cls, callback=None, context=None):
         """Return widget class that passes keypress()es through `evaluate`
