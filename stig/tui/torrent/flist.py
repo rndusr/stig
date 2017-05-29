@@ -203,7 +203,7 @@ class FileListWidget(urwid.WidgetWrap):
         self._table = Table(**TUICOLUMNS)
         self._table.columns = columns
 
-        self._listbox = urwid.ListBox(urwid.SimpleListWalker([]))
+        self._listbox = tui.keymap.wrap(urwid.ListBox, context='filelist')(urwid.SimpleListWalker([]))
 
         listbox_sb = urwid.AttrMap(
             ScrollBar(urwid.AttrMap(self._listbox, 'filelist')),
