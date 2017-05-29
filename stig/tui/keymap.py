@@ -313,7 +313,10 @@ class KeyMap():
                     log.debug('Unmapped %r [%s]', k, context)
                     key_removed = True
             if not key_removed:
-                raise ValueError('Key not mapped in context {!r}: {}'.format(context, key))
+                msg = ('Key not mapped ',
+                       ('in context %r' % context if context is not None else 'in default context'),
+                       ': %s' % key)
+                raise ValueError(''.join(msg))
         self._bindunbind_callbacks.send(self)
 
     def evaluate(self, key, context=None, callback=None, widget=None):
