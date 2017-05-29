@@ -256,7 +256,7 @@ class KeyMap():
     """
 
     def __init__(self, callback=None):
-        self._callback = callback
+        self._default_callback = callback
         self._contexts = {None: {}}
 
         self._keychain_callbacks = []
@@ -380,10 +380,10 @@ class KeyMap():
             # Individual callback for this widget
             log.debug('Calling widget callback %r with widget %r', callback, widget)
             callback(action, widget)
-        elif self._callback is not None:
+        elif self._default_callback is not None:
             # General callback for all widgets
-            log.debug('Calling default callback %r with widget %r', self._callback, widget)
-            self._callback(action, widget)
+            log.debug('Calling default callback %r with widget %r', self._default_callback, widget)
+            self._default_callback(action, widget)
         else:
             raise TypeError('No callback given - unable to handle {!r}'.format(action))
 
