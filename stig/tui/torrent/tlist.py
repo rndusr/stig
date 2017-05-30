@@ -228,6 +228,10 @@ class TorrentListWidget(urwid.WidgetWrap):
         return self._listbox.focus
 
     @property
+    def focused_torrent_id(self):
+        return self._listbox.focus.torrent['id']
+
+    @property
     def focus_position(self):
         return self._listbox.focus_position
 
