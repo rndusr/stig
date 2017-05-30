@@ -115,11 +115,6 @@ class select_torrents():
             if tids:
                 return tids
 
-        # Get torrent ID from widget in focused tab (e.g. torrent lists)
-        if hasattr(focused_widget, 'focused_torrent') and \
-           focused_widget.focused_torrent is not None:
-            return (focused_widget.focused_torrent.torrent_id,)
-
         # Get torrent ID from widget in focused tab (e.g. file lists)
         if hasattr(focused_widget, 'focused_torrent_id') and \
            focused_widget.focused_torrent_id is not None:
