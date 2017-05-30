@@ -58,6 +58,7 @@ for section in SECTIONS:
 class TorrentDetailsWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tid, title=None):
         self._title = title
+        self._tid = None
 
         sections = []
         self._sections = {}
@@ -91,6 +92,7 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
     def _handle_response(self, response):
         if response is not None and response.success:
             torrent = response.torrents[0]
+            self._tid = torrent['id']
             for w in self._sections.values():
                 w.update(torrent)
 
@@ -99,7 +101,13 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
                 self._title = torrent['name']
             if self.title_updater is not None:
                 self.title_updater(self._title)
+        else:
+            self._tid = None
 
     @property
     def title(self):
         return self._title or ''
+
+    @property
+    def focused_torrent_id(self):
+        return self._tid
