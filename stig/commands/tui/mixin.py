@@ -106,8 +106,8 @@ class select_torrents():
 
         # Get torrent ID from attribute set by 'tab' command (this happens if
         # for example when you run 'tab filelist' while a torrent is focused)
-        if hasattr(self, 'focused_torrent'):
-            return (self.focused_torrent['id'],)
+        if hasattr(self, 'focused_torrent_id'):
+            return (self.focused_torrent_id,)
 
         # Get torrent IDs from marks
         if hasattr(focused_widget, 'marked'):
