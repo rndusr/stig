@@ -649,7 +649,6 @@ TYPES = {
     'comment'           : SmartCmpStr,
     'creator'           : SmartCmpStr,
     'magnetlink'        : str,
-
     'count-pieces'      : Number,
 
     '%downloaded'       : Percent,
