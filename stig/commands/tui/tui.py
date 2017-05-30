@@ -343,7 +343,7 @@ class TabCmd(metaclass=InitCommand):
         # it to the command running in a new tab.
         cmdargs = {'title': title} if title else {}
         try:
-            cmdargs['focused_torrent'] = tabs.focus.focused_torrent.torrent
+            cmdargs['focused_torrent_id'] = tabs.focus.focused_torrent_id
         except AttributeError:
             pass
 
