@@ -141,6 +141,7 @@ SECTIONS = (
         Item('Uploaded',   ('size-uploaded', 'size-total', '%uploaded'), _uploaded_hr, _uploaded_mr),
         Item('Ratio',      ('ratio',)),
         Item('Isolated',   ('status',), _isolated_hr, _isolated_mr),
+        Item('Error',      ('error',)),
     )},
 
     {'title': 'Peers', 'width': 25, 'items': (
