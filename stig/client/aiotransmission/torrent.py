@@ -362,12 +362,7 @@ class Torrent(base.TorrentBase):
 
         # Update an existing TorrentFileTree instead of creating a new one
         if 'fileStats' in raw_torrent and 'files' in cache:
-            cache['files'].update(raw_torrent['fileStats'])
-            # Make sure the 'files' RPC field doesn't exist because it always
-            # triggers the creation of a new TorrentFileTree (see
-            # _create_TorrentFileTree).
-            if 'files' in raw_torrent:
-                del raw_torrent['files']
+            cache['files'].update(raw_torrent.pop('fileStats'))
 
         # Remove cached values if their original/raw value(s) differ
         for k,v in tuple(cache.items()):
