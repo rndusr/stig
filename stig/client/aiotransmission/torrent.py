@@ -357,7 +357,6 @@ class Torrent(base.TorrentBase):
         self._cache = {}
 
     def update(self, raw_torrent):
-        old = self._raw
         cache = self._cache
 
         # Update an existing TorrentFileTree instead of creating a new one
@@ -365,11 +364,11 @@ class Torrent(base.TorrentBase):
             cache['files'].update(raw_torrent.pop('fileStats'))
 
         # Remove cached values if their original/raw value(s) differ
+        old = self._raw
         for k,v in tuple(cache.items()):
             fields = DEPENDENCIES[k]
             for field in fields:
-                if field in old and field in raw_torrent and \
-                   old[field] != raw_torrent[field]:
+                if field in old and field in raw_torrent and old[field] != raw_torrent[field]:
                     del cache[k]
                     break
         old.update(raw_torrent)
