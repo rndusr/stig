@@ -70,13 +70,6 @@ def _count_seeds(t):
         return tkeys.SeedCount.UNKNOWN
 
 
-def _count_files(t):
-    return len(t['fileStats'])
-
-def _count_files_wanted(t):
-    return sum(1 for f in t['fileStats'] if f['wanted'])
-
-
 def _bytes_available(t):
     return t['desiredAvailable'] + t['haveValid'] + t['haveUnchecked']
 
@@ -280,10 +273,7 @@ DEPENDENCIES = {
     'comment'           : ('comment',),
     'creator'           : ('creator',),
     'magnetlink'        : ('magnetLink',),
-
     'count-pieces'      : ('pieceCount',),
-    'count-files'       : ('fileStats',),
-    'count-files-wanted': ('fileStats',),
 
     '%downloaded'       : ('percentDone',),
     '%uploaded'         : ('totalSize', 'uploadedEver'),
@@ -336,8 +326,6 @@ _MODIFY = {
     'status'            : _make_status,
     'peers-seeding'     : _count_seeds,
     'ratio'             : _modify_ratio,
-    'count-files'       : _count_files,
-    'count-files-wanted': _count_files_wanted,
     'size-available'    : _bytes_available,
 
     'timespan-eta'      : _modify_eta,

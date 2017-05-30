@@ -651,8 +651,6 @@ TYPES = {
     'magnetlink'        : str,
 
     'count-pieces'      : Number,
-    'count-files'       : Number,
-    'count-files-wanted': Number,
 
     '%downloaded'       : Percent,
     '%uploaded'         : Percent,

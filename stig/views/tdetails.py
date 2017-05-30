@@ -27,11 +27,17 @@ def _size_mr(t):
     return '%d\t%d' % (t['size-total'], t['size-final'])
 
 
+def _file_counts(t):
+    files = tuple(t['files'].files)
+    all_files = len(files)
+    wanted_files = sum(1 for f in files if f['is-wanted'])
+    return (all_files, wanted_files)
+
 def _files_hr(t):
-    return '%d (%d wanted)' % (t['count-files'], t['count-files-wanted'])
+    return '%d (%d wanted)' % _file_counts(t)
 
 def _files_mr(t):
-    return '%d\t%d' % (t['count-files'], t['count-files-wanted'])
+    return '%d\t%d' % _file_counts(t)
 
 
 def _pieces_hr(t):
@@ -121,7 +127,7 @@ SECTIONS = (
         Item('ID',         ('id',)),
         Item('Hash',       ('hash',)),
         Item('Size',       ('size-total', 'size-final'), _size_hr, _size_mr),
-        Item('Files',      ('count-files', 'count-files-wanted'), _files_hr, _files_mr),
+        Item('Files',      ('files',), _files_hr, _files_mr),
         Item('Pieces',     ('count-pieces', 'size-piece'), _pieces_hr, _pieces_mr),
         Item('Private',    ('private',), _private_hr, _private_mr),
         Item('Comment',    ('comment',)),
