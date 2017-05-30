@@ -248,6 +248,8 @@ DEFAULT_KEYMAP = (
     {'context': 'peerlist', 'key': 's U',       'action': 'sort --add !rate-up'},
     {'context': 'peerlist', 'key': 's s',       'action': 'sort --add rate-est'},
     {'context': 'peerlist', 'key': 's S',       'action': 'sort --add !rate-est'},
+    {'context': 'peerlist', 'key': 's r',       'action': 'sort --add rate'},
+    {'context': 'peerlist', 'key': 's R',       'action': 'sort --add !rate'},
     {'context': 'peerlist', 'key': 's t',       'action': 'sort --add torrent'},
     {'context': 'peerlist', 'key': 's T',       'action': 'sort --add !torrent'},
     {'context': 'peerlist', 'key': 's ,',       'action': 'sort --reset'},
