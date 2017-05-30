@@ -119,7 +119,7 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     def _update_listitems(self):
         # Remember focused torrent
-        focused_torrent = self.focused_torrent
+        focused_tw = self.focused_torrent_widget
 
         walker = self._walker
         tdict = {t['id']:t for t in self._torrents}
@@ -155,9 +155,9 @@ class TorrentListWidget(urwid.WidgetWrap):
                             inplace=True)
 
         # If necessary, re-focus previously focused torrent
-        if focused_torrent is not None and self.focused_torrent is not None and \
-           focused_torrent.torrent_id != self.focused_torrent.torrent_id:
-            focused_tid = focused_torrent.torrent_id
+        if focused_tw is not None and self.focused_torrent_widget is not None and \
+           focused_tw.torrent_id != self.focused_torrent_widget.torrent_id:
+            focused_tid = focused_tw.torrent_id
             for i,tw in enumerate(walker):
                 if tw.torrent_id == focused_tid:
                     self._listbox.focus_position = i
@@ -224,7 +224,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         return 'tlist%s:%s' % (id(self), self.title)
 
     @property
-    def focused_torrent(self):
+    def focused_torrent_widget(self):
         return self._listbox.focus
 
     @property
@@ -249,8 +249,8 @@ class TorrentListWidget(urwid.WidgetWrap):
         yield from self._marked
 
     def _set_mark(self, mark, toggle=False, all=False):
-        if toggle and self.focused_torrent is not None:
-            mark = not self.focused_torrent.is_marked
+        if toggle and self.focused_torrent_widget is not None:
+            mark = not self.focused_torrent_widget.is_marked
 
         for widget in self._select_items_for_marking(all):
             widget.is_marked = mark
@@ -260,11 +260,11 @@ class TorrentListWidget(urwid.WidgetWrap):
                 self._marked.discard(widget)
 
     def _select_items_for_marking(self, all):
-        if self.focused_torrent is not None:
+        if self.focused_torrent_widget is not None:
             if all:
                 yield from self._listbox.body
             else:
-                yield self.focused_torrent
+                yield self.focused_torrent_widget
 
     def refresh_marks(self):
         """Redraw the "marked" column in all rows"""
