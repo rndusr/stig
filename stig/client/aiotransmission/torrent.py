@@ -310,7 +310,7 @@ DEPENDENCIES = {
     'error'             : ('errorString', 'error'),
     'peers'             : ('peers', 'totalSize'),
 
-    # 'files' is called once to initialize file names and sizes by
+    # The RPC field 'files' is called once to initialize file names and sizes by
     # api_torrent.TorrentAPI._get_torrents_by_ids when files are requested.
     'files'             : ('fileStats',),
 }
@@ -382,6 +382,7 @@ class Torrent(base.TorrentBase):
                 # Modifier gets the whole raw torrent
                 value = _MODIFY[key](raw)
             else:
+                # Copy raw value unmodified
                 fields = DEPENDENCIES[key]
                 assert len(fields) == 1
                 try:
