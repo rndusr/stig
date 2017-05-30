@@ -342,13 +342,13 @@ _MODIFY = {
 
     'timespan-eta'      : _modify_eta,
     'time-created'      : lambda raw: _modify_timestamp(raw, 'dateCreated',
-                                                      zero_means=tkeys.Timestamp.UNKNOWN),
+                                                        zero_means=tkeys.Timestamp.UNKNOWN),
     'time-added'        : lambda raw: _modify_timestamp(raw, 'addedDate',
-                                                      zero_means=tkeys.Timestamp.UNKNOWN),
+                                                        zero_means=tkeys.Timestamp.UNKNOWN),
     'time-started'      : lambda raw: _modify_timestamp(raw, 'startDate',
-                                                      zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+                                                        zero_means=tkeys.Timestamp.NOT_APPLICABLE),
     'time-activity'     : lambda raw: _modify_timestamp(raw, 'activityDate',
-                                                      zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+                                                        zero_means=tkeys.Timestamp.NOT_APPLICABLE),
     'time-completed'    : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
