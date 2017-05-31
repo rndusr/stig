@@ -11,10 +11,6 @@ questions and point out issues.
     torrents marked, show 'tui.marked.on', otherwise the number of marked
     torrents.  But that would widen the column to at least 3 characters.
 
-** TODO New command: sort
-   Sort torrents or peers in the focused list.  Check if tab actually contains
-   a sortable list and not something like a help page.
-
 ** TODO New command: interactive
    Take an arbitrary amount of (option, prompt) pairs and any command.  The
    command contains placeholders.  First, for each (option, prompt) pair, the
