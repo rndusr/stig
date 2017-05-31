@@ -90,11 +90,24 @@ class TorrentAPI():
         else:
             return Response(result=result, msgs=(), success=True)
 
-    async def add(self, torrent, stopped=False):
+    async def _abs_download_path(self, path, autoconnect=True):
+        """Turn relative `path` into absolute path based on default download path"""
+        if not os.path.isabs(path):
+            response = await self._request(self.rpc.session_get, autoconnect=autoconnect)
+            if not response.success:
+                return Response(path=None, success=False, msgs=response.msgs)
+            else:
+                download_dir = response.result['download-dir']
+                abs_path = os.path.normpath(os.path.join(download_dir, path))
+                return Response(path=abs_path, success=True)
+        return Response(path=path, success=True)
+
+    async def add(self, torrent, stopped=False, path=None):
         """Add torrent from file, URL or hash
 
         torrent: Path to local file, web/magnet link or hash
         stopped: False to start downloading immediately, True otherise
+        path:    Download directory or `None` for default directory
 
         Return Response with the following properties:
             torrent: Torrent object with the keys 'id' and 'name' if the
@@ -110,6 +123,12 @@ class TorrentAPI():
         success = False
 
         args = {'paused': bool(stopped)}
+        if path is not None:
+            response = await self._abs_download_path(path)
+            if not response.success:
+                return Response(success=False, torrent=None, msgs=response.msgs)
+            else:
+                args['download-dir'] = response.path
 
         # Check if torrent_str is path to local torrent file
         torrent_str_path = os.path.expanduser(torrent_str)
@@ -516,7 +535,8 @@ class TorrentAPI():
         """Change torrents' location in the file system
 
         torrents: See `torrents` method
-        path: Destination of the specified torrents
+        path: Destination of the specified torrents; relative paths are relative
+              to the default download path.
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
@@ -526,15 +546,12 @@ class TorrentAPI():
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if not os.path.isabs(path):
-            # Transmission wants an absolute path, so we convert a relative
-            # destination path starting from the default download path.
-            response = await self._request(self.rpc.session_get, autoconnect=autoconnect)
-            if not response.success:
-                return Response(torrents=(), success=False, msgs=response.msgs)
-            else:
-                download_dir = response.result['download-dir']
-                path = os.path.normpath(os.path.join(download_dir, path))
+        # Transmission wants an absolute path
+        response = await self._abs_download_path(path, autoconnect=autoconnect)
+        if not response.success:
+            return Response(torrents=(), success=False, msgs=response.msgs)
+        else:
+            path = response.path
 
         def create_info_msg(t):
             if t['path'] != path:
