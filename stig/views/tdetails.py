@@ -98,9 +98,14 @@ def _isolated_mr(t):
 
 def _date_hr(key, t):
     date = t[key]
-    if abs(date.delta) < 5:
-        return 'now'
-    return '%s (%s)' % (date.full, date.delta.with_preposition)
+    if date.is_known:
+        delta = date.delta
+        if abs(delta) < 5:
+            return 'now'
+        else:
+            return '%s (%s)' % (date.full, delta.with_preposition)
+    else:
+        return date.full
 
 def _date_mr(key, t):
     date = t[key]
