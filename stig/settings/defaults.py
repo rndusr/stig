@@ -223,7 +223,7 @@ DEFAULT_KEYMAP = (
 
     # Torrent actions
     {'context': 'torrent', 'key': 't v',       'action': 'verify'},
-    {'context': 'torrent', 'key': 't p',       'action': 'stop --toggle'},
+    {'context': 'torrent', 'key': 't p',       'action': 'pause --toggle'},
     {'context': 'torrent', 'key': 't P',       'action': 'start --toggle --force'},
     {'context': 'torrent', 'key': 't a',       'action': 'announce'},
     {'context': 'torrent', 'key': 't d',       'action': 'delete'},
