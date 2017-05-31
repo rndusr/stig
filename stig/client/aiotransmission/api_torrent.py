@@ -109,7 +109,7 @@ class TorrentAPI():
         msgs = []
         success = False
 
-        args = {'paused': stopped}
+        args = {'paused': bool(stopped)}
 
         # Check if torrent_str is path to local torrent file
         torrent_str_path = os.path.expanduser(torrent_str)
