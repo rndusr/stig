@@ -22,9 +22,6 @@ questions and point out issues.
    This is mostly useful for better keybindings in the TUI, but it may also
    have benefits on the CLI.
 
-** TODO add: --path,-p option
-   The newly added torrent is downloaded to the specified path.
-
 ** TODO New command: rate
    Usage: rate up|down <RATE> [<TORRENT FILTER>]
 
