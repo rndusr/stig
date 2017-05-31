@@ -36,15 +36,18 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
 
         { 'names': ('--stopped','-s'), 'action': 'store_true',
           'description': 'Do not start downloading the added torrent(s)' },
+
+        { 'names': ('--path','-p'),
+          'description': 'Custom download directory for added torrent(s)' },
     )
 
     srvapi = ExpectedResource
 
-    async def run(self, TORRENT, stopped):
+    async def run(self, TORRENT, stopped, path):
         success = True
         force_torrentlist_update = False
         for source in TORRENT:
-            response = await self.make_request(self.srvapi.torrent.add(source, stopped=stopped))
+            response = await self.make_request(self.srvapi.torrent.add(source, stopped=stopped, path=path))
             success = success and response.success
             force_torrentlist_update = force_torrentlist_update or success
 
