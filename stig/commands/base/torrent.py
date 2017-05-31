@@ -35,7 +35,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
           'description': 'Link or path to torrent file, magnet link or hash' },
 
         { 'names': ('--stopped','-s'), 'action': 'store_true',
-          'description': 'Do not start downloading the added torrent' },
+          'description': 'Do not start downloading the added torrent(s)' },
     )
 
     srvapi = ExpectedResource
