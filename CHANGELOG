@@ -11,6 +11,7 @@
     * Scroll one page up/down with <space>/<b>
     * New 'tab' command option --close-all closes all tabs
     * New 'unbind' command option --all removes all keybindings
+    * New 'add' command option --path downloads to a custom path
     * New keybindings contexts: 'torrentlist', 'filelist', 'peerlist'
     * <?> is now an alias for <F1>
     * Quick help in top bar now reacts to changed keybindings even after the
