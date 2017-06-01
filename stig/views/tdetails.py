@@ -149,11 +149,11 @@ SECTIONS = (
         Item('Error',      ('error',)),
     )},
 
-    {'title': 'Peers', 'width': 25, 'items': (
-        Item('Seeding peers',     ('peers-seeding',)),
-        Item('Connected peers',   ('peers-connected',)),
-        Item('Uploading peers',   ('peers-uploading',)),
-        Item('Downloading peers', ('peers-downloading',)),
+    {'title': 'Peers', 'width': 18, 'items': (
+        Item('Seeding',     ('peers-seeding',)),
+        Item('Connected',   ('peers-connected',)),
+        Item('Uploading',   ('peers-uploading',)),
+        Item('Downloading', ('peers-downloading',)),
     )},
 
     {'title': 'Dates', 'width': 39, 'items': (
