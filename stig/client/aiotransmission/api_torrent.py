@@ -23,6 +23,8 @@ from .torrent import TorrentFields, Torrent
 from .. import ClientError
 from ..filters.tfilter import TorrentFilter
 from ..filters.ffilter import TorrentFileFilter
+from .. import convert
+from .. import constants as const
 
 
 class _TorrentCache():
@@ -687,3 +689,67 @@ class TorrentAPI():
                                           keys=('name', 'status', 'trackers',
                                                 'time-manual-announce-allowed'),
                                           autoconnect=autoconnect)
+
+
+    async def _limit_rate(self, direction, torrents, rate, autoconnect=True):
+        # Make number or constant from `rate`
+        if rate is None:
+            limit = const.UNLIMITED
+        else:
+            r = convert.bandwidth.from_string(rate)
+            limit = const.UNLIMITED if r <= 0 else r
+
+        # Create 'torrent_set' arguments
+        if limit is const.UNLIMITED:
+            args = {'%sloadLimited' % direction: False}
+        else:
+            args = {'%sloadLimited' % direction: True,
+                    '%sloadLimit' % direction: int(limit/1000)}  # Transmission expects kilobytes
+
+        response = await self._torrent_action(self.rpc.torrent_set, torrents,
+                                              keys=('name', 'id'),
+                                              method_args=args,
+                                              autoconnect=autoconnect)
+
+        if not response.success:
+            return response
+        else:
+            def create_info_msg(t):
+                limit = t['rate-limit-'+direction]
+                limit_str = str(limit) if const.is_constant(limit) else limit.with_unit
+                return 'Limited %sload rate of %s: %s' % (direction, t['name'], limit_str)
+
+            # Fetch new list with the actual rate limits
+            tids = tuple(t['id'] for t in response.torrents)
+            response = await self.torrents(tids, keys=('name', 'id', 'rate-limit-'+direction))
+            return Response(torrents=response.torrents,
+                            success=response.success,
+                            msgs=(create_info_msg(t) for t in response.torrents))
+
+    async def limit_rate_up(self, torrents, rate, autoconnect=True):
+        """Limit upload rate for individual torrent(s)
+
+        torrents: See `torrents` method
+        rate: Maximum allowed upload rate for `torrents` or `None` for default limit
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-up'
+            success: True if any torrents were found, False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        return await self._limit_rate('up', torrents, rate, autoconnect)
+
+    async def limit_rate_down(self, torrents, rate, autoconnect=True):
+        """Limit download rate for individual torrent(s)
+
+        torrents: See `torrents` method
+        rate: Maximum allowed download rate for `torrents` or `None` for default limit
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-down'
+            success: True if any torrents were found, False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        return await self._limit_rate('down', torrents, rate, autoconnect)
