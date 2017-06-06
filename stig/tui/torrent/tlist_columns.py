@@ -206,6 +206,39 @@ class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
 TUICOLUMNS['rate-up'] = RateUp
 
 
+
+class RateLimitDown(_COLUMNS['rate-limit-down'], CellWidgetBase):
+    style = Style(prefix='torrentlist.rate-limit-down', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-limit-down'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < float('inf') else ''
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['rate-limit-down'].header['right']
+
+TUICOLUMNS['rate-limit-down'] = RateLimitDown
+
+
+class RateLimitUp(_COLUMNS['rate-limit-up'], CellWidgetBase):
+    style = Style(prefix='torrentlist.rate-limit-up', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-limit-up'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < float('inf') else ''
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header.original_widget.right = _COLUMNS['rate-limit-up'].header['right']
+
+TUICOLUMNS['rate-limit-up'] = RateLimitUp
+
+
 class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
     style = Style(prefix='torrentlist.eta', focusable=True,
                   extras=('header',), modes=('highlighted',))

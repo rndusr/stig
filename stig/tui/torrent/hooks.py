@@ -19,6 +19,8 @@ def _set_bandwidth_unit(unit):
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
     TCOLUMNS['rate-up'].set_unit(u)
     TCOLUMNS['rate-down'].set_unit(u)
+    TCOLUMNS['rate-limit-up'].set_unit(u)
+    TCOLUMNS['rate-limit-down'].set_unit(u)
 
     PCOLUMNS['rate-up'].set_unit(u)
     PCOLUMNS['rate-down'].set_unit(u)

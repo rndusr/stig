@@ -252,6 +252,42 @@ class RateUp(ColumnBase):
 COLUMNS['rate-up'] = RateUp
 
 
+class RateLimitDown(ColumnBase):
+    header = {'left': 'LmtDn', 'right': '?/s'}
+    width = 9
+    needed_keys = ('rate-limit-down',)
+
+    def get_value(self):
+        return self.data['rate-limit-down']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = '%s/s' % unit
+
+COLUMNS['rate-limit-down'] = RateLimitDown
+
+
+class RateLimitUp(ColumnBase):
+    header = {'left': 'LmtUp', 'right': '?/s'}
+    width = 9
+    needed_keys = ('rate-limit-up',)
+
+    def get_value(self):
+        return self.data['rate-limit-up']
+
+    def get_raw(self):
+        return int(self.get_value())
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = '%s/s' % unit
+
+COLUMNS['rate-limit-up'] = RateLimitUp
+
+
 class EtaComplete(ColumnBase):
     header = {'left': 'ETA'}
     width = 5
