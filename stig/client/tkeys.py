@@ -53,10 +53,9 @@ class Number(float):
         if match is None:
             raise ValueError('Not a number: {!r}'.format(string))
         else:
-            num_str = match.group(1)
+            num = float(match.group(1))
             unit = match.group(3) or unit
             prfx = match.group(2)
-            num = float(num_str)
             if prfx:
                 all_prfxs = cls._ALL_PREFIXES_DCT
                 prfx_lower = prfx.lower()
