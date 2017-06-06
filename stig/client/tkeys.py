@@ -30,6 +30,8 @@ from collections import abc
 from .utils import pretty_float
 import os
 
+from . import constants as const
+
 
 from itertools import chain
 import re
@@ -129,6 +131,10 @@ class Number(float):
 # Because 'convert' needs Number, which is specified in this file, it must be
 # imported AFTER Number exists to avoid a circular import.
 from . import convert
+
+
+def _rate_limit(limit):
+    return const.UNLIMITED if limit is None else convert.bandwidth(limit)
 
 
 class Percent(float):
@@ -676,6 +682,9 @@ TYPES = {
 
     'rate-down'         : convert.bandwidth,
     'rate-up'           : convert.bandwidth,
+
+    'rate-limit-down'   : _rate_limit,
+    'rate-limit-up'     : _rate_limit,
 
     'size-final'        : convert.size,
     'size-total'        : convert.size,
