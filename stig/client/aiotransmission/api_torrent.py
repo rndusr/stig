@@ -703,8 +703,9 @@ class TorrentAPI():
         if limit is const.UNLIMITED:
             args = {'%sloadLimited' % direction: False}
         else:
+            l = limit / 8 if limit.unit == 'b' else limit
             args = {'%sloadLimited' % direction: True,
-                    '%sloadLimit' % direction: int(limit/1000)}  # Transmission expects kilobytes
+                    '%sloadLimit' % direction: int(l/1000)}  # Transmission expects kilobytes
 
         response = await self._torrent_action(self.rpc.torrent_set, torrents,
                                               keys=('name', 'id'),
