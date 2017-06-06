@@ -105,8 +105,10 @@ class TestNumber(unittest.TestCase):
                 self.assertEqual(n2.prefix, orig.prefix)
 
     def test_not_a_number(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             tkeys.Number.from_string('foo')
+        self.assertIn('Not a number', str(cm.exception))
+        self.assertIn('foo', str(cm.exception))
 
     def test_signs(self):
         self.assertEqual(tkeys.Number.from_string('-10'), -10)
