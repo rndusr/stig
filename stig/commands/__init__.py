@@ -541,7 +541,6 @@ class CommandManager():
 
         Returns True if the command chain ran successfully, False if it
         failed, and None if it is async and `block` is False.
-
         """
         log.debug('Running command chain synchronously: %r', commands)
         cmdchain = self.split_cmdchain(commands)
