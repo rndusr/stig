@@ -19,7 +19,7 @@ class TestAddTorrentsCmd(CommandTestCase):
         process = AddTorrentsCmd(['some.torrent'], loop=self.loop)
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
-        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False})
+        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, True)
         self.assert_logged(logged, ('INFO', '^Added Some Torrent$'))
 
@@ -31,7 +31,7 @@ class TestAddTorrentsCmd(CommandTestCase):
         process = AddTorrentsCmd(['some.torrent'], loop=self.loop)
         with self.assertLogs(level='ERROR') as logged:
             await self.finish(process)
-        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False})
+        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, False)
         self.assert_logged(logged, ('ERROR', '^Bogus torrent$'))
 
@@ -48,8 +48,8 @@ class TestAddTorrentsCmd(CommandTestCase):
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
         self.api.torrent.assert_called(2, 'add',
-                                       ('some.torrent',), {'stopped': False},
-                                       ('another.torrent',), {'stopped': False})
+                                       ('some.torrent',), {'stopped': False, 'path': None},
+                                       ('another.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, False)
         self.assert_logged(logged,
                            ('INFO', '^Added Some Torrent$'),
@@ -63,7 +63,7 @@ class TestAddTorrentsCmd(CommandTestCase):
         process = AddTorrentsCmd(['some.torrent', '--stopped'], loop=self.loop)
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
-        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True})
+        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None})
         self.assertEqual(process.success, True)
         self.assert_logged(logged, ('INFO', '^Added Some Torrent$'))
 
