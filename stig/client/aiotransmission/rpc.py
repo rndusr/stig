@@ -254,6 +254,9 @@ class TransmissionRPC():
                 if not self.connected:
                     log.debug('Connecting to %s (timeout=%ss)', self.url, self.timeout)
                     session_args = {'loop': self.loop}
+                    # TODO: Remove this check when aiohttp2 is common.
+                    if aiohttp.__version__[0] == '2':
+                        session_args['connector'] = aiohttp.TCPConnector(limit_per_host=1)
                     if self.__url.has_auth:
                         session_args['auth'] = aiohttp.BasicAuth(self.__url.username,
                                                                  self.__url.password)
