@@ -312,8 +312,8 @@ class TransmissionRPC():
         with aiohttp.Timeout(self.timeout, loop=self.loop):
             try:
                 response = await self.__session.post(repr(self.__url), data=data, headers=self.__headers)
-            except aiohttp.ClientResponseError as e:
-                log.debug('Caught ClientResponseError during POST request')
+            except aiohttp.ClientError as e:
+                log.debug('Caught %s during POST request', type(e).__name__)
                 raise ConnectionError(str(self.url))
             else:
                 if response.status == CSRF_ERROR_CODE:
@@ -332,9 +332,9 @@ class TransmissionRPC():
                 else:
                     try:
                         answer = await response.json()
-                    except ValueError as e:
+                    except aiohttp.ClientResponseError as e:
                         text = textwrap.shorten(await response.text(),
-                                                100, placeholder='...')
+                                                50, placeholder='...')
                         raise RPCError('Server sent malformed JSON: {}'.format(text))
                     else:
                         return answer
