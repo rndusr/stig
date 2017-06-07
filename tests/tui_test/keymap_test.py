@@ -242,8 +242,11 @@ class TestKeyMap_with_key_chains(unittest.TestCase):
         for keys in ('1 3', '1 2 4', '1 2 3 4', '2', '3', '2 1', '3 2 1'):
             self.km.bind(kc, 'foo')
             self.assertIn(KeyChain('1', '2', '3'), self.km.keys())
-            with self.assertRaises(ValueError):
+            with self.assertRaises(ValueError) as cm:
                 self.km.unbind(keys)
+            self.assertIn('Key not mapped', str(cm.exception))
+            self.assertIn('default context', str(cm.exception))
+            self.assertIn(str(self.km.mkkey(keys)), str(cm.exception))
 
     def test_correct_chain(self):
         self.km.bind('1 2 3', 'foo')
