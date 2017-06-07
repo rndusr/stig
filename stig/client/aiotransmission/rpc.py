@@ -272,7 +272,7 @@ class TransmissionRPC():
                     test_request = json.dumps({'method':'session-get'})
                     info = await self.__send_request(test_request)
                 except ClientError as e:
-                    log.debug('Caught %s during initialization: %r', type(e).__name__, e)
+                    log.debug('Caught during initialization: %r', e)
                     self.__connect_exception = e
                     await self.disconnect('Connection failed during initialization')
                     self.__on_error.send(self.__url, error=e)
@@ -313,7 +313,7 @@ class TransmissionRPC():
             try:
                 response = await self.__session.post(repr(self.__url), data=data, headers=self.__headers)
             except aiohttp.ClientError as e:
-                log.debug('Caught %s during POST request', type(e).__name__)
+                log.debug('Caught during POST request: %r', e)
                 raise ConnectionError(str(self.url))
             else:
                 if response.status == CSRF_ERROR_CODE:
@@ -350,7 +350,6 @@ class TransmissionRPC():
         Raises ClientError.
         """
         try:
-            log.debug('Sending POST request: %r', post_data)
             answer = await self.__post(post_data)
         except OSError as e:
             log.debug('Caught OSError: %r', e)
@@ -382,12 +381,11 @@ class TransmissionRPC():
         Raises RPCError, ConnectionError, AuthError
         """
         realmethod = method.replace('_', '-')
-        log.debug('Generating RPC request method: %r', realmethod)
 
         async def request(arguments={}, autoconnect=True, **kwargs):
             if not self.connected:
                 if autoconnect:
-                    log.debug('Autoconnecting')
+                    log.debug('Autoconnecting for %r', method)
                     await self.connect()
                 else:
                     log.debug('Not connected and autoconnect=%r - %r returns None',
