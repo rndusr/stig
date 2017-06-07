@@ -315,7 +315,7 @@ class KeyMap():
             if not key_removed:
                 msg = ('Key not mapped ',
                        ('in context %r' % context if context is not None else 'in default context'),
-                       ': %s' % key)
+                       ': ', str(key))
                 raise ValueError(''.join(msg))
         self._bindunbind_callbacks.send(self)
 
