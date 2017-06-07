@@ -225,6 +225,11 @@ class PriorityCmd(base.PriorityCmdbase,
     provides = {'tui'}
 
 
+class RateLimitCmd(base.RateLimitCmdbase,
+                   mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
+    provides = {'tui'}
+
+
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}

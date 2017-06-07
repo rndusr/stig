@@ -355,6 +355,11 @@ class PriorityCmd(base.PriorityCmdbase,
     provides = {'cli'}
 
 
+class RateLimitCmd(base.RateLimitCmdbase,
+                   mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+
+
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.make_request, mixin.select_torrents):
     provides = {'cli'}

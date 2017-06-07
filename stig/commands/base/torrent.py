@@ -461,6 +461,77 @@ class PriorityCmdbase(metaclass=InitCommand):
         return response.success
 
 
+class RateLimitCmdbase(metaclass=InitCommand):
+    name = 'rate'
+    aliases = ()
+    provides = set()
+    category = 'torrent'
+    description = "Limit up-/download rate per torrent or globally"
+    usage = ('rate <DIRECTION> <LIMIT>',
+             'rate <DIRECTION> <LIMIT> [<TORRENT FILTER> <TORRENT FILTER> ...]')
+    examples = ('rate up 5Mb',
+                'rate up,down - "This torrent" size<100MB',
+                'rate down,up 1MB global')
+    argspecs = (
+        {'names': ('DIRECTION',),
+         'description': '"up", "down" or both separated by a comma'},
+
+        {'names': ('LIMIT',),
+         'description': ('Maximum allowed rate limit; metric (k, M, G, etc) and binary (Ki, Mi, Gi, etc) '
+                         'unit prefixes are supported (case is ignored); append "b" for bits, "B" for bytes '
+                         'or nothing for whatever \'unit.bandwidth\' is set to; "none", "-" and '
+                         'negative numbers disable the limit; if TORRENT FILTER is "global", any valid '
+                         '\'srv.limit.rate.up/down\' setting is accepted (see `help srv.limit.rate.up`)')},
+
+        {'names': ('TORRENT FILTER',), 'nargs': '*',
+         'description': ('Filter expression (see `help filter`), "global" to set '
+                         '\'srv.limit.rate.<DIRECTION>\' or focused torrent in the TUI')},
+    )
+
+    srvapi = ExpectedResource
+    cmdmgr = ExpectedResource
+
+    async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
+        direction = DIRECTION.split(',')
+        for d in direction:
+            if d not in ('up', 'down'):
+                log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
+                return False
+
+        if TORRENT_FILTER == ['global']:
+            if LIMIT in ('none', '-'):
+                LIMIT = 'disable'
+            for d in direction:
+                success = await self.cmdmgr.run_async('set srv.limit.rate.%s %s' % (d, LIMIT),
+                                                      block=True)
+                if not success:
+                    return False
+            return True
+
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+        else:
+            if LIMIT in ('none', '-'):
+                LIMIT = None
+
+            for d in direction:
+                method = getattr(self.srvapi.torrent, 'limit_rate_'+d)
+                try:
+                    response = await self.make_request(method(tfilter, LIMIT),
+                                                       polling_frenzy=True)
+                except ValueError as e:
+                    log.error(e)
+                    return False
+                if not response.success:
+                    return False
+            return True
+
+
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
     name = 'remove'
     aliases = ('rm', 'delete')
