@@ -89,7 +89,7 @@ class QuickHelpWidget(urwid.Text):
 
 class ConnectionStatusWidget(urwid.WidgetWrap):
     def __init__(self):
-        self._text = urwid.Text(' ')
+        self._text = urwid.Text('Not connected')
         self._attrmap = urwid.AttrMap(self._text, 'topbar.host.disconnected')
         super().__init__(self._attrmap)
         srvapi.rpc.on('connected', self._handle_connected)
