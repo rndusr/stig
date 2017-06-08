@@ -174,6 +174,22 @@ torrentlist.rate-up.focused                        $rate-up_fg           on $tli
 torrentlist.rate-up.highlighted.unfocused          $rate-up_hl           on $tlist_bg.uf
 torrentlist.rate-up.highlighted.focused            $rate-up_hl           on $tlist_bg.f
 
+$rate-limit-down_fg = dark cyan
+$rate-limit-down_hl = light cyan
+torrentlist.rate-limit-down.header                 $rate-limit-down_fg,underline on $tlist_bg.uf
+torrentlist.rate-limit-down.unfocused              $rate-limit-down_fg           on $tlist_bg.uf
+torrentlist.rate-limit-down.focused                $rate-limit-down_fg           on $tlist_bg.f
+torrentlist.rate-limit-down.highlighted.unfocused  $rate-limit-down_hl           on $tlist_bg.uf
+torrentlist.rate-limit-down.highlighted.focused    $rate-limit-down_hl           on $tlist_bg.f
+
+$rate-limit-up_fg = dark green
+$rate-limit-up_hl = light green
+torrentlist.rate-limit-up.header                   $rate-limit-up_fg,underline on $tlist_bg.uf
+torrentlist.rate-limit-up.unfocused                $rate-limit-up_fg           on $tlist_bg.uf
+torrentlist.rate-limit-up.focused                  $rate-limit-up_fg           on $tlist_bg.f
+torrentlist.rate-limit-up.highlighted.unfocused    $rate-limit-up_hl           on $tlist_bg.uf
+torrentlist.rate-limit-up.highlighted.focused      $rate-limit-up_hl           on $tlist_bg.f
+
 $ratio_fg = dark blue
 $ratio_hl = light blue
 torrentlist.ratio.header                           $ratio_fg,underline on $tlist_bg.uf
