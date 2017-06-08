@@ -3,22 +3,30 @@
     * File lists are now opened with <alt-enter> instead of <enter>
 
   Other changes:
-    * New command 'details' (bound to <enter> by default) displays detailed
-      information about a single torrent
-    * New command 'sort' changes the sort order of existing torrent and peer
-      lists (bound to <s> by default)
     * Scrollbars to indicate scroll position
     * Scroll one page up/down with <space>/<b>
+    * New commands
+      - 'details' displays detailed information about a single torrent (bound to
+        <enter> by default)
+      - 'sort' changes the sort order of existing torrent and peer lists (bound
+        to <s> by default)
+      - 'rate' limits the download and upload rates of individual torrents or
+        globally
+    * New torrent list columns 'rate-limit-up' and 'rate-limit-down' that show a
+      torrent's individual rate limits
     * New 'tab' command option --close-all closes all tabs
     * New 'unbind' command option --all removes all keybindings
     * New 'add' command option --path downloads to a custom path
-    * New keybindings contexts: 'torrentlist', 'filelist', 'peerlist'
+    * New log messages are now automatically hidden after showing them for 10
+      seconds. (You can always toggle with <alt-shift-l>.)
+    * New contexts for keybindings: 'torrentlist', 'filelist', 'peerlist'
     * <?> is now an alias for <F1>
     * Quick help in top bar now reacts to changed keybindings even after the
       initial start
     * Sort orders are deduplicated
 
   Fixed bugs:
+    * The settings 'tui.log.height' and 'tui.log.autohide' didn't do anything
     * 'tui' command can hide/show/toggle multiple elements, as documented
     * Keybinding context 'file' was not documented in help for 'bind' command
 
