@@ -33,8 +33,8 @@ class LogWidget(urwid.WidgetWrap):
     """Present LogRecords from logging module in a ListBox Widget"""
 
     def __init__(self, maxrows=10, autohide_delay=0, loop=None):
-        self.maxrows = maxrows
-        self.autohide_delay = autohide_delay
+        self._maxrows = maxrows
+        self._autohide_delay = autohide_delay
         self._autohide_handle = None
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._listbox = urwid.ListBox(urwid.SimpleListWalker([]))
@@ -147,6 +147,24 @@ class LogWidget(urwid.WidgetWrap):
     @property
     def entries(self):
         yield from self._listbox.body
+
+    @property
+    def autohide_delay(self):
+        return self._autohide_delay
+
+    @autohide_delay.setter
+    def autohide_delay(self, seconds):
+        self._autohide_delay = seconds
+
+    @property
+    def maxrows(self):
+        return self._maxrows
+
+    @maxrows.setter
+    def maxrows(self, rows):
+        self._maxrows = rows
+        self._invalidate_rows()
+        self._invalidate()
 
     def selectable(self):
         return False
