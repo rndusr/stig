@@ -6,4 +6,4 @@ clean:
 	rm -rf .cache  # py.test junk
 
 test:
-	nosetests3 --stop ./tests/
+	python3 -m pytest --exitfirst
