@@ -64,13 +64,13 @@ cfg['tui.cli.history'].on_change(_set_cli_history)
 
 
 def _set_autohide_delay(seconds):
-    tui.log.autohide_delay = seconds.value
+    tui.logwidget.autohide_delay = seconds.value
 
 cfg['tui.log.autohide'].on_change(_set_autohide_delay)
 
 
 def _set_log_maxrows(rows):
-    tui.log.maxrows = rows.value
+    tui.logwidget.maxrows = rows.value
 
 cfg['tui.log.height'].on_change(_set_log_maxrows)
 
