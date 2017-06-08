@@ -78,6 +78,11 @@ def _downloaded_mr(t):
                                t['timespan-eta'])
 
 
+def _ratio_hr(t):
+    return '%.4f' % t['ratio']
+_ratio_mr = _ratio_hr
+
+
 def _available_hr(t):
     return '%s (%.2f %%)' % (t['size-available'].with_unit, t['%available'])
 
@@ -144,7 +149,7 @@ SECTIONS = (
         Item('Available',  ('%available', 'size-available'), _available_hr, _available_mr),
         Item('Downloaded', ('size-downloaded', 'size-left', '%downloaded', 'timespan-eta'), _downloaded_hr, _downloaded_mr),
         Item('Uploaded',   ('size-uploaded', 'size-total', '%uploaded'), _uploaded_hr, _uploaded_mr),
-        Item('Ratio',      ('ratio',)),
+        Item('Ratio',      ('ratio',), _ratio_hr, _ratio_mr),
         Item('Isolated',   ('status',), _isolated_hr, _isolated_mr),
         Item('Error',      ('error',)),
     )},
