@@ -430,7 +430,7 @@ class Timestamp(int):
         if self == self.UNKNOWN:
             return 'unknown'
         elif self == self.NOT_APPLICABLE:
-            return 'not applicaple'
+            return 'not applicable'
         else:
             return time.strftime('%Y-%m-%d %H:%M', time.localtime(self))
 
