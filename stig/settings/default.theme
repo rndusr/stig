@@ -27,12 +27,13 @@
 #
 # VARIABLES
 #
-# It is possibel to declare variables like this:
+# You can declare simple variables like this:
 #
 #     $<VARIABLE> = <VALUE>
 #
 # Any occurence of '$<VARIABLE>' after this declaration is replaced by
-# '<VALUE>'.
+# '<VALUE>'.  Variable names cannot contain any non-whitespace characters.  All
+# other characters are fine.
 
 # Uncomment the next line to automatically make light colors bold.
 # light_is_bold
