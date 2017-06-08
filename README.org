@@ -114,6 +114,7 @@
    - [[https://pypi.python.org/pypi/appdirs][appdirs]]
    - [[https://pypi.python.org/pypi/blinker][blinker]]
    - [[https://pypi.python.org/pypi/natsort][natsort]]
+   - [[https://pypi.python.org/pypi/asynctest/][asynctest]] (optional; only needed for running tests)
    - [[https://pypi.python.org/pypi/GeoIP][GeoIP]] (optional; shows country codes in peer lists)
 
 ** Contributing
