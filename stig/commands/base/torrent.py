@@ -492,7 +492,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
     cmdmgr = ExpectedResource
 
     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
-        direction = DIRECTION.split(',')
+        direction = tuple(map(str.lower, DIRECTION.split(',')))
         for d in direction:
             if d not in ('up', 'down'):
                 log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
