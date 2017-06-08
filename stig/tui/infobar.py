@@ -75,10 +75,10 @@ class QuickHelpWidget(urwid.Text):
 
         def maybe_add_entry(items, label, key):
             if key is not None:
-                items.append([('topbar.help.key',    str(key)),
+                items.append([('topbar.help.space',  '   '),
+                              ('topbar.help.key',    str(key)),
                               ('topbar.help.equals', ' '),
-                              ('topbar.help.label',  label),
-                              ('topbar.help.space',  '   ')])
+                              ('topbar.help.label',  label)])
 
         items = []
         maybe_add_entry(items, 'Prompt', get_key('tui show cli', contexts=('main', None)))
