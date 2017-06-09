@@ -34,8 +34,8 @@ class UILogRecordHandler(logging.Handler):
 class LogWidget(urwid.WidgetWrap):
     """Present LogRecords from logging module in a ListBox Widget"""
 
-    def __init__(self, maxrows=10, autohide_delay=0, loop=None):
-        self._maxrows = maxrows
+    def __init__(self, height=10, autohide_delay=0, loop=None):
+        self._height = height
         self._autohide_delay = autohide_delay
         self._autohide_handle = None
         self._loop = loop if loop is not None else asyncio.get_event_loop()
@@ -122,7 +122,7 @@ class LogWidget(urwid.WidgetWrap):
         if hasattr(self, '_rows'):
             return self._rows
         else:
-            (maxcols, maxrows) = (size[0], self.maxrows)
+            (maxcols, maxrows) = (size[0], self.height)
             walker = self._listbox.body
             rows = 0
 
@@ -163,12 +163,12 @@ class LogWidget(urwid.WidgetWrap):
         self._autohide_delay = seconds
 
     @property
-    def maxrows(self):
-        return self._maxrows
+    def height(self):
+        return self._height
 
-    @maxrows.setter
-    def maxrows(self, rows):
-        self._maxrows = rows
+    @height.setter
+    def height(self, rows):
+        self._height = rows
         self._invalidate_rows()
         self._invalidate()
 

@@ -69,10 +69,10 @@ def _set_autohide_delay(seconds):
 cfg['tui.log.autohide'].on_change(_set_autohide_delay)
 
 
-def _set_log_maxrows(rows):
-    tui.logwidget.maxrows = rows.value
+def _set_log_height(rows):
+    tui.logwidget.height = rows.value
 
-cfg['tui.log.height'].on_change(_set_log_maxrows)
+cfg['tui.log.height'].on_change(_set_log_height)
 
 
 def _set_theme(themefile):
