@@ -22,17 +22,6 @@ questions and point out issues.
    This is mostly useful for better keybindings in the TUI, but it may also
    have benefits on the CLI.
 
-** TODO New command: rate
-   Usage: rate up|down <RATE> [<TORRENT FILTER>]
-
-   First, implement a new async method that sets the up/down rates of individual
-   torrents in client.aiotransmission.api_torrent.  Use client.convert.bandwidth
-   to parse numbers with units and unit prefixes correctly (e.g. '1kB').  See
-   client.aiotransmission.api_settings.*rate_limit* for inspiration.
-
-   If TORRENT FILTER is not given, simply set the setting
-   'srv.limit.rate.up/down' to RATE.
-
 
 * tui.logger
 
