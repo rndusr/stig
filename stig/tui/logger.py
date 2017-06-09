@@ -17,6 +17,8 @@ import urwid
 import time
 import asyncio
 
+from .scroll import ScrollBar
+
 
 class UILogRecordHandler(logging.Handler):
     """Feed LogRecords to a LogWidget"""
@@ -38,7 +40,11 @@ class LogWidget(urwid.WidgetWrap):
         self._autohide_handle = None
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._listbox = urwid.ListBox(urwid.SimpleListWalker([]))
-        super().__init__(urwid.AttrMap(self._listbox, 'log'))
+        listbox_sb = urwid.AttrMap(
+            ScrollBar(urwid.AttrMap(self._listbox, 'log')),
+            'scrollbar'
+        )
+        super().__init__(listbox_sb)
 
         self._root_logger = logging.getLogger()
         self._orig_handlers = []
