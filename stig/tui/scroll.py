@@ -202,12 +202,22 @@ class Scrollable(urwid.WidgetDecoration):
         """Current scrolling position
 
         Lower limit is 0, upper limit is the maximum number of rows with the
-        given maxcol minus maxrow.  Higher/Lower values are automatically
-        adjusted during rendering.
+        given maxcol minus maxrow.
+
+        NOTE: The returned value may be too low or too high if the position has
+        changed but the widget wasn't rendered yet.
         """
         return self._trim_top
 
     def set_scrollpos(self, position):
+        """Set scrolling position
+
+        If `position` is positive it is interpreted as lines from the top.
+        If `position` is negative it is interpreted as lines from the bottom.
+
+        Values that are too high or too low values are automatically adjusted
+        during rendering.
+        """
         self._trim_top = int(position)
         self._invalidate()
 
