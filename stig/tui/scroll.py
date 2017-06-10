@@ -154,6 +154,10 @@ class Scrollable(urwid.WidgetDecoration):
         trim_top = self._trim_top
         canv_rows = canv.rows()
 
+        if trim_top < 0:
+            # Negative trim_top values use bottom of canvas as reference
+            trim_top = canv_rows - maxrow + trim_top + 1
+
         if canv_rows <= maxrow:
             self._trim_top = 0  # Reset scroll position
             return
