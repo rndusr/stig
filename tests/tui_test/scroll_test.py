@@ -3,18 +3,17 @@ from stig.tui.scroll import (Scrollable, ScrollBar)
 import unittest
 import urwid
 
-TEXT = '''
-one
-two
-three
-four
-five
-six
-seven
-eight
-nine
-ten
-'''.strip().split('\n')
+TEXT = ('one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine',
+        'ten')
+
 
 class FixedText(urwid.Widget):
     _sizing = frozenset(['fixed'])
@@ -80,7 +79,7 @@ class TestScrollable(unittest.TestCase):
     def test_vertical_padding(self):
         for w in self._test_widgets:
             self.check(w, size=(10, 15),
-                       text=(l.ljust(10) for l in TEXT+['']*5))
+                       text=(l.ljust(10) for l in TEXT+('',)*5))
 
     def test_horizontal_trimming(self):
         for w in self._test_widgets:
