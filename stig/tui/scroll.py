@@ -198,7 +198,7 @@ class Scrollable(urwid.WidgetDecoration):
         elif FLOW in sizing:
             return (size[0],)
 
-    def get_scrollpos(self, size, focus=False):
+    def get_scrollpos(self, size=None, focus=False):
         """Current scrolling position
 
         Lower limit is 0, upper limit is the maximum number of rows with the
