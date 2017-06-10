@@ -214,21 +214,71 @@ class UnmarkCmd(metaclass=InitCommand):
             return True
 
 
-class ClearLogCmd(metaclass=InitCommand):
-    name = 'clearlog'
+class LogCmd(metaclass=InitCommand):
+    name = 'log'
     provides = {'tui'}
     category = 'tui'
-    description = 'Clear all logged messages'
+    description = 'Clear, add or scroll through log messages'
+    usage = ('log <ACTION> [<PARAMETERS>]',)
+    examples = ('log clear',
+                'log scroll up',
+                'log scroll page down',
+                'log error Holy crap, Batman!')
+    argspecs = (
+        { 'names': ('ACTION',), 'nargs': 'REMAINDER',
+          'description': ('"clear", "scroll", "info" or "error"; '
+                          'see the sections below for more information') },
+    )
+
+    more_sections = { 'clear': ('Remove all previously logged messages.  This action ignores all PARAMETERS.',),
+                      'scroll': ('Scroll the log messages up or down.  '
+                                 'Valid PARAMETERS are "up", "down", "page up", "page down", '
+                                 '"top" and "bottom".',),
+                      'info': ('Take all PARAMETERS and display them as a normal message.',),
+                      'error': ('Take all PARAMETERS and display them as an error message.',),
+    }
 
     tui = ExpectedResource
 
-    def run(self):
+    def run(self, ACTION):
         logwidget = self.tui.logwidget
-        if len(tuple(logwidget.entries)) > 0:
-            logwidget.clear()
-            return True
-        else:
+
+        if len(ACTION) < 1:
+            log.error('%s: Missing arguments', self.name)
             return False
+
+        elif ACTION[0] == 'clear':
+            if len(tuple(logwidget.entries)) < 1:
+                return False
+            else:
+                logwidget.clear()
+
+        elif ACTION[0] == 'scroll':
+            args = ' '.join(ACTION[1:])
+            if args == 'up':
+                logwidget.scroll_relative('up', 1)
+            elif args == 'down':
+                logwidget.scroll_relative('down', 1)
+            elif args == 'page up':
+                logwidget.scroll_relative('up', logwidget.height-1)
+            elif args == 'page down':
+                logwidget.scroll_relative('down', logwidget.height-1)
+            elif args == 'top':
+                logwidget.scroll_to('top')
+            elif args == 'bottom':
+                logwidget.scroll_to('bottom')
+            else:
+                log.error('%s: Invalid arguments for "scroll": %r', self.name, args)
+                return False
+
+        elif ACTION[0] == 'error':
+            log.error(' '.join(ACTION[1:]))
+        elif ACTION[0] == 'info':
+            log.info(' '.join(ACTION[1:]))
+        else:
+            log.info(' '.join(ACTION))
+
+        return True
 
 
 class QuitCmd(metaclass=InitCommand):
