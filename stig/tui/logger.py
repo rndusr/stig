@@ -17,7 +17,7 @@ import urwid
 import time
 import asyncio
 
-from .scroll import ScrollBar
+from .scroll import (Scrollable, ScrollBar)
 
 
 class UILogRecordHandler(logging.Handler):
@@ -39,12 +39,14 @@ class LogWidget(urwid.WidgetWrap):
         self._autohide_delay = autohide_delay
         self._autohide_handle = None
         self._loop = loop if loop is not None else asyncio.get_event_loop()
-        self._listbox = urwid.ListBox(urwid.SimpleListWalker([]))
-        listbox_sb = urwid.AttrMap(
-            ScrollBar(urwid.AttrMap(self._listbox, 'log')),
+        self._pile = urwid.Pile([])
+        self._pile_options = self._pile.options('pack', None)
+        self._scrollable = Scrollable(self._pile)
+        pile_sb = urwid.AttrMap(
+            ScrollBar(urwid.AttrMap(self._scrollable, 'log')),
             'scrollbar'
         )
-        super().__init__(listbox_sb)
+        super().__init__(pile_sb)
 
         self._root_logger = logging.getLogger()
         self._orig_handlers = []
@@ -96,11 +98,19 @@ class LogWidget(urwid.WidgetWrap):
         msg += record.getMessage()
 
         # Indicate identical messages instead of spamming the log
-        if len(self._listbox.body) > 0 and self._listbox.body[-1].text == msg:
-            self._listbox.body[-1].dupes += 1
+        entries = tuple(widget for widget,options in self._pile.contents)
+        if len(entries) > 0 and entries[-1].text == msg:
+            entries[-1].dupes += 1
         else:
-            self._listbox.body.append(LogEntry(msg, style))
-            self._listbox.focus_position = len(self._listbox.body)-1  # Scroll to end of log
+            # Keep scrolling down if we are currently at the bottom; otherwise
+            # the user has scrolled up manually.
+            curpos = self._scrollable.get_scrollpos()
+            maxpos = self._scrollable.rows_max()
+            scroll_to_bottom = curpos+self._height >= maxpos
+            new_content = (LogEntry(msg, style), self._pile_options)
+            self._pile.contents.append(new_content)
+            if scroll_to_bottom:
+                self.scroll_to('bottom')
         self._invalidate_rows()
         self._maybe_show_temporarily()
 
@@ -119,26 +129,10 @@ class LogWidget(urwid.WidgetWrap):
             self._autohide_handle = self._loop.call_later(self.autohide_delay, hide)
 
     def rows(self, size, focus=False):
-        if hasattr(self, '_rows'):
-            return self._rows
-        else:
-            (maxcols, maxrows) = (size[0], self.height)
-            walker = self._listbox.body
-            rows = 0
-
-            if len(walker) >= maxrows:
-                rows = maxrows
-            else:
-                for widget in walker:
-                    rows += widget.rows(size=(maxcols,))
-                    if rows >= maxrows:
-                        break
-            self._rows = min(rows, maxrows)
-            return self._rows
-
-    def render(self, size, focus=False):
-        size = (size[0], self.rows(size, focus))
-        return super().render(size, focus)
+        if not hasattr(self, '_rows'):
+            self._rows = min(self._pile.rows(size, focus),
+                             self._height)
+        return self._rows
 
     def _invalidate_rows(self):
         try:
@@ -146,13 +140,37 @@ class LogWidget(urwid.WidgetWrap):
         except AttributeError:
             pass
 
+    def render(self, size, focus=False):
+        return super().render((size[0], self.rows(size, focus)), focus)
+
     def clear(self):
-        self._listbox.body[:] = []
+        self._pile.contents.clear()
         self._invalidate_rows()
+
+    def scroll_relative(self, direction, lines):
+        scrl = self._scrollable
+        pos = scrl.get_scrollpos()
+        if direction == 'up':
+            pos -= lines
+        elif direction == 'down':
+            pos += lines
+        scrl.set_scrollpos(pos)
+
+    _WHERE = {'top': 0, 'bottom': -1}
+    def scroll_to(self, where):
+        """Scroll to top or bottom of log
+
+        where: "top" or "bottom"
+        """
+        try:
+            self._scrollable.set_scrollpos(self._WHERE[where])
+        except KeyError:
+            raise ValueError('where argument must be "top" or "bottom", not %r' % where)
 
     @property
     def entries(self):
-        yield from self._listbox.body
+        for widget,options in self._pile.contents:
+            yield widget
 
     @property
     def autohide_delay(self):
