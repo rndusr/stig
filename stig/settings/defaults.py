@@ -151,6 +151,7 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'q', 'action': 'quit'},
     {'context': 'main', 'key': ':', 'action': 'tui show cli'},
 
+    # Help
     {'context': 'main', 'key': 'F1+c', 'action': 'tab help commands'},
     {'context': 'main', 'key': 'F1+s', 'action': 'tab help settings'},
     {'context': 'main', 'key': 'F1+k', 'action': 'tab help keymap'},
@@ -158,11 +159,18 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'F1+r', 'action': 'tab help rcfile'},
     {'context': 'main', 'key': '?',    'action': '<F1>'},
 
-    {'context': 'main', 'key': 'ctrl-l', 'action': 'clearlog'},
+    # Hide/Show TUI elements
     {'context': 'main', 'key': 'meta-L', 'action': 'tui toggle log'},
     {'context': 'main', 'key': 'meta-M', 'action': 'tui toggle main'},
     {'context': 'main', 'key': 'meta-T', 'action': 'tui toggle topbar'},
     {'context': 'main', 'key': 'meta-B', 'action': 'tui toggle bottombar'},
+
+    # Log messages
+    {'context': 'main', 'key': 'ctrl-l',   'action': 'log clear'},
+    {'context': 'main', 'key': 'alt-pgup', 'action': 'log scroll page up'},
+    {'context': 'main', 'key': 'alt-pgdn', 'action': 'log scroll page down'},
+    {'context': 'main', 'key': 'alt-home', 'action': 'log scroll top'},
+    {'context': 'main', 'key': 'alt-end',  'action': 'log scroll bottom'},
 
     # Bandwidth limits
     {'context': 'main', 'key': 'shift-up',    'action': 'set srv.limit.rate.down +=100kB'},
