@@ -92,7 +92,7 @@ class TestScrollable(unittest.TestCase):
                        text=(l.ljust(10) for l in TEXT[:3]))
 
 
-    def test_set_position(self):
+    def test_set_position_positive(self):
         size = (10, 3)
         for w in self._test_widgets:
             for i in range(len(TEXT)*2):
@@ -100,7 +100,18 @@ class TestScrollable(unittest.TestCase):
                 start = min(len(TEXT)-size[1], i)
                 end   = min(len(TEXT),         i+size[1])
                 self.check(w, size,
-                           text=(l.ljust(10) for l in TEXT[start:end]))
+                           text=(l.ljust(size[0]) for l in TEXT[start:end]))
+
+    def test_set_position_negative(self):
+        size = (10, 3)
+        for w in self._test_widgets:
+            for i in range(len(TEXT)*2):
+                pos = -i-1
+                w.set_scrollpos(pos)
+                start = max(0, -i + len(TEXT) - size[1])
+                end   = start + size[1]
+                self.check(w, size,
+                           text=(l.ljust(size[0]) for l in TEXT[start:end]))
 
 
     def test_scroll_line_down(self):
