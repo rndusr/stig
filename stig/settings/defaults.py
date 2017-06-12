@@ -126,6 +126,12 @@ def init_server_defaults(cfg, settingsapi):
                         getter=lambda: settingsapi['lpd'],
                         setter=settingsapi.set_lpd),
 
+        BooleanSrvValue('srv.pex',
+                        description=('Whether to use Peer Exchange '
+                                     'to discover peers for public torrents'),
+                        getter=lambda: settingsapi['pex'],
+                        setter=settingsapi.set_pex),
+
         RateLimitSrvValue('srv.limit.rate.up',
                           description='Combined upload rate limit',
                           getter=lambda: settingsapi['rate-limit-up'],
