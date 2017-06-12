@@ -591,6 +591,7 @@ def _guess_peer_rate_and_eta(peer_id, peer_progress, torrent_size):
 
             # It's possible progress goes down, e.g. if a peer deletes a file
             if p_diff > 0:
+                torrent_size = int(torrent_size)  # Don't copy unit + unit prefix from torrent_size
                 size_diff = torrent_size * p_diff
                 rate = size_diff / t_diff
                 size_remaining = torrent_size - (torrent_size * peer_progress)
