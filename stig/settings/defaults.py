@@ -120,6 +120,12 @@ def init_server_defaults(cfg, settingsapi):
                         getter=lambda: settingsapi['dht'],
                         setter=settingsapi.set_dht),
 
+        BooleanSrvValue('srv.lpd',
+                        description=('Whether to use Local Peer Discovery '
+                                     'to discover peers for public torrents'),
+                        getter=lambda: settingsapi['lpd'],
+                        setter=settingsapi.set_lpd),
+
         RateLimitSrvValue('srv.limit.rate.up',
                           description='Combined upload rate limit',
                           getter=lambda: settingsapi['rate-limit-up'],
