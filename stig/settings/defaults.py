@@ -113,78 +113,43 @@ def init_defaults(cfg):
 def init_server_defaults(cfg, settingsapi):
     from .settings_server import (BooleanSrvValue, IntegerSrvValue, PathSrvValue,
                                   PathIncompleteSrvValue, RateLimitSrvValue)
+
+    def mk(cls, name, setting, description):
+        getter = lambda: settingsapi[setting]
+        setter = getattr(settingsapi, 'set_'+setting)
+        return cls(name, getter=getter, setter=setter, description=description)
+
     cfg.load(
-        BooleanSrvValue('srv.utp',
-                        description=('Whether to use Micro Transport Protocol to mitigate '
-                                     'latency issues'),
-                        getter=lambda: settingsapi['utp'],
-                        setter=settingsapi.set_utp),
+        mk(BooleanSrvValue, 'srv.utp', 'utp',
+           'Whether to use Micro Transport Protocol to mitigate latency issues'),
+        mk(BooleanSrvValue, 'srv.dht', 'dht',
+           'Whether to use Distributed Hash Tables to discover peers for public torrents'),
+        mk(BooleanSrvValue, 'srv.lpd', 'lpd',
+           'Whether to use Local Peer Discovery to discover peers for public torrents'),
+        mk(BooleanSrvValue, 'srv.pex', 'pex',
+           'Whether to use Peer Exchange to discover peers for public torrents'),
 
-        BooleanSrvValue('srv.dht',
-                        description=('Whether to use Distributed Hash Tables '
-                                     'to discover peers for public torrents'),
-                        getter=lambda: settingsapi['dht'],
-                        setter=settingsapi.set_dht),
+        mk(IntegerSrvValue, 'srv.port', 'port',
+           'Port used to communicate with peers'),
+        mk(BooleanSrvValue, 'srv.port-forwarding', 'port_forwarding',
+           'Whether to instruct your router to forward the peer port via UPnP or NAT-PMP'),
 
-        BooleanSrvValue('srv.lpd',
-                        description=('Whether to use Local Peer Discovery '
-                                     'to discover peers for public torrents'),
-                        getter=lambda: settingsapi['lpd'],
-                        setter=settingsapi.set_lpd),
+        mk(IntegerSrvValue, 'srv.limit.peers.global', 'peer_limit_global',
+           'Maximum number of connections for all torrents combined'),
+        mk(IntegerSrvValue, 'srv.limit.peers.torrent', 'peer_limit_torrent',
+           'Maximum number of connections for a single torrent'),
 
-        BooleanSrvValue('srv.pex',
-                        description=('Whether to use Peer Exchange '
-                                     'to discover peers for public torrents'),
-                        getter=lambda: settingsapi['pex'],
-                        setter=settingsapi.set_pex),
+        mk(RateLimitSrvValue, 'srv.limit.rate.up', 'rate_limit_up',
+           'Combined upload rate limit'),
+        mk(RateLimitSrvValue, 'srv.limit.rate.down', 'rate_limit_down',
+           'Combined download rate limit'),
 
-        IntegerSrvValue('srv.port',
-                        description='Port used to communicate with peers',
-                        getter=lambda: settingsapi['port'],
-                        setter=settingsapi.set_port),
-
-        BooleanSrvValue('srv.port-forwarding',
-                        description=('Whether to instruct your router to forward the peer port '
-                                     'via UPnP or NAT-PMP'),
-                        getter=lambda: settingsapi['port-forwarding'],
-                        setter=settingsapi.set_port_forwarding),
-
-        IntegerSrvValue('srv.limit.peers.global',
-                        description='Maximum number of connections for all torrents combined',
-                        getter=lambda: settingsapi['peer-limit-global'],
-                        setter=settingsapi.set_peer_limit_global),
-
-        IntegerSrvValue('srv.limit.peers.torrent',
-                        description='Maximum number of connections for a single torrent',
-                        getter=lambda: settingsapi['peer-limit-torrent'],
-                        setter=settingsapi.set_peer_limit_torrent),
-
-
-        RateLimitSrvValue('srv.limit.rate.up',
-                          description='Combined upload rate limit',
-                          getter=lambda: settingsapi['rate-limit-up'],
-                          setter=settingsapi.set_rate_limit_up),
-
-        RateLimitSrvValue('srv.limit.rate.down',
-                          description='Combined download rate limit',
-                          getter=lambda: settingsapi['rate-limit-down'],
-                          setter=settingsapi.set_rate_limit_down),
-
-
-        BooleanSrvValue('srv.part-files',
-                        description='Whether to append ".part" to incomplete file names',
-                        getter=lambda: settingsapi['part-files'],
-                        setter=settingsapi.set_part_files),
-
-        PathSrvValue('srv.path.complete',
-                     description='Where to put torrent files',
-                     getter=lambda: settingsapi['path-complete'],
-                     setter=settingsapi.set_path_complete),
-
-        PathIncompleteSrvValue('srv.path.incomplete',
-                     description='Where to put incomplete torrent files',
-                     getter=lambda: settingsapi['path-incomplete'],
-                     setter=settingsapi.set_path_incomplete),
+        mk(BooleanSrvValue, 'srv.part-files', 'part_files',
+           'Whether to append ".part" to incomplete file names'),
+        mk(PathSrvValue, 'srv.path.complete', 'path_complete',
+           'Where to put torrent files'),
+        mk(PathIncompleteSrvValue, 'srv.path.incomplete', 'path_incomplete',
+           'Where to put incomplete torrent files'),
     )
 
 
