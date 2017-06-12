@@ -135,18 +135,21 @@ class TestNumber(unittest.TestCase):
         self.assertIsInstance(n, tkeys.Number)
 
     def test_arithmetic_operation_copies_unit(self):
-        n = tkeys.Number(5, unit='X') / 3000
+        n = tkeys.Number(5, unit='X') / 100
+        self.assertEqual(n, 0.05)
         self.assertEqual(n.unit, 'X')
 
     def test_arithmetic_operation_copies_prefix(self):
         for prfx in ('metric', 'binary'):
-            n = tkeys.Number(5, prefix=prfx) - 3000
+            n = tkeys.Number(5, prefix=prfx) * 100
+            self.assertEqual(n, 500)
             self.assertEqual(n.prefix, prfx)
 
     def test_arithmetic_operation_copies_from_first_value(self):
         for prfx in ('metric', 'binary'):
-            n = tkeys.Number(5,    unit='X', prefix=prfx) \
-              * tkeys.Number(3000, unit='z', prefix='metric')
+            n = tkeys.Number(  5, unit='X', prefix=prfx) \
+              + tkeys.Number(100, unit='z', prefix='metric')
+            self.assertEqual(n, 105)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.prefix, prfx)
 
