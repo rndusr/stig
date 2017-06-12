@@ -356,6 +356,21 @@ class SettingsAPI(abc.Mapping):
 
 
     @setting
+    def utp(self):
+        """Whether UTP is used to discover peers"""
+        return const.ENABLED if self._raw['utp-enabled'] else const.DISABLED
+
+    async def get_utp(self):
+        """Refresh cache and return `utp`"""
+        await self.update()
+        return self.utp
+
+    async def set_utp(self, enabled):
+        """See `utp`"""
+        await self._set({'utp-enabled': bool(enabled)})
+
+
+    @setting
     def dht(self):
         """Whether DHT is used to discover peers"""
         return const.ENABLED if self._raw['dht-enabled'] else const.DISABLED
