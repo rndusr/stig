@@ -1,6 +1,8 @@
 2017-??-?? ?.?.?
   Breaking changes:
     * The 'clearlog' command has been replaced by the 'log' command
+    * For boolean settings, 'enable/disable' have been replaced by
+      'enabled/disabled'
 
   Other changes:
     * New command 'log' can clear the log, scroll up/down and append info/error
