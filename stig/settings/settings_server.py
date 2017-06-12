@@ -80,6 +80,9 @@ def is_server_setting(name):
 class BooleanSrvValue(SrvValueBase, BooleanValue):
     pass
 
+class IntegerSrvValue(SrvValueBase, IntegerValue):
+    pass
+
 class PathSrvValue(SrvValueBase, PathValue):
     pass
 
