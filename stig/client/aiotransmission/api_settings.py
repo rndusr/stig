@@ -336,6 +336,21 @@ class SettingsAPI(abc.Mapping):
 
 
     @setting
+    def pex(self):
+        """Whether Peer Exchange is used to discover peers"""
+        return const.ENABLED if self._raw['pex-enabled'] else const.DISABLED
+
+    async def get_pex(self):
+        """Refresh cache and return `pex`"""
+        await self.update()
+        return self.pex
+
+    async def set_pex(self, enabled):
+        """Whether Peer Exchange should be used to disover peers"""
+        await self._set({'pex-enabled': bool(enabled)})
+
+
+    @setting
     def encryption(self):
         """Whether protocol encryption is used to mask BitTorrent traffic
 
