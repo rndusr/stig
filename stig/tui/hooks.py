@@ -42,13 +42,23 @@ srvapi.rpc.on('connected', _update_pollers)
 
 
 def _clear_list_widgets(seconds):
-    from .torrent.tlist import TorrentListWidget
-    from .torrent.flist import FileListWidget
     for widget in tui.tabs.contents:
-        if isinstance(widget, (TorrentListWidget, FileListWidget)):
+        if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
 
 srvapi.rpc.on('disconnected', _clear_list_widgets)
+
+
+def _refresh_lists(value):
+    for widget in tui.tabs:
+        if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
+            widget.clear()
+    tui.srvapi.poll()
+
+cfg['unit.bandwidth'].on_change(_refresh_lists)
+cfg['unit.size'].on_change(_refresh_lists)
+cfg['unitprefix.bandwidth'].on_change(_refresh_lists)
+cfg['unitprefix.size'].on_change(_refresh_lists)
 
 
 def _set_poll_interval(seconds):
@@ -82,18 +92,6 @@ def _set_theme(themefile):
         raise ValueError(e)
 
 cfg['tui.theme'].on_change(_set_theme)
-
-
-def _refresh_lists(value):
-    for widget in tui.tabs:
-        if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
-            widget.clear()
-    tui.srvapi.poll()
-
-cfg['unit.bandwidth'].on_change(_refresh_lists)
-cfg['unit.size'].on_change(_refresh_lists)
-cfg['unitprefix.bandwidth'].on_change(_refresh_lists)
-cfg['unitprefix.size'].on_change(_refresh_lists)
 
 
 def _set_tui_marked_char(methodname, setting):
