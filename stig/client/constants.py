@@ -26,16 +26,13 @@ def get_constant(string, repr_str=None, bases=(), value=None, attrs={}):
     attrs: Additional attributes of the constant class
     """
     if string not in _constants_cache:
-        repr_str = (string if repr_str is None else repr_str).upper()
-
         def __str__(self): return self.string
         def __repr__(self): return '<Constant: {}>'.format(self.repr_str.upper())
 
         cls_attrs = {'__str__': __str__,
                      '__repr__': __repr__,
                      'string': string,
-                     'repr_str': repr_str,
-                     'value': value}
+                     'repr_str': (string if repr_str is None else repr_str).upper()}
         cls_attrs.update(attrs)
 
         cls = type('Constant', bases + (ConstantBase,), cls_attrs)
