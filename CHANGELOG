@@ -1,3 +1,8 @@
+2017-06-12 0.7.2a
+  Fixed bugs:
+    * 'peerlist' command crashed with a NameError if no title was specified
+
+
 2017-06-09 0.7.1a
   Fixed bugs:
     * Pressing <page up> or <page down> with a modifier (namely <alt>) resulted
