@@ -29,6 +29,11 @@ class ResetCmdbase(metaclass=InitCommand):
         {'names': ('NAME',), 'nargs': '+',
          'description': 'Name of setting'},
     )
+    more_sections = {
+        'SEE ALSO': (('Run `help settings` for a list of all available settings.  Note that '
+                      'server settings (srv.* except for srv.url and srv.timeout) cannot be reset.'),),
+    }
+
     cfg = ExpectedResource
 
     def run(self, NAME):
@@ -59,6 +64,11 @@ class SetCmdbase(metaclass=InitCommand):
         {'names': ('VALUE',), 'nargs': 'REMAINDER',
          'description': 'New value'},
     )
+    more_sections = {
+        'SEE ALSO': (('Run `help settings` for a list of all available '
+                      'client and server settings.'),),
+    }
+
     cfg = ExpectedResource
     srvapi = ExpectedResource
 
