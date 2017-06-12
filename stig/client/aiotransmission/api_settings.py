@@ -252,6 +252,7 @@ class SettingsAPI(abc.Mapping):
     def _absolute_path(self, path, cwd):
         return os.path.normpath(os.path.join(cwd, path))
 
+
     @setting
     def path_complete(self):
         """Path to directory where torrent files are put"""
@@ -270,6 +271,7 @@ class SettingsAPI(abc.Mapping):
         """
         path = self._absolute_path(path, await self.get_path_complete())
         await self._set({'download-dir': path})
+
 
     @setting
     def path_incomplete(self):
@@ -302,6 +304,7 @@ class SettingsAPI(abc.Mapping):
         else:
             await self._set({'incomplete-dir-enabled': bool(path)})
 
+
     @setting
     def part_files(self):
         """Whether ".part" is appended to incomplete file names"""
@@ -317,7 +320,22 @@ class SettingsAPI(abc.Mapping):
         await self._set({'rename-partial-files': bool(enabled)})
 
 
-    # Peer discovery settings
+    # Network settings
+
+    @setting
+    def port_forwarding(self):
+        """Whether UPnP/NAT-PMP is enabled"""
+        return const.ENABLED if self._raw['port-forwarding-enabled'] else const.DISABLED
+
+    async def get_port_forwarding(self):
+        """Refresh cache and return `port_forwarding`"""
+        await self.update()
+        return self.port_forwarding
+
+    async def set_port_forwarding(self, enabled):
+        """See `port_forwarding`"""
+        await self._set({'port-forwarding-enabled': bool(enabled)})
+
 
     @setting
     def dht(self):
