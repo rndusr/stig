@@ -2,6 +2,14 @@
   Breaking changes:
     * The 'clearlog' command has been replaced by the 'log' command
 
+  Other changes:
+    * New command 'log' can clear the log, scroll up/down and append info/error
+      messages to it
+
+    * New server settings: srv.utp, srv.dht, srv.pex, srv.lpd, srv.port,
+      srv.port-forwarding, srv.limit.peers.global, srv.limit.peers.torrent,
+      srv.part-files
+
 
 2017-06-12 0.7.2a
   Fixed bugs:
