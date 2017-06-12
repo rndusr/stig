@@ -337,7 +337,7 @@ class SettingsAPI(abc.Mapping):
         if 0 < port < 65536:
             await self._set({'peer-port': int(port)})
         else:
-            raise ValueError('Must be between 0 and 65536: %r' % port)
+            raise ValueError('Must be between 0 and 65536')
 
 
     @setting
@@ -420,5 +420,4 @@ class SettingsAPI(abc.Mapping):
         if encryption in ('required', 'preferred', 'tolerated'):
             await self._set({'encryption': encryption})
         else:
-            raise ValueError("Must be one of 'required', 'preferred', 'tolerated', not {!r}"
-                             .format(encryption))
+            raise ValueError("Must be 'required', 'preferred' or 'tolerated'" % encryption)
