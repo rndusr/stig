@@ -114,6 +114,12 @@ def init_server_defaults(cfg, settingsapi):
     from .settings_server import (BooleanSrvValue, IntegerSrvValue, PathSrvValue,
                                   PathIncompleteSrvValue, RateLimitSrvValue)
     cfg.load(
+        BooleanSrvValue('srv.utp',
+                        description=('Whether to use Micro Transport Protocol to mitigate '
+                                     'latency issues'),
+                        getter=lambda: settingsapi['dht'],
+                        setter=settingsapi.set_dht),
+
         BooleanSrvValue('srv.dht',
                         description=('Whether to use Distributed Hash Tables '
                                      'to discover peers for public torrents'),
