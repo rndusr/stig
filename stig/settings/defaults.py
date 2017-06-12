@@ -115,7 +115,8 @@ def init_server_defaults(cfg, settingsapi):
                                   PathIncompleteSrvValue, RateLimitSrvValue)
     cfg.load(
         BooleanSrvValue('srv.dht',
-                        description='Whether to use DHT for peer discovery',
+                        description=('Whether to use Distributed Hash Tables '
+                                     'to discover peers for public torrents'),
                         getter=lambda: settingsapi['dht'],
                         setter=settingsapi.set_dht),
 
