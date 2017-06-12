@@ -149,11 +149,22 @@ def init_server_defaults(cfg, settingsapi):
                         getter=lambda: settingsapi['port-forwarding'],
                         setter=settingsapi.set_port_forwarding),
 
+        IntegerSrvValue('srv.limit.peers.global',
+                        description='Maximum number of connections for all torrents combined',
+                        getter=lambda: settingsapi['peer-limit-global'],
+                        setter=settingsapi.set_peer_limit_global),
+
+        IntegerSrvValue('srv.limit.peers.torrent',
+                        description='Maximum number of connections for a single torrent',
+                        getter=lambda: settingsapi['peer-limit-torrent'],
+                        setter=settingsapi.set_peer_limit_torrent),
+
 
         RateLimitSrvValue('srv.limit.rate.up',
                           description='Combined upload rate limit',
                           getter=lambda: settingsapi['rate-limit-up'],
                           setter=settingsapi.set_rate_limit_up),
+
         RateLimitSrvValue('srv.limit.rate.down',
                           description='Combined download rate limit',
                           getter=lambda: settingsapi['rate-limit-down'],
