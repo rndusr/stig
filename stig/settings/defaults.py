@@ -132,6 +132,12 @@ def init_server_defaults(cfg, settingsapi):
                         getter=lambda: settingsapi['pex'],
                         setter=settingsapi.set_pex),
 
+        BooleanSrvValue('srv.part-files',
+                        description='Whether to append ".part" to incomplete file names',
+                        getter=lambda: settingsapi['part-files'],
+                        setter=settingsapi.set_part_files),
+
+
         RateLimitSrvValue('srv.limit.rate.up',
                           description='Combined upload rate limit',
                           getter=lambda: settingsapi['rate-limit-up'],
