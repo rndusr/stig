@@ -323,6 +323,21 @@ class SettingsAPI(abc.Mapping):
     # Network settings
 
     @setting
+    def port(self):
+        """Port used to communicate with peers"""
+        return self._raw['peer-port']
+
+    async def get_port(self):
+        """Refresh cache and return `port`"""
+        await self.update()
+        return self.port
+
+    async def set_port(self, port):
+        """See `port`"""
+        await self._set({'peer-port': int(port)})
+
+
+    @setting
     def port_forwarding(self):
         """Whether UPnP/NAT-PMP is enabled"""
         return const.ENABLED if self._raw['port-forwarding-enabled'] else const.DISABLED
