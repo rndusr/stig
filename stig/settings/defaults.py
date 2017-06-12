@@ -109,10 +109,16 @@ def init_defaults(cfg):
     )
 
 
-from .settings_server import (RateLimitSrvValue, PathSrvValue, PathIncompleteSrvValue)
 
 def init_server_defaults(cfg, settingsapi):
+    from .settings_server import (BooleanSrvValue, PathSrvValue,
+                                  PathIncompleteSrvValue, RateLimitSrvValue)
     cfg.load(
+        BooleanSrvValue('srv.dht',
+                        description='Whether to use DHT for peer discovery',
+                        getter=lambda: settingsapi['dht'],
+                        setter=settingsapi.set_dht),
+
         RateLimitSrvValue('srv.limit.rate.up',
                           description='Combined upload rate limit',
                           getter=lambda: settingsapi['rate-limit-up'],
