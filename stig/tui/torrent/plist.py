@@ -43,6 +43,8 @@ class PeerListWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tfilter, pfilter, columns, sort=None, title=None):
         self._sort = sort
         self._sort_orig = sort
+        self._tfilter = tfilter
+        self._pfilter = pfilter
 
         # Create peer filter generator
         if pfilter is not None:
@@ -152,10 +154,10 @@ class PeerListWidget(urwid.WidgetWrap):
         # Create the fixed part of the title (everything minus the number of peers listed)
         # If title is not given, create one from filter and sort order
         if self._title is None:
-            # tfilter is either None or an actual TorrentFilter instance
-            title = str(tfilter or 'all')
-            if pfilter:
-                title += ' %s' % pfilter
+            # self._tfilter is either None or an actual TorrentFilter instance
+            title = str(self._tfilter or 'all')
+            if self._pfilter:
+                title += ' %s' % self._pfilter
         else:
             title = self._title
 
