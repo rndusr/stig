@@ -302,8 +302,22 @@ class SettingsAPI(abc.Mapping):
         else:
             await self._set({'incomplete-dir-enabled': bool(path)})
 
+    @setting
+    def part_files(self):
+        """Whether ".part" is appended to incomplete file names"""
+        return const.ENABLED if self._raw['rename-partial-files'] else const.DISABLED
 
-    # Other settings
+    async def get_part_files(self):
+        """Refresh cache and return `part_files`"""
+        await self.update()
+        return self.part_files
+
+    async def set_part_files(self, enabled):
+        """See `part_files`"""
+        await self._set({'rename-partial-files': bool(enabled)})
+
+
+    # Peer discovery settings
 
     @setting
     def dht(self):
@@ -349,6 +363,8 @@ class SettingsAPI(abc.Mapping):
         """Whether Peer Exchange should be used to disover peers"""
         await self._set({'pex-enabled': bool(enabled)})
 
+
+    # Other settings
 
     @setting
     def encryption(self):
