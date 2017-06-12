@@ -62,6 +62,38 @@ class SrvValueBase(ValueBase):
             log.debug('Valid value: %r', value)
 
 
+def is_server_setting(name):
+    """Whether setting `name` is managed by the server"""
+    if isinstance(name, ValueBase):
+        name = name.name
+    else:
+        name = str(name)
+
+    if name.startswith('srv.') and \
+       not name.startswith('srv.timeout') and \
+       not name.startswith('srv.url'):
+        return True
+    else:
+        return False
+
+
+class BooleanSrvValue(SrvValueBase, BooleanValue):
+    pass
+
+class PathSrvValue(SrvValueBase, PathValue):
+    pass
+
+
+class PathIncompleteSrvValue(PathSrvValue):
+    typename = 'path or bool'
+    def convert(self, value):
+        try:
+            # value may be something like 'on' or 'off'
+            return BooleanValue.convert(self, value)
+        except ValueError:
+            return super().convert(value)
+
+
 class RateLimitSrvValue(SrvValueBase, NumberValue):
     typename = 'number or bool'
     valuesyntax = ('[+=|-=]<NUMBER>[k|M|G|T|Ki|Mi|Gi|Ti][b|B] or '
@@ -101,31 +133,3 @@ class RateLimitSrvValue(SrvValueBase, NumberValue):
             pass
         else:
             super().validate(value)  # May raise ValueError
-
-
-class PathSrvValue(SrvValueBase, PathValue):
-    pass
-
-class PathIncompleteSrvValue(PathSrvValue):
-    typename = 'path or bool'
-    def convert(self, value):
-        try:
-            # value may be something like 'on' or 'off'
-            return BooleanValue.convert(self, value)
-        except ValueError:
-            return super().convert(value)
-
-
-def is_server_setting(name):
-    """Whether setting `name` is managed by the server"""
-    if isinstance(name, ValueBase):
-        name = name.name
-    else:
-        name = str(name)
-
-    if name.startswith('srv.') and \
-       not name.startswith('srv.timeout') and \
-       not name.startswith('srv.url'):
-        return True
-    else:
-        return False
