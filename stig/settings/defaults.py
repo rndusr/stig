@@ -137,6 +137,12 @@ def init_server_defaults(cfg, settingsapi):
                         getter=lambda: settingsapi['part-files'],
                         setter=settingsapi.set_part_files),
 
+        BooleanSrvValue('srv.port-forwarding',
+                        description=('Whether to instruct your router to forward the peer port '
+                                     'via UPnP or NAT-PMP'),
+                        getter=lambda: settingsapi['port-forwarding'],
+                        setter=settingsapi.set_port_forwarding),
+
 
         RateLimitSrvValue('srv.limit.rate.up',
                           description='Combined upload rate limit',
