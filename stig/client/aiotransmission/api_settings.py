@@ -334,7 +334,10 @@ class SettingsAPI(abc.Mapping):
 
     async def set_port(self, port):
         """See `port`"""
-        await self._set({'peer-port': int(port)})
+        if 0 < port < 65536:
+            await self._set({'peer-port': int(port)})
+        else:
+            raise ValueError('Must be between 0 and 65536: %r' % port)
 
 
     @setting
