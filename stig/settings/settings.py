@@ -282,8 +282,8 @@ class IntegerValue(NumberValue):
     _numbertype = 'integer'
 
 
-TRUE = ('enable', 'yes', 'on', 'true', '1')
-FALSE = ('disable', 'no', 'off', 'false', '0')
+TRUE = ('enabled', 'yes', 'on', 'true', '1')
+FALSE = ('disabled', 'no', 'off', 'false', '0')
 class BooleanValue(ValueBase):
     type = bool
     typename = 'boolean'
