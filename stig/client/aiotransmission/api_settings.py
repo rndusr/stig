@@ -400,6 +400,42 @@ class SettingsAPI(abc.Mapping):
         await self._set({'pex-enabled': bool(enabled)})
 
 
+    @setting
+    def peer_limit_global(self):
+        """Maximum number connections for all torrents combined"""
+        return self._raw['peer-limit-global']
+
+    async def get_peer_limit_global(self):
+        """Refresh cache and return `peer_limit_global`"""
+        await self.update()
+        return self.peer_limit_global
+
+    async def set_peer_limit_global(self, limit):
+        """See `peer_limit_global`"""
+        if 0 < limit < 65536:
+            await self._set({'peer-limit-global': int(limit)})
+        else:
+            raise ValueError('Must be between 0 and 65536')
+
+
+    @setting
+    def peer_limit_torrent(self):
+        """Maximum number connections per torrent"""
+        return self._raw['peer-limit-per-torrent']
+
+    async def get_peer_limit_torrent(self):
+        """Refresh cache and return `peer_limit_torrent`"""
+        await self.update()
+        return self.peer_limit_torrent
+
+    async def set_peer_limit_torrent(self, limit):
+        """See `peer_limit_torrent`"""
+        if 0 < limit < 65536:
+            await self._set({'peer-limit-per-torrent': int(limit)})
+        else:
+            raise ValueError('Must be between 0 and 65536')
+
+
     # Other settings
 
     @setting
