@@ -111,7 +111,7 @@ def init_defaults(cfg):
 
 
 def init_server_defaults(cfg, settingsapi):
-    from .settings_server import (BooleanSrvValue, PathSrvValue,
+    from .settings_server import (BooleanSrvValue, IntegerSrvValue, PathSrvValue,
                                   PathIncompleteSrvValue, RateLimitSrvValue)
     cfg.load(
         BooleanSrvValue('srv.dht',
@@ -132,10 +132,10 @@ def init_server_defaults(cfg, settingsapi):
                         getter=lambda: settingsapi['pex'],
                         setter=settingsapi.set_pex),
 
-        BooleanSrvValue('srv.part-files',
-                        description='Whether to append ".part" to incomplete file names',
-                        getter=lambda: settingsapi['part-files'],
-                        setter=settingsapi.set_part_files),
+        IntegerSrvValue('srv.port',
+                        description='Port used to communicate with peers',
+                        getter=lambda: settingsapi['port'],
+                        setter=settingsapi.set_port),
 
         BooleanSrvValue('srv.port-forwarding',
                         description=('Whether to instruct your router to forward the peer port '
@@ -152,6 +152,12 @@ def init_server_defaults(cfg, settingsapi):
                           description='Combined download rate limit',
                           getter=lambda: settingsapi['rate-limit-down'],
                           setter=settingsapi.set_rate_limit_down),
+
+
+        BooleanSrvValue('srv.part-files',
+                        description='Whether to append ".part" to incomplete file names',
+                        getter=lambda: settingsapi['part-files'],
+                        setter=settingsapi.set_part_files),
 
         PathSrvValue('srv.path.complete',
                      description='Where to put torrent files',
