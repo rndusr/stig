@@ -330,7 +330,7 @@ class SettingsAPI(abc.Mapping):
         return self.dht
 
     async def set_dht(self, enabled):
-        """Whether DHT should be used to disover peers"""
+        """See `dht`"""
         await self._set({'dht-enabled': bool(enabled)})
 
 
@@ -345,7 +345,7 @@ class SettingsAPI(abc.Mapping):
         return self.lpd
 
     async def set_lpd(self, enabled):
-        """Whether Local Peer Discovery should be used to disover peers"""
+        """See `lpd`"""
         await self._set({'lpd-enabled': bool(enabled)})
 
 
@@ -360,7 +360,7 @@ class SettingsAPI(abc.Mapping):
         return self.pex
 
     async def set_pex(self, enabled):
-        """Whether Peer Exchange should be used to disover peers"""
+        """See `pex`"""
         await self._set({'pex-enabled': bool(enabled)})
 
 
@@ -380,7 +380,7 @@ class SettingsAPI(abc.Mapping):
         return self.encryption
 
     async def set_encryption(self, encryption):
-        """Whether encryption is 'required', 'preferred' or 'tolerated'"""
+        """See `encryption`"""
         if encryption in ('required', 'preferred', 'tolerated'):
             await self._set({'encryption': encryption})
         else:
