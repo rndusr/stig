@@ -80,11 +80,29 @@ def is_server_setting(name):
 class BooleanSrvValue(SrvValueBase, BooleanValue):
     pass
 
+class PathSrvValue(SrvValueBase, PathValue):
+    pass
+
 class IntegerSrvValue(SrvValueBase, IntegerValue):
     pass
 
-class PathSrvValue(SrvValueBase, PathValue):
-    pass
+
+class PortSrvValue(SrvValueBase, IntegerValue):
+    typename = 'integer or "random"'
+
+    def validate(self, value):
+        if value is not None:
+            super().validate(value)  # May raise ValueError
+
+    def convert(self, value):
+        if value in (None, 'random'):
+            return None
+        else:
+            return super().convert(value)
+
+    def str(self, *args, **kwargs):
+        text = super().str(*args, **kwargs)
+        return 'random' if text == 'None' else text
 
 
 class PathIncompleteSrvValue(PathSrvValue):
