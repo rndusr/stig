@@ -228,6 +228,7 @@ class TransmissionRPC():
             # raise the same error, but that's too much recursion for my tiny,
             # little mind.
             elif self.__connect_exception is not None:
+                log.debug('Raising exception of other connect() call: %r', self.__connect_exception)
                 raise self.__connect_exception
 
             # Looks like we're connected.  Our intended timeout may differ
