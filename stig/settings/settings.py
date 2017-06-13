@@ -158,11 +158,13 @@ class ValueBase():
     def str(self, value=None, default=False):
         """Return prettily stringified value
 
-        value: None to return current value, or specific value that is converted
-               to the standard string representation for this type
+        value: None to use `value` property, or anything else
         default: Whether to return current or default value
 
-        This method must always return a string, even for invalid values.
+        If possible, `convert` should be used to parse `value`.
+
+        If `value` is invalid, `str(value)` or something similar should be
+        returned so we can provide pretty error messages.
         """
         if default:
             text = str(self.default)
