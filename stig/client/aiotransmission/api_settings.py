@@ -308,7 +308,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def part_files(self):
         """Whether ".part" is appended to incomplete file names"""
-        return const.ENABLED if self._raw['rename-partial-files'] else const.DISABLED
+        return bool(self._raw['rename-partial-files'])
 
     async def get_part_files(self):
         """Refresh cache and return `part_files`"""
@@ -343,7 +343,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def port_forwarding(self):
         """Whether UPnP/NAT-PMP is enabled"""
-        return const.ENABLED if self._raw['port-forwarding-enabled'] else const.DISABLED
+        return bool(self._raw['port-forwarding-enabled'])
 
     async def get_port_forwarding(self):
         """Refresh cache and return `port_forwarding`"""
@@ -358,7 +358,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def utp(self):
         """Whether UTP is used to discover peers"""
-        return const.ENABLED if self._raw['utp-enabled'] else const.DISABLED
+        return bool(self._raw['utp-enabled'])
 
     async def get_utp(self):
         """Refresh cache and return `utp`"""
@@ -373,7 +373,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def dht(self):
         """Whether DHT is used to discover peers"""
-        return const.ENABLED if self._raw['dht-enabled'] else const.DISABLED
+        return bool(self._raw['dht-enabled'])
 
     async def get_dht(self):
         """Refresh cache and return `dht`"""
@@ -388,7 +388,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def lpd(self):
         """Whether Local Peer Discovery is used to discover peers"""
-        return const.ENABLED if self._raw['lpd-enabled'] else const.DISABLED
+        return bool(self._raw['lpd-enabled'])
 
     async def get_lpd(self):
         """Refresh cache and return `lpd`"""
@@ -403,7 +403,7 @@ class SettingsAPI(abc.Mapping):
     @setting
     def pex(self):
         """Whether Peer Exchange is used to discover peers"""
-        return const.ENABLED if self._raw['pex-enabled'] else const.DISABLED
+        return bool(self._raw['pex-enabled'])
 
     async def get_pex(self):
         """Refresh cache and return `pex`"""
