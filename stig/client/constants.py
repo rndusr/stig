@@ -44,7 +44,7 @@ def get_constant(string, repr_str=None, bases=(), value=None, attrs={}):
     return _constants_cache[string]
 
 
-DISCONNECTED = get_constant('<unknown>', repr_str='disconnected')
+DISCONNECTED = get_constant('<disconnected>', repr_str='disconnected')
 UNLIMITED = get_constant('unlimited', bases=(float,), value='inf')
 DISABLED = get_constant('disabled', attrs={'__bool__': lambda self: False})
 ENABLED = get_constant('enabled', attrs={'__bool__': lambda self: True})
