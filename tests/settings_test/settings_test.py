@@ -1,7 +1,44 @@
 import unittest
-from stig.settings.settings import (Settings, StringValue, IntegerValue,
-                                     NumberValue, BooleanValue, PathValue,
-                                     ListValue, OptionValue)
+from stig.settings.settings import (Settings, ValueBase, StringValue,
+                                    IntegerValue, NumberValue, BooleanValue,
+                                    PathValue, ListValue, OptionValue)
+
+
+class TestValueBase(unittest.TestCase):
+    def setUp(self):
+        class TestValue(ValueBase):
+            pass
+        self.cls = TestValue
+        self.val = self.cls(name='foo', default=(1, 2, 3))
+        self.val.set('hello')
+
+    def test_str_from_current_value(self):
+        self.assertEqual(self.val.str(), 'hello')
+
+    def test_str_from_default_value(self):
+        self.assertEqual(self.val.str(default=True), '(1, 2, 3)')
+
+    def test_str_from_specific_value(self):
+        self.assertEqual(self.val.str(['x', 'y', 'z']), "['x', 'y', 'z']")
+
+
+class TestBooleanValue(unittest.TestCase):
+    def setUp(self):
+        self.val = BooleanValue(name='foo', default=0)
+        self.val.set('true')
+
+    def test_str_from_current_value(self):
+        self.assertEqual(self.val.str(), 'enabled')
+
+    def test_str_from_default_value(self):
+        self.assertEqual(self.val.str(default=True), 'disabled')
+
+    def test_str_from_specific_valid_value(self):
+        self.assertEqual(self.val.str(value='on'), 'enabled')
+
+    def test_str_from_specific_invalid_value(self):
+        self.assertEqual(self.val.str(value=('jibber', 'jabber')),
+                         "('jibber', 'jabber')")
 
 
 class TestNumberValue(unittest.TestCase):
