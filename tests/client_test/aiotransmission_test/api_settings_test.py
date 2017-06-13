@@ -190,9 +190,9 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_get_dht(self):
         self.rpc.fake_settings['dht-enabled'] = True
-        self.assertEqual((await self.api.get_dht()), const.ENABLED)
+        self.assertEqual((await self.api.get_dht()), True)
         self.rpc.fake_settings['dht-enabled'] = False
-        self.assertEqual((await self.api.get_dht()), const.DISABLED)
+        self.assertEqual((await self.api.get_dht()), False)
 
     async def test_set_dht(self):
         await self.api.set_dht(True)
@@ -207,9 +207,9 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_get_lpd(self):
         self.rpc.fake_settings['lpd-enabled'] = True
-        self.assertEqual((await self.api.get_lpd()), const.ENABLED)
+        self.assertEqual((await self.api.get_lpd()), True)
         self.rpc.fake_settings['lpd-enabled'] = False
-        self.assertEqual((await self.api.get_lpd()), const.DISABLED)
+        self.assertEqual((await self.api.get_lpd()), False)
 
     async def test_set_lpd(self):
         await self.api.set_lpd(True)
