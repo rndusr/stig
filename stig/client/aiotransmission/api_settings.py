@@ -324,8 +324,11 @@ class SettingsAPI(abc.Mapping):
 
     @setting
     def port(self):
-        """Port used to communicate with peers"""
-        return self._raw['peer-port']
+        """Port used to communicate with peers or `None` to pick a random port"""
+        if self._raw['peer-port-random-on-start']:
+            return None
+        else:
+            return self._raw['peer-port']
 
     async def get_port(self):
         """Refresh cache and return `port`"""
@@ -334,11 +337,13 @@ class SettingsAPI(abc.Mapping):
 
     async def set_port(self, port):
         """See `port`"""
-        if 0 < port < 65536:
-            await self._set({'peer-port': int(port)})
-        else:
-            raise ValueError('Must be between 0 and 65536')
-
+        args = {'peer-port-random-on-start': port is None}
+        if port is not None:
+            if 0 < port < 65536:
+                args['peer-port'] = int(port)
+            else:
+                raise ValueError('Must be between 0 and 65536')
+        await self._set(args)
 
     @setting
     def port_forwarding(self):
