@@ -169,7 +169,10 @@ class ValueBase():
         if default:
             text = str(self.default)
         elif value is not None:
-            text = str(value)
+            try:
+                text = str(self.convert(value))
+            except ValueError:
+                text = str(value)
         else:
             text = str(self.value)
 
