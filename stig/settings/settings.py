@@ -168,7 +168,7 @@ class ValueBase():
         else:
             text = str(self.value)
 
-        if text and (text[0] == ' ' or text[-1] == ' '):
+        if not text or (text[0] == ' ' or text[-1] == ' '):
             return repr(text)
         else:
             return text
