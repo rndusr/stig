@@ -75,7 +75,7 @@ class ValueBase():
 
     # Must be set by derived classes
     type = NotImplemented
-    typename = '<NOT IMPLEMENTED>'
+    typename = 'anything'
 
     @property
     def value(self): return self.__value
@@ -129,14 +129,14 @@ class ValueBase():
 
     def validate(self, value):
         """Raise ValueError if value is not valid"""
-        if not isinstance(value, self.type):
+        if self.type is not NotImplemented and not isinstance(value, self.type):
             raise ValueError('Not a {}'.format(self.typename))
 
     def convert(self, value):
         """Try to convert value to correct type before validation (e.g. str->int)
 
         Raise ValueError if impossible"""
-        if isinstance(value, self.type):
+        if self.type is NotImplemented or isinstance(value, self.type):
             return value
         try:
             if isinstance(value, abc.Iterable):
