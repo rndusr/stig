@@ -471,4 +471,4 @@ class SettingsAPI(abc.Mapping):
         if encryption in ('required', 'preferred', 'tolerated'):
             await self._set({'encryption': encryption})
         else:
-            raise ValueError("Must be 'required', 'preferred' or 'tolerated'" % encryption)
+            raise ValueError("Must be 'required', 'preferred' or 'tolerated'")
