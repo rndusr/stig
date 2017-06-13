@@ -111,8 +111,9 @@ def init_defaults(cfg):
 
 
 def init_server_defaults(cfg, settingsapi):
-    from .settings_server import (BooleanSrvValue, IntegerSrvValue, PathSrvValue,
-                                  PathIncompleteSrvValue, RateLimitSrvValue)
+    from .settings_server import (BooleanSrvValue, IntegerSrvValue,
+                                  PathSrvValue, PathIncompleteSrvValue,
+                                  RateLimitSrvValue, PortSrvValue)
 
     def mk(cls, name, setting, description):
         getter = lambda: settingsapi[setting]
@@ -129,8 +130,8 @@ def init_server_defaults(cfg, settingsapi):
         mk(BooleanSrvValue, 'srv.pex', 'pex',
            'Whether to use Peer Exchange to discover peers for public torrents'),
 
-        mk(IntegerSrvValue, 'srv.port', 'port',
-           'Port used to communicate with peers'),
+        mk(PortSrvValue, 'srv.port', 'port',
+           'Port used to communicate with peers or "random" to use a random port'),
         mk(BooleanSrvValue, 'srv.port-forwarding', 'port_forwarding',
            'Whether to instruct your router to forward the peer port via UPnP or NAT-PMP'),
 
