@@ -151,7 +151,7 @@ class LogWidget(urwid.WidgetWrap):
         scrl = self._scrollable
         pos = scrl.get_scrollpos()
         if direction == 'up':
-            pos -= lines
+            pos = max(0, pos - lines)
         elif direction == 'down':
             pos += lines
         scrl.set_scrollpos(pos)
