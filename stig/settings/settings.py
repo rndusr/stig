@@ -313,6 +313,15 @@ class BooleanValue(ValueBase):
     def validate(self, value):
         self.convert(value)
 
+    def str(self, value=None, default=False):
+        text = super().str(value, default)
+        if text == 'True':
+            return TRUE[0]
+        elif text == 'False':
+            return FALSE[0]
+        else:
+            return text
+
 
 class ListValue(ValueBase):
     type = list
