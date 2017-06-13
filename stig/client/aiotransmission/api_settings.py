@@ -477,3 +477,20 @@ class SettingsAPI(abc.Mapping):
             await self._set({'encryption': encryption})
         else:
             raise ValueError("Must be 'required', 'preferred' or 'tolerated'")
+
+
+    @setting
+    def autostart_torrents(self):
+        """Whether added torrents should be started automatically"""
+        return bool(self._raw['start-added-torrents'])
+
+    async def get_autostart_torrents(self):
+        """Refresh cache and return `autostart_torrents`"""
+        await self.update()
+        return self.autostart_torrents
+
+    async def set_autostart_torrents(self, enabled):
+        """See `autostart_torrents`"""
+        await self._set({'start-added-torrents': bool(enabled)})
+
+

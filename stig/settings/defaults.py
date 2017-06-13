@@ -151,6 +151,9 @@ def init_server_defaults(cfg, settingsapi):
            'Where to put torrent files'),
         mk(PathIncompleteSrvValue, 'srv.path.incomplete', 'path_incomplete',
            'Where to put incomplete torrent files'),
+
+        mk(BooleanSrvValue, 'srv.autostart-torrents', 'autostart_torrents',
+           'Automatically start torrents when they are added'),
     )
 
 
