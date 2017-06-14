@@ -135,6 +135,10 @@ def init_server_defaults(cfg, settingsapi):
         mk(BooleanSrvValue, 'srv.port-forwarding', 'port_forwarding',
            'Whether to instruct your router to forward the peer port via UPnP or NAT-PMP'),
 
+        mk(OptionSrvValue, 'srv.encryption', 'encryption',
+           'Protocol encryption policy; "required", "preferred" or "tolerated"',
+           options=('required', 'preferred', 'tolerated')),
+
         mk(IntegerSrvValue, 'srv.limit.peers.global', 'peer_limit_global',
            'Maximum number of connections for all torrents combined'),
         mk(IntegerSrvValue, 'srv.limit.peers.torrent', 'peer_limit_torrent',
