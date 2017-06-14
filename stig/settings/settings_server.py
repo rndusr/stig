@@ -86,6 +86,9 @@ class PathSrvValue(SrvValueBase, PathValue):
 class IntegerSrvValue(SrvValueBase, IntegerValue):
     pass
 
+class OptionSrvValue(SrvValueBase, OptionValue):
+    pass
+
 
 class PortSrvValue(SrvValueBase, IntegerValue):
     typename = 'integer or "random"'

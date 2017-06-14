@@ -111,7 +111,7 @@ def init_defaults(cfg):
 
 
 def init_server_defaults(cfg, settingsapi):
-    from .settings_server import (BooleanSrvValue, IntegerSrvValue,
+    from .settings_server import (BooleanSrvValue, IntegerSrvValue, OptionSrvValue,
                                   PathSrvValue, PathIncompleteSrvValue,
                                   RateLimitSrvValue, PortSrvValue)
 
