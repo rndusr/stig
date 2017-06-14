@@ -257,12 +257,13 @@ DEFAULT_KEYMAP = (
     {'context': 'torrentlist', 'key': 's .',       'action': 'sort --none'},
 
     # Torrent actions
-    {'context': 'torrent', 'key': 't v',       'action': 'verify'},
-    {'context': 'torrent', 'key': 't p',       'action': 'pause --toggle'},
-    {'context': 'torrent', 'key': 't P',       'action': 'start --toggle --force'},
     {'context': 'torrent', 'key': 't a',       'action': 'announce'},
     {'context': 'torrent', 'key': 't d',       'action': 'delete'},
     {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files'},
+    {'context': 'torrent', 'key': 't p',       'action': 'tab peerlist'},
+    {'context': 'torrent', 'key': 't s',       'action': 'start --toggle'},
+    {'context': 'torrent', 'key': 't S',       'action': 'start --toggle --force'},
+    {'context': 'torrent', 'key': 't v',       'action': 'verify'},
     {'context': 'torrent', 'key': 'enter',     'action': 'tab details'},
     {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab filelist'},
     {'context': 'torrent', 'key': 'space',     'action': 'mark --toggle --focus-next'},
