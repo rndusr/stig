@@ -23,13 +23,6 @@ questions and point out issues.
    have benefits on the CLI.
 
 
-* tui.logger
-
-** TODO Make log widget scrollable
-   How to scroll?  Do we need a command for that, like ~scrollog
-   up/down/pgup/pgdown~?  Is there a better way?
-
-
 * client
 
 ** TODO Better moving average for peer download rate estimation
