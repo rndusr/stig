@@ -23,6 +23,17 @@ questions and point out issues.
    have benefits on the CLI.
 
 
+* tui
+
+** TODO New command: settings
+   Create a new widget that lists all available server settings.  Available
+   settings should probably be provided as a list by SettingsAPI to make it
+   easier to support other BitTorrent clients with slightly different settings.
+
+   The settings command takes no arguments and opens the settings widget in the
+   current tab.
+
+
 * client
 
 ** TODO Better moving average for peer download rate estimation
