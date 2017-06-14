@@ -115,10 +115,10 @@ def init_server_defaults(cfg, settingsapi):
                                   PathSrvValue, PathIncompleteSrvValue,
                                   RateLimitSrvValue, PortSrvValue)
 
-    def mk(cls, name, setting, description):
+    def mk(cls, name, setting, description, **kwargs):
         getter = lambda: settingsapi[setting]
         setter = getattr(settingsapi, 'set_'+setting)
-        return cls(name, getter=getter, setter=setter, description=description)
+        return cls(name, getter=getter, setter=setter, description=description, **kwargs)
 
     cfg.load(
         mk(BooleanSrvValue, 'srv.utp', 'utp',
