@@ -17,7 +17,6 @@ import re
 import operator
 import os
 
-from . import keymap as km
 
 class CLIEditWidget(urwid.Edit):
     """Edit widget with readline keybindings callbacks and a history"""
