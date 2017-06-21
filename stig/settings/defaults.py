@@ -47,9 +47,8 @@ from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
 
 class SortOrderValue(SetValue):
     """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
-    def __init__(self, sortercls, *args, options=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.options = tuple(sortercls.SORTSPECS)
+    def __init__(self, sortercls, *args, **kwargs):
+        super().__init__(*args, options=tuple(sortercls.SORTSPECS), **kwargs)
 
     def validate(self, names):
         super().validate(name.strip('!.') for name in names)
