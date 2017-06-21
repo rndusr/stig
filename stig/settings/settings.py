@@ -22,13 +22,14 @@ class Settings():
 
     def __init__(self, *values):
         # _values and _values_dict hold the same instances; the list is to
-        # preserve order and the dict is for access via __getitem__, etc.
+        # preserve order and the dict is for fast access via __getitem__
         self._values = []
         self._values_dict = {}
         self._on_change = Signal()
         self.load(*values)
 
     def add(self, value):
+        assert isinstance(value, ValueBase), 'not a ValueBase: %r' % value
         self._values.append(value)
         self._values_dict[value.name] = value
 
@@ -64,107 +65,113 @@ class Settings():
 
 
 class ValueBase():
-    """Name:value pair with validation, default value and description"""
+    """Base class for *Value types"""
 
-    def __init__(self, name, default, description='No description available'):
+    _type = NotImplemented  # Something like int, str or tuple
+    typename = 'anything'   # User-readable explanation
+
+    def __init__(self, name, *, default=None, description=None):
         """Create new value"""
-        self.__name = name
-        self.__value = self.__default = self.convert(default)
-        self.__description = description
-        self.__on_change = Signal()
-
-    # Must be set by derived classes
-    type = NotImplemented
-    typename = 'anything'
-
-    @property
-    def value(self): return self.__value
+        self._name = name
+        if default is None:
+            self._value = self._default = None
+        else:
+            self._value = self._default = self.convert(default)
+            self.validate(self._default)
+        self._description = description or 'No description available'
+        self._on_change = Signal()
 
     @property
-    def name(self): return self.__name
+    def value(self): return self._value
+    @value.setter
+    def value(self, value): self.set(value)
 
     @property
-    def default(self): return self.__default
+    def name(self): return self._name
+    @name.setter
+    def name(self, name): self._name = str(name)
 
     @property
-    def description(self): return self.__description
+    def default(self): return self._default
+    @default.setter
+    def default(self, default):
+        self.validate(default)
+        self._default = default
 
-    def on_change(self, callback, autoremove=True):
-        """Pass this object to `callback` every time its value changes
-
-        `callback` may raise ValueError to revert the change (see `set`).
-
-        If `autoremove` is True, stop calling callback once it is garbage
-        collected.
-        """
-        self.__on_change.connect(callback, weak=autoremove)
+    @property
+    def description(self): return self._description
+    @description.setter
+    def description(self, description): self._description = str(description)
 
     def set(self, value):
         """Change value if valid, reset to default if None
 
-        Callbacks connected to `on_change` are passed this object every time a
-        value is changed.  If a callback raises ValueError, the change is
+        Callbacks connected to `on_change` get this object every time a value is
+        changed.  If one of the callbacks raises ValueError, the change is
         reverted and a ValueError is raised.
         """
         if value is None:
-            value = self.__default
+            value = self.default
         try:
             new_value = self.convert(value)
             self.validate(new_value)
         except ValueError as e:
-            raise ValueError('{} = {}: {}'.format(self.name, self.str(value), e))
+            raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
         else:
-            prev_value = self.__value
-            self.__value = new_value
+            prev_value = self.value
+            self._value = new_value
             # Callbacks can revert the change by raising ValueError
             try:
-                self.__on_change.send(self)
+                self._on_change.send(self)
             except ValueError as e:
-                self.__value = prev_value
-                raise ValueError('{} = {}: {}'.format(self.name, self.str(value), e))
+                self._value = prev_value
+                raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
 
     def get(self):
-        """Return current value"""
+        """Return current value
+
+        This method is usefull for retrieving values asynchronously as there are
+        no asynchronous properties.
+        """
         return self.value
 
     def validate(self, value):
-        """Raise ValueError if value is not valid"""
-        if self.type is not NotImplemented and not isinstance(value, self.type):
+        """Raise ValueError if value is not valid
+
+        The default implementation checks if `value` is of the type specified in
+        the class attribute `_type`, if it is specified (i.e. not
+        `NotImplemented`).
+
+        Additionally, subclasses may check for things like max/min length/number
+        (see `StringValue` and `NumberValue` for examples).
+        """
+        if self._type is not NotImplemented and not isinstance(value, self._type):
             raise ValueError('Not a {}'.format(self.typename))
 
     def convert(self, value):
         """Try to convert value to correct type before validation (e.g. str->int)
 
-        Raise ValueError if impossible"""
-        if self.type is NotImplemented or isinstance(value, self.type):
+        Raise ValueError if impossible
+        """
+        if self._type is NotImplemented or isinstance(value, self._type):
             return value
         try:
-            if isinstance(value, abc.Iterable):
-                return self.type(''.join(value))
-            else:
-                return self.type(value)
+            return self._type(value)
         except Exception:
             raise ValueError('Not a {}'.format(self.typename))
 
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return self.value == other.value
-        else:
-            return self.value == other
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def str(self, value=None, default=False):
+    def string(self, value=None, default=False):
         """Return prettily stringified value
 
-        value: None to use `value` property, or anything else
-        default: Whether to return current or default value
+        value: The value to stringify or `None` to use `value` property
+        default: Whether to stringify current or default value (setting this to
+                 True ignores the value argument)
 
-        If possible, `convert` should be used to parse `value`.
+        If possible, use `convert` to parse `value` before stringifying it.
 
         If `value` is invalid, `str(value)` or something similar should be
-        returned so we can provide pretty error messages.
+        returned so we can provide pretty error messages.  This method must not
+        raise any exceptions.
         """
         if default:
             text = str(self.default)
@@ -182,93 +189,178 @@ class ValueBase():
             return text
 
     def __str__(self):
-        return self.str()
+        return self.string()
 
     def __repr__(self):
         return '{}={!r}'.format(self.name, self.value)
 
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.value == other.value
+        else:
+            return self.value == other
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def on_change(self, callback, autoremove=True):
+        """Pass this object to `callback` every time its value changes
+
+        `callback` may raise ValueError to revert the change (see `set`).
+
+        If `autoremove` is True, stop calling callback once it is garbage
+        collected.
+        """
+        self._on_change.connect(callback, weak=autoremove)
+
 
 class StringValue(ValueBase):
-    type = str
+    """Simple string
+
+    Specify `minlen` and/or `maxlen` to limit the length of the string.
+    """
+    _type = str
+
     @property
     def typename(self):
         text = 'string'
-        if ((self._minlen == 1 or self._minlen == None) and
-            (self._maxlen == 1 or self._maxlen == None)):
+        if ((self.minlen == 1 or self.minlen == None) and
+            (self.maxlen == 1 or self.maxlen == None)):
             chrstr = 'character'
         else:
             chrstr = 'characters'
-        if self._minlen is not None and self._maxlen is not None:
-            if self._minlen == self._maxlen:
-                text += ' of {} {}'.format(self._minlen, chrstr)
+        if self.minlen is not None and self.maxlen is not None:
+            if self.minlen == self.maxlen:
+                text += ' of {} {}'.format(self.minlen, chrstr)
             else:
-                text += ' of {} to {} {}'.format(self._minlen, self._maxlen, chrstr)
-        elif self._minlen is not None:
-            text += ' of at least {} {}'.format(self._minlen, chrstr)
-        elif self._maxlen is not None:
-            text += ' of at most {} {}'.format(self._maxlen, chrstr)
+                text += ' of {} to {} {}'.format(self.minlen, self.maxlen, chrstr)
+        elif self.minlen is not None:
+            text += ' of at least {} {}'.format(self.minlen, chrstr)
+        elif self.maxlen is not None:
+            text += ' of at most {} {}'.format(self.maxlen, chrstr)
         return text
 
     def __init__(self, *args, minlen=None, maxlen=None, **kwargs):
-        if minlen is not None and maxlen is not None:
-            assert minlen <= maxlen, 'minimum string length must be <= maximum'
-        assert minlen is None or minlen >= 0, 'minimum string length must be >= 0'
-        assert maxlen is None or maxlen >= 0, 'maximum string length must be >= 0'
+        self._check_minlen_maxlen(minlen, maxlen)
         self._minlen = minlen
         self._maxlen = maxlen
         super().__init__(*args, **kwargs)
 
-    def validate(self, string):
-        if self._maxlen is not None and len(string) > self._maxlen:
-            raise ValueError('Too long (maximum length is {})'.format(self._maxlen))
-        if self._minlen is not None and len(string) < self._minlen:
-            raise ValueError('Too short (minimum length is {})'.format(self._minlen))
+    @staticmethod
+    def _check_minlen_maxlen(minlen, maxlen):
+        if minlen is not None and maxlen is not None:
+            if minlen > maxlen:
+                raise ValueError('minlen must be smaller than or equal to maxlen: minlen=%r, maxlen=%r' % (minlen, maxlen))
+        if minlen is not None and minlen <= 0:
+            raise ValueError('minlen must be > 0 or None')
+        if maxlen is not None and maxlen <= 0:
+            raise ValueError('maxlen must be > 0 or None')
+
+    def validate(self, value):
+        string = self.convert(value)
+        if self.maxlen is not None and len(string) > self.maxlen:
+            raise ValueError('Too long (maximum length is {})'.format(self.maxlen))
+        if self.minlen is not None and len(string) < self.minlen:
+            raise ValueError('Too short (minimum length is {})'.format(self.minlen))
+
+    @property
+    def minlen(self):
+        return self._minlen
+
+    @minlen.setter
+    def minlen(self, minlen):
+        self._check_minlen_maxlen(minlen, self.maxlen)
+        self._minlen = minlen
+        if minlen is not None:
+            for name in ('default', 'value'):
+                value = getattr(self, name)
+                if value is not None and len(value) < minlen:
+                    setattr(self, name, value.ljust(minlen))
+
+    @property
+    def maxlen(self):
+        return self._maxlen
+
+    @maxlen.setter
+    def maxlen(self, maxlen):
+        self._check_minlen_maxlen(self.minlen, maxlen)
+        self._maxlen = maxlen
+        if maxlen is not None:
+            for name in ('default', 'value'):
+                value = getattr(self, name)
+                if value is not None and len(value) > maxlen:
+                    setattr(self, name, value[:maxlen])
 
 
 class PathValue(StringValue):
+    """File system path
+
+    If `mustexist` evaluates to True, the path must exist on the local file system.
+    """
     typename = 'path'
 
     def __init__(self, *args, mustexist=False, **kwargs):
-        self.mustexist = mustexist
+        self._mustexist = mustexist
         super().__init__(*args, **kwargs)
 
-    def convert(self, path):
-        return os.path.expanduser(path)
-
-    def validate(self, path):
+    def validate(self, value):
+        path = self.convert(value)
         if self.mustexist and not os.path.exists(path):
             raise ValueError('No such file or directory')
 
-    def str(self, value=None, default=False):
-        """Tildify string"""
-        path = super().str(value=value, default=default)
+    def convert(self, value):
+        return os.path.expanduser(super().convert(value))
+
+    def string(self, value=None, default=False):
+        """Replace user home directory with '~'"""
+        path = super().string(value=value, default=default)
         if path.startswith(os.environ['HOME']):
             path = '~' + path[len(os.environ['HOME']):]
         return path
 
+    @property
+    def mustexist(self):
+        return self._mustexist
+
+    @mustexist.setter
+    def mustexist(self, mustexist):
+        self._mustexist = bool(mustexist)
+
 
 class NumberValue(ValueBase):
-    type = float
+    _type = float
     _numbertype = 'rational'
     valuesyntax = '[+=|-=]<NUMBER>'
-
-    def __init__(self, *args, min=None, max=None, **kwargs):
-        if min is not None and max is not None:
-            assert min <= max, 'minimum must be smaller or equal than maximum'
-        self._min = min
-        self._max = max
-        super().__init__(*args, **kwargs)
 
     @property
     def typename(self):
         text = '{} number'.format(self._numbertype)
-        if self._min is not None and self._max is not None:
-            text += ' {}-{}'.format(self._min, self._max)
-        elif self._min is not None:
-            text += ' >= {}'.format(self._min)
-        elif self._max is not None:
-            text += ' <= {}'.format(self._max)
+        if self.min is not None and self.max is not None:
+            text += ' {} - {}'.format(self.min, self.max)
+        elif self.min is not None:
+            text += ' >= {}'.format(self.min)
+        elif self.max is not None:
+            text += ' <= {}'.format(self.max)
         return text
+
+    def __init__(self, *args, min=None, max=None, **kwargs):
+        self._check_min_max(min, max)
+        self._min = min
+        self._max = max
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def _check_min_max(min, max):
+        if min is not None and max is not None:
+            if min > max:
+                raise ValueError('minimum must be smaller than or equal to maximum: min=%r, max=%r' % (min, max))
+
+    def validate(self, value):
+        num = self.convert(value)
+        if self.min is not None and num < self.min:
+            raise ValueError('Too small (minimum is {})'.format(self.min))
+        elif self.max is not None and num > self.max:
+            raise ValueError('Too big (maximum is {})'.format(self.max))
 
     def convert(self, value):
         if isinstance(value, str) and len(value) >= 3:
@@ -278,58 +370,171 @@ class NumberValue(ValueBase):
                 return self.value - super().convert(value[2:].strip())
         return super().convert(value)
 
-    def validate(self, value):
-        super().validate(value)
-        if self._min is not None and value < self._min:
-            raise ValueError('Too small (minimum is {})'.format(self._min))
-        elif self._max is not None and value > self._max:
-            raise ValueError('Too big (maximum is {})'.format(self._max))
+    @property
+    def min(self):
+        return self._min
+
+    @min.setter
+    def min(self, min):
+        self._check_min_max(min, self.max)
+        self._min = min
+        if min is not None:
+            if self.default is not None and self.default < min: self.default = min
+            if self.value is not None and self.value < min: self.value = min
+
+    @property
+    def max(self):
+        return self._max
+
+    @max.setter
+    def max(self, max):
+        self._check_min_max(self.min, max)
+        self._max = max
+        if max is not None:
+            if self.default is not None and self.default > max: self.default = max
+            if self.value is not None and self.value > max: self.value = max
+
 
 class IntegerValue(NumberValue):
-    type = int
+    """NumberValue that automatically converts values to `int`"""
+    _type = int
     _numbertype = 'integer'
+
+    def convert(self, value):
+        try:
+            # Try to convert float or str to int
+            return super().convert(value)
+        except ValueError as error:
+            # int cannot handle floats in string form (e.g. '10.3'), so we try
+            # do convert them to float first.  If that also doesn't work, raise
+            # *previous* exception.
+            try:
+                return super().convert(float(value))
+            except (ValueError, TypeError) as _:
+                raise error from None
 
 
 TRUE = ('enabled', 'yes', 'on', 'true', '1')
 FALSE = ('disabled', 'no', 'off', 'false', '0')
 class BooleanValue(ValueBase):
-    type = bool
+    """Boolean value
+
+    Supported strings are specified in the module-level variables `TRUE` and
+    `FALSE`.  Valid values are also the numbers 1/0 and `True`/`False`.  All
+    other values are invalid.
+    """
+    _type = bool
     typename = 'boolean'
     valuesyntax = '[%s]' % '|'.join('/'.join((t,f)) for t,f in zip(TRUE, FALSE))
+
+    def validate(self, value):
+        super().validate(self.convert(value))
 
     def convert(self, value):
         if isinstance(value, bool):
             return value
         elif isinstance(value, int):
-            if value in (0, 1):
-                return bool(value)
+            if value in (0, 1): return bool(value)
         elif isinstance(value, str):
-            if value.lower() in FALSE:
-                return False
-            elif value.lower() in TRUE:
-                return True
+            if value.lower() in FALSE:  return False
+            elif value.lower() in TRUE: return True
         raise ValueError('Not a {}'.format(self.typename))
 
-    def validate(self, value):
-        self.convert(value)
+    def string(self, value=None, default=False):
+        v = super().string(value, default)
+        if v == 'True':    return TRUE[0]
+        elif v == 'False': return FALSE[0]
+        else:              return v
 
-    def str(self, value=None, default=False):
-        text = super().str(value, default)
-        if text == 'True':
-            return TRUE[0]
-        elif text == 'False':
-            return FALSE[0]
+
+class OptionValue(ValueBase):
+    """Single value that can only be one of a predefined set of values"""
+
+    @property
+    def _type(self):
+        if self.options:
+            return type(self.options[0])
         else:
-            return text
+            raise RuntimeError('Cannot guess value type: {!r}'.format(self))
+
+    @property
+    def typename(self):
+        optvals = (str(o) for o in self.options)
+        return 'option: ' + ', '.join(optvals)
+
+    def __init__(self, *args, options=(), **kwargs):
+        self._options = tuple(options)
+        super().__init__(*args, **kwargs)
+
+    def validate(self, value):
+        value = self.convert(value)
+        if value not in self.options:
+            optvals = (str(o) for o in self.options)
+            raise ValueError('Not one of: {}'.format(', '.join(optvals)))
+
+    @property
+    def options(self):
+        """Iterable of all valid values"""
+        return self._options
+
+    @options.setter
+    def options(self, options):
+        if not isinstance(options, abc.Iterable):
+            raise ValueError('Not an iterable: %r', options)
+        else:
+            self._options = tuple(options)
+            for name in ('default', 'value'):
+                if getattr(self, name) not in self.options:
+                    setattr(self, name, self.options[0])
 
 
 class ListValue(ValueBase):
-    type = list
+    """A sequence of values
+
+    Set `options` to any iterable to limit the items allowed in the list.
+    """
+    _type = list
     typename = 'list'
 
     def __init__(self, *args, options=None, **kwargs):
         self._options = options
         super().__init__(*args, **kwargs)
+
+    def validate(self, value):
+        lst = self.convert(value)
+        super().validate(lst)
+
+        if self.options is not None:
+            # Only items in self.options are allowed
+            invalid_items = []
+            for item in lst:
+                if item not in self.options:
+                    invalid_items.append(item)
+
+            if invalid_items:
+                raise ValueError('Invalid value{}: {}'.format(
+                    's' if len(invalid_items) != 1 else '',
+                    self.string(invalid_items)))
+
+    def convert(self, value):
+        if isinstance(value, str):
+            return self._type(value.strip() for value in value.split(','))
+        elif isinstance(value, abc.Iterable):
+            return self._type(value)
+        else:
+            raise ValueError('Not a {}'.format(self.typename))
+
+    def string(self, value=None, default=False):
+        if default:
+            lst = self.default
+        elif value is not None:
+            try:
+                lst = self.convert(value)
+            except ValueError:
+                lst = str(value)
+        else:
+            lst = self.value
+        return ', '.join(str(item) for item in lst)
 
     @property
     def options(self):
@@ -342,49 +547,24 @@ class ListValue(ValueBase):
 
     @options.setter
     def options(self, options):
-        if isinstance(options, abc.Iterable):
+        if options is None:
+            self._options = None
+        elif isinstance(options, abc.Iterable):
             self._options = tuple(options)
+            # Purge new invalid items
+            for name in ('default', 'value'):
+                lst = getattr(self, name)
+                invalid_items = set(lst).difference(self.options)
+                for item in invalid_items:
+                    while item in lst:
+                        lst.remove(item)
         else:
-            raise TypeError('options must be sequence, not {}: {!r}'
-                            .format(type(options).__name__, options))
-
-    def convert(self, value):
-        if isinstance(value, str):
-            return self.type(value.strip() for value in value.split(','))
-        elif isinstance(value, abc.Iterable):
-            return self.type(value)
-        else:
-            raise ValueError('Not a {}'.format(self.typename))
-
-    def validate(self, lst):
-        if self.options is not None:
-            # Only items in self.options are allowed
-            invalid_items = []
-            for item in lst:
-                if item not in self.options:
-                    invalid_items.append(item)
-
-            if invalid_items:
-                raise ValueError('Invalid value{}: {}'.format(
-                    's' if len(invalid_items) != 1 else '',
-                    self.str(invalid_items)))
-
-    def str(self, value=None, default=False):
-        if default:
-            lst = self.default
-        elif value is not None:
-            try:
-                lst = self.convert(value)
-            except ValueError:
-                lst = str(value)
-        else:
-            lst = self.value
-        return ', '.join(str(item) for item in lst)
+            raise TypeError('options must be sequence or None, not %s: %r' % (type(options).__name__, options))
 
 
 class SetValue(ListValue):
     """ListValue with unique elements (order is preserved)"""
-    type = list
+    _type = list
     typename = 'set'
 
     def convert(self, value):
@@ -392,30 +572,3 @@ class SetValue(ListValue):
         # Make list items unique while preserving order
         seen = set()
         return [x for x in lst if not (x in seen or seen.add(x))]
-
-
-class OptionValue(ValueBase):
-    def __init__(self, *args, options=(), **kwargs):
-        self._options = tuple(options)
-        super().__init__(*args, **kwargs)
-
-    @property
-    def type(self):
-        if self._options:
-            return type(self._options[0])
-        else:
-            raise RuntimeError('Cannot guess value type: {!r}'.format(self))
-
-    @property
-    def typename(self):
-        optvals = sorted(str(o) for o in self._options)
-        return 'option: ' + ', '.join(optvals)
-
-    def validate(self, value):
-        if value not in self._options:
-            optvals = sorted(str(o) for o in self._options)
-            raise ValueError('Must be one of: {}'.format(', '.join(optvals)))
-
-    def convert(self, value):
-        self.validate(value)
-        return value
