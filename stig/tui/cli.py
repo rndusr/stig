@@ -22,7 +22,7 @@ class CLIEditWidget(urwid.Edit):
     """Edit widget with readline keybindings callbacks and a history"""
 
     def __init__(self, *args, on_change=None, on_accept=None, on_cancel=None,
-                 history_file=None, **kwargs):
+                 history_file=None, history_size=1000, **kwargs):
         kwargs['align'] = kwargs['align'] if 'align' in kwargs else 'left'
         kwargs['wrap'] = kwargs['wrap'] if 'wrap' in kwargs else 'clip'
         self._on_change = on_change
@@ -30,6 +30,7 @@ class CLIEditWidget(urwid.Edit):
         self._on_cancel = on_cancel
         self._edit_text_cache = ''
         self._history = []
+        self._history_size = history_size
         self._history_pos = -1
         self.history_file = history_file
         return super().__init__(*args, **kwargs)
@@ -168,6 +169,20 @@ class CLIEditWidget(urwid.Edit):
                 log.debug('Setting history_file=%r', self._history_file)
                 self._read_history()
 
+    @property
+    def history_size(self):
+        """Maximum number of lines kept in history"""
+        self._history_size
+
+    @property
+    def history_size(self):
+        """Maximum number of lines kept in history"""
+        return self._history_size
+
+    @history_size.setter
+    def history_size(self, size):
+        self._history_size = int(size)
+        self._trim_history()
 
 
 def _mkdir(path):
