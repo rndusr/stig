@@ -112,8 +112,8 @@ class HelpManager():
         lines = [v.name,
                  '\t' + v.description,
                  '\tType: \t' + v.typename,
-                 '\tValue: \t' + v.str(default=False),
-                 '\tDefault: \t' + v.str(default=True)]
+                 '\tValue: \t' + v.string(default=False),
+                 '\tDefault: \t' + v.string(default=True)]
         if hasattr(v, 'options'):
             lines.append('\tOptions: \t' + \
                          ', '.join(str(o) for o in sorted(v.options)))
