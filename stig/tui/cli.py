@@ -127,7 +127,7 @@ class CLIEditWidget(urwid.Edit):
 
     def _read_history(self):
         if self._history_file:
-            self._history = _read_lines(self._history_file)
+            self._history = list(reversed(_read_lines(self._history_file)))
 
     def _append_to_history(self, line):
         # Don't add the same line twice in a row
@@ -136,6 +136,23 @@ class CLIEditWidget(urwid.Edit):
         self._history.insert(0, line)
         if self._history_file is not None:
             _append_line(self._history_file, line)
+        self._trim_history()
+
+    def _trim_history(self):
+        max_size = self._history_size
+        if len(self._history) > max_size:
+            # Trim history in memory
+            self._history[:] = self._history[:max_size]
+
+        if len(self._history) > 0 and self._history_file:
+            # Trim history on disk
+            flines = _read_lines(self._history_file)
+            if len(flines) > max_size:
+                # Over-trim history to reduce number of writes
+                overtrim = max(0, min(int(self._history_size/2), 10))
+                flines = flines[-max(overtrim*2, self._history_size-overtrim):]
+                log.info('Re-writing %r history lines (most recent: %r)', len(flines), flines[-2:])
+                _write_lines(self._history_file, flines)
 
     @property
     def history_file(self):
@@ -176,7 +193,7 @@ def _read_lines(filepath):
     if os.path.exists(filepath):
         try:
             with open(filepath, 'r') as f:
-                return [line.strip() for line in reversed(f.readlines())]
+                return [line.strip() for line in f.readlines()]
         except OSError as e:
             log.error("Can't read history file {}: {}"
                       .format(filepath, e.strerror))
