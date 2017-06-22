@@ -14,13 +14,16 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-
+import shlex
 from . import make_tab_title_widget
 from .. import (InitCommand, ExpectedResource)
 
+# Import tui module only on demand
+def _get_KEYMAP_CONTEXTS():
+    from ...tui.main import KEYMAP_CONTEXTS
+    return KEYMAP_CONTEXTS
 
-from ...tui.main import KEYMAP_CONTEXTS
-import shlex
+
 class BindCmd(metaclass=InitCommand):
     name = 'bind'
     provides = {'tui'}
@@ -53,7 +56,7 @@ class BindCmd(metaclass=InitCommand):
              'actions in different contexts.'),
             '',
             'Available contexts are: ' + \
-              ', '.join('%s' % context for context in KEYMAP_CONTEXTS),
+              ', '.join('%s' % context for context in _get_KEYMAP_CONTEXTS()),
             '',
             'EXAMPLE',
             '\tbind --context torrent ctrl-t start',
@@ -95,7 +98,7 @@ class BindCmd(metaclass=InitCommand):
         else:
             action = ' '.join(shlex.quote(x) for x in ACTION)
 
-        if context is not None and context not in KEYMAP_CONTEXTS:
+        if context is not None and context not in _get_KEYMAP_CONTEXTS():
             log.error('Invalid context: {!r}'.format(context))
             return False
         try:
@@ -132,7 +135,7 @@ class UnbindCmd(metaclass=InitCommand):
         if all:
             keymap.clear()
 
-        if context is not None and context not in KEYMAP_CONTEXTS:
+        if context is not None and context not in _get_KEYMAP_CONTEXTS():
             log.error('Invalid context: {!r}'.format(context))
             return False
 
