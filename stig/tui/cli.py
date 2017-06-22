@@ -178,6 +178,19 @@ def _read_lines(filepath):
             log.error("Can't read history file {}: {}"
                       .format(filepath, e.strerror))
     return []
+
+
+def _write_lines(filepath, lines):
+    try:
+        with open(filepath, 'w') as f:
+            for line in lines:
+                f.write(line.strip('\n') + '\n')
+    except OSError as e:
+        log.error("Can't write history file {}: {}".format(filepath, e.strerror))
+    else:
+        return True
+
+
 def _append_line(filepath, line):
     try:
         with open(filepath, 'a') as f:
