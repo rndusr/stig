@@ -62,10 +62,14 @@ def _set_poll_interval(seconds):
 cfg['tui.poll'].on_change(_set_poll_interval)
 
 
-def _set_cli_history(histfile):
+def _set_cli_history_file(histfile):
     tui.cli.original_widget.history_file = histfile.value
+cfg['tui.cli.history-file'].on_change(_set_cli_history_file)
 
-cfg['tui.cli.history'].on_change(_set_cli_history)
+
+def _set_cli_history_size(histsize):
+    tui.cli.original_widget.history_size = histsize.value
+cfg['tui.cli.history-size'].on_change(_set_cli_history_size)
 
 
 def _set_autohide_delay(seconds):
