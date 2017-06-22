@@ -146,8 +146,9 @@ class CLIEditWidget(urwid.Edit):
         if path is None:
             self._history_file = None
         else:
-            if _mkdir(os.path.dirname(path)) and _testwrite(path):
+            if _mkdir(os.path.dirname(path)) and _test_access(path):
                 self._history_file = os.path.abspath(os.path.expanduser(path))
+                log.debug('Setting history_file=%r', self._history_file)
                 self._read_history()
 
 
@@ -161,13 +162,15 @@ def _mkdir(path):
     else:
         return True
 
-def _testwrite(path):
+
+def _test_access(path):
     try:
-        open(path, 'a')
+        with open(path, 'a'): pass
     except OSError as e:
-        log.error("Can't append to history file {}: {}".format(path, e.strerror))
+        log.error("Can't read/write history file {}: {}".format(path, e.strerror))
     else:
         return True
+
 
 def _read_lines(filepath):
     if os.path.exists(filepath):
