@@ -21,8 +21,8 @@ from ..client import convert
 
 
 class SrvValueBase(ValueBase):
-    def __init__(self, name, getter, setter, description='No description available', **kwargs):
-        super().__init__(name, default=const.DISCONNECTED, description=description, **kwargs)
+    def __init__(self, name, *, getter, setter, **kwargs):
+        super().__init__(name, default=const.DISCONNECTED, **kwargs)
         self._getter = getter
         self._setter = setter
 
