@@ -3,12 +3,14 @@
     * The default keybindings to start/stop torrents have changed from <t+p> and
       <t+P> to <t+s> and <t+S> (so we can open the peer list with <t+p>)
     * The 'clearlog' command has been replaced by the 'log' command
+    * The setting 'tui.cli.history' has been renamed to 'tui.cli.history-file'
     * For boolean settings, 'enable/disable' have been replaced by
       'enabled/disabled'
 
   Other changes:
     * New command 'log' can clear the log, scroll up/down and append info/error
       messages to it
+    * New setting: tui.cli.history-size
     * New server settings: srv.utp, srv.dht, srv.pex, srv.lpd, srv.port,
       srv.port-forwarding, srv.limit.peers.global, srv.limit.peers.torrent,
       srv.autostart-torrents, srv.part-files, srv.encryption
