@@ -103,8 +103,8 @@ class PortSrvValue(SrvValueBase, IntegerValue):
         else:
             return super().convert(value)
 
-    def str(self, *args, **kwargs):
-        text = super().str(*args, **kwargs)
+    def string(self, *args, **kwargs):
+        text = super().string(*args, **kwargs)
         return 'random' if text == 'None' else text
 
 
