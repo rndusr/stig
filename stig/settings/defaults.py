@@ -84,7 +84,7 @@ def init_defaults(cfg):
         NumberValue('tui.log.autohide', default=10, min=0,
                     description=('If the log is hidden, show it for this many seconds '
                                  'for new log entries before hiding it again')),
-        PathValue('tui.cli.history', default=DEFAULT_HISTORY_FILE,
+        PathValue('tui.cli.history-file', default=DEFAULT_HISTORY_FILE,
                   description='Path to TUI command line history file'),
         NumberValue('tui.poll', default=5, min=0.1,
                     description='Interval in seconds between TUI updates'),
