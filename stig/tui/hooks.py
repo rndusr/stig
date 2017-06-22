@@ -31,13 +31,11 @@ def _connect_to_new_url(url):
         except ClientError as e:
             pass
     aioloop.create_task(coro())
-
 cfg['srv.url'].on_change(_connect_to_new_url)
 
 
 def _update_pollers(seconds):
     tui.srvapi.poll()
-
 srvapi.rpc.on('connected', _update_pollers)
 
 
@@ -45,7 +43,6 @@ def _clear_list_widgets(seconds):
     for widget in tui.tabs.contents:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
-
 srvapi.rpc.on('disconnected', _clear_list_widgets)
 
 
@@ -54,7 +51,6 @@ def _refresh_lists(value):
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
     tui.srvapi.poll()
-
 cfg['unit.bandwidth'].on_change(_refresh_lists)
 cfg['unit.size'].on_change(_refresh_lists)
 cfg['unitprefix.bandwidth'].on_change(_refresh_lists)
@@ -63,7 +59,6 @@ cfg['unitprefix.size'].on_change(_refresh_lists)
 
 def _set_poll_interval(seconds):
     tui.srvapi.interval = seconds.value
-
 cfg['tui.poll'].on_change(_set_poll_interval)
 
 
@@ -75,13 +70,11 @@ cfg['tui.cli.history'].on_change(_set_cli_history)
 
 def _set_autohide_delay(seconds):
     tui.logwidget.autohide_delay = seconds.value
-
 cfg['tui.log.autohide'].on_change(_set_autohide_delay)
 
 
 def _set_log_height(rows):
     tui.logwidget.height = rows.value
-
 cfg['tui.log.height'].on_change(_set_log_height)
 
 
@@ -90,7 +83,6 @@ def _set_theme(themefile):
         tui.load_theme(themefile.value)
     except tui.theme.ThemeError as e:
         raise ValueError(e)
-
 cfg['tui.theme'].on_change(_set_theme)
 
 
@@ -101,15 +93,12 @@ def _set_tui_marked_char(methodname, setting):
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget)):
             widget.refresh_marks()
-
 cfg['tui.marked.on'].on_change(partial(_set_tui_marked_char, 'set_marked_char'), autoremove=False)
 cfg['tui.marked.off'].on_change(partial(_set_tui_marked_char, 'set_unmarked_char'), autoremove=False)
-
 _set_tui_marked_char('set_marked_char', cfg['tui.marked.on'])
 _set_tui_marked_char('set_unmarked_char', cfg['tui.marked.off'])
 
 
 def _update_quickhelp(keymap):
     tui.topbar.help.update()
-
 tui.keymap.on_bind_unbind(_update_quickhelp)
