@@ -86,6 +86,8 @@ def init_defaults(cfg):
                                  'for new log entries before hiding it again')),
         PathValue('tui.cli.history-file', default=DEFAULT_HISTORY_FILE,
                   description='Path to TUI command line history file'),
+        PathValue('tui.cli.history-size', default=10000,
+                  description='Maximum number of lines in history file'),
         NumberValue('tui.poll', default=5, min=0.1,
                     description='Interval in seconds between TUI updates'),
 
