@@ -152,7 +152,6 @@ class CLIEditWidget(urwid.Edit):
                 # Over-trim history to reduce number of writes
                 overtrim = max(0, min(int(self._history_size/2), 10))
                 flines = flines[-max(overtrim*2, self._history_size-overtrim):]
-                log.info('Re-writing %r history lines (most recent: %r)', len(flines), flines[-2:])
                 _write_lines(self._history_file, flines)
 
     @property
