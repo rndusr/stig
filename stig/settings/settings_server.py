@@ -63,18 +63,9 @@ class SrvValueBase(ValueBase):
 
 
 def is_server_setting(name):
-    """Whether setting `name` is managed by the server"""
-    if isinstance(name, ValueBase):
-        name = name.name
-    else:
-        name = str(name)
-
-    if name.startswith('srv.') and \
-       not name.startswith('srv.timeout') and \
-       not name.startswith('srv.url'):
-        return True
-    else:
-        return False
+    """Whether setting `name` (`str` or `ValueBase` instance) is managed by the server"""
+    name_str = name.name if isinstance(name, ValueBase) else str(name)
+    return name_str.startswith('srv.') and name_str not in ('srv.timeout', 'srv.url')
 
 
 class BooleanSrvValue(SrvValueBase, BooleanValue):
