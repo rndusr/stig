@@ -40,7 +40,7 @@ class SrvValueBase(ValueBase):
             raise ValueError("Can't change server setting {}: {}".format(self.name, e))
         except ValueError as e:
             log.debug('%s while setting %s to %r: %s', type(e).__name__, self.name, value, e)
-            raise ValueError('{} = {}: {}'.format(self.name, self.str(value), e))
+            raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
         else:
             log.debug('Successfully set %s to %r', self.name, value)
 
