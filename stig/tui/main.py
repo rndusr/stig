@@ -117,7 +117,7 @@ def _create_cli_widget():
 
     return CLIEditWidget(':',
                          on_accept=on_accept, on_cancel=on_cancel,
-                         history_file=cfg['tui.cli.history'].value)
+                         history_file=cfg['tui.cli.history-file'].value)
 
 
 def _greedy_spacer():
