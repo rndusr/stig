@@ -151,15 +151,6 @@ class CLIEditWidget(urwid.Edit):
                 self._read_history()
 
 
-def _read_lines(filepath):
-    if  os.path.exists(filepath):
-        try:
-            with open(filepath, 'r') as f:
-                return [line.strip() for line in reversed(f.readlines())]
-        except OSError as e:
-            log.error("Can't read history file {}: {}"
-                      .format(filepath, e.strerror))
-    return []
 
 def _mkdir(path):
     try:
@@ -178,6 +169,15 @@ def _testwrite(path):
     else:
         return True
 
+def _read_lines(filepath):
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'r') as f:
+                return [line.strip() for line in reversed(f.readlines())]
+        except OSError as e:
+            log.error("Can't read history file {}: {}"
+                      .format(filepath, e.strerror))
+    return []
 def _append_line(filepath, line):
     try:
         with open(filepath, 'a') as f:
