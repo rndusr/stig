@@ -194,7 +194,7 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'meta-B', 'action': 'tui toggle bottombar'},
 
     # Log messages
-    {'context': 'main', 'key': 'ctrl-l',   'action': 'log clear'},
+    {'context': 'main', 'key': 'ctrl-l',   'action': 'tui toggle log'},
     {'context': 'main', 'key': 'alt-pgup', 'action': 'log scroll page up'},
     {'context': 'main', 'key': 'alt-pgdn', 'action': 'log scroll page down'},
     {'context': 'main', 'key': 'alt-home', 'action': 'log scroll top'},
