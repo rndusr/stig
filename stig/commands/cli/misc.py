@@ -14,7 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ..base import help as base
+from ..base import misc as base
 
 
 class HelpCmd(base.HelpCmdbase):

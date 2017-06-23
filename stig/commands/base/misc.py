@@ -22,7 +22,7 @@ TOPIC_DELIMITER = ['', '='*50, '']
 class HelpCmdbase(metaclass=InitCommand):
     name = 'help'
     aliases = ('man',)
-    category = 'misc'
+    category = 'miscellaneous'
     provides = set()
     description = 'List or explain commands and settings'
     usage = ('help [<TOPIC> <TOPIC> <TOPIC> ...]',)
@@ -68,7 +68,7 @@ class HelpCmdbase(metaclass=InitCommand):
 
 class VersionCmdbase(metaclass=InitCommand):
     name = 'version'
-    category = 'misc'
+    category = 'miscellaneous'
     provides = set()
     description = 'Show {} version'.format(APPNAME)
 

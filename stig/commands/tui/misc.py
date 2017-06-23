@@ -15,7 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 
-from ..base import help as base
+from ..base import misc as base
 from .. import ExpectedResource
 from .utils import make_tab_title_widget
 

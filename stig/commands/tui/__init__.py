@@ -12,6 +12,6 @@
 """Commands for the TUI"""
 
 from .config import *
-from .help import *
+from .misc import *
 from .torrent import *
 from .tui import *

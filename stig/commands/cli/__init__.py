@@ -12,5 +12,5 @@
 """Commands for the CLI"""
 
 from .config import *
-from .help import *
+from .misc import *
 from .torrent import *
