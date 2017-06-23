@@ -44,3 +44,43 @@ class HelpCmd(base.HelpCmdbase):
 
 class VersionCmd(base.VersionCmdbase):
     provides = {'tui'}
+
+
+class LogCmd(base.LogCmdbase):
+    provides = {'tui'}
+    tui = ExpectedResource
+
+    def _do(self, action, *args):
+        logwidget = self.tui.logwidget
+        if action == 'clear':
+            if len(tuple(logwidget.entries)) < 1:
+                return False
+            else:
+                logwidget.clear()
+
+        elif action == 'scroll':
+            args = ' '.join(args)
+            if args == 'up':
+                logwidget.scroll_relative('up', 1)
+            elif args == 'down':
+                logwidget.scroll_relative('down', 1)
+            elif args == 'page up':
+                logwidget.scroll_relative('up', logwidget.height-1)
+            elif args == 'page down':
+                logwidget.scroll_relative('down', logwidget.height-1)
+            elif args == 'top':
+                logwidget.scroll_to('top')
+            elif args == 'bottom':
+                logwidget.scroll_to('bottom')
+            else:
+                log.error('%s: Invalid arguments for "scroll": %r', self.name, args)
+                return False
+
+        else:
+            cmd_str = '%s %s' % (self.name, action)
+            if args:
+                cmd_str += ' ' + ' '.join(args)
+            log.error('Unsupported action: %s', cmd_str)
+
+        return True
+

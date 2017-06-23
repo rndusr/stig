@@ -75,3 +75,45 @@ class VersionCmdbase(metaclass=InitCommand):
     def run(self):
         log.info('{} version {}'.format(APPNAME, __version__))
         return True
+
+
+class LogCmdbase(metaclass=InitCommand):
+    name = 'log'
+    provides = set()
+    category = 'miscellaneous'
+    description = 'Clear, add or scroll through log messages'
+    usage = ('log <ACTION> [<PARAMETERS>]',)
+    examples = ('log clear',
+                'log scroll up',
+                'log scroll page down',
+                'log error Holy crap, Batman!')
+    argspecs = (
+        { 'names': ('ACTION',), 'nargs': 'REMAINDER',
+          'description': ('"clear", "scroll", "info" or "error"; '
+                          'see the sections below for more information') },
+    )
+
+    more_sections = { 'clear': ('Remove all previously logged messages in the TUI.  '
+                                'This action ignores all PARAMETERS.',),
+                      'scroll': ('Scroll the log messages up or down in the TUI.  '
+                                 'Valid PARAMETERS are "up", "down", "page up", "page down", '
+                                 '"top" and "bottom".',),
+                      'info': ('Take all PARAMETERS and display them as a normal message.',),
+                      'error': ('Take all PARAMETERS and display them as an error message.',),
+    }
+
+    def run(self, ACTION):
+        if len(ACTION) < 1:
+            log.error('%s: Missing arguments', self.name)
+            return False
+        elif ACTION[0] == 'clear':
+            return self._do('clear', *ACTION[1:])
+        elif ACTION[0] == 'scroll':
+            return self._do('scroll', *ACTION[1:])
+        elif ACTION[0] == 'error':
+            log.error(' '.join(ACTION[1:]))
+        elif ACTION[0] == 'info':
+            log.info(' '.join(ACTION[1:]))
+        else:
+            log.info(' '.join(ACTION))
+        return True

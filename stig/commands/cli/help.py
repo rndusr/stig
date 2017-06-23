@@ -41,3 +41,12 @@ class HelpCmd(base.HelpCmdbase):
 
 class VersionCmd(base.VersionCmdbase):
     provides = {'cli'}
+
+
+class LogCmd(base.LogCmdbase):
+    provides = {'cli'}
+
+    def _do(self, action, *args):
+        cmd_str = '%s %s %s' % (self.name, action, ' '.join(args))
+        log.error('Unsupported command in CLI mode: %s', cmd_str)
+        return False
