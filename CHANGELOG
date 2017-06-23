@@ -15,6 +15,10 @@
       srv.port-forwarding, srv.limit.peers.global, srv.limit.peers.torrent,
       srv.autostart-torrents, srv.part-files, srv.encryption
     * New default keybinding: <t+p> opens a torrent's peer list
+    * <ctrl-l> now hides/shows the log instead of clearing it
+    * The 'rc' command is now available on the CLI
+    * The 'rc' command no longer fails if it encounters a command that is not
+      supported by the active interface
 
 
 2017-06-13 0.7.3a
