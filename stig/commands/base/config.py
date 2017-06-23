@@ -54,8 +54,9 @@ class RcCmdbase(metaclass=InitCommand):
             for cmdline in lines:
                 log.debug('  %r', cmdline)
                 success = await self.cmdmgr.run_async(cmdline)
-                if not success:
+                if success is False:
                     return False
+            return True
 
 
 class ResetCmdbase(metaclass=InitCommand):
