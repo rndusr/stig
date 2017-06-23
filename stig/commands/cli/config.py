@@ -13,6 +13,9 @@
 
 from ..base import config as base
 
+class RcCmd(base.RcCmdbase):
+    provides = {'cli'}
+
 class ResetCmd(base.ResetCmdbase):
     provides = {'cli'}
 

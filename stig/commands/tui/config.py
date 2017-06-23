@@ -13,6 +13,9 @@
 
 from ..base import config as base
 
+class RcCmd(base.RcCmdbase):
+    provides = {'tui'}
+
 class ResetCmd(base.ResetCmdbase):
     provides = {'tui'}
 

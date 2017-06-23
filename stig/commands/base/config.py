@@ -18,6 +18,46 @@ from .. import (InitCommand, ExpectedResource, utils)
 from asyncio import iscoroutinefunction
 
 
+class RcCmdbase(metaclass=InitCommand):
+    name = 'rc'
+    aliases = ('source',)
+    category = 'configuration'
+    provides = {'tui'}
+    description = 'Run commands in rc file'
+    usage = ('rc <FILE>',)
+    examples = ('rc rc.example   # Load $XDG_CONFIG_HOME/.config/{APPNAME}/rc.example',)
+    argspecs = (
+        {'names': ('FILE',),
+         'description': ('Path to rc file; if FILE does not start with '
+                         "'.', '~' or '/', $XDG_CONFIG_HOME/.config/{APPNAME}/ "
+                         'is prepended')},
+    )
+    cmdmgr = ExpectedResource
+
+    async def run(self, FILE):
+        from ...settings import rcfile
+        from ...settings.defaults import DEFAULT_RCFILE
+        import os
+
+        if FILE[0] not in (os.sep, '.', '~'):
+            FILE = '{}{}{}'.format(os.path.dirname(DEFAULT_RCFILE),
+                                   os.sep,
+                                   FILE)
+
+        try:
+            lines = rcfile.read(FILE)
+        except rcfile.RcFileError as e:
+            log.error('Loading rc file failed: {}'.format(e))
+            return False
+        else:
+            log.debug('Running commands from rc file: %r', FILE)
+            for cmdline in lines:
+                log.debug('  %r', cmdline)
+                success = await self.cmdmgr.run_async(cmdline)
+                if not success:
+                    return False
+
+
 class ResetCmdbase(metaclass=InitCommand):
     name = 'reset'
     category = 'misc'
