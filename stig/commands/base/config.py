@@ -60,7 +60,7 @@ class RcCmdbase(metaclass=InitCommand):
 
 class ResetCmdbase(metaclass=InitCommand):
     name = 'reset'
-    category = 'misc'
+    category = 'configuration'
     provides = set()
     description = 'Reset settings to their default values'
     usage = ('reset <NAME> <NAME> <NAME> ...',)
@@ -93,7 +93,7 @@ class ResetCmdbase(metaclass=InitCommand):
 
 class SetCmdbase(metaclass=InitCommand):
     name = 'set'
-    category = 'misc'
+    category = 'configuration'
     provides = set()
     description = 'Change values of settings'
     usage = ('set <NAME> <VALUE>',)
