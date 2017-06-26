@@ -277,6 +277,8 @@ DEFAULT_KEYMAP = (
     {'context': 'peerlist', 'key': 's D',       'action': 'sort --add !rate-down'},
     {'context': 'peerlist', 'key': 's e',       'action': 'sort --add eta'},
     {'context': 'peerlist', 'key': 's E',       'action': 'sort --add !eta'},
+    {'context': 'peerlist', 'key': 's i',       'action': 'sort --add ip'},
+    {'context': 'peerlist', 'key': 's I',       'action': 'sort --add !ip'},
     {'context': 'peerlist', 'key': 's l',       'action': 'sort --add client'},
     {'context': 'peerlist', 'key': 's L',       'action': 'sort --add !client'},
     {'context': 'peerlist', 'key': 's p',       'action': 'sort --add progress'},
