@@ -192,7 +192,8 @@ class ValueBase():
         return self.string()
 
     def __repr__(self):
-        return '{}={!r}'.format(self.name, self.value)
+        v = self.value
+        return '%s=%s' % (self.name, '<unspecified>' if v is None else repr(v))
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
