@@ -385,7 +385,10 @@ class Torrent(base.TorrentBase):
             raw = self._raw
             if key in _MODIFY:
                 # Modifier gets the whole raw torrent
-                value = _MODIFY[key](raw)
+                try:
+                    value = _MODIFY[key](raw)
+                except ZeroDivisionError:
+                    value = 0
             else:
                 # Copy raw value unmodified
                 fields = DEPENDENCIES[key]
