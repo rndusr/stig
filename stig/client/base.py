@@ -61,7 +61,6 @@ class TorrentBase(abc.Mapping):
 
 
 from collections import abc
-from . import tkeys
 class TorrentFileTreeBase(abc.Mapping):
     """Nested mapping of a Torrent's files"""
 
