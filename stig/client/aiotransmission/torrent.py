@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+"""Torrent class and value modifiers for compatibility with ttypes"""
+
 from ...logging import make_logger
 log = make_logger(__name__)
 
