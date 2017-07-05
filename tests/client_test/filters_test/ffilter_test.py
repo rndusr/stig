@@ -1,5 +1,5 @@
 from stig.client.filters.ffilter import (TorrentFileFilter)
-from stig.client.tkeys import TorrentFile
+from stig.client.ttypes import TorrentFile
 
 import unittest
 

@@ -1,6 +1,6 @@
 from stig.client.aiotransmission.api_status import StatusAPI
 from stig.client import constants as const
-from stig.client.tkeys import Status
+from stig.client.ttypes import Status
 
 import resources_aiotransmission as rsrc
 
