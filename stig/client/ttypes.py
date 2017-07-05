@@ -29,12 +29,12 @@ log = make_logger(__name__)
 from collections import abc
 from .utils import pretty_float
 import os
+from itertools import chain
+import re
 
 from . import constants as const
 
 
-from itertools import chain
-import re
 class Number(float):
     """float with a nice string representation; also parses strings like '123K' or '123Mi'"""
 
