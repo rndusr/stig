@@ -14,7 +14,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from .tkeys import Number
+from .ttypes import Number
 
 
 class _DataCountConverter():

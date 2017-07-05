@@ -202,7 +202,7 @@ class TorrentAPI():
         """Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: 'ALL' for all supported Torrent keys or a sequence of key
-              strings (see client.tkeys.TYPES for available keys)
+              strings (see client.ttypes.TYPES for available keys)
         ids: None for all torrents or a sequence of wanted IDs
         autoconnect: Wether to attempt to connect automatically if not
                      connected; if False and not connected, return None

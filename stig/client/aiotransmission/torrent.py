@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import tkeys as tkeys
+from .. import ttypes
 from .. import utils
 from .. import base
 
@@ -24,9 +24,9 @@ def _modify_ratio(t):
     #define TR_RATIO_INF -2
     ratio = t['uploadRatio']
     if ratio == -1:
-        return tkeys.Ratio.NOT_APPLICABLE
+        return ttypes.Ratio.NOT_APPLICABLE
     elif ratio == -2:
-        return tkeys.Ratio.UNKNOWN
+        return ttypes.Ratio.UNKNOWN
     else:
         return ratio
 
@@ -36,14 +36,14 @@ def _modify_eta(t):
     #define TR_ETA_UNKNOWN -2
     seconds = t['eta']
     if seconds == -1:
-        return tkeys.Timedelta.NOT_APPLICABLE
+        return ttypes.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
-        return tkeys.Timedelta.UNKNOWN
+        return ttypes.Timedelta.UNKNOWN
     else:
         return seconds
 
 
-def _modify_timestamp(t, key, zero_means=tkeys.Timestamp.UNKNOWN):
+def _modify_timestamp(t, key, zero_means=ttypes.Timestamp.UNKNOWN):
     # I couldn't find any documentation on this, but 0 seems to mean "not applicable"?
     seconds = t[key]
     if seconds == 0:
@@ -57,7 +57,7 @@ def _modify_timestamp_completed(t):
     if t['percentDone'] >= 1:
         return t['doneDate']            # Timestamp is in the past
     elif t['eta'] <= 0:
-        return tkeys.Timestamp.UNKNOWN  # Torrent is paused
+        return ttypes.Timestamp.UNKNOWN  # Torrent is paused
     else:
         return time.time() + t['eta']   # Timestamp is in the future
 
@@ -67,7 +67,7 @@ def _count_seeds(t):
     if trackerStats:
         return max(t['seederCount'] for t in trackerStats)
     else:
-        return tkeys.SeedCount.UNKNOWN
+        return ttypes.SeedCount.UNKNOWN
 
 
 def _bytes_available(t):
@@ -118,7 +118,7 @@ def _find_tracker_error(t):
 
 
 def _make_status(t):
-    Status = tkeys.Status
+    Status = ttypes.Status
     statuses = []
 
     # RPC values for 'status' field:
@@ -196,7 +196,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         for entry in entries:
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
-                items[parts[0]] = tkeys.TorrentFile(
+                items[parts[0]] = ttypes.TorrentFile(
                     tid=torrent_id, id=entry['id'],
                     name=entry['name'], path=path,
                     size_total=entry['length'],
@@ -225,7 +225,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 return
 
             for entry in ftree.values():
-                if isinstance(entry, tkeys.TorrentFile):
+                if isinstance(entry, ttypes.TorrentFile):
                     # File ID is its index in the list provided by
                     # Transmission (see _create_TorrentFileTree)
                     fstats = fileStats[entry['id']]
@@ -249,7 +249,7 @@ class TrackerList(tuple):
 
 class PeerList(tuple):
     def __new__(cls, t):
-        TorrentPeer = tkeys.TorrentPeer
+        TorrentPeer = ttypes.TorrentPeer
         return super().__new__(cls,
             (TorrentPeer(tid=t['id'], tname=t['name'],
                          tsize=t['totalSize'],
@@ -336,13 +336,13 @@ _MODIFY = {
 
     'timespan-eta'      : _modify_eta,
     'time-created'      : lambda raw: _modify_timestamp(raw, 'dateCreated',
-                                                        zero_means=tkeys.Timestamp.UNKNOWN),
+                                                        zero_means=ttypes.Timestamp.UNKNOWN),
     'time-added'        : lambda raw: _modify_timestamp(raw, 'addedDate',
-                                                        zero_means=tkeys.Timestamp.UNKNOWN),
+                                                        zero_means=ttypes.Timestamp.UNKNOWN),
     'time-started'      : lambda raw: _modify_timestamp(raw, 'startDate',
-                                                        zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+                                                        zero_means=ttypes.Timestamp.NOT_APPLICABLE),
     'time-activity'     : lambda raw: _modify_timestamp(raw, 'activityDate',
-                                                        zero_means=tkeys.Timestamp.NOT_APPLICABLE),
+                                                        zero_means=ttypes.Timestamp.NOT_APPLICABLE),
     'time-completed'    : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
@@ -355,7 +355,7 @@ _MODIFY = {
 class Torrent(base.TorrentBase):
     """Information about a torrent as a mapping
 
-    The available keys are specified in DEPENDENCIES and tkeys.TYPES.
+    The available keys are specified in DEPENDENCIES and ttypes.TYPES.
     """
 
     def __init__(self, raw_torrent):
@@ -397,7 +397,7 @@ class Torrent(base.TorrentBase):
                     value = raw[fields[0]]
                 except KeyError:
                     raise KeyError(key)
-            cache[key] = tkeys.TYPES[key](value)
+            cache[key] = ttypes.TYPES[key](value)
         return cache[key]
 
     def __contains__(self, key):

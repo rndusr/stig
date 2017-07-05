@@ -11,7 +11,7 @@
 
 """Filtering PeerList items by various values"""
 
-from ..tkeys import TorrentPeer
+from ..ttypes import TorrentPeer
 from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 

@@ -78,13 +78,13 @@ class ResetCmdbase(metaclass=InitCommand):
     cfg = ExpectedResource
 
     def run(self, NAME):
-        from ...settings import is_server_setting
+        from ...settings import is_srv_setting
         success = True
         for name in NAME:
             if name not in self.cfg:
                 log.error('Unknown setting: {}'.format(name))
                 success = False
-            elif is_server_setting(name):
+            elif is_srv_setting(name):
                 log.error('Server settings cannot be reset: {}'.format(name))
                 success = False
             else:
@@ -125,8 +125,8 @@ class SetCmdbase(metaclass=InitCommand):
             else:
                 val = ' '.join(VALUE)
 
-            from ...settings import is_server_setting
-            if is_server_setting(setting):
+            from ...settings import is_srv_setting
+            if is_srv_setting(setting):
                 from ...client import ClientError
                 try:
                     await self.srvapi.settings.update()

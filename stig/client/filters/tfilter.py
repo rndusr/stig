@@ -19,7 +19,7 @@ import re
 from . import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter,
                Filter, FilterChain)
 
-from ..tkeys import TYPES as VALUETYPES
+from ..ttypes import TYPES as VALUETYPES
 def _make_cmp_filter(*args, **kwargs):
     return make_cmp_filter(VALUETYPES, *args, **kwargs)
 
@@ -29,7 +29,7 @@ def _desc(text):
     return text
 
 
-from ..tkeys import Status
+from ..ttypes import Status
 _STATUS_VERIFY    = Status.VERIFY
 _STATUS_DOWNLOAD  = Status.DOWNLOAD
 _STATUS_UPLOAD    = Status.UPLOAD

@@ -21,9 +21,9 @@ class HelpCmd(base.HelpCmdbase):
     provides = {'cli'}
 
     async def run(self, TOPIC):
-        from ...settings import is_server_setting
+        from ...settings import is_srv_setting
         for topic in TOPIC:
-            if is_server_setting(topic):
+            if is_srv_setting(topic):
                 from ...main import srvapi
                 from ...client import ClientError
                 try:

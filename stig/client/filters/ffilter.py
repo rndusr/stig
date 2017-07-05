@@ -11,7 +11,7 @@
 
 """Filtering TorrentFiles by various values"""
 
-from ..tkeys import (TorrentFile, TorrentFilePriority)
+from ..ttypes import (TorrentFile, TorrentFilePriority)
 from . import (BoolFilterSpec, make_cmp_filter, Filter, FilterChain)
 
 def _make_cmp_filter(*args, **kwargs):

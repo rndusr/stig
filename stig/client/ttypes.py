@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Value types for Torrent classes"""
+"""Value types used in Torrent classes"""
 
 # The TYPES dictionary at the end of this file maps Torrent key names to
 # types.  Every Torrent key must have a type, even if it's just a no-op

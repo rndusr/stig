@@ -9,6 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .settings import Settings
-from .settings_server import is_server_setting
+from ..types import Settings
+from .types_srv import is_srv_setting
 from .defaults import (init_defaults, init_server_defaults)

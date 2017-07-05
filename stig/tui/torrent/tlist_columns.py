@@ -24,7 +24,7 @@ import urwid
 from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
 from ...views.tlist import COLUMNS as _COLUMNS
-from ...client import tkeys
+from ...client import ttypes
 
 
 TUICOLUMNS = {}
@@ -319,16 +319,16 @@ class Status(_COLUMNS['status'], CellWidgetBase):
                            style.attrs('header'))
 
     MODE_MAP = {
-        tkeys.Status.IDLE      : 'idle',
-        tkeys.Status.DOWNLOAD  : 'downloading',
-        tkeys.Status.UPLOAD    : 'uploading',
-        tkeys.Status.CONNECTED : 'connected',
-        tkeys.Status.SEED      : 'seeding',
-        tkeys.Status.STOPPED   : 'stopped',
-        tkeys.Status.QUEUED    : 'queued',
-        tkeys.Status.ISOLATED  : 'isolated',
-        tkeys.Status.VERIFY    : 'verifying',
-        tkeys.Status.INIT      : 'discovering',
+        ttypes.Status.IDLE      : 'idle',
+        ttypes.Status.DOWNLOAD  : 'downloading',
+        ttypes.Status.UPLOAD    : 'uploading',
+        ttypes.Status.CONNECTED : 'connected',
+        ttypes.Status.SEED      : 'seeding',
+        ttypes.Status.STOPPED   : 'stopped',
+        ttypes.Status.QUEUED    : 'queued',
+        ttypes.Status.ISOLATED  : 'isolated',
+        ttypes.Status.VERIFY    : 'verifying',
+        ttypes.Status.INIT      : 'discovering',
     }
     def get_mode(self):
         return self.MODE_MAP[self.value]

@@ -152,7 +152,7 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
         # peers' progresses, and we need to prune that data from time to
         # time. It's a bit dirty to put this here, but managing another task
         # just for this isn't much better.
-        from .tkeys import gc_peer_progress_data
+        from .ttypes import gc_peer_progress_data
         while True:
             gc_peer_progress_data()
 
