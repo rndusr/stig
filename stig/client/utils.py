@@ -89,19 +89,3 @@ class URL():
 
     def __repr__(self):
         return '<URL %s>' % self
-
-
-def pretty_float(n):
-    """Format number with a reasonable amount of decimal places"""
-    n_abs = round(abs(n), 2)
-    n_abs_int = int(n_abs)
-    if n_abs == 0:
-        return '0'
-    elif n_abs == n_abs_int:
-        return '%.0f' % n
-    elif n_abs < 10:
-        return '%.2f' % n
-    elif n_abs < 100:
-        return '%.1f' % n
-    else:
-        return '%.0f' % n
