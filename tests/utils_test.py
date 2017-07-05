@@ -1,6 +1,156 @@
-from stig.utils import (strwidth, strcrop, stralign)
+from stig.utils import (Number, strwidth, strcrop, stralign)
 
 import unittest
+
+
+class TestNumber(unittest.TestCase):
+    def test_unit_and_prefix(self):
+        n = Number(1024, prefix='binary', unit='Potatoe')
+        self.assertEqual(n, 1024)
+        self.assertEqual(n.unit, 'Potatoe')
+        self.assertEqual(n.with_unit, '1KiPotatoe')
+        self.assertEqual(n.without_unit, '1Ki')
+
+        n = Number(1024, prefix='metric', unit='Potatoe')
+        self.assertEqual(n, 1024)
+        self.assertEqual(n.unit, 'Potatoe')
+        self.assertEqual(n.with_unit, '1.02kPotatoe')
+        self.assertEqual(n.without_unit, '1.02k')
+
+        n = Number(1000**3, prefix='metric', unit='foo')
+        self.assertEqual(n, 1000**3)
+        self.assertEqual(n.unit, 'foo')
+        self.assertEqual(n.with_unit, '1Gfoo')
+        self.assertEqual(n.without_unit, '1G')
+
+        n = Number(1000**3, prefix='binary', unit='foo')
+        self.assertEqual(n, 1000**3)
+        self.assertEqual(n.unit, 'foo')
+        self.assertEqual(n.with_unit, '954Mifoo')
+        self.assertEqual(n.without_unit, '954Mi')
+
+    def test_no_unit(self):
+        n = Number(1000**3, prefix='binary')
+        self.assertEqual(n, 1000**3)
+        self.assertEqual(n.unit, None)
+        self.assertEqual(str(n), '954Mi')
+
+    def test_string_repr(self):
+        for (num,str_metric,str_binary) in (
+                (pow(1000, 1), '1k', '1000'),  (pow(1024, 1), '1.02k', '1Ki'),
+                (pow(1000, 2), '1M', '977Ki'), (pow(1024, 2), '1.05M', '1Mi'),
+                (pow(1000, 3), '1G', '954Mi'), (pow(1024, 3), '1.07G', '1Gi'),
+                (pow(1000, 4), '1T', '931Gi'), (pow(1024, 4), '1.10T', '1Ti') ):
+
+            num_metric = Number(num, prefix='metric')
+            self.assertEqual(num_metric, num)
+            self.assertEqual(str(num_metric), str_metric)
+
+            num_binary = Number(num, prefix='binary')
+            self.assertEqual(num_binary, num)
+            self.assertEqual(str(num_binary), str_binary)
+
+    def test_string_with_out_unit(self):
+        n = Number(1000, prefix='metric', unit='Balls')
+        self.assertEqual(n.with_unit, '1kBalls')
+        self.assertEqual(n.without_unit, '1k')
+
+    def test_parsing_without_unit(self):
+        for (string,num) in ( ('23', 23), ('23.1', 23.1),
+                              ('23.2k',  23.2*pow(1000, 1)),
+                              ('23.3Mi', 23.3*pow(1024, 2)),
+                              ('23.4G',  23.4*pow(1000, 3)),
+                              ('23.5Ti', 23.5*pow(1024, 4)) ):
+            n = Number.from_string(string)
+            self.assertEqual(n, num)
+            self.assertEqual(str(n), string)
+
+    def test_parsing_with_unit(self):
+        for (string,num) in ( ('23X', 23),
+                              ('23.1X', 23.1),
+                              ('23.2kX',  23.2*pow(1000, 1)),
+                              ('23.3MiX', 23.3*pow(1024, 2)),
+                              ('23.4GX',  23.4*pow(1000, 3)),
+                              ('23.5TiX', 23.5*pow(1024, 4)) ):
+            n = Number.from_string(string)
+            self.assertEqual(n, num)
+            self.assertEqual(n.unit, 'X')
+            self.assertEqual(n.with_unit, string)
+            self.assertEqual(n.without_unit, string[:-1])
+
+    def test_parsing_conflicting_units(self):
+        n = Number.from_string('123kF', unit='B')
+        self.assertEqual(n, 123000)
+        self.assertEqual(n.unit, 'F')
+
+    def test_parsing_Number_instance(self):
+        for prefix in ('binary', 'metric'):
+            orig = Number.from_string('1MB', prefix=prefix)
+
+            n = Number(orig)
+            self.assertEqual(n, 1e6)
+            self.assertEqual(n.unit, orig.unit)
+            self.assertEqual(n.prefix, orig.prefix)
+
+            for new_prefix in ('metric', 'binary'):
+                n1 = Number(orig, prefix=new_prefix)
+                self.assertEqual(n1, 1e6)
+                self.assertEqual(n1.unit, orig.unit)
+                self.assertEqual(n1.prefix, new_prefix)
+
+                n2 = Number(orig, unit='b')
+                self.assertEqual(n2, 1e6)
+                self.assertEqual(n2.unit, 'b')
+                self.assertEqual(n2.prefix, orig.prefix)
+
+    def test_not_a_number(self):
+        with self.assertRaises(ValueError) as cm:
+            Number.from_string('foo')
+        self.assertIn('Not a number', str(cm.exception))
+        self.assertIn('foo', str(cm.exception))
+
+    def test_signs(self):
+        self.assertEqual(Number.from_string('-10'), -10)
+        self.assertEqual(Number.from_string('+10'), 10)
+        self.assertEqual(Number.from_string('-10k'), -10000)
+        self.assertEqual(Number.from_string('+10M'), 10e6)
+        n = Number.from_string('-10GX')
+        self.assertEqual(n, -10e9)
+        self.assertEqual(n.unit, 'X')
+        n = Number.from_string('-10Ty')
+        self.assertEqual(n, -10e12)
+        self.assertEqual(n.unit, 'y')
+
+    def test_equality(self):
+        self.assertEqual(Number(0), 0)
+        self.assertEqual(Number(0), Number(0))
+        self.assertEqual(Number(1024), 1024)
+        self.assertEqual(Number(1024), Number(1024))
+        self.assertNotEqual(Number(1000), 1000.0001)
+        self.assertNotEqual(Number(1024), Number(1023))
+
+    def test_arithmetic_operation_returns_Number_instance(self):
+        n = Number(5) * 3000
+        self.assertIsInstance(n, Number)
+
+    def test_arithmetic_operation_copies_unit(self):
+        n = Number(5, unit='X') / 100
+        self.assertEqual(n, 0.05)
+        self.assertEqual(n.unit, 'X')
+
+    def test_arithmetic_operation_copies_prefix(self):
+        for prfx in ('metric', 'binary'):
+            n = Number(5, prefix=prfx) * 100
+            self.assertEqual(n, 500)
+            self.assertEqual(n.prefix, prfx)
+
+    def test_arithmetic_operation_copies_from_first_value(self):
+        for prfx in ('metric', 'binary'):
+            n = Number(  5, unit='X', prefix=prfx) \
+              + Number(100, unit='z', prefix='metric')
+            self.assertEqual(n, 105)
+            self.assertEqual(n.unit, 'X')
+            self.assertEqual(n.prefix, prfx)
 
 
 class Test_strwidth(unittest.TestCase):
