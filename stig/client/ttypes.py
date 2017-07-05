@@ -15,12 +15,12 @@
 # types.  Every Torrent key must have a type, even if it's just a no-op
 # (`lambda obj: obj`).
 #
-# A type is any callable that converts a single value to the appropriate class
-# instance.
+# A type is any callable that converts a single value to the appropriate object.
 #
-# Types are used to convert values from the server (e.g. large integers) and
-# from the user (e.g. number strings like '3.5G').  Not all types must accept
-# user-given values (e.g. 'files').
+# Types are used to convert values from the server by instantiating them
+# normally (e.g. `Number(1234567)`) and from the user by using the class method
+# `from_string` (e.g. `Number.from_string('1.3GB')`). Not all types must provide
+# a `from_string` class method (e.g. 'files').
 
 
 from ..logging import make_logger
