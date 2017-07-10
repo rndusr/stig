@@ -88,7 +88,7 @@ class Number(float):
 
     def __repr__(self):
         return '<{} {}, prefix={!r}, unit={!r}>'.format(type(self).__name__, float(self),
-                                                        self.prefix, self.unit)
+                                                        self._prefix, self._unit)
 
     # Arithmetic operations return Number instances with unit and prefix preserved
     def __add__(self, other):
