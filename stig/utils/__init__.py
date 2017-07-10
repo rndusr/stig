@@ -19,14 +19,17 @@ class Number(float):
 
     _PREFIXES_BINARY = (('Ti', 1024**4), ('Gi', 1024**3), ('Mi', 1024**2), ('Ki', 1024))
     _PREFIXES_METRIC = (('T', 1000**4), ('G', 1000**3), ('M', 1000**2), ('k', 1000))
-    _ALL_PREFIXES = tuple((prefix.lower(), size)
+    _PREFIXES = tuple((prefix.lower(), size)
                           for prefix,size in chain.from_iterable(zip(_PREFIXES_BINARY,
                                                                      _PREFIXES_METRIC)))
-    _ALL_PREFIXES_DCT = dict(_ALL_PREFIXES)
+    _PREFIXES_DCT = dict(_PREFIXES)
     _REGEX = re.compile('^([-+]?(?:\d+\.\d+|\d+|\.\d+)) ?(' +\
-                        '|'.join(p[0] for p in _ALL_PREFIXES) + \
+                        '|'.join(p[0] for p in _PREFIXES) + \
                         '|)(.*?)$',
                         flags=re.IGNORECASE)
+
+    PREFIXES = tuple(prefix for prefix,size in chain.from_iterable(zip(_PREFIXES_BINARY,
+                                                                       _PREFIXES_METRIC)))
 
     @classmethod
     def from_string(cls, string, *, prefix='metric', unit=None):
@@ -38,7 +41,7 @@ class Number(float):
             unit = match.group(3) or unit
             prfx = match.group(2)
             if prfx:
-                all_prfxs = cls._ALL_PREFIXES_DCT
+                all_prfxs = cls._PREFIXES_DCT
                 prfx_lower = prfx.lower()
                 if prfx_lower in all_prfxs:
                     num *= all_prfxs[prfx_lower]
