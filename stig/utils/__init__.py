@@ -56,18 +56,32 @@ class Number(float):
 
     def __new__(cls, num, prefix='metric', unit=None):
         if isinstance(num, cls):
-            return cls(float(num), prefix or num.prefix, unit or num.unit)
+            return cls(float(num), prefix=prefix or num.prefix, unit=unit or num.unit)
+        elif isinstance(num, str):
+            return cls.from_string(num, prefix=prefix, unit=unit)
 
         obj = super().__new__(cls, num)
-        if prefix == 'binary':
-            obj._prefixes = cls._PREFIXES_BINARY
-        elif prefix == 'metric':
-            obj._prefixes = cls._PREFIXES_METRIC
-        else:
-            raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
         obj.unit = unit
         obj.prefix = prefix
         return obj
+
+    @property
+    def unit(self): return self._unit
+    @unit.setter
+    def unit(self, unit): self._unit = unit
+
+    @property
+    def prefix(self):
+        return self._prefix
+    @prefix.setter
+    def prefix(self, prefix):
+        if prefix == 'binary':
+            self._prefixes = self._PREFIXES_BINARY
+        elif prefix == 'metric':
+            self._prefixes = self._PREFIXES_METRIC
+        else:
+            raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
+        self._prefix = prefix
 
     @property
     def with_unit(self):
