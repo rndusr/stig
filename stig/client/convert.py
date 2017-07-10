@@ -28,53 +28,52 @@ class _DataCountConverter():
     UNITS_L2S = {'bit': 'b', 'byte': 'B', 'b': 'b', 'B': 'B'}
     UNITS_S2L = {'b': 'bit', 'B': 'byte', 'bit': 'bit', 'byte': 'byte'}
 
-    def from_string(self, string):
+    def from_string(self, string, *, unit=None):
         """Parse number of bytes/bits from `string`
 
-        `string` must be of the format "NUMBER[UNIT PREFIX][UNIT]".  UNIT PREFIX
-        is something like 'M' (mega) or 'Mi' (mebi). UNIT must be 'b' (bits) or
-        'B' (bytes). If UNIT is not given, NUMBER is assumed to be in whatever
-        the `unit` property is set to.
-
-        Raises ValueError if unit is invalid.
+        All arguments are passed to `Number.from_string`.  `unit` defaults to
+        the `unit` property of this object.
         """
-        num = Number.from_string(string)
-        unit = num.unit
-        if unit is None:
-            # Default to value of `unit` property
-            unit = self.unit
-            num.unit = self.UNITS_L2S[unit]
-        elif unit not in self.UNITS_S2L:
-            raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not {!r}".format(unit))
+        num = Number.from_string(string, prefix=self._prefix,
+                                 unit=unit or self.unit_short)
+        num = self._ensure_unit_and_prefix(num)
+        return num
 
-        return self._ensure_unit(num)
+    def __call__(self, num, unit=None):
+        """Make Number from `num`
 
-    def __call__(self, bytes):
-        """Make Number from `bytes`
+        The returned Number is converted to bits or bytes depending on what the
+        `unit` property is set to.
 
-        The returned Number object is converted to bits if the `unit` property
-        is set to 'bits'.
-
-        If `bytes` is a Number object, it's `unit` property is evaluated to
-        ensure the correct unit of the returned Number.
+        If no unit is given by passing a Number object with a specified `unit`
+        property or by passing the `unit` argument, it is assumed to be in what
+        the `unit` property of this object is set to.
         """
-        if isinstance(bytes, Number):
-            return self._ensure_unit(bytes)
-        elif self._unit == 'bit':
-            return Number(bytes*8, prefix=self._prefix, unit='b')
+        if not isinstance(num, Number):
+            unit = unit or self.unit_short
+            num = Number(num, prefix=self._prefix, unit=unit)
+        return self._ensure_unit_and_prefix(num)
+
+    def _ensure_unit_and_prefix(self, num):
+        unit_given = num.unit or self._unit
+        if unit_given not in self.UNITS_L2S:
+            raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not {!r}".format(unit_given))
         else:
-            return Number(bytes, prefix=self._prefix, unit='B')
+            unit_given = self.UNITS_L2S[unit_given]
+            unit_wanted = self.unit_short
+            if unit_given != unit_wanted:
+                if unit_wanted == 'b':
+                    num = Number(num*8, prefix=self._prefix, unit='b')
+                elif unit_wanted == 'B':
+                    num = Number(num/8, prefix=self._prefix, unit='B')
+                else:
+                    raise RuntimeError('This should never have happened!')
+            else:
+                # Make sure unit is in short form ('B', not 'byte')
+                num.unit = unit_wanted
 
-    def _ensure_unit(self, num):
-        # Make sure the unit of the returned Number is what the `unit` property is set to
-        unit_wanted = self._unit
-        unit_given = self.UNITS_S2L[num.unit]
-        if unit_wanted == unit_given:
+            num.prefix = self._prefix
             return num
-        elif unit_given == 'bit':
-            return Number(num/8, prefix=self._prefix, unit='B')
-        elif unit_given == 'byte':
-            return Number(num*8, prefix=self._prefix, unit='b')
 
     @property
     def unit(self):
@@ -83,9 +82,14 @@ class _DataCountConverter():
 
     @unit.setter
     def unit(self, unit):
-        if unit not in ('bit', 'byte'):
+        if unit not in self.UNITS_S2L:
             raise ValueError("unit must be 'bit' or 'byte'")
-        self._unit = unit
+        else:
+            self._unit = self.UNITS_S2L[unit]
+
+    @property
+    def unit_short(self):
+        return self.UNITS_L2S[self._unit]
 
     @property
     def prefix(self):

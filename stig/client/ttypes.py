@@ -35,7 +35,7 @@ from . import convert
 
 
 def _rate_limit(limit):
-    return const.UNLIMITED if limit is None else convert.bandwidth(limit)
+    return const.UNLIMITED if limit is None else convert.bandwidth(limit, unit='byte')
 
 
 class Percent(float):
@@ -392,8 +392,8 @@ class TorrentFile(abc.Mapping):
         'id'              : int,
         'name'            : SmartCmpStr,
         'path'            : Path,
-        'size-total'      : convert.size,
-        'size-downloaded' : convert.size,
+        'size-total'      : lambda size: convert.size(size, unit='byte'),
+        'size-downloaded' : lambda size: convert.size(size, unit='byte'),
         'is-wanted'       : bool,
         'priority'        : TorrentFilePriority,
         'progress'        : Percent,
@@ -506,16 +506,16 @@ class TorrentPeer(abc.Mapping):
         'id'        : lambda val: val,
         'tid'       : lambda val: val,
         'tname'     : SmartCmpStr,
-        'tsize'     : convert.size,
+        'tsize'     : lambda size: convert.size(size, unit='byte'),
         'ip'        : str,
         'port'      : int,
         'client'    : SmartCmpStr,
         'country'   : SmartCmpStr,
         'progress'  : Percent,
-        'rate-up'   : convert.bandwidth,
-        'rate-down' : convert.bandwidth,
+        'rate-up'   : lambda rate: convert.bandwidth(rate, unit='byte'),
+        'rate-down' : lambda rate: convert.bandwidth(rate, unit='byte'),
         'eta'       : Timedelta,
-        'rate-est'  : convert.bandwidth,
+        'rate-est'  : lambda rate: convert.bandwidth(rate, unit='byte'),
     }
 
     _VALUES = {
@@ -582,20 +582,20 @@ TYPES = {
     'time-completed'    : Timestamp,
     'time-manual-announce-allowed': Timestamp,
 
-    'rate-down'         : convert.bandwidth,
-    'rate-up'           : convert.bandwidth,
+    'rate-down'         : lambda rate: convert.bandwidth(rate, unit='byte'),
+    'rate-up'           : lambda rate: convert.bandwidth(rate, unit='byte'),
 
     'rate-limit-down'   : _rate_limit,
     'rate-limit-up'     : _rate_limit,
 
-    'size-final'        : convert.size,
-    'size-total'        : convert.size,
-    'size-downloaded'   : convert.size,
-    'size-uploaded'     : convert.size,
-    'size-available'    : convert.size,
-    'size-left'         : convert.size,
-    'size-corrupt'      : convert.size,
-    'size-piece'        : convert.size,
+    'size-final'        : lambda size: convert.size(size, unit='byte'),
+    'size-total'        : lambda size: convert.size(size, unit='byte'),
+    'size-downloaded'   : lambda size: convert.size(size, unit='byte'),
+    'size-uploaded'     : lambda size: convert.size(size, unit='byte'),
+    'size-available'    : lambda size: convert.size(size, unit='byte'),
+    'size-left'         : lambda size: convert.size(size, unit='byte'),
+    'size-corrupt'      : lambda size: convert.size(size, unit='byte'),
+    'size-piece'        : lambda size: convert.size(size, unit='byte'),
 
     'trackers'          : tuple,
     'error'             : str,

@@ -147,7 +147,7 @@ class SettingsAPI(abc.Mapping):
         key_value, key_enabled = self._rate_limit_keys(direction, alt)
         if self._raw[key_enabled]:
             # Transmission reports kilobytes
-            return convert.bandwidth(self._raw[key_value]*1000)
+            return convert.bandwidth(self._raw[key_value]*1000, unit='byte')
         else:
             return const.UNLIMITED
 
@@ -159,7 +159,7 @@ class SettingsAPI(abc.Mapping):
              isinstance(limit, (int, float)) and limit < 0:
             return {key_enabled: False}
         else:
-            l = convert.bandwidth(limit)
+            l = convert.bandwidth(limit, unit='byte')
             if l.unit == 'b':
                 l /= 8  # Convert to bytes
             return {key_value: int(l/1000), key_enabled: True}
