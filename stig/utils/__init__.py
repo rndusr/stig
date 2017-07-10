@@ -29,7 +29,7 @@ class Number(float):
                         flags=re.IGNORECASE)
 
     @classmethod
-    def from_string(cls, string, prefix='metric', unit=None):
+    def from_string(cls, string, *, prefix='metric', unit=None):
         match = cls._REGEX.match(string)
         if match is None:
             raise ValueError('Not a number: {!r}'.format(string))
