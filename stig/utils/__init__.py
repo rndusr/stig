@@ -109,6 +109,12 @@ class Number(float):
         return type(self)(super().__divmod__(other), unit=self.unit, prefix=self.prefix)
     def __pow__(self, other):
         return type(self)(super().__pow__(other), unit=self.unit, prefix=self.prefix)
+    def __round__(self, *args, **kwargs):
+        return type(self)(super().__round__(*args, **kwargs), unit=self.unit, prefix=self.prefix)
+    def __floor__(self):
+        return type(self)(super().__floor__(), unit=self.unit, prefix=self.prefix)
+    def __ceil__(self):
+        return type(self)(super().__ceil__(), unit=self.unit, prefix=self.prefix)
 
 
 def pretty_float(n):
