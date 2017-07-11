@@ -40,7 +40,7 @@ class SettingsAPI(abc.Mapping):
 
     Cached values that are updated every `interval` seconds are available as
     properties with 'get_' removed from the equivalent method name.  For
-    example, `get_path_incomplete` as an asyncronous method, `path_incomplete`
+    example, `get_path_incomplete` is an asyncronous method, `path_incomplete`
     is a syncronous property.
 
     Cached values are also available as items, e.g. settings['path-incomplete'].
