@@ -4,77 +4,66 @@ import unittest
 
 
 class TestNumber(unittest.TestCase):
-    def test_unit_and_prefix(self):
-        n = Number(1024, prefix='binary', unit='Potatoe')
-        self.assertEqual(n, 1024)
-        self.assertEqual(n.unit, 'Potatoe')
-        self.assertEqual(n.with_unit, '1KiPotatoe')
-        self.assertEqual(n.without_unit, '1Ki')
+    def test_prefix(self):
+        for value,str_metric,str_binary in ((pow(1000, 1), '1k', '1000'),
+                                            (pow(1024, 1), '1.02k', '1Ki'),
+                                            (pow(1000, 2), '1M', '977Ki'),
+                                            (pow(1024, 2), '1.05M', '1Mi'),
+                                            (pow(1000, 3), '1G', '954Mi'),
+                                            (pow(1024, 3), '1.07G', '1Gi'),
+                                            (pow(1000, 4), '1T', '931Gi'),
+                                            (pow(1024, 4), '1.10T', '1Ti')):
+            for prefix in ('metric', 'binary'):
+                n = Number(value, prefix=prefix)
+                self.assertEqual(n, value)
+                self.assertEqual(n.prefix, prefix)
+                n.prefix = 'metric'
+                self.assertEqual(n.prefix, 'metric')
+                self.assertEqual(n.without_unit, str_metric)
+                n.prefix = 'binary'
+                self.assertEqual(n.prefix, 'binary')
+                self.assertEqual(n.without_unit, str_binary)
 
-        n = Number(1024, prefix='metric', unit='Potatoe')
-        self.assertEqual(n, 1024)
-        self.assertEqual(n.unit, 'Potatoe')
-        self.assertEqual(n.with_unit, '1.02kPotatoe')
-        self.assertEqual(n.without_unit, '1.02k')
+        with self.assertRaises(ValueError) as cm:
+            n.prefix = 'foo'
+        self.assertIn('binary', str(cm.exception))
+        self.assertIn('metric', str(cm.exception))
 
-        n = Number(1000**3, prefix='metric', unit='foo')
-        self.assertEqual(n, 1000**3)
-        self.assertEqual(n.unit, 'foo')
-        self.assertEqual(n.with_unit, '1Gfoo')
-        self.assertEqual(n.without_unit, '1G')
-
-        n = Number(1000**3, prefix='binary', unit='foo')
-        self.assertEqual(n, 1000**3)
-        self.assertEqual(n.unit, 'foo')
-        self.assertEqual(n.with_unit, '954Mifoo')
-        self.assertEqual(n.without_unit, '954Mi')
-
-    def test_no_unit(self):
-        n = Number(1000**3, prefix='binary')
-        self.assertEqual(n, 1000**3)
-        self.assertEqual(n.unit, None)
-        self.assertEqual(str(n), '954Mi')
-
-    def test_string_repr(self):
-        for (num,str_metric,str_binary) in (
-                (pow(1000, 1), '1k', '1000'),  (pow(1024, 1), '1.02k', '1Ki'),
-                (pow(1000, 2), '1M', '977Ki'), (pow(1024, 2), '1.05M', '1Mi'),
-                (pow(1000, 3), '1G', '954Mi'), (pow(1024, 3), '1.07G', '1Gi'),
-                (pow(1000, 4), '1T', '931Gi'), (pow(1024, 4), '1.10T', '1Ti') ):
-
-            num_metric = Number(num, prefix='metric')
-            self.assertEqual(num_metric, num)
-            self.assertEqual(str(num_metric), str_metric)
-
-            num_binary = Number(num, prefix='binary')
-            self.assertEqual(num_binary, num)
-            self.assertEqual(str(num_binary), str_binary)
-
-    def test_string_with_out_unit(self):
-        n = Number(1000, prefix='metric', unit='Balls')
-        self.assertEqual(n.with_unit, '1kBalls')
-        self.assertEqual(n.without_unit, '1k')
+    def test_unit(self):
+        n = Number(1e6, unit='A', prefix='metric')
+        self.assertEqual(n, 1e6)
+        self.assertEqual(n.with_unit, '1MA')
+        self.assertEqual(n.without_unit, '1M')
+        n.unit = 'B'
+        self.assertEqual(n.with_unit, '1MB')
+        self.assertEqual(n.without_unit, '1M')
+        n.unit = None
+        self.assertEqual(n.with_unit, '1M')
+        self.assertEqual(n.without_unit, '1M')
 
     def test_parsing_without_unit(self):
-        for (string,num) in ( ('23', 23), ('23.1', 23.1),
-                              ('23.2k',  23.2*pow(1000, 1)),
-                              ('23.3Mi', 23.3*pow(1024, 2)),
-                              ('23.4G',  23.4*pow(1000, 3)),
-                              ('23.5Ti', 23.5*pow(1024, 4)) ):
+        for string,num,prefix in ( ('23', 23, 'metric'),
+                                   ('23.1', 23.1, 'metric'),
+                                   ('23.2k',  23.2*pow(1000, 1), 'metric'),
+                                   ('23.3Mi', 23.3*pow(1024, 2), 'binary'),
+                                   ('23.4G',  23.4*pow(1000, 3), 'metric'),
+                                   ('23.5Ti', 23.5*pow(1024, 4), 'binary') ):
             n = Number.from_string(string)
             self.assertEqual(n, num)
             self.assertEqual(str(n), string)
+            self.assertEqual(n.prefix, prefix)
 
     def test_parsing_with_unit(self):
-        for (string,num) in ( ('23X', 23),
-                              ('23.1X', 23.1),
-                              ('23.2kX',  23.2*pow(1000, 1)),
-                              ('23.3MiX', 23.3*pow(1024, 2)),
-                              ('23.4GX',  23.4*pow(1000, 3)),
-                              ('23.5TiX', 23.5*pow(1024, 4)) ):
+        for string,num,prefix in ( ('23X', 23, 'metric'),
+                                   ('23.1X', 23.1, 'metric'),
+                                   ('23.2kX',  23.2*pow(1000, 1), 'metric'),
+                                   ('23.3MiX', 23.3*pow(1024, 2), 'binary'),
+                                   ('23.4GX',  23.4*pow(1000, 3), 'metric'),
+                                   ('23.5TiX', 23.5*pow(1024, 4), 'binary') ):
             n = Number.from_string(string)
             self.assertEqual(n, num)
             self.assertEqual(n.unit, 'X')
+            self.assertEqual(n.prefix, prefix)
             self.assertEqual(n.with_unit, string)
             self.assertEqual(n.without_unit, string[:-1])
 
