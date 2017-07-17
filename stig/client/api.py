@@ -24,6 +24,7 @@ from .aiotransmission.api_torrent import TorrentAPI
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
+from .errors import *
 
 
 # https://stackoverflow.com/a/6849299
@@ -51,6 +52,14 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     StatusAPI, TorrentRequestPool and TorrentCounters in a lazy manner on
     demand.
     """
+
+    # Make errors available without having to import them everywhere
+    ClientError     = ClientError
+    ConnectionError = ConnectionError
+    RPCError        = RPCError
+    AuthError       = AuthError
+    URLParserError  = URLParserError
+
     def __init__(self, url, interval=1, loop=None):
         if loop is None:
             raise TypeError('Missing argument: loop')
