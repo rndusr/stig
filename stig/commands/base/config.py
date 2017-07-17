@@ -127,22 +127,28 @@ class SetCmdbase(metaclass=InitCommand):
 
             from ...settings import is_srv_setting
             if is_srv_setting(setting):
-                # Fetch current settings from server first
+                # Fetch current values from server first
                 try:
                     await self.srvapi.settings.update()
                 except self.srvapi.ClientError as e:
                     log.error(str(e))
                     return False
-
-            try:
-                # Server settings' set() methods are async (maybe others too)
-                if iscoroutinefunction(setting.set):
-                    await setting.set(val)
                 else:
-                    setting.set(val)
-            except ValueError as e:
-                log.error(e)
+                    # Send new setting to server
+                    try:
+                        await setting.set(val)
+                    except ValueError as e:
+                        log.error(e)
+                    else:
+                        return True
+
             else:
-                return True
+                # Client setting
+                try:
+                    setting.set(val)
+                except ValueError as e:
+                    log.error(e)
+                else:
+                    return True
 
         return False
