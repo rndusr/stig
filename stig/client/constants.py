@@ -17,34 +17,31 @@ def is_constant(obj):
     return isinstance(obj, ConstantBase)
 
 _constants_cache = {}
-def get_constant(string, repr_str=None, bases=(), value=None, attrs={}):
-    """Get constant/singleton defined by `string`
+def get_constant(name, repr=None, bases=(), value=None, attrs={}):
+    """Get constant/singleton defined by `name`
 
-    repr_str: Same as `string.upper()` if not specified
+    repr: Same as `name.upper()` unless specified otherwise
     bases: tuple of base classes; will be prepended to (ConstantBase, str)
-    value: What the constant class is passed to upon creation
-    attrs: Additional attributes of the constant class
+    value: Argument for the new constant class during creation
+    attrs: Additional class attributes
     """
-    if string not in _constants_cache:
-        def __str__(self): return self.string
-        def __repr__(self): return '<Constant: {}>'.format(self.repr_str.upper())
-
+    if name not in _constants_cache:
+        def __str__(self): return self.name
+        def __repr__(self): return ('<Constant: %s>' % self.name.upper()) if self.repr is None else self.repr
         cls_attrs = {'__str__': __str__,
                      '__repr__': __repr__,
-                     'string': string,
-                     'repr_str': (string if repr_str is None else repr_str).upper()}
+                     'name': name,
+                     'repr': repr}
         cls_attrs.update(attrs)
-
         cls = type('Constant', bases + (ConstantBase,), cls_attrs)
 
         if value is not None:
-            _constants_cache[string] = cls(value)
+            _constants_cache[name] = cls(value)
         else:
-            _constants_cache[string] = cls()
-    return _constants_cache[string]
+            _constants_cache[name] = cls()
+    return _constants_cache[name]
 
-
-DISCONNECTED = get_constant('<disconnected>', repr_str='disconnected')
+DISCONNECTED = get_constant('disconnected', repr='<disconnected>')
 UNLIMITED = get_constant('unlimited', bases=(float,), value='inf')
 DISABLED = get_constant('disabled', attrs={'__bool__': lambda self: False})
 ENABLED = get_constant('enabled', attrs={'__bool__': lambda self: True})
