@@ -87,7 +87,7 @@ def run():
         cmdmgr.active_interface = 'cli'
     else:
         try:
-            cmdmgr.active_interface = guess_ui(clicmds, cmdmgr)
+            cmdmgr.active_interface = guess_ui(clicmds, cmdmgr, cfg)
         except UIGuessError as e:
             log.error('Unable to guess user interface')
             log.error('Provide one of these options: --tui/-t or --no-tui/-T')

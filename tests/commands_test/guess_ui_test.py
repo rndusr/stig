@@ -14,7 +14,7 @@ class Test_guess_ui(unittest.TestCase):
         self.cmdmgr.register(make_cmdcls(name='dotorrent', provides=('cli', 'tui'), category='torrent'))
 
     def guess_ui(self, cmds):
-        return guess_ui(cmds, self.cmdmgr)
+        return guess_ui(cmds, self.cmdmgr, cfg=None)
 
     def test_guess_no_commands(self):
         self.assertEqual(self.guess_ui([]), 'tui')

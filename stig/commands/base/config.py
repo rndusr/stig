@@ -88,7 +88,7 @@ class ResetCmdbase(metaclass=InitCommand):
                 log.error('Server settings cannot be reset: {}'.format(name))
                 success = False
             else:
-                self.cfg[name] = None
+                self.cfg[name].reset()
         return success
 
 

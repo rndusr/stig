@@ -9,82 +9,36 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
+from .logging import make_logger
 log = make_logger(__name__)
 
 import os
 from collections import abc
 from blinker import Signal
+import inspect
 
+from .utils import Number
 
-class Settings():
-    """Dict of ordered Value objects"""
-
-    def __init__(self, *values):
-        # _values and _values_dict hold the same instances; the list is to
-        # preserve order and the dict is for fast access via __getitem__
-        self._values = []
-        self._values_dict = {}
-        self._on_change = Signal()
-        self.load(*values)
-
-    def add(self, value):
-        assert isinstance(value, ValueBase), 'not a ValueBase: %r' % value
-        self._values.append(value)
-        self._values_dict[value.name] = value
-
-    def load(self, *values):
-        for v in values:
-            self.add(v)
-
-    @property
-    def names(self):
-        yield from self._values_dict.keys()
-
-    @property
-    def values(self):
-        yield from self._values
-
-    def on_change(self, callback, autoremove=True):
-        """Run `callback` every time a value changes with the value
-
-        If `autoremove` is True, stop calling callback once it is garbage
-        collected.
-        """
-        self._on_change.connect(callback, weak=autoremove)
-
-    def __getitem__(self, name):
-        return self._values_dict[name]
-
-    def __setitem__(self, name, value):
-        self._values_dict[name].set(value)
-        self._on_change.send(self._values_dict[name])
-
-    def __contains__(self, name):
-        return name in self._values_dict
+UNSPECIFIED = '<unspecified>'
 
 
 class ValueBase():
-    """Base class for *Value types"""
+    """Base class for *Value classes"""
 
-    _type = NotImplemented  # Something like int, str or tuple
+    type = None             # Something like int, str or tuple
     typename = 'anything'   # User-readable explanation
 
     def __init__(self, name, *, default=None, description=None):
-        """Create new value"""
-        self._name = name
-        if default is None:
-            self._value = self._default = None
-        else:
-            self._value = self._default = self.convert(default)
-            self.validate(self._default)
-        self._description = description or 'No description available'
+        self._name = str(name)
+        self._description = str(description) or 'No description available'
         self._on_change = Signal()
-
-    @property
-    def value(self): return self._value
-    @value.setter
-    def value(self, value): self.set(value)
+        self._default = self._value = self._prev_value = None
+        if default is not None:
+            initial_value = self.convert(default)
+            self.validate(initial_value)
+            self._value = initial_value
+            self._default = self._value
+        log.debug('Initialized ValueBase: %r=%r', self._name, self._value)
 
     @property
     def name(self): return self._name
@@ -92,33 +46,43 @@ class ValueBase():
     def name(self, name): self._name = str(name)
 
     @property
-    def default(self): return self._default
-    @default.setter
-    def default(self, default):
-        self.validate(default)
-        self._default = default
-
-    @property
     def description(self): return self._description
     @description.setter
     def description(self, description): self._description = str(description)
 
-    def set(self, value):
-        """Change value if valid, reset to default if None
+    @property
+    def value(self):
+        """Convenience property for `get` method"""
+        return self.get()
+    @value.setter
+    def value(self, value): self.set(value)
 
-        Callbacks connected to `on_change` get this object every time a value is
-        changed.  If one of the callbacks raises ValueError, the change is
-        reverted and a ValueError is raised.
+    @property
+    def default(self):
+        """Convenience property for `get_default` method"""
+        return self.get_default()
+    @default.setter
+    def default(self, default): self.set_default(default)
+
+    def get(self):
+        """Return current value"""
+        return self._value
+
+    def set(self, value):
+        """Set current value
+
+        When setting this property, callbacks connected to `on_change` get the
+        current value (after validation) every time it is changed.  If one of
+        the callbacks raises ValueError, the change is reverted and ValueError
+        is raised.
         """
-        if value is None:
-            value = self.default
         try:
             new_value = self.convert(value)
             self.validate(new_value)
         except ValueError as e:
             raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
         else:
-            prev_value = self.value
+            prev_value = self._value
             self._value = new_value
             # Callbacks can revert the change by raising ValueError
             try:
@@ -126,37 +90,56 @@ class ValueBase():
             except ValueError as e:
                 self._value = prev_value
                 raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
+            else:
+                self._prev_value = prev_value
 
-    def get(self):
-        """Return current value
+    def get_default(self):
+        """Return default value or `None` if no default is specified"""
+        return self._default
 
-        This method is usefull for retrieving values asynchronously as there are
-        no asynchronous properties.
+    def set_default(self, default):
+        """Change default value
+
+        Raise ValueError if `default` doesn't pass through `convert` and
+        `validate` methods.
         """
-        return self.value
+        try:
+            new_default = self.convert(default)
+            self.validate(new_default)
+        except ValueError as e:
+            raise ValueError('{} = {}: {}'.format(self.name, self.string(default), e))
+        else:
+            self._default = new_default
+
+    def prev_value(self):
+        return self._prev_value
+
+    def reset(self):
+        """Reset current value back to default"""
+        self.value = self.default
 
     def validate(self, value):
-        """Raise ValueError if value is not valid
+        """Raise ValueError if `value` is not valid
 
         The default implementation checks if `value` is of the type specified in
-        the class attribute `_type`, if it is specified (i.e. not
-        `NotImplemented`).
+        the class attribute `type`.  If `type` is None (the default), all values
+        valid.
 
         Additionally, subclasses may check for things like max/min length/number
         (see `StringValue` and `NumberValue` for examples).
         """
-        if self._type is not NotImplemented and not isinstance(value, self._type):
+        if self.type is not None and not isinstance(value, self.type):
             raise ValueError('Not a {}'.format(self.typename))
 
-    def convert(self, value):
+    def convert(self, value, *args, **kwargs):
         """Try to convert value to correct type before validation (e.g. str->int)
 
         Raise ValueError if impossible
         """
-        if self._type is NotImplemented or isinstance(value, self._type):
+        if self.type is None or isinstance(value, self.type):
             return value
         try:
-            return self._type(value)
+            return self.type(value, *args, **kwargs)
         except Exception:
             raise ValueError('Not a {}'.format(self.typename))
 
@@ -174,14 +157,17 @@ class ValueBase():
         raise any exceptions.
         """
         if default:
-            text = str(self.default)
+            value = self.default
         elif value is not None:
             try:
-                text = str(self.convert(value))
-            except ValueError:
-                text = str(value)
+                value = self.convert(value)
+            except ValueError as e:
+                value = value
         else:
-            text = str(self.value)
+            value = self.value
+
+        # Display `None` as something more user-readable
+        text = UNSPECIFIED if value is None else str(value)
 
         if not text or (text[0] == ' ' or text[-1] == ' '):
             return repr(text)
@@ -193,7 +179,7 @@ class ValueBase():
 
     def __repr__(self):
         v = self.value
-        return '%s=%s' % (self.name, '<unspecified>' if v is None else repr(v))
+        return '%s=%s' % (self.name, UNSPECIFIED if v is None else repr(v))
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -216,11 +202,11 @@ class ValueBase():
 
 
 class StringValue(ValueBase):
-    """Simple string
+    """String value
 
     Specify `minlen` and/or `maxlen` to limit the length of the string.
     """
-    _type = str
+    type = str
 
     @property
     def typename(self):
@@ -245,7 +231,7 @@ class StringValue(ValueBase):
         self._check_minlen_maxlen(minlen, maxlen)
         self._minlen = minlen
         self._maxlen = maxlen
-        super().__init__(*args, **kwargs)
+        ValueBase.__init__(self, *args, **kwargs)
 
     @staticmethod
     def _check_minlen_maxlen(minlen, maxlen):
@@ -273,7 +259,7 @@ class StringValue(ValueBase):
         self._check_minlen_maxlen(minlen, self.maxlen)
         self._minlen = minlen
         if minlen is not None:
-            for name in ('default', 'value'):
+            for name in ('_default', '_value'):
                 value = getattr(self, name)
                 if value is not None and len(value) < minlen:
                     setattr(self, name, value.ljust(minlen))
@@ -287,7 +273,7 @@ class StringValue(ValueBase):
         self._check_minlen_maxlen(self.minlen, maxlen)
         self._maxlen = maxlen
         if maxlen is not None:
-            for name in ('default', 'value'):
+            for name in ('_default', '_value'):
                 value = getattr(self, name)
                 if value is not None and len(value) > maxlen:
                     setattr(self, name, value[:maxlen])
@@ -296,13 +282,14 @@ class StringValue(ValueBase):
 class PathValue(StringValue):
     """File system path
 
-    If `mustexist` evaluates to True, the path must exist on the local file system.
+    If `mustexist` evaluates to True, the path must exist on the local file
+    system.
     """
     typename = 'path'
 
     def __init__(self, *args, mustexist=False, **kwargs):
         self._mustexist = mustexist
-        super().__init__(*args, **kwargs)
+        StringValue.__init__(self, *args, **kwargs)
 
     def validate(self, value):
         path = self.convert(value)
@@ -310,17 +297,19 @@ class PathValue(StringValue):
             raise ValueError('No such file or directory')
 
     def convert(self, value):
-        return os.path.expanduser(super().convert(value))
+        path = StringValue.convert(self, value)
+        return os.path.expanduser(os.path.normpath(path))
 
-    def string(self, value=None, default=False):
+    def string(self, *args, **kwargs):
         """Replace user home directory with '~'"""
-        path = super().string(value=value, default=default)
+        path = StringValue.string(self, *args, **kwargs)
         if path.startswith(os.environ['HOME']):
             path = '~' + path[len(os.environ['HOME']):]
         return path
 
     @property
     def mustexist(self):
+        """Whether the path must exist on the local file system."""
         return self._mustexist
 
     @mustexist.setter
@@ -329,26 +318,32 @@ class PathValue(StringValue):
 
 
 class NumberValue(ValueBase):
-    _type = float
+    """Float or integer value
+
+    Specify `min` and/or `max` to limit the range of valid numbers.
+    """
+    type = Number
     _numbertype = 'rational'
-    valuesyntax = '[+=|-=]<NUMBER>'
+    valuesyntax = '[+=|-=]<NUMBER>[%s]' % '|'.join(Number.PREFIXES)
 
     @property
     def typename(self):
         text = '{} number'.format(self._numbertype)
         if self.min is not None and self.max is not None:
-            text += ' {} - {}'.format(self.min, self.max)
+            text += ' ({} - {})'.format(self.min, self.max)
         elif self.min is not None:
-            text += ' >= {}'.format(self.min)
+            text += ' (>= {})'.format(self.min)
         elif self.max is not None:
-            text += ' <= {}'.format(self.max)
+            text += ' (<= {})'.format(self.max)
         return text
 
-    def __init__(self, *args, min=None, max=None, **kwargs):
+    def __init__(self, *args, min=None, max=None, prefix='metric', unit=None, **kwargs):
         self._check_min_max(min, max)
         self._min = min
         self._max = max
-        super().__init__(*args, **kwargs)
+        ValueBase.__init__(self, *args, **kwargs)
+        self.prefix = prefix
+        self.unit = unit
 
     @staticmethod
     def _check_min_max(min, max):
@@ -358,21 +353,46 @@ class NumberValue(ValueBase):
 
     def validate(self, value):
         num = self.convert(value)
-        if self.min is not None and num < self.min:
+        # bools are integers but not invalid in this case
+        if isinstance(value, bool):
+            raise ValueError('Not a %s' % self.typename)
+        elif self.min is not None and num < self.min:
             raise ValueError('Too small (minimum is {})'.format(self.min))
         elif self.max is not None and num > self.max:
-            raise ValueError('Too big (maximum is {})'.format(self.max))
+            raise ValueError('Too large (maximum is {})'.format(self.max))
 
     def convert(self, value):
-        if isinstance(value, str) and len(value) >= 3:
+        # True and False are technically integers
+        if isinstance(value, bool):
+            raise ValueError('Not a %s' % self.typename)
+
+        # Allow adjusting value relative to current value
+        elif isinstance(value, str) and len(value) >= 3:
+            current_value = 0 if self.value is None else self.value
+            value_str = value
             if value[0:2] == '+=':
-                return self.value + super().convert(value[2:].strip())
+                value = current_value + self.type(value[2:].strip())
             elif value[0:2] == '-=':
-                return self.value - super().convert(value[2:].strip())
-        return super().convert(value)
+                value = current_value - self.type(value[2:].strip())
+
+        if not isinstance(value, self.type):
+            try:
+                value = self.type(value, prefix=self.prefix, unit=self.unit)
+            except (ValueError, TypeError) as e:
+                raise ValueError('Not a %s' % self.typename)
+
+        if hasattr(self, '_set_unit_when_possible'):
+            value.unit = self._set_unit_when_possible
+            delattr(self, '_set_unit_when_possible')
+        if hasattr(self, '_set_prefix_when_possible'):
+            value.prefix = self._set_prefix_when_possible
+            delattr(self, '_set_prefix_when_possible')
+
+        return value
 
     @property
     def min(self):
+        """The smallest valid number"""
         return self._min
 
     @min.setter
@@ -380,11 +400,16 @@ class NumberValue(ValueBase):
         self._check_min_max(min, self.max)
         self._min = min
         if min is not None:
-            if self.default is not None and self.default < min: self.default = min
-            if self.value is not None and self.value < min: self.value = min
+            default = self.default
+            if default is not None and default < min:
+                self.default = self.type(min, prefix=self.prefix, unit=self.unit)
+            value = self.value
+            if value is not None and value < min:
+                self.value = self.type(min, prefix=self.prefix, unit=self.unit)
 
     @property
     def max(self):
+        """The largest valid number"""
         return self._max
 
     @max.setter
@@ -392,27 +417,74 @@ class NumberValue(ValueBase):
         self._check_min_max(self.min, max)
         self._max = max
         if max is not None:
-            if self.default is not None and self.default > max: self.default = max
-            if self.value is not None and self.value > max: self.value = max
+            default = self.default
+            if default is not None and default > max:
+                self.default = self.type(max, prefix=self.prefix, unit=self.unit)
+            value = self.value
+            if value is not None and value > max:
+                self.value = self.type(max, prefix=self.prefix, unit=self.unit)
+
+    @property
+    def unit(self):
+        """Any string or `None` for no unit"""
+        value = self.value
+        if value is not None:
+            return value.unit
+        elif hasattr(self, '_set_unit_when_possible'):
+            return self._set_unit_when_possible
+    @unit.setter
+    def unit(self, unit):
+        value = self.value
+        if value is not None:
+            value.unit = unit
+        else:
+            self._set_unit_when_possible = unit
+
+    @property
+    def prefix(self):
+        """Unit prefix; 'binary' or 'metric'"""
+        value = self.value
+        if value is not None:
+            return value.prefix
+        elif hasattr(self, '_set_prefix_when_possible'):
+            return self._set_prefix_when_possible
+        else:
+            return 'metric'
+    @prefix.setter
+    def prefix(self, prefix):
+        value = self.value
+        if value is None and prefix is not None:
+            self._set_prefix_when_possible = prefix
+        else:
+            value.prefix = prefix
+
+    def string(self, value=None, default=False, with_unit=True):
+        if default:
+            num = self.default
+        elif value is not None:
+            try:
+                num = self.convert(value)
+            except ValueError:
+                return str(value)
+        else:
+            num = self.value
+
+        if num is None:
+            return UNSPECIFIED
+        else:
+            return num.with_unit if with_unit is True else num.without_unit
+
+    def __repr__(self):
+        v = self.value
+        return '%s=%s' % (self.name, UNSPECIFIED if v is None else str(v))
 
 
 class IntegerValue(NumberValue):
-    """NumberValue that automatically converts values to `int`"""
-    _type = int
+    """NumberValue that rounds numbers off to an integer"""
     _numbertype = 'integer'
 
     def convert(self, value):
-        try:
-            # Try to convert float or str to int
-            return super().convert(value)
-        except ValueError as error:
-            # int cannot handle floats in string form (e.g. '10.3'), so we try
-            # do convert them to float first.  If that also doesn't work, raise
-            # *previous* exception.
-            try:
-                return super().convert(float(value))
-            except (ValueError, TypeError) as _:
-                raise error from None
+        return round(NumberValue.convert(self, value))
 
 
 TRUE = ('enabled', 'yes', 'on', 'true', '1')
@@ -420,16 +492,16 @@ FALSE = ('disabled', 'no', 'off', 'false', '0')
 class BooleanValue(ValueBase):
     """Boolean value
 
-    Supported strings are specified in the module-level variables `TRUE` and
-    `FALSE`.  Valid values are also the numbers 1/0 and `True`/`False`.  All
-    other values are invalid.
+    Supported strings are specified in the module variables `TRUE` and `FALSE`.
+    Valid values are also the numbers 1/0 and `True`/`False`.  All other values
+    are invalid.
     """
-    _type = bool
+    type = bool
     typename = 'boolean'
     valuesyntax = '[%s]' % '|'.join('/'.join((t,f)) for t,f in zip(TRUE, FALSE))
 
     def validate(self, value):
-        super().validate(self.convert(value))
+        ValueBase.validate(self, self.convert(value))
 
     def convert(self, value):
         if isinstance(value, bool):
@@ -441,8 +513,9 @@ class BooleanValue(ValueBase):
             elif value.lower() in TRUE: return True
         raise ValueError('Not a {}'.format(self.typename))
 
-    def string(self, value=None, default=False):
-        v = super().string(value, default)
+    def string(self, *args, **kwargs):
+        """Return the first value specified in the module variables `TRUE` or `FALSE`"""
+        v = ValueBase.string(self, *args, **kwargs)
         if v == 'True':    return TRUE[0]
         elif v == 'False': return FALSE[0]
         else:              return v
@@ -452,20 +525,13 @@ class OptionValue(ValueBase):
     """Single value that can only be one of a predefined set of values"""
 
     @property
-    def _type(self):
-        if self.options:
-            return type(self.options[0])
-        else:
-            raise RuntimeError('Cannot guess value type: {!r}'.format(self))
-
-    @property
     def typename(self):
         optvals = (str(o) for o in self.options)
         return 'option: ' + ', '.join(optvals)
 
     def __init__(self, *args, options=(), **kwargs):
         self._options = tuple(options)
-        super().__init__(*args, **kwargs)
+        ValueBase.__init__(self, *args, **kwargs)
 
     def validate(self, value):
         value = self.convert(value)
@@ -484,7 +550,7 @@ class OptionValue(ValueBase):
             raise ValueError('Not an iterable: %r', options)
         else:
             self._options = tuple(options)
-            for name in ('default', 'value'):
+            for name in ('_default', '_value'):
                 if getattr(self, name) not in self.options:
                     setattr(self, name, self.options[0])
 
@@ -494,16 +560,16 @@ class ListValue(ValueBase):
 
     Set `options` to any iterable to limit the items allowed in the list.
     """
-    _type = list
+    type = list
     typename = 'list'
 
     def __init__(self, *args, options=None, **kwargs):
         self._options = options
-        super().__init__(*args, **kwargs)
+        ValueBase.__init__(self, *args, **kwargs)
 
     def validate(self, value):
         lst = self.convert(value)
-        super().validate(lst)
+        ValueBase.validate(self, lst)
 
         if self.options is not None:
             # Only items in self.options are allowed
@@ -519,9 +585,9 @@ class ListValue(ValueBase):
 
     def convert(self, value):
         if isinstance(value, str):
-            return self._type(value.strip() for value in value.split(','))
+            return self.type(value.strip() for value in value.split(','))
         elif isinstance(value, abc.Iterable):
-            return self._type(value)
+            return self.type(value)
         else:
             raise ValueError('Not a {}'.format(self.typename))
 
@@ -532,7 +598,7 @@ class ListValue(ValueBase):
             try:
                 lst = self.convert(value)
             except ValueError:
-                lst = str(value)
+                lst = (str(value),)
         else:
             lst = self.value
         return ', '.join(str(item) for item in lst)
@@ -553,7 +619,7 @@ class ListValue(ValueBase):
         elif isinstance(options, abc.Iterable):
             self._options = tuple(options)
             # Purge new invalid items
-            for name in ('default', 'value'):
+            for name in ('_default', '_value'):
                 lst = getattr(self, name)
                 invalid_items = set(lst).difference(self.options)
                 for item in invalid_items:
@@ -565,11 +631,223 @@ class ListValue(ValueBase):
 
 class SetValue(ListValue):
     """ListValue with unique elements (order is preserved)"""
-    _type = list
+    type = list
     typename = 'set'
 
     def convert(self, value):
-        lst = super().convert(value)
+        lst = ListValue.convert(self, value)
         # Make list items unique while preserving order
         seen = set()
         return [x for x in lst if not (x in seen or seen.add(x))]
+
+
+def signature_without_unbound_args(func):
+    sig = inspect.signature(func)
+    params = [param for param in sig.parameters.values()
+              if param.kind not in (inspect.Parameter.VAR_POSITIONAL,
+                                    inspect.Parameter.VAR_KEYWORD)]
+    return inspect.Signature(params)
+
+def MultiValue(*clses):
+    # Create class name from names of subclasses
+    clsnames = []
+    for cls in clses:
+        if not issubclass(cls, ValueBase):
+            raise RuntimeError('Not a ValueBase: %r', cls)
+        clsnames.append(cls.__name__[:-5])  # Remove 'Value' from class name
+    clsname = 'Or'.join(clsnames) + 'Value'
+
+    clsattrs = {'_subclses': clses}
+
+    def __init__(self, name, *, default=None, description=None, **kwargs):
+        # Create instance of each subclass
+        instances_list = []
+        instances_dict = {}
+        used_args = set()
+        for cls in self._subclses:
+            init_args = {'name': '%s[%s]' % (name, cls.__name__)}
+            cls_sig = signature_without_unbound_args(cls.__init__)
+            for param in cls_sig.parameters:
+                if param in kwargs:
+                    init_args[param] = kwargs[param]
+                    used_args.add(param)
+            instance = cls(**init_args)
+            instances_dict[cls] = instance
+            instances_list.append(instance)
+
+        # Any arguments not used by any subclass raise a TypeError
+        unused_args = set(kwargs).difference(used_args)
+        if len(unused_args) > 0:
+            raise TypeError("TypeError: invalid keyword arguments: %s" %
+                            ', '.join(repr(arg) for arg in sorted(unused_args)))
+
+        # These attributes don't exist yet, so we must avoid calling __getattr__
+        for attrname in ('_name', '_default', '_value', '_description', '_on_change'):
+            object.__setattr__(self, attrname, None)
+        object.__setattr__(self, '_instances_list', instances_list)
+        object.__setattr__(self, '_instances_dict', instances_dict)
+        object.__setattr__(self, '_current_instance', self._get_valid_instance(default))
+
+        # Fill _name, _default, etc with actual values
+        ValueBase.__init__(self, name, default=default, description=description)
+        log.debug('Initialized of MultiValue %s: %r', clsname, self)
+    clsattrs['__init__'] = __init__
+
+    clsattrs['instances'] = property(fget=lambda self: self._instances_dict,
+                                     fset=None, fdel=None,
+                                     doc='Dictionary of values with their class as key')
+
+    def _get_valid_instance(self, value):
+        """Return first instance that accepts `value`"""
+        instances = self._instances_list
+        if value is None:
+            return instances[0]
+        else:
+            exceptions = []
+            for inst in instances:
+                try:
+                    inst.validate(value)
+                except ValueError as e:
+                    if inst.typename is not None:
+                        exceptions.append(e)
+                else:
+                    return inst
+            raise ValueError('; '.join(str(e) for e in exceptions))
+    clsattrs['_get_valid_instance'] = _get_valid_instance
+
+    def set_(self, value):
+        self._current_instance = self._get_valid_instance(value)
+        self._current_instance.set(value)
+
+        # Set our own _value attribute and call custom validate()/convert() of
+        # child classes
+        ValueBase.set(self, self._current_instance.value)
+    clsattrs['set'] = set_
+
+    def validate(self, value):
+        self._get_valid_instance(value)
+    clsattrs['validate'] = validate
+
+    def convert(self, value):
+        inst = self._get_valid_instance(value)
+        return inst.convert(value)
+    clsattrs['convert'] = convert
+
+    def string(self, value=None, default=False):
+        if default:
+            inst = self._get_valid_instance(self.default)
+            return inst.string(self.default)
+        elif value is not None:
+            inst = self._get_valid_instance(value)
+            return inst.string(value)
+        else:
+            return self._current_instance.string(self.value)
+    clsattrs['string'] = string
+
+    def typename(self):
+        return ' or '.join(inst.typename for inst in self._instances_list
+                           if inst.typename is not None)
+    clsattrs['typename'] = property(typename)
+
+    def valuesyntax(self):
+        parts = []
+        for inst in self._instances_list:
+            for attrname in ('valuesyntax', 'typename'):
+                if hasattr(inst, attrname):
+                    attr = getattr(inst, attrname)
+                    if attr is not None:
+                        parts.append(attr)
+                        break
+        return ' or '.join(parts)
+    clsattrs['valuesyntax'] = property(valuesyntax)
+
+    def __repr__(self):
+        # Use class of current value and supply it with self instance.  This
+        # uses the proper __repr__ method while keeping the correct name without
+        # the '[<type>]' affix.
+        return type(self._current_instance).__repr__(self)
+    clsattrs['__repr__'] = __repr__
+
+    def __getattr__(self, name):
+        # Find custom attribute (e.g. 'minlen' or 'options') in instances
+        for inst in self._instances_list:
+            if hasattr(inst, name):
+                attr = getattr(inst, name)
+                return attr
+        raise AttributeError('%r object has no attribute %r' % (type(self).__name__, name))
+    clsattrs['__getattr__'] = __getattr__
+
+    def __setattr__(self, name, value):
+        # Look for attribute on self only (avoid __getattr__)
+        try:
+            attr = object.__getattribute__(self, name)
+        except AttributeError:
+            pass
+        else:
+            object.__setattr__(self, name, value)
+            return
+
+        # Look for special attributes on the other instances (e.g. OptionValue's
+        # "options" or Number's "min/max")
+        for inst in self._instances_list:
+            if hasattr(inst, name):
+                setattr(inst, name, value)
+                return
+
+        raise AttributeError('%r object has no attribute %r' % (type(self).__name__, name))
+    clsattrs['__setattr__'] = __setattr__
+
+    cls = type(clsname, (ValueBase,), clsattrs)
+    return cls
+
+
+class Settings():
+    """Make multiple *Value instances accessible as a dict with their name as key"""
+
+    def __init__(self, *values):
+        # _values and _values_dict hold the same instances; the list is to
+        # preserve order and the dict is for fast access via __getitem__
+        self._values = []
+        self._values_dict = {}
+        self._on_change = Signal()
+        self.load(*values)
+
+    def add(self, value):
+        """Add `value` to collection"""
+        self._values.append(value)
+        self._values_dict[value.name] = value
+
+    def load(self, *values):
+        """Add multiple `values` to collection"""
+        for v in values:
+            self.add(v)
+
+    @property
+    def values(self):
+        """Iterate over collected values"""
+        yield from self._values
+
+    @property
+    def names(self):
+        """Iterate over values' `name` properties"""
+        yield from self._values_dict.keys()
+
+    def on_change(self, callback, autoremove=True):
+        """Run `callback` every time a value changes
+
+        `callback` gets the value instances as the only argument.
+
+        If `autoremove` is True, stop calling `callback` once it is garbage
+        collected.
+        """
+        self._on_change.connect(callback, weak=autoremove)
+
+    def __getitem__(self, name):
+        return self._values_dict[name]
+
+    def __setitem__(self, name, value):
+        self._values_dict[name].value = value
+        self._on_change.send(self._values_dict[name])
+
+    def __contains__(self, name):
+        return name in self._values_dict

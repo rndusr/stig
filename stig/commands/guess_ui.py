@@ -19,7 +19,7 @@ from ..commands import is_op as is_cmd_op
 class UIGuessError(Exception):
     pass
 
-def guess_ui(clicmds, cmdmgr):
+def guess_ui(clicmds, cmdmgr, cfg):
     """Guess desired user interface based on CLI commands
 
     Return 'tui' or 'cli'
@@ -64,7 +64,7 @@ def guess_ui(clicmds, cmdmgr):
             if setting.startswith('tui.'):
                 debugmsg += 'TUI setting: %r - guessing TUI' % setting
                 guess = 'tui'
-            elif is_srv_setting(setting):
+            elif is_srv_setting(setting, cfg):
                 debugmsg += 'server setting: %r - guessing CLI' % setting
                 guess = 'cli'
             else:

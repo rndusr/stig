@@ -8,6 +8,7 @@ class TestHelpCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         HelpCmd.helpmgr = self.helpmgr
+        HelpCmd.cfg = self.cfg
 
     async def test_no_topic(self):
         process = HelpCmd([], loop=self.loop)

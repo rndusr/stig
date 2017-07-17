@@ -42,19 +42,18 @@ else:
                              'eta', 'ip', 'client')
 
 
-from .settings import (StringValue, IntegerValue, NumberValue, BooleanValue,
-                       PathValue, ListValue, SetValue, OptionValue)
-
-class SortOrderValue(SetValue):
-    """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
-    def __init__(self, sortercls, *args, **kwargs):
-        super().__init__(*args, options=tuple(sortercls.SORTSPECS), **kwargs)
-
-    def validate(self, names):
-        super().validate(name.strip('!.') for name in names)
-
-
 def init_defaults(cfg):
+    from ..types import (StringValue, IntegerValue, NumberValue, BooleanValue,
+                         PathValue, ListValue, SetValue, OptionValue)
+
+    class SortOrderValue(SetValue):
+        """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
+        def __init__(self, sortercls, *args, **kwargs):
+            super().__init__(*args, options=tuple(sortercls.SORTSPECS), **kwargs)
+
+        def validate(self, names):
+            super().validate(name.strip('!.') for name in names)
+
     cfg.load(
         StringValue('srv.url', default='localhost:9091',
                     description='URL of the Transmission RPC interface ([USER:PASSWORD@]HOST[:PORT])'),
@@ -112,9 +111,9 @@ def init_defaults(cfg):
 
 
 def init_server_defaults(cfg, settingsapi):
-    from .settings_server import (BooleanSrvValue, IntegerSrvValue, OptionSrvValue,
-                                  PathSrvValue, PathIncompleteSrvValue,
-                                  RateLimitSrvValue, PortSrvValue)
+    from .types_srv import (BooleanSrvValue, IntegerSrvValue, OptionSrvValue,
+                            PathSrvValue, PathIncompleteSrvValue,
+                            RateLimitSrvValue, PortSrvValue)
 
     def mk(cls, name, setting, description, **kwargs):
         getter = lambda: settingsapi[setting]
@@ -132,7 +131,8 @@ def init_server_defaults(cfg, settingsapi):
            'Whether to use Peer Exchange to discover peers for public torrents'),
 
         mk(PortSrvValue, 'srv.port', 'port',
-           'Port used to communicate with peers or "random" to use a random port'),
+           'Port used to communicate with peers or "random" to use a random port',
+           min=1, max=65535),
         mk(BooleanSrvValue, 'srv.port-forwarding', 'port_forwarding',
            'Whether to instruct your router to forward the peer port via UPnP or NAT-PMP'),
 
