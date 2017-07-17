@@ -13,7 +13,6 @@ from functools import partial
 
 from ..main import (cfg, srvapi, aioloop)
 from . import main as tui
-from ..client import ClientError
 
 from .torrent.tlist import TorrentListWidget
 from .torrent.flist import FileListWidget
@@ -28,7 +27,7 @@ def _connect_to_new_url(url):
     async def coro():
         try:
             await srvapi.rpc.connect(url.value)
-        except ClientError as e:
+        except srvapi.ClientError as e:
             pass
     aioloop.create_task(coro())
 cfg['srv.url'].on_change(_connect_to_new_url)
