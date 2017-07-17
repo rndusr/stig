@@ -92,6 +92,9 @@ class Number(float):
 
     @property
     def without_unit(self):
+        if self >= float('inf'):
+            return pretty_float(self)
+
         for prefix,size in self._prefixes:
             if self >= size:
                 return pretty_float(self/size) + prefix
