@@ -84,7 +84,7 @@ class ResetCmdbase(metaclass=InitCommand):
             if name not in self.cfg:
                 log.error('Unknown setting: {}'.format(name))
                 success = False
-            elif is_srv_setting(name):
+            elif is_srv_setting(self.cfg[name]):
                 log.error('Server settings cannot be reset: {}'.format(name))
                 success = False
             else:
