@@ -133,6 +133,8 @@ class Number(float):
 
 def pretty_float(n):
     """Format float with a reasonable amount of decimal places"""
+    if n == float('inf'):
+        return '∞'
     n_abs = round(abs(n), 2)
     n_abs_int = int(n_abs)
     if n_abs == 0:
