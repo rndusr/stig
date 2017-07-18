@@ -142,6 +142,12 @@ class TestNumber(unittest.TestCase):
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.prefix, prfx)
 
+    def test_str_with_unit_argument(self):
+        for str_with_unit,exp in ((True, '1MA'), (False, '1M')):
+            n = Number(1e6, unit='A', prefix='metric',
+                       str_with_unit=str_with_unit)
+            self.assertEqual(str(n), exp)
+
 
 class Test_strwidth(unittest.TestCase):
     def test_empty_string(self):

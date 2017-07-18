@@ -11,6 +11,7 @@
 
 import unicodedata
 from itertools import chain
+from types import MethodType
 import re
 
 
@@ -32,7 +33,7 @@ class Number(float):
                                                                        _PREFIXES_METRIC)))
 
     @classmethod
-    def from_string(cls, string, *, prefix='metric', unit=None):
+    def from_string(cls, string, *, prefix='metric', unit=None, str_with_unit=True):
         match = cls._REGEX.match(str(string))
         if match is None:
             raise ValueError('Not a number: {!r}'.format(string))
@@ -52,9 +53,9 @@ class Number(float):
             elif prfx_len == 1:
                 prefix = 'metric'
 
-            return cls(num, prefix, unit)
+            return cls(num, prefix, unit, str_with_unit)
 
-    def __new__(cls, num, prefix='metric', unit=None):
+    def __new__(cls, num, prefix='metric', unit=None, str_with_unit=True):
         if isinstance(num, cls):
             return cls(float(num), prefix=prefix or num.prefix, unit=unit or num.unit)
         elif isinstance(num, str):
@@ -63,25 +64,18 @@ class Number(float):
         obj = super().__new__(cls, num)
         obj.unit = unit
         obj.prefix = prefix
+        if str_with_unit:
+            obj.__str = MethodType(lambda self: self.with_unit, obj)
+        else:
+            obj.__str = MethodType(lambda self: self.without_unit, obj)
         return obj
 
-    @property
-    def unit(self): return self._unit
-    @unit.setter
-    def unit(self, unit): self._unit = unit
+    def __str__(self):
+        return self.__str()
 
-    @property
-    def prefix(self):
-        return self._prefix
-    @prefix.setter
-    def prefix(self, prefix):
-        if prefix == 'binary':
-            self._prefixes = self._PREFIXES_BINARY
-        elif prefix == 'metric':
-            self._prefixes = self._PREFIXES_METRIC
-        else:
-            raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
-        self._prefix = prefix
+    def __repr__(self):
+        return '<{} {}, prefix={!r}, unit={!r}>'.format(type(self).__name__, float(self),
+                                                        self._prefix, self._unit)
 
     @property
     def with_unit(self):
@@ -100,12 +94,23 @@ class Number(float):
                 return pretty_float(self/size) + prefix
         return pretty_float(self)
 
-    def __str__(self):
-        return self.without_unit
+    @property
+    def unit(self): return self._unit
+    @unit.setter
+    def unit(self, unit): self._unit = unit
 
-    def __repr__(self):
-        return '<{} {}, prefix={!r}, unit={!r}>'.format(type(self).__name__, float(self),
-                                                        self._prefix, self._unit)
+    @property
+    def prefix(self):
+        return self._prefix
+    @prefix.setter
+    def prefix(self, prefix):
+        if prefix == 'binary':
+            self._prefixes = self._PREFIXES_BINARY
+        elif prefix == 'metric':
+            self._prefixes = self._PREFIXES_METRIC
+        else:
+            raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
+        self._prefix = prefix
 
     # Arithmetic operations return Number instances with unit and prefix preserved
     def __add__(self, other):
