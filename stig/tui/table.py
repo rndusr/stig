@@ -47,6 +47,8 @@ class Table():
         for colname in self._enabled_columns:
             cellcls = self._colspecs[colname]
             cellwidget = cellcls()
+            if member.exists(colname):
+                member.remove(colname)
             member.add(colname, cellwidget, options=cellcls.width, removable=True)
         self._members[member_id] = member
 
@@ -80,6 +82,8 @@ class Table():
         for colname in columns:
             # Add header
             cellcls = self._colspecs[colname]
+            if self._headers.exists(colname):
+                self._headers.remove(colname)
             self._headers.add(colname, cellcls.header, options=cellcls.width, removable=True)
             self._enabled_columns.append(colname)
 
