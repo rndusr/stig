@@ -33,7 +33,7 @@ class Number(float):
 
     @classmethod
     def from_string(cls, string, *, prefix='metric', unit=None):
-        match = cls._REGEX.match(string)
+        match = cls._REGEX.match(str(string))
         if match is None:
             raise ValueError('Not a number: {!r}'.format(string))
         else:
