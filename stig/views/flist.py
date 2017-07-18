@@ -14,10 +14,11 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import ColumnBase
+from . import (ColumnBase, _ensure_string_without_unit)
 
 
 COLUMNS = {}
+
 
 class Filename(ColumnBase):
     header = {'left': 'Filename'}
@@ -36,7 +37,7 @@ class Size(ColumnBase):
     width = 6
 
     def get_value(self):
-        return self.data['size-total']
+        return _ensure_string_without_unit(self.data['size-total'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -53,7 +54,7 @@ class Downloaded(ColumnBase):
     width = 6
 
     def get_value(self):
-        return self.data['size-downloaded']
+        return _ensure_string_without_unit(self.data['size-downloaded'])
 
     def get_raw(self):
         return int(self.get_value())

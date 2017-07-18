@@ -14,9 +14,11 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import ColumnBase
+from . import (ColumnBase, _ensure_string_without_unit)
+
 
 COLUMNS = {}
+
 
 import os
 PATHSEP = os.sep
@@ -146,7 +148,7 @@ class Size(ColumnBase):
     needed_keys = ('size-final',)
 
     def get_value(self):
-        return self.data['size-final']
+        return _ensure_string_without_unit(self.data['size-final'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -164,7 +166,7 @@ class Downloaded(ColumnBase):
     needed_keys = ('size-downloaded', 'size-final')
 
     def get_value(self):
-        return self.data['size-downloaded']
+        return _ensure_string_without_unit(self.data['size-downloaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -182,7 +184,7 @@ class Uploaded(ColumnBase):
     needed_keys = ('size-uploaded', 'size-downloaded')
 
     def get_value(self):
-        return self.data['size-uploaded']
+        return _ensure_string_without_unit(self.data['size-uploaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -202,9 +204,9 @@ class BytesAvailable(ColumnBase):
     def get_value(self):
         data = self.data
         if data['peers-seeding'] > 0:
-            return data['size-final']
+            return _ensure_string_without_unit(data['size-final'])
         else:
-            return data['size-available']
+            return _ensure_string_without_unit(data['size-available'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -222,7 +224,7 @@ class RateDown(ColumnBase):
     needed_keys = ('rate-down',)
 
     def get_value(self):
-        return self.data['rate-down']
+        return _ensure_string_without_unit(self.data['rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -240,7 +242,7 @@ class RateUp(ColumnBase):
     needed_keys = ('rate-up',)
 
     def get_value(self):
-        return self.data['rate-up']
+        return _ensure_string_without_unit(self.data['rate-up'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -258,7 +260,7 @@ class RateLimitDown(ColumnBase):
     needed_keys = ('rate-limit-down',)
 
     def get_value(self):
-        return self.data['rate-limit-down']
+        return _ensure_string_without_unit(self.data['rate-limit-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -276,7 +278,7 @@ class RateLimitUp(ColumnBase):
     needed_keys = ('rate-limit-up',)
 
     def get_value(self):
-        return self.data['rate-limit-up']
+        return _ensure_string_without_unit(self.data['rate-limit-up'])
 
     def get_raw(self):
         return int(self.get_value())

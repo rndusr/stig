@@ -66,3 +66,12 @@ class ColumnBase():
             return '<{} {}>'.format(type(self).__name__, self.get_value())
         else:
             return '<{} <UNINITIALIZED>>'.format(type(self).__name__)
+
+
+def _ensure_string_without_unit(value):
+    # We don't want to display the unit ('B' or 'b') in each cell; it's already
+    # displayed in the column header.
+    if hasattr(value, 'str_with_unit'):
+        return type(value)(value, str_with_unit=False)
+    else:
+        return value

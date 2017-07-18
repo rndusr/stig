@@ -14,7 +14,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import ColumnBase
+from . import (ColumnBase, _ensure_string_without_unit)
 
 
 COLUMNS = {}
@@ -91,7 +91,7 @@ class RateDown(ColumnBase):
     width = 6
 
     def get_value(self):
-        return self.data['rate-down']
+        return _ensure_string_without_unit(self.data['rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -108,7 +108,7 @@ class RateUp(ColumnBase):
     width = 6
 
     def get_value(self):
-        return self.data['rate-up']
+        return _ensure_string_without_unit(self.data['rate-up'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -138,7 +138,7 @@ class EstimatedPeerRate(ColumnBase):
     width = 7
 
     def get_value(self):
-        return self.data['rate-est']
+        return _ensure_string_without_unit(self.data['rate-est'])
 
     def get_raw(self):
         return int(self.get_value())
