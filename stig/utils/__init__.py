@@ -33,7 +33,7 @@ class Number(float):
                                                                        _PREFIXES_METRIC)))
 
     @classmethod
-    def from_string(cls, string, *, prefix='metric', unit=None, str_with_unit=True):
+    def from_string(cls, string, *, prefix=None, unit=None, str_with_unit=None):
         match = cls._REGEX.match(str(string))
         if match is None:
             raise ValueError('Not a number: {!r}'.format(string))
@@ -55,11 +55,22 @@ class Number(float):
 
             return cls(num, prefix, unit, str_with_unit)
 
-    def __new__(cls, num, prefix='metric', unit=None, str_with_unit=True):
+    def __new__(cls, num, prefix=None, unit=None, str_with_unit=None):
         if isinstance(num, cls):
-            return cls(float(num), prefix=prefix or num.prefix, unit=unit or num.unit)
-        elif isinstance(num, str):
-            return cls.from_string(num, prefix=prefix, unit=unit)
+            # Copy properties from existing Number instance unless they are
+            # overridden by arguments.
+            prefix = num.prefix if prefix is None else prefix
+            unit = num.unit if unit is None else unit
+            str_with_unit = num.str_with_unit if str_with_unit is None else str_with_unit
+            return cls(float(num), prefix=prefix, unit=unit, str_with_unit=str_with_unit)
+
+        # We can't specify defaults in the arguments because then we don't know
+        # which arguments are passed and which are default.
+        prefix = 'metric' if prefix is None else prefix
+        str_with_unit = True if str_with_unit is None else str_with_unit
+
+        if isinstance(num, str):
+            return cls.from_string(num, prefix=prefix, unit=unit, str_with_unit=str_with_unit)
 
         obj = super().__new__(cls, num)
         obj.unit = unit

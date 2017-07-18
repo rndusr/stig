@@ -72,25 +72,39 @@ class TestNumber(unittest.TestCase):
         self.assertEqual(n, 123000)
         self.assertEqual(n.unit, 'F')
 
-    def test_parsing_Number_instance(self):
-        for prefix in ('binary', 'metric'):
-            orig = Number.from_string('1MB', prefix=prefix)
+    def test_passing_Number_instance_copies_properties(self):
+        for orig_prefix in ('binary', 'metric'):
+            for orig_unit in ('A', 'B'):
+                for orig_str_with_unit in (True, False):
+                    orig = Number(1e3, prefix=orig_prefix, unit=orig_unit, str_with_unit=orig_str_with_unit)
+                    copy = Number(orig)
+                    self.assertEqual(copy, 1e3)
+                    self.assertEqual(copy.unit, orig.unit)
+                    self.assertEqual(copy.prefix, orig.prefix)
+                    self.assertEqual(copy.str_with_unit, orig.str_with_unit)
 
-            n = Number(orig)
-            self.assertEqual(n, 1e6)
-            self.assertEqual(n.unit, orig.unit)
-            self.assertEqual(n.prefix, orig.prefix)
+                    # Override prefix
+                    for new_prefix in ('metric', 'binary'):
+                        copy = Number(orig, prefix=new_prefix)
+                        self.assertEqual(copy, 1e3)
+                        self.assertEqual(copy.unit, orig.unit)
+                        self.assertEqual(copy.prefix, new_prefix)
+                        self.assertEqual(copy.str_with_unit, orig.str_with_unit)
 
-            for new_prefix in ('metric', 'binary'):
-                n1 = Number(orig, prefix=new_prefix)
-                self.assertEqual(n1, 1e6)
-                self.assertEqual(n1.unit, orig.unit)
-                self.assertEqual(n1.prefix, new_prefix)
+                    # Override unit
+                    copy = Number(orig, unit='Z')
+                    self.assertEqual(copy, 1e3)
+                    self.assertEqual(copy.unit, 'Z')
+                    self.assertEqual(copy.prefix, orig.prefix)
+                    self.assertEqual(copy.str_with_unit, orig.str_with_unit)
 
-                n2 = Number(orig, unit='b')
-                self.assertEqual(n2, 1e6)
-                self.assertEqual(n2.unit, 'b')
-                self.assertEqual(n2.prefix, orig.prefix)
+                    # Override str_with_unit
+                    for new_str_with_unit in (True, False):
+                        copy = Number(orig, str_with_unit=new_str_with_unit)
+                        self.assertEqual(copy, 1e3)
+                        self.assertEqual(copy.unit, orig.unit)
+                        self.assertEqual(copy.prefix, orig.prefix)
+                        self.assertEqual(copy.str_with_unit, new_str_with_unit)
 
     def test_not_a_number(self):
         for value in ('foo', [1, 2, 3], print):
@@ -134,19 +148,32 @@ class TestNumber(unittest.TestCase):
             self.assertEqual(n, 500)
             self.assertEqual(n.prefix, prfx)
 
+    def test_arithmetic_operation_copies_str_with_unit(self):
+        for str_with_unit in (True, False):
+            n = Number(5, str_with_unit=str_with_unit) * 100
+            self.assertEqual(n, 500)
+            self.assertEqual(n.str_with_unit, str_with_unit)
+
     def test_arithmetic_operation_copies_from_first_value(self):
         for prfx in ('metric', 'binary'):
-            n = Number(  5, unit='X', prefix=prfx) \
-              + Number(100, unit='z', prefix='metric')
+            n = Number(  5, unit='X', prefix=prfx, str_with_unit=False) \
+              + Number(100, unit='z', prefix='metric', str_with_unit=True)
             self.assertEqual(n, 105)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.prefix, prfx)
+            self.assertEqual(n.str_with_unit, False)
 
     def test_str_with_unit_argument(self):
-        for str_with_unit,exp in ((True, '1MA'), (False, '1M')):
-            n = Number(1e6, unit='A', prefix='metric',
-                       str_with_unit=str_with_unit)
-            self.assertEqual(str(n), exp)
+        string = '1MA'
+        n = Number(1e6, unit='A', prefix='metric', str_with_unit=True)
+        self.assertEqual(str(n), string)
+        n.str_with_unit = False
+        self.assertEqual(str(n), string[:-1])
+
+        n = Number(1e6, unit='A', prefix='metric', str_with_unit=False)
+        self.assertEqual(str(n), string[:-1])
+        n.str_with_unit = True
+        self.assertEqual(str(n), string)
 
 
 class Test_strwidth(unittest.TestCase):
