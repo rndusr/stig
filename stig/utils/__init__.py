@@ -64,10 +64,7 @@ class Number(float):
         obj = super().__new__(cls, num)
         obj.unit = unit
         obj.prefix = prefix
-        if str_with_unit:
-            obj.__str = MethodType(lambda self: self.with_unit, obj)
-        else:
-            obj.__str = MethodType(lambda self: self.without_unit, obj)
+        obj.str_with_unit = str_with_unit
         return obj
 
     def __str__(self):
@@ -93,6 +90,18 @@ class Number(float):
             if self >= size:
                 return pretty_float(self/size) + prefix
         return pretty_float(self)
+
+    @property
+    def str_with_unit(self, str_with_unit):
+        return self._str_with_unit
+
+    @str_with_unit.setter
+    def str_with_unit(self, str_with_unit):
+        if str_with_unit:
+            self.__str = MethodType(lambda self: self.with_unit, self)
+        else:
+            self.__str = MethodType(lambda self: self.without_unit, self)
+        self._str_with_unit = bool(str_with_unit)
 
     @property
     def unit(self): return self._unit
