@@ -121,31 +121,34 @@ class Number(float):
             raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
         self._prefix = prefix
 
-    # Arithmetic operations return Number instances with unit and prefix preserved
+    # Arithmetic operations return Number instances with unit, prefix, etc preserved
+    def _get_kwargs(self):
+        return {'unit': self.unit, 'prefix': self.prefix, 'str_with_unit': self._str_with_unit}
+
     def __add__(self, other):
-        return type(self)(super().__add__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__add__(other), **self._get_kwargs())
     def __sub__(self, other):
-        return type(self)(super().__sub__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__sub__(other), **self._get_kwargs())
     def __mul__(self, other):
-        return type(self)(super().__mul__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__mul__(other), **self._get_kwargs())
     def __div__(self, other):
-        return type(self)(super().__div__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__div__(other), **self._get_kwargs())
     def __truediv__(self, other):
-        return type(self)(super().__truediv__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__truediv__(other), **self._get_kwargs())
     def __floordiv__(self, other):
-        return type(self)(super().__floordiv__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__floordiv__(other), **self._get_kwargs())
     def __mod__(self, other):
-        return type(self)(super().__mod__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__mod__(other), **self._get_kwargs())
     def __divmod__(self, other):
-        return type(self)(super().__divmod__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__divmod__(other), **self._get_kwargs())
     def __pow__(self, other):
-        return type(self)(super().__pow__(other), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__pow__(other), **self._get_kwargs())
     def __round__(self, *args, **kwargs):
-        return type(self)(super().__round__(*args, **kwargs), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__round__(*args, **kwargs), **self._get_kwargs())
     def __floor__(self):
-        return type(self)(super().__floor__(), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__floor__(), **self._get_kwargs())
     def __ceil__(self):
-        return type(self)(super().__ceil__(), unit=self.unit, prefix=self.prefix)
+        return type(self)(super().__ceil__(), **self._get_kwargs())
 
 
 def pretty_float(n):
