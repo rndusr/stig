@@ -62,14 +62,14 @@ class TestResetCmd(CommandTestCase):
     async def test_space_separated_arguments(self):
         process = ResetCmd(['some.string', 'some.number'])
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.string'], None)
-        self.assertEqual(self.cfg['some.number'], None)
+        self.assertEqual(self.cfg['some.string'].value, None)
+        self.assertEqual(self.cfg['some.number'].value, None)
 
     async def test_unknown_setting(self):
         with self.assertLogs(level='ERROR') as logged:
             process = ResetCmd(['some.string', 'foo.bar'])
         self.assertEqual(process.success, False)
-        self.assertEqual(self.cfg['some.string'], None)
+        self.assertEqual(self.cfg['some.string'].value, None)
         self.assert_logged(logged, ('ERROR', '^Unknown setting: foo.bar'))
 
 

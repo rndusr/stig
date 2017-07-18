@@ -128,24 +128,31 @@ class MockHelpManager():
 
 from types import SimpleNamespace
 def MockSettings():
-    cfg = {'srv.url': SimpleNamespace(value='http://localhost:9091',
-                                      typename='string'),
-           'sort.torrents': SimpleNamespace(value=['name'],
-                                         typename='list'),
-           'columns.torrents': SimpleNamespace(value=['name', 'rate-down', 'rate-up'],
-                                            typename='list'),
-           'some.string': SimpleNamespace(value='foo',
-                                          typename='string'),
-           'some.integer': SimpleNamespace(value=10,
+    def mk_setting(**kwargs):
+        setting = SimpleNamespace(**kwargs)
+        def reset():
+            setting.value = None
+        setting.reset = reset
+        return setting
+
+    cfg = {'srv.url'          : mk_setting(value='http://localhost:9091',
+                                           typename='string'),
+           'sort.torrents'    : mk_setting(value=['name'],
+                                           typename='list'),
+           'columns.torrents' : mk_setting(value=['name', 'rate-down', 'rate-up'],
+                                           typename='list'),
+           'some.string'      : mk_setting(value='foo',
+                                           typename='string'),
+           'some.integer'     : mk_setting(value=10,
                                            typename='integer'),
-           'some.number': SimpleNamespace(value=3.7,
-                                          typename='number'),
-           'some.list': SimpleNamespace(value=('bob', 'alice'),
-                                        typename='list'),
-           'some.boolean': SimpleNamespace(value=True,
+           'some.number'      : mk_setting(value=3.7,
+                                           typename='number'),
+           'some.list'        : mk_setting(value=('bob', 'alice'),
+                                           typename='list'),
+           'some.boolean'     : mk_setting(value=True,
                                            typename='boolean'),
-           'some.option': SimpleNamespace(value='blue', options=('red', 'green', 'blue'),
-                                          typename='option: red, green, blue'),
+           'some.option'      : mk_setting(value='blue', options=('red', 'green', 'blue'),
+                                           typename='option: red, green, blue'),
     }
 
     for ns in cfg.values():
