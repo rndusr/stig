@@ -97,7 +97,7 @@ class Number(float):
     @property
     def unit(self): return self._unit
     @unit.setter
-    def unit(self, unit): self._unit = unit
+    def unit(self, unit): self._unit = str(unit) if unit is not None else None
 
     @property
     def prefix(self):
