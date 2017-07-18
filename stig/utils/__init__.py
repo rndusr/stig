@@ -92,7 +92,7 @@ class Number(float):
         return pretty_float(self)
 
     @property
-    def str_with_unit(self, str_with_unit):
+    def str_with_unit(self):
         return self._str_with_unit
 
     @str_with_unit.setter
