@@ -426,12 +426,10 @@ class TestMultiValue(unittest.TestCase):
         for kwarg in tuple(kwargs):
             if kwarg in ('__repr__'):
                 method = getattr(v, kwarg)
-                print('%r.%s()=%r, exp=%r' % (v, kwarg, method(), kwargs[kwarg]))
                 self.assertEqual(method(), kwargs[kwarg])
                 kwargs.pop(kwarg)
 
         for attr,val in kwargs.items():
-            print('%s=%r, exp=%r' % (attr, getattr(v, attr), val))
             self.assertEqual(getattr(v, attr), val)
 
     def test_invalid_init_arguments(self):
