@@ -171,11 +171,6 @@ class CLIEditWidget(urwid.Edit):
     @property
     def history_size(self):
         """Maximum number of lines kept in history"""
-        self._history_size
-
-    @property
-    def history_size(self):
-        """Maximum number of lines kept in history"""
         return self._history_size
 
     @history_size.setter
