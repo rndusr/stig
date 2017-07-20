@@ -71,13 +71,15 @@ class CLIEditWidget(urwid.Edit):
             if start_pos != None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             key = None
-        elif self._on_accept is not None and self._command_map[key] is urwid.ACTIVATE:
+        elif self._command_map[key] is urwid.ACTIVATE:
             self._append_to_history(self.edit_text)
-            self._on_accept(self)
+            if self._on_accept is not None:
+                self._on_accept(self)
             self._reset()
             key = None
-        elif self._on_cancel is not None and self._command_map[key] is urwid.CANCEL:
-            self._on_cancel(self)
+        elif self._command_map[key] is urwid.CANCEL:
+            if self._on_cancel is not None:
+                self._on_cancel(self)
             self._reset()
             key = None
         elif key == 'space':
