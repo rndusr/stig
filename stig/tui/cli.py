@@ -149,9 +149,9 @@ class CLIEditWidget(urwid.Edit):
             # Trim history on disk
             flines = _read_lines(self._history_file)
             if len(flines) > max_size:
-                # Over-trim history to reduce number of writes
+                # Trim more than necessary to reduce number of writes
                 overtrim = max(0, min(int(self._history_size/2), 10))
-                flines = flines[-max(overtrim*2, self._history_size-overtrim):]
+                flines = flines[overtrim:]
                 _write_lines(self._history_file, flines)
 
     @property
