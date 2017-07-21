@@ -21,18 +21,18 @@ class Key(str):
 
     # Convert some urwid key names and some other stuff
     _INIT = (
-        (re.compile(r'^<(.+)>$'),                 r'\1'),
-        (re.compile(r'^(.*) $'),                  r'\1space'),
-        (re.compile(r'^meta', flags=re.I),        r'alt'),
-        (re.compile(r'\besc$', flags=re.I),       r'escape'),
-        (re.compile(r'\bpos1$', flags=re.I),      r'home'),
-        (re.compile(r'\bdel$', flags=re.I),       r'delete'),
-        (re.compile(r'\bins$', flags=re.I),       r'insert'),
-        (re.compile(r'\breturn$', flags=re.I),    r'enter'),
-        (re.compile(r'\bpage up$', flags=re.I),   r'pgup'),
-        (re.compile(r'\bpage down$', flags=re.I), r'pgdn'),
-        (re.compile(r'\bpage dn$', flags=re.I),   r'pgdn'),
-        (re.compile(r' '),                        r'-'),
+        (re.compile(r'^<(.+)>$'),                            r'\1'),
+        (re.compile(r'^(.*) $'),                             r'\1space'),
+        (re.compile(r'^meta', flags=re.I),                   r'alt'),
+        (re.compile(r'\besc$', flags=re.I),                  r'escape'),
+        (re.compile(r'\bpos1$', flags=re.I),                 r'home'),
+        (re.compile(r'\bdel$', flags=re.I),                  r'delete'),
+        (re.compile(r'\bins$', flags=re.I),                  r'insert'),
+        (re.compile(r'(\b|\W*)(?:return|\n)$', flags=re.I),  r'\1enter'),
+        (re.compile(r'\bpage up$', flags=re.I),              r'pgup'),
+        (re.compile(r'\bpage down$', flags=re.I),            r'pgdn'),
+        (re.compile(r'\bpage dn$', flags=re.I),              r'pgdn'),
+        (re.compile(r' '),                                   r'-'),
         # The first part in key combos must always be the same, but the part
         # after must be preserved. <alt-l> is not the same as <alt-L>.
         (re.compile(r'^(\w+)-(\S+)$'),
