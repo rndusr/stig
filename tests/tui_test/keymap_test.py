@@ -23,14 +23,26 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('escape'), Key('esc'))
         self.assertEqual(Key('home'), Key('pos1'))
         self.assertEqual(Key('delete'), Key('del'))
-        self.assertEqual(Key('enter'), Key('return'))
         self.assertEqual(Key('insert'), Key('ins'))
+
+        self.assertEqual(Key('enter'), Key('return'))
+        self.assertEqual(Key('enter'), Key('\n'))
+        self.assertEqual(Key('alt-enter'), Key('meta-\n'))
 
         self.assertEqual(Key('alt-insert'), Key('meta ins'))
         self.assertEqual(Key('alt-del'), Key('meta delete'))
         self.assertEqual(Key('shift-ctrl-enter'), Key('shift-Ctrl-RETURN'))
         self.assertEqual(Key('alt-space'), Key('meta  '))
         self.assertEqual(Key('alt-pgup'), Key('meta page up'))
+
+    def test_compare_Key_with_str(self):
+        self.assertEqual(Key('enter'), '\n')
+        self.assertEqual(Key('enter'), 'return')
+        self.assertEqual(Key('pgdn'), 'page down')
+        self.assertEqual(Key('pgup'), 'page up')
+        self.assertEqual(Key('space'), ' ')
+        self.assertEqual(Key('ins'), 'insert')
+        self.assertEqual(Key('insert'), 'ins')
 
     def test_convert_shift_modifier(self):
         self.assertEqual(Key('shift-E'), Key('E'))
