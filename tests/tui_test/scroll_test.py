@@ -1,4 +1,5 @@
 from stig.tui.scroll import (Scrollable, ScrollBar)
+import stig.tui.urwidpatches
 
 import unittest
 import urwid
@@ -117,7 +118,6 @@ class TestScrollable(unittest.TestCase):
     def test_scroll_line_down(self):
         size = (10, 3)
         for w in self._test_widgets:
-            # press 'down' 20 times
             for i in range(21):
                 x = min(len(TEXT)-size[1], i)
                 y = min(len(TEXT),         i+size[1])
@@ -130,7 +130,6 @@ class TestScrollable(unittest.TestCase):
         size = (10, 3)
         for w in self._test_widgets:
             w.set_scrollpos(len(TEXT)-1)  # jump to end
-            # press 'up' 20 times
             for i in reversed(range(21)):
                 i -= 10
                 x = max(0, i-size[1])
@@ -143,20 +142,18 @@ class TestScrollable(unittest.TestCase):
     def test_scroll_page_down(self):
         size = (10, 3)
         for w in self._test_widgets:
-            # press 'page down' 20 times
             for i in range(0, 21, size[1]-1):
                 x = min(len(TEXT)-size[1], i)
                 y = min(len(TEXT),         i+size[1])
                 self.check(w, size,
                            text=(l.ljust(10) for l in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
-                w.keypress(size, 'page down')
+                w.keypress(size, 'pgdn')
 
     def test_scroll_page_up(self):
         size = (10, 3)
         for w in self._test_widgets:
             w.set_scrollpos(len(TEXT)-1)  # jump to end
-            # press 'page up' 20 times
             for i in reversed(range(0, 21, size[1]-1)):
                 i -= 10
                 x = max(0, i-size[1])
@@ -164,7 +161,7 @@ class TestScrollable(unittest.TestCase):
                 self.check(w, size,
                            text=(l.ljust(10) for l in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
-                w.keypress(size, 'page up')
+                w.keypress(size, 'pgup')
 
 
     def test_focusable_widget_gets_keypress_only_if_visible(self):
@@ -403,8 +400,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
 
 class TestListBox_scrolling_API(unittest.TestCase):
     def mk_test_subjects(self, *listbox_items):
-        from stig.tui.urwidpatches import ListBox_patched
-        listbox = ListBox_patched(
+        listbox = urwid.ListBox(
             urwid.SimpleListWalker(list(listbox_items))
         )
         return listbox
