@@ -23,42 +23,6 @@ from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
 
 KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'filelist', 'file', 'peerlist')
 
-# Remove urwid's defaults
-for key in tuple(urwid.command_map._command):
-    del urwid.command_map[key]
-
-from .keymap import Key
-urwid.command_map[Key('pgup')]   = urwid.CURSOR_PAGE_UP
-urwid.command_map[Key('pgdn')]   = urwid.CURSOR_PAGE_DOWN
-urwid.command_map[Key('ctrl-b')] = urwid.CURSOR_PAGE_UP
-urwid.command_map[Key('ctrl-f')] = urwid.CURSOR_PAGE_DOWN
-urwid.command_map[Key('b')]      = urwid.CURSOR_PAGE_UP
-urwid.command_map[Key('space')]  = urwid.CURSOR_PAGE_DOWN
-
-urwid.command_map[Key('up')]     = urwid.CURSOR_UP
-urwid.command_map[Key('down')]   = urwid.CURSOR_DOWN
-urwid.command_map[Key('left')]   = urwid.CURSOR_LEFT
-urwid.command_map[Key('right')]  = urwid.CURSOR_RIGHT
-urwid.command_map[Key('meta-b')] = urwid.CURSOR_WORD_LEFT
-urwid.command_map[Key('meta-f')] = urwid.CURSOR_WORD_RIGHT
-
-urwid.command_map[Key('home')]   = urwid.CURSOR_MAX_LEFT
-urwid.command_map[Key('end')]    = urwid.CURSOR_MAX_RIGHT
-urwid.command_map[Key('ctrl-a')] = urwid.CURSOR_MAX_LEFT
-urwid.command_map[Key('ctrl-e')] = urwid.CURSOR_MAX_RIGHT
-
-urwid.command_map[Key('ctrl-k')] = urwid.DELETE_TO_EOL
-urwid.command_map[Key('ctrl-u')] = urwid.DELETE_LINE
-urwid.command_map[Key('ctrl-d')] = urwid.DELETE_CHAR_UNDER_CURSOR
-urwid.command_map[Key('meta-d')] = urwid.DELETE_WORD_LEFT
-urwid.command_map[Key('meta-backspace')] = urwid.DELETE_WORD_RIGHT
-urwid.command_map[Key('ctrl-w')] = urwid.DELETE_WORD_RIGHT
-
-urwid.command_map[Key('enter')]  = urwid.ACTIVATE
-urwid.command_map[Key('escape')] = urwid.CANCEL
-urwid.command_map[Key('ctrl-g')] = urwid.CANCEL
-urwid.command_map[Key('ctrl-l')] = urwid.REDRAW_SCREEN
-
 from ..settings.defaults import DEFAULT_KEYMAP
 from .keymap import KeyMap
 keymap = KeyMap(callback=lambda cmd,widget: cmdmgr.run_task(cmd, on_error=log.error))
