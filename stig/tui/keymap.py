@@ -101,6 +101,18 @@ class Key(str):
         cls._cache[orig_key] = obj
         return obj
 
+    def __eq__(self, other):
+        if super().__eq__(other):
+            return True
+        else:
+            return super().__eq__(Key(other))
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return super().__hash__()
+
     def __str__(self):
         return '<%s>' % super().__str__()
 
