@@ -44,8 +44,8 @@ class Number(float):
             if prfx:
                 all_prfxs = cls._PREFIXES_DCT
                 prfx_lower = prfx.lower()
-                if prfx_lower in all_prfxs:
-                    num *= all_prfxs[prfx_lower]
+                # _REGEX matches, so we can be sure that prfx_lower is in all_prfxs
+                num *= all_prfxs[prfx_lower]
 
             prfx_len = len(prfx)
             if prfx_len == 2:
