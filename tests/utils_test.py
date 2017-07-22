@@ -133,8 +133,10 @@ class TestNumber(unittest.TestCase):
         self.assertNotEqual(Number(1000), 1000.0001)
         self.assertNotEqual(Number(1024), Number(1023))
 
-    def test_arithmetic_operation_returns_Number_instance(self):
-        n = Number(5) * 3000
+    def test_arithmetic_operation_returns_correct_type(self):
+        n = Number(5) * 2
+        self.assertIsInstance(n, Number)
+        n = Number(5) / 2
         self.assertIsInstance(n, Number)
 
     def test_arithmetic_operation_copies_unit(self):
