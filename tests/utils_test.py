@@ -48,7 +48,7 @@ class TestNumber(unittest.TestCase):
                                    ('23.3Mi', 23.3*pow(1024, 2), 'binary'),
                                    ('23.4G',  23.4*pow(1000, 3), 'metric'),
                                    ('23.5Ti', 23.5*pow(1024, 4), 'binary') ):
-            n = Number.from_string(string)
+            n = Number(string)
             self.assertEqual(n, num)
             self.assertEqual(str(n), string)
             self.assertEqual(n.prefix, prefix)
@@ -60,7 +60,7 @@ class TestNumber(unittest.TestCase):
                                    ('23.3MiX', 23.3*pow(1024, 2), 'binary'),
                                    ('23.4GX',  23.4*pow(1000, 3), 'metric'),
                                    ('23.5TiX', 23.5*pow(1024, 4), 'binary') ):
-            n = Number.from_string(string)
+            n = Number(string)
             self.assertEqual(n, num)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.prefix, prefix)
@@ -68,7 +68,7 @@ class TestNumber(unittest.TestCase):
             self.assertEqual(n.without_unit, string[:-1])
 
     def test_parsing_conflicting_units(self):
-        n = Number.from_string('123kF', unit='B')
+        n = Number('123kF', unit='B')
         self.assertEqual(n, 123000)
         self.assertEqual(n.unit, 'F')
 
@@ -109,19 +109,19 @@ class TestNumber(unittest.TestCase):
     def test_not_a_number(self):
         for value in ('foo', [1, 2, 3], print):
             with self.assertRaises(ValueError) as cm:
-                Number.from_string(value)
+                Number(value)
             self.assertIn('Not a number', str(cm.exception))
             self.assertIn(str(value), str(cm.exception))
 
     def test_signs(self):
-        self.assertEqual(Number.from_string('-10'), -10)
-        self.assertEqual(Number.from_string('+10'), 10)
-        self.assertEqual(Number.from_string('-10k'), -10000)
-        self.assertEqual(Number.from_string('+10M'), 10e6)
-        n = Number.from_string('-10GX')
+        self.assertEqual(Number('-10'), -10)
+        self.assertEqual(Number('+10'), 10)
+        self.assertEqual(Number('-10k'), -10000)
+        self.assertEqual(Number('+10M'), 10e6)
+        n = Number('-10GX')
         self.assertEqual(n, -10e9)
         self.assertEqual(n.unit, 'X')
-        n = Number.from_string('-10Ty')
+        n = Number('-10Ty')
         self.assertEqual(n, -10e12)
         self.assertEqual(n.unit, 'y')
 
