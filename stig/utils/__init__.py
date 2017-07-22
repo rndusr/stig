@@ -71,12 +71,14 @@ class Number(float):
 
         if isinstance(num, str):
             return cls.from_string(num, prefix=prefix, unit=unit, str_with_unit=str_with_unit)
-
-        obj = super().__new__(cls, num)
-        obj.unit = unit
-        obj.prefix = prefix
-        obj.str_with_unit = str_with_unit
-        return obj
+        elif isinstance(num, (int, float)):
+            obj = super().__new__(cls, num)
+            obj.unit = unit
+            obj.prefix = prefix
+            obj.str_with_unit = str_with_unit
+            return obj
+        else:
+            raise ValueError('Not a number: %r', num)
 
     def __str__(self):
         return self.__str()
