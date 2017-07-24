@@ -72,7 +72,7 @@ class BandwidthValue(NumberValue):
             value = converter.bandwidth.from_string(value[2:])
             value = operator + str(float(value))
 
-        # Convert to Number and ensure it has a unit
+        # Convert to NumberFloat and ensure it has a unit
         return converter.bandwidth(super().convert(value))
 
     def validate(self, value):

@@ -14,11 +14,11 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import Number
+from . import NumberFloat
 
 
 class _DataCountConverter():
-    """Convert bits or bytes with metric or binary unit prefix to Number"""
+    """Convert bits or bytes with metric or binary unit prefix to NumberFloat"""
 
     def __init__(self):
         self.prefix = 'metric'
@@ -31,27 +31,27 @@ class _DataCountConverter():
     def from_string(self, string, *, unit=None):
         """Parse number of bytes/bits from `string`
 
-        All arguments are passed to `Number.from_string`.  `unit` defaults to
-        the `unit` property of this object.
+        All arguments are passed to `NumberFloat.from_string`.  `unit` defaults
+        to the `unit` property of this object.
         """
-        num = Number.from_string(string, prefix=self._prefix,
-                                 unit=unit or self.unit_short)
+        num = NumberFloat.from_string(string, prefix=self._prefix,
+                                      unit=unit or self.unit_short)
         num = self._ensure_unit_and_prefix(num)
         return num
 
     def __call__(self, num, unit=None):
-        """Make Number from `num`
+        """Make NumberFloat from `num`
 
-        The returned Number is converted to bits or bytes depending on what the
-        `unit` property is set to.
+        The returned NumberFloat is converted to bits or bytes depending on what
+        the `unit` property is set to.
 
-        If no unit is given by passing a Number object with a specified `unit`
-        property or by passing the `unit` argument, it is assumed to be in what
-        the `unit` property of this object is set to.
+        If no unit is given by passing a NumberFloat object with a specified
+        `unit` property or by passing the `unit` argument, it is assumed to be
+        in what the `unit` property of this object is set to.
         """
-        if not isinstance(num, Number):
+        if not isinstance(num, NumberFloat):
             unit = unit or self.unit_short
-            num = Number(num, prefix=self._prefix, unit=unit)
+            num = NumberFloat(num, prefix=self._prefix, unit=unit)
         return self._ensure_unit_and_prefix(num)
 
     def _ensure_unit_and_prefix(self, num):
@@ -63,9 +63,9 @@ class _DataCountConverter():
             unit_wanted = self.unit_short
             if unit_given != unit_wanted:
                 if unit_wanted == 'b':
-                    num = Number(num*8, prefix=self._prefix, unit='b')
+                    num = NumberFloat(num*8, prefix=self._prefix, unit='b')
                 elif unit_wanted == 'B':
-                    num = Number(num/8, prefix=self._prefix, unit='B')
+                    num = NumberFloat(num/8, prefix=self._prefix, unit='B')
                 else:
                     raise RuntimeError('This should never have happened!')
             else:

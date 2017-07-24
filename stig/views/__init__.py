@@ -69,9 +69,9 @@ class ColumnBase():
 
 
 def _ensure_string_without_unit(value):
-    # We don't want to display the unit ('B' or 'b') in each cell; it's already
-    # displayed in the column header.
-    if hasattr(value, 'str_with_unit'):
-        return type(value)(value, str_with_unit=False)
+    # We don't want to display the unit (e.g. 'B' or 'b' for file size or
+    # transfer rate) in each cell; it's already displayed in the column header.
+    if hasattr(value, 'str_includes_unit'):
+        return type(value)(value, str_includes_unit=False)
     else:
         return value

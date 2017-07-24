@@ -1,9 +1,9 @@
-from stig.utils import (Number, strwidth, strcrop, stralign)
+from stig.utils import (NumberFloat, NumberInt, strwidth, strcrop, stralign)
 
 import unittest
 
 
-class TestNumber(unittest.TestCase):
+class TestNumberFloat(unittest.TestCase):
     def test_prefix(self):
         for value,str_metric,str_binary in ((pow(1000, 1), '1k', '1000'),
                                             (pow(1024, 1), '1.02k', '1Ki'),
@@ -14,7 +14,7 @@ class TestNumber(unittest.TestCase):
                                             (pow(1000, 4), '1T', '931Gi'),
                                             (pow(1024, 4), '1.10T', '1Ti')):
             for prefix in ('metric', 'binary'):
-                n = Number(value, prefix=prefix)
+                n = NumberFloat(value, prefix=prefix)
                 self.assertEqual(n, value)
                 self.assertEqual(n.prefix, prefix)
                 n.prefix = 'metric'
@@ -30,7 +30,7 @@ class TestNumber(unittest.TestCase):
         self.assertIn('metric', str(cm.exception))
 
     def test_unit(self):
-        n = Number(1e6, unit='A', prefix='metric')
+        n = NumberFloat(1e6, unit='A', prefix='metric')
         self.assertEqual(n, 1e6)
         self.assertEqual(n.with_unit, '1MA')
         self.assertEqual(n.without_unit, '1M')
@@ -48,7 +48,7 @@ class TestNumber(unittest.TestCase):
                                    ('23.3Mi', 23.3*pow(1024, 2), 'binary'),
                                    ('23.4G',  23.4*pow(1000, 3), 'metric'),
                                    ('23.5Ti', 23.5*pow(1024, 4), 'binary') ):
-            n = Number(string)
+            n = NumberFloat(string)
             self.assertEqual(n, num)
             self.assertEqual(str(n), string)
             self.assertEqual(n.prefix, prefix)
@@ -60,7 +60,7 @@ class TestNumber(unittest.TestCase):
                                    ('23.3MiX', 23.3*pow(1024, 2), 'binary'),
                                    ('23.4GX',  23.4*pow(1000, 3), 'metric'),
                                    ('23.5TiX', 23.5*pow(1024, 4), 'binary') ):
-            n = Number(string)
+            n = NumberFloat(string)
             self.assertEqual(n, num)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.prefix, prefix)
@@ -68,113 +68,113 @@ class TestNumber(unittest.TestCase):
             self.assertEqual(n.without_unit, string[:-1])
 
     def test_parsing_conflicting_units(self):
-        n = Number('123kF', unit='B')
+        n = NumberFloat('123kF', unit='B')
         self.assertEqual(n, 123000)
         self.assertEqual(n.unit, 'F')
 
-    def test_passing_Number_instance_copies_properties(self):
+    def test_passing_NumberFloat_instance_copies_properties(self):
         for orig_prefix in ('binary', 'metric'):
             for orig_unit in ('A', 'B'):
-                for orig_str_with_unit in (True, False):
-                    orig = Number(1e3, prefix=orig_prefix, unit=orig_unit, str_with_unit=orig_str_with_unit)
-                    copy = Number(orig)
+                for orig_str_includes_unit in (True, False):
+                    orig = NumberFloat(1e3, prefix=orig_prefix, unit=orig_unit, str_includes_unit=orig_str_includes_unit)
+                    copy = NumberFloat(orig)
                     self.assertEqual(copy, 1e3)
                     self.assertEqual(copy.unit, orig.unit)
                     self.assertEqual(copy.prefix, orig.prefix)
-                    self.assertEqual(copy.str_with_unit, orig.str_with_unit)
+                    self.assertEqual(copy.str_includes_unit, orig.str_includes_unit)
 
                     # Override prefix
                     for new_prefix in ('metric', 'binary'):
-                        copy = Number(orig, prefix=new_prefix)
+                        copy = NumberFloat(orig, prefix=new_prefix)
                         self.assertEqual(copy, 1e3)
                         self.assertEqual(copy.unit, orig.unit)
                         self.assertEqual(copy.prefix, new_prefix)
-                        self.assertEqual(copy.str_with_unit, orig.str_with_unit)
+                        self.assertEqual(copy.str_includes_unit, orig.str_includes_unit)
 
                     # Override unit
-                    copy = Number(orig, unit='Z')
+                    copy = NumberFloat(orig, unit='Z')
                     self.assertEqual(copy, 1e3)
                     self.assertEqual(copy.unit, 'Z')
                     self.assertEqual(copy.prefix, orig.prefix)
-                    self.assertEqual(copy.str_with_unit, orig.str_with_unit)
+                    self.assertEqual(copy.str_includes_unit, orig.str_includes_unit)
 
-                    # Override str_with_unit
-                    for new_str_with_unit in (True, False):
-                        copy = Number(orig, str_with_unit=new_str_with_unit)
+                    # Override str_includes_unit
+                    for new_str_includes_unit in (True, False):
+                        copy = NumberFloat(orig, str_includes_unit=new_str_includes_unit)
                         self.assertEqual(copy, 1e3)
                         self.assertEqual(copy.unit, orig.unit)
                         self.assertEqual(copy.prefix, orig.prefix)
-                        self.assertEqual(copy.str_with_unit, new_str_with_unit)
+                        self.assertEqual(copy.str_includes_unit, new_str_includes_unit)
 
     def test_not_a_number(self):
         for value in ('foo', [1, 2, 3], print):
             with self.assertRaises(ValueError) as cm:
-                Number(value)
+                NumberFloat(value)
             self.assertIn('Not a number', str(cm.exception))
             self.assertIn(str(value), str(cm.exception))
 
     def test_signs(self):
-        self.assertEqual(Number('-10'), -10)
-        self.assertEqual(Number('+10'), 10)
-        self.assertEqual(Number('-10k'), -10000)
-        self.assertEqual(Number('+10M'), 10e6)
-        n = Number('-10GX')
+        self.assertEqual(NumberFloat('-10'), -10)
+        self.assertEqual(NumberFloat('+10'), 10)
+        self.assertEqual(NumberFloat('-10k'), -10000)
+        self.assertEqual(NumberFloat('+10M'), 10e6)
+        n = NumberFloat('-10GX')
         self.assertEqual(n, -10e9)
         self.assertEqual(n.unit, 'X')
-        n = Number('-10Ty')
+        n = NumberFloat('-10Ty')
         self.assertEqual(n, -10e12)
         self.assertEqual(n.unit, 'y')
 
     def test_equality(self):
-        self.assertEqual(Number(0), 0)
-        self.assertEqual(Number(0), Number(0))
-        self.assertEqual(Number(1024), 1024)
-        self.assertEqual(Number(1024), Number(1024))
-        self.assertNotEqual(Number(1000), 1000.0001)
-        self.assertNotEqual(Number(1024), Number(1023))
+        self.assertEqual(NumberFloat(0), 0)
+        self.assertEqual(NumberFloat(0), NumberFloat(0))
+        self.assertEqual(NumberFloat(1024), 1024)
+        self.assertEqual(NumberFloat(1024), NumberFloat(1024))
+        self.assertNotEqual(NumberFloat(1000), 1000.0001)
+        self.assertNotEqual(NumberFloat(1024), NumberFloat(1023))
 
     def test_arithmetic_operation_returns_correct_type(self):
-        n = Number(5) * 2
-        self.assertIsInstance(n, Number)
-        n = Number(5) / 2
-        self.assertIsInstance(n, Number)
+        n = NumberFloat(5) / 2
+        self.assertIsInstance(n, NumberFloat)
+        n = NumberFloat(5) * 2
+        self.assertIsInstance(n, NumberInt)
 
     def test_arithmetic_operation_copies_unit(self):
-        n = Number(5, unit='X') / 100
+        n = NumberFloat(5, unit='X') / 100
         self.assertEqual(n, 0.05)
         self.assertEqual(n.unit, 'X')
 
     def test_arithmetic_operation_copies_prefix(self):
         for prfx in ('metric', 'binary'):
-            n = Number(5, prefix=prfx) * 100
+            n = NumberFloat(5, prefix=prfx) * 100
             self.assertEqual(n, 500)
             self.assertEqual(n.prefix, prfx)
 
-    def test_arithmetic_operation_copies_str_with_unit(self):
-        for str_with_unit in (True, False):
-            n = Number(5, str_with_unit=str_with_unit) * 100
+    def test_arithmetic_operation_copies_str_includes_unit(self):
+        for str_includes_unit in (True, False):
+            n = NumberFloat(5, str_includes_unit=str_includes_unit) * 100
             self.assertEqual(n, 500)
-            self.assertEqual(n.str_with_unit, str_with_unit)
+            self.assertEqual(n.str_includes_unit, str_includes_unit)
 
     def test_arithmetic_operation_copies_from_first_value(self):
         for prfx in ('metric', 'binary'):
-            n = Number(  5, unit='X', prefix=prfx, str_with_unit=False) \
-              + Number(100, unit='z', prefix='metric', str_with_unit=True)
+            n = NumberFloat(  5, unit='X', prefix=prfx, str_includes_unit=False) \
+              + NumberFloat(100, unit='z', prefix='metric', str_includes_unit=True)
             self.assertEqual(n, 105)
             self.assertEqual(n.unit, 'X')
             self.assertEqual(n.prefix, prfx)
-            self.assertEqual(n.str_with_unit, False)
+            self.assertEqual(n.str_includes_unit, False)
 
-    def test_str_with_unit_argument(self):
+    def test_str_includes_unit_argument(self):
         string = '1MA'
-        n = Number(1e6, unit='A', prefix='metric', str_with_unit=True)
+        n = NumberFloat(1e6, unit='A', prefix='metric', str_includes_unit=True)
         self.assertEqual(str(n), string)
-        n.str_with_unit = False
+        n.str_includes_unit = False
         self.assertEqual(str(n), string[:-1])
 
-        n = Number(1e6, unit='A', prefix='metric', str_with_unit=False)
+        n = NumberFloat(1e6, unit='A', prefix='metric', str_includes_unit=False)
         self.assertEqual(str(n), string[:-1])
-        n.str_with_unit = True
+        n.str_includes_unit = True
         self.assertEqual(str(n), string)
 
 

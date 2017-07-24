@@ -169,7 +169,7 @@ class SettingsAPI(abc.Mapping):
     def rate_limit_up(self):
         """Cached upload rate limit
 
-        Returns a Number object created by the `bandwidth` converter in the
+        Returns a NumberFloat object created by the `bandwidth` converter in the
         `convert` module or one of the constants: UNLIMITED, DISCONNECTED
         """
         if 'rate_limit_up' not in self._cache:

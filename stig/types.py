@@ -17,7 +17,7 @@ from collections import abc
 from blinker import Signal
 import inspect
 
-from .utils import Number
+from .utils import (NumberFloat, NumberInt)
 
 UNSPECIFIED = '<unspecified>'
 
@@ -38,7 +38,7 @@ class ValueBase():
             self.validate(initial_value)
             self._value = initial_value
             self._default = self._value
-        log.debug('Initialized ValueBase: %r=%r', self._name, self._value)
+        log.debug('Initialized ValueBase: %s=%r', self._name, self._value)
 
     @property
     def name(self): return self._name
@@ -322,9 +322,9 @@ class NumberValue(ValueBase):
 
     Specify `min` and/or `max` to limit the range of valid numbers.
     """
-    type = Number
+    type = NumberFloat
     _numbertype = 'rational'
-    valuesyntax = '[+=|-=]<NUMBER>[%s]' % '|'.join(Number.PREFIXES)
+    valuesyntax = '[+=|-=]<NUMBER>[%s]' % '|'.join(NumberFloat.UNIT_PREFIXES)
 
     @property
     def typename(self):
@@ -481,6 +481,7 @@ class NumberValue(ValueBase):
 
 class IntegerValue(NumberValue):
     """NumberValue that rounds numbers off to an integer"""
+    type = NumberInt
     _numbertype = 'integer'
 
     def convert(self, value):
@@ -788,7 +789,7 @@ def MultiValue(*clses):
             return
 
         # Look for special attributes on the other instances (e.g. OptionValue's
-        # "options" or Number's "min/max")
+        # "options" or NumberValue's "min/max")
         for inst in self._instances_list:
             if hasattr(inst, name):
                 setattr(inst, name, value)

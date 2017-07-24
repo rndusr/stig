@@ -18,9 +18,9 @@
 # A type is any callable that converts a single value to the appropriate object.
 #
 # Types are used to convert values from the server by instantiating them
-# normally (e.g. `Number(1234567)`) and from the user by using the class method
-# `from_string` (e.g. `Number.from_string('1.3GB')`). Not all types must provide
-# a `from_string` class method (e.g. 'files').
+# normally (e.g. `NumberFloat(1234567)`) and from the user by using the class
+# method `from_string` (e.g. `NumberFloat.from_string('1.3GB')`). Not all types
+# must provide a `from_string` class method (e.g. 'files').
 
 
 from ..logging import make_logger
@@ -29,7 +29,7 @@ log = make_logger(__name__)
 from collections import abc
 import os
 import re
-from . import (Number, pretty_float)
+from . import (NumberFloat, NumberInt)
 from . import constants as const
 from . import convert
 
@@ -38,11 +38,6 @@ def _rate_limit(limit):
     return const.UNLIMITED if limit is None else convert.bandwidth(limit, unit='byte')
 
 
-class Percent(float):
-    """Float with a pretty string representation"""
-    def __str__(self):
-        return pretty_float(self)
-
 def _calc_percent(a, b):
     try:
         return a / b * 100
@@ -50,7 +45,13 @@ def _calc_percent(a, b):
         return 0
 
 
-class Ratio(Number):
+class Percent(NumberFloat):
+    def __new__(cls, *args, **kwargs):
+        kwargs['unit'] = '%'
+        return super().__new__(cls, *args, **kwargs)
+
+
+class Ratio(NumberFloat):
     """A Torrent's upload/download ratio as a float"""
     UNKNOWN = -1
     NOT_APPLICABLE = -2
@@ -60,10 +61,11 @@ class Ratio(Number):
         elif self == self.NOT_APPLICABLE:
             return ''
         else:
-            return pretty_float(self)
+            # return super().__str__()
+            return super().without_unit
 
 
-class SeedCount(Number):
+class SeedCount(NumberInt):
     UNKNOWN = -1
     def __str__(self):
         return '?' if self == self.UNKNOWN else super().__str__()
@@ -561,7 +563,7 @@ TYPES = {
     'comment'           : SmartCmpStr,
     'creator'           : SmartCmpStr,
     'magnetlink'        : str,
-    'count-pieces'      : Number,
+    'count-pieces'      : NumberInt,
 
     '%downloaded'       : Percent,
     '%uploaded'         : Percent,
@@ -569,9 +571,9 @@ TYPES = {
     '%verified'         : Percent,
     '%available'        : Percent,
 
-    'peers-connected'   : Number,
-    'peers-uploading'   : Number,
-    'peers-downloading' : Number,
+    'peers-connected'   : NumberInt,
+    'peers-uploading'   : NumberInt,
+    'peers-downloading' : NumberInt,
     'peers-seeding'     : SeedCount,
 
     'timespan-eta'      : Timedelta,

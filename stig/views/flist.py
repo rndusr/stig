@@ -119,7 +119,7 @@ def create_directory_data(name, tree, filtered_count=0):
 
     def sum_size(tfiles, key):
         sizes = tuple(tfile[key] for tfile in tfiles)
-        # Preserve the original type (Number)
+        # Preserve the original type (NumberFloat)
         first_size = sizes[0]
         start_value = type(first_size)(0, unit=first_size.unit, prefix=first_size.prefix)
         return sum(sizes, start_value)

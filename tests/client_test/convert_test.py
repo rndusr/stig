@@ -1,5 +1,5 @@
 from stig.client.convert import _DataCountConverter
-from stig.utils import Number
+from stig.utils import NumberFloat
 
 import unittest
 
@@ -74,31 +74,31 @@ class Test_DataCountConverter(unittest.TestCase):
     def test_unit_conversion(self):
         self.conv.unit = 'byte'
         self.conv.prefix = 'metric'
-        self.assertEqual(self.conv(Number('100kB')).with_unit, '100kB')
-        self.assertEqual(self.conv(Number('100kb')).with_unit, '12.5kB')
-        self.assertEqual(self.conv(Number('100KiB')).with_unit, '102kB')
-        self.assertEqual(self.conv(Number('100Kib')).with_unit, '12.8kB')
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '100kB')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '12.5kB')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '102kB')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '12.8kB')
 
         self.conv.unit = 'bit'
         self.conv.prefix = 'metric'
-        self.assertEqual(self.conv(Number('100kB')).with_unit, '800kb')
-        self.assertEqual(self.conv(Number('100kb')).with_unit, '100kb')
-        self.assertEqual(self.conv(Number('100KiB')).with_unit, '819kb')
-        self.assertEqual(self.conv(Number('100Kib')).with_unit, '102kb')
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '800kb')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '100kb')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '819kb')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '102kb')
 
         self.conv.unit = 'byte'
         self.conv.prefix = 'binary'
-        self.assertEqual(self.conv(Number('100kB')).with_unit, '97.7KiB')
-        self.assertEqual(self.conv(Number('100kb')).with_unit, '12.2KiB')
-        self.assertEqual(self.conv(Number('100KiB')).with_unit, '100KiB')
-        self.assertEqual(self.conv(Number('100Kib')).with_unit, '12.5KiB')
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '97.7KiB')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '12.2KiB')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '100KiB')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '12.5KiB')
 
         self.conv.unit = 'bit'
         self.conv.prefix = 'binary'
-        self.assertEqual(self.conv(Number('100kB')).with_unit, '781Kib')
-        self.assertEqual(self.conv(Number('100kb')).with_unit, '97.7Kib')
-        self.assertEqual(self.conv(Number('100KiB')).with_unit, '800Kib')
-        self.assertEqual(self.conv(Number('100Kib')).with_unit, '100Kib')
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '781Kib')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '97.7Kib')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '800Kib')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '100Kib')
 
     def test_invalid_unit(self):
         with self.assertRaises(ValueError) as cm:

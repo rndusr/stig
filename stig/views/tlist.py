@@ -98,11 +98,12 @@ class Progress(ColumnBase):
         t = self.data
         v, d, m = (t['%verified'], t['%downloaded'], t['%metadata'])
         if 0 < v < 100:
-            return v
+            value = v
         elif 0 < m < 100:
-            return m
+            value = m
         else:
-            return d
+            value = d
+        return _ensure_string_without_unit(value)
 
     def get_raw(self):
         return float(self.get_value()) / 100
@@ -118,9 +119,10 @@ class PercentAvailable(ColumnBase):
     def get_value(self):
         data = self.data
         if data['peers-seeding'] > 0:
-            return type(data['%available'])(100)
+            NumberFloat = type(data['%available'])
+            return NumberFloat(100, str_includes_unit=False)
         else:
-            return data['%available']
+            return _ensure_string_without_unit(data['%available'])
 
     def get_raw(self):
         return float(self.get_value()) / 100

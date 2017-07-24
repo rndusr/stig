@@ -36,6 +36,19 @@ class TestValueBase(unittest.TestCase):
         self.assertEqual(self.val.get(), 0)
         self.assertEqual(self.val.prev_value(), 'the end')
 
+    def test_value_is_converted_to_correct_type(self):
+        for basetype,testval1,testval2 in ((str, (1, 2, 3), []),
+                                           (int, 1.234, -3.21),
+                                           (float, 5, 17),
+                                           (bool, 1, 0)):
+            class TestValue(ValueBase):
+                type = basetype
+
+            val = TestValue('test', default=testval1)
+            self.assertIsInstance(val.get(), basetype)
+            val.set(testval2)
+            self.assertIsInstance(val.get(), basetype)
+
 
 class TestBooleanValue(unittest.TestCase):
     def test_valid_values(self):

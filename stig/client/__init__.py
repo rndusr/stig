@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 # External dependencies
-from ..utils import (Number, pretty_float)
+from ..utils import (NumberFloat, NumberInt)
 
 
 from .errors import *
