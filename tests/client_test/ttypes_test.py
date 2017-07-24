@@ -6,13 +6,13 @@ import time
 
 class TestPercent(unittest.TestCase):
     def test_string(self):
-        self.assertEqual(str(ttypes.Percent(0)), '0')
-        self.assertEqual(str(ttypes.Percent(0.129)), '0.13')
-        self.assertEqual(str(ttypes.Percent(1)), '1')
-        self.assertEqual(str(ttypes.Percent(9.3456)), '9.35')
-        self.assertEqual(str(ttypes.Percent(10.6543)), '10.7')
-        self.assertEqual(str(ttypes.Percent(100)), '100')
-        self.assertEqual(str(ttypes.Percent(100.6)), '101')
+        self.assertEqual(str(ttypes.Percent(0)), '0%')
+        self.assertEqual(str(ttypes.Percent(0.129)), '0.13%')
+        self.assertEqual(str(ttypes.Percent(1)), '1%')
+        self.assertEqual(str(ttypes.Percent(9.3456)), '9.35%')
+        self.assertEqual(str(ttypes.Percent(10.6543)), '10.7%')
+        self.assertEqual(str(ttypes.Percent(100)), '100%')
+        self.assertEqual(str(ttypes.Percent(100.6)), '101%')
 
 
 class TestSmartCmpStr(unittest.TestCase):

@@ -41,7 +41,7 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(str(SingleTorrentFilter('!=foo')), '!=foo')
         self.assertEqual(str(SingleTorrentFilter('name= foo')), '= foo')
         self.assertEqual(str(SingleTorrentFilter('name!=foo ')), '!=foo ')
-        self.assertEqual(str(SingleTorrentFilter('%downloaded>17.2')), '%downloaded>17.2')
+        self.assertEqual(str(SingleTorrentFilter('%downloaded>17.2')), '%downloaded>17.2%')
 
         with self.assertRaises(ValueError) as cm:
             SingleTorrentFilter('=')
