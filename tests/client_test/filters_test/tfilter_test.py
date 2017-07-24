@@ -49,9 +49,6 @@ class TestSingleTorrentFilter(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             SingleTorrentFilter('%downloaded!>')
         self.assertEqual(str(cm.exception), "Missing value: %downloaded!> ...")
-        # with self.assertRaises(ValueError) as cm:
-        #     SingleTorrentFilter('tracker')
-        # self.assertEqual(str(cm.exception), "Missing operator and value: tracker [<|<=|=|>|>=|~] ...")
         with self.assertRaises(ValueError) as cm:
             SingleTorrentFilter('name! =foo')
         self.assertEqual(str(cm.exception), "Malformed filter expression: 'name! =foo'")
