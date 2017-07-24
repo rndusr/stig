@@ -258,7 +258,7 @@ class FileListWidget(urwid.WidgetWrap):
 
     @property
     def count(self):
-        """Number of listed peers"""
+        """Number of listed files"""
         return self._filetree.filecount if hasattr(self, '_filetree') else 0
 
     def update(self):
