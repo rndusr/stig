@@ -145,13 +145,13 @@ class BandwidthStatusWidget(urwid.Widget):
         if up is not const.DISCONNECTED:
             up_attrs = 'bottombar.bandwidth.up.highlighted' if highlight(up) \
                        else 'bottombar.bandwidth.up'
-            self._text_up.set_text((up_attrs, str(up)))
+            self._text_up.set_text((up_attrs, up.without_unit))
 
         dn = status.rate_down
         if dn is not const.DISCONNECTED:
             dn_attrs = 'bottombar.bandwidth.down.highlighted' if highlight(dn) \
                        else 'bottombar.bandwidth.down'
-            self._text_dn.set_text((dn_attrs, str(dn)))
+            self._text_dn.set_text((dn_attrs, dn.without_unit))
             self._connected = True
         else:
             self._connected = False
@@ -162,8 +162,8 @@ class BandwidthStatusWidget(urwid.Widget):
         dn = settings['rate-limit-down']
 
         # Empty display if DISCONNECTED or UNLIMITED
-        as_str = lambda v: '' if v in (const.DISCONNECTED, const.UNLIMITED) \
-                           else '/%s' % str(v)
+        as_str = lambda rate: '' if rate in (const.DISCONNECTED, const.UNLIMITED) \
+                              else '/%s' % rate.without_unit
         self._text_up_limit.set_text(as_str(up))
         self._text_dn_limit.set_text(as_str(dn))
 
