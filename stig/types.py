@@ -735,12 +735,15 @@ def MultiValue(*clses):
     clsattrs['convert'] = convert
 
     def string(self, value=None, default=False):
-        if default:
-            inst = self._get_valid_instance(self.default)
-            return inst.string(self.default)
-        elif value is not None:
-            inst = self._get_valid_instance(value)
-            return inst.string(value)
+        if default or value is not None:
+            if default:
+                value = self.default
+            try:
+                inst = self._get_valid_instance(value)
+            except ValueError:
+                return str(value)
+            else:
+                return inst.string(value)
         else:
             return self._current_instance.string(self.value)
     clsattrs['string'] = string
