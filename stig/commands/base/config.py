@@ -138,7 +138,7 @@ class SetCmdbase(metaclass=InitCommand):
                     try:
                         await setting.set(val)
                     except ValueError as e:
-                        log.error(e)
+                        log.error('%s = %s: %s', setting.name, setting.string(val), e)
                     else:
                         return True
 
@@ -147,7 +147,7 @@ class SetCmdbase(metaclass=InitCommand):
                 try:
                     setting.set(val)
                 except ValueError as e:
-                    log.error(e)
+                    log.error('%s = %s: %s', setting.name, setting.string(val), e)
                 else:
                     return True
 

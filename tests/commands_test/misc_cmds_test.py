@@ -136,4 +136,4 @@ class TestSetCmd(CommandTestCase):
         process = SetCmd(['some.string', 'bar'], loop=self.loop)
         with self.assertLogs(level='ERROR') as logged:
             await self.finish(process)
-        self.assert_logged(logged, ('ERROR', '^value no good: bar$'))
+        self.assert_logged(logged, ('ERROR', r"^some.string = bar: value no good: bar$"))

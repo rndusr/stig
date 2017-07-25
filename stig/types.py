@@ -76,22 +76,22 @@ class ValueBase():
         the callbacks raises ValueError, the change is reverted and ValueError
         is raised.
         """
+        # convert() and validate() may raise ValueError
+        new_value = self.convert(value)
+        self.validate(new_value)
+
+        # Set new value
+        prev_value = self._value
+        self._value = new_value
+
+        # Callbacks can revert the change by raising ValueError
         try:
-            new_value = self.convert(value)
-            self.validate(new_value)
-        except ValueError as e:
-            raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
+            self._on_change.send(self)
+        except ValueError:
+            self._value = prev_value
+            raise
         else:
-            prev_value = self._value
-            self._value = new_value
-            # Callbacks can revert the change by raising ValueError
-            try:
-                self._on_change.send(self)
-            except ValueError as e:
-                self._value = prev_value
-                raise ValueError('{} = {}: {}'.format(self.name, self.string(value), e))
-            else:
-                self._prev_value = prev_value
+            self._prev_value = prev_value
 
     def get_default(self):
         """Return default value or `None` if no default is specified"""

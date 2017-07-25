@@ -73,7 +73,6 @@ class TestBooleanValue(unittest.TestCase):
             with self.assertRaises(ValueError) as cm:
                 val.set(v)
             self.assertIn('Not a boolean', str(cm.exception))
-            self.assertIn(str(v), str(cm.exception))
 
     def test_string_from_current_value(self):
         val = BooleanValue(name='foo', default=True)
@@ -105,7 +104,6 @@ class TestNumberValue(unittest.TestCase):
             with self.assertRaises(ValueError) as cm:
                 val.set(v)
             self.assertIn('Not a %s' % val.typename, str(cm.exception))
-            self.assertIn(str(v), str(cm.exception))
 
     def test_adjusting_current_value(self):
         val = NumberValue(name='foo', default=10)
@@ -323,7 +321,7 @@ class TestPathValue(unittest.TestCase):
             nonexisting_path = 'this/path/does/not/exist'
             with self.assertRaises(ValueError) as cm:
                 val.set(nonexisting_path)
-            self.assertIn(nonexisting_path, str(cm.exception))
+            self.assertIn('No such file or directory', str(cm.exception))
 
             val.mustexist = False
             val.set(nonexisting_path)
@@ -407,16 +405,14 @@ class TestListValue(unittest.TestCase):
 
         with self.assertRaises(ValueError) as cm:
             v.set([4, 5, 6, 0])
-        self.assertIn('0', str(cm.exception))
-        self.assertIn('test', str(cm.exception))
         self.assertIn('invalid', str(cm.exception).lower())
+        self.assertIn('0', str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
             v.set([4, 12, 5, 6, 0])
-        self.assertIn('0', str(cm.exception))
-        self.assertIn('12', str(cm.exception))
-        self.assertIn('test', str(cm.exception))
         self.assertIn('invalid', str(cm.exception).lower())
+        self.assertIn('12', str(cm.exception))
+        self.assertIn('0', str(cm.exception))
 
     def test_changing_options_adjusts_value_and_default(self):
         v = ListValue(name='test', default=[3, 2, 1, 2, 3, 2, 1, 2, 3], options=(1, 2, 3, 4))
@@ -462,8 +458,10 @@ class TestMultiValue(unittest.TestCase):
         for v in ([1, 2, 3], 'a', '', 'xx', ' z', range(10)):
             with self.assertRaises(ValueError) as cm:
                 self.IntOrOptOrBool('test', default=v, options=options)
-            self.assertIn('Not a integer number; Not one of: %s' % ', '.join(options),
-                          str(cm.exception))
+            errmsgs = ('Not a integer number',
+                       'Not one of: %s' % ', '.join(options),
+                       'Not a boolean')
+            self.assertEqual('; '.join(errmsgs), str(cm.exception))
 
     def test___repr__(self):
         val = self.IntOrOptOrBool('test_value', options=('a', 'b', 'c'))
@@ -583,9 +581,13 @@ class TestMultiValue(unittest.TestCase):
 
     def test_string_from_specific_valid_value(self):
         options = ('this', 'that')
-        val = self.IntOrOptOrBool('foo', default='this', options=options)
+        val = self.IntOrOptOrBool('foo', default='this', min=0, options=options)
         val.set(1000)
         for v,exp in (('on', 'enabled'), ('false', 'disabled'), ('that', 'that'), (9, '9')):
+            self.assertEqual(val.string(value=v), exp)
+
+        # Invalid values should not raise an exception
+        for v,exp in (('invalid value', 'invalid value'), (-1, '-1')):
             self.assertEqual(val.string(value=v), exp)
 
     def test_relative_number_adjustment(self):
