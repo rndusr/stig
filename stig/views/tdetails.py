@@ -79,7 +79,13 @@ def _downloaded_mr(t):
 
 
 def _ratio_hr(t):
-    return '%.4f' % t['ratio']
+    ratio = t['ratio']
+    if ratio == ratio.INFINITE:
+        return 'infinite'
+    elif ratio == ratio.NOT_APPLICABLE:
+        return 'not applicable'
+    else:
+        return '%.4f' % ratio
 _ratio_mr = _ratio_hr
 
 

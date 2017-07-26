@@ -28,7 +28,7 @@ def _modify_ratio(t):
     if ratio == -1:
         return ttypes.Ratio.NOT_APPLICABLE
     elif ratio == -2:
-        return ttypes.Ratio.UNKNOWN
+        return ttypes.Ratio.INFINITE
     else:
         return ratio
 

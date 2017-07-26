@@ -71,7 +71,8 @@ class TestPath(unittest.TestCase):
 class TestRatio(unittest.TestCase):
     def test_string(self):
         self.assertEqual(ttypes.Ratio(0), 0)
-        self.assertEqual(str(ttypes.Ratio(-1)), '?')
+        self.assertEqual(str(ttypes.Ratio(-1)), '')
+        self.assertEqual(str(ttypes.Ratio(float('inf'))), '∞')
         self.assertEqual(str(ttypes.Ratio(0.0003)), '0')
         self.assertEqual(str(ttypes.Ratio(5.389)), '5.39')
         self.assertEqual(str(ttypes.Ratio(10.0234)), '10.0')

@@ -53,15 +53,14 @@ class Percent(NumberFloat):
 
 class Ratio(NumberFloat):
     """A Torrent's upload/download ratio as a float"""
-    UNKNOWN = -1
-    NOT_APPLICABLE = -2
+    INFINITE = float('inf')
+    NOT_APPLICABLE = -1
     def __str__(self):
-        if self == self.UNKNOWN:
-            return '?'
+        if self == self.INFINITE:
+            return '∞'
         elif self == self.NOT_APPLICABLE:
             return ''
         else:
-            # return super().__str__()
             return super().without_unit
 
 
