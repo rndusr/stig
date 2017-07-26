@@ -17,12 +17,12 @@ def is_constant(obj):
     return isinstance(obj, ConstantBase)
 
 _constants_cache = {}
-def get_constant(name, repr=None, bases=(), value=None, attrs={}):
+def get_constant(name, repr=None, bases=(), init_value=None, attrs={}):
     """Get constant/singleton defined by `name`
 
     repr: Same as `name.upper()` unless specified otherwise
     bases: tuple of base classes; will be prepended to (ConstantBase, str)
-    value: Argument for the new constant class during creation
+    init_value: Argument for the new constant class during creation
     attrs: Additional class attributes
     """
     if name not in _constants_cache:
@@ -35,14 +35,14 @@ def get_constant(name, repr=None, bases=(), value=None, attrs={}):
         cls_attrs.update(attrs)
         cls = type('Constant', bases + (ConstantBase,), cls_attrs)
 
-        if value is not None:
-            _constants_cache[name] = cls(value)
+        if init_value is not None:
+            _constants_cache[name] = cls(init_value)
         else:
             _constants_cache[name] = cls()
     return _constants_cache[name]
 
 DISCONNECTED = get_constant('disconnected', repr='<disconnected>')
-UNLIMITED = get_constant('unlimited', bases=(float,), value='inf')
+UNLIMITED = get_constant('unlimited', bases=(float,), init_value='inf')
 DISABLED = get_constant('disabled', attrs={'__bool__': lambda self: False})
 ENABLED = get_constant('enabled', attrs={'__bool__': lambda self: True})
 RANDOM = get_constant('random', repr="'random'")

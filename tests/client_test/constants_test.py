@@ -6,11 +6,11 @@ def test_simple():
     assert repr(c) == '<Constant: FOO>'
 
 def test_base_class():
-    c = get_constant('Bar', bases=(int,), value=24)
+    c = get_constant('Bar', bases=(int,), init_value=24)
     assert c == 24
     assert str(c) == 'Bar'
     assert repr(c) == '<Constant: BAR>'
 
 def test_persistence():
-    c = get_constant('baz', bases=(float,), value=6.5)
+    c = get_constant('baz', bases=(float,), init_value=6.5)
     assert c is get_constant('baz')
