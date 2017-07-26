@@ -57,11 +57,15 @@ def _modify_timestamp(t, key, zero_means=ttypes.Timestamp.UNKNOWN):
 import time
 def _modify_timestamp_completed(t):
     if t['percentDone'] >= 1:
-        return t['doneDate']            # Timestamp is in the past
+        doneDate = t['doneDate']
+        if doneDate == 0:
+            return ttypes.Timestamp.UNKNOWN  # We are the original uploader
+        else:
+            return doneDate                  # Torrent has been completed in the past
     elif t['eta'] <= 0:
-        return ttypes.Timestamp.UNKNOWN  # Torrent is paused
+        return ttypes.Timestamp.UNKNOWN      # Torrent is incomplete + paused
     else:
-        return time.time() + t['eta']   # Timestamp is in the future
+        return time.time() + t['eta']        # Torrent is downloading
 
 
 def _count_seeds(t):
