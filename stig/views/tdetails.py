@@ -56,6 +56,13 @@ def _private_mr(t):
     return 'yes' if t['private'] else 'no'
 
 
+def _state_hr(t):
+    return ', '.join(t['status'])
+
+def _state_mr(t):
+    return ','.join(t['status'])
+
+
 def _uploaded_hr(t):
     return '%s (%.2f %%)' % (t['size-uploaded'].with_unit, t['%uploaded'])
 
@@ -151,6 +158,7 @@ SECTIONS = (
     )},
 
     {'title': 'Status', 'width': 51, 'items': (
+        Item('State',      ('status',), _state_hr, _state_mr),
         Item('Location',   ('path',),),
         Item('Available',  ('%available', 'size-available'), _available_hr, _available_mr),
         Item('Downloaded', ('size-downloaded', 'size-left', '%downloaded', 'timespan-eta'), _downloaded_hr, _downloaded_mr),
