@@ -172,8 +172,8 @@ class Timedelta(int):
     # To sort unknown and not applicable Timedeltas below the rest, these
     # constants have large values that are very likely never encountered as
     # actual values.
-    UNKNOWN        = 1e10    # ~3.1k years
-    NOT_APPLICABLE = 1e10+1  # ~31k years
+    UNKNOWN        = 1e20    # >3 billion years
+    NOT_APPLICABLE = 1e21    # >31 billion years
 
     _FROM_STRING_REGEX = re.compile((r'(\d+(?:\.\d+|)[' +
                                      r''.join(unit for unit,secs in SECONDS) +
