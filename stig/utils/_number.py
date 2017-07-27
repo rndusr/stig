@@ -56,9 +56,9 @@ class _NumberBase():
         if match is None:
             raise ValueError('Not a number: %r' % string)
         else:
-            # Convert to float first, because int() cannot deal with floats in
-            # string form
-            num = cls._numtype(float(match.group(1)))
+            # Convert to float first, because a) int('1.2') is not allowed and
+            # b) so '1.2k' (which is a integer) is not parsed to 1000
+            num = float(match.group(1))
             unit = match.group(3) or unit
             prfx = match.group(2)
             if prfx:
@@ -66,6 +66,7 @@ class _NumberBase():
                 prfx_lower = prfx.lower()
                 # _REGEX matches, so we can be sure that prfx_lower is in all_prfxs
                 num *= all_prfxs[prfx_lower]
+            num = cls._numtype(num)
 
             prfx_len = len(prfx)
             if prfx_len == 2:

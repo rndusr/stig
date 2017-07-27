@@ -234,7 +234,9 @@ class TestIntegerValue(unittest.TestCase):
     def test_valid_values(self):
         val = IntegerValue(name='foo', default=10)
         self.assertEqual(val.get(), 10)
-        for newval,exp in ((0.3, 0), ('-23.34', -23), (123.4, 123), ('-500', -500)):
+        for newval,exp in ((0.3, 0), ('-23.34', -23), (123.4, 123), ('-500', -500),
+                           ('1.234k', 1234), ('1.23456789k', 1234)):
+            print(newval)
             val.set(newval)
             self.assertEqual(val.get(), exp)
 
