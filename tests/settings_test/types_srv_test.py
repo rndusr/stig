@@ -3,7 +3,7 @@ from stig.settings.types_srv import (const, converter, RateLimitValue,
                                      RateLimitSrvValue, BooleanSrvValue,
                                      PortSrvValue, IntegerSrvValue,
                                      PathIncompleteSrvValue)
-from stig.types import (TRUE, FALSE)
+from stig.settings.types import (TRUE, FALSE)
 
 
 class FakeServer():

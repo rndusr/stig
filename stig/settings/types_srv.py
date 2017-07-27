@@ -12,9 +12,9 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from ..types import (BooleanValue, IntegerValue, ListValue, NumberValue,
-                     OptionValue, PathValue, SetValue, StringValue,
-                     ValueBase, MultiValue)
+from .types import (BooleanValue, IntegerValue, ListValue, NumberValue,
+                    OptionValue, PathValue, SetValue, StringValue, ValueBase,
+                    MultiValue)
 from ..client.errors import ClientError
 from ..client import constants as const
 from ..client import convert as converter
