@@ -43,7 +43,7 @@ class _NumberBase():
 
     _REGEX = re.compile('^([-+]?(?:\d+\.\d+|\d+|\.\d+)) ?(' +\
                         '|'.join(p[0] for p in _PREFIXES) + \
-                        '|)(.*?)$',
+                        '|)(\S*?)$',
                         flags=re.IGNORECASE)
 
     # Public tuple of all supported unit prefixes
