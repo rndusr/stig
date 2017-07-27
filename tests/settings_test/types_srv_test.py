@@ -194,7 +194,7 @@ class TestRateLimitValue(asynctest.TestCase):
         self.val = RateLimitValue('test')
 
     async def test_typename(self):
-        self.assertEqual(self.val.typename, 'boolean or rational number (>= 0)')
+        self.assertEqual(self.val.typename, 'boolean or rational number')
 
     async def test_valuesyntax(self):
         self.assertEqual(self.val.valuesyntax,
@@ -216,6 +216,8 @@ class TestRateLimitValue(asynctest.TestCase):
                 ('+=1G', 6.67e9, '6.67GB'),
                 ('false', const.UNLIMITED, 'unlimited'),
                 ('+=2Gi', 2*(2**30), '2.15GB'),
+                ('-=100GB', const.UNLIMITED, 'unlimited'),
+                ('0B', 0, '0B'),
         ):
             self.val.set(v)
             self.assertEqual(self.val.get(), exp_get)
@@ -238,6 +240,8 @@ class TestRateLimitValue(asynctest.TestCase):
                 ('+=8Mb', 2e6, '1.91MiB'),
                 ('false', const.UNLIMITED, 'unlimited'),
                 ('+=4Mb', 4e6/8, '488KiB'),
+                ('-=100Gb', const.UNLIMITED, 'unlimited'),
+                ('0b', 0, '0B'),
         ):
             self.val.set(v)
             self.assertEqual(self.val.get(), exp_get)
@@ -260,6 +264,8 @@ class TestRateLimitValue(asynctest.TestCase):
                 ('-=500k', (1048576*8)-500e3, '7.89Mb'),
                 ('false', const.UNLIMITED, 'unlimited'),
                 ('+=500k', 500e3, '500kb'),
+                ('-=100T', const.UNLIMITED, 'unlimited'),
+                ('0KiB', 0, '0b'),
         ):
             self.val.set(v)
             self.assertEqual(self.val.get(), exp_get)
@@ -282,6 +288,8 @@ class TestRateLimitValue(asynctest.TestCase):
                 ('+=1000k', (1048576*8) + 1e6, '8.95Mib'),
                 ('false', const.UNLIMITED, 'unlimited'),
                 ('+=100kB', 800e3, '781Kib'),
+                ('-=100TB', const.UNLIMITED, 'unlimited'),
+                ('0kb', 0, '0b'),
         ):
             self.val.set(v)
             self.assertEqual(self.val.get(), exp_get)
@@ -294,7 +302,6 @@ class TestRateLimitValue(asynctest.TestCase):
                           ('10km', "Unit must be 'b' (bit) or 'B' (byte), not 'm'"),
                           ('=3', 'Not a rational number'),
                           ('zilch', 'Not a rational number'),
-                          (-1, 'Too small'),
                           ([1, 2, 3], 'Not a rational number')):
             with self.assertRaises(ValueError) as cm:
                 self.val.set(v)

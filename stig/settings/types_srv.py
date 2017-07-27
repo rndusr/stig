@@ -91,7 +91,6 @@ class RateLimitValue(MultiValue(BooleanValue, UnlimitedValue, BandwidthValue)):
 
     def __init__(self, *args, **kwargs):
         object.__setattr__(self, '_previous_number', BandwidthValue(0))
-        kwargs['min'] = 0
         super().__init__(*args, **kwargs)
 
     def set(self, value):
@@ -101,23 +100,20 @@ class RateLimitValue(MultiValue(BooleanValue, UnlimitedValue, BandwidthValue)):
         if isinstance(self.get(), BandwidthValue.type):
             self._previous_number = self.get()
 
-        # If limit is now disabled, set internal number to 0 so that if the next
-        # value is an adjustment ('+=1Mb'), we start from 0 instead of the
-        # previously set number
-        if self.get() == float('inf'):
+        # If limit was just disabled, set internal number to 0 so that if the
+        # next value is an adjustment (e.g '+=1Mb'), we start from 0 instead of
+        # the previously set number, which may be confusing to the user.
+        if self.get() is const.UNLIMITED:
             self.instances[BandwidthValue].set(0)
 
     def convert(self, value):
         value = super().convert(value)
         if value is True:
-            # Enable previously set limit
-            return self._previous_number
-        elif value is False:
-            # No limit
-            return const.UNLIMITED
+            return self._previous_number    # Re-enable previously set limit
+        elif value is False or value < 0:
+            return const.UNLIMITED          # No limit
         else:
-            # Must be a BandwidthValue object
-            return value
+            return value                    # Must be a BandwidthValue object
 
 
 def SrvValue(*value_clses):
