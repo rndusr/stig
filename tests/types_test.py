@@ -673,13 +673,9 @@ class TestMultiValue(unittest.TestCase):
         self.assertEqual(val.string(), 'foo - bar - baz')
 
     def test_nested_MultiValues_with_custom_methods(self):
-        import logging
-        log = logging.getLogger()
-
         class UpperStringValue(MultiValue(BooleanValue, StringValue)):
             def convert(self, value):
                 v = super().convert(value)
-                log.debug('UpperStringValue: Converting %r', value)
                 return v.upper() if isinstance(value, str) else v
 
         val = UpperStringValue('test', default='this')
