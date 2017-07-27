@@ -717,12 +717,17 @@ def MultiValue(*clses):
     clsattrs['_get_valid_instance'] = _get_valid_instance
 
     def set_(self, value):
-        self._current_instance = self._get_valid_instance(value)
-        self._current_instance.set(value)
+        inst = self._get_valid_instance(value)
+        inst.set(value)
 
-        # Set our own _value attribute and call custom validate()/convert() of
-        # child classes
-        ValueBase.set(self, self._current_instance.value)
+        # Call custom validate()/convert() of child classes, set our own
+        # internal _value attribute and handle callbacks.
+        ValueBase.set(self, inst.value)
+
+        # convert() of a child class may have changed value (e.g. if we are a
+        # BooleanOrIntegerValue, convert() may return False for values < 0), so
+        # we must check again which instance is valid for the current value.
+        self._current_instance = self._get_valid_instance(ValueBase.get(self))
     clsattrs['set'] = set_
 
     def validate(self, value):
