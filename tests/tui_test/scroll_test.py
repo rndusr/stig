@@ -4,6 +4,8 @@ import stig.tui.urwidpatches
 import unittest
 import urwid
 
+from .resources_tui import get_canvas_text
+
 TEXT = ('one',
         'two',
         'three',
@@ -28,16 +30,6 @@ class FixedText(urwid.Widget):
     def render(self, size, focus=False):
         return self._canvas
 
-def get_widget_text(x):
-    # Join text of nested canvas parts
-    t = []
-    if isinstance(x, list):
-        for y in x:
-            t.append(get_widget_text(y))
-    else:
-        t.append(x[2].decode('utf-8'))
-    return ''.join(t)
-
 
 class TestScrollable(unittest.TestCase):
     def setUp(self):
@@ -51,7 +43,7 @@ class TestScrollable(unittest.TestCase):
         canv = widget.render(size, focus=True)
         self.assertEqual((canv.cols(), canv.rows()), size)
 
-        content = tuple(get_widget_text(row) for row in canv.content())
+        content = tuple(get_canvas_text(row) for row in canv.content())
         content_exp = tuple(text)
         self.assertEqual(content, content_exp)
 
@@ -274,7 +266,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
         canv = widget.render(size, focus=True)
         self.assertEqual((canv.cols(), canv.rows()), size)
 
-        content = tuple(get_widget_text(row) for row in canv.content())
+        content = tuple(get_canvas_text(row) for row in canv.content())
         content_exp = tuple(text)
         self.assertEqual(content, content_exp)
 

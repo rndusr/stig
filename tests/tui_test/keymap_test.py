@@ -1,6 +1,9 @@
 import unittest
 from stig.tui.keymap import (Key, KeyChain, KeyMap)
-from urwid import Text
+from urwid import (Text, ListBox, SimpleFocusListWalker)
+import stig.tui.urwidpatches
+
+from .resources_tui import get_canvas_text
 
 import logging
 log = logging.getLogger(__name__)
@@ -74,77 +77,91 @@ class TestKey(unittest.TestCase):
         self.assertIn('No key', str(cm.exception))
 
 
-class TestKeyChain(unittest.TestCase):
-    def test_advance(self):
-        kc = KeyChain('a', 'b', 'c')
-        for _ in range(10):
-            self.assertEqual(kc.given, ())
-            kc.advance()
-            self.assertEqual(kc.given, ('a',))
-            kc.advance()
-            self.assertEqual(kc.given, ('a', 'b'))
-            kc.advance()
-            self.assertEqual(kc.given, ('a', 'b', 'c'))
-            kc.advance()
+class FakeAction():
+    def __init__(self, action=None):
+        self.callnum = 0
+        self.action = action
+    def run(self, widget):
+        self.callnum += 1
+        if self.action is not None:
+            return self.action()
 
-    def test_reset(self):
-        kc = KeyChain('a', 'b', 'c')
-        for i in range(10):
-            for _ in range(i): kc.advance()
-            kc.reset()
-            self.assertEqual(kc.given, ())
+class TestKeyMapped(unittest.TestCase):
+    def setUp(self):
+        self.keymap = KeyMap()
 
-    def test_next_key(self):
-        kc = KeyChain('a', 'b', 'c')
-        for i in range(10):
-            self.assertEqual(kc.next_key, 'a')
-            kc.advance()
-            self.assertEqual(kc.next_key, 'b')
-            kc.advance()
-            self.assertEqual(kc.next_key, 'c')
-            kc.advance()
-            self.assertEqual(kc.next_key, None)  # chain is complete
-            kc.advance()  # same as reset() if complete
+    def mk_widget(self, subcls, *args, context=None, callback=None, **kwargs):
+        cls = self.keymap.wrap(subcls, context=context, callback=callback)
+        return cls(*args, **kwargs)
 
-    def test_startswith(self):
-        kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.startswith(('a',)), True)
-        self.assertEqual(kc.startswith(('a', 'b')), True)
-        self.assertEqual(kc.startswith(('a', 'b', 'c')), True)
-        self.assertEqual(kc.startswith(('a', 'b', 'c', 'x')), False)
-        self.assertEqual(kc.startswith(('a', 'b', 'x')), False)
-        self.assertEqual(kc.startswith(('a', 'x')), False)
-        self.assertEqual(kc.startswith(('x')), False)
-        self.assertEqual(kc.startswith(()), True)
+    def assert_lines(self, widget, size, exp_lines, exp_focus_pos=None):
+        canv = widget.render(size, focus=True)
+        content = tuple(get_canvas_text(row) for row in canv.content())
+        self.assertEqual(content, tuple(exp_lines))
+        if exp_focus_pos is not None:
+            self.assertEqual(widget.focus_position, exp_focus_pos)
 
-    def test_is_complete(self):
-        kc = KeyChain('a', 'b', 'c')
-        for i in range(10):
-            self.assertEqual(kc.is_complete, False)
-            kc.advance()
-            self.assertEqual(kc.is_complete, False)
-            kc.advance()
-            self.assertEqual(kc.is_complete, False)
-            kc.advance()
-            self.assertEqual(kc.is_complete, True)
-            kc.advance()
+    def test_hardcoded_keys_keep_working(self):
+        list_contents = [Text(str(i)) for i in range(1, 10)]
+        widget = self.mk_widget(ListBox, SimpleFocusListWalker(list_contents),
+                                context='foocon')
+        size = (3, 3)
+        self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
+        widget.keypress(size, 'down')
+        self.assert_lines(widget, size, exp_lines=('2  ', '3  ', '4  '))
+        widget.keypress(size, 'page down')
+        self.assert_lines(widget, size, exp_lines=('5  ', '6  ', '7  '))
+        widget.keypress(size, 'up')
+        self.assert_lines(widget, size, exp_lines=('4  ', '5  ', '6  '))
+        widget.keypress(size, 'page up')
+        self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
 
-    def test_feed_with_correct_chain(self):
-        kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('b'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('c'), KeyChain.COMPLETED)
+    def test_non_hardcoded_keys_are_evaluated(self):
+        list_contents = [Text(str(i)) for i in range(1, 10)]
+        widget = self.mk_widget(ListBox, SimpleFocusListWalker(list_contents),
+                                context='foocon')
+        action = FakeAction()
+        self.keymap.bind('a', context='foocon', action=action.run)
+        size = (3, 3)
+        self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
+        widget.keypress(size, 'a')
+        self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
+        self.assertEqual(action.callnum, 1)
 
-    def test_feed_with_wrong_chain(self):
-        kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.feed('x'), KeyChain.REFUSED)
+    def test_evaluated_keys_are_offered_to_parent_again(self):
+        list_contents = [Text(str(i)) for i in range(1, 10)]
+        widget = self.mk_widget(ListBox, SimpleFocusListWalker(list_contents),
+                                context='foocon')
+        self.keymap.bind('j', context='foocon', action=Key('down'))
+        size = (3, 3)
+        self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
+        widget.keypress(size, 'j')
+        self.assert_lines(widget, size, exp_lines=('2  ', '3  ', '4  '))
 
-        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
+    def test_evaluated_key_does_not_replace_original_key(self):
+        # Create a list of widgets that translate 'j' to 'down' in their
+        # keypress() methods.
+        lst_contents = [self.mk_widget(Text, str(i), context='barcon')
+                        for i in range(1, 10)]
+        self.keymap.bind('j', context='barcon', action=Key('down'))
 
-        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('b'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
+        # Create ListBox with separate key context.  If the ListBox gets to
+        # handle 'j', it just checks a mark we can look for.
+        lst_widget = self.mk_widget(ListBox, SimpleFocusListWalker(lst_contents), context='foocon')
+        lst_action = FakeAction()
+        self.keymap.bind('j', context='foocon', action=lst_action.run)
+
+        # Make sure everything is as expected
+        size = (3, 3)
+        self.assert_lines(lst_widget, size, exp_lines=('1  ', '2  ', '3  '), exp_focus_pos=0)
+        lst_widget.keypress(size, 'down')
+        self.assert_lines(lst_widget, size, exp_lines=('1  ', '2  ', '3  '), exp_focus_pos=1)
+
+        # Pressing 'j' should pass 'j' to the focused list item, which evaluates
+        # it to 'down'.  But 'down' must NOT be used to move focus down.
+        lst_widget.keypress(size, 'j')
+        self.assert_lines(lst_widget, size, exp_lines=('1  ', '2  ', '3  '), exp_focus_pos=1)
+        self.assertEqual(lst_action.callnum, 1)
 
 
 class TestKeyMap(unittest.TestCase):
@@ -227,6 +244,79 @@ class TestKeyMap(unittest.TestCase):
         widget = km.wrap(Text)('Test Text')
         widget.keypress((80,), 'b')
         self.assertEqual(widget.text, 'Key pressed: a')
+
+
+class TestKeyChain(unittest.TestCase):
+    def test_advance(self):
+        kc = KeyChain('a', 'b', 'c')
+        for _ in range(10):
+            self.assertEqual(kc.given, ())
+            kc.advance()
+            self.assertEqual(kc.given, ('a',))
+            kc.advance()
+            self.assertEqual(kc.given, ('a', 'b'))
+            kc.advance()
+            self.assertEqual(kc.given, ('a', 'b', 'c'))
+            kc.advance()
+
+    def test_reset(self):
+        kc = KeyChain('a', 'b', 'c')
+        for i in range(10):
+            for _ in range(i): kc.advance()
+            kc.reset()
+            self.assertEqual(kc.given, ())
+
+    def test_next_key(self):
+        kc = KeyChain('a', 'b', 'c')
+        for i in range(10):
+            self.assertEqual(kc.next_key, 'a')
+            kc.advance()
+            self.assertEqual(kc.next_key, 'b')
+            kc.advance()
+            self.assertEqual(kc.next_key, 'c')
+            kc.advance()
+            self.assertEqual(kc.next_key, None)  # chain is complete
+            kc.advance()  # same as reset() if complete
+
+    def test_startswith(self):
+        kc = KeyChain('a', 'b', 'c')
+        self.assertEqual(kc.startswith(('a',)), True)
+        self.assertEqual(kc.startswith(('a', 'b')), True)
+        self.assertEqual(kc.startswith(('a', 'b', 'c')), True)
+        self.assertEqual(kc.startswith(('a', 'b', 'c', 'x')), False)
+        self.assertEqual(kc.startswith(('a', 'b', 'x')), False)
+        self.assertEqual(kc.startswith(('a', 'x')), False)
+        self.assertEqual(kc.startswith(('x')), False)
+        self.assertEqual(kc.startswith(()), True)
+
+    def test_is_complete(self):
+        kc = KeyChain('a', 'b', 'c')
+        for i in range(10):
+            self.assertEqual(kc.is_complete, False)
+            kc.advance()
+            self.assertEqual(kc.is_complete, False)
+            kc.advance()
+            self.assertEqual(kc.is_complete, False)
+            kc.advance()
+            self.assertEqual(kc.is_complete, True)
+            kc.advance()
+
+    def test_feed_with_correct_chain(self):
+        kc = KeyChain('a', 'b', 'c')
+        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
+        self.assertEqual(kc.feed('b'), KeyChain.ADVANCED)
+        self.assertEqual(kc.feed('c'), KeyChain.COMPLETED)
+
+    def test_feed_with_wrong_chain(self):
+        kc = KeyChain('a', 'b', 'c')
+        self.assertEqual(kc.feed('x'), KeyChain.REFUSED)
+
+        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
+        self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
+
+        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
+        self.assertEqual(kc.feed('b'), KeyChain.ADVANCED)
+        self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
 
 
 class TestKeyMap_with_key_chains(unittest.TestCase):
