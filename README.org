@@ -5,22 +5,23 @@
   [[file:https://raw.githubusercontent.com/rndusr/stig/master/screenshot.png]]
 
 ** Features
-   - Use *filters* to list/start/stop/remove/... torrents matching any
+   - *Filters* are used to list/start/stop/remove/etc torrents matching any
      combination of criteria
-   - *Tabs* with different lists, documentation, etc
-   - Everything is done via *commands*, and they are invoked
+   - *Tabs* with list of torrents/peers/files, documentation, etc
+   - *Commands* or *sub-commands* (think git) do everything, and they can be
+     invoked
      - through single- or multi-key (think emacs) *keybindings*,
      - by entering them in a *command prompt* (think vi),
      - by providing them as *CLI arguments* in your interactive shell or in
        *scripts*,
      - or by listing them in an *rc file*.
    - Support for *themes* with 16 and 256 colors
-   - *Complete built-in documentation* with ~help~ command
+   - *Complete built-in documentation* with ~help~ command or ~--help~ argument
    - Full *API abstraction layer* makes it possible to add support for other
-     BitTorrent clients with RPC interfaces
+     BitTorrent clients with RPC interfaces (contributors are welcome)
 
 ** Examples
-   Add two torrents (file and hash) and exit
+   Add two torrents, one by file and one by hash, and exit
    #+BEGIN_SRC sh
    $ stig add /path/to/some.torrent d4d6b73851fe3288e40389a8e1fb98124a9b9ba5
    #+END_SRC
@@ -55,9 +56,9 @@
    #+END_SRC
 
 ** Configuration and Scripting
-   All configuration is done in ~$HOME/.config/stig/rc~.  Each line is a command
-   that is called during startup.  Commands given as CLI arguments are called
-   after the rc commands.
+   All configuration is done in ~$HOME/.config/stig/rc~ by default.  Each line
+   is a command that is called during startup.  Commands given as CLI arguments
+   are called after the commands collected from rc files.
 
 *** Example ~$HOME/.config/stig/rc~
    #+BEGIN_SRC
@@ -70,20 +71,20 @@
    # Default columns in torrent lists
    set columns.torrents name ratio rate-up rate-down
 
-   # Open a few tabs
+   # Open a few tabs on startup
    tab ls active --sort !progress,path,!rate
    tab ls paused --sort !progress --columns name,progress,ratio,size
    tab ls isolated --sort tracker --columns name,path
    #+END_SRC
 
-   You can have different rc files and run them either with
-   ~stig -c path/to/file~ or by using the shebang ~#!/path/to/stig -Tc~
-   (~-T~ disables the TUI, ~-c~ specifies the rc file) to turn them into
-   executables.
+   You can have different rc files and run them either with ~stig -c
+   path/to/file~ or with the ~rc~ command.  You can even turn them into
+   executables with the shebang ~#!/path/to/stig -Tc~ (~-T~ disables the TUI,
+   ~-c~ specifies the rc file).
 
 *** Example maintenance script
    #+BEGIN_SRC
-   #!/home/ich/.local/bin/stig -Tc
+   #!/path/to/stig -Tc
    rm path=/path/to/torrents/trash
    pause seeds>100
    start seeds<20&size>10G|seeds<50&size>20G
@@ -118,6 +119,9 @@
    - [[https://pypi.python.org/pypi/GeoIP][GeoIP]] (optional; shows country codes in peer lists)
 
 ** Contributing
+   Pull requests, bug reports, features requests, ideas for improvement and all
+   other kinds of constructive contributions are welcome.
+
    Development happens in the ~dev~ branch while ~master~ is the current
    stable release.
 
