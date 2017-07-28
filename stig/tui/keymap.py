@@ -117,7 +117,7 @@ class Key(str):
         return '<%s>' % super().__str__()
 
     def __repr__(self):
-        return '<Key %s>' % self
+        return '<Key %s>' % super().__str__()
 
 
 class KeyChain(tuple):
