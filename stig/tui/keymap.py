@@ -363,14 +363,14 @@ class KeyMap():
                 self._keychain_context = context    # Lock context
                 self._keychain_partial.append(key)
                 log.debug('%r was used to advance a keychain (status: %r)', key, self._keychain_partial)
-                self._run_callbacks(tuple(self._active_keychains(context, self._keychain_partial)))
+                self._run_keychain_callbacks((self._active_keychains(context, self._keychain_partial)))
                 return None
             elif action is KeyChain.ABORTED:
                 log.debug('%r was used to abort a keychain', key)
                 self._reset_keychains(context, self._keychain_partial)
                 self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
-                self._run_callbacks(tuple())
+                self._run_keychain_callbacks(())
                 return None
             elif action is KeyChain.REFUSED:
                 log.debug('%r was refused by all keychains', key)
@@ -381,12 +381,12 @@ class KeyMap():
                 log.debug('%r was resolved to a single key: %r', key)
                 self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
-                self._run_callbacks(tuple())
+                self._run_keychain_callbacks(())
             else:
                 log.debug('%r was used to complete a keychain', key)
                 self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
-                self._run_callbacks(tuple())
+                self._run_keychain_callbacks(())
 
         # Handle the action we found
         log.debug('Evaluated %r to action: %r', key, action)
@@ -463,7 +463,7 @@ class KeyMap():
             if kc.is_started:
                 yield (kc, action)
 
-    def _run_callbacks(self, active_keychains):
+    def _run_keychain_callbacks(self, active_keychains):
         log.debug('Running callbacks with %r', active_keychains)
         self._keychain_callbacks.send(active_keychains)
 
