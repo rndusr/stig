@@ -235,12 +235,14 @@ class KeyMapped():
                                             callback=self.callback,
                                             widget=self)
             if key_eval is None:
+                # Key was evaluated() to some action
                 return None
             elif key_eval != key:
-                # evaluate() may have resolved key to another key
-                # (e.g. 'j' -> 'down')
-                key = try_super(key_eval)
-
+                # evaluate() may have resolved key to another key (e.g. 'j' ->
+                # 'down').  Offer evaluated key to parent again.
+                if try_super(key_eval) is None:
+                    # Parent consumed evaluated key
+                    return None
         return key
 
     def selectable(self):
