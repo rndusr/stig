@@ -15,7 +15,7 @@
      - by providing them as *CLI arguments* in your interactive shell or in
        *scripts*,
      - or by listing them in an *rc file*.
-   - Support for *themes* with 16 and 256 colors
+   - *Color themes* support 16 and 256 colors
    - *Complete built-in documentation* with ~help~ command or ~--help~ argument
    - Full *API abstraction layer* makes it possible to add support for other
      BitTorrent clients with RPC interfaces (contributors are welcome)
