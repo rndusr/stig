@@ -25,13 +25,13 @@ questions and point out issues.
 
 * tui
 
-** TODO New command: settings
-   Create a new widget that lists all available server settings.  Available
-   settings should probably be provided as a list by SettingsAPI to make it
-   easier to support other BitTorrent clients with slightly different settings.
+** TODO Create view that lists all settings
+   The view is opened when the TUI version of the command 'set' is called
+   without any arguments.
 
-   The settings command takes no arguments and opens the settings widget in the
-   current tab.
+   Available server settings should be provided as a list by SettingsAPI to make
+   it easier to support other BitTorrent clients with slightly different
+   settings.
 
 
 * client
@@ -47,13 +47,6 @@ questions and point out issues.
 *** TODO NotImplementedError callbacks
     Figure out how to avoid tons of ~try: ... except NotImplementedError as e:
     log.error(e)~.  Maybe with a callback somewhere?
-
-
-* tui.tabs
-
-** TODO New tab not always rendered
-   If no tab exists and a new one is created, it isn't rendered until
-   something else happens, like opening the command prompt.
 
 
 #+STARTUP: showeverything
