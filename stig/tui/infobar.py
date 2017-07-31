@@ -139,18 +139,14 @@ class BandwidthStatusWidget(urwid.Widget):
         srvapi.settings.on_update(self._update_rate_limits)
 
     def _update_current_rates(self, status):
-        highlight = lambda v: v > 0
-
         up = status.rate_up
         if up is not const.DISCONNECTED:
-            up_attrs = 'bottombar.bandwidth.up.highlighted' if highlight(up) \
-                       else 'bottombar.bandwidth.up'
+            up_attrs = 'bottombar.bandwidth.up.highlighted' if up > 0 else 'bottombar.bandwidth.up'
             self._text_up.set_text((up_attrs, up.without_unit))
 
         dn = status.rate_down
         if dn is not const.DISCONNECTED:
-            dn_attrs = 'bottombar.bandwidth.down.highlighted' if highlight(dn) \
-                       else 'bottombar.bandwidth.down'
+            dn_attrs = 'bottombar.bandwidth.down.highlighted' if dn > 0 else 'bottombar.bandwidth.down'
             self._text_dn.set_text((dn_attrs, dn.without_unit))
             self._connected = True
         else:
