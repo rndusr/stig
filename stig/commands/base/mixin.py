@@ -27,7 +27,6 @@ class get_torrent_id():
             torrents = TorrentSorter(('name',)).apply(response.torrents)
             return torrents[0]['id']
 
-
 class get_torrent_sorter():
     def get_torrent_sorter(self, args):
         """Return TorrentSorter instance or None
@@ -41,37 +40,8 @@ class get_torrent_sorter():
             from ...client import TorrentSorter
             return TorrentSorter(utils.listify_args(args))
 
-
-class get_peer_sorter():
-    def get_peer_sorter(self, args):
-        """Return TorrentPeerSorter instance or None
-
-        If `args` evaluates to True, it is passed to TorrentPeerSorter and the
-        result is returned.
-
-        If `args` evaluates to False, None is returned.
-        """
-        if args:
-            from ...client import TorrentPeerSorter
-            return TorrentPeerSorter(utils.listify_args(args))
-
-
-class get_peer_filter():
-    def get_peer_filter(self, FILTER):
-        """Return TorrentPeerFilter instance or None
-
-        If `FILTER` evaluates to True, it is passed to TorrentPeerFilter and
-        the resulting object is returned.
-
-        If `FILTER` evaluates to False, None is returned.
-        """
-        if FILTER:
-            from ...client import TorrentPeerFilter
-            return TorrentPeerFilter(FILTER)
-
-
-class get_tlist_columns():
-    def get_tlist_columns(self, columns, interface=None):
+class get_torrent_columns():
+    def get_torrent_columns(self, columns, interface=None):
         """Check if each item in iterable `columns` is a valid torrent list column name
 
         If `interface` is not None, also remove all columns that don't have
@@ -91,8 +61,9 @@ class get_tlist_columns():
         return cols
 
 
-class get_flist_columns():
-    def get_flist_columns(self, columns):
+
+class get_file_columns():
+    def get_file_columns(self, columns):
         """Check if each item in iterable `columns` is a valid file list column name
 
         Raise ValueError or return a new list of `columns`.
@@ -105,8 +76,35 @@ class get_flist_columns():
         return cols
 
 
-class get_plist_columns():
-    def get_plist_columns(self, columns):
+
+class get_peer_sorter():
+    def get_peer_sorter(self, args):
+        """Return TorrentPeerSorter instance or None
+
+        If `args` evaluates to True, it is passed to TorrentPeerSorter and the
+        result is returned.
+
+        If `args` evaluates to False, None is returned.
+        """
+        if args:
+            from ...client import TorrentPeerSorter
+            return TorrentPeerSorter(utils.listify_args(args))
+
+class get_peer_filter():
+    def get_peer_filter(self, FILTER):
+        """Return TorrentPeerFilter instance or None
+
+        If `FILTER` evaluates to True, it is passed to TorrentPeerFilter and
+        the resulting object is returned.
+
+        If `FILTER` evaluates to False, None is returned.
+        """
+        if FILTER:
+            from ...client import TorrentPeerFilter
+            return TorrentPeerFilter(FILTER)
+
+class get_peer_columns():
+    def get_peer_columns(self, columns):
         """Check if each item in iterable `columns` is a valid peer list column name
 
         Raise ValueError or return a new list of `columns`.

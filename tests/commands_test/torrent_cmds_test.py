@@ -76,7 +76,7 @@ class TestListTorrentsCmd(CommandTestCase):
         ListTorrentsCmd.cfg = self.cfg
         ListTorrentsCmd.select_torrents = mock_select_torrents
         ListTorrentsCmd.get_torrent_sorter = mock_get_torrent_sorter
-        ListTorrentsCmd.get_tlist_columns = lambda self, columns, interface=None: ('name',)
+        ListTorrentsCmd.get_torrent_columns = lambda self, columns, interface=None: ('name',)
 
         from types import SimpleNamespace
         from stig.commands.cli import torrent

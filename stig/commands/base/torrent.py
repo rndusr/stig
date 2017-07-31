@@ -131,7 +131,7 @@ def _make_COLUMNS_doc(columnspecs, option, setting, append=()):
             + append
 
 
-class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
+class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                           metaclass=InitCommand):
     name = 'list'
     aliases = ('ls',)
@@ -174,7 +174,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
         sort = self.cfg['sort.torrents'].value if sort is None else sort
         columns = self.cfg['columns.torrents'].value if columns is None else columns
         try:
-            columns = self.get_tlist_columns(columns)
+            columns = self.get_torrent_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
                                            discover_torrent=False)
@@ -190,7 +190,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_tlist_columns,
                 return self.make_tlist(tfilter, sort, columns)
 
 
-class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
+class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
     name = 'filelist'
     aliases = ('fls', 'lsf')
     provides = set()
@@ -225,7 +225,7 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
     async def run(self, TORRENT_FILTER, FILE_FILTER, columns):
         columns = self.cfg['columns.files'].value if columns is None else columns
         try:
-            columns = self.get_flist_columns(columns)
+            columns = self.get_file_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
                                            discover_torrent=True)
@@ -244,7 +244,7 @@ class ListFilesCmdbase(mixin.get_flist_columns, metaclass=InitCommand):
             return self.make_flist(tfilter, ffilter, columns)
 
 
-class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
+class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
                        mixin.get_peer_filter, metaclass=InitCommand):
     name = 'peerlist'
     aliases = ('pls', 'lsp')
@@ -296,7 +296,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_plist_columns,
                                            discover_torrent=True)
             pfilter = self.get_peer_filter(PEER_FILTER)
             sort    = self.get_peer_sorter(sort)
-            columns = self.get_plist_columns(columns)
+            columns = self.get_peer_columns(columns)
         except ValueError as e:
             log.error(e)
             return False
