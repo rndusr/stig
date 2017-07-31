@@ -14,7 +14,6 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from collections import abc
 
 from .. import utils
 
