@@ -383,13 +383,26 @@ class HelpManager():
         """Provide help text for rc file"""
         lines = [
             'RC FILES',
-            ("\tAn rc file contains a list of arbitrary commands.  Lines starting "
-             "with '#' (or more precisely '\s*#') are ignored."),
+            ("\tAn rc file contains a list of arbitrary commands, one per line.  "
+             "Lines starting with '#' (more precisely: '\s*#') are ignored."),
             '',
-            ("\tThe default rc file path is '$XDG_CONFIG_HOME/{APPNAME}/rc'.  "
-             "XDG_CONFIG_HOME defaults to '~/.config'.  A different path can be "
-             "provided with the '--rcfile' option.  An existing rc file at the "
-             "default path can be ignored with the '--norcfile' option."),
+            ("\tThe default rc file path is '$XDG_CONFIG_HOME/{APPNAME}/rc', "
+             "where XDG_CONFIG_HOME defaults to '~/.config' if it is not set."),
+            '',
+            ("\tA different path can be provided with the '--rcfile' option.  "
+             "An existing rc file at the default path can be ignored with the "
+             "'--norcfile' option."),
+            '',
+            ('\tHINT: To permanently change the default config file, create an '
+             'alias or a function.  This works in bash and zsh:'),
+            '',
+            '\t\t$ alias stig="command stig --rcfile ~/.stigrc"',
+            '',
+            ("\tTo load an additional rc file after the default one, use the "
+             "'rc' command.  (Note that, if given as a CLI command, this will "
+             "suppress the TUI from being loaded unless you provide the "
+             "'--tui' option aswell. See the GUESSING THE USER INTERFACE section "
+             "in the 'commands' help for more information.)"),
             '',
             ('\tCommands in an rc file are called during startup before the '
              'commands given on the command line.'),
