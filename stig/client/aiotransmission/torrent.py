@@ -316,7 +316,7 @@ DEPENDENCIES = {
 
     'trackers'          : ('trackers',),
     'error'             : ('errorString', 'error'),
-    'peers'             : ('peers', 'totalSize'),
+    'peers'             : ('peers', 'totalSize', 'name'),
 
     # The RPC field 'files' is called once to initialize file names and sizes by
     # api_torrent.TorrentAPI._get_torrents_by_ids when files are requested.
