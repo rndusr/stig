@@ -55,11 +55,12 @@
    #+END_SRC
 
 ** Configuration and Scripting
-   All configuration is done in ~$HOME/.config/stig/rc~.  Each line is a command
-   that is called during startup.  Commands given as CLI arguments are called
-   after the rc commands.
+   All configuration is done in ~$XDG_CONFIG_HOME/stig/rc~, which expands to
+   ~$HOME/.config/stig/rc~ if you haven't changed XDG_CONFIG_HOME. Each line
+   is a command that is called during startup. Commands given as CLI arguments
+   are called after the rc commands.
 
-*** Example ~$HOME/.config/stig/rc~
+*** Example ~rc~-file
    #+BEGIN_SRC
    # Host that runs Transmission daemon
    set srv.url otherhost:123
@@ -111,7 +112,7 @@
    - [[http://www.urwid.org/][urwid]] >=1.3.0
    - [[https://github.com/pazz/urwidtrees][urwidtrees]] >=1.0.3dev0
    - [[https://pypi.python.org/pypi/aiohttp][aiohttp]]
-   - [[https://pypi.python.org/pypi/appdirs][appdirs]]
+   - [[https://pypi.python.org/pypi/xdg][xdg]]
    - [[https://pypi.python.org/pypi/blinker][blinker]]
    - [[https://pypi.python.org/pypi/natsort][natsort]]
    - [[https://pypi.python.org/pypi/asynctest/][asynctest]] (optional; only needed for running tests)

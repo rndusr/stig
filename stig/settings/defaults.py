@@ -13,7 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import os
-from appdirs import (user_cache_dir, user_config_dir)
+from xdg import (XDG_CONFIG_HOME, XDG_CACHE_HOME)
 
 from .. import APPNAME
 from ..views.tlist import COLUMNS as TCOLUMNS
@@ -22,8 +22,8 @@ from ..views.plist import COLUMNS as PCOLUMNS
 from ..client.sorters.tsorter import TorrentSorter
 from ..client.sorters.psorter import TorrentPeerSorter
 
-DEFAULT_RCFILE        = user_config_dir(APPNAME) + '/rc'
-DEFAULT_HISTORY_FILE  = user_cache_dir(APPNAME)+'/history'
+DEFAULT_RCFILE        = os.path.join(XDG_CONFIG_HOME, APPNAME, 'rc')
+DEFAULT_HISTORY_FILE  = os.path.join(XDG_CACHE_HOME, APPNAME, 'history')
 DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TLIST_SORT    = ('name',)
