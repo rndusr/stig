@@ -68,8 +68,14 @@ class Response(SimpleNamespace):
 
 
 from urllib.parse import (urlsplit, urlunsplit)
-class URL():
+class URL(str):
     """Provide the same attributes as `urllib.parse.urlsplit` plus 'domain'"""
+    def __new__(cls, url):
+        if isinstance(url, URL):
+            return url
+        else:
+            return super().__new__(cls, url)
+
     def __init__(self, url):
         url = urlsplit(url)
         for attr in ('scheme', 'netloc', 'path', 'query', 'fragment'):
