@@ -22,10 +22,6 @@ from ..base import torrent as base
 from . import mixin
 from .. import ExpectedResource
 from ...utils import strwidth
-from ...views.tlist import COLUMNS as TLIST_COLUMNS
-from ...views.flist import COLUMNS as FLIST_COLUMNS
-from ...views.flist import create_directory_data
-from ...views.plist import COLUMNS as PLIST_COLUMNS
 
 
 def _print_table(items, columns_wanted, COLUMN_SPECS):
@@ -163,6 +159,9 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
     async def make_tlist(self, tfilter, sort, columns):
+        from ...views.tlist import COLUMNS as TLIST_COLUMNS
+
+        # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, TLIST_COLUMNS)
 
         # Get wanted torrents and sort them
@@ -202,6 +201,8 @@ class ListFilesCmd(base.ListFilesCmdbase,
             filelist.extend(files)
 
         if filelist:
+            from ...views.flist import COLUMNS as FLIST_COLUMNS
+            # Remove columns that aren't supported by CLI interface (e.g. 'marked')
             columns = self.only_supported_columns(columns, FLIST_COLUMNS)
             _print_table(filelist, columns, FLIST_COLUMNS)
             return True
@@ -229,6 +230,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 node['name'] = '%s%s' % ('  '*(_indent_level), node['name'])
             indent_directory_name = indent_file_name
 
+        from ...views.flist import create_directory_data
         flist = []
         filtered_count = 0
         for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
@@ -275,6 +277,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
         sort.apply(peerlist, inplace=True)
 
         if peerlist:
+            from ...views.plist import COLUMNS as PLIST_COLUMNS
             _print_table(peerlist, columns, PLIST_COLUMNS)
             return True
         else:
