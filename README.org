@@ -57,9 +57,11 @@
 
 ** Configuration and Scripting
    All configuration is done in ~$XDG_CONFIG_HOME/stig/rc~, which expands to
-   ~$HOME/.config/stig/rc~ if you haven't changed XDG_CONFIG_HOME. Each line
-   is a command that is called during startup. Commands given as CLI arguments
-   are called after the rc commands.
+   ~$HOME/.config/stig/rc~ if you haven't changed XDG_CONFIG_HOME.  Each line is
+   a command that is called during startup.  Commands given as CLI arguments are
+   called after the rc commands.
+
+   Run ~stig help rcfile~ for more information.
 
 *** Example ~rc~-file
    #+BEGIN_SRC
