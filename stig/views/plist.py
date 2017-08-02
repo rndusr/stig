@@ -29,7 +29,7 @@ class TorrentName(ColumnBase):
     def get_value(self):
         return self.data['tname']
 
-COLUMNS['name'] = TorrentName
+COLUMNS['torrent'] = TorrentName
 
 
 class Client(ColumnBase):

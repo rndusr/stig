@@ -305,7 +305,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
         # ID, automatically add the 'name' column.
         if 'name' not in columns and \
            (not isinstance(tfilter, abc.Sequence) or len(tfilter) != 1):
-            columns.insert(0, 'name')
+            columns.insert(0, 'torrent')
 
         log.debug('Listing %s peers of %s torrents', pfilter, tfilter)
 
