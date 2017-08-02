@@ -400,7 +400,7 @@ class TorrentFile(abc.Mapping):
         'progress'        : Percent,
     }
 
-    _VALUES = {
+    _MODIFIERS = {
         'tid'             : lambda raw: raw['tid'],
         'id'              : lambda raw: raw['id'],
         'name'            : lambda raw: raw['name'],
@@ -421,9 +421,11 @@ class TorrentFile(abc.Mapping):
 
     def __getitem__(self, key):
         if key not in self._cache:
-            self._cache[key] = self.TYPES[key](
-                self._VALUES[key](self._raw)
-            )
+            if key in self._MODIFIERS:
+                val = self._MODIFIERS[key](self._raw)
+            else:
+                val = self._raw[key]
+            self._cache[key] = self.TYPES[key](val)
         return self._cache[key]
 
     def update(self, raw):
@@ -519,7 +521,7 @@ class TorrentPeer(abc.Mapping):
         'rate-est'  : lambda rate: convert.bandwidth(rate, unit='byte'),
     }
 
-    _VALUES = {
+    _MODIFIERS = {
         'id'      : lambda p: hash((p['tid'], p['ip'], p['port'])),
         'country' : lambda p: geoip.country_code(p['ip']) or '?',
     }
@@ -538,8 +540,8 @@ class TorrentPeer(abc.Mapping):
                 self._cache['eta'] = self.TYPES['eta'](eta)
 
             else:
-                if key in self._VALUES:
-                    val = self._VALUES[key](self._dct)
+                if key in self._MODIFIERS:
+                    val = self._MODIFIERS[key](self._dct)
                 else:
                     val = self._dct[key]
                 self._cache[key] = self.TYPES[key](val)
