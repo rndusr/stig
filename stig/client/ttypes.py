@@ -32,6 +32,7 @@ import re
 from . import (NumberFloat, NumberInt)
 from . import constants as const
 from . import convert
+from . import utils
 
 
 def _rate_limit(limit):
@@ -548,6 +549,54 @@ class TorrentPeer(abc.Mapping):
         return self._cache[key]
 
     def __repr__(self): return '<{} {}@{}>'.format(type(self).__name__, self['ip'], self['progress'])
+    def __iter__(self): return iter(self.TYPES)
+    def __len__(self): return len(self.TYPES)
+
+
+
+class TorrentTracker(abc.Mapping):
+    def _validate_tracker_state(string):
+        if string not in ('inactive', 'waiting', 'queued', 'announcing', 'scraping'):
+            raise TypeError('Invalid tracker state: %r' % string)
+        else:
+            return SmartCmpStr(string)
+
+    TYPES = {
+        'tid'              : int,
+        'tname'            : SmartCmpStr,
+        'id'               : int,
+        'tier'             : int,
+        'url-announce'     : utils.URL,
+        'url-scrape'       : utils.URL,
+        'domain'           : SmartCmpStr,
+        'state-announce'   : _validate_tracker_state,
+        'state-scrape'     : _validate_tracker_state,
+        'state'            : _validate_tracker_state,
+        'error-announce'   : SmartCmpStr,
+        'error-scrape'     : SmartCmpStr,
+        'error'            : SmartCmpStr,
+    }
+
+    _MODIFIERS = {
+        'domain' : lambda self: self['url-announce'].domain,
+        'state'  : lambda self: self['state-announce'] or self['state-scrape'],
+        'error'  : lambda self: self['error-announce'] or self['error-scrape'],
+    }
+
+    def __init__(self, trkdict):
+        self._dct = trkdict
+        self._cache = {}
+
+    def __getitem__(self, key):
+        if key not in self._cache:
+            if key in self._MODIFIERS:
+                val = self._MODIFIERS[key](self)
+            else:
+                val = self._dct[key]
+            self._cache[key] = self.TYPES[key](val)
+        return self._cache[key]
+
+    def __repr__(self): return '<%s %s>' % (type(self).__name__, self['domain'])
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
 

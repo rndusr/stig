@@ -67,6 +67,16 @@ class Response(SimpleNamespace):
         super().__init__(success=bool(success), msgs=tuple(msgs), **kwargs)
 
 
+class LazyDict(dict):
+    """Dictionary with callables as values that return the actual value on demand"""
+    def __getitem__(self, key):
+        value = dict.__getitem__(self, key)
+        if callable(value):
+            value = value()
+            dict.__setitem__(self, key, value)
+        return value
+
+
 from urllib.parse import (urlsplit, urlunsplit)
 class URL(str):
     """Provide the same attributes as `urllib.parse.urlsplit` plus 'domain'"""

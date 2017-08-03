@@ -245,11 +245,47 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
 
 class TrackerList(tuple):
-    def __new__(cls, t):
+    _STATES_ANNOUNCE = {
+        # From libtransmission/transmission.h:
+        # /* we won't (announce,scrape) this torrent to this tracker because
+        #  * the torrent is stopped, or because of an error, or whatever */
+        0: 'inactive',
+        # /* we will (announce,scrape) this torrent to this tracker, and are
+        #  * waiting for enough time to pass to satisfy the tracker's interval */
+        1: 'waiting',
+        # /* it's time to (announce,scrape) this torrent, and we're waiting on a
+        #  * a free slot to open up in the announce manager */
+        2: 'queued',
+        # /* we're (announcing,scraping) this torrent right now */
+        3: 'announcing',
+    }
+    _STATES_SCRAPE = {0: 'inactive', 1: 'waiting', 2: 'queued', 3: 'scraping'}
+
+    @staticmethod
+    def _error_announce(tracker):
+        msg = tracker['lastAnnounceResult'] if tracker['hasAnnounced'] else ''
+        return '' if msg == 'Success' else msg
+
+    @staticmethod
+    def _error_scrape(tracker):
+        msg = tracker['lastScrapeResult'] if tracker['hasScraped'] else ''
+        return '' if msg == 'Success' else msg
+
+    def __new__(cls, raw_torrent):
         return super().__new__(cls,
-            ({'id': tracker['id'],
-              'url-announce': utils.URL(tracker['announce'])}
-             for tracker in t['trackers'])
+            (ttypes.TorrentTracker(
+                (utils.LazyDict({
+                    'tid'              : raw_torrent['id'],
+                    'tname'            : raw_torrent['name'],
+                    'id'               : tracker['id'],
+                    'tier'             : tracker['tier'],
+                    'url-announce'     : lambda: utils.URL(tracker['announce']),
+                    'url-scrape'       : lambda: utils.URL(tracker['scrape']),
+                    'state-announce'   : cls._STATES_ANNOUNCE[tracker['announceState']],
+                    'state-scrape'     : cls._STATES_SCRAPE[tracker['scrapeState']],
+                    'error-announce'   : lambda: cls._error_announce(tracker),
+                    'error-scrape'     : lambda: cls._error_scrape(tracker),
+                }))) for tracker in raw_torrent['trackerStats'])
         )
 
 
@@ -314,7 +350,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
     'size-piece'        : ('pieceSize',),
 
-    'trackers'          : ('trackers',),
+    'trackers'          : ('trackerStats',),
     'error'             : ('errorString', 'error'),
     'peers'             : ('peers', 'totalSize', 'name'),
 
