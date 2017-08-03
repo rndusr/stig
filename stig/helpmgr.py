@@ -364,10 +364,12 @@ class HelpManager():
         from .client.filters.tfilter import SingleTorrentFilter
         from .client.filters.ffilter import SingleTorrentFileFilter
         from .client.filters.pfilter import SingleTorrentPeerFilter
+        from .client.filters.trkfilter import SingleTrackerFilter
 
         for caption,filt in (('TORRENT FILTERS', SingleTorrentFilter),
-                             ('TORRENT FILE FILTERS', SingleTorrentFileFilter),
-                             ('TORRENT PEER FILTERS', SingleTorrentPeerFilter)):
+                             ('FILE FILTERS', SingleTorrentFileFilter),
+                             ('PEER FILTERS', SingleTorrentPeerFilter),
+                             ('TRACKER FILTERS', SingleTrackerFilter)):
             lines += ['', '\t%s' % caption]
             lines.append('\t\tBOOLEAN FILTERS')
             for fname,f in sorted(filt.BOOLEAN_FILTERS.items()):
