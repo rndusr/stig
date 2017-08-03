@@ -300,6 +300,52 @@ class ListPeersCmd(base.ListPeersCmdbase,
             return False
 
 
+class ListTrackersCmd(base.ListTrackersCmdbase,
+                      mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+    srvapi = ExpectedResource
+    async def make_trklist(self, torfilter, trkfilter, sort, columns):
+        response = await self.make_request(
+            self.srvapi.torrent.torrents(torfilter, keys=('name', 'trackers')),
+            quiet=True)
+        torrents = response.torrents
+
+        if len(torrents) < 1:
+            return False
+
+        if trkfilter is None:
+            filter_trackers = lambda trackers: trackers
+        else:
+            filter_trackers = lambda trackers: trkfilter.apply(trackers)
+
+        trklist = []
+        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+            trklist.extend(filter_trackers(torrent['trackers']))
+
+        sort.apply(trklist, inplace=True)
+
+        if trklist:
+            from ...views.trklist import COLUMNS as TRKLIST_COLUMNS
+            _print_table(trklist, columns, TRKLIST_COLUMNS)
+            return True
+        else:
+            filter_is_relevant = lambda f: f and str(f) != 'all'
+
+            if filter_is_relevant(trkfilter):
+                errmsg = 'No matching trackers'
+            else:
+                errmsg = 'No trackers'
+
+            if filter_is_relevant(torfilter):
+                errmsg += ' in %s torrents' % torfilter
+
+            if filter_is_relevant(trkfilter):
+                errmsg += ': %s' % trkfilter
+
+            log.error(errmsg)
+            return False
+
+
 class TorrentsDetailsCmd(base.TorrentDetailsCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
