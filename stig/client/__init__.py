@@ -20,10 +20,12 @@ from .utils import Response
 
 from .sorters.tsorter import TorrentSorter
 from .sorters.psorter import TorrentPeerSorter
+from .sorters.trksorter import TorrentTrackerSorter
 
 from .filters.tfilter import TorrentFilter
 from .filters.ffilter import TorrentFileFilter
 from .filters.pfilter import TorrentPeerFilter
+from .filters.trkfilter import TorrentTrackerFilter
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
