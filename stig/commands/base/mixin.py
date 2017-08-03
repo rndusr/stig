@@ -115,3 +115,44 @@ class get_peer_columns():
             if col not in COLUMNS:
                 raise ValueError('Unknown column name: {}'.format(col))
         return cols
+
+
+
+class get_tracker_sorter():
+    def get_tracker_sorter(self, args):
+        """Return TorrentTrackerSorter instance or None
+
+        If `args` evaluates to True, it is passed to TorrentTrackerSorter and
+        the result is returned.
+
+        If `args` evaluates to False, None is returned.
+        """
+        if args:
+            from ...client import TorrentTrackerSorter
+            return TorrentTrackerSorter(utils.listify_args(args))
+
+class get_tracker_filter():
+    def get_tracker_filter(self, FILTER):
+        """Return TorrentTrackerFilter instance or None
+
+        If `FILTER` evaluates to True, it is passed to TorrentTrackerFilter and
+        the resulting object is returned.
+
+        If `FILTER` evaluates to False, None is returned.
+        """
+        if FILTER:
+            from ...client import TorrentTrackerFilter
+            return TorrentTrackerFilter(FILTER)
+
+class get_tracker_columns():
+    def get_tracker_columns(self, columns):
+        """Check if each item in iterable `columns` is a valid tracker list column name
+
+        Raise ValueError or return a new list of `columns`.
+        """
+        from ...views.trklist import COLUMNS
+        cols = utils.listify_args(columns)
+        for col in cols:
+            if col not in COLUMNS:
+                raise ValueError('Unknown column name: {}'.format(col))
+        return cols
