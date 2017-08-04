@@ -23,9 +23,9 @@ from ..table import Table
 from .flist_columns import TUICOLUMNS
 from ...views.flist import (create_directory_data, create_directory_name)
 
-COLUMNS_FOCUS_MAP = {}
+_COLUMNS_FOCUS_MAP = {}
 for col in TUICOLUMNS.values():
-    COLUMNS_FOCUS_MAP.update(col.style.focus_map)
+    _COLUMNS_FOCUS_MAP.update(col.style.focus_map)
 
 
 class FileWidget(urwid.WidgetWrap):
@@ -152,7 +152,7 @@ class FileTreeDecorator(ArrowTree):
         file_widget = self._filewidgetcls(data, row)
         node_id = (data['tid'], data['id'])
         self._widgets[node_id] = file_widget
-        return urwid.AttrMap(file_widget, attr_map=None, focus_map=COLUMNS_FOCUS_MAP)
+        return urwid.AttrMap(file_widget, attr_map=None, focus_map=_COLUMNS_FOCUS_MAP)
 
     def update(self, torrents):
         widgets = self._widgets

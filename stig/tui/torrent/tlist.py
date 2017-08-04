@@ -21,9 +21,9 @@ from ..scroll import ScrollBar
 from ..table import Table
 from .tlist_columns import TUICOLUMNS
 
-COLUMNS_FOCUS_MAP = {}
+_COLUMNS_FOCUS_MAP = {}
 for col in TUICOLUMNS.values():
-    COLUMNS_FOCUS_MAP.update(col.style.focus_map)
+    _COLUMNS_FOCUS_MAP.update(col.style.focus_map)
 
 
 class TorrentListItemWidget(urwid.WidgetWrap):
@@ -32,7 +32,7 @@ class TorrentListItemWidget(urwid.WidgetWrap):
         self._tid = torrent['id']
         self._cells = cells
         self.update(torrent)
-        row = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=COLUMNS_FOCUS_MAP),
+        row = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=_COLUMNS_FOCUS_MAP),
                             'torrentlist', 'torrentlist.focused')
         super().__init__(row)
 
