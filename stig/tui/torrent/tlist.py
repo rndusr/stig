@@ -71,8 +71,9 @@ class TorrentListWidget(urwid.WidgetWrap):
         self._table.columns = columns
 
         self._torrents = ()
-        self._walker = urwid.SimpleFocusListWalker([])
-        self._listbox = tui.keymap.wrap(urwid.ListBox, context='torrentlist')(self._walker)
+        self._listbox = tui.keymap.wrap(urwid.ListBox, context='torrentlist')(
+            urwid.SimpleFocusListWalker([])
+        )
         self._marked = set()
 
         listbox_sb = urwid.AttrMap(
@@ -121,7 +122,7 @@ class TorrentListWidget(urwid.WidgetWrap):
         # Remember focused torrent
         focused_tw = self.focused_torrent_widget
 
-        walker = self._walker
+        walker = self._listbox.body
         tdict = {t['id']:t for t in self._torrents}
         dead_tws = []
         for tw in walker:  # tw = TorrentListItemWidget
@@ -165,9 +166,9 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     def clear(self):
         """Remove all list items"""
-        for tw in tuple(self._walker):
+        for tw in tuple(self._listbox.body):
             tw.torrent.clearcache()
-            self._walker.remove(tw)
+            self._listbox.body.remove(tw)
         tui.srvapi.treqpool.poll()
 
     def update(self):
