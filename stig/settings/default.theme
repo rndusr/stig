@@ -428,56 +428,56 @@ filelist.priority.shun.focused             dark blue              on $flist_bg.f
 
 
 $plist_bg = black
-peerlist                                      default              on $plist_bg
-peerlist.focused                              default              on $plist_bg
-peerlist.header                               light gray,underline on $plist_bg
+peerlist                                   default              on $plist_bg
+peerlist.focused                           default              on $plist_bg
+peerlist.header                            light gray,underline on $plist_bg
 
-$name_fg = light gray
-peerlist.torrent.header                       $name_fg,underline on $plist_bg
-peerlist.torrent.unfocused                    $name_fg           on $plist_bg
+$torrent_fg = light gray
+peerlist.torrent.header                    $torrent_fg,underline on $plist_bg
+peerlist.torrent.unfocused                 $torrent_fg           on $plist_bg
 
 $ip_fg = light gray
-peerlist.ip.header                            $ip_fg,underline on $plist_bg
-peerlist.ip.unfocused                         $ip_fg           on $plist_bg
+peerlist.ip.header                         $ip_fg,underline on $plist_bg
+peerlist.ip.unfocused                      $ip_fg           on $plist_bg
 
 $port_fg = light gray
-peerlist.port.header                          $port_fg,underline on $plist_bg
-peerlist.port.unfocused                       $port_fg           on $plist_bg
+peerlist.port.header                       $port_fg,underline on $plist_bg
+peerlist.port.unfocused                    $port_fg           on $plist_bg
 
 $client_fg = dark magenta
-peerlist.client.header                        $client_fg,underline on $plist_bg
-peerlist.client.unfocused                     $client_fg           on $plist_bg
+peerlist.client.header                     $client_fg,underline on $plist_bg
+peerlist.client.unfocused                  $client_fg           on $plist_bg
 
 $progress_fg = dark blue
 $progress_hl = light blue
-peerlist.progress.header                      $progress_fg,underline on $plist_bg
-peerlist.progress.unfocused                   $progress_fg           on $plist_bg
-peerlist.progress.highlighted.unfocused       $progress_hl           on $plist_bg
+peerlist.progress.header                   $progress_fg,underline on $plist_bg
+peerlist.progress.unfocused                $progress_fg           on $plist_bg
+peerlist.progress.highlighted.unfocused    $progress_hl           on $plist_bg
 
 $rate-down_fg = dark cyan
 $rate-down_hl = light cyan
-peerlist.rate-down.header                     $rate-down_fg,underline on $plist_bg
-peerlist.rate-down.unfocused                  $rate-down_fg           on $plist_bg
-peerlist.rate-down.highlighted.unfocused      $rate-down_hl           on $plist_bg
+peerlist.rate-down.header                  $rate-down_fg,underline on $plist_bg
+peerlist.rate-down.unfocused               $rate-down_fg           on $plist_bg
+peerlist.rate-down.highlighted.unfocused   $rate-down_hl           on $plist_bg
 
 $rate-up_fg = dark green
 $rate-up_hl = light green
-peerlist.rate-up.header                       $rate-up_fg,underline on $plist_bg
-peerlist.rate-up.unfocused                    $rate-up_fg           on $plist_bg
-peerlist.rate-up.highlighted.unfocused        $rate-up_hl           on $plist_bg
+peerlist.rate-up.header                    $rate-up_fg,underline on $plist_bg
+peerlist.rate-up.unfocused                 $rate-up_fg           on $plist_bg
+peerlist.rate-up.highlighted.unfocused     $rate-up_hl           on $plist_bg
 
 $rate-est_fg = dark green
 $rate-est_hl = light green
-peerlist.rate-est.header                      $rate-est_fg,underline on $plist_bg
-peerlist.rate-est.unfocused                   $rate-est_fg           on $plist_bg
-peerlist.rate-est.highlighted.unfocused       $rate-est_hl           on $plist_bg
+peerlist.rate-est.header                   $rate-est_fg,underline on $plist_bg
+peerlist.rate-est.unfocused                $rate-est_fg           on $plist_bg
+peerlist.rate-est.highlighted.unfocused    $rate-est_hl           on $plist_bg
 
 $eta_fg = brown
 $eta_hl = yellow
-peerlist.eta.header                           $eta_fg,underline on $plist_bg
-peerlist.eta.unfocused                        $eta_fg           on $plist_bg
-peerlist.eta.highlighted.unfocused            $eta_hl           on $plist_bg
+peerlist.eta.header                        $eta_fg,underline on $plist_bg
+peerlist.eta.unfocused                     $eta_fg           on $plist_bg
+peerlist.eta.highlighted.unfocused         $eta_hl           on $plist_bg
 
 $country_fg = dark red
-peerlist.country.header                       $country_fg,underline on $plist_bg
-peerlist.country.unfocused                    $country_fg           on $plist_bg
+peerlist.country.header                    $country_fg,underline on $plist_bg
+peerlist.country.unfocused                 $country_fg           on $plist_bg
