@@ -26,7 +26,7 @@ class PeerListItemWidget(urwid.WidgetWrap):
         super().__init__(urwid.AttrMap(cells, 'peerlist'))
 
     def update(self, peer):
-        for widget in self._cells.original_widget.widgets:
+        for widget in self._cells.widgets:
             widget.update(peer)
         self._peer = peer
 
@@ -121,7 +121,7 @@ class PeerListWidget(urwid.WidgetWrap):
         # Any peers that haven't been used to update an existing peer widget are new
         for pid in pdict:
             self._table.register(pid)
-            row = urwid.AttrMap(self._table.get_row(pid), attr_map='peerlist')
+            row = self._table.get_row(pid)
             walker.append(PeerListItemWidget(pdict[pid], row))
 
         # Sort peers
