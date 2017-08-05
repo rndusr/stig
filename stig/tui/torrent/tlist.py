@@ -20,43 +20,11 @@ from .. import main as tui
 from ..scroll import ScrollBar
 from ..table import Table
 from .tlist_columns import TUICOLUMNS
+from . import make_ItemWidget_class
 
-_COLUMNS_FOCUS_MAP = {}
-for col in TUICOLUMNS.values():
-    _COLUMNS_FOCUS_MAP.update(col.style.focus_map)
-
-
-class TorrentListItemWidget(urwid.WidgetWrap):
-    def __init__(self, torrent, cells):
-        self._torrent = torrent
-        self._tid = torrent['id']
-        self._cells = cells
-        self.update(torrent)
-        row = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=_COLUMNS_FOCUS_MAP),
-                            'torrentlist', 'torrentlist.focused')
-        super().__init__(row)
-
-    def update(self, torrent):
-        for widget in self._cells.widgets:
-            widget.update(torrent)
-        self._torrent = torrent
-
-    @property
-    def torrent_id(self):
-        return self._tid
-
-    @property
-    def torrent(self):
-        return self._torrent
-
-    @property
-    def is_marked(self):
-        return self._cells.marked.is_marked
-
-    @is_marked.setter
-    def is_marked(self, is_marked):
-        self._cells.marked.is_marked = bool(is_marked)
-
+TorrentItemWidget = make_ItemWidget_class('Torrent', TUICOLUMNS,
+                                          unfocused='torrentlist',
+                                          focused='torrentlist.focused')
 
 class TorrentListWidget(urwid.WidgetWrap):
     def __init__(self, sort=None, tfilter=None, columns=[], title=None):
@@ -125,8 +93,8 @@ class TorrentListWidget(urwid.WidgetWrap):
         walker = self._listbox.body
         tdict = {t['id']:t for t in self._torrents}
         dead_tws = []
-        for tw in walker:  # tw = TorrentListItemWidget
-            tid = tw.torrent_id
+        for tw in walker:  # tw = TorrentItemWidget
+            tid = tw.id
             try:
                 # Update existing torrent widget with new data
                 tw.update(tdict[tid])
@@ -143,7 +111,7 @@ class TorrentListWidget(urwid.WidgetWrap):
 
         # Any torrents that haven't been used to update an existing torrent are new
         if tdict:
-            widgetcls = tui.keymap.wrap(TorrentListItemWidget, context='torrent')
+            widgetcls = tui.keymap.wrap(TorrentItemWidget, context='torrent')
             for tid in tdict:
                 self._table.register(tid)
                 row = self._table.get_row(tid)
@@ -152,22 +120,22 @@ class TorrentListWidget(urwid.WidgetWrap):
         # Sort torrents
         if self._sort is not None:
             self._sort.apply(walker,
-                            item_getter=lambda tw: tw.torrent,
+                            item_getter=lambda tw: tw.item,
                             inplace=True)
 
         # If necessary, re-focus previously focused torrent
         if focused_tw is not None and self.focused_torrent_widget is not None and \
-           focused_tw.torrent_id != self.focused_torrent_widget.torrent_id:
-            focused_tid = focused_tw.torrent_id
+           focused_tw.id != self.focused_torrent_widget.id:
+            focused_tid = focused_tw.id
             for i,tw in enumerate(walker):
-                if tw.torrent_id == focused_tid:
+                if tw.id == focused_tid:
                     self._listbox.focus_position = i
                     break
 
     def clear(self):
         """Remove all list items"""
         for tw in tuple(self._listbox.body):
-            tw.torrent.clearcache()
+            tw.item.clearcache()
             self._listbox.body.remove(tw)
         tui.srvapi.treqpool.poll()
 
@@ -230,7 +198,7 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def focused_torrent_id(self):
-        return self._listbox.focus.torrent['id']
+        return self._listbox.focus.id
 
     @property
     def focus_position(self):
@@ -250,7 +218,7 @@ class TorrentListWidget(urwid.WidgetWrap):
 
     @property
     def marked(self):
-        """Generator that yields TorrentListItemWidgets"""
+        """Generator that yields TorrentItemWidgets"""
         yield from self._marked
 
     def _set_mark(self, mark, toggle=False, all=False):
