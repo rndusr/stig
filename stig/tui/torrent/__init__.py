@@ -100,4 +100,58 @@ class CellWidgetBase(urwid.WidgetWrap):
         return None
 
 
+def make_ItemWidget_class(item_name, tui_columns, unfocused, focused=None):
+    """Return class to be used for rows in Torrent/File/Peer/... lists"""
+    clsattrs = {'palette_unfocused': unfocused,
+                'palette_focused': focused}
+
+    if focused:
+        # List items are focusable - create focus map that maps <unfocused> ->
+        # <focused> that we can later use in __init__ for an AttrMap wrapper
+        # around the whole row.
+        COLUMNS_FOCUS_MAP = {}
+        for col in tui_columns.values():
+            COLUMNS_FOCUS_MAP.update(col.style.focus_map)
+        clsattrs['COLUMNS_FOCUS_MAP'] = COLUMNS_FOCUS_MAP
+
+    def __init__(self, item, cells):
+        self._item = item    # Info of torrent/tracker/file/peer/...
+        self._cells = cells  # Group instance that combines widgets horizontally
+
+        if hasattr(self, 'COLUMNS_FOCUS_MAP'):
+            # Item is focusable
+            row = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=self.COLUMNS_FOCUS_MAP),
+                                self.palette_unfocused, self.palette_focused)
+        else:
+            # Item is not focusable
+            row = urwid.AttrMap(cells, self.palette_unfocused)
+        urwid.WidgetWrap.__init__(self, row)
+
+        # Initialize cell widgets
+        self.update(item)
+    clsattrs['__init__'] = __init__
+
+    def update(self, item):
+        for widget in self._cells.widgets:
+            widget.update(item)
+        self._item = item
+    clsattrs['update'] = update
+
+    def id(self):
+        return self._item['id']
+    clsattrs['id'] = property(id)
+
+    def item(self):
+        return self._item
+    clsattrs['item'] = property(item)
+
+    def is_marked_getter(self):
+        return self._cells.marked.is_marked
+    def is_marked_setter(self, is_marked):
+        self._cells.marked.is_marked = bool(is_marked)
+    clsattrs['is_marked'] = property(fget=is_marked_getter, fset=is_marked_setter)
+
+    return type(item_name+'ItemWidget', (urwid.WidgetWrap,), clsattrs)
+
+
 from . import hooks
