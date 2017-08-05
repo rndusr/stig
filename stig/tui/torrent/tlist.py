@@ -139,11 +139,6 @@ class TorrentListWidget(urwid.WidgetWrap):
             self._listbox.body.remove(tw)
         tui.srvapi.treqpool.poll()
 
-    def update(self):
-        """Call `clear` and then poll immediately"""
-        self.clear()
-        tui.srvapi.treqpool.poll()
-
     @property
     def sort(self):
         return self._sort
