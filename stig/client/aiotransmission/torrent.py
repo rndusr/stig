@@ -277,7 +277,7 @@ class TrackerList(tuple):
                 (utils.LazyDict({
                     'tid'              : raw_torrent['id'],
                     'tname'            : raw_torrent['name'],
-                    'id'               : tracker['id'],
+                    'id'               : (raw_torrent['id'], tracker['id']),
                     'tier'             : tracker['tier'],
                     'url-announce'     : lambda: utils.URL(tracker['announce']),
                     'url-scrape'       : lambda: utils.URL(tracker['scrape']),

@@ -564,7 +564,7 @@ class TorrentTracker(abc.Mapping):
     TYPES = {
         'tid'              : int,
         'tname'            : SmartCmpStr,
-        'id'               : int,
+        'id'               : lambda val: val,
         'tier'             : int,
         'url-announce'     : utils.URL,
         'url-scrape'       : utils.URL,
@@ -578,6 +578,7 @@ class TorrentTracker(abc.Mapping):
     }
 
     _MODIFIERS = {
+        'id'     : lambda self: hash((self['tid'], self['url-announce'])),
         'domain' : lambda self: self['url-announce'].domain,
         'state'  : lambda self: self['state-announce'] or self['state-scrape'],
         'error'  : lambda self: self['error-announce'] or self['error-scrape'],
