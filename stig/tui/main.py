@@ -21,7 +21,8 @@ from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
 # Keybindings
 #
 
-KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'filelist', 'file', 'peerlist')
+KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'filelist', 'file',
+                   'peerlist', 'trackerlist', 'tracker')
 
 from ..settings.defaults import DEFAULT_KEYMAP
 from .keymap import KeyMap
