@@ -129,7 +129,7 @@ class FileTreeDecorator(ArrowTree):
         file_widget = self._filewidgetcls(data, row)
         node_id = (data['tid'], data['id'])
         self._widgets[node_id] = file_widget
-        return urwid.AttrMap(file_widget, attr_map=None, focus_map=FileItemWidget.COLUMNS_FOCUS_MAP)
+        return file_widget
 
     def update(self, torrents):
         widgets = self._widgets
@@ -262,7 +262,7 @@ class FileListWidget(urwid.WidgetWrap):
         """Focused FileItemWidget instance"""
         focused = self._listbox.focus
         if focused is not None:
-            return focused.original_widget
+            return focused
 
     @property
     def focused_torrent_id(self):
@@ -287,7 +287,7 @@ class FileListWidget(urwid.WidgetWrap):
         ft = self._filetree
         lb = self._listbox
         def recurse(subpos):
-            widget = lb.body[subpos].original_widget
+            widget = lb.body[subpos]
             if ft.is_leaf(subpos):
                 yield (subpos, widget)
             else:
@@ -323,7 +323,7 @@ class FileListWidget(urwid.WidgetWrap):
                 mark = not focused.is_marked
 
         def get_widget(pos):
-            return self._listbox.body[pos].original_widget
+            return self._listbox.body[pos]
 
         def mark_leaves(pos, mark):
             get_widget(pos).is_marked = mark
