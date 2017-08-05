@@ -21,7 +21,7 @@ from .. import (InitCommand, ExpectedResource)
 # Import tui module only on demand
 def _get_KEYMAP_CONTEXTS():
     from ...tui.main import KEYMAP_CONTEXTS
-    return KEYMAP_CONTEXTS
+    return sorted(KEYMAP_CONTEXTS)
 
 
 class BindCmd(metaclass=InitCommand):
