@@ -22,46 +22,23 @@ from ..scroll import ScrollBar
 from ..table import Table
 from .flist_columns import TUICOLUMNS
 from ...views.flist import (create_directory_data, create_directory_name)
+from . import make_ItemWidget_class
 
-_COLUMNS_FOCUS_MAP = {}
-for col in TUICOLUMNS.values():
-    _COLUMNS_FOCUS_MAP.update(col.style.focus_map)
-
-
-class FileWidget(urwid.WidgetWrap):
-    def __init__(self, tfile, row):
-        self._cells = row
-        super().__init__(urwid.AttrMap(row, 'filelist', 'filelist.focused'))
-        self.update(tfile)
-
-    def update(self, tfile):
-        for widget in self._cells.widgets:
-            widget.update(tfile)
-        self._tfile = tfile
-
+class FileItemWidget(make_ItemWidget_class('_File', TUICOLUMNS,
+                                           unfocused='filelist',
+                                           focused='filelist.focused')):
     @property
     def torrent_id(self):
-        return self._tfile['tid']
+        return self._item['tid']
 
     @property
     def file_id(self):
-        return self._tfile['id']
-
-    @property
-    def is_marked(self):
-        return self._cells.marked.is_marked
-
-    @is_marked.setter
-    def is_marked(self, is_marked):
-        self._cells.marked.is_marked = bool(is_marked)
+        return self._item['id']
 
     @property
     def nodetype(self):
         """'parent' or 'leaf'"""
-        return self._tfile.nodetype
-
-    def __repr__(self):
-        return '<{} {!r}>'.format(type(self).__name__, self._tfile['name'])
+        return self._item.nodetype
 
 
 from urwidtrees.decoration import ArrowTree
@@ -69,7 +46,7 @@ class FileTreeDecorator(ArrowTree):
     """urwidtrees decorator for TorrentFiles and TorrentFileTrees"""
 
     def __init__(self, torrents, keymap, table, ffilter):
-        self._filewidgetcls = keymap.wrap(FileWidget, context='file')
+        self._filewidgetcls = keymap.wrap(FileItemWidget, context='file')
         self._table = table
         self._ffilter = ffilter
         self._widgets = {}
@@ -147,12 +124,12 @@ class FileTreeDecorator(ArrowTree):
         decowidget.update = update_method
         row.replace('name', decowidget)
 
-        # Wrap the whole row in a FileWidget with keymapping.  This also
+        # Wrap the whole row in a FileItemWidget with keymapping.  This also
         # applies all the other values besides the name (size, progress, etc).
         file_widget = self._filewidgetcls(data, row)
         node_id = (data['tid'], data['id'])
         self._widgets[node_id] = file_widget
-        return urwid.AttrMap(file_widget, attr_map=None, focus_map=_COLUMNS_FOCUS_MAP)
+        return urwid.AttrMap(file_widget, attr_map=None, focus_map=FileItemWidget.COLUMNS_FOCUS_MAP)
 
     def update(self, torrents):
         widgets = self._widgets
@@ -282,7 +259,7 @@ class FileListWidget(urwid.WidgetWrap):
 
     @property
     def focused_file(self):
-        """Focused FileWidget instance"""
+        """Focused FileItemWidget instance"""
         focused = self._listbox.focus
         if focused is not None:
             return focused.original_widget
@@ -336,7 +313,7 @@ class FileListWidget(urwid.WidgetWrap):
 
     @property
     def marked(self):
-        """Generator that yields FileWidgets"""
+        """Generator that yields FileItemWidgets"""
         yield from self._marked
 
     def _set_mark(self, mark, toggle=False, all=False):
