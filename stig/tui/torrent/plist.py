@@ -16,28 +16,10 @@ from .. import main as tui
 from ..scroll import ScrollBar
 from ..table import Table
 from .plist_columns import TUICOLUMNS
+from . import make_ItemWidget_class
 
 
-class PeerListItemWidget(urwid.WidgetWrap):
-    def __init__(self, peer, cells):
-        self._peer = peer
-        self._cells = cells
-        self.update(peer)
-        super().__init__(urwid.AttrMap(cells, 'peerlist'))
-
-    def update(self, peer):
-        for widget in self._cells.widgets:
-            widget.update(peer)
-        self._peer = peer
-
-    @property
-    def pid(self):
-        return self._peer['id']
-
-    @property
-    def peer(self):
-        return self._peer
-
+PeerItemWidget = make_ItemWidget_class('Peer', TUICOLUMNS, unfocused='peerlist')
 
 class PeerListWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tfilter, pfilter, columns, sort=None, title=None):
@@ -104,8 +86,8 @@ class PeerListWidget(urwid.WidgetWrap):
         pdict = self._peers
         walker = self._listbox.body
         dead_pws = []
-        for pw in walker:  # pw = PeerListItemWidget
-            pid = pw.pid
+        for pw in walker:  # pw = PeerItemWidget
+            pid = pw.id
             try:
                 # Update existing peer widget with new data
                 pw.update(pdict[pid])
@@ -122,12 +104,12 @@ class PeerListWidget(urwid.WidgetWrap):
         for pid in pdict:
             self._table.register(pid)
             row = self._table.get_row(pid)
-            walker.append(PeerListItemWidget(pdict[pid], row))
+            walker.append(PeerItemWidget(pdict[pid], row))
 
         # Sort peers
         if self._sort is not None:
             self._sort.apply(walker,
-                            item_getter=lambda pw: pw.peer,
+                            item_getter=lambda pw: pw.item,
                             inplace=True)
 
     def clear(self):
