@@ -36,7 +36,7 @@ DEFAULT_TLIST_COLUMNS   = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
                            'seeds', 'connections', 'status', 'eta', 'progress',
                            'rate-down', 'rate-up', 'name')
 DEFAULT_FLIST_COLUMNS   = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
-DEFAULT_TRKLIST_COLUMNS = ('domain', 'tier', 'error')
+DEFAULT_TRKLIST_COLUMNS = ('tier', 'domain', 'state', 'error')
 
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:
