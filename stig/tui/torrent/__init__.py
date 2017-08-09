@@ -141,6 +141,11 @@ def make_ItemWidget_class(item_name, tui_columns, unfocused, focused=None):
         return self._item['id']
     clsattrs['id'] = property(id)
 
+    def torrent_id(self):
+        item = self._item
+        return item['tid'] if 'tid' in item else item['id']
+    clsattrs['torrent_id'] = property(torrent_id)
+
     def item(self):
         return self._item
     clsattrs['item'] = property(item)
