@@ -15,46 +15,30 @@ log = make_logger(__name__)
 import urwid
 from collections import abc
 
-from .. import main as tui
-
 from ..scroll import ScrollBar
 from ..table import Table
 from .tlist_columns import TUICOLUMNS
-from . import make_ItemWidget_class
+from . import (make_ItemWidget_class, ListWidgetBase)
 
 TorrentItemWidget = make_ItemWidget_class('Torrent', TUICOLUMNS,
                                           unfocused='torrentlist',
                                           focused='torrentlist.focused')
 
-class TorrentListWidget(urwid.WidgetWrap):
-    def __init__(self, sort=None, tfilter=None, columns=[], title=None):
-        self._sort = sort
-        self._sort_orig = sort
+class TorrentListWidget(ListWidgetBase):
+    TUICOLUMNS = TUICOLUMNS
+    ListItemClass = TorrentItemWidget
+    keymap_context = 'torrent'
+    palette_name = 'torrentlist'
+
+    def __init__(self, srvapi, keymap, tfilter=None, sort=None, columns=None, title=None):
+        super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._tfilter = tfilter
-        self._columns = columns
-        self._title_base = title
-        self.title_updater = None
-
-        self._table = Table(**TUICOLUMNS)
-        self._table.columns = columns
-
-        self._torrents = ()
-        self._listbox = tui.keymap.wrap(urwid.ListBox, context='torrentlist')(
-            urwid.SimpleFocusListWalker([])
-        )
-        self._marked = set()
-
-        listbox_sb = urwid.AttrMap(
-            ScrollBar(urwid.AttrMap(self._listbox, 'torrentlist')),
-            'scrollbar'
-        )
-        pile = urwid.Pile([
-            ('pack', urwid.AttrMap(self._table.headers, 'torrentlist.header')),
-            listbox_sb
-        ])
-        super().__init__(pile)
-
         self._register_request()
+
+    @property
+    def id(self):
+        """Hashable object that is unique among all torrent lists"""
+        return repr(self)
 
     def _register_request(self):
         # Get keys needed for sort order, tfilter and columns
@@ -67,174 +51,44 @@ class TorrentListWidget(urwid.WidgetWrap):
             keys.extend(TUICOLUMNS[colname].needed_keys)
 
         # Register new request in request pool
-        log.debug('Registering keys for %s: %s', self.id, keys)
-        tui.srvapi.treqpool.register(self.id, self._handle_tlist,
-                                     keys=keys,
-                                     tfilter=self._tfilter)
-        tui.srvapi.treqpool.poll()
+        log.debug('Registering keys for %r: %s', self, keys)
+        self._srvapi.treqpool.register(self.id,
+                                       self._handle_torrents,
+                                       keys=keys, tfilter=self._tfilter)
+        self._srvapi.treqpool.poll()
 
-    def _handle_tlist(self, torrents):
-        self._torrents = tuple(torrents)
-        if self.title_updater is not None:
-            # First argument can be cropped if too long, second argument is fixed
-            self.title_updater(self.title, ' [%d]' % self.count)
-        self._invalidate()
-
-    def render(self, size, focus=False):
-        if self._torrents is not None:
-            self._update_listitems()
-            self._torrents = None
-        return super().render(size, focus)
-
-    def _update_listitems(self):
-        # Remember focused torrent
-        focused_tw = self.focused_torrent_widget
-
-        walker = self._listbox.body
-        tdict = {t['id']:t for t in self._torrents}
-        dead_tws = []
-        for tw in walker:  # tw = TorrentItemWidget
-            tid = tw.id
-            try:
-                # Update existing torrent widget with new data
-                tw.update(tdict[tid])
-                del tdict[tid]
-            except KeyError:
-                # Torrent has been removed
-                dead_tws.append(tw)
-
-        # Remove list items that don't exist in self._torrents anymore
-        marked = self._marked
-        for tw in dead_tws:
-            walker.remove(tw)
-            marked.discard(tw)  # List items are also stored in self._marked
-
-        # Any torrents that haven't been used to update an existing torrent are new
-        if tdict:
-            widgetcls = tui.keymap.wrap(TorrentItemWidget, context='torrent')
-            for tid in tdict:
-                self._table.register(tid)
-                row = self._table.get_row(tid)
-                walker.append(widgetcls(tdict[tid], row))
-
-        # Sort torrents
-        if self._sort is not None:
-            self._sort.apply(walker,
-                            item_getter=lambda tw: tw.item,
-                            inplace=True)
-
-        # If necessary, re-focus previously focused torrent
-        if focused_tw is not None and self.focused_torrent_widget is not None and \
-           focused_tw.id != self.focused_torrent_widget.id:
-            focused_tid = focused_tw.id
-            for i,tw in enumerate(walker):
-                if tw.id == focused_tid:
-                    self._listbox.focus_position = i
-                    break
+    def _handle_torrents(self, torrents):
+        self._items = {t['id']:t for t in torrents}
+        super()._invalidate()
 
     def clear(self):
         """Remove all list items"""
-        for tw in tuple(self._listbox.body):
-            tw.item.clearcache()
-            self._listbox.body.remove(tw)
-        tui.srvapi.treqpool.poll()
+        for w in self._listbox.body:
+            w.item.clearcache()
+        super().clear()
+        self._srvapi.treqpool.poll()
 
     @property
     def sort(self):
+        """TorrentSorter object (set to `None` to restore original sort order)"""
         return self._sort
 
     @sort.setter
     def sort(self, sort):
-        tui.srvapi.treqpool.remove(self.id)
-        if sort == 'RESET':
-            self._sort = self._sort_orig
-        else:
-            self._sort = sort
+        self._srvapi.treqpool.remove(self.id)
+        ListWidgetBase.sort.fset(self, sort)
         self._register_request()
 
     @property
-    def title(self):
-        if self._title_base is None:
+    def title_name(self):
+        if self._title is None:
             if self._tfilter is None:
-                title = ['<all>']
+                return '<all>'
             elif isinstance(self._tfilter, abc.Sequence):
-                title = ['<handpicked>']
+                # tfilter is a sequence of torrent IDs that can be impractically
+                # large to display in the tab title
+                return '<handpicked>'
             else:
-                title = [str(self._tfilter)]
+                return str(self._tfilter)
         else:
-            title = [self._title_base]
-
-        if self._sort is not None:
-            sortstr = str(self._sort)
-            if sortstr is not self._sort.DEFAULT_SORT:
-                title.append('{%s}' % sortstr)
-
-        return ' '.join(title)
-
-    @property
-    def count(self):
-        """Number of listed torrents"""
-        # If this method was called before rendering, the contents of the
-        # listbox widget are inaccurate and we have to use self._torrents.
-        # But if we're called after rendering, self._torrents is reset to
-        # None.
-        if self._torrents is not None:
-            return len(self._torrents)
-        else:
-            return len(self._listbox.body)
-
-    @property
-    def id(self):
-        return 'tlist%s:%s' % (id(self), self.title)
-
-    @property
-    def focused_torrent_widget(self):
-        return self._listbox.focus
-
-    @property
-    def focused_torrent_id(self):
-        return self._listbox.focus.id
-
-    @property
-    def focus_position(self):
-        return self._listbox.focus_position
-
-    @focus_position.setter
-    def focus_position(self, focus_position):
-        self._listbox.focus_position = min(focus_position, len(self._listbox.body)-1)
-
-    def mark(self, toggle=False, all=False):
-        """Mark the currently focused item or all items"""
-        self._set_mark(True, toggle=toggle, all=all)
-
-    def unmark(self, toggle=False, all=False):
-        """Unmark the currently focused item or all items"""
-        self._set_mark(False, toggle=toggle, all=all)
-
-    @property
-    def marked(self):
-        """Generator that yields TorrentItemWidgets"""
-        yield from self._marked
-
-    def _set_mark(self, mark, toggle=False, all=False):
-        if toggle and self.focused_torrent_widget is not None:
-            mark = not self.focused_torrent_widget.is_marked
-
-        for widget in self._select_items_for_marking(all):
-            widget.is_marked = mark
-            if mark:
-                self._marked.add(widget)
-            else:
-                self._marked.discard(widget)
-
-    def _select_items_for_marking(self, all):
-        if self.focused_torrent_widget is not None:
-            if all:
-                yield from self._listbox.body
-            else:
-                yield self.focused_torrent_widget
-
-    def refresh_marks(self):
-        """Redraw the "marked" column in all rows"""
-        for widget in self._listbox.body:
-            widget.is_marked = widget.is_marked
+            return ListWidgetBase.title_name.fget(self)
