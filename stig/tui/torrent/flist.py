@@ -17,30 +17,11 @@ import urwidtrees
 from collections import abc
 import builtins
 
-from .. import main as tui
-from ..scroll import ScrollBar
-from ..table import Table
 from .flist_columns import TUICOLUMNS
+from . import (make_ItemWidget_class, ListWidgetBase)
+
+
 from ...views.flist import (create_directory_data, create_directory_name)
-from . import make_ItemWidget_class
-
-class FileItemWidget(make_ItemWidget_class('_File', TUICOLUMNS,
-                                           unfocused='filelist',
-                                           focused='filelist.focused')):
-    @property
-    def torrent_id(self):
-        return self._item['tid']
-
-    @property
-    def file_id(self):
-        return self._item['id']
-
-    @property
-    def nodetype(self):
-        """'parent' or 'leaf'"""
-        return self._item.nodetype
-
-
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
     """urwidtrees decorator for TorrentFiles and TorrentFileTrees"""
@@ -159,44 +140,50 @@ class FileTreeDecorator(ArrowTree):
         yield from self._widgets.values()
 
 
-class FileListWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tfilter, ffilter, columns, title=None):
-        self._ffilter = ffilter
-        self._torrents = ()
-        self._marked = set()
-        self._initialized = False
+class FileItemWidget(make_ItemWidget_class('_File', TUICOLUMNS,
+                                           unfocused='filelist',
+                                           focused='filelist.focused')):
+    @property
+    def torrent_id(self):
+        return self._item['tid']
 
-        # Create the fixed part of the title (everything minus the number of files listed)
-        # If title is not given, create one from filters
+    @property
+    def file_id(self):
+        return self._item['id']
+
+    @property
+    def nodetype(self):
+        """'parent' or 'leaf'"""
+        return self._item.nodetype
+
+
+class FileListWidget(ListWidgetBase):
+    TUICOLUMNS = TUICOLUMNS
+    ListItemClass = FileItemWidget
+    keymap_context = 'file'
+    palette_name = 'filelist'
+
+    def __init__(self, srvapi, keymap, tfilter, ffilter, columns=None, title=None):
+        # If title is not given, create the static part of the title (file
+        # filter + torrent filter)
         if title is None:
             tfilter_str = str(tfilter or 'all')
             if ffilter is None:
                 title = tfilter_str
             else:
                 title = '%s files of %s torrents' % (ffilter, tfilter_str)
-        self._title_base = title
-        self.title_updater = None
 
-        self._table = Table(**TUICOLUMNS)
-        self._table.columns = columns
+        super().__init__(srvapi, keymap, columns=columns, title=title)
 
-        self._listbox = tui.keymap.wrap(urwid.ListBox, context='filelist')(urwid.SimpleListWalker([]))
+        self._tfilter = tfilter
+        self._ffilter = ffilter
+        self._initialized = False
 
-        listbox_sb = urwid.AttrMap(
-            ScrollBar(urwid.AttrMap(self._listbox, 'filelist')),
-            'scrollbar'
-        )
-        pile = urwid.Pile([
-            ('pack', urwid.AttrMap(self._table.headers, 'filelist.header')),
-            listbox_sb
-        ])
-        super().__init__(pile)
+        self._poller = self._srvapi.create_poller(
+            self._srvapi.torrent.torrents, tfilter, keys=('files', 'name'))
+        self._poller.on_response(self._handle_files)
 
-        self._poller = srvapi.create_poller(
-            srvapi.torrent.torrents, tfilter, keys=('files', 'name'))
-        self._poller.on_response(self._handle_response)
-
-    def _handle_response(self, response):
+    def _handle_files(self, response):
         if response is None or not response.torrents:
             self.clear()
         else:
@@ -204,44 +191,40 @@ class FileListWidget(urwid.WidgetWrap):
                 self._update_listitems(response.torrents)
             else:
                 self._init_listitems(response.torrents)
-        if self.title_updater is not None:
-            # First argument can be cropped if too long, second argument is fixed
-            self.title_updater(self.title, ' [%d]' % self.count)
         self._invalidate()
 
     def _init_listitems(self, torrents):
         self.clear()
         if torrents:
-            self._filetree = FileTreeDecorator(torrents, tui.keymap,
+            self._filetree = FileTreeDecorator(torrents, self._keymap,
                                                self._table, self._ffilter)
             self._listbox.body = urwidtrees.widgets.TreeListWalker(self._filetree)
             self._listbox._invalidate()
             self._initialized = True
 
-    def _update_listitems(self, torrents):
+    def _update_listitems(self, torrents=()):
         if torrents:
             self._filetree.update(torrents)
 
     def clear(self):
-        """Remove all list items"""
-        self._table.clear()
+        # We can't call super().clear() because it runs `self._listbox.body[:] = ()`,
+        # which work here because urwidtrees.TreeListWalker doesn't support item assignment.
         self._listbox.body = urwid.SimpleListWalker([])
         self._listbox._invalidate()
         self._initialized = False
+        self._table.clear()
+        self._marked.clear()
 
-    @property
-    def title(self):
-        return self._title_base
+    # def update(self):
+    #     """Call `clear` and then poll immediately"""
+    #     # TODO: Doesn't look like we need this method
+    #     self.clear()
+    #     self._poller.poll()
+
 
     @property
     def count(self):
-        """Number of listed files"""
         return self._filetree.filecount if hasattr(self, '_filetree') else 0
-
-    def update(self):
-        """Call `clear` and then poll immediately"""
-        self.clear()
-        self._poller.poll()
 
     @property
     def focus_position(self):
@@ -258,29 +241,16 @@ class FileListWidget(urwid.WidgetWrap):
             pass
 
     @property
-    def focused_file(self):
-        """Focused FileItemWidget instance"""
-        focused = self._listbox.focus
-        if focused is not None:
-            return focused
-
-    @property
-    def focused_torrent_id(self):
-        """Torrent ID of the focused file's torrent"""
-        focused = self.focused_file
-        if focused is not None:
-            return focused.torrent_id
-
-    @property
     def focused_file_ids(self):
         """File IDs of the focused files in a tuple"""
-        focused = self.focused_file
+        focused = self.focused_widget
         if focused is not None:
             # The focused widget in the list can be a file or a directory.  If
             # it's a directory, the 'file_id' property returns the IDs of all
             # the contained files recursively.
             fid = focused.file_id
             return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
+
 
     def all_children(self, pos):
         """Yield (position, widget) tuples of all sub-nodes (leaves and parents)"""
@@ -303,22 +273,9 @@ class FileListWidget(urwid.WidgetWrap):
 
         yield from recurse(pos)
 
-    def mark(self, toggle=False, all=False):
-        """Mark the currently focused item or all items"""
-        self._set_mark(True, toggle=toggle, all=all)
-
-    def unmark(self, toggle=False, all=False):
-        """Unmark the currently focused item or all items"""
-        self._set_mark(False, toggle=toggle, all=all)
-
-    @property
-    def marked(self):
-        """Generator that yields FileItemWidgets"""
-        yield from self._marked
-
     def _set_mark(self, mark, toggle=False, all=False):
         if toggle:
-            focused = self.focused_file
+            focused = self.focused_widget
             if focused is not None:
                 mark = not focused.is_marked
 
@@ -337,7 +294,8 @@ class FileListWidget(urwid.WidgetWrap):
                         self._marked.discard(widget)
 
                 elif widget.nodetype == 'parent':
-                    mark_leaves(subpos, mark)
+                    if pos != subpos:  # Avoid infinite recursion
+                        mark_leaves(subpos, mark)
 
         if all:
             # Top ancestor node positions are (0,), (1,), (3,) etc
@@ -369,6 +327,5 @@ class FileListWidget(urwid.WidgetWrap):
             parpos = self._filetree.parent_position(parpos)
 
     def refresh_marks(self):
-        """Redraw the "marked" column in all rows"""
         for widget in self._filetree.widgets:
             widget.is_marked = widget.is_marked
