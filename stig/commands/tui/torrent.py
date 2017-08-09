@@ -117,6 +117,32 @@ class ListPeersCmd(base.ListPeersCmdbase,
         return True
 
 
+class ListTrackersCmd(base.ListTrackersCmdbase,
+                      mixin.make_request, mixin.select_torrents, mixin.generate_tab_title):
+    provides = {'tui'}
+    tui = ExpectedResource
+    srvapi = ExpectedResource
+
+    async def make_trklist(self, torfilter, trkfilter, sort, columns):
+        make_titlew = partial(make_tab_title_widget,
+                              attr_unfocused='tabs.trackerlist.unfocused',
+                              attr_focused='tabs.trackerlist.focused')
+
+        title_str = await self.generate_tab_title(torfilter)
+
+        from ...tui.torrent.trklist import TrackerListWidget
+        trklistw = TrackerListWidget(self.srvapi, self.tui.keymap,
+                                     torfilter=torfilter, trkfilter=trkfilter,
+                                     sort=sort, columns=columns, title=title_str)
+        tabid = self.tui.tabs.load(make_titlew(trklistw.title), trklistw)
+
+        def set_tab_title(text, count):
+            self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
+        trklistw.title_updater = set_tab_title
+
+        return True
+
+
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                         mixin.select_torrents, mixin.make_request,
                         mixin.generate_tab_title):
