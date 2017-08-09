@@ -79,10 +79,11 @@ class select_torrents():
         raised.
 
         Torrents are discovered by getting the:
-            - `focused_torrent` attribute in this command's object (e.g. set
-              by the 'tab' command),
-            - `focused_torrent` attribute of the focused tab's widget
-              (e.g. TorrentListWidget),
+            - `torrent_id` attribute in this command's object (e.g. set by the
+              'tab' command),
+            - `marked` attribute of the focused tab's widget
+              (e.g. TorrentListWidget), which must be an iterable of objects
+              with an `id` attribute that returns a torrent ID
             - `focused_torrent_id` attribute of the focused tab's widget
               (e.g. FileListWidget).
         """
@@ -102,23 +103,24 @@ class select_torrents():
                 raise ValueError('No torrent specified')
 
     def _find_torrent_ids(self):
-        focused_widget = self.tui.tabs.focus
-
         # Get torrent ID from attribute set by 'tab' command (this happens if
         # for example when you run 'tab filelist' while a torrent is focused)
-        if hasattr(self, 'focused_torrent_id'):
-            return (self.focused_torrent_id,)
+        if hasattr(self, 'torrent_id'):
+            return (self.torrent_id,)
 
-        # Get torrent IDs from marks
+        focused_widget = self.tui.tabs.focus
+
+        # Get torrent IDs from marked items
         if hasattr(focused_widget, 'marked'):
-            tids = tuple(twidget.torrent_id for twidget in focused_widget.marked)
+            tids = tuple(twidget.id for twidget in focused_widget.marked)
             if tids:
                 return tids
 
-        # Get torrent ID from widget in focused tab (e.g. file lists)
-        if hasattr(focused_widget, 'focused_torrent_id') and \
-           focused_widget.focused_torrent_id is not None:
-            return (focused_widget.focused_torrent_id,)
+        # Get torrent ID from widget in focused tab (e.g. FileListWidget)
+        if hasattr(focused_widget, 'focused_torrent_id'):
+            tid = focused_widget.focused_torrent_id
+            if tid is not None:
+                return (tid,)
 
 
 class select_files():
