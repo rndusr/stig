@@ -37,6 +37,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.select_torrents, mixin.generate_tab_title):
     provides = {'tui'}
     tui = ExpectedResource
+    srvapi = ExpectedResource
 
     async def make_tlist(self, tfilter, sort, columns):
         if 'marked' not in columns:
