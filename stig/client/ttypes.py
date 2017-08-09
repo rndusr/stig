@@ -548,7 +548,7 @@ class TorrentPeer(abc.Mapping):
                 self._cache[key] = self.TYPES[key](val)
         return self._cache[key]
 
-    def __repr__(self): return '<{} {}@{}>'.format(type(self).__name__, self['ip'], self['progress'])
+    def __repr__(self): return '<{} #{}, {}>'.format(type(self).__name__, self['tid'], self['ip'])
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
 
