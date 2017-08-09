@@ -388,10 +388,10 @@ filelist.marked.focused                    $marked_fg           on $flist_bg.f
 $file_fg = light gray
 $folder_fg = white
 filelist.name.header                       light gray,underline on $flist_bg.uf
-filelist.name.file.unfocused               $file_fg           on $flist_bg.uf
-filelist.name.file.focused                 $file_fg           on $flist_bg.f
-filelist.name.folder.unfocused             $folder_fg         on $flist_bg.uf
-filelist.name.folder.focused               $folder_fg         on $flist_bg.f
+filelist.name.file.unfocused               $file_fg             on $flist_bg.uf
+filelist.name.file.focused                 $file_fg             on $flist_bg.f
+filelist.name.folder.unfocused             $folder_fg           on $flist_bg.uf
+filelist.name.folder.focused               $folder_fg           on $flist_bg.f
 
 $size_fg = dark magenta
 filelist.size.header                       $size_fg,underline on $flist_bg.uf
