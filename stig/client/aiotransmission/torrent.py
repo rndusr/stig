@@ -350,7 +350,7 @@ DEPENDENCIES = {
     'size-corrupt'      : ('corruptEver',),
     'size-piece'        : ('pieceSize',),
 
-    'trackers'          : ('trackerStats',),
+    'trackers'          : ('trackerStats', 'name', 'id'),
     'error'             : ('errorString', 'error'),
     'peers'             : ('peers', 'totalSize', 'name'),
 
