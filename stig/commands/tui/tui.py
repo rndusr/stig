@@ -284,13 +284,18 @@ class TabCmd(metaclass=InitCommand):
         elif close is not False:
             tabs.remove(i_close)
 
-        # Remember which torrent is focused in current tab so we can provide
-        # it to the command running in a new tab.
+        # User may specify a custom title for new tab
         cmdargs = {'title': title} if title else {}
-        try:
-            cmdargs['focused_torrent_id'] = tabs.focus.focused_torrent_id
-        except AttributeError:
-            pass
+
+        # Find out which torrent is focused in current tab so we can provide it
+        # to the command running in a new tab.
+        focused_content = tabs.focus
+        if focused_content is not None:
+            for attr in ('focused_torrent_id', 'focused_id'):
+                torrent_id = getattr(tabs.focus, attr)
+                if torrent_id is not None:
+                    cmdargs['torrent_id'] = torrent_id
+                    break
 
         if close is False and close_all is False and focus is None:
             titlew = make_tab_title_widget(title or 'Empty tab',
