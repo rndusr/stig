@@ -50,8 +50,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         title_str = await self.generate_tab_title(tfilter)
 
         from ...tui.torrent.tlist import TorrentListWidget
-        tlistw = TorrentListWidget(tfilter=tfilter, sort=sort, columns=columns,
-                                   title=title_str)
+        tlistw = TorrentListWidget(self.srvapi, self.tui.keymap, tfilter=tfilter,
+                                   sort=sort, columns=columns, title=title_str)
         tabid = self.tui.tabs.load(make_titlew(tlistw.title), tlistw)
 
         def set_tab_title(text, count):
@@ -79,8 +79,9 @@ class ListFilesCmd(base.ListFilesCmdbase,
         title_str = await self.generate_tab_title(tfilter)
 
         from ...tui.torrent.flist import FileListWidget
-        flistw = FileListWidget(self.srvapi, tfilter, ffilter, columns,
-                                title=title_str)
+        flistw = FileListWidget(self.srvapi, self.tui.keymap,
+                                tfilter=tfilter, ffilter=ffilter,
+                                columns=columns, title=title_str)
         tabid = self.tui.tabs.load(make_titlew(flistw.title), flistw)
 
         def set_tab_title(text, count):
@@ -104,7 +105,8 @@ class ListPeersCmd(base.ListPeersCmdbase,
         title_str = await self.generate_tab_title(tfilter)
 
         from ...tui.torrent.plist import PeerListWidget
-        plistw = PeerListWidget(self.srvapi, tfilter=tfilter, pfilter=pfilter,
+        plistw = PeerListWidget(self.srvapi, self.tui.keymap,
+                                tfilter=tfilter, pfilter=pfilter,
                                 sort=sort, columns=columns, title=title_str)
         tabid = self.tui.tabs.load(make_titlew(plistw.title), plistw)
 
