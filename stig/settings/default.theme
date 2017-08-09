@@ -52,6 +52,8 @@ tabs.filelist.unfocused       light magenta on dark gray
 tabs.filelist.focused         black         on dark magenta
 tabs.peerlist.unfocused       light green   on dark gray
 tabs.peerlist.focused         black         on dark green
+tabs.trackerlist.unfocused    white         on dark gray
+tabs.trackerlist.focused      black         on light gray
 tabs.help.unfocused           yellow        on dark gray
 tabs.help.focused             black         on yellow
 
@@ -481,3 +483,45 @@ peerlist.eta.highlighted.unfocused         $eta_hl           on $plist_bg
 $country_fg = dark red
 peerlist.country.header                    $country_fg,underline on $plist_bg
 peerlist.country.unfocused                 $country_fg           on $plist_bg
+
+
+$trklist_bg.uf = black
+$trklist_bg.f  = dark gray
+trackerlist                                default              on $trklist_bg.uf
+trackerlist.focused                        default              on $trklist_bg.f
+trackerlist.header                         light gray,underline on $trklist_bg.uf
+
+$torrent_fg = light gray
+trackerlist.torrent.header                 $torrent_fg,underline on $trklist_bg.uf
+trackerlist.torrent.unfocused              $tracker_fg           on $trklist_bg.uf
+trackerlist.torrent.focused                $tracker_fg           on $trklist_bg.f
+
+$tier_fg = brown
+trackerlist.tier.header                    $tier_fg,underline on $trklist_bg.uf
+trackerlist.tier.unfocused                 $tier_fg           on $trklist_bg.uf
+trackerlist.tier.focused                   $tier_fg           on $trklist_bg.f
+
+$domain_fg = dark magenta
+trackerlist.domain.header                  $domain_fg,underline on $trklist_bg.uf
+trackerlist.domain.unfocused               $domain_fg           on $trklist_bg.uf
+trackerlist.domain.focused                 $domain_fg           on $trklist_bg.f
+
+$announce_fg = light blue
+trackerlist.announce.header                $announce_fg,underline on $trklist_bg.uf
+trackerlist.announce.unfocused             $announce_fg           on $trklist_bg.uf
+trackerlist.announce.focused               $announce_fg           on $trklist_bg.f
+
+$scrape_fg = light blue
+trackerlist.scrape.header                  $scrape_fg,underline on $trklist_bg.uf
+trackerlist.scrape.unfocused               $scrape_fg           on $trklist_bg.uf
+trackerlist.scrape.focused                 $scrape_fg           on $trklist_bg.f
+
+$state_fg = dark cyan
+trackerlist.state.header                   $state_fg,underline on $trklist_bg.uf
+trackerlist.state.unfocused                $state_fg           on $trklist_bg.uf
+trackerlist.state.focused                  $state_fg           on $trklist_bg.f
+
+$error_fg = dark red
+trackerlist.error.header                   $error_fg,underline on $trklist_bg.uf
+trackerlist.error.unfocused                $error_fg           on $trklist_bg.uf
+trackerlist.error.focused                  $error_fg           on $trklist_bg.f
