@@ -159,7 +159,6 @@ class ItemWidgetBase(urwid.WidgetWrap):
 
 
 
-from .. import main as tui
 from ..table import Table
 from ..scroll import ScrollBar
 
