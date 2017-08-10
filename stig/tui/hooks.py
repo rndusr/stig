@@ -14,12 +14,12 @@ from functools import partial
 from ..main import (cfg, srvapi, aioloop)
 from . import main as tui
 
-from .torrent.tlist import TorrentListWidget
-from .torrent.flist import FileListWidget
-from .torrent.plist import PeerListWidget
+from .views.torrentlist import TorrentListWidget
+from .views.filelist import FileListWidget
+from .views.peerlist import PeerListWidget
 
-from .torrent.tlist_columns import TUICOLUMNS as TCOLUMNS
-from .torrent.flist_columns import TUICOLUMNS as FCOLUMNS
+from .views.tlist_columns import TUICOLUMNS as TORRENT_COLUMNS
+from .views.flist_columns import TUICOLUMNS as FILE_COLUMNS
 
 
 def _connect_to_new_url(url):
@@ -90,8 +90,8 @@ cfg['tui.theme'].on_change(_set_theme)
 
 
 def _set_tui_marked_char(methodname, setting):
-    getattr(TCOLUMNS['marked'], methodname)(setting.value)
-    getattr(FCOLUMNS['marked'], methodname)(setting.value)
+    getattr(TORRENT_COLUMNS['marked'], methodname)(setting.value)
+    getattr(FILE_COLUMNS['marked'], methodname)(setting.value)
 
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget)):

@@ -49,7 +49,7 @@ def mksection(title, width, items):
 
 
 _sections = []
-from ...views.tdetails import SECTIONS
+from ...views.summary import SECTIONS
 for section in SECTIONS:
     sectionw = mksection(**section)
     _sections.append(sectionw)

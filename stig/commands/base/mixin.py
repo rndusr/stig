@@ -49,7 +49,7 @@ class get_torrent_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.tlist import COLUMNS
+        from ...views.torrentlist import COLUMNS
         cols = utils.listify_args(columns)
         for col in tuple(cols):
             if col not in COLUMNS:
@@ -68,7 +68,7 @@ class get_file_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.flist import COLUMNS
+        from ...views.filelist import COLUMNS
         cols = utils.listify_args(columns)
         for col in cols:
             if col not in COLUMNS:
@@ -109,7 +109,7 @@ class get_peer_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.plist import COLUMNS
+        from ...views.peerlist import COLUMNS
         cols = utils.listify_args(columns)
         for col in cols:
             if col not in COLUMNS:
@@ -150,7 +150,7 @@ class get_tracker_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.trklist import COLUMNS
+        from ...views.trackerlist import COLUMNS
         cols = utils.listify_args(columns)
         for col in cols:
             if col not in COLUMNS:

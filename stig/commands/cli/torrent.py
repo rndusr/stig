@@ -161,10 +161,10 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
     async def make_tlist(self, tfilter, sort, columns):
-        from ...views.tlist import COLUMNS as TLIST_COLUMNS
+        from ...views.torrentlist import COLUMNS as TORRENT_COLUMNS
 
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
-        columns = self.only_supported_columns(columns, TLIST_COLUMNS)
+        columns = self.only_supported_columns(columns, TORRENT_COLUMNS)
 
         # Get wanted torrents and sort them
         if tfilter is None:
@@ -172,14 +172,14 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         else:
             keys = set(sort.needed_keys + tfilter.needed_keys)
         for colname in columns:
-            keys.update(TLIST_COLUMNS[colname].needed_keys)
+            keys.update(TORRENT_COLUMNS[colname].needed_keys)
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilter, keys=keys),
             quiet=True)
         torrents = sort.apply(response.torrents)
 
         if torrents:
-            _print_table(torrents, columns, TLIST_COLUMNS)
+            _print_table(torrents, columns, TORRENT_COLUMNS)
         return len(torrents) > 0
 
 
@@ -203,10 +203,10 @@ class ListFilesCmd(base.ListFilesCmdbase,
             filelist.extend(files)
 
         if filelist:
-            from ...views.flist import COLUMNS as FLIST_COLUMNS
+            from ...views.filelist import COLUMNS as FILE_COLUMNS
             # Remove columns that aren't supported by CLI interface (e.g. 'marked')
-            columns = self.only_supported_columns(columns, FLIST_COLUMNS)
-            _print_table(filelist, columns, FLIST_COLUMNS)
+            columns = self.only_supported_columns(columns, FILE_COLUMNS)
+            _print_table(filelist, columns, FILE_COLUMNS)
             return True
         else:
             if str(tfilter) != 'all':
@@ -232,7 +232,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 node['name'] = '%s%s' % ('  '*(_indent_level), node['name'])
             indent_directory_name = indent_file_name
 
-        from ...views.flist import create_directory_data
+        from ...views.filelist import create_directory_data
         flist = []
         filtered_count = 0
         for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
@@ -279,8 +279,8 @@ class ListPeersCmd(base.ListPeersCmdbase,
         sort.apply(peerlist, inplace=True)
 
         if peerlist:
-            from ...views.plist import COLUMNS as PLIST_COLUMNS
-            _print_table(peerlist, columns, PLIST_COLUMNS)
+            from ...views.peerlist import COLUMNS as PEER_COLUMNS
+            _print_table(peerlist, columns, PEER_COLUMNS)
             return True
         else:
             filter_is_relevant = lambda f: f and str(f) != 'all'
@@ -325,8 +325,8 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
         sort.apply(trklist, inplace=True)
 
         if trklist:
-            from ...views.trklist import COLUMNS as TRKLIST_COLUMNS
-            _print_table(trklist, columns, TRKLIST_COLUMNS)
+            from ...views.trackerlist import COLUMNS as TRACKER_COLUMNS
+            _print_table(trklist, columns, TRACKER_COLUMNS)
             return True
         else:
             filter_is_relevant = lambda f: f and str(f) != 'all'
@@ -355,7 +355,7 @@ class TorrentsDetailsCmd(base.TorrentDetailsCmdbase,
         if tid is None:
             return False
 
-        from ...views.tdetails import SECTIONS
+        from ...views.summary import SECTIONS
         needed_keys = set(('name',))
         for _section in SECTIONS:
             for _item in _section['items']:
@@ -377,7 +377,7 @@ class TorrentsDetailsCmd(base.TorrentDetailsCmdbase,
         return True
 
     def _human_readable(self, torrent):
-        from ...views.tdetails import SECTIONS
+        from ...views.summary import SECTIONS
 
         label_width = max(len(item.label)
                           for section in SECTIONS
@@ -389,7 +389,7 @@ class TorrentsDetailsCmd(base.TorrentDetailsCmdbase,
                 log.info('  %s: %s', item.label.rjust(label_width), item.human_readable(torrent))
 
     def _machine_readable(self, torrent):
-        from ...views.tdetails import SECTIONS
+        from ...views.summary import SECTIONS
 
         for section in SECTIONS:
             for item in section['items']:

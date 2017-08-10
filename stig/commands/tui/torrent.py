@@ -49,7 +49,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
 
         title_str = await self.generate_tab_title(tfilter)
 
-        from ...tui.torrent.tlist import TorrentListWidget
+        from ...tui.views.torrentlist import TorrentListWidget
         tlistw = TorrentListWidget(self.srvapi, self.tui.keymap, tfilter=tfilter,
                                    sort=sort, columns=columns, title=title_str)
         tabid = self.tui.tabs.load(make_titlew(tlistw.title), tlistw)
@@ -78,7 +78,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
         title_str = await self.generate_tab_title(tfilter)
 
-        from ...tui.torrent.flist import FileListWidget
+        from ...tui.views.filelist import FileListWidget
         flistw = FileListWidget(self.srvapi, self.tui.keymap,
                                 tfilter=tfilter, ffilter=ffilter,
                                 columns=columns, title=title_str)
@@ -104,7 +104,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
 
         title_str = await self.generate_tab_title(tfilter)
 
-        from ...tui.torrent.plist import PeerListWidget
+        from ...tui.views.peerlist import PeerListWidget
         plistw = PeerListWidget(self.srvapi, self.tui.keymap,
                                 tfilter=tfilter, pfilter=pfilter,
                                 sort=sort, columns=columns, title=title_str)
@@ -130,7 +130,7 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
 
         title_str = await self.generate_tab_title(torfilter)
 
-        from ...tui.torrent.trklist import TrackerListWidget
+        from ...tui.views.trackerlist import TrackerListWidget
         trklistw = TrackerListWidget(self.srvapi, self.tui.keymap,
                                      torfilter=torfilter, trkfilter=trkfilter,
                                      sort=sort, columns=columns, title=title_str)
@@ -159,7 +159,7 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                               attr_focused='tabs.torrentdetails.focused')
 
         title_str = await self.generate_tab_title(tfilter)
-        from ...tui.torrent.tdetails import TorrentDetailsWidget
+        from ...tui.views.summary import TorrentDetailsWidget
         TorrentDetailsWidget_keymapped = self.tui.keymap.wrap(TorrentDetailsWidget,
                                                               context='torrent')
         detailsw = TorrentDetailsWidget_keymapped(self.srvapi, tid, title=title_str)
@@ -221,8 +221,8 @@ class SortCmdbase(metaclass=InitCommand):
 
         if ORDER:
             # Find appropriate sorter class for focused list
-            from ...tui.torrent.tlist import TorrentListWidget
-            from ...tui.torrent.plist import PeerListWidget
+            from ...tui.views.torrentlist import TorrentListWidget
+            from ...tui.views.peerlist import PeerListWidget
             if isinstance(current_tab, TorrentListWidget):
                 sortcls = self.TorrentSorter
             elif isinstance(current_tab, PeerListWidget):

@@ -21,7 +21,7 @@ from .flist_columns import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase)
 
 
-from ...views.flist import (create_directory_data, create_directory_name)
+from ...views.filelist import (create_directory_data, create_directory_name)
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
     """urwidtrees decorator for TorrentFiles and TorrentFileTrees"""

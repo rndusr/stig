@@ -15,7 +15,7 @@ import urwid
 
 from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
-from ...views.plist import COLUMNS as _COLUMNS
+from ...views.peerlist import COLUMNS as _COLUMNS
 
 
 TUICOLUMNS = {}

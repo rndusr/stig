@@ -12,9 +12,9 @@
 """General hooks that are always needed regardless of the interface"""
 
 from .main import (cfg, srvapi)
-from .views.tlist import COLUMNS as TCOLUMNS
-from .views.flist import COLUMNS as FCOLUMNS
-from .views.plist import COLUMNS as PCOLUMNS
+from .views.torrentlist import COLUMNS as TORRENT_COLUMNS
+from .views.filelist import COLUMNS as FILE_COLUMNS
+from .views.peerlist import COLUMNS as PEER_COLUMNS
 
 
 def _set_rpc_timeout(timeout):
@@ -30,16 +30,16 @@ cfg['srv.url'].on_change(_set_rpc_url)
 def _set_bandwidth_unit(unit):
     srvapi.bandwidth_unit = unit.value
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
-    TCOLUMNS['rate-up'].set_unit(u)
-    TCOLUMNS['rate-down'].set_unit(u)
-    TCOLUMNS['rate-limit-up'].set_unit(u)
-    TCOLUMNS['rate-limit-down'].set_unit(u)
+    TORRENT_COLUMNS['rate-up'].set_unit(u)
+    TORRENT_COLUMNS['rate-down'].set_unit(u)
+    TORRENT_COLUMNS['rate-limit-up'].set_unit(u)
+    TORRENT_COLUMNS['rate-limit-down'].set_unit(u)
 
-    PCOLUMNS['rate-up'].set_unit(u)
-    PCOLUMNS['rate-down'].set_unit(u)
-    PCOLUMNS['rate-est'].set_unit(u)
+    PEER_COLUMNS['rate-up'].set_unit(u)
+    PEER_COLUMNS['rate-down'].set_unit(u)
+    PEER_COLUMNS['rate-est'].set_unit(u)
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
-_set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TCOLUMNS[...].set_unit()
+_set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
 
 def _set_bandwidth_prefix(prefix):
@@ -50,15 +50,15 @@ cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 def _set_size_unit(unit):
     srvapi.size_unit = unit.value
     u = {'bit': 'b', 'byte': 'B'}[unit.value]
-    TCOLUMNS['size'].set_unit(u)
-    TCOLUMNS['downloaded'].set_unit(u)
-    TCOLUMNS['uploaded'].set_unit(u)
-    TCOLUMNS['available'].set_unit(u)
+    TORRENT_COLUMNS['size'].set_unit(u)
+    TORRENT_COLUMNS['downloaded'].set_unit(u)
+    TORRENT_COLUMNS['uploaded'].set_unit(u)
+    TORRENT_COLUMNS['available'].set_unit(u)
 
-    FCOLUMNS['size'].set_unit(u)
-    FCOLUMNS['downloaded'].set_unit(u)
+    FILE_COLUMNS['size'].set_unit(u)
+    FILE_COLUMNS['downloaded'].set_unit(u)
 cfg['unit.size'].on_change(_set_size_unit)
-_set_size_unit(cfg['unit.size'])  # Initially call TCOLUMNS[...].set_unit()
+_set_size_unit(cfg['unit.size'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
 
 def _set_size_prefix(prefix):

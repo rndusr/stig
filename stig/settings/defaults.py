@@ -16,10 +16,10 @@ import os
 from xdg import (XDG_CONFIG_HOME, XDG_CACHE_HOME)
 
 from .. import APPNAME
-from ..views.tlist import COLUMNS as TCOLUMNS
-from ..views.flist import COLUMNS as FCOLUMNS
-from ..views.plist import COLUMNS as PCOLUMNS
-from ..views.trklist import COLUMNS as TRKCOLUMNS
+from ..views.torrentlist import COLUMNS as TORRENT_COLUMNS
+from ..views.filelist import COLUMNS as FILE_COLUMNS
+from ..views.peerlist import COLUMNS as PEER_COLUMNS
+from ..views.trackerlist import COLUMNS as TRACKER_COLUMNS
 from ..client.sorters.tsorter import TorrentSorter
 from ..client.sorters.psorter import TorrentPeerSorter
 from ..client.sorters.trksorter import TorrentTrackerSorter
@@ -28,23 +28,23 @@ DEFAULT_RCFILE        = os.path.join(XDG_CONFIG_HOME, APPNAME, 'rc')
 DEFAULT_HISTORY_FILE  = os.path.join(XDG_CACHE_HOME, APPNAME, 'history')
 DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 
-DEFAULT_TLIST_SORT   = ('name',)
-DEFAULT_PLIST_SORT   = ('torrent',)
-DEFAULT_TRKLIST_SORT = ('domain',)
+DEFAULT_TORRENT_SORT = ('name',)
+DEFAULT_PEER_SORT    = ('torrent',)
+DEFAULT_TRACKER_SORT = ('domain',)
 
-DEFAULT_TLIST_COLUMNS   = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
+DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
                            'seeds', 'connections', 'status', 'eta', 'progress',
                            'rate-down', 'rate-up', 'name')
-DEFAULT_FLIST_COLUMNS   = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
-DEFAULT_TRKLIST_COLUMNS = ('tier', 'domain', 'state', 'error')
+DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
+DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error')
 
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:
-    DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
-                             'eta', 'ip', 'country', 'client')
+    DEFAULT_PEER_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
+                            'eta', 'ip', 'country', 'client')
 else:
-    DEFAULT_PLIST_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
-                             'eta', 'ip', 'client')
+    DEFAULT_PEER_COLUMNS = ('progress', 'rate-down', 'rate-up', 'rate-est',
+                            'eta', 'ip', 'client')
 
 
 def init_defaults(cfg):
@@ -66,24 +66,24 @@ def init_defaults(cfg):
                     description=('Number of seconds before connecting '
                                  'to Transmission daemon fails')),
 
-        SetValue('columns.torrents', default=DEFAULT_TLIST_COLUMNS,
-                 options=tuple(TCOLUMNS),
+        SetValue('columns.torrents', default=DEFAULT_TORRENT_COLUMNS,
+                 options=tuple(TORRENT_COLUMNS),
                  description='List of columns in new torrent lists'),
-        SetValue('columns.peers', default=DEFAULT_PLIST_COLUMNS,
-                 options=tuple(PCOLUMNS),
+        SetValue('columns.peers', default=DEFAULT_PEER_COLUMNS,
+                 options=tuple(PEER_COLUMNS),
                  description='List of columns in new peer lists'),
-        SetValue('columns.files', default=DEFAULT_FLIST_COLUMNS,
-                 options=tuple(FCOLUMNS),
+        SetValue('columns.files', default=DEFAULT_FILE_COLUMNS,
+                 options=tuple(FILE_COLUMNS),
                  description='List of columns in new torrent file lists'),
-        SetValue('columns.trackers', default=DEFAULT_TRKLIST_COLUMNS,
-                 options=tuple(TRKCOLUMNS),
+        SetValue('columns.trackers', default=DEFAULT_TRACKER_COLUMNS,
+                 options=tuple(TRACKER_COLUMNS),
                  description='List of columns in new tracker lists'),
 
-        SortOrderValue(TorrentSorter, 'sort.torrents', default=DEFAULT_TLIST_SORT,
+        SortOrderValue(TorrentSorter, 'sort.torrents', default=DEFAULT_TORRENT_SORT,
                        description='List of torrent list sort orders'),
-        SortOrderValue(TorrentPeerSorter, 'sort.peers', default=DEFAULT_PLIST_SORT,
+        SortOrderValue(TorrentPeerSorter, 'sort.peers', default=DEFAULT_PEER_SORT,
                        description='List of peer list sort orders'),
-        SortOrderValue(TorrentTrackerSorter, 'sort.trackers', default=DEFAULT_TRKLIST_SORT,
+        SortOrderValue(TorrentTrackerSorter, 'sort.trackers', default=DEFAULT_TRACKER_SORT,
                        description='List of tracker list sort orders'),
 
         PathValue('tui.theme', default=DEFAULT_THEME_FILE,

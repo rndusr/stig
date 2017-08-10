@@ -23,7 +23,7 @@ import urwid
 
 from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
-from ...views.tlist import COLUMNS as _COLUMNS
+from ...views.torrentlist import COLUMNS as _COLUMNS
 from ...client import ttypes
 
 
