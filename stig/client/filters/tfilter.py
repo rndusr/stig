@@ -120,6 +120,7 @@ class SingleTorrentFilter(Filter):
                                         aliases=('%down',)),
         'downloaded': _make_cmp_filter('size-downloaded', _desc('... number of downloaded bytes'),
                                        aliases=('down',)),
+        'error':       _make_cmp_filter('error', _desc('... error message')),
         'id':        _make_cmp_filter('id', _desc('... ID')),
         'name':      _make_cmp_filter('name', _desc('... name'),
                                       aliases=('title',)),
