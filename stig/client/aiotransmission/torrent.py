@@ -351,7 +351,7 @@ DEPENDENCIES = {
     'size-piece'        : ('pieceSize',),
 
     'trackers'          : ('trackerStats', 'name', 'id'),
-    'error'             : ('errorString', 'error'),
+    'error'             : ('errorString', 'error', 'trackerStats'),
     'peers'             : ('peers', 'totalSize', 'name'),
 
     # The RPC field 'files' is called once to initialize file names and sizes by
