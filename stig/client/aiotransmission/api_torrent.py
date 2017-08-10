@@ -60,7 +60,7 @@ class _TorrentCache():
         if ids:
             return tuple(t for tid,t in self._tdict.items() if tid in ids)
         else:
-            return tuple(t for t in self._tdict.values())
+            return tuple(self._tdict.values())
 
     def files_initialized(self, ids):
         """Wether all cached Torrents have a 'files' key"""
