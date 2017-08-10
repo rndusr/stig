@@ -536,7 +536,7 @@ class TorrentPeer(abc.Mapping):
     def __getitem__(self, key):
         if key not in self._cache:
             if key in ('eta', 'rate-est'):
-                rate, eta = _guess_peer_rate_and_eta(self['id'], self['progress']/100, self['tsize'])
+                rate, eta = _guess_peer_rate_and_eta(self['id'], self['progress'] / 100, self['tsize'])
                 self._cache['rate-est'] = self.TYPES['rate-est'](rate)
                 self._cache['eta'] = self.TYPES['eta'](eta)
 
