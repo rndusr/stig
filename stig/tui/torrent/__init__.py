@@ -73,6 +73,8 @@ class Style():
 #       share the remaining width using ('weight', x), giving some of them
 #       (e.g. name) more space than others (e.g. path).
 class CellWidgetBase(urwid.WidgetWrap):
+    """Base class for cells in items in Torrent/File/Peer/... lists"""
+
     style = collections.defaultdict(lambda: 'default')
     header = urwid.Padding(urwid.Text('NO HEADER SPECIFIED'))
     width = ('weight', 100)
