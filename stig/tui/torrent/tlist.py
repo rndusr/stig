@@ -30,10 +30,11 @@ class TorrentItemWidget(ItemWidgetBase):
 
 
 class TorrentListWidget(ListWidgetBase):
-    TUICOLUMNS = TUICOLUMNS
-    ListItemClass = TorrentItemWidget
-    keymap_context = 'torrent'
-    palette_name = 'torrentlist'
+    tuicolumns      = TUICOLUMNS
+    ListItemClass   = TorrentItemWidget
+    keymap_context  = 'torrent'
+    palette_name    = 'torrentlist'
+    focusable_items = True
 
     def __init__(self, srvapi, keymap, tfilter=None, sort=None, columns=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
@@ -53,7 +54,7 @@ class TorrentListWidget(ListWidgetBase):
         if hasattr(self._tfilter, 'needed_keys'):
             keys.extend(self._tfilter.needed_keys)
         for colname in self._columns:
-            keys.extend(TUICOLUMNS[colname].needed_keys)
+            keys.extend(self.tuicolumns[colname].needed_keys)
 
         # Register new request in request pool
         log.debug('Registering keys for %r: %s', self, keys)

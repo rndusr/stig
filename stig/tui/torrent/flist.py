@@ -164,10 +164,11 @@ class FileItemWidget(ItemWidgetBase):
 
 
 class FileListWidget(ListWidgetBase):
-    TUICOLUMNS = TUICOLUMNS
-    ListItemClass = FileItemWidget
-    keymap_context = 'file'
-    palette_name = 'filelist'
+    tuicolumns      = TUICOLUMNS
+    ListItemClass   = FileItemWidget
+    keymap_context  = 'file'
+    palette_name    = 'filelist'
+    focusable_items = True
 
     def __init__(self, srvapi, keymap, tfilter, ffilter, columns=None, title=None):
         # If title is not given, create the static part of the title (file

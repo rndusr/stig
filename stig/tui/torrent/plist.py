@@ -22,10 +22,11 @@ class PeerItemWidget(ItemWidgetBase):
 
 
 class PeerListWidget(ListWidgetBase):
-    TUICOLUMNS = TUICOLUMNS
-    ListItemClass = PeerItemWidget
-    keymap_context = 'peer'
-    palette_name = 'peerlist'
+    tuicolumns      = TUICOLUMNS
+    ListItemClass   = PeerItemWidget
+    keymap_context  = 'peer'
+    palette_name    = 'peerlist'
+    focusable_items = False
 
     def __init__(self, srvapi, keymap, tfilter=None, pfilter=None, columns=None, sort=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)

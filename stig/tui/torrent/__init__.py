@@ -161,20 +161,24 @@ class ItemWidgetBase(urwid.WidgetWrap):
 
 from ..table import Table
 from ..scroll import ScrollBar
-
 class ListWidgetBase(urwid.WidgetWrap):
-    # Derived classes must set these
-    TUICOLUMNS = NotImplemented
-    ListItemClass = NotImplemented
-    keymap_context = NotImplemented
-    palette_name = NotImplemented
+    """Base class for Torrent/File/Peer/... lists"""
 
-    # TODO: Remove all columns=[], because that [] is a singleton of that function
+    # Derived classes must set these class attributes
+    tuicolumns      = NotImplemented
+    ListItemClass   = NotImplemented
+    keymap_context  = NotImplemented
+    palette_name    = NotImplemented
+    focusable_items = False
+
     def __init__(self, srvapi, keymap, columns=None, sort=None, title=None):
         self._srvapi = srvapi
         self._keymap = keymap
-        self._ListItemClass = keymap.wrap(self.ListItemClass,
-                                              context=self.keymap_context)
+
+        if self.focusable_items:
+            self._ListItemClass = keymap.wrap(self.ListItemClass, context=self.keymap_context)
+        else:
+            self._ListItemClass = self.ListItemClass
 
         self._items = ()
         self._marked = set()
@@ -186,12 +190,14 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._title = title
         self.title_updater = None
 
-        self._table = Table(**self.TUICOLUMNS)
+        self._table = Table(**self.tuicolumns)
         self._table.columns = self._columns
 
-        self._listbox = keymap.wrap(urwid.ListBox, context=self.keymap_context + 'list')(
-            urwid.SimpleFocusListWalker([])
-        )
+        if self.focusable_items:
+            walker = urwid.SimpleFocusListWalker([])
+        else:
+            walker = urwid.SimpleListWalker([])
+        self._listbox = keymap.wrap(urwid.ListBox, context=self.keymap_context + 'list')(walker)
 
         listbox_sb = urwid.AttrMap(
             ScrollBar(urwid.AttrMap(self._listbox, self.palette_name)),
@@ -220,7 +226,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         return super().render(size, focus)
 
     def _update_listitems(self):
-        # Remember focused row in case rows get added or removed
+        # Remember focused item widget in case items get added or removed
         focusedw = self.focused_widget
 
         walker = self._listbox.body
@@ -248,8 +254,8 @@ class ListWidgetBase(urwid.WidgetWrap):
             cls = self._ListItemClass
             for tid in item_dict:
                 table.register(tid)
-                row = table.get_row(tid)
-                walker.append(cls(item_dict[tid], row))
+                itemw = table.get_row(tid)  # itemw = item widget
+                walker.append(cls(item_dict[tid], itemw))
 
         # Sort items in walker
         if self._sort is not None:
@@ -355,7 +361,7 @@ class ListWidgetBase(urwid.WidgetWrap):
                 yield self.focused_widget
 
     def refresh_marks(self):
-        """Redraw the "marked" column in all rows
+        """Redraw the "marked" column in all items widgets
 
         This shouldn't be needed unless the marked character was changed.
         """

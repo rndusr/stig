@@ -26,10 +26,11 @@ class TrackerItemWidget(ItemWidgetBase):
 
 
 class TrackerListWidget(ListWidgetBase):
-    TUICOLUMNS = TUICOLUMNS
-    ListItemClass = TrackerItemWidget
-    keymap_context = 'tracker'
-    palette_name = 'trackerlist'
+    tuicolumns      = TUICOLUMNS
+    ListItemClass   = TrackerItemWidget
+    keymap_context  = 'tracker'
+    palette_name    = 'trackerlist'
+    focusable_items = True
 
     def __init__(self, srvapi, keymap, torfilter, trkfilter, columns=None, sort=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
