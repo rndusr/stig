@@ -10,17 +10,20 @@
     * The setting 'tui.cli.history' has been renamed to 'tui.cli.history-file'
 
   Other changes:
+    * New command 'trackerlist'
+    * New contexts for keybindings: trackerlist, tracker
     * New command 'log' can clear the log, scroll up/down and append info/error
       messages to it
-    * New setting: tui.cli.history-size
     * New server settings: srv.utp, srv.dht, srv.pex, srv.lpd, srv.port,
       srv.port-forwarding, srv.limit.peers.global, srv.limit.peers.torrent,
       srv.autostart-torrents, srv.part-files, srv.encryption
+    * New setting: tui.cli.history-size
     * New default keybinding: <t+p> opens a torrent's peer list
     * <ctrl-l> now hides/shows the log instead of clearing it
     * The 'rc' command is now available on the CLI
     * The 'rc' command no longer fails if it encounters a command that is not
       supported by the active interface
+    * Foreground colors in the tab bar are now all bright in the default theme
 
   Fixed bugs:
     * In torrent details, the 'Completed' date was displayed as the unix epoch
