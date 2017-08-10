@@ -9,17 +9,21 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-
 import urwid
-from .. import main as tui
+
 from ..scroll import ScrollBar
 from ..table import Table
 from .trklist_columns import TUICOLUMNS
-from . import (make_ItemWidget_class, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase)
 
-TrackerItemWidget = make_ItemWidget_class('Tracker', TUICOLUMNS,
-                                          unfocused='trackerlist',
-                                          focused='trackerlist.focused')
+
+class TrackerItemWidget(ItemWidgetBase):
+    palette_unfocused = 'trackerlist'
+    palette_focused   ='trackerlist.focused'
+    columns_focus_map = {}
+    for col in TUICOLUMNS.values():
+        columns_focus_map.update(col.style.focus_map)
+
 
 class TrackerListWidget(ListWidgetBase):
     TUICOLUMNS = TUICOLUMNS

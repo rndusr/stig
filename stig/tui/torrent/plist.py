@@ -14,10 +14,11 @@ import urwid
 from ..scroll import ScrollBar
 from ..table import Table
 from .plist_columns import TUICOLUMNS
-from . import (make_ItemWidget_class, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase)
 
 
-PeerItemWidget = make_ItemWidget_class('Peer', TUICOLUMNS, unfocused='peerlist')
+class PeerItemWidget(ItemWidgetBase):
+    palette_unfocused = 'peerlist'
 
 
 class PeerListWidget(ListWidgetBase):

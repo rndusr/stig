@@ -102,63 +102,61 @@ class CellWidgetBase(urwid.WidgetWrap):
         return None
 
 
-def make_ItemWidget_class(item_name, tui_columns, unfocused, focused=None):
-    """Return class to be used for rows in Torrent/File/Peer/... lists"""
-    clsattrs = {'palette_unfocused': unfocused,
-                'palette_focused': focused}
+class ItemWidgetBase(urwid.WidgetWrap):
+    """Base class for items in Torrent/File/Peer/... lists"""
 
-    if focused:
-        # List items are focusable - create focus map that maps <unfocused> ->
-        # <focused> that we can later use in __init__ for an AttrMap wrapper
-        # around the whole row.
-        COLUMNS_FOCUS_MAP = {}
-        for col in tui_columns.values():
-            COLUMNS_FOCUS_MAP.update(col.style.focus_map)
-        clsattrs['COLUMNS_FOCUS_MAP'] = COLUMNS_FOCUS_MAP
+    # Derived classes must set these class attributes; lists with unfocusable
+    # items (e.g. peer lists) don't have to set palette_focused and
+    # columns_focus_map.
+    columns_focus_map = NotImplemented
+    palette_unfocused = NotImplemented
+    palette_focused   = NotImplemented
 
     def __init__(self, item, cells):
         self._item = item    # Info of torrent/tracker/file/peer/...
         self._cells = cells  # Group instance that combines widgets horizontally
 
-        if hasattr(self, 'COLUMNS_FOCUS_MAP'):
-            # Item is focusable
-            row = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=self.COLUMNS_FOCUS_MAP),
-                                self.palette_unfocused, self.palette_focused)
+        # Create focusable or unfocusable item widget
+        if self.columns_focus_map is not NotImplemented:
+            itemw = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=self.columns_focus_map),
+                                  self.palette_unfocused, self.palette_focused)
         else:
-            # Item is not focusable
-            row = urwid.AttrMap(cells, self.palette_unfocused)
-        urwid.WidgetWrap.__init__(self, row)
+            itemw = urwid.AttrMap(cells, self.palette_unfocused)
+        urwid.WidgetWrap.__init__(self, itemw)
 
         # Initialize cell widgets
         self.update(item)
-    clsattrs['__init__'] = __init__
 
     def update(self, item):
         for widget in self._cells.widgets:
             widget.update(item)
         self._item = item
-    clsattrs['update'] = update
 
+    @property
     def id(self):
+        """ID of the displayed item"""
         return self._item['id']
-    clsattrs['id'] = property(id)
 
+    @property
     def torrent_id(self):
+        """ID of the torrent the displayed item belongs to"""
         item = self._item
         return item['tid'] if 'tid' in item else item['id']
-    clsattrs['torrent_id'] = property(torrent_id)
 
+    @property
     def item(self):
+        """Displayed data in dictionary form"""
         return self._item
-    clsattrs['item'] = property(item)
 
-    def is_marked_getter(self):
+    @property
+    def is_marked(self):
+        """Whether this item has been marked by the user"""
         return self._cells.marked.is_marked
-    def is_marked_setter(self, is_marked):
-        self._cells.marked.is_marked = bool(is_marked)
-    clsattrs['is_marked'] = property(fget=is_marked_getter, fset=is_marked_setter)
 
-    return type(item_name+'ItemWidget', (urwid.WidgetWrap,), clsattrs)
+    @is_marked.setter
+    def is_marked(self, is_marked):
+        self._cells.marked.is_marked = bool(is_marked)
+
 
 
 from .. import main as tui

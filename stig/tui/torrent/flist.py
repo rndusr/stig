@@ -18,7 +18,7 @@ from collections import abc
 import builtins
 
 from .flist_columns import TUICOLUMNS
-from . import (make_ItemWidget_class, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase)
 
 
 from ...views.flist import (create_directory_data, create_directory_name)
@@ -140,9 +140,15 @@ class FileTreeDecorator(ArrowTree):
         yield from self._widgets.values()
 
 
-class FileItemWidget(make_ItemWidget_class('_File', TUICOLUMNS,
-                                           unfocused='filelist',
-                                           focused='filelist.focused')):
+
+class FileItemWidget(ItemWidgetBase):
+    palette_unfocused = 'filelist'
+    palette_focused   = 'filelist.focused'
+    columns_focus_map = {}
+    for col in TUICOLUMNS.values():
+        columns_focus_map.update(col.style.focus_map)
+
+
     @property
     def torrent_id(self):
         return self._item['tid']

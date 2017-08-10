@@ -18,11 +18,16 @@ from collections import abc
 from ..scroll import ScrollBar
 from ..table import Table
 from .tlist_columns import TUICOLUMNS
-from . import (make_ItemWidget_class, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase)
 
-TorrentItemWidget = make_ItemWidget_class('Torrent', TUICOLUMNS,
-                                          unfocused='torrentlist',
-                                          focused='torrentlist.focused')
+
+class TorrentItemWidget(ItemWidgetBase):
+    palette_unfocused = 'torrentlist'
+    palette_focused   = 'torrentlist.focused'
+    columns_focus_map = {}
+    for col in TUICOLUMNS.values():
+        columns_focus_map.update(col.style.focus_map)
+
 
 class TorrentListWidget(ListWidgetBase):
     TUICOLUMNS = TUICOLUMNS
