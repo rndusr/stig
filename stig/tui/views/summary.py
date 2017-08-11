@@ -55,7 +55,7 @@ for section in SECTIONS:
     _sections.append(sectionw)
 
 
-class TorrentDetailsWidget(urwid.WidgetWrap):
+class TorrentSummaryWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tid, title=None):
         self._title = title
         self._tid = None
@@ -79,7 +79,7 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
             grid.contents.append((section_wrapped, opts))
 
         grid_sb = urwid.AttrMap(
-            ScrollBar(urwid.AttrMap(Scrollable(grid), 'torrentdetails')),
+            ScrollBar(urwid.AttrMap(Scrollable(grid), 'torrentsummary')),
             'scrollbar'
         )
         super().__init__(grid_sb)

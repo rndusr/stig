@@ -143,31 +143,30 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
         return True
 
 
-class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
-                        mixin.select_torrents, mixin.make_request,
-                        mixin.generate_tab_title):
+class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
+                        mixin.select_torrents, mixin.make_request, mixin.generate_tab_title):
     provides = {'tui'}
     tui = ExpectedResource
 
-    async def show_details(self, tfilter):
+    async def display_summary(self, tfilter):
         tid = await self.get_torrent_id(tfilter)
         if tid is None:
             return False
 
         make_titlew = partial(make_tab_title_widget,
-                              attr_unfocused='tabs.torrentdetails.unfocused',
-                              attr_focused='tabs.torrentdetails.focused')
+                              attr_unfocused='tabs.torrentsummary.unfocused',
+                              attr_focused='tabs.torrentsummary.focused')
 
         title_str = await self.generate_tab_title(tfilter)
-        from ...tui.views.summary import TorrentDetailsWidget
-        TorrentDetailsWidget_keymapped = self.tui.keymap.wrap(TorrentDetailsWidget,
+        from ...tui.views.summary import TorrentSummaryWidget
+        TorrentSummaryWidget_keymapped = self.tui.keymap.wrap(TorrentSummaryWidget,
                                                               context='torrent')
-        detailsw = TorrentDetailsWidget_keymapped(self.srvapi, tid, title=title_str)
-        tabid = self.tui.tabs.load(make_titlew(detailsw.title), detailsw)
+        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, tid, title=title_str)
+        tabid = self.tui.tabs.load(make_titlew(summaryw.title), summaryw)
 
         def set_tab_title(text):
             self.tui.tabs.set_title(make_titlew(text), position=tabid)
-        detailsw.title_updater = set_tab_title
+        summaryw.title_updater = set_tab_title
 
         return True
 

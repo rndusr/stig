@@ -346,11 +346,11 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
             return False
 
 
-class TorrentsDetailsCmd(base.TorrentDetailsCmdbase,
-                      mixin.make_request, mixin.select_torrents):
+class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
+                         mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
-    async def show_details(self, tfilter):
+    async def display_summary(self, tfilter):
         tid = await self.get_torrent_id(tfilter)
         if tid is None:
             return False

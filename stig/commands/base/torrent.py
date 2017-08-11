@@ -384,14 +384,14 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
             return self.make_trklist(torfilter, trkfilter, sort, columns)
 
 
-class TorrentDetailsCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
-    name = 'details'
-    aliases = ('info',)
+class TorrentSummaryCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
+    name = 'summary'
+    aliases = ('info', 'details')
     provides = set()
     category = 'torrent'
     description = 'Display detailed torrent information'
-    usage = ('details',)
-    examples = ('details id=71',)
+    usage = ('summary',)
+    examples = ('summary id=71',)
     argspecs = (
         { 'names': ('TORRENT FILTER',), 'nargs': '?',
           'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
@@ -408,11 +408,11 @@ class TorrentDetailsCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
             log.error(e)
             return False
         else:
-            log.debug('Showing details of torrent %r', tfilter)
-            if asyncio.iscoroutinefunction(self.show_details):
-                return await self.show_details(tfilter)
+            log.debug('Showing summary of torrent %r', tfilter)
+            if asyncio.iscoroutinefunction(self.display_summary):
+                return await self.display_summary(tfilter)
             else:
-                return self.show_details(tfilter)
+                return self.display_summary(tfilter)
 
 
 class MoveTorrentsCmdbase(metaclass=InitCommand):

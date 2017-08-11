@@ -275,7 +275,7 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 't s',       'action': 'start --toggle'},
     {'context': 'torrent', 'key': 't S',       'action': 'start --toggle --force'},
     {'context': 'torrent', 'key': 't v',       'action': 'verify'},
-    {'context': 'torrent', 'key': 'enter',     'action': 'tab details'},
+    {'context': 'torrent', 'key': 'enter',     'action': 'tab summary'},
     {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab filelist'},
     {'context': 'torrent', 'key': 'space',     'action': 'mark --toggle --focus-next'},
     {'context': 'torrent', 'key': 'alt-space', 'action': 'mark --toggle --all'},
