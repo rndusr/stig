@@ -1,12 +1,14 @@
 2017-??-?? ?.?.?
   Breaking changes:
+    * The 'details' command has been renamed to 'summary' ('details' still still
+      works as an alias)
     * The default keybindings to start/stop torrents have changed from <t+p> and
       <t+P> to <t+s> and <t+S> (so we can open the peer list with <t+p>)
     * For peer lists, the 'name' column is now called 'torrent' when specifying
       it via peerlist's '--columns' option and when setting 'columns.peers'
     * For boolean settings, the values 'enable'/'disable' have been replaced by
       'enabled'/'disabled'
-    * The 'clearlog' command has been replaced by the 'log' command
+    * The 'clearlog' command has been removed (see new 'log' command)
     * The setting 'tui.cli.history' has been renamed to 'tui.cli.history-file'
 
   Other changes:
