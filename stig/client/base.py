@@ -81,12 +81,12 @@ class TorrentFileTreeBase(abc.Mapping):
                 yield from entry.files
 
     @property
-    def folders(self):
+    def directories(self):
         """Yield (name, TorrentFileTree) tuples recursively"""
         for name,entry in self._items.items():
             if entry.nodetype == 'parent':
                 yield (name, entry)
-                yield from entry.folders
+                yield from entry.directories
 
     @property
     def path(self):

@@ -197,12 +197,13 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
         self._path = os.sep.join(path)
         items = {}
-        subfolders = {}
+        subdirs = {}
 
         for entry in entries:
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
-                items[parts[0]] = ttypes.TorrentFile(
+                filename = parts[0]
+                items[filename] = ttypes.TorrentFile(
                     tid=torrent_id, id=entry['id'],
                     name=entry['name'], path=path,
                     size_total=entry['length'],
@@ -211,16 +212,16 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                     priority=entry['priority'])
 
             elif len(parts) == 2:
-                subfolder, subpath = parts
-                if subfolder not in subfolders:
-                    subfolders[subfolder] = []
+                subdir, subpath = parts
+                if subdir not in subdirs:
+                    subdirs[subdir] = []
                 entry['name'] = subpath
-                subfolders[subfolder].append(entry)
+                subdirs[subdir].append(entry)
             else:
                 raise RuntimeError(parts)
 
-        for subfolder,entries in subfolders.items():
-            items[subfolder] = TorrentFileTree(torrent_id, entries, path=path+[subfolder])
+        for subdir,entries in subdirs.items():
+            items[subdir] = TorrentFileTree(torrent_id, entries, path=path+[subdir])
         self._items = items
 
     def update(self, fileStats):

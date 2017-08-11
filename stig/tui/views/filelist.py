@@ -125,7 +125,7 @@ class FileTreeDecorator(ArrowTree):
                     widgets[node_id].update(f)
 
             # Update directory nodes
-            for name,content in t['files'].folders:
+            for name,content in t['files'].directories:
                 fids = frozenset(f['id'] for f in content.files)
                 node_id = (tid, fids)
                 if node_id in widgets:
