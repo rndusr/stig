@@ -138,6 +138,8 @@ class TestNumberFloat(unittest.TestCase):
         self.assertIsInstance(n, NumberFloat)
         n = NumberFloat(5) * 2
         self.assertIsInstance(n, NumberInt)
+        n = NumberInt(5) + NumberFloat(4.3)
+        self.assertIsInstance(n, NumberFloat)
 
     def test_arithmetic_operation_copies_unit(self):
         n = NumberFloat(5, unit='X') / 100

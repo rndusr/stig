@@ -158,14 +158,28 @@ class _NumberBase():
         self._prefix = prefix
 
     def _do_math(self, method, *args, **kwargs):
+        # Get the new value as int or float
         new_value = getattr(self._numtype, method)(self, *args, **kwargs)
         if new_value is NotImplemented:
-            return NotImplemented
-        elif isinstance(new_value, int) or \
-             isinstance(new_value, float) and int(new_value) == new_value:
+            # This may have happened because `self._numtype` is `int` and it got
+            # a `float` to handle.  To make this work, we must flip `self` and
+            # `other`, getting the method from `other` and passing it `self`:
+            # int.__add__(<int>, <float>)  ->  float.__add__(<float>, <int>)
+            # If we get the parent method from the instance instead of its type,
+            # we don't have to pass two values and it's a little bit faster.
+            parent_method = getattr(args[0], method)
+            new_value = parent_method(self, **kwargs)
+            if new_value is NotImplemented:
+                return NotImplemented
+
+        # Determine the appropriate class (1.0 should return a NumberInt)
+        if isinstance(new_value, int) or \
+           isinstance(new_value, float) and int(new_value) == new_value:
             new_cls = NumberInt
         else:
             new_cls = NumberFloat
+
+        # Copy all properties to new instance
         return new_cls(new_value, unit=self.unit, prefix=self.prefix,
                        str_includes_unit=self._str_includes_unit)
 
