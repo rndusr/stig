@@ -67,6 +67,7 @@ cmdmgr.load_cmds_from_module(
 
 def run():
     from .commands.guess_ui import (guess_ui, UIGuessError)
+    from .commands import CmdError
     from . import hooks
 
     # Read commands from rc file
@@ -91,6 +92,9 @@ def run():
         except UIGuessError as e:
             log.error('Unable to guess user interface')
             log.error('Provide one of these options: --tui/-t or --no-tui/-T')
+            sys.exit(1)
+        except CmdError as e:
+            log.error(e)
             sys.exit(1)
 
     def run_commands():
