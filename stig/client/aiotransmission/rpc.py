@@ -261,6 +261,16 @@ class TransmissionRPC():
                     if self.__url.has_auth:
                         session_args['auth'] = aiohttp.BasicAuth(self.__url.username,
                                                                  self.__url.password)
+
+                    # It is possible that the connection test below was
+                    # interrupted, which leaves us with self.connected returning
+                    # False (self.__connection_tested is still False), but an
+                    # unclosed ClientSession in self.__session.  We must close
+                    # it before consigning it to the garbage collector so it
+                    # doesn't throw warnings around.
+                    if self.__session is not None and not self.__session.closed:
+                        log.debug('Closing leftover ClientSession before creating a new one: %r', self.__session)
+                        self.__session.close()
                     self.__session = aiohttp.ClientSession(**session_args)
                     skip_connected_callback = False
                 else:
