@@ -42,7 +42,6 @@ class PerfectInterval():
 
     def __init__(self, loop):
         self._loop = loop
-        self._started = loop.time()
 
     def __call__(self, seconds):
         now = self._loop.time()
