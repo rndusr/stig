@@ -194,7 +194,7 @@ class RequestPoller():
 
     @property
     def request(self):
-        """The request coroutine sent every interval
+        """The request coroutine called every interval
 
         If any arguments were given, this is a partial object.
         """
