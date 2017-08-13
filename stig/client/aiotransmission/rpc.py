@@ -415,7 +415,7 @@ class TransmissionRPC():
 
                 # RPCError does not mean host is unreachable, there was just a
                 # misunderstanding, so we're still connected.
-                if not isinstance(e, RPCError):
+                if not isinstance(e, RPCError) and self.connected:
                     await self.disconnect(str(e))
 
                 self.__on_error.send(self.__url, error=e)
