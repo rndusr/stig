@@ -20,7 +20,7 @@ from . import errors
 from .utils import (SleepUneasy, PerfectInterval)
 
 
-def _funcname(func, *posargs, **kwargs):
+def _func_call_str(func, *posargs, **kwargs):
     if hasattr(func, '__qualname__'):
         name = func.__qualname__
     elif hasattr(func, '__name__'):
@@ -185,7 +185,7 @@ class RequestPoller():
         Any positional or keyword arguments are passed to `request` at each
         call.
         """
-        self._request_str = _funcname(request, *args, **kwargs)
+        self._request_str = _func_call_str(request, *args, **kwargs)
         log.debug('Setting new request: %s', self._request_str)
         if args or kwargs:
             self._request = functools.partial(request, *args, **kwargs)
@@ -211,12 +211,12 @@ class RequestPoller():
         If the request raises an exception, 'response' callbacks are called
         with `None` and 'error' callbacks are called with the exception.
         """
-        log.debug('Registering %r to receive %s responses', _funcname(callback), self._request_str)
+        log.debug('Registering %r to receive %s responses', _func_call_str(callback), self._request_str)
         self._on_response.connect(callback, weak=autoremove)
 
     def on_error(self, callback, autoremove=True):
         """Register `callback` to receive request exceptions (see `on_response`)"""
-        log.debug('Registering %r to receive %s errors', _funcname(callback), self._request_str)
+        log.debug('Registering %r to receive %s errors', _func_call_str(callback), self._request_str)
         self._on_error.connect(callback, weak=autoremove)
 
     @property
