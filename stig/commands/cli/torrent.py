@@ -81,6 +81,7 @@ def _print_table(items, columns_wanted, COLUMN_SPECS):
 
         def get_max_colwidth(colindex):
             # Return width of widest cell in all rows
+            colname = columns_wanted[colindex]
             header = COLUMN_SPECS[colname].header
             header_width = strwidth(''.join((header.get('left', ''), header.get('right', ''))))
             max_cell_width = max(strwidth(row[colindex].get_string()) for row in rows)
