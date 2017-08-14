@@ -19,16 +19,16 @@ class _SortSpec(SortSpecBase):
 
 class TorrentTrackerSorter(SorterBase):
     SORTSPECS = {
+        'torrent':    _SortSpec(lambda t: t['tname'].lower(),
+                                description='torrent name'),
         'tier':       _SortSpec(lambda t: t['tier'],
                                 description='tier number'),
         'domain':     _SortSpec(lambda t: t['domain'],
                                 description='domain from announce URL',
                                 aliases=('host',)),
-        'error':      _SortSpec(lambda t: t['error'],
-                                description='error message'),
         'state':      _SortSpec(lambda t: t['state'],
                                 description='tracker state'),
-        'torrent':    _SortSpec(lambda t: t['tname'].lower(),
-                                description='torrent name'),
+        'error':      _SortSpec(lambda t: t['error'],
+                                description='error message'),
     }
     DEFAULT_SORT = 'torrent'
