@@ -556,7 +556,7 @@ class TorrentPeer(abc.Mapping):
 
 class TorrentTracker(abc.Mapping):
     def _validate_tracker_state(string):
-        if string not in ('inactive', 'waiting', 'queued', 'announcing', 'scraping'):
+        if string not in ('stopped', 'idle', 'queued', 'announcing', 'scraping'):
             raise TypeError('Invalid tracker state: %r' % string)
         else:
             return SmartCmpStr(string)

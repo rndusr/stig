@@ -250,17 +250,17 @@ class TrackerList(tuple):
         # From libtransmission/transmission.h:
         # /* we won't (announce,scrape) this torrent to this tracker because
         #  * the torrent is stopped, or because of an error, or whatever */
-        0: 'inactive',
+        0: 'stopped',
         # /* we will (announce,scrape) this torrent to this tracker, and are
         #  * waiting for enough time to pass to satisfy the tracker's interval */
-        1: 'waiting',
+        1: 'idle',
         # /* it's time to (announce,scrape) this torrent, and we're waiting on a
         #  * a free slot to open up in the announce manager */
         2: 'queued',
         # /* we're (announcing,scraping) this torrent right now */
         3: 'announcing',
     }
-    _STATES_SCRAPE = {0: 'inactive', 1: 'waiting', 2: 'queued', 3: 'scraping'}
+    _STATES_SCRAPE = {0: 'stopped', 1: 'idle', 2: 'queued', 3: 'scraping'}
 
     @staticmethod
     def _error_announce(tracker):
