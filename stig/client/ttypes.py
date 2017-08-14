@@ -329,7 +329,7 @@ class Timestamp(int):
 
         abs_delta = abs(self - time.time())
         if abs_delta <= SECONDS[2][1]:  # <= 1 day
-            frmt = '%H:%M'
+            frmt = '%H:%M:%S'
         else:
             frmt = '%Y-%m-%d'
         return time.strftime(frmt, time.localtime(self))
