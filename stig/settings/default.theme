@@ -538,3 +538,24 @@ $seeds_fg = light gray
 trackerlist.seeds.header                   $seeds_fg,underline on $trklist_bg.uf
 trackerlist.seeds.unfocused                $seeds_fg           on $trklist_bg.uf
 trackerlist.seeds.focused                  $seeds_fg           on $trklist_bg.f
+
+$last-announce_fg = white
+trackerlist.last-announce.header           $last-announce_fg,underline on $trklist_bg.uf
+trackerlist.last-announce.unfocused        $last-announce_fg           on $trklist_bg.uf
+trackerlist.last-announce.focused          $last-announce_fg           on $trklist_bg.f
+
+$next-announce_fg = white
+trackerlist.next-announce.header           $next-announce_fg,underline on $trklist_bg.uf
+trackerlist.next-announce.unfocused        $next-announce_fg           on $trklist_bg.uf
+trackerlist.next-announce.focused          $next-announce_fg           on $trklist_bg.f
+
+$last-scrape_fg = white
+trackerlist.last-scrape.header           $last-scrape_fg,underline on $trklist_bg.uf
+trackerlist.last-scrape.unfocused        $last-scrape_fg           on $trklist_bg.uf
+trackerlist.last-scrape.focused          $last-scrape_fg           on $trklist_bg.f
+
+$next-scrape_fg = white
+trackerlist.next-scrape.header           $next-scrape_fg,underline on $trklist_bg.uf
+trackerlist.next-scrape.unfocused        $next-scrape_fg           on $trklist_bg.uf
+trackerlist.next-scrape.focused          $next-scrape_fg           on $trklist_bg.f
+

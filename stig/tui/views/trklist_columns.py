@@ -113,3 +113,39 @@ class Seeds(_COLUMNS['seeds'], CellWidgetBase):
                            style.attrs('header'))
 
 TUICOLUMNS['seeds'] = Seeds
+
+
+class LastAnnounce(_COLUMNS['last-announce'], CellWidgetBase):
+    style = Style(prefix='trackerlist.last-announce', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['last-announce'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['last-announce'] = LastAnnounce
+
+
+class NextAnnounce(_COLUMNS['next-announce'], CellWidgetBase):
+    style = Style(prefix='trackerlist.next-announce', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['next-announce'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['next-announce'] = NextAnnounce
+
+
+class LastScrape(_COLUMNS['last-scrape'], CellWidgetBase):
+    style = Style(prefix='trackerlist.last-scrape', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['last-scrape'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['last-scrape'] = LastScrape
+
+
+class NextScrape(_COLUMNS['next-scrape'], CellWidgetBase):
+    style = Style(prefix='trackerlist.next-scrape', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['next-scrape'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['next-scrape'] = NextScrape

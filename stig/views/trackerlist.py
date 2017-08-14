@@ -129,3 +129,47 @@ class Seeds(ColumnBase):
         return self.data['count-seeds']
 
 COLUMNS['seeds'] = Seeds
+
+
+class LastAnnounce(ColumnBase):
+    header = {'left': 'Last Announce'}
+    align = 'right'
+    width = 13
+
+    def get_value(self):
+        return self.data['time-last-announce']
+
+COLUMNS['last-announce'] = LastAnnounce
+
+
+class NextAnnounce(ColumnBase):
+    header = {'left': 'Next Announce'}
+    align = 'right'
+    width = 13
+
+    def get_value(self):
+        return self.data['time-next-announce']
+
+COLUMNS['next-announce'] = NextAnnounce
+
+
+class LastScrape(ColumnBase):
+    header = {'left': 'Last Scrape'}
+    align = 'right'
+    width = 11
+
+    def get_value(self):
+        return self.data['time-last-scrape']
+
+COLUMNS['last-scrape'] = LastScrape
+
+
+class NextScrape(ColumnBase):
+    header = {'left': 'Next Scrape'}
+    align = 'right'
+    width = 11
+
+    def get_value(self):
+        return self.data['time-next-scrape']
+
+COLUMNS['next-scrape'] = NextScrape
