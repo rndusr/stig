@@ -38,7 +38,7 @@ DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
 DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
 DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',
                            'leeches', 'seeds', 'downloads',
-)
+                           'last-announce', 'next-announce')
 
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:
