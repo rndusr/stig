@@ -176,7 +176,7 @@ class SortCmd(metaclass=InitCommand):
     aliases = ()
     provides = {'tui'}
     category = 'torrent'
-    description = "Sort lists of torrents or peers"
+    description = "Sort lists of torrents/peers/trackers/etc"
     usage = ('sort [<OPTIONS>] [<ORDER> <ORDER> <ORDER> ...]',)
     examples = ('sort tracker status !rate-down',
                 'sort --add eta')
@@ -201,10 +201,13 @@ class SortCmd(metaclass=InitCommand):
 
     from ...client.sorters.tsorter import TorrentSorter
     from ...client.sorters.psorter import TorrentPeerSorter
+    from ...client.sorters.trksorter import TorrentTrackerSorter
     more_sections = {
         'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) + \
                        ('',) + \
-                       _list_sort_orders('PEER LISTS', TorrentPeerSorter)
+                       _list_sort_orders('PEER LISTS', TorrentPeerSorter) + \
+                       ('',) + \
+                       _list_sort_orders('TRACKER LISTS', TorrentTrackerSorter)
     }
 
     tui = ExpectedResource
