@@ -73,7 +73,7 @@ def _count_seeds(t):
     if trackerStats:
         return max(t['seederCount'] for t in trackerStats)
     else:
-        return ttypes.SeedCount.UNKNOWN
+        return ttypes.Count.UNKNOWN
 
 
 def _bytes_available(t):

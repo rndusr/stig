@@ -65,10 +65,10 @@ class Ratio(NumberFloat):
             return super().without_unit
 
 
-class SeedCount(NumberInt):
+class Count(NumberInt):
     UNKNOWN = -1
     def __str__(self):
-        return '?' if self == self.UNKNOWN else super().__str__()
+        return '?' if self < 0 else super().__str__()
 
 
 class Status(tuple):
@@ -625,7 +625,7 @@ TYPES = {
     'peers-connected'   : NumberInt,
     'peers-uploading'   : NumberInt,
     'peers-downloading' : NumberInt,
-    'peers-seeding'     : SeedCount,
+    'peers-seeding'     : Count,
 
     'timespan-eta'      : Timedelta,
     'time-created'      : Timestamp,
