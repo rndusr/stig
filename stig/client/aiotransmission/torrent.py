@@ -272,27 +272,68 @@ class TrackerList(tuple):
         msg = tracker['lastScrapeResult'] if tracker['hasScraped'] else ''
         return '' if msg == 'Success' else msg
 
+    @staticmethod
+    def _next_time(tracker, which):
+        """Handle next(Announce|Scrape)Time RPC key
+
+        `which` must be 'Scrape' or 'Announce'.
+
+        transmission.h says:
+            /* when the next periodic (announce|scrape) message will be sent out.
+               if (announce|scrape)State isn't TR_TRACKER_WAITING, this field is undefined */
+        """
+        state = tracker['%sState' % which.lower()]
+        if state == 1:    # TR_TRACKER_WAITING = 1
+            return tracker['next%sTime' % which]
+        elif state == 0:  # Torrent is paused
+            return ttypes.Timestamp.NOT_APPLICABLE
+        elif state == 2:  # Announce/scrape is queued
+            return ttypes.Timestamp.SOON
+        else:
+            return ttypes.Timestamp.NOW
+
+    @staticmethod
+    def _last_time(tracker, which):
+        """Handle last(Announce|Scrape)Time RPC key
+
+        `which` must be 'Scrape' or 'Announce'.
+
+        transmission.h says:
+            /* when the last (announce|scrape) was completed.
+               if "has(Announced|Scraped)" is false, this field is undefined */
+        """
+        if tracker['has%sd' % which]:
+            return tracker['last%sTime' % which]
+        else:
+            return ttypes.Timestamp.NEVER
+
     def __new__(cls, raw_torrent):
         return super().__new__(cls,
             (ttypes.TorrentTracker(
                 (utils.LazyDict({
-                    'tid'              : raw_torrent['id'],
-                    'tname'            : raw_torrent['name'],
-                    'id'               : (raw_torrent['id'], tracker['id']),
-                    'tier'             : tracker['tier'],
+                    'tid'                : raw_torrent['id'],
+                    'tname'              : raw_torrent['name'],
+                    'id'                 : (raw_torrent['id'], tracker['id']),
+                    'tier'               : tracker['tier'],
 
-                    'url-announce'     : lambda: utils.URL(tracker['announce']),
-                    'url-scrape'       : lambda: utils.URL(tracker['scrape']),
+                    'url-announce'       : lambda: utils.URL(tracker['announce']),
+                    'url-scrape'         : lambda: utils.URL(tracker['scrape']),
 
-                    'state-announce'   : cls._STATES_ANNOUNCE[tracker['announceState']],
-                    'state-scrape'     : cls._STATES_SCRAPE[tracker['scrapeState']],
+                    'state-announce'     : cls._STATES_ANNOUNCE[tracker['announceState']],
+                    'state-scrape'       : cls._STATES_SCRAPE[tracker['scrapeState']],
 
-                    'error-announce'   : lambda: cls._error_announce(tracker),
-                    'error-scrape'     : lambda: cls._error_scrape(tracker),
+                    'error-announce'     : lambda: cls._error_announce(tracker),
+                    'error-scrape'       : lambda: cls._error_scrape(tracker),
 
-                    'count-downloads'  : tracker['downloadCount'],
-                    'count-leeches'    : tracker['leecherCount'],
-                    'count-seeds'      : tracker['seederCount'],
+                    'count-downloads'    : tracker['downloadCount'],
+                    'count-leeches'      : tracker['leecherCount'],
+                    'count-seeds'        : tracker['seederCount'],
+
+                    'time-last-announce' : lambda: cls._last_time(tracker, 'Announce'),
+                    'time-last-scrape'   : lambda: cls._last_time(tracker, 'Scrape'),
+                    'time-next-announce' : lambda: cls._next_time(tracker, 'Announce'),
+                    'time-next-scrape'   : lambda: cls._next_time(tracker, 'Scrape'),
+
                 }))) for tracker in raw_torrent['trackerStats'])
         )
 

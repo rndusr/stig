@@ -584,26 +584,31 @@ class TorrentTracker(abc.Mapping):
             return SmartCmpStr(string)
 
     TYPES = {
-        'tid'              : int,
-        'tname'            : SmartCmpStr,
-        'id'               : lambda val: val,
-        'tier'             : int,
+        'tid'                : int,
+        'tname'              : SmartCmpStr,
+        'id'                 : lambda val: val,
+        'tier'               : int,
 
-        'url-announce'     : utils.URL,
-        'url-scrape'       : utils.URL,
-        'domain'           : SmartCmpStr,
+        'url-announce'       : utils.URL,
+        'url-scrape'         : utils.URL,
+        'domain'             : SmartCmpStr,
 
-        'state-announce'   : _validate_tracker_state,
-        'state-scrape'     : _validate_tracker_state,
-        'state'            : _validate_tracker_state,
+        'state-announce'     : _validate_tracker_state,
+        'state-scrape'       : _validate_tracker_state,
+        'state'              : _validate_tracker_state,
 
-        'error-announce'   : SmartCmpStr,
-        'error-scrape'     : SmartCmpStr,
-        'error'            : SmartCmpStr,
+        'error-announce'     : SmartCmpStr,
+        'error-scrape'       : SmartCmpStr,
+        'error'              : SmartCmpStr,
 
-        'count-downloads'  : Count,
-        'count-leeches'    : Count,
-        'count-seeds'      : Count,
+        'count-downloads'    : Count,
+        'count-leeches'      : Count,
+        'count-seeds'        : Count,
+
+        'time-last-announce' : Timestamp,
+        'time-next-announce' : Timestamp,
+        'time-last-scrape'   : Timestamp,
+        'time-next-scrape'   : Timestamp,
     }
 
     _MODIFIERS = {
