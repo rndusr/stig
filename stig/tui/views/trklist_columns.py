@@ -86,3 +86,30 @@ class Error(_COLUMNS['error'], CellWidgetBase):
                            style.attrs('header'))
 
 TUICOLUMNS['error'] = Error
+
+
+class Downloads(_COLUMNS['downloads'], CellWidgetBase):
+    style = Style(prefix='trackerlist.downloads', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['downloads'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['downloads'] = Downloads
+
+
+class Leeches(_COLUMNS['leeches'], CellWidgetBase):
+    style = Style(prefix='trackerlist.leeches', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['leeches'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['leeches'] = Leeches
+
+
+class Seeds(_COLUMNS['seeds'], CellWidgetBase):
+    style = Style(prefix='trackerlist.seeds', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['seeds'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['seeds'] = Seeds

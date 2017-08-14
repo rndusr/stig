@@ -96,3 +96,36 @@ class Error(ColumnBase):
         return self.data['error']
 
 COLUMNS['error'] = Error
+
+
+class Downloads(ColumnBase):
+    header = {'left': 'Downloads'}
+    align = 'left'
+    width = 9
+
+    def get_value(self):
+        return self.data['count-downloads']
+
+COLUMNS['downloads'] = Downloads
+
+
+class Leeches(ColumnBase):
+    header = {'left': 'Leeches'}
+    align = 'left'
+    width = 7
+
+    def get_value(self):
+        return self.data['count-leeches']
+
+COLUMNS['leeches'] = Leeches
+
+
+class Seeds(ColumnBase):
+    header = {'left': 'Seeds'}
+    align = 'left'
+    width = 5
+
+    def get_value(self):
+        return self.data['count-seeds']
+
+COLUMNS['seeds'] = Seeds

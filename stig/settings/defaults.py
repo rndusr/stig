@@ -36,7 +36,9 @@ DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
                            'seeds', 'connections', 'status', 'eta', 'progress',
                            'rate-down', 'rate-up', 'name')
 DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
-DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error')
+DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',
+                           'leeches', 'seeds', 'downloads',
+)
 
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:

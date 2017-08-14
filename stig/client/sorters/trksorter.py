@@ -30,5 +30,11 @@ class TorrentTrackerSorter(SorterBase):
                                 description='tracker state'),
         'error':      _SortSpec(lambda t: t['error'],
                                 description='error message'),
+        'downloads':  _SortSpec(lambda t: t['count-downloads'],
+                                description='number of known downloads'),
+        'leeches':    _SortSpec(lambda t: t['count-leeches'],
+                                description='number of known downloading peers'),
+        'seeds':      _SortSpec(lambda t: t['count-seeds'],
+                                description='number of known seeding peers'),
     }
     DEFAULT_SORT = 'torrent'

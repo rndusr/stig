@@ -55,6 +55,18 @@ class SingleTrackerFilter(Filter):
             lambda trk, op, v: op(trk['error'], v),
             description='Match VALUE against error message from tracker',
             value_type=TorrentTracker.TYPES['error']),
+        'downloads': CmpFilterSpec(
+            lambda trk, op, v: op(trk['count-downloads'], v),
+            description='Match VALUE against number of known downloads',
+            value_type=TorrentTracker.TYPES['count-downloads']),
+        'leeches': CmpFilterSpec(
+            lambda trk, op, v: op(trk['count-leeches'], v),
+            description='Match VALUE against number of known downloading peers',
+            value_type=TorrentTracker.TYPES['count-leeches']),
+        'seeds': CmpFilterSpec(
+            lambda trk, op, v: op(trk['count-seeds'], v),
+            description='Match VALUE against number of known seeding peers',
+            value_type=TorrentTracker.TYPES['count-seeds']),
     }
 
 
