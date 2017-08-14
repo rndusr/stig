@@ -78,7 +78,7 @@ COLUMNS['scrape'] = ScrapeURL
 
 class State(ColumnBase):
     header = {'left': 'State'}
-    align = 'left'
+    align = 'right'
     width = 10
 
     def get_value(self):
