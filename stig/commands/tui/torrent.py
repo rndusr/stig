@@ -171,7 +171,7 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
         return True
 
 
-class SortCmdbase(metaclass=InitCommand):
+class SortCmd(metaclass=InitCommand):
     name = 'sort'
     aliases = ()
     provides = {'tui'}
