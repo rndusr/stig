@@ -33,6 +33,7 @@
       values if unknown/not applicable
     * Don't show 'Unclosed client session' errors anymore when opening multiple
       torrent lists with an rc file while not being connected
+    * Some columns of torrent, peer and file lists were unnecessarily wide
 
 
 2017-06-13 0.7.3a
