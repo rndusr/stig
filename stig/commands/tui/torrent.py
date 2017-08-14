@@ -225,12 +225,15 @@ class SortCmd(metaclass=InitCommand):
             # Find appropriate sorter class for focused list
             from ...tui.views.torrentlist import TorrentListWidget
             from ...tui.views.peerlist import PeerListWidget
+            from ...tui.views.trackerlist import TrackerListWidget
             if isinstance(current_tab, TorrentListWidget):
                 sortcls = self.TorrentSorter
             elif isinstance(current_tab, PeerListWidget):
                 sortcls = self.TorrentPeerSorter
+            elif isinstance(current_tab, TrackerListWidget):
+                sortcls = self.TorrentTrackerSorter
             else:
-                log.error('Current tab does not contain a torrent or peer list.')
+                log.error('Current tab does not contain a torrent, peer or tracker list.')
                 return False
 
             try:
