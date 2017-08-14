@@ -253,6 +253,7 @@ class Timestamp(int):
     SOON           = -1
     UNKNOWN        = 1e31
     NOT_APPLICABLE = 1e32
+    NEVER          = 1e33
 
     _FORMATS_DATE = (('%Y',       ('tm_year',)),
                      ('%Y-%m',    ('tm_year', 'tm_mon')),
@@ -326,6 +327,8 @@ class Timestamp(int):
             return 'now'
         elif self == self.SOON:
             return 'soon'
+        elif self == self.NEVER:
+            return 'never'
 
         abs_delta = abs(self - time.time())
         if abs_delta <= SECONDS[2][1]:  # <= 1 day
@@ -344,13 +347,15 @@ class Timestamp(int):
             return 'now'
         elif self == self.SOON:
             return 'soon'
+        elif self == self.NEVER:
+            return 'never'
         else:
             return time.strftime('%Y-%m-%d %H:%M', time.localtime(self))
 
     def __bool__(self):
         """Whether timestamp known"""
         return self != self.UNKNOWN and self != self.NOT_APPLICABLE and \
-               self != self.NOW and self != self.SOON
+               self != self.NOW and self != self.SOON and self != self.NEVER
 
     @property
     def is_known(self):
@@ -366,6 +371,8 @@ class Timestamp(int):
             return Timedelta(0)
         elif self == self.SOON:
             return Timedelta(0)
+        elif self == self.NEVER:
+            return Timedelta(Timedelta.NOT_APPLICABLE)
         else:
             return Timedelta(self - time.time())
 
