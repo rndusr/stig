@@ -280,12 +280,19 @@ class TrackerList(tuple):
                     'tname'            : raw_torrent['name'],
                     'id'               : (raw_torrent['id'], tracker['id']),
                     'tier'             : tracker['tier'],
+
                     'url-announce'     : lambda: utils.URL(tracker['announce']),
                     'url-scrape'       : lambda: utils.URL(tracker['scrape']),
+
                     'state-announce'   : cls._STATES_ANNOUNCE[tracker['announceState']],
                     'state-scrape'     : cls._STATES_SCRAPE[tracker['scrapeState']],
+
                     'error-announce'   : lambda: cls._error_announce(tracker),
                     'error-scrape'     : lambda: cls._error_scrape(tracker),
+
+                    'count-downloads'  : tracker['downloadCount'],
+                    'count-leeches'    : tracker['leecherCount'],
+                    'count-seeds'      : tracker['seederCount'],
                 }))) for tracker in raw_torrent['trackerStats'])
         )
 

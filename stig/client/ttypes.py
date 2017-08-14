@@ -566,15 +566,22 @@ class TorrentTracker(abc.Mapping):
         'tname'            : SmartCmpStr,
         'id'               : lambda val: val,
         'tier'             : int,
+
         'url-announce'     : utils.URL,
         'url-scrape'       : utils.URL,
         'domain'           : SmartCmpStr,
+
         'state-announce'   : _validate_tracker_state,
         'state-scrape'     : _validate_tracker_state,
         'state'            : _validate_tracker_state,
+
         'error-announce'   : SmartCmpStr,
         'error-scrape'     : SmartCmpStr,
         'error'            : SmartCmpStr,
+
+        'count-downloads'  : Count,
+        'count-leeches'    : Count,
+        'count-seeds'      : Count,
     }
 
     _MODIFIERS = {
