@@ -68,6 +68,26 @@ class SingleTrackerFilter(Filter):
             lambda trk, op, v: op(trk['count-seeds'], v),
             description='Match VALUE against number of known seeding peers',
             value_type=VALUETYPES['count-seeds']),
+        'last-announce': CmpFilterSpec(
+            lambda trk, op, v: op(trk['time-last-announce'], v),
+            description='Match VALUE against last time of a successful announce',
+            value_type=VALUETYPES['time-last-announce'],
+            value_convert=VALUETYPES['time-last-announce'].from_string),
+        'next-announce': CmpFilterSpec(
+            lambda trk, op, v: op(trk['time-next-announce'], v),
+            description='Match VALUE against next time of a successful announce',
+            value_type=VALUETYPES['time-next-announce'],
+            value_convert=VALUETYPES['time-next-announce'].from_string),
+        'last-scrape': CmpFilterSpec(
+            lambda trk, op, v: op(trk['time-last-scrape'], v),
+            description='Match VALUE against last time of a successful scrape',
+            value_type=VALUETYPES['time-last-scrape'],
+            value_convert=VALUETYPES['time-last-scrape'].from_string),
+        'next-scrape': CmpFilterSpec(
+            lambda trk, op, v: op(trk['time-next-scrape'], v),
+            description='Match VALUE against next time of a successful scrape',
+            value_type=VALUETYPES['time-next-scrape'],
+            value_convert=VALUETYPES['time-next-scrape'].from_string),
     }
 
 
