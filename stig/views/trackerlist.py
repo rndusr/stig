@@ -100,7 +100,7 @@ COLUMNS['error'] = Error
 
 class Downloads(ColumnBase):
     header = {'left': 'Downloads'}
-    align = 'left'
+    align = 'right'
     width = 9
 
     def get_value(self):
@@ -111,7 +111,7 @@ COLUMNS['downloads'] = Downloads
 
 class Leeches(ColumnBase):
     header = {'left': 'Leeches'}
-    align = 'left'
+    align = 'right'
     width = 7
 
     def get_value(self):
@@ -122,7 +122,7 @@ COLUMNS['leeches'] = Leeches
 
 class Seeds(ColumnBase):
     header = {'left': 'Seeds'}
-    align = 'left'
+    align = 'right'
     width = 5
 
     def get_value(self):
