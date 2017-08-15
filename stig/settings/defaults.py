@@ -313,4 +313,31 @@ DEFAULT_KEYMAP = (
     {'context': 'file', 'key': '0',         'action': 'priority shun'},
     {'context': 'file', 'key': 'space',     'action': 'mark --toggle --focus-next'},
     {'context': 'file', 'key': 'alt-space', 'action': 'mark --toggle --all'},
+
+    # Torrent tracker actions
+    {'context': 'trackerlist', 'key': 's n a',   'action': 'sort --add next-announce'},
+    {'context': 'trackerlist', 'key': 's n A',   'action': 'sort --add !next-announce'},
+    {'context': 'trackerlist', 'key': 's l a',   'action': 'sort --add last-announce'},
+    {'context': 'trackerlist', 'key': 's l A',   'action': 'sort --add !last-announce'},
+
+    {'context': 'trackerlist', 'key': 's n s',   'action': 'sort --add next-scrape'},
+    {'context': 'trackerlist', 'key': 's n S',   'action': 'sort --add !next-scrape'},
+    {'context': 'trackerlist', 'key': 's l s',   'action': 'sort --add last-scrape'},
+    {'context': 'trackerlist', 'key': 's l S',   'action': 'sort --add !last-scrape'},
+
+    {'context': 'trackerlist', 'key': 's D',     'action': 'sort --add !downloads'},
+    {'context': 'trackerlist', 'key': 's d',     'action': 'sort --add downloads'},
+    {'context': 'trackerlist', 'key': 's D',     'action': 'sort --add !downloads'},
+    {'context': 'trackerlist', 'key': 's c',     'action': 'sort --add leeches'},
+    {'context': 'trackerlist', 'key': 's C',     'action': 'sort --add !leeches'},
+    {'context': 'trackerlist', 'key': 's s',     'action': 'sort --add seeds'},
+    {'context': 'trackerlist', 'key': 's S',     'action': 'sort --add !seeds'},
+
+    {'context': 'trackerlist', 'key': 's e',     'action': 'sort --add error'},
+    {'context': 'trackerlist', 'key': 's E',     'action': 'sort --add !error'},
+    {'context': 'trackerlist', 'key': 's t',     'action': 'sort --add state'},
+    {'context': 'trackerlist', 'key': 's T',     'action': 'sort --add !state'},
+
+    {'context': 'trackerlist', 'key': 's ,',     'action': 'sort --reset'},
+    {'context': 'trackerlist', 'key': 's .',     'action': 'sort --none'},
 )
