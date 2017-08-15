@@ -238,13 +238,15 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(bool(td), False)
 
     def test_sorting(self):
-        lst = [ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE),
-               ttypes.Timestamp(ttypes.Timestamp.UNKNOWN),
+        lst = [ttypes.Timestamp(ttypes.Timestamp.NOW),
+               ttypes.Timestamp(ttypes.Timestamp.SOON),
                ttypes.Timestamp(self.now + (-2 * HOUR)),
                ttypes.Timestamp(self.now + (2 * MIN)),
                ttypes.Timestamp(self.now + (3 * MIN)),
                ttypes.Timestamp(self.now + (1 * DAY)),
-               ttypes.Timestamp(self.now + (2.5 * YEAR))]
+               ttypes.Timestamp(self.now + (2.5 * YEAR)),
+               ttypes.Timestamp(ttypes.Timestamp.UNKNOWN),
+               ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE)]
 
         import random
         def shuffle(l):
