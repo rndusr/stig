@@ -54,11 +54,11 @@ class SingleTorrentFilter(Filter):
 
         'leeching': BoolFilterSpec(
             lambda t: t['%downloaded'] < 100 and _STATUS_STOPPED not in t['status'],
-            description='unstopped Torrents downloading or waiting for seeds',
+            description='Unstopped torrents downloading or waiting for seeds',
             needed_keys=('%downloaded', 'status')),
         'seeding': BoolFilterSpec(
             lambda t: t['%downloaded'] >= 100 and _STATUS_STOPPED not in t['status'],
-            description='unstopped Torrents with all wanted files downloaded',
+            description='Unstopped torrents with all wanted files downloaded',
             needed_keys=('%downloaded', 'status')),
         'complete': BoolFilterSpec(
             lambda t: t['%downloaded'] >= 100,
@@ -94,7 +94,7 @@ class SingleTorrentFilter(Filter):
         'idle': BoolFilterSpec(
             lambda t: (_STATUS_IDLE in t['status'] and
                        _STATUS_STOPPED not in t['status']),
-            description='unstopped Torrents not using any bandwidth',
+            description='Unstopped torrents not using any bandwidth',
             needed_keys=('status',)),
         'isolated': BoolFilterSpec(
             lambda t: _STATUS_ISOLATED in t['status'],
