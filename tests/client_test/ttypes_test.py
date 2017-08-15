@@ -218,10 +218,10 @@ class TestTimestamp(unittest.TestCase):
         self.assertIn('foo', str(cm.exception))
 
     def test_string(self):
-        self.assertEqual(str(ttypes.Timestamp(self.now)), self.strftime('%H:%M', self.now))
+        self.assertEqual(str(ttypes.Timestamp(self.now)), self.strftime('%H:%M:%S', self.now))
         later_today = self.now + 20*60*60
         self.assertEqual(str(ttypes.Timestamp(later_today)),
-                         self.strftime('%H:%M', later_today))
+                         self.strftime('%H:%M:%S', later_today))
         next_week = self.now + 7*24*60*60
         self.assertEqual(str(ttypes.Timestamp(next_week)),
                          self.strftime('%Y-%m-%d', next_week))
