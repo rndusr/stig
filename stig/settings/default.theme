@@ -504,15 +504,15 @@ trackerlist.domain.header                  $domain_fg,underline on $trklist_bg.u
 trackerlist.domain.unfocused               $domain_fg           on $trklist_bg.uf
 trackerlist.domain.focused                 $domain_fg           on $trklist_bg.f
 
-$announce_fg = light blue
-trackerlist.announce.header                $announce_fg,underline on $trklist_bg.uf
-trackerlist.announce.unfocused             $announce_fg           on $trklist_bg.uf
-trackerlist.announce.focused               $announce_fg           on $trklist_bg.f
+$url-announce_fg = light blue
+trackerlist.url-announce.header            $url-announce_fg,underline on $trklist_bg.uf
+trackerlist.url-announce.unfocused         $url-announce_fg           on $trklist_bg.uf
+trackerlist.url-announce.focused           $url-announce_fg           on $trklist_bg.f
 
-$scrape_fg = light blue
-trackerlist.scrape.header                  $scrape_fg,underline on $trklist_bg.uf
-trackerlist.scrape.unfocused               $scrape_fg           on $trklist_bg.uf
-trackerlist.scrape.focused                 $scrape_fg           on $trklist_bg.f
+$url-scrape_fg = light blue
+trackerlist.url-scrape.header              $url-scrape_fg,underline on $trklist_bg.uf
+trackerlist.url-scrape.unfocused           $url-scrape_fg           on $trklist_bg.uf
+trackerlist.url-scrape.focused             $url-scrape_fg           on $trklist_bg.f
 
 $state_fg = dark cyan
 trackerlist.state.header                   $state_fg,underline on $trklist_bg.uf

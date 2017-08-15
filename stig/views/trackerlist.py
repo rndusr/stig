@@ -62,7 +62,7 @@ class AnnounceURL(ColumnBase):
     def get_value(self):
         return self.data['url-announce']
 
-COLUMNS['announce'] = AnnounceURL
+COLUMNS['url-announce'] = AnnounceURL
 
 
 class ScrapeURL(ColumnBase):
@@ -73,7 +73,7 @@ class ScrapeURL(ColumnBase):
     def get_value(self):
         return self.data['url-scrape']
 
-COLUMNS['scrape'] = ScrapeURL
+COLUMNS['url-scrape'] = ScrapeURL
 
 
 class State(ColumnBase):

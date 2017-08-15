@@ -49,24 +49,24 @@ class Domain(_COLUMNS['domain'], CellWidgetBase):
 TUICOLUMNS['domain'] = Domain
 
 
-class AnnounceURL(_COLUMNS['announce'], CellWidgetBase):
+class AnnounceURL(_COLUMNS['url-announce'], CellWidgetBase):
     width = ('weight', 100)
-    style = Style(prefix='trackerlist.announce', focusable=True,
+    style = Style(prefix='trackerlist.url-announce', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['announce'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['url-announce'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['announce'] = AnnounceURL
+TUICOLUMNS['url-announce'] = AnnounceURL
 
 
-class ScrapeURL(_COLUMNS['scrape'], CellWidgetBase):
+class ScrapeURL(_COLUMNS['url-scrape'], CellWidgetBase):
     width = ('weight', 100)
-    style = Style(prefix='trackerlist.scrape', focusable=True,
+    style = Style(prefix='trackerlist.url-scrape', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['scrape'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['url-scrape'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['scrape'] = ScrapeURL
+TUICOLUMNS['url-scrape'] = ScrapeURL
 
 
 class State(_COLUMNS['state'], CellWidgetBase):
