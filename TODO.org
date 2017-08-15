@@ -3,6 +3,17 @@ questions and point out issues.
 
 * commands
 
+** TODO New command: 'filter'
+   1. Create 'filter' command that adds/removes/clears filters of the currently
+      focused list.  Make it work similar to the 'sort' command.
+   2. Change default keybindings:
+       1. 'n' in 'tabs' (or 'main'?) context starts a keychain that opens a
+          torrent/peer/tracker/file list in a new tab.
+       2. 'f' in any '*list' context starts a keychain that applies different
+          filters to the currently focused list.
+   3. Implement 'interactive' command (see below) and use it to add comparative
+      filters to lists with more 'f ...' key chains.
+
 ** TODO Show number of selected torrents/files
     The best place would probably be in the bottom bar.  Either implement that
     in tui.infobar.TorrentCountersWidget or create a new widget.
