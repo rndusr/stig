@@ -614,7 +614,8 @@ class TorrentTracker(abc.Mapping):
     _MODIFIERS = {
         'id'     : lambda self: hash((self['tid'], self['url-announce'])),
         'domain' : lambda self: self['url-announce'].domain,
-        'state'  : lambda self: self['state-announce'] or self['state-scrape'],
+        'state'  : lambda self: (self['state-scrape'] if self['state-announce'] == 'idle'
+                                 else self['state-announce']),
         'error'  : lambda self: self['error-announce'] or self['error-scrape'],
     }
 
