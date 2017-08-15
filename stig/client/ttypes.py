@@ -597,8 +597,8 @@ class TorrentTracker(abc.Mapping):
         'state-scrape'       : _validate_tracker_state,
         'state'              : _validate_tracker_state,
 
-        'error-announce'     : SmartCmpStr,
-        'error-scrape'       : SmartCmpStr,
+        'error-announce'     : lambda error: SmartCmpStr('Announce error: %s' % error if error else ''),
+        'error-scrape'       : lambda error: SmartCmpStr('Scrape error: %s' % error if error else ''),
         'error'              : SmartCmpStr,
 
         'count-downloads'    : Count,
