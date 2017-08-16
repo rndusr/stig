@@ -98,6 +98,28 @@ class Error(ColumnBase):
 COLUMNS['error'] = Error
 
 
+class ErrorAnnounce(ColumnBase):
+    header = {'left': 'Announce Error'}
+    align = 'left'
+    width = None
+
+    def get_value(self):
+        return self.data['error-announce']
+
+COLUMNS['error-announce'] = ErrorAnnounce
+
+
+class ErrorScrape(ColumnBase):
+    header = {'left': 'Scrape Error'}
+    align = 'left'
+    width = None
+
+    def get_value(self):
+        return self.data['error-scrape']
+
+COLUMNS['error-scrape'] = ErrorScrape
+
+
 class Downloads(ColumnBase):
     header = {'left': 'Downloads'}
     align = 'right'

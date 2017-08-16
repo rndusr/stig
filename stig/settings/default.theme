@@ -524,6 +524,16 @@ trackerlist.error.header                   $error_fg,underline on $trklist_bg.uf
 trackerlist.error.unfocused                $error_fg           on $trklist_bg.uf
 trackerlist.error.focused                  $error_fg           on $trklist_bg.f
 
+$error-announce_fg = dark red
+trackerlist.error-announce.header          $error_fg,underline on $trklist_bg.uf
+trackerlist.error-announce.unfocused       $error_fg           on $trklist_bg.uf
+trackerlist.error-announce.focused         $error_fg           on $trklist_bg.f
+
+$error-scrape_fg = dark red
+trackerlist.error-scrape.header            $error_fg,underline on $trklist_bg.uf
+trackerlist.error-scrape.unfocused         $error_fg           on $trklist_bg.uf
+trackerlist.error-scrape.focused           $error_fg           on $trklist_bg.f
+
 $downloads_fg = light gray
 trackerlist.downloads.header               $downloads_fg,underline on $trklist_bg.uf
 trackerlist.downloads.unfocused            $downloads_fg           on $trklist_bg.uf

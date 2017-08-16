@@ -88,6 +88,26 @@ class Error(_COLUMNS['error'], CellWidgetBase):
 TUICOLUMNS['error'] = Error
 
 
+class ErrorAnnounce(_COLUMNS['error-announce'], CellWidgetBase):
+    width = ('weight', 100)
+    style = Style(prefix='trackerlist.error-announce', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['error-announce'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['error-announce'] = ErrorAnnounce
+
+
+class ErrorScrape(_COLUMNS['error-scrape'], CellWidgetBase):
+    width = ('weight', 100)
+    style = Style(prefix='trackerlist.error-scrape', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['error-scrape'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['error-scrape'] = ErrorScrape
+
+
 class Downloads(_COLUMNS['downloads'], CellWidgetBase):
     style = Style(prefix='trackerlist.downloads', focusable=True,
                   extras=('header',))
