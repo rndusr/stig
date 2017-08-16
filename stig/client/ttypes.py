@@ -597,8 +597,8 @@ class TorrentTracker(abc.Mapping):
         'state-scrape'       : _validate_tracker_state,
         'state'              : _validate_tracker_state,
 
-        'error-announce'     : lambda error: SmartCmpStr('Announce error: %s' % error if error else ''),
-        'error-scrape'       : lambda error: SmartCmpStr('Scrape error: %s' % error if error else ''),
+        'error-announce'     : SmartCmpStr,
+        'error-scrape'       : SmartCmpStr,
         'error'              : SmartCmpStr,
 
         'count-downloads'    : Count,
@@ -616,7 +616,9 @@ class TorrentTracker(abc.Mapping):
         'domain' : lambda self: self['url-announce'].domain,
         'state'  : lambda self: (self['state-scrape'] if self['state-announce'] == 'idle'
                                  else self['state-announce']),
-        'error'  : lambda self: self['error-announce'] or self['error-scrape'],
+        'error'  : lambda self: ('Announce error: %s' % self['error-announce']
+                                 if self['error-announce'] else
+                                 'Scrape error: %s' % self['error-scrape'])
     }
 
     def __init__(self, trkdict):
