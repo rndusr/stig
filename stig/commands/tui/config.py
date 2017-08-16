@@ -9,9 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Configuration commands for the TUI"""
-
 from ..base import config as base
+from . import _mixin as mixin
+
 
 class RcCmd(base.RcCmdbase):
     provides = {'tui'}
@@ -20,4 +20,8 @@ class ResetCmd(base.ResetCmdbase):
     provides = {'tui'}
 
 class SetCmd(base.SetCmdbase):
+    provides = {'tui'}
+
+class RateLimitCmd(base.RateLimitCmdbase,
+                   mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
     provides = {'tui'}

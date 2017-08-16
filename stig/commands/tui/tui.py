@@ -14,9 +14,11 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-import shlex
-from . import make_tab_title_widget
 from .. import (InitCommand, ExpectedResource)
+from ._common import make_tab_title_widget
+
+import shlex
+
 
 # Import tui module only on demand
 def _get_KEYMAP_CONTEXTS():
@@ -409,3 +411,81 @@ class TUICmd(metaclass=InitCommand):
                 except ValueError as e:
                     log.error(e)
         return success
+
+
+class SortCmd(metaclass=InitCommand):
+    name = 'sort'
+    aliases = ()
+    provides = {'tui'}
+    category = 'tui'
+    description = "Sort lists of torrents/peers/trackers/etc"
+    usage = ('sort [<OPTIONS>] [<ORDER> <ORDER> <ORDER> ...]',)
+    examples = ('sort tracker status !rate-down',
+                'sort --add eta')
+    argspecs = (
+        {'names': ('ORDER',), 'nargs': '*',
+         'description': 'How to sort list items (see SORT ORDERS section)'},
+
+        {'names': ('--add', '-a'), 'action': 'store_true',
+         'description': 'Append ORDERs to current list of sort orders instead of replacing it'},
+
+        {'names': ('--reset', '-r'), 'action': 'store_true',
+         'description': 'Go back to sort order that was used when list was created'},
+
+        {'names': ('--none', '-n'), 'action': 'store_true',
+         'description': 'Remove all sort orders from the list'},
+    )
+
+    def _list_sort_orders(title, sortercls):
+        return (title,) + \
+            tuple('\t{}\t - \t{}'.format(', '.join((sname,) + s.aliases), s.description)
+                  for sname,s in sorted(sortercls.SORTSPECS.items()))
+
+    from ...client.sorters.tsorter import TorrentSorter
+    from ...client.sorters.psorter import TorrentPeerSorter
+    from ...client.sorters.trksorter import TorrentTrackerSorter
+    more_sections = {
+        'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) + \
+                       ('',) + \
+                       _list_sort_orders('PEER LISTS', TorrentPeerSorter) + \
+                       ('',) + \
+                       _list_sort_orders('TRACKER LISTS', TorrentTrackerSorter)
+    }
+
+    tui = ExpectedResource
+
+    async def run(self, add, reset, none, ORDER):
+        current_tab = self.tui.tabs.focus
+
+        if reset:
+            current_tab.sort = 'RESET'
+
+        if none:
+            current_tab.sort = None
+
+        if ORDER:
+            # Find appropriate sorter class for focused list
+            from ...tui.views.torrentlist import TorrentListWidget
+            from ...tui.views.peerlist import PeerListWidget
+            from ...tui.views.trackerlist import TrackerListWidget
+            if isinstance(current_tab, TorrentListWidget):
+                sortcls = self.TorrentSorter
+            elif isinstance(current_tab, PeerListWidget):
+                sortcls = self.TorrentPeerSorter
+            elif isinstance(current_tab, TrackerListWidget):
+                sortcls = self.TorrentTrackerSorter
+            else:
+                log.error('Current tab does not contain a torrent, peer or tracker list.')
+                return False
+
+            try:
+                new_sort = sortcls(ORDER)
+            except ValueError as e:
+                log.error(e)
+                return False
+
+            if add and current_tab.sort is not None:
+                current_tab.sort += new_sort
+            else:
+                current_tab.sort = new_sort
+            return True

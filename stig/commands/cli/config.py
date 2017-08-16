@@ -9,9 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Configuration commands for the CLI"""
-
 from ..base import config as base
+from . import _mixin as mixin
 
 class RcCmd(base.RcCmdbase):
     provides = {'cli'}
@@ -20,4 +19,8 @@ class ResetCmd(base.ResetCmdbase):
     provides = {'cli'}
 
 class SetCmd(base.SetCmdbase):
+    provides = {'cli'}
+
+class RateLimitCmd(base.RateLimitCmdbase,
+                   mixin.make_request, mixin.select_torrents):
     provides = {'cli'}

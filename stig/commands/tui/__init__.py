@@ -9,9 +9,11 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Commands for the TUI"""
-
 from .config import *
 from .misc import *
 from .torrent import *
+from .file import *
+from .peer import *
+from .tracker import *
+
 from .tui import *
