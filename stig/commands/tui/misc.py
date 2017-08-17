@@ -83,4 +83,3 @@ class LogCmd(base.LogCmdbase):
             log.error('Unsupported action: %s', cmd_str)
 
         return True
-

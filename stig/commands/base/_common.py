@@ -31,6 +31,7 @@ def make_SCRIPTING_doc(cmdname):
              "",
              "\t$ \tCOLUMNS=80 LINES=24 {{APPNAME}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
 
+
 def make_SORT_ORDERS_doc(sortercls, option, setting, append=()):
     doc = [('The following sort orders can be specified with the {option} option '
             'or the "{setting}" setting:').format(option=option, setting=setting),
