@@ -660,37 +660,6 @@ class TorrentAPI():
             raise ValueError('Invalid priority: {!r}'.format(priority))
 
 
-    async def announce(self, torrents, autoconnect=True):
-        """Re-announce to torrents' tracker
-
-        torrents: See `torrents` method
-        autoconnect: See `torrents` method
-
-        Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
-        """
-        import time
-        def check(t):
-            if len(t['trackers']) < 1:
-                return (False, 'Torrent has no trackers: %s' % t['name'])
-            elif t['status'].STOPPED in t['status']:
-                return (False, 'Not announcing inactive torrent: %s' % t['name'])
-            elif t['time-manual-announce-allowed'] > time.time():
-                return (False, ('Not allowing manual announce until %s (in %s): %r' %
-                                (t['time-manual-announce-allowed'],
-                                 t['time-manual-announce-allowed'].delta, t['name'])))
-            else:
-                return (True, 'Announcing: %s' % t['name'])
-
-        return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
-                                          check=check,
-                                          keys=('name', 'status', 'trackers',
-                                                'time-manual-announce-allowed'),
-                                          autoconnect=autoconnect)
-
-
     async def _limit_rate(self, direction, torrents, rate, autoconnect=True):
         # Make number or constant from `rate`
         if rate is None:
@@ -754,3 +723,34 @@ class TorrentAPI():
             msgs: list of strings/`ClientError`s caused by the request
         """
         return await self._limit_rate('down', torrents, rate, autoconnect)
+
+
+    async def announce(self, torrents, autoconnect=True):
+        """Announce torrents' to its tracker(s)
+
+        torrents: See `torrents` method
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents with the keys 'id' and 'name'
+            success: True if any torrents were found, False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        import time
+        def check(t):
+            if len(t['trackers']) < 1:
+                return (False, 'Torrent has no trackers: %s' % t['name'])
+            elif t['status'].STOPPED in t['status']:
+                return (False, 'Not announcing inactive torrent: %s' % t['name'])
+            elif t['time-manual-announce-allowed'] > time.time():
+                return (False, ('Not allowing manual announce until %s (in %s): %r' %
+                                (t['time-manual-announce-allowed'],
+                                 t['time-manual-announce-allowed'].delta, t['name'])))
+            else:
+                return (True, 'Announcing: %s' % t['name'])
+
+        return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
+                                          check=check,
+                                          keys=('name', 'status', 'trackers',
+                                                'time-manual-announce-allowed'),
+                                          autoconnect=autoconnect)
