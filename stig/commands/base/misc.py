@@ -25,7 +25,8 @@ class HelpCmdbase(metaclass=InitCommand):
     category = 'miscellaneous'
     provides = set()
     description = 'List or explain commands and settings'
-    usage = ('help [<TOPIC> <TOPIC> <TOPIC> ...]',)
+    usage = ('help',
+             'help <TOPIC> <TOPIC> ...')
     examples = ('help',
                 'help help')
     argspecs = (
@@ -82,24 +83,24 @@ class LogCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'miscellaneous'
     description = 'Clear, add or scroll through log messages'
-    usage = ('log <ACTION> [<PARAMETERS>]',)
+    usage = ('log <ACTION> [<PARAMETER> <PARAMETER> ...]',)
     examples = ('log clear',
                 'log scroll up',
                 'log scroll page down',
                 'log error Holy crap, Batman!')
     argspecs = (
         { 'names': ('ACTION',), 'nargs': 'REMAINDER',
-          'description': ('"clear", "scroll", "info" or "error"; '
-                          'see the sections below for more information') },
+          'description': ('"clear", "scroll", "info" or "error" '
+                          '(see the sections below for more information)') },
     )
 
     more_sections = { 'clear': ('Remove all previously logged messages in the TUI.  '
-                                'This action ignores all PARAMETERS.',),
+                                'This action ignores all PARAMETERs.',),
                       'scroll': ('Scroll the log messages up or down in the TUI.  '
-                                 'Valid PARAMETERS are "up", "down", "page up", "page down", '
+                                 'Valid PARAMETERs are "up", "down", "page up", "page down", '
                                  '"top" and "bottom".',),
-                      'info': ('Take all PARAMETERS and display them as a normal message.',),
-                      'error': ('Take all PARAMETERS and display them as an error message.',),
+                      'info': ('Join all PARAMETERs and display them as a normal message.',),
+                      'error': ('Join all PARAMETERs and display them as an error message.',),
     }
 
     def run(self, ACTION):

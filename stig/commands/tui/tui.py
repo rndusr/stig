@@ -117,7 +117,7 @@ class UnbindCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Unbind keys so pressing them has no effect'
-    usage = ('unbind [<OPTIONS>] <KEY> <KEY> <KEY> ...',)
+    usage = ('unbind [<OPTIONS>] <KEY> <KEY> ...',)
     examples = ('unbind --context main ctrl-l',
                 'unbind q')
     argspecs = (
@@ -235,7 +235,8 @@ class TabCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Open, close and focus tabs'
-    usage = ('tab [<OPTIONS>] [<COMMAND>]',)
+    usage = ('tab [<OPTIONS>]',
+             'tab [<OPTIONS>] <COMMAND>')
     examples = ('tab',
                 'tab ls active',
                 'tab -b ls active',

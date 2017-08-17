@@ -28,7 +28,8 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
     category = 'peer'
     description = 'List connected peers of torrent(s)'
     usage = ('peerlist [<OPTIONS>]',
-             'peerlist [<OPTIONS>] [<TORRENT FILTER>] [<PEER FILTER>]')
+             'peerlist [<OPTIONS>] <TORRENT FILTER>',
+             'peerlist [<OPTIONS>] <TORRENT FILTER> <PEER FILTER>')
     examples = ('peerlist',
                 'peerlist downloading',
                 'peerlist some_torrent ip=127.0.0.1')

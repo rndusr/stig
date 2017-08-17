@@ -28,7 +28,8 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
     category = 'tracker'
     description = 'List tracker(s) of torrent(s)'
     usage = ('trackerlist [<OPTIONS>]',
-             'trackerlist [<OPTIONS>] [<TORRENT FILTER>] [<TRACKER FILTER>]')
+             'trackerlist [<OPTIONS>] <TORRENT FILTER>',
+             'trackerlist [<OPTIONS>] <TORRENT FILTER> <TRACKER FILTER>')
     examples = ()  # TODO
     argspecs = (
         {'names': ('TORRENT FILTER',), 'nargs': '?',

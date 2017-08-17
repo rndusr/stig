@@ -26,7 +26,8 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     provides = set()
     category = 'torrent'
     description = 'List torrents'
-    usage = ('list [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]',)
+    usage = ('list [<OPTIONS>]',
+             'list [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('ls active',
                 'ls !active',
                 'ls seeds<10',
@@ -84,7 +85,8 @@ class TorrentSummaryCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Display detailed torrent information'
-    usage = ('summary',)
+    usage = ('summary',
+             'summary <TORRENT FILTER>')
     examples = ('summary id=71',)
     argspecs = (
         { 'names': ('TORRENT FILTER',), 'nargs': '?',
@@ -149,7 +151,8 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = "Change torrents' location"
-    usage = ('move [<TORRENT FILTER>] <PATH>',)
+    usage = ('move <PATH>',
+             'move <TORRENT FILTER> <PATH>')
     examples = ('move new/path',
                 'move size>50g path/to/lots/of/storage')
     argspecs = (
@@ -184,7 +187,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     category = 'torrent'
     description = 'Remove torrents'
     usage = ('remove [<OPTIONS>]',
-             'remove [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]')
+             'remove [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('remove',
                 'remove "stupid torrent" silly\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
@@ -225,7 +228,7 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
     category = 'torrent'
     description = 'Start downloading torrents'
     usage = ('start [<OPTIONS>]',
-             'start [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]')
+             'start [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('start',
                 "start 'night of the living dead' Metropolis",
                 'start ubuntu --force')
@@ -266,7 +269,7 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
     category = 'torrent'
     description = 'Stop downloading torrents'
     usage = ('stop [<OPTIONS>]',
-             'stop [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]')
+             'stop [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('stop',
                 'stop "night of the living dead" idle',
                 'stop --toggle ubuntu')
@@ -304,7 +307,7 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     category = 'torrent'
     description = 'Verify downloaded torrent data'
     usage = ('verify [<OPTIONS>]',
-             'verify [<OPTIONS>] [<TORRENT FILTER> <TORRENT FILTER> ...]')
+             'verify [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('verify',
                 'verify debian')
     argspecs = (

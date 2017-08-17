@@ -26,7 +26,8 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
     category = 'file'
     description = 'List files of torrent(s)'
     usage = ('filelist [<OPTIONS>]',
-             'filelist [<OPTIONS>] [<TORRENT FILTER>] [<FILE FILTER>]')
+             'filelist [<OPTIONS>] <TORRENT FILTER>',
+             'filelist [<OPTIONS>] <TORRENT FILTER> <FILE FILTER>')
     examples = ('filelist',
                 'filelist size<100MB',
                 'filelist A.Torrent.with.Files priority=low')
@@ -80,7 +81,8 @@ class PriorityCmdbase(metaclass=InitCommand):
     category = 'file'
     description = 'Change download priority of files'
     usage = ('priority <PRIORITY>',
-             'priority <PRIORITY> [<TORRENT FILTER>] [<FILE FILTER>]')
+             'priority <PRIORITY> <TORRENT FILTER>',
+             'priority <PRIORITY> <TORRENT FILTER> <FILE FILTER>')
     examples = ('priority low',
                 'priority high "that torrent" size>12M')
     argspecs = (

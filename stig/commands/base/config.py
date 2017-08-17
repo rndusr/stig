@@ -157,7 +157,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
     category = 'configuration'
     description = "Limit up-/download rate per torrent or globally"
     usage = ('rate <DIRECTION> <LIMIT>',
-             'rate <DIRECTION> <LIMIT> [<TORRENT FILTER> <TORRENT FILTER> ...]')
+             'rate <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('rate up 5Mb',
                 'rate up,down - "This torrent" size<100MB',
                 'rate down,up 1MB global')
