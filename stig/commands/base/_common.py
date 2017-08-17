@@ -10,6 +10,15 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 
+def make_X_FILTER_spec(filtername, or_focused=False, **kwargs):
+    spec = { 'names': (filtername.upper() + ' FILTER',),
+             'description': 'Filter expression (see %s FILTERS section in `help filter`)' % filtername.upper()}
+    if or_focused:
+        spec['description'] += ' or focused %s in the TUI' % filtername.lower()
+    spec.update(**kwargs)
+    return spec
+
+
 def make_SCRIPTING_doc(cmdname):
     return ( ("If invoked as a command line argument and the output does not "
               "go to a TTY (i.e. the terminal size can't be determined), "

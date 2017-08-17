@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource)
 from . import _mixin as mixin
-from . _common import (make_COLUMNS_doc, make_SCRIPTING_doc)
+from ._common import (make_X_FILTER_spec, make_COLUMNS_doc, make_SCRIPTING_doc)
 
 import asyncio
 
@@ -32,12 +32,8 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
                 'filelist size<100MB',
                 'filelist A.Torrent.with.Files priority=low')
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '?',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
-
-        { 'names': ('FILE FILTER',), 'nargs': '?',
-          'description': 'Filter expression (see `help filter`)' },
-
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+        make_X_FILTER_spec('FILE', or_focused=False, nargs='?'),
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'columns.files' setting",
           'description': ('Comma-separated list of column names '
@@ -87,14 +83,9 @@ class PriorityCmdbase(metaclass=InitCommand):
                 'priority high "that torrent" size>12M')
     argspecs = (
         { 'names': ('PRIORITY',),
-          'description': ("File priority; must be low/normal/high/shun, "
-                          "l/n/h/s or -/./+/0")},
-
-        {'names': ('TORRENT FILTER',), 'nargs': '?',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
-
-        { 'names': ('FILE FILTER',), 'nargs': '?',
-         'description': 'Filter expression (see `help filter`) or focused file in the TUI'},
+          'description': 'File priority; must be low/normal/high/shun, l/n/h/s or -/./+/0'},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+        make_X_FILTER_spec('FILE', or_focused=True, nargs='?'),
     )
     srvapi = ExpectedResource
 

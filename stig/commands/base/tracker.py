@@ -14,7 +14,8 @@ log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource)
 from . import _mixin as mixin
-from . _common import (make_COLUMNS_doc, make_SORT_ORDERS_doc, make_SCRIPTING_doc)
+from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
+                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
 import asyncio
 from collections import abc
@@ -32,11 +33,8 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
              'trackerlist [<OPTIONS>] <TORRENT FILTER> <TRACKER FILTER>')
     examples = ()  # TODO
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '?',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
-
-        { 'names': ('TRACKER FILTER',), 'nargs': '?',
-          'description': 'Filter expression (see `help filter`)' },
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+        make_X_FILTER_spec('TRACKER', or_focused=True, nargs='?'),
 
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'sort.trackers' setting",
@@ -99,8 +97,7 @@ class AnnounceTorrentsCmdbase(metaclass=InitCommand):
              'announce <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('announce tracker~example.org',)
     argspecs = (
-        { 'names': ('TORRENT FILTER',), 'nargs': '*',
-          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
     )
     srvapi = ExpectedResource
 

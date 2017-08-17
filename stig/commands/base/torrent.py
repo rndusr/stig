@@ -14,7 +14,8 @@ log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource)
 from . import _mixin as mixin
-from . _common import (make_COLUMNS_doc, make_SORT_ORDERS_doc, make_SCRIPTING_doc)
+from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
+                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
 import asyncio
 
@@ -35,8 +36,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                 'ls active|idle&tracker~example')
 
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '*',
-         'description': 'Filter expression (see `help filter`)'},
+        make_X_FILTER_spec('TORRENT', or_focused=False, nargs='*'),
 
         { 'names': ('--sort', '-s'),
           'default_description': "current value of 'sort.torrents' setting",
@@ -89,8 +89,7 @@ class TorrentSummaryCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
              'summary <TORRENT FILTER>')
     examples = ('summary id=71',)
     argspecs = (
-        { 'names': ('TORRENT FILTER',), 'nargs': '?',
-          'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
     )
     srvapi = ExpectedResource
 
@@ -156,9 +155,7 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
     examples = ('move new/path',
                 'move size>50g path/to/lots/of/storage')
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '?',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
-
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         {'names': ('PATH',),
          'description': ('New location of the specified torrent(s).  If PATH is relative '
                          '(does not start with "/"), it is relative to the value of the '
@@ -192,9 +189,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 'remove "stupid torrent" silly\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '*',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
-
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
         { 'names': ('--delete-files','-d'), 'action': 'store_true',
           'description': 'Delete any downloaded files' },
     )
@@ -233,9 +228,7 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
                 "start 'night of the living dead' Metropolis",
                 'start ubuntu --force')
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '*',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
-
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
         { 'names': ('--force','-f'), 'action': 'store_true',
           'description': 'Ignore download queue' },
         ARGSPEC_TOGGLE,
@@ -274,8 +267,7 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
                 'stop "night of the living dead" idle',
                 'stop --toggle ubuntu')
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '*',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
         ARGSPEC_TOGGLE,
     )
     srvapi = ExpectedResource
@@ -311,8 +303,7 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     examples = ('verify',
                 'verify debian')
     argspecs = (
-        {'names': ('TORRENT FILTER',), 'nargs': '*',
-         'description': 'Filter expression (see `help filter`) or focused torrent in the TUI'},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
     )
     srvapi = ExpectedResource
 
