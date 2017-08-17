@@ -87,7 +87,7 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
             return self.make_trklist(torfilter, trkfilter, sort, columns)
 
 
-class AnnounceTorrentsCmdbase(metaclass=InitCommand):
+class AnnounceCmdbase(metaclass=InitCommand):
     name = 'announce'
     aliases = ('an',)
     provides = set()

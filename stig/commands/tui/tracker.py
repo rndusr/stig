@@ -43,8 +43,8 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
         return True
 
 
-class AnnounceTorrentsCmd(base.AnnounceTorrentsCmdbase,
-                          mixin.make_request, mixin.select_torrents):
+class AnnounceCmd(base.AnnounceCmdbase,
+                  mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
 
 
