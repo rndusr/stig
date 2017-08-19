@@ -18,7 +18,7 @@ import os
 import base64
 import unicodedata
 
-from ..utils import Response
+from ..utils import (Response, URL)
 from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
 from ..filters.tfilter import TorrentFilter
