@@ -731,6 +731,61 @@ class TorrentAPI():
         return await self._limit_rate('down', torrents, rate, autoconnect)
 
 
+    async def tracker_add(self, torrents, urls, autoconnect=True):
+        """Add tracker(s) to torrents
+
+        torrents: See `torrents` method
+        urls: Iterable of announce URLs
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            success: True if any torrents were found, False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+        """
+        # Transmission returns 'Invalid argument' if we try to add an existing
+        # tracker, so first we check if any of our URLs already exist.
+        response = await self.torrents(torrents, keys=('id', 'name', 'trackers',),
+                                       autoconnect=autoconnect)
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=response.msgs)
+        else:
+            tordict = {tor['id']:tor for tor in  response.torrents}
+
+        # Map torrent IDs to currently used URLs by that torrent
+        old_url_dict = {torid:tuple(trk['url-announce'] for trk in torrent['trackers'])
+                        for torid,torrent in tordict.items()}
+
+        # Make sure URLs are comparable
+        new_urls = [URL(url) for url in urls]
+
+        # For each torrent, report any supplied URLs that are already used
+        msgs = []
+        for torid,old_urls in old_url_dict.items():
+            for old_url in old_urls:
+                for new_url in new_urls:
+                    if old_url == new_url:
+                        msgs.append(ClientError('%s: Tracker already exists: %s' %
+                                                (tordict[torid]['name'], new_url)))
+                        new_urls.remove(new_url)
+
+        # No URLs left to add?
+        if not new_urls:
+            return Response(success=False, torrents=(), msgs=msgs)
+
+        for new_url in new_urls:
+            msgs.append('%s: Tracker added: %s' % (tordict[torid]['name'], new_url))
+
+        # Add trackers
+        args = {'trackerAdd': [str(url) for url in new_urls]}
+        response = await self._torrent_action(self.rpc.torrent_set, torrents,
+                                              method_args=args,
+                                              autoconnect=autoconnect)
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=msgs + list(response.msgs))
+        else:
+            return Response(success=True, torrents=response.torrents, msgs=msgs)
+
     async def announce(self, torrents, autoconnect=True):
         """Announce torrents' to its tracker(s)
 
