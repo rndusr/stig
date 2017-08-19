@@ -94,8 +94,10 @@ class TorrentAPI():
 
     async def _abs_download_path(self, path, autoconnect=True):
         """Turn relative `path` into absolute path based on default download path"""
-        if not os.path.isabs(path):
-            response = await self._request(self.rpc.session_get, autoconnect=autoconnect)
+        if not autoconnect and not self.rpc.connected:
+            return None
+        elif not os.path.isabs(path):
+            response = await self._request(self.rpc.session_get)
             if not response.success:
                 return Response(path=None, success=False, msgs=response.msgs)
             else:
@@ -209,8 +211,7 @@ class TorrentAPI():
         """
         if not autoconnect and not self.rpc.connected:
             return None
-
-        if keys == 'ALL':
+        elif keys == 'ALL':
             fields = TorrentFields(keys)
         else:
             fields = TorrentFields(*keys)
@@ -264,7 +265,7 @@ class TorrentAPI():
         elif tfilter == None:
             log.debug('Looking for all torrents with keys: %s', keys)
             # No filter specified - just return all torrents with the specified keys
-            return await self._get_torrents_by_ids(keys=keys, autoconnect=autoconnect)
+            return await self._get_torrents_by_ids(keys=keys)
         else:
             log.debug('Looking for %s torrents with keys: %s', tfilter, keys)
             tlist = ()
@@ -314,13 +315,15 @@ class TorrentAPI():
             success: False if no torrents were found, True otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if torrents is None:
-            return await self._get_torrents_by_ids(keys, autoconnect=autoconnect)
+        if not autoconnect and not self.rpc.connected:
+            return None
+        elif torrents is None:
+            return await self._get_torrents_by_ids(keys)
         elif isinstance(torrents, (str, TorrentFilter)):
-            return await self._get_torrents_by_filter(keys, tfilter=torrents, autoconnect=autoconnect)
+            return await self._get_torrents_by_filter(keys, tfilter=torrents)
         elif isinstance(torrents, abc.Sequence) and \
              all(isinstance(id, int) for id in torrents):
-            return await self._get_torrents_by_ids(keys, ids=torrents, autoconnect=autoconnect)
+            return await self._get_torrents_by_ids(keys, ids=torrents)
         else:
             raise ValueError("Invalid 'torrents' argument: {!r}".format(torrents))
 
@@ -557,8 +560,11 @@ class TorrentAPI():
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
+        if not autoconnect and not self.rpc.connected:
+            return None
+
         # Transmission wants an absolute path
-        response = await self._abs_download_path(path, autoconnect=autoconnect)
+        response = await self._abs_download_path(path)
         if not response.success:
             return Response(torrents=(), success=False, msgs=response.msgs)
         else:
@@ -573,8 +579,7 @@ class TorrentAPI():
         return await self._torrent_action(self.rpc.torrent_set_location, torrents,
                                           check=create_info_msg, keys_check=('path',),
                                           keys_return=('path',),
-                                          method_args={'move': True, 'location': path},
-                                          autoconnect=autoconnect)
+                                          method_args={'move': True, 'location': path})
 
 
     async def file_priority(self, torrents, priority, files, autoconnect=True):
@@ -593,8 +598,10 @@ class TorrentAPI():
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        response = await self.torrents(torrents, keys=('name', 'files'),
-                                       autoconnect=autoconnect)
+        if not autoconnect and not self.rpc.connected:
+            return None
+
+        response = await self.torrents(torrents, keys=('name', 'files'))
         if not response.success:
             return Response(torrents=(), success=False, msgs=response.msgs)
         else:
@@ -637,14 +644,13 @@ class TorrentAPI():
                 # file's ID is its index (see .torrent.TorrentFileTree).
                 findexes = tuple(f['id'] for f in flist)
                 if findexes:
-                    response = await self._set_files_priority(priority, t['id'], findexes, autoconnect)
+                    response = await self._set_files_priority(priority, t['id'], findexes)
                     if response.success:
                         torrent_ids.append(t['id'])
                     msgs.extend(response.msgs)
 
         if torrent_ids:
-            response = await self.torrents(torrent_ids, keys=('name', 'files'),
-                                           autoconnect=autoconnect)
+            response = await self.torrents(torrent_ids, keys=('name', 'files'))
             if response.success:
                 torrents = response.torrents
         return Response(torrents=torrents,
@@ -668,6 +674,9 @@ class TorrentAPI():
 
 
     async def _limit_rate(self, direction, torrents, rate, autoconnect=True):
+        if not autoconnect and not self.rpc.connected:
+            return None
+
         # Make number or constant from `rate`
         if rate is None:
             limit = const.UNLIMITED
@@ -684,8 +693,7 @@ class TorrentAPI():
                     '%sloadLimit' % direction: int(l/1000)}  # Transmission expects kilobytes
 
         response = await self._torrent_action(self.rpc.torrent_set, torrents,
-                                              method_args=args,
-                                              autoconnect=autoconnect)
+                                              method_args=args)
 
         if not response.success:
             return response
@@ -743,10 +751,12 @@ class TorrentAPI():
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
+        if not autoconnect and not self.rpc.connected:
+            return None
+
         # Transmission returns 'Invalid argument' if we try to add an existing
         # tracker, so first we check if any of our URLs already exist.
-        response = await self.torrents(torrents, keys=('id', 'name', 'trackers',),
-                                       autoconnect=autoconnect)
+        response = await self.torrents(torrents, keys=('id', 'name', 'trackers',))
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
         else:
@@ -778,8 +788,7 @@ class TorrentAPI():
         # Add trackers
         args = {'trackerAdd': [str(url) for url in new_urls]}
         response = await self._torrent_action(self.rpc.torrent_set, torrents,
-                                              method_args=args,
-                                              autoconnect=autoconnect)
+                                              method_args=args)
         if not response.success:
             return Response(success=False, torrents=(), msgs=msgs + list(response.msgs))
         else:
