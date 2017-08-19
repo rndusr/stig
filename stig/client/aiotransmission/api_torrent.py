@@ -391,7 +391,7 @@ class TorrentAPI():
 
         # Get the requested keys for returned torrents
         if len(tlist) > 0:
-            response = await self.torrents(torrents, keys=keys_return)
+            response = await self._get_torrents_by_ids(keys_return, tuple(t['id'] for t in tlist))
             if not response.success:
                 return Response(success=False, torrents=(), msgs=response.msgs)
             return Response(success=True, torrents=response.torrents, msgs=msgs)
