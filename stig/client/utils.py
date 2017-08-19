@@ -79,28 +79,36 @@ class LazyDict(dict):
 from urllib.parse import (urlsplit, urlunsplit)
 class URL(str):
     """Provide the same attributes as `urllib.parse.urlsplit` plus 'domain'"""
-    def __new__(cls, url):
-        if isinstance(url, URL):
-            return url
-        else:
-            return super().__new__(cls, url)
-
     def __init__(self, url):
-        url = urlsplit(url)
-        for attr in ('scheme', 'netloc', 'path', 'query', 'fragment'):
-            setattr(self, attr, getattr(url, attr))
+        # If no scheme is given, urlsplit() thinks the whole string is the path
+        if '://' not in url:
+            url = 'http://' + url
+        self._split_url = split_url = urlsplit(url)
 
-        # Find domain
-        if url.hostname.count('.') <= 1:
-            setattr(self, 'domain', url.hostname)
+        # Find domain name
+        if split_url.hostname.count('.') <= 1:
+            self.__domain = split_url.hostname
         else:
-            parts = url.hostname.split('.')
-            setattr(self, 'domain', '.'.join(parts[-2:]))
+            parts = split_url.hostname.split('.')
+            self.__domain = '.'.join(parts[-2:])
 
-        self._url = url
+    def __getattr__(self, name):
+        if name == 'domain':
+            return self.__domain
+        else:
+            return getattr(self._split_url, name)
 
     def __str__(self):
-        return urlunsplit(self._url)
+        return urlunsplit(self._split_url)
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self._split_url == other._split_url
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash(self._split_url)
 
     def __repr__(self):
         return '<URL %s>' % self
