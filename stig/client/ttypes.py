@@ -590,7 +590,7 @@ class TorrentTracker(abc.Mapping):
         'tier'               : int,
 
         'url-announce'       : utils.URL,
-        'url-scrape'         : utils.URL,
+        'url-scrape'         : lambda url: utils.URL(url) if url else '',
         'domain'             : SmartCmpStr,
 
         'state-announce'     : _validate_tracker_state,

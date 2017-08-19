@@ -316,8 +316,8 @@ class TrackerList(tuple):
                     'id'                 : (raw_torrent['id'], tracker['id']),
                     'tier'               : tracker['tier'],
 
-                    'url-announce'       : lambda: utils.URL(tracker['announce']),
-                    'url-scrape'         : lambda: utils.URL(tracker['scrape']),
+                    'url-announce'       : tracker['announce'],
+                    'url-scrape'         : tracker['scrape'],
 
                     'state-announce'     : cls._STATES_ANNOUNCE[tracker['announceState']],
                     'state-scrape'       : cls._STATES_SCRAPE[tracker['scrapeState']],
