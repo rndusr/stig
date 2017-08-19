@@ -783,7 +783,7 @@ class TorrentAPI():
             return Response(success=False, torrents=(), msgs=msgs)
 
         for new_url in new_urls:
-            msgs.append('%s: Tracker added: %s' % (tordict[torid]['name'], new_url))
+            msgs.append('%s: Adding tracker: %s' % (tordict[torid]['name'], new_url))
 
         # Add trackers
         args = {'trackerAdd': [str(url) for url in new_urls]}
