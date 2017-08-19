@@ -313,28 +313,27 @@ class TrackerList(tuple):
                 (utils.LazyDict({
                     'tid'                : raw_torrent['id'],
                     'tname'              : raw_torrent['name'],
-                    'id'                 : (raw_torrent['id'], tracker['id']),
-                    'tier'               : tracker['tier'],
+                    'id'                 : (raw_torrent['id'], raw_tracker['id']),
+                    'tier'               : raw_tracker['tier'],
 
-                    'url-announce'       : tracker['announce'],
-                    'url-scrape'         : tracker['scrape'],
+                    'url-announce'       : raw_tracker['announce'],
+                    'url-scrape'         : raw_tracker['scrape'],
 
-                    'state-announce'     : cls._STATES_ANNOUNCE[tracker['announceState']],
-                    'state-scrape'       : cls._STATES_SCRAPE[tracker['scrapeState']],
+                    'state-announce'     : cls._STATES_ANNOUNCE[raw_tracker['announceState']],
+                    'state-scrape'       : cls._STATES_SCRAPE[raw_tracker['scrapeState']],
 
-                    'error-announce'     : lambda: cls._error_announce(tracker),
-                    'error-scrape'       : lambda: cls._error_scrape(tracker),
+                    'error-announce'     : lambda: cls._error_announce(raw_tracker),
+                    'error-scrape'       : lambda: cls._error_scrape(raw_tracker),
 
-                    'count-downloads'    : tracker['downloadCount'],
-                    'count-leeches'      : tracker['leecherCount'],
-                    'count-seeds'        : tracker['seederCount'],
+                    'count-downloads'    : raw_tracker['downloadCount'],
+                    'count-leeches'      : raw_tracker['leecherCount'],
+                    'count-seeds'        : raw_tracker['seederCount'],
 
-                    'time-last-announce' : lambda: cls._last_time(tracker, 'Announce'),
-                    'time-last-scrape'   : lambda: cls._last_time(tracker, 'Scrape'),
-                    'time-next-announce' : lambda: cls._next_time(tracker, 'Announce'),
-                    'time-next-scrape'   : lambda: cls._next_time(tracker, 'Scrape'),
-
-                }))) for tracker in raw_torrent['trackerStats'])
+                    'time-last-announce' : lambda: cls._last_time(raw_tracker, 'Announce'),
+                    'time-last-scrape'   : lambda: cls._last_time(raw_tracker, 'Scrape'),
+                    'time-next-announce' : lambda: cls._next_time(raw_tracker, 'Announce'),
+                    'time-next-scrape'   : lambda: cls._next_time(raw_tracker, 'Scrape'),
+                }))) for raw_tracker in raw_torrent['trackerStats'])
         )
 
 
