@@ -436,8 +436,8 @@ class TorrentAPI():
             method = self.rpc.torrent_start
 
         return await self._torrent_action(method, torrents,
-                                          method_args={'force':force},
                                           check=check, keys=('status', 'name'),
+                                          method_args={'force':force},
                                           autoconnect=autoconnect)
 
     async def toggle_stopped(self, torrents, force=False, autoconnect=True):
@@ -527,9 +527,8 @@ class TorrentAPI():
             return (True, msg % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_remove, torrents,
-                                          keys=('name',),
+                                          check=create_info_msg, keys=('name',),
                                           method_args={'delete-local-data': delete},
-                                          check=create_info_msg,
                                           autoconnect=autoconnect)
 
 
@@ -562,9 +561,8 @@ class TorrentAPI():
                 return (False, 'Already in %s: %s' % (path, t['name']))
 
         return await self._torrent_action(self.rpc.torrent_set_location, torrents,
-                                          keys=('name', 'path'),
+                                          check=create_info_msg, keys=('name', 'path'),
                                           method_args={'move': True, 'location': path},
-                                          check=create_info_msg,
                                           autoconnect=autoconnect)
 
 
@@ -750,7 +748,6 @@ class TorrentAPI():
                 return (True, 'Announcing: %s' % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
-                                          check=check,
-                                          keys=('name', 'status', 'trackers',
-                                                'time-manual-announce-allowed'),
+                                          check=check, keys=('name', 'status', 'trackers',
+                                                             'time-manual-announce-allowed'),
                                           autoconnect=autoconnect)
