@@ -48,3 +48,6 @@ class AnnounceCmd(base.AnnounceCmdbase,
     provides = {'tui'}
 
 
+class TrackerCmd(base.TrackerCmdbase,
+                 mixin.make_request, mixin.polling_frenzy, mixin.select_torrents):
+    provides = {'tui'}

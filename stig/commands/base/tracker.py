@@ -114,3 +114,48 @@ class AnnounceCmdbase(metaclass=InitCommand):
                 self.srvapi.torrent.announce(tfilter),
                 polling_frenzy=False)
             return response.success
+
+
+class TrackerCmdbase(metaclass=InitCommand):
+    name = 'tracker'
+    aliases = ('trk',)
+    provides = set()
+    category = 'tracker'
+    description = 'Add or remove tracker from torrents'
+    usage = ('tracker <ACTION> [<TORRENT FILTER>] <URL> <URL> ...',)
+    examples = ('tracker add "torrent with no tracker" http://tracker3.example.org:12345/announce',
+                'tracker remove all tracker1.example tracker2.example ')
+    argspecs = (
+        { 'names': ('ACTION',),
+          'description': '"add" or "remove"' },
+
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+
+        { 'names': ('URL',), 'nargs': '+',
+          'description': ('Announce URL to add to or remove from all matching torrents; '
+                          'may be partial (e.g. the domain name) if ACTION is "remove"') },
+    )
+    srvapi = ExpectedResource
+
+    async def run(self, ACTION, TORRENT_FILTER, URL):
+        urls = tuple(URL)
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
+
+        log.debug('Adding trackers to %s torrents: %s', tfilter, ', '.join(urls))
+
+        if ACTION == 'add':
+            method = self.srvapi.torrent.tracker_add
+        elif ACTION == 'remove':
+            method = self.srvapi.torrent.tracker_remove
+        else:
+            log.error('%s: ACTION argument must be "add" or "remove", not %r', self.name, ACTION)
+            return False
+
+        response = await self.make_request(method(tfilter, urls), polling_frenzy=True)
+        return response.success

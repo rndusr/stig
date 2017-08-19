@@ -68,3 +68,8 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
 class AnnounceCmd(base.AnnounceCmdbase,
                   mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
+
+
+class TrackerCmd(base.TrackerCmdbase,
+                 mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
