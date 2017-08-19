@@ -149,7 +149,6 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         response = await self.api._torrent_action(
             torrents=TorrentFilter('id=4'),
             method=self.mock_method,
-            keys=('id')
         )
         self.assertEqual(self.mock_method_args, None)
         self.assertEqual(self.mock_method_kwargs, None)
@@ -162,7 +161,6 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         response = await self.api._torrent_action(
             torrents=TorrentFilter('id=4|id=3'),
             method=self.mock_method,
-            keys=('id',)
         )
         self.assertEqual(self.mock_method_args, (3,))
         self.assertEqual(self.mock_method_kwargs, {})
@@ -174,7 +172,6 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         response = await self.api._torrent_action(
             torrents=TorrentFilter('name~B'),
             method=self.mock_method, method_args={'foo': 'bar'},
-            keys=('name',)
         )
         self.assertEqual(self.mock_method_args, (2,3))
         self.assertEqual(self.mock_method_kwargs, {'foo': 'bar'})
@@ -185,7 +182,6 @@ class TestManipulatingTorrents(TorrentAPITestCase):
     async def test_rpc_method_without_filter(self):
         response = await self.api._torrent_action(
             method=self.mock_method,
-            keys=('name',)
         )
         self.assertEqual(self.mock_method_args, (1, 2, 3))  # All torrents
         self.assertEqual(self.mock_method_kwargs, {})
@@ -205,8 +201,7 @@ class TestManipulatingTorrents(TorrentAPITestCase):
 
         response = await self.api._torrent_action(
             method=self.mock_method,
-            keys=wanted_keys,
-            check=check_func,
+            check=check_func, keys_check=wanted_keys,
         )
         self.assertEqual(self.mock_method_args, (1, 3))
         self.assertEqual(self.mock_method_kwargs, {})
