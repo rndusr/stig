@@ -763,11 +763,10 @@ class TorrentAPI():
         msgs = []
         for torid,old_urls in old_url_dict.items():
             for old_url in old_urls:
-                for new_url in new_urls:
-                    if old_url == new_url:
-                        msgs.append(ClientError('%s: Tracker already exists: %s' %
-                                                (tordict[torid]['name'], new_url)))
-                        new_urls.remove(new_url)
+                if old_url in new_urls:
+                    msgs.append(ClientError('%s: Tracker already exists: %s' %
+                                            (tordict[torid]['name'], old_url)))
+                    new_urls.remove(old_url)
 
         # No URLs left to add?
         if not new_urls:
