@@ -794,6 +794,78 @@ class TorrentAPI():
         else:
             return Response(success=True, torrents=response.torrents, msgs=msgs)
 
+    async def tracker_remove(self, torrents, urls, partial_match=False, autoconnect=True):
+        """Remove tracker(s) from torrents
+
+        torrents: See `torrents` method
+        urls: Iterable of announce URLs
+        partial_match: True if given URLs match existing URLs partially
+                       (e.g. 'example.org' matches 'http://tracker.example.org/')
+        autoconnect: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            success: True if any torrents were found, False otherwise
+            msgs: list of strings/`ClientError`s caused by the request
+
+        """
+        if not autoconnect and not self.rpc.connected:
+            return None
+
+        # Get wanted torrent IDs
+        response = await self.torrents(torrents, keys=('id',))
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=response.msgs)
+        else:
+            torids = tuple(t['id'] for t in response.torrents)
+
+        # Get raw tracker lists for the unaltered tracker IDs.  We need them
+        # later to specify which trackers to remove.
+        response = await self._request(self.rpc.torrent_get, ids=torids,
+                                       fields=('id', 'name', 'trackers'))
+        if not response.success or len(response.result) <= 0:
+            return Response(success=False, torrents=(), msgs=response.msgs)
+        else:
+            raw_tor_dict = {raw_tor['id']:raw_tor for raw_tor in response.result}
+
+        # Map torrent IDs to lists of IDs of matching trackers
+        msgs = []
+        remove_urls = urls
+        matching_urls = []
+        remove_ids = {}
+        for torid,raw_tor in raw_tor_dict.items():
+            remove_ids[torid] = []
+            for raw_trk in raw_tor['trackers']:
+                existing_url = raw_trk['announce']
+                for remove_url in remove_urls:
+                    if remove_url == existing_url or partial_match and remove_url in existing_url:
+                        remove_ids[torid].append(raw_trk['id'])
+                        matching_urls.append(remove_url)
+                        msgs.append('%s: Removing tracker: %s' % (raw_tor['name'], existing_url))
+
+            if len(remove_ids[torid]) <= 0:
+                # No matching trackers for this torrent
+                del remove_ids[torid]
+
+        # Report error if no matching trackers were found for a given URL
+        for mismatch in set(remove_urls).difference(matching_urls):
+            msgs.append(ClientError('No matching trackers found: %r' % mismatch))
+
+        # Finally remove trackers from torrents
+        if remove_ids:
+            for torid,trkids in remove_ids.items():
+                response = await self._torrent_action(self.rpc.torrent_set, (torid,),
+                                                      method_args={'trackerRemove': trkids})
+                if not response.success:
+                    return Response(success=False, torrents=(), msgs=response.msgs)
+
+        # Get new torrent list with newly added trackers
+        response = await self.torrents(tuple(remove_ids), keys=('id', 'name', 'trackers'))
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=msgs + list(response.msgs))
+        else:
+            return Response(success=True, torrents=response.torrents, msgs=msgs)
+
     async def announce(self, torrents, autoconnect=True):
         """Announce torrents' to its tracker(s)
 
