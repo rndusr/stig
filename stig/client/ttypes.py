@@ -634,7 +634,7 @@ class TorrentTracker(abc.Mapping):
             self._cache[key] = self.TYPES[key](val)
         return self._cache[key]
 
-    def __repr__(self): return '<%s %s>' % (type(self).__name__, self['domain'])
+    def __repr__(self): return '<%s %s>' % (type(self).__name__, self['url-announce'])
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
 
