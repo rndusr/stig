@@ -753,6 +753,8 @@ class TorrentAPI():
         """
         if not autoconnect and not self.rpc.connected:
             return None
+        if not urls:
+            return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
 
         # Transmission returns 'Invalid argument' if we try to add an existing
         # tracker, so first we check if any of our URLs already exist.
@@ -811,6 +813,8 @@ class TorrentAPI():
         """
         if not autoconnect and not self.rpc.connected:
             return None
+        if not urls:
+            return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
 
         # Get wanted torrent IDs
         response = await self.torrents(torrents, keys=('id',))
