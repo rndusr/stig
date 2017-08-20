@@ -618,7 +618,8 @@ class TorrentTracker(abc.Mapping):
                                  else self['state-announce']),
         'error'  : lambda self: ('Announce error: %s' % self['error-announce']
                                  if self['error-announce'] else
-                                 'Scrape error: %s' % self['error-scrape'])
+                                 'Scrape error: %s' % self['error-scrape']
+                                 if self['error-scrape'] else '')
     }
 
     def __init__(self, trkdict):
