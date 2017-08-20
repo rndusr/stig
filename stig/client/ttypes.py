@@ -173,8 +173,8 @@ class Timedelta(int):
     # To sort unknown and not applicable Timedeltas below the rest, these
     # constants have large values that are very likely never encountered as
     # actual values.
-    UNKNOWN        = 1e20    # >3 billion years
-    NOT_APPLICABLE = 1e21    # >31 billion years
+    UNKNOWN        = 1e10
+    NOT_APPLICABLE = 1e11
 
     _FROM_STRING_REGEX = re.compile((r'(\d+(?:\.\d+|)[' +
                                      r''.join(unit for unit,secs in SECONDS) +
@@ -251,9 +251,9 @@ import time
 class Timestamp(int):
     NOW            = -2
     SOON           = -1
-    UNKNOWN        = 1e31
-    NOT_APPLICABLE = 1e32
-    NEVER          = 1e33
+    UNKNOWN        = 1e10
+    NOT_APPLICABLE = 1e11
+    NEVER          = 1e12
 
     _FORMATS_DATE = (('%Y',       ('tm_year',)),
                      ('%Y-%m',    ('tm_year', 'tm_mon')),
