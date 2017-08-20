@@ -10,11 +10,13 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 
-def make_X_FILTER_spec(filtername, or_focused=False, **kwargs):
+def make_X_FILTER_spec(filtername, or_focused=False, more_text='', **kwargs):
     spec = { 'names': (filtername.upper() + ' FILTER',),
              'description': 'Filter expression (see %s FILTERS section in `help filter`)' % filtername.upper()}
     if or_focused:
         spec['description'] += ' or focused %s in the TUI' % filtername.lower()
+    if more_text:
+        spec['description'] += '; %s' % more_text
     spec.update(**kwargs)
     return spec
 
