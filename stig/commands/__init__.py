@@ -162,15 +162,16 @@ def InitCommand(clsname, bases, attrs):
     argp = StayAliveArgParser()
     for argspec in attrs['argspecs']:
         # Check if all mandatory keys are in the spec
-        for mandatory_key in ('names', 'description'):
+        for mandatory_key in ('names',):
             if mandatory_key not in argspec:
                 raise RuntimeError('Missing key {!r} in argument spec: {}'
                                    .format(mandatory_key, argspec))
 
-        # Create a copy of the spec for this arg and remove all items that
-        # ArgParser doesn't understand
+        # Create a copy of argspec so we don't alter the original class
+        # attribute and remove all items that ArgParser doesn't understand
         argspec = argspec.copy()
-        argspec.pop('description')
+        if 'description' in argspec:
+            argspec.pop('description')
         if 'default_description' in argspec:
             argspec.pop('default_description')
 

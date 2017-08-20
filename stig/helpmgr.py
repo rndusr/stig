@@ -237,6 +237,10 @@ class HelpManager():
             lines.append('ARGUMENTS')
             lines_args = []
             for argspec in cmd.argspecs:
+                if 'description' not in argspec:
+                    # Argument has no description
+                    continue
+
                 argline = '\t' + ','.join(argspec['names'])
                 if takes_value(argspec):
                     dest = arg_dest(argspec)
