@@ -121,19 +121,23 @@ class TrackerCmdbase(metaclass=InitCommand):
     aliases = ('trk',)
     provides = set()
     category = 'tracker'
-    description = 'Add or remove tracker from torrents'
-    usage = ('tracker <ACTION> [<TORRENT FILTER>] <URL> <URL> ...',)
+    description = 'Add/Remove trackers to/from torrents'
+    _ADD_ACTIONS = ('add',)
+    _REMOVE_ACTIONS = ('remove', 'rm')
+    _ALL_ACTIONS = _ADD_ACTIONS + _REMOVE_ACTIONS
+    usage = ('tracker %s <URL>' % '|'.join(_ALL_ACTIONS),
+             'tracker %s [<TORRENT FILTER>] <URL> <URL> ...' % '|'.join(_ALL_ACTIONS))
+
     examples = ('tracker add "torrent with no tracker" http://tracker3.example.org:12345/announce',
                 'tracker remove all tracker1.example tracker2.example ')
     argspecs = (
-        { 'names': ('ACTION',),
-          'description': '"add" or "remove"' },
+        { 'names': ('ACTION',), 'choices': _ALL_ACTIONS },
 
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
 
         { 'names': ('URL',), 'nargs': '+',
-          'description': ('Announce URL to add to or remove from all matching torrents; '
-                          'may be partial (e.g. the domain name) if ACTION is "remove"') },
+          'description': ('Announce URL to add to or remove from matching torrents; '
+                          'may be partial (e.g. domain name) when removing trackers') },
     )
     srvapi = ExpectedResource
 
@@ -147,15 +151,15 @@ class TrackerCmdbase(metaclass=InitCommand):
             log.error(e)
             return False
 
-        log.debug('Adding trackers to %s torrents: %s', tfilter, ', '.join(urls))
-
-        if ACTION == 'add':
-            method = self.srvapi.torrent.tracker_add
-        elif ACTION == 'remove':
-            method = self.srvapi.torrent.tracker_remove
+        if any(ACTION == action for action in self._ADD_ACTIONS):
+            request = self.srvapi.torrent.tracker_add(tfilter, urls)
+            log.debug('Adding trackers to %s torrents: %s', tfilter, ', '.join(urls))
+        elif any(ACTION == action for action in self._REMOVE_ACTIONS):
+            request = self.srvapi.torrent.tracker_remove(tfilter, urls, partial_match=True)
+            log.debug('Removing trackers from %s torrents: %s', tfilter, ', '.join(urls))
         else:
-            log.error('%s: ACTION argument must be "add" or "remove", not %r', self.name, ACTION)
+            log.error('%s: Invalid ACTION: %r', self.name, ACTION)
             return False
 
-        response = await self.make_request(method(tfilter, urls), polling_frenzy=True)
+        response = await self.make_request(request, polling_frenzy=True)
         return response.success
