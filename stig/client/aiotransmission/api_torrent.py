@@ -692,7 +692,7 @@ class TorrentAPI():
         else:
             l = limit / 8 if limit.unit == 'b' else limit
             args = {'%sloadLimited' % direction: True,
-                    '%sloadLimit' % direction: int(l/1000)}  # Transmission expects kilobytes
+                    '%sloadLimit' % direction: round(l/1000)}  # Transmission expects kilobytes
 
         response = await self._torrent_action(self.rpc.torrent_set, torrents,
                                               method_args=args)
