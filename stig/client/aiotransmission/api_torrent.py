@@ -681,8 +681,10 @@ class TorrentAPI():
         if rate is None:
             limit = const.UNLIMITED
         else:
-            r = convert.bandwidth.from_string(rate, unit='byte')
-            limit = const.UNLIMITED if r <= 0 else r
+            l = convert.bandwidth.from_string(rate)
+            limit = const.UNLIMITED if l <= 0 else l
+
+        log.debug('Setting %sload limit: %r', direction, limit)
 
         # Create 'torrent_set' arguments
         if limit is const.UNLIMITED:
