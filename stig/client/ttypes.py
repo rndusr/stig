@@ -332,8 +332,10 @@ class Timestamp(int):
             return 'never'
 
         abs_delta = abs(self - time.time())
-        if abs_delta <= SECONDS[2][1]:  # <= 1 day
+        if abs_delta < 600:     # <= 10 minutes
             frmt = '%H:%M:%S'
+        elif abs_delta < 86400: # <= 1 day
+            frmt = '%H:%M'
         else:
             frmt = '%Y-%m-%d'
         return time.strftime(frmt, time.localtime(self))
