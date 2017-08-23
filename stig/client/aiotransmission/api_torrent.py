@@ -93,6 +93,25 @@ class TorrentAPI():
         else:
             return Response(result=result, msgs=(), success=True)
 
+    @staticmethod
+    def _ensure_bytes(number, converter):
+        if number is const.UNLIMITED:
+            return number
+        elif not hasattr(number, 'unit'):
+            if isinstance(number, str):
+                number = converter.from_string(number)
+            else:
+                number = converter(number)
+        unit = number.unit
+        if unit == 'b':
+            number = number / 8
+            number.unit = 'B'
+            return number
+        elif unit == 'B':
+            return number
+        else:
+            raise RuntimeError('Cannot convert %r to bytes: %r', unit, number)
+
     async def _abs_download_path(self, path, autoconnect=True):
         """Turn relative `path` into absolute path based on default download path"""
         if not autoconnect and not self.rpc.connected:
