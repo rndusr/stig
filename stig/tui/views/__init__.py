@@ -223,7 +223,9 @@ class ListWidgetBase(urwid.WidgetWrap):
         if self._items is not None:
             self._update_listitems()
             self._items = None
-        return super().render(size, focus)
+        # focus=True because we always want to display the focused torrent, for
+        # example when the CLI is open
+        return super().render(size, focus=True)
 
     def _update_listitems(self):
         # Remember focused item widget in case items get added or removed
