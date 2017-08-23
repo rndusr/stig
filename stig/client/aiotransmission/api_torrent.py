@@ -112,6 +112,26 @@ class TorrentAPI():
         else:
             raise RuntimeError('Cannot convert %r to bytes: %r', unit, number)
 
+    async def _map_tid_to_torrent_values(self, torrents, keys):
+        """Map torrent ID to Torrent value(s)
+
+        If `keys` lists only one key, the returned map maps torrent IDs to each
+        torrent's value of that key.
+
+        If `keys` lists two or more keys, the returned map maps torrent IDs to a
+        dict with the keys `keys` and their corresponding values for each torrent.
+        """
+        response = await self.torrents(torrents, keys=('id',) + tuple(keys))
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=response.msgs)
+        else:
+            if len(keys) == 1:
+                key = keys[0]
+                return {t['id']:t[key] for t in response.torrents}
+            else:
+                return {t['id']:{key:t[key] for key in keys}
+                        for t in response.torrents}
+
     async def _abs_download_path(self, path, autoconnect=True):
         """Turn relative `path` into absolute path based on default download path"""
         if not autoconnect and not self.rpc.connected:
