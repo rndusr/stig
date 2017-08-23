@@ -84,7 +84,8 @@ class TorrentAPI():
         self.rpc = rpc
         self._tcache = _TorrentCache()
 
-    async def _request(self, method, *args, **kwargs):
+    @staticmethod
+    async def _request(method, *args, **kwargs):
         try:
             result = await method(*args, **kwargs)
         except ClientError as e:
