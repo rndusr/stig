@@ -90,7 +90,7 @@ class RateLimitValue(MultiValue(BooleanValue, UnlimitedValue, BandwidthValue)):
     """
 
     def __init__(self, *args, **kwargs):
-        object.__setattr__(self, '_previous_number', BandwidthValue(0))
+        object.__setattr__(self, '_previous_number', converter.bandwidth(0))
         super().__init__(*args, **kwargs)
 
     def set(self, value):
