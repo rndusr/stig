@@ -173,8 +173,9 @@ class _NumberBase():
                 return NotImplemented
 
         # Determine the appropriate class (1.0 should return a NumberInt)
-        if isinstance(new_value, int) or \
-           isinstance(new_value, float) and int(new_value) == new_value:
+        if isinstance(new_value, int) or (new_value < float('inf') and
+                                          isinstance(new_value, float) and
+                                          int(new_value) == new_value):
             new_cls = NumberInt
         else:
             new_cls = NumberFloat
