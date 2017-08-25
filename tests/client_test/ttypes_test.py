@@ -2,6 +2,8 @@ from stig.client import ttypes
 
 import unittest
 import time
+from datetime import datetime
+
 
 
 class TestPercent(unittest.TestCase):
@@ -106,6 +108,7 @@ MIN = 60
 HOUR = 60*MIN
 DAY = 24*HOUR
 YEAR = 365.25*DAY
+
 class TestTimedelta(unittest.TestCase):
     def test_from_string(self):
         for s, i, s_exp in (('0', 0, 'now'),
@@ -177,8 +180,21 @@ class TestTimedelta(unittest.TestCase):
             self.assertEqual(bool(td), False)
 
 
-
 class TestTimestamp(unittest.TestCase):
+    def mock_time(self, timestamp):
+        self._localtime_orig = time.localtime
+        self._time_orig = time.time
+
+        time.time = lambda: timestamp
+        st = datetime.fromtimestamp(timestamp).timetuple()  # Create struct_time
+        time.localtime = lambda _=None: st
+
+    def tearDown(self):
+        if hasattr(self, '_time_orig'):
+            time.time = self._time_orig
+        if hasattr(self, '_localtime_orig'):
+            time.localtime = self._localtime_orig
+
     def strftime(self, format, timestamp):
         return time.strftime(format, time.localtime(timestamp))
 
@@ -186,20 +202,18 @@ class TestTimestamp(unittest.TestCase):
         tstruct = time.strptime(string, '%Y-%m-%d %H:%M:%S')
         return time.mktime(tstruct)
 
-    now = time.time()
-    year = time.localtime(now).tm_year
-    month = time.localtime(now).tm_mon
-    day = time.localtime(now).tm_mday
-
     def test_from_string(self):
-        for s,s_exp in (('      2015', '2015-01-01 00:00:00'),
-                        ('   2105-02', '2105-02-01 00:00:00'),
-                        ('2051-03-10', '2051-03-10 00:00:00'),
-                        ('     04-11', '%04d-04-11 00:00:00' % self.year),
-                        ('        17', '%04d-%02d-17 00:00:00' % (self.year, self.month)),
-                        ('           05:30', '%04d-%02d-%02d 05:30:00' % (self.year, self.month, self.day)),
-                        ('        09 06:12', '%04d-%02d-09 06:12:00' % (self.year, self.month)),
-                        ('     06-16 06:40', '%04d-06-16 06:40:00' % (self.year)),
+        dt = datetime(year=2000, month=1, day=1)
+        self.mock_time(dt.timestamp())
+
+        for s,s_exp in (('            2015', '2015-01-01 00:00:00'),
+                        ('         2105-02', '2105-02-01 00:00:00'),
+                        ('      2051-03-10', '2051-03-10 00:00:00'),
+                        ('           04-11', '%04d-04-11 00:00:00' % dt.year),
+                        ('              17', '%04d-%02d-17 00:00:00' % (dt.year, dt.month)),
+                        ('           05:30', '%04d-%02d-%02d 05:30:00' % (dt.year, dt.month, dt.day)),
+                        ('        09 06:12', '%04d-%02d-09 06:12:00' % (dt.year, dt.month)),
+                        ('     06-16 06:40', '%04d-06-16 06:40:00' % (dt.year)),
                         ('2021-12-31 23:59', '2021-12-31 23:59:00'),
                         ('2001-10    19:04', '2001-10-01 19:04:00'),
                         ('2014       07:43', '2014-01-01 07:43:00')):
@@ -213,13 +227,17 @@ class TestTimestamp(unittest.TestCase):
         self.assertIn('foo', str(cm.exception))
 
     def test_string(self):
-        self.assertEqual(str(ttypes.Timestamp(self.now)), self.strftime('%H:%M:%S', self.now))
-        later_today = self.now + 20*60*60
-        self.assertEqual(str(ttypes.Timestamp(later_today)),
-                         self.strftime('%H:%M:%S', later_today))
-        next_week = self.now + 7*24*60*60
-        self.assertEqual(str(ttypes.Timestamp(next_week)),
-                         self.strftime('%Y-%m-%d', next_week))
+        dt = datetime(year=2000, month=1, day=1)
+        now = dt.timestamp()
+        self.mock_time(now)
+
+        self.assertEqual(str(ttypes.Timestamp(now)), self.strftime('%H:%M:%S', now))
+        soon = now + 3*60
+        self.assertEqual(str(ttypes.Timestamp(soon)), self.strftime('%H:%M:%S', soon))
+        later_today = now + 3*60*60
+        self.assertEqual(str(ttypes.Timestamp(later_today)), self.strftime('%H:%M', later_today))
+        next_week = now + 7*24*60*60
+        self.assertEqual(str(ttypes.Timestamp(next_week)), self.strftime('%Y-%m-%d', next_week))
 
     def test_bool(self):
         import random
@@ -233,13 +251,14 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(bool(td), False)
 
     def test_sorting(self):
+        now = 1e6
         lst = [ttypes.Timestamp(ttypes.Timestamp.NOW),
                ttypes.Timestamp(ttypes.Timestamp.SOON),
-               ttypes.Timestamp(self.now + (-2 * HOUR)),
-               ttypes.Timestamp(self.now + (2 * MIN)),
-               ttypes.Timestamp(self.now + (3 * MIN)),
-               ttypes.Timestamp(self.now + (1 * DAY)),
-               ttypes.Timestamp(self.now + (2.5 * YEAR)),
+               ttypes.Timestamp(now + (-2 * HOUR)),
+               ttypes.Timestamp(now + (2 * MIN)),
+               ttypes.Timestamp(now + (3 * MIN)),
+               ttypes.Timestamp(now + (1 * DAY)),
+               ttypes.Timestamp(now + (2.5 * YEAR)),
                ttypes.Timestamp(ttypes.Timestamp.UNKNOWN),
                ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE)]
 
