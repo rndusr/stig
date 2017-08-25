@@ -432,7 +432,7 @@ _MODIFY = {
     'time-started'      : lambda raw: _modify_timestamp(raw, 'startDate',
                                                         zero_means=ttypes.Timestamp.NOT_APPLICABLE),
     'time-activity'     : lambda raw: _modify_timestamp(raw, 'activityDate',
-                                                        zero_means=ttypes.Timestamp.NOT_APPLICABLE),
+                                                        zero_means=ttypes.Timestamp.NEVER),
     'time-completed'    : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed': lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
