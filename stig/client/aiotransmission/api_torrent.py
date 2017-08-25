@@ -120,17 +120,20 @@ class TorrentAPI():
 
         If `keys` lists two or more keys, the returned map maps torrent IDs to a
         dict with the keys `keys` and their corresponding values for each torrent.
+
+        If request failed, return Response instance from `torrents` object.
         """
         response = await self.torrents(torrents, keys=('id',) + tuple(keys))
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrent_values={}, msgs=response.msgs)
         else:
             if len(keys) == 1:
                 key = keys[0]
-                return {t['id']:t[key] for t in response.torrents}
+                torrent_values = {t['id']:t[key] for t in response.torrents}
             else:
-                return {t['id']:{key:t[key] for key in keys}
-                        for t in response.torrents}
+                torrent_values = {t['id']:{key:t[key] for key in keys}
+                                  for t in response.torrents}
+            return Response(success=True, torrent_values=torrent_values)
 
     async def _abs_download_path(self, path, autoconnect=True):
         """Turn relative `path` into absolute path based on default download path"""
