@@ -133,17 +133,12 @@ class TestTimedelta(unittest.TestCase):
 
     def test_even_units(self):
         for unit,char in ((1, 's'), (MIN, 'm'), (HOUR, 'h'), (DAY, 'd'), (YEAR, 'y')):
-            for i in range(11, 20):
+            for i in range(1, 6):
                 self.assertEqual(str(ttypes.Timedelta(i * unit)), '%d%s' % (i, char))
 
-    def test_subunits_with_small_numbers(self):
-        self.assertEqual(str(ttypes.Timedelta(1*DAY + 0*HOUR + 59*MIN + 59)), '1d')
-        self.assertEqual(str(ttypes.Timedelta(1*DAY + 23*HOUR + 59*MIN + 59)), '1d23h')
-
-        self.assertEqual(str(ttypes.Timedelta(9*DAY + 0*HOUR + 59*MIN + 59)), '9d')
-        self.assertEqual(str(ttypes.Timedelta(9*DAY + 23*HOUR + 59*MIN + 59)), '9d23h')
-
-        self.assertEqual(str(ttypes.Timedelta(10*DAY + 23*HOUR + 59*MIN + 59)), '10d')
+    def test_added_subunits_for_small_numbers(self):
+        self.assertEqual(str(ttypes.Timedelta(9*HOUR + 59*MIN + 59)), '9h59m')
+        self.assertEqual(str(ttypes.Timedelta(10*HOUR + 59*MIN + 59)), '10h')
 
     def test_negative_delta(self):
         self.assertEqual(str(ttypes.Timedelta(-10)), '-10s')
