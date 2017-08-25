@@ -159,7 +159,14 @@ class _NumberBase():
 
     def _do_math(self, method, *args, **kwargs):
         # Get the new value as int or float
-        new_value = getattr(self._numtype, method)(self, *args, **kwargs)
+        if self == float('inf'):
+            # No need to do any calculations with infinity, especially because
+            # of round() throwing and OverflowError because `int` has no
+            # infinity implemented.
+            new_value = float('inf')
+        else:
+            new_value = getattr(self._numtype, method)(self, *args, **kwargs)
+
         if new_value is NotImplemented:
             # This may have happened because `self._numtype` is `int` and it got
             # a `float` to handle.  To make this work, we must flip `self` and
