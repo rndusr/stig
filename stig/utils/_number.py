@@ -164,7 +164,9 @@ class _NumberBase():
             # This may have happened because `self._numtype` is `int` and it got
             # a `float` to handle.  To make this work, we must flip `self` and
             # `other`, getting the method from `other` and passing it `self`:
-            # int.__add__(<int>, <float>)  ->  float.__add__(<float>, <int>)
+            #
+            #     int.__add__(<int>, <float>)  ->  float.__add__(<float>, <int>)
+            #
             # If we get the parent method from the instance instead of its type,
             # we don't have to pass two values and it's a little bit faster.
             parent_method = getattr(args[0], method)
