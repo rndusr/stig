@@ -13,6 +13,8 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource, utils)
+from ._common import make_X_FILTER_spec
+
 from asyncio import iscoroutinefunction
 
 
@@ -150,52 +152,63 @@ class SetCmdbase(metaclass=InitCommand):
         return False
 
 
+# Abuse some *Value classes from the settings to allow the same
+# user-input for individual torrents as we do for the global settings
+# srv.limit.rate.*.
+from ...settings.types_srv import (MultiValue, BooleanValue, UnlimitedValue, BandwidthValue)
+class TorrentRateLimitValue(MultiValue(UnlimitedValue, BandwidthValue, BooleanValue)):
+    pass
+
 class RateLimitCmdbase(metaclass=InitCommand):
-    name = 'rate'
-    aliases = ()
+    name = 'ratelimit'
+    aliases = ('rate',)
     provides = set()
     category = 'configuration'
     description = "Limit up-/download rate per torrent or globally"
     usage = ('rate <DIRECTION> <LIMIT>',
              'rate <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('rate up 5Mb',
-                'rate up,down - "This torrent" size<100MB',
-                'rate down,up 1MB global')
+                'rate down,up 1MB global',
+                'rate up,dn off "This torrent" size<100MB')
     argspecs = (
         {'names': ('DIRECTION',),
-         'description': '"up", "down" or both separated by a comma'},
-
+         'description': 'Any combination of "up", "down" or "dn" separated by a comma'},
         {'names': ('LIMIT',),
-         'description': ('Maximum allowed rate limit; metric (k, M, G, etc) and binary (Ki, Mi, Gi, etc) '
-                         'unit prefixes are supported (case is ignored); append "b" for bits, "B" for bytes '
-                         'or nothing for whatever \'unit.bandwidth\' is set to; "none", "-" and '
-                         'negative numbers disable the limit; if TORRENT FILTER is "global", any valid '
-                         '\'srv.limit.rate.up/down\' setting is accepted (see `help srv.limit.rate.up`)')},
-
-        {'names': ('TORRENT FILTER',), 'nargs': '*',
-         'description': ('Filter expression (see `help filter`), "global" to set '
-                         '\'srv.limit.rate.<DIRECTION>\' or focused torrent in the TUI')},
+         'description': ('Maximum allowed transfer rate; see `help srv.limit.rate.up` for the syntax')},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*',
+                           more_text=('"global" to set global limit (same as setting '
+                                      "srv.limit.rate.<DIRECTION>'); may be omitted in CLI mode "
+                                      'for the same effect of specifying "global"')),
     )
     srvapi = ExpectedResource
     cmdmgr = ExpectedResource
 
+    # TODO: Make omitting "global" work in CLI mode but discover torrent in TUI mode.
+
     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
-        direction = tuple(map(str.lower, DIRECTION.split(',')))
-        for d in direction:
+        directions = tuple('down' if d == 'dn' else d
+                           for d in map(str.lower, DIRECTION.split(',')))
+        for d in directions:
             if d not in ('up', 'down'):
                 log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
                 return False
 
         if TORRENT_FILTER == ['global']:
-            if LIMIT in ('none', '-'):
-                LIMIT = 'disable'
-            for d in direction:
-                success = await self.cmdmgr.run_async('set srv.limit.rate.%s %s' % (d, LIMIT),
-                                                      block=True)
-                if not success:
-                    return False
-            return True
+            return await self._set_global_limit(directions, LIMIT)
+        else:
+            return await self._set_individual_limit(TORRENT_FILTER, directions, LIMIT)
 
+    async def _set_global_limit(self, directions, LIMIT):
+        # Change the srv.limit.rate.* setting for each direction
+        log.debug('Setting global %s rate limit: %r', '/'.join(directions), LIMIT)
+        for d in directions:
+            success = await self.cmdmgr.run_async('set srv.limit.rate.%s %s' % (d, LIMIT),
+                                                  block=True)
+            if not success:
+                return False
+        return True
+
+    async def _set_individual_limit(self, TORRENT_FILTER, directions, LIMIT):
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
@@ -203,18 +216,28 @@ class RateLimitCmdbase(metaclass=InitCommand):
         except ValueError as e:
             log.error(e)
             return False
-        else:
-            if LIMIT in ('none', '-'):
-                LIMIT = None
 
-            for d in direction:
-                method = getattr(self.srvapi.torrent, 'limit_rate_'+d)
-                try:
-                    response = await self.make_request(method(tfilter, LIMIT),
-                                                       polling_frenzy=True)
-                except ValueError as e:
-                    log.error(e)
-                    return False
-                if not response.success:
-                    return False
-            return True
+        # Do we adjust current limits or set absolute limits?
+        if LIMIT[:2] == '+=' or LIMIT[:2] == '-=':
+            method_start = 'adjust_rate_limit_'
+            limit = LIMIT[0] + LIMIT[2:]  # Remove '=' so it can be parsed as a number
+        else:
+            method_start = 'set_rate_limit_'
+            limit = LIMIT
+
+        try:
+            new_limit = TorrentRateLimitValue('_new_limit', default=limit).get()
+        except ValueError as e:
+            log.error(e)
+            return False
+
+        log.debug('Setting %s rate limit for %s torrents: %r',
+                  '+'.join(directions), tfilter, new_limit)
+
+        for d in directions:
+            method = getattr(self.srvapi.torrent, method_start + d)
+            response = await self.make_request(method(tfilter, new_limit),
+                                               polling_frenzy=True)
+            if not response.success:
+                return False
+        return True

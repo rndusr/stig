@@ -716,64 +716,144 @@ class TorrentAPI():
             raise ValueError('Invalid priority: {!r}'.format(priority))
 
 
-    async def _limit_rate(self, direction, torrents, rate, autoconnect=True):
+    async def _limit_rate_absolute(self, torrents, direction, limit, autoconnect=True):
         if not autoconnect and not self.rpc.connected:
             return None
 
-        # Make number or constant from `rate`
-        if rate is None:
-            limit = const.UNLIMITED
-        else:
-            l = convert.bandwidth.from_string(rate)
-            limit = const.UNLIMITED if l <= 0 else l
+        # Disable limits for negative values
+        if isinstance(limit, (float, int)):
+            limit = False if limit < 0 or limit >= float('inf') else limit
 
-        log.debug('Setting %sload limit: %r', direction, limit)
+        log.debug('Setting new %sload limit for torrents %s: %r', direction, torrents, limit)
+        return await self._limit_rate(torrents, direction, get_new_limit=lambda _: limit)
 
-        # Create 'torrent_set' arguments
-        if limit is const.UNLIMITED:
-            args = {'%sloadLimited' % direction: False}
-        else:
-            l = limit / 8 if limit.unit == 'b' else limit
-            args = {'%sloadLimited' % direction: True,
-                    '%sloadLimit' % direction: round(l/1000)}  # Transmission expects kilobytes
+    async def _limit_rate_relative(self, torrents, direction, adjustment, autoconnect=True):
+        if not autoconnect and not self.rpc.connected:
+            return None
 
-        response = await self._torrent_action(self.rpc.torrent_set, torrents,
-                                              method_args=args)
+        # Only numbers are allowed
+        if not isinstance(adjustment, (float, int)):
+            raise ValueError('Invalid rate limit adjustment: %r', adjustment)
 
+        def add_to_current_limit(current_limit):
+            log.debug('Adjusting %sload limit %r by %r', direction, current_limit, adjustment)
+            if isinstance(current_limit, (float, int)):
+                new_limit = current_limit + adjustment
+                new_limit = max(0, new_limit)
+            else:
+                new_limit = current_limit
+            return new_limit
+
+        return await self._limit_rate(torrents, direction, get_new_limit=add_to_current_limit)
+
+    async def _limit_rate(self, torrents, direction, get_new_limit):
+        response = await self._map_tid_to_torrent_values(torrents, keys=('rate-limit-'+direction,))
         if not response.success:
-            return response
+            return Response(success=False, torrent_set_args={}, errors=[], msgs=response.msgs)
         else:
-            def create_info_msg(t):
+            current_limits = response.torrent_values
+            log.debug('Current %sload rate limits: %r', direction, current_limits)
+
+        def normalize_rate_limit(limit):
+            if limit >= float('inf') or \
+               any(limit is x for x in (None, False, const.DISABLED, const.UNLIMITED)):
+                return None
+            elif any(limit is x for x in (True, const.ENABLED)):
+                return True
+            else:
+                return self._ensure_bytes(convert.bandwidth(limit), convert.bandwidth)
+
+        # Generate 'torrent-set' arguments for each torrent ID.  To de-duplicate
+        # requests (same args for multiple torrents), we map the args to a list
+        # of torrent IDs, so we just append another ID for existing args.
+        torrent_set_args = {}
+        errors = {}
+        for tid,cur_limit in current_limits.items():
+            new_limit = get_new_limit(cur_limit)
+
+            # Ensure that both values are in bytes
+            new_limit_norm = normalize_rate_limit(new_limit)
+            cur_limit_norm = normalize_rate_limit(cur_limit)
+
+            if new_limit_norm == cur_limit_norm:
+                log.debug('Nothing to set: new:%r == cur:%r', new_limit, cur_limit)
+                errors[tid] = ('Already %s' % cur_limit)
+                continue
+            elif new_limit_norm is None:
+                log.debug('Disabling limit')
+                args = (('%sloadLimited' % direction, False),)
+            elif new_limit_norm is True:
+                if cur_limit_norm not in (False, None):
+                    errors[tid] = ('Already enabled (%s)' % cur_limit)
+                    continue
+                else:
+                    log.debug('Enabling limit')
+                    args = (('%sloadLimited' % direction, True),)
+            else:
+                log.debug('Setting new limit: %r -> %r', new_limit, new_limit_norm)
+                if new_limit_norm >= float('inf'):
+                    args = (('%sloadLimited' % direction, False),)
+                else:
+                    rpc_value = int(round(new_limit_norm/1000))
+                    args = (('%sloadLimited' % direction, True),
+                            ('%sloadLimit' % direction, rpc_value))  # Transmission expects kilobytes
+
+            if args in torrent_set_args:
+                torrent_set_args[args].append(tid)
+            else:
+                torrent_set_args[args] = [tid]
+
+        # Send one 'torrent-set' request for each list of torrent IDs
+        for args,tids in torrent_set_args.items():
+            response = await self._torrent_action(self.rpc.torrent_set, tids,
+                                                  method_args=dict(args))
+            if not response.success:
+                return Response(success=False, torrents=(), msgs=response.msgs)
+
+        # Fetch torrents again and return Response with new rate limit messages
+        all_tids = sum(torrent_set_args.values(), []) + list(errors)
+        response = await self.torrents(all_tids, keys=('name', 'id', 'rate-limit-'+direction))
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=response.msgs)
+        msgs = []
+        success = False
+        for t in response.torrents:
+            if t['id'] in errors:
+                msgs.append(ClientError('%s %sload rate: %s' %
+                                        (t['name'], direction, errors[t['id']])))
+            else:
+                success = True
                 limit = t['rate-limit-'+direction]
                 limit_str = str(limit) if const.is_constant(limit) else limit.with_unit
-                return 'Limited %sload rate of %s: %s' % (direction, t['name'], limit_str)
+                msgs.append('%s %sload rate: %s' % (t['name'], direction, limit_str))
+        return Response(torrents=response.torrents, success=success, msgs=msgs)
 
-            # Fetch new list with the actual rate limits
-            tids = tuple(t['id'] for t in response.torrents)
-            response = await self.torrents(tids, keys=('name', 'id', 'rate-limit-'+direction))
-            return Response(torrents=response.torrents,
-                            success=response.success,
-                            msgs=(create_info_msg(t) for t in response.torrents))
-
-    async def limit_rate_up(self, torrents, rate, autoconnect=True):
+    async def set_rate_limit_up(self, torrents, limit, autoconnect=True):
         """Limit upload rate for individual torrent(s)
 
         torrents: See `torrents` method
-        rate: Maximum allowed upload rate for `torrents` or `None` for default limit
+        limit: Allowed values:
+                 - Any positive number (bytes per second) sets the new limit to
+                   that
+                 - A negative number, `None`, `False` and the constants DISABLED
+                   and UNLIMITED disable the current limit
+                 - `True` and the constant ENABLED enable a previously disabled
+                   limit
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-up'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
-        """
-        return await self._limit_rate('up', torrents, rate, autoconnect)
 
-    async def limit_rate_down(self, torrents, rate, autoconnect=True):
+        """
+        return await self._limit_rate_absolute(torrents, 'up', limit, autoconnect)
+
+    async def set_rate_limit_down(self, torrents, limit, autoconnect=True):
         """Limit download rate for individual torrent(s)
 
         torrents: See `torrents` method
-        rate: Maximum allowed download rate for `torrents` or `None` for default limit
+        limit: See `set_rate_limit_up` method
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
@@ -781,7 +861,22 @@ class TorrentAPI():
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        return await self._limit_rate('down', torrents, rate, autoconnect)
+        return await self._limit_rate_absolute(torrents, 'down', limit, autoconnect)
+
+    async def adjust_rate_limit_up(self, torrents, adjustment, autoconnect=True):
+        """Same as `set_rate_limit_up` but set new limit relative to current limit
+
+        adjustment: Negative or positive number to add to the current limit of
+                    each matching torrent
+        """
+        return await self._limit_rate_relative(torrents, 'up', adjustment, autoconnect)
+
+    async def adjust_rate_limit_down(self, torrents, adjustment, autoconnect=True):
+        """Same as `set_rate_limit_down` but set new limit relative to current limit
+
+        adjustment: See `adjust_rate_limit_up` method
+        """
+        return await self._limit_rate_relative(torrents, 'down', adjustment, autoconnect)
 
 
     async def tracker_add(self, torrents, urls, autoconnect=True):
