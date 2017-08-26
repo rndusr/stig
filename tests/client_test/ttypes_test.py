@@ -269,3 +269,19 @@ class TestTimestamp(unittest.TestCase):
         for _ in range(10):
             self.assertEqual(sorted(shuffle(lst)), lst)
 
+
+class TestTorrentFilePriority(unittest.TestCase):
+    def test_sort_order(self):
+        prios = [
+            ttypes.TorrentFilePriority(-2),
+            ttypes.TorrentFilePriority(-1),
+            ttypes.TorrentFilePriority(0),
+            ttypes.TorrentFilePriority(1),
+        ]
+
+        import random
+        def shuffle(l):
+            return random.sample(l, k=len(l))
+
+        for _ in range(10):
+            self.assertEqual(sorted(shuffle(prios)), prios)
