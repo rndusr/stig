@@ -306,7 +306,7 @@ DEFAULT_KEYMAP = (
     {'context': 'peerlist', 'key': 's ,',       'action': 'sort --reset'},
     {'context': 'peerlist', 'key': 's .',       'action': 'sort --none'},
 
-    # Torrent file actions
+    # File actions
     {'context': 'file', 'key': '+',         'action': 'priority high'},
     {'context': 'file', 'key': '=',         'action': 'priority normal'},
     {'context': 'file', 'key': '-',         'action': 'priority low'},
@@ -314,7 +314,7 @@ DEFAULT_KEYMAP = (
     {'context': 'file', 'key': 'space',     'action': 'mark --toggle --focus-next'},
     {'context': 'file', 'key': 'alt-space', 'action': 'mark --toggle --all'},
 
-    # Torrent tracker actions
+    # Tracker list actions
     {'context': 'trackerlist', 'key': 's n a',   'action': 'sort --add next-announce'},
     {'context': 'trackerlist', 'key': 's n A',   'action': 'sort --add !next-announce'},
     {'context': 'trackerlist', 'key': 's l a',   'action': 'sort --add last-announce'},
@@ -340,4 +340,8 @@ DEFAULT_KEYMAP = (
 
     {'context': 'trackerlist', 'key': 's ,',     'action': 'sort --reset'},
     {'context': 'trackerlist', 'key': 's .',     'action': 'sort --none'},
+
+    # Tracker actions
+    {'context': 'tracker', 'key': 'enter',       'action': 'tab summary'},
+    {'context': 'tracker', 'key': 'alt-enter',   'action': 'tab filelist'},
 )
