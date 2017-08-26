@@ -122,8 +122,11 @@ class FakeTransmissionDaemon:
         self.handler = None
         self.server = None
         self.response = None
+        self.requests = []
 
     async def handle_POST(self, request):
+        self.requests.append(await request.json())
+
         if CSRF_HEADER not in request.headers:
             resp = web.Response(headers={CSRF_HEADER: SESSION_ID},
                                 status=CSRF_ERROR_CODE)
