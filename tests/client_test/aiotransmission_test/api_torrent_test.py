@@ -213,3 +213,68 @@ class TestManipulatingTorrents(TorrentAPITestCase):
             errors.ClientError('miss: #2, Bar'),
             'hit: #3, Boo',
         ))
+
+
+class TestTorrentBandwidthLimit(TorrentAPITestCase):
+    def assert_request(self, expected_request):
+        # Because order doesn't matter, replace lists with sets to make requests comparable
+        def comparable_request(request):
+            cmp_req = {}
+            for k,v in request.items():
+                if isinstance(v, (str, int, float)):
+                    cmp_req[k] = v
+                elif isinstance(v, list):
+                    cmp_req[k] = set(v)
+                else:
+                    cmp_req[k] = comparable_request(v)
+            return cmp_req
+
+        existing_reqs = tuple(map(comparable_request, self.daemon.requests))
+        expected_req = comparable_request(expected_request)
+        for r in existing_reqs:
+            print(r)
+        print()
+        print(expected_req)
+        self.assertIn(expected_req, existing_reqs)
+
+
+    async def test_enable_rate_limit(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
+        )
+        response = await self.api.set_rate_limit_up(TorrentFilter('id=1|id=2'), True)
+        self.assert_request({'method': 'torrent-set',
+                            'arguments': {'ids': [1, 2], 'uploadLimited': True}})
+
+    async def test_disable_rate_limit(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
+        )
+        response = await self.api.set_rate_limit_up(TorrentFilter('id=1|id=2'), False)
+        self.assert_request({'method': 'torrent-set',
+                            'arguments': {'ids': [1, 2], 'uploadLimited': False}})
+
+    async def test_set_absolute_rate_limit(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
+        )
+        response = await self.api.set_rate_limit_up(TorrentFilter('id=1|id=2'), 1e6)
+        self.assert_request({'method': 'torrent-set',
+                            'arguments': {'ids': [1, 2], 'uploadLimited': True,
+                                          'uploadLimit': 1000}})
+
+    async def test_set_relative_rate_limit_when_enabled(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
+        )
+        response = await self.api.adjust_rate_limit_up(TorrentFilter('id=1|id=2'), -50e3)
+        self.assert_request({'method': 'torrent-set',
+                            'arguments': {'ids': [1], 'uploadLimited': True,
+                                          'uploadLimit': 50}})
+        self.assert_request({'method': 'torrent-set',
+                            'arguments': {'ids': [2], 'uploadLimited': True,
+                                          'uploadLimit': 150}})
