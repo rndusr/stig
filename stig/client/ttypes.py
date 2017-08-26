@@ -29,6 +29,8 @@ log = make_logger(__name__)
 from collections import abc
 import os
 import re
+import time
+
 from . import (NumberFloat, NumberInt)
 from . import constants as const
 from . import convert
@@ -248,7 +250,6 @@ class Timedelta(int):
         return bool(self)
 
 
-import time
 class Timestamp(int):
     NOW            = -2
     SOON           = -1
@@ -408,8 +409,6 @@ class TorrentFilePriority(str):
     def __int__(self): return self.STR2INT[self]
     def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
-
-import os
 class TorrentFile(abc.Mapping):
     """Mapping that holds the values of a single file in a torrent"""
 
@@ -481,7 +480,6 @@ def _ensure_TorrentFileTree(obj):
 
 
 
-import time
 from collections import (defaultdict, deque)
 MAX_SAMPLES = 10
 MAX_SAMPLE_AGE = 5*3600
