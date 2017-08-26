@@ -386,8 +386,6 @@ class Timestamp(int):
 
 
 
-from functools import total_ordering
-@total_ordering
 class TorrentFilePriority(str):
     INT2STR = {-1:'low', 0:'normal', 1:'high', -2:'shun'}
     STR2INT = {'low':-1, 'normal':0, 'high':1, 'shun':-2}
@@ -403,8 +401,11 @@ class TorrentFilePriority(str):
             obj = super().__new__(cls, prio)
         return obj
 
-    def __int__(self): return self.STR2INT[self]
     def __lt__(self, other): return int(self) < int(other)
+    def __gt__(self, other): return int(self) > int(other)
+    def __le__(self, other): return int(self) <= int(other)
+    def __ge__(self, other): return int(self) >= int(other)
+    def __int__(self): return self.STR2INT[self]
     def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
 
