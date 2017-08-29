@@ -10,9 +10,11 @@
       'enabled'/'disabled'
     * The 'clearlog' command has been removed (see new 'log' command)
     * The setting 'tui.cli.history' has been renamed to 'tui.cli.history-file'
+    * The 'rate' command now accepts the same values for its LIMIT argument as
+      the settings 'srv.limit.rate.up/down'
 
   Other changes:
-    * New command 'trackerlist'
+    * New commands: 'trackerlist', 'tracker add|remove'
     * New contexts for keybindings: trackerlist, tracker
     * New command 'log' can clear the log, scroll up/down and append info/error
       messages to it
@@ -26,6 +28,7 @@
     * The 'rc' command no longer fails if it encounters a command that is not
       supported by the active interface
     * Foreground colors in the tab bar are now all bright in the default theme
+    * Time deltas now show seconds if less than ten minutes
 
   Fixed bugs:
     * In torrent details, the 'Completed' date was displayed as the unix epoch
