@@ -85,6 +85,10 @@ class TorrentAPI():
         self.rpc = rpc
         self._tcache = _TorrentCache()
 
+    def clearcache(self):
+        """Remove all torrents from cache"""
+        self._tcache.purge(existing_tids=())
+
     @staticmethod
     async def _request(method, *args, **kwargs):
         try:
