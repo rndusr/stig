@@ -327,10 +327,9 @@ class TorrentAPI():
                 log.debug('Wanted IDs: %s', wanted_ids)
                 if len(wanted_ids) > 0:
                     # Get only wanted torrents with all wanted keys
-                    try:
-                        response = await self._get_torrents_by_ids(keys, wanted_ids)
-                    except ClientError as e:
-                        msgs.append(ClientError(str(e)))
+                    response = await self._get_torrents_by_ids(keys, wanted_ids)
+                    if not response.success:
+                        msgs.extend(response.msgs)
                     else:
                         tlist = tuple(response.torrents)
             else:
