@@ -27,6 +27,15 @@ def _size_mr(t):
     return '%d\t%d' % (t['size-total'], t['size-final'])
 
 
+def _rate_limit_hr(direction, t):
+    limit = t['rate-limit-' + direction]
+    return limit.with_unit if hasattr(limit, 'with_unit') else str(limit)
+
+def _rate_limit_mr(direction, t):
+    limit = t['rate-limit-' + direction]
+    return int(limit) if limit < float('inf') else str(limit)
+
+
 def _file_counts(t):
     files = tuple(t['files'].files)
     all_files = len(files)
@@ -166,6 +175,11 @@ SECTIONS = (
         Item('Ratio',      ('ratio',), _ratio_hr, _ratio_mr),
         Item('Isolated',   ('status',), _isolated_hr, _isolated_mr),
         Item('Error',      ('error',)),
+    )},
+
+    {'title': 'Limits', 'width': 30, 'items': (
+        Item('Upload rate',   ('rate-limit-up',), partial(_rate_limit_hr, 'up'), partial(_rate_limit_mr, 'up')),
+        Item('Download rate',   ('rate-limit-down',), partial(_rate_limit_hr, 'down'), partial(_rate_limit_mr, 'down')),
     )},
 
     {'title': 'Peers', 'width': 18, 'items': (
