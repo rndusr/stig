@@ -71,7 +71,7 @@ class Progress(ColumnBase):
     width = 4
 
     def get_value(self):
-        return self.data['progress']
+        return _ensure_string_without_unit(self.data['progress'])
 
     def get_raw(self):
         return int(self.get_value())

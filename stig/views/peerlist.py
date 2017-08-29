@@ -78,10 +78,10 @@ COLUMNS['port'] = Port
 
 class Progress(ColumnBase):
     header = {'right': '%'}
-    width = 5
+    width = 4
 
     def get_value(self):
-        return self.data['progress']
+        return _ensure_string_without_unit(self.data['progress'])
 
 COLUMNS['progress'] = Progress
 
