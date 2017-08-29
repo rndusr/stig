@@ -224,9 +224,9 @@ class TorrentAPI():
 
     async def _request_torrents(self, fields, ids=None):
         """Unmodified 'torrent-get' request"""
+        if 'id' not in fields:
+            fields = ('id',) + tuple(fields)
         try:
-            if 'id' not in fields:
-                fields = ('id',) + tuple(fields)
             if ids is None:
                 # Request all IDs
                 raw_tlist = await self.rpc.torrent_get(fields=fields)
