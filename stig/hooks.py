@@ -38,12 +38,15 @@ def _set_bandwidth_unit(unit):
     PEER_COLUMNS['rate-up'].set_unit(u)
     PEER_COLUMNS['rate-down'].set_unit(u)
     PEER_COLUMNS['rate-est'].set_unit(u)
+
+    srvapi.torrent.clearcache()
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 _set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
 
 def _set_bandwidth_prefix(prefix):
     srvapi.bandwidth_prefix = prefix.value
+    srvapi.torrent.clearcache()
 cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 
 
@@ -57,10 +60,13 @@ def _set_size_unit(unit):
 
     FILE_COLUMNS['size'].set_unit(u)
     FILE_COLUMNS['downloaded'].set_unit(u)
+
+    srvapi.torrent.clearcache()
 cfg['unit.size'].on_change(_set_size_unit)
 _set_size_unit(cfg['unit.size'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
 
 def _set_size_prefix(prefix):
     srvapi.size_prefix = prefix.value
+    srvapi.torrent.clearcache()
 cfg['unitprefix.size'].on_change(_set_size_prefix)
