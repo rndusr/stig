@@ -700,7 +700,7 @@ class TorrentAPI():
                         success=success,
                         msgs=msgs)
 
-    async def _set_files_priority(self, priority, torrent_id, file_indexes, autoconnect):
+    async def _set_files_priority(self, priority, torrent_id, file_indexes, autoconnect=True):
         fi = tuple(file_indexes)
         if priority in ('high', 'normal', 'low'):
             return await self._torrent_action(
