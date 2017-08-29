@@ -435,8 +435,7 @@ class TorrentFile(abc.Mapping):
         'size-total'      : lambda raw: raw['size-total'],
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
-        'priority'        : lambda raw: (TorrentFilePriority.STR2INT['shun']
-                                         if not raw['is-wanted'] else raw['priority']),
+        'priority'        : lambda raw: 'shun' if not raw['is-wanted'] else raw['priority'],
         'progress'        : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
 
