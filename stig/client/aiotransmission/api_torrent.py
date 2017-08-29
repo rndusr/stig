@@ -288,7 +288,8 @@ class TorrentAPI():
                     if tid not in tlist:
                         msgs.append(ClientError('No torrent with ID: {}'.format(tid)))
             else:
-                self._tcache.purge(t['id'] for t in raw_tlist)  # Remove deleted torrents from cache
+                tids = tuple(t['id'] for t in raw_tlist)
+                self._tcache.purge(existing_tids=tids)  # Remove deleted torrents from cache
                 tlist = self._tcache.get()
             success = len(tlist) > 0 or not ids
 
