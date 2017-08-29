@@ -388,8 +388,8 @@ class Timestamp(int):
 
 
 class TorrentFilePriority(str):
-    INT2STR = {-1:'low', 0:'normal', 1:'high', -2:'shun'}
-    STR2INT = {'low':-1, 'normal':0, 'high':1, 'shun':-2}
+    INT2STR = {-2:'shun', -1:'low', 0:'normal', 1:'high'}
+    STR2INT = {'shun':-2, 'low':-1, 'normal':0, 'high':1}
 
     def __new__(cls, prio):
         if isinstance(prio, int):
