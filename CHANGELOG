@@ -28,7 +28,7 @@
     * The 'rc' command no longer fails if it encounters a command that is not
       supported by the active interface
     * Foreground colors in the tab bar are now all bright in the default theme
-    * Time deltas now show seconds if less than ten minutes
+    * Time deltas now show seconds if less than two minutes away
 
   Fixed bugs:
     * In torrent details, the 'Completed' date was displayed as the unix epoch

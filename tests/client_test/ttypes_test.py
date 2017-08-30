@@ -232,7 +232,7 @@ class TestTimestamp(unittest.TestCase):
         self.mock_time(now)
 
         self.assertEqual(str(ttypes.Timestamp(now)), self.strftime('%H:%M:%S', now))
-        soon = now + 3*60
+        soon = now + 60
         self.assertEqual(str(ttypes.Timestamp(soon)), self.strftime('%H:%M:%S', soon))
         later_today = now + 3*60*60
         self.assertEqual(str(ttypes.Timestamp(later_today)), self.strftime('%H:%M', later_today))
