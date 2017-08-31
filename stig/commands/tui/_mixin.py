@@ -73,26 +73,17 @@ class select_torrents():
         If `FILTER` evaluates to True, it is passed to TorrentFilter and the
         resulting object is returned.
 
-        If `FILTER` evaluates to False, a torrent ID is returned in a tuple if
-        possible and `discover_torrent` evaluates to True. Otherwise, None is
+        If `FILTER` evaluates to False, the result of `discover_torrent_ids` is
+        returned if `discover_torrent` evaluates to True. Otherwise, None is
         returned if `allow_no_filter` evaluates to True, else a ValueError is
         raised.
-
-        Torrents are discovered by getting the:
-            - `torrent_id` attribute in this command's object (e.g. set by the
-              'tab' command),
-            - `marked` attribute of the focused tab's widget
-              (e.g. TorrentListWidget), which must be an iterable of objects
-              with an `id` attribute that returns a torrent ID
-            - `focused_torrent_id` attribute of the focused tab's widget
-              (e.g. FileListWidget).
         """
         if FILTER:
             from ...client import TorrentFilter
             return TorrentFilter(FILTER)
         else:
             if discover_torrent:
-                tids = self._find_torrent_ids()
+                tids = self.discover_torrent_ids()
                 if tids is not None:
                     return tids
 
@@ -102,24 +93,48 @@ class select_torrents():
             else:
                 raise ValueError('No torrent specified')
 
-    def _find_torrent_ids(self):
-        # Get torrent ID from attribute set by 'tab' command (this happens if
-        # for example when you run 'tab filelist' while a torrent is focused)
-        if hasattr(self, 'torrent_id'):
-            return (self.torrent_id,)
+    def discover_torrent_ids(self, widget=None):
+        """Return IDs of selected torrents
 
-        focused_widget = self.tui.tabs.focus
+        Return tuple of torrent IDs that are either focused, marked or otherwise
+        selected by the user.
+
+        Return None if no torrents are selected.
+
+        widget: Widget that is used to discover torrent IDs or None to use
+                widget in focused tab
+
+        Torrents are discovered by getting the:
+            - `selected_torrent_ids` attribute in this command's object
+              (e.g. set by the 'tab' command),
+            - `marked` attribute of the focused tab's widget
+              (e.g. TorrentListWidget), which must be an iterable of objects
+              with an `id` attribute that returns a torrent ID
+            - `focused_torrent_id` attribute of the focused tab's widget
+              (e.g. FileListWidget).
+
+        """
+        # Get torrent IDs from attribute set by 'tab' command (this happens when
+        # you run 'tab filelist' while a torrent is focused)
+        if hasattr(self, 'selected_torrent_ids') and len(self.selected_torrent_ids) > 0:
+            log.debug('Found torrents specified by tab command: %r', self.selected_torrent_ids)
+            return self.selected_torrent_ids
+
+        focused_widget = widget if widget is not None else self.tui.tabs.focus
+        log.debug('Finding torrent in focused tab: %r', focused_widget)
 
         # Get torrent IDs from marked items
         if hasattr(focused_widget, 'marked'):
             tids = tuple(twidget.id for twidget in focused_widget.marked)
             if tids:
+                log.debug('Found marked torrents: %r', tids)
                 return tids
 
         # Get torrent ID from widget in focused tab (e.g. FileListWidget)
         if hasattr(focused_widget, 'focused_torrent_id'):
             tid = focused_widget.focused_torrent_id
             if tid is not None:
+                log.debug('Found focused torrent: %r', tid)
                 return (tid,)
 
 
