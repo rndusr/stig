@@ -274,6 +274,7 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 't d',       'action': 'delete'},
     {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files'},
     {'context': 'torrent', 'key': 't p',       'action': 'tab peerlist'},
+    {'context': 'torrent', 'key': 't t',       'action': 'tab trackerlist'},
     {'context': 'torrent', 'key': 't s',       'action': 'start --toggle'},
     {'context': 'torrent', 'key': 't S',       'action': 'start --toggle --force'},
     {'context': 'torrent', 'key': 't v',       'action': 'verify'},
