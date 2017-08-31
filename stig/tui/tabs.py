@@ -146,8 +146,8 @@ class Tabs(urwid.Widget):
                 raise IndexError('No tab with ID: {}'.format(position))
         else:
             i = self.focus_position if position is None else position
-            c_len = len(self._contents)
             if i is not None:
+                c_len = len(self._contents)
                 if i < 0:
                     if i >= -c_len:
                         return self.get_index(c_len + i)
