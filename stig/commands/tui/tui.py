@@ -15,6 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource)
+from . import _mixin as mixin
 from ._common import make_tab_title_widget
 
 import shlex
@@ -230,7 +231,7 @@ class QuitCmd(metaclass=InitCommand):
         raise urwid.ExitMainLoop()
 
 
-class TabCmd(metaclass=InitCommand):
+class TabCmd(mixin.select_torrents, metaclass=InitCommand):
     name = 'tab'
     provides = {'tui'}
     category = 'tui'
@@ -263,8 +264,11 @@ class TabCmd(metaclass=InitCommand):
     cmdmgr = ExpectedResource
 
     async def run(self, close, close_all, focus, background, title, COMMAND):
+        tabs = self.tui.tabs
+
         # Get indexes before adding/removing tabs, which changes indexes on
         # subsequent operations
+        old_index = tabs.focus_position
         if focus is not None:
             i_focus = self.get_tab_index(focus)
             log.debug('Focusing tab %r at index %r', focus, i_focus)
@@ -276,8 +280,29 @@ class TabCmd(metaclass=InitCommand):
             if i_close is None:
                 return False
 
-        tabs = self.tui.tabs
-        old_index = tabs.focus_position
+        # COMMAND may get additional hidden arguments as instance attributes
+        cmd_attrs = {}
+
+        # The command we're running might be interested in the items the
+        # user had selected in the previously focused tab.  For example, you
+        # can run `tab peerlist` to list peers of the focused torrent or all
+        # marked torrents.
+        #
+        # If we open, close or focused a tab, at first the focused tab is empty
+        # or has other irrelevant content, so the command we're supposed to run
+        # can't find out which torrents were marked in the previous tab.
+        #
+        # To help out, we use the `discover_torrent_ids` method of the
+        # `select_torrents` mixin on the widget of the previously focused tab.
+        # If the previously focused tab doesn't exist anymore or doesn't have
+        # any discoverable items, everything should return None and we don't
+        # pass any selected torrent IDs.
+        if old_index is not None:
+            previous_tab_content = tabs.get_content(old_index)
+            selected_tids = self.discover_torrent_ids(previous_tab_content)
+            log.debug('Found selected IDs: %r', selected_tids)
+            if selected_tids:
+                cmd_attrs['selected_torrent_ids'] = selected_tids
 
         # Apply close/focus operations
         if focus is not None:
@@ -287,19 +312,7 @@ class TabCmd(metaclass=InitCommand):
         elif close is not False:
             tabs.remove(i_close)
 
-        # User may specify a custom title for new tab
-        cmdargs = {'title': title} if title else {}
-
-        # Find out which torrent is focused in current tab so we can provide it
-        # to the command running in a new tab.
-        focused_content = tabs.focus
-        if focused_content is not None:
-            for attr in ('focused_torrent_id', 'focused_id'):
-                torrent_id = getattr(tabs.focus, attr)
-                if torrent_id is not None:
-                    cmdargs['torrent_id'] = torrent_id
-                    break
-
+        # If no tabs were closed or focused, open a new one
         if close is False and close_all is False and focus is None:
             titlew = make_tab_title_widget(title or 'Empty tab',
                                            attr_unfocused='tabs.unfocused',
@@ -307,14 +320,19 @@ class TabCmd(metaclass=InitCommand):
             tabs.insert(titlew, position='right')
             log.debug('Inserted new tab at position %d: %r', tabs.focus_position, titlew.base_widget.text)
 
+        # Maybe provide a user-specified tab title to the new command
+        if title:
+            cmd_attrs['title'] = title
+
         if COMMAND:
-            cmd = ' '.join(shlex.quote(arg) for arg in COMMAND)
+            # Execute command
+            cmd_str = ' '.join(shlex.quote(arg) for arg in COMMAND)
             log.debug('Running command in tab %d with args %s: %r',
                       tabs.focus_position,
-                      ', '.join('%s=%r' % (k,v) for k,v in cmdargs.items()),
-                      cmd)
+                      ', '.join('%s=%r' % (k,v) for k,v in cmd_attrs.items()),
+                      cmd_str)
 
-            cmd = await self.cmdmgr.run_async(cmd, **cmdargs)
+            cmd = await self.cmdmgr.run_async(cmd_str, **cmd_attrs)
             retval = cmd
         else:
             retval = True
