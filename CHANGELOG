@@ -23,6 +23,7 @@
       srv.autostart-torrents, srv.part-files, srv.encryption
     * New setting: tui.cli.history-size
     * New default keybinding: <t+p> opens a torrent's peer list
+    * New default keybinding: <t+t> opens a torrent's tracker list
     * <ctrl-l> now hides/shows the log instead of clearing it
     * The 'rc' command is now available on the CLI
     * The 'rc' command no longer fails if it encounters a command that is not
@@ -34,7 +35,7 @@
     * In torrent details, the 'Completed' date was displayed as the unix epoch
       (1970-01-01 ...) if unknown, and the 'Ratio' was displayed as negative
       values if unknown/not applicable
-    * Don't show 'Unclosed client session' errors anymore when opening multiple
+    * Don't throw 'Unclosed client session' errors anymore when opening multiple
       torrent lists with an rc file while not being connected
     * Some columns of torrent, peer and file lists were unnecessarily wide
 
