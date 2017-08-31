@@ -266,18 +266,17 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
     async def run(self, close, close_all, focus, background, title, COMMAND):
         tabs = self.tui.tabs
 
-        # Get indexes before adding/removing tabs, which changes indexes on
-        # subsequent operations
-        old_index = tabs.focus_position
+        # Find relevant tab IDs and fail immediately if unsuccessful
+        tabid_old = tabs.get_id()
         if focus is not None:
-            i_focus = self._get_tab_index(focus)
-            log.debug('Focusing tab %r at index %r', focus, i_focus)
-            if i_focus is None:
+            tabid_focus = self._get_tab_id(focus)
+            log.debug('Focusing tab %r -> %r', focus, tabid_focus)
+            if tabid_focus is None:
                 return False
         if close is not False:
-            i_close = self._get_tab_index(close)
-            log.debug('Closing tab %r at index %r', close, i_close)
-            if i_close is None:
+            tabid_close = self._get_tab_id(close)
+            log.debug('Closing tab %r -> %r', close, tabid_close)
+            if tabid_close is None:
                 return False
 
         # COMMAND may get additional hidden arguments as instance attributes
@@ -297,20 +296,20 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         # If the previously focused tab doesn't exist anymore or doesn't have
         # any discoverable items, everything should return None and we don't
         # pass any selected torrent IDs.
-        if old_index is not None:
-            previous_tab_content = tabs.get_content(old_index)
+        if tabid_old is not None:
+            previous_tab_content = tabs.get_content(tabid_old)
             selected_tids = self.discover_torrent_ids(previous_tab_content)
-            log.debug('Found selected IDs: %r', selected_tids)
+            log.debug('Found selected torrent IDs: %r', selected_tids)
             if selected_tids:
                 cmd_attrs['selected_torrent_ids'] = selected_tids
 
         # Apply close/focus operations
         if focus is not None:
-            tabs.focus_position = i_focus
+            tabs.focus_id = tabid_focus
         if close_all is not False:
             tabs.clear()
         elif close is not False:
-            tabs.remove(i_close)
+            tabs.remove(tabid_close)
 
         # If no tabs were closed or focused, open a new one
         if close is False and close_all is False and focus is None:
@@ -338,44 +337,62 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
             retval = True
 
         if background:
-            tabs.focus_position = old_index
+            tabs.focus_id = tabid_old
 
         return retval
 
-    def _get_tab_index(self, pos):
+    def _get_tab_id(self, pos):
         tabs = self.tui.tabs
 
         if pos is None:
-            return tabs.focus_position
+            return tabs.focus_id
 
-        def find_index(pos):
-            i = pos-1 if pos > 0 else pos
+        def find_id_by_index(index):
+            # First index 1 unless the user specified 0
+            index = index-1 if index > 0 else index
             try:
-                return tabs.get_index(i)
+                index = tabs.get_index(index)
             except IndexError as e:
                 log.error('No tab at position: {}'.format(pos))
+            else:
+                return tabs.get_id(index)
 
-        def find_title(string):
-            for i,title in enumerate(tabs.titles):
+        def find_right_left_id(right_or_left):
+            tabcount = len(tabs)
+            if tabcount > 1:
+                cur_index = tabs.focus_position
+                cur_index = 1 if cur_index is None else cur_index
+                if right_or_left == 'left':
+                    return tabs.get_id(max(0, cur_index-1))
+                elif right_or_left == 'right':
+                    return tabs.get_id(min(tabcount-1, cur_index+1))
+
+        def find_id_by_title(string):
+            for index,title in enumerate(tabs.titles):
                 if string in title.original_widget.text:
-                    return i
-            log.error('No tab found: {!r}'.format(string))
-
-        tabcount = len(tabs)
-        curpos = tabs.focus_position
-        curpos = 1 if curpos is None else curpos
+                    return tabs.get_id(index)
+            log.error('No tab with matching title: {!r}'.format(pos_str))
 
         try:
-            return find_index(int(pos))
+            index = int(pos)
         except ValueError:
-            if pos == 'left':
-                if tabcount > 1:
-                    return tabs.get_index(max(0, curpos-1))
-            elif pos == 'right':
-                if tabcount > 1:
-                    return tabs.get_index(min(tabcount-1, curpos+1))
-            else:
-                return find_title(pos)
+            pass
+        else:
+            tabid = find_id_by_index(index)
+            log.debug('Found tab ID by index=%r: %r', index, tabid)
+            return tabid
+
+        pos_str = str(pos)
+
+        tabid = find_right_left_id(pos_str)
+        if tabid is not None:
+            log.debug('Found tab ID by direction=%r: %r', pos, tabid)
+            return tabid
+
+        tabid = find_id_by_title(pos_str)
+        if tabid is not None:
+            log.debug('Found tab ID by title=%r: %r', pos, tabid)
+            return tabid
 
 
 class TUICmd(metaclass=InitCommand):
