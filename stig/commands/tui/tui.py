@@ -270,12 +270,12 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         # subsequent operations
         old_index = tabs.focus_position
         if focus is not None:
-            i_focus = self.get_tab_index(focus)
+            i_focus = self._get_tab_index(focus)
             log.debug('Focusing tab %r at index %r', focus, i_focus)
             if i_focus is None:
                 return False
         if close is not False:
-            i_close = self.get_tab_index(close)
+            i_close = self._get_tab_index(close)
             log.debug('Closing tab %r at index %r', close, i_close)
             if i_close is None:
                 return False
@@ -342,7 +342,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
 
         return retval
 
-    def get_tab_index(self, pos):
+    def _get_tab_index(self, pos):
         tabs = self.tui.tabs
 
         if pos is None:
