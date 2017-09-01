@@ -147,11 +147,13 @@ class Tabs(urwid.Widget):
         else:
             i = self.focus_position if position is None else position
             if i is not None:
-                c_len = len(self._contents)
+                tab_count = len(self._contents)
                 if i < 0:
-                    if i >= -c_len:
-                        return self.get_index(c_len + i)
-                elif i < c_len:
+                    # Negative index means right-bound index (-1 is the rightmost tab)
+                    if i >= -tab_count:
+                        return self.get_index(tab_count + i)
+                elif i < tab_count:
+                    # Positive index means left-bound index (1 is the leftmost tab)
                     return i
                 raise IndexError('No tab at position: {}'.format(position))
 
