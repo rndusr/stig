@@ -241,7 +241,7 @@ class HelpManager():
                     # Argument has no description
                     continue
 
-                argline = '\t' + ','.join(argspec['names'])
+                argline = '\t' + ', '.join(argspec['names'])
                 if takes_value(argspec):
                     dest = arg_dest(argspec)
                     if dest is not None:
