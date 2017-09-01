@@ -270,12 +270,10 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         tabid_old = tabs.get_id()
         if focus is not None:
             tabid_focus = self._get_tab_id(focus)
-            log.debug('Focusing tab %r -> %r', focus, tabid_focus)
             if tabid_focus is None:
                 return False
         if close is not False:
             tabid_close = self._get_tab_id(close)
-            log.debug('Closing tab %r -> %r', close, tabid_close)
             if tabid_close is None:
                 return False
 
@@ -305,10 +303,13 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
 
         # Apply close/focus operations
         if focus is not None:
+            log.debug('Focusing tab %r', tabid_focus)
             tabs.focus_id = tabid_focus
         if close_all is not False:
+            log.debug('Closing all tabs')
             tabs.clear()
         elif close is not False:
+            log.debug('Closing tab %r', tabid_close)
             tabs.remove(tabid_close)
 
         # If no tabs were closed or focused, open a new one
