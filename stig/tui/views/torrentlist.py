@@ -13,12 +13,11 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 import urwid
-from collections import abc
 
 from ..scroll import ScrollBar
 from ..table import Table
 from .tlist_columns import TUICOLUMNS
-from . import (ItemWidgetBase, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 
 
 class TorrentItemWidget(ItemWidgetBase):
@@ -88,13 +87,6 @@ class TorrentListWidget(ListWidgetBase):
     @property
     def title_name(self):
         if self._title is None:
-            if self._tfilter is None:
-                return '<all>'
-            elif isinstance(self._tfilter, abc.Sequence):
-                # tfilter is a sequence of torrent IDs that can be impractically
-                # large to display in the tab title
-                return '<handpicked>'
-            else:
-                return str(self._tfilter)
+            return stringify_torrent_filter(self._tfilter)
         else:
             return ListWidgetBase.title_name.fget(self)

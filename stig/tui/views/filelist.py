@@ -18,7 +18,7 @@ from collections import abc
 import builtins
 
 from .flist_columns import TUICOLUMNS
-from . import (ItemWidgetBase, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 
 
 from ...views.filelist import (create_directory_data, create_directory_name)
@@ -174,7 +174,7 @@ class FileListWidget(ListWidgetBase):
         # If title is not given, create the static part of the title (file
         # filter + torrent filter)
         if title is None:
-            tfilter_str = str(tfilter or 'all')
+            tfilter_str = stringify_torrent_filter(tfilter)
             if ffilter is None:
                 title = tfilter_str
             else:

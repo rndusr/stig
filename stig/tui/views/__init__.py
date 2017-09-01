@@ -399,4 +399,15 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._listbox.focus_position = min(focus_position, len(self._listbox.body)-1)
 
 
+def stringify_torrent_filter(tfilter):
+    if tfilter is None:
+        return 'all'
+    elif isinstance(tfilter, collections.abc.Sequence):
+        # tfilter is a sequence of torrent IDs
+        return ','.join(str(tid) for tid in tfilter)
+    else:
+        # Probably a TorrentFilter instance
+        return str(tfilter)
+
+
 from . import hooks

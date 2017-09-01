@@ -14,7 +14,7 @@ import urwid
 from ..scroll import ScrollBar
 from ..table import Table
 from .plist_columns import TUICOLUMNS
-from . import (ItemWidgetBase, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 
 
 class PeerItemWidget(ItemWidgetBase):
@@ -68,8 +68,7 @@ class PeerListWidget(ListWidgetBase):
     @property
     def title_name(self):
         if self._title is None:
-            # self._tfilter is either None or a TorrentFilter instance
-            title = str(self._tfilter or 'all')
+            title =  stringify_torrent_filter(self._tfilter)
             if self._pfilter:
                 title += ' %s' % self._pfilter
             return title

@@ -14,7 +14,7 @@ import urwid
 from ..scroll import ScrollBar
 from ..table import Table
 from .trklist_columns import TUICOLUMNS
-from . import (ItemWidgetBase, ListWidgetBase)
+from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 
 
 class TrackerItemWidget(ItemWidgetBase):
@@ -72,8 +72,7 @@ class TrackerListWidget(ListWidgetBase):
     @property
     def title_name(self):
         if self._title is None:
-            # self._torfilter is either None or a TorrentFilter instance
-            title = str(self._torfilter or 'all')
+            title = stringify_torrent_filter(self._torfilter)
             if self._trkfilter:
                 title += ' %s' % self._trkfilter
             return title
