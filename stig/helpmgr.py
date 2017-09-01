@@ -249,22 +249,25 @@ class HelpManager():
 
                 argline += '  \t' + argspec['description']
 
-                def stringify_default(default):
-                    dflt = default() if callable(default) else default
+                if 'document_default' not in argspec or argspec['document_default']:
+                    # Argument takes a value that may default to another value
+                    # if ommitted and we want to document that default value
+                    def stringify_default(default):
+                        dflt = default() if callable(default) else default
 
-                    if not isinstance(dflt, str) and isinstance(dflt, abc.Sequence):
-                        return ' '.join(dflt)
-                    else:
-                        return str(dflt)
+                        if not isinstance(dflt, str) and isinstance(dflt, abc.Sequence):
+                            return ' '.join(dflt)
+                        else:
+                            return str(dflt)
 
-                if 'default_description' in argspec:
-                    argline += ' (default: {})'.format(
-                        stringify_default(argspec['default_description'])
-                    )
-                elif 'default' in argspec:
-                    argline += ' (default: {})'.format(
-                        stringify_default(argspec['default'])
-                    )
+                    if 'default_description' in argspec:
+                        argline += ' (default: {})'.format(
+                            stringify_default(argspec['default_description'])
+                        )
+                    elif 'default' in argspec:
+                        argline += ' (default: {})'.format(
+                            stringify_default(argspec['default'])
+                        )
 
                 lines_args.append(argline)
             lines += lines_args

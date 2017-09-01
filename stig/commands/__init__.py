@@ -174,6 +174,8 @@ def InitCommand(clsname, bases, attrs):
             argspec.pop('description')
         if 'default_description' in argspec:
             argspec.pop('default_description')
+        if 'document_default' in argspec:
+            argspec.pop('document_default')
 
         # Assemble arg names
         argnames = argspec.pop('names', None)
