@@ -343,18 +343,29 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
 
     def _get_tab_id(self, pos):
         tabs = self.tui.tabs
+        if len(tabs) == 0:
+            return None
 
         if pos is None:
             return tabs.focus_id
 
         def find_id_by_index(index):
-            # First index 1 unless the user specified 0
-            index = index-1 if index > 0 else index
             try:
-                index = tabs.get_index(index)
-            except IndexError as e:
-                log.error('No tab at position: {}'.format(pos))
+                index = int(index)
+            except ValueError:
+                pass
             else:
+                index_max = len(tabs) - 1
+                # Internally, first tab is at index 0, but for users it's 1, unless
+                # they gave us 0, in which case we assume they mean 1.
+                index = index-1 if index > 0 else index
+
+                # Limit index to index_max, considering negative values when
+                # indexing from the right.
+                if index < 0:
+                    index = max(index, -index_max-1)
+                else:
+                    index = min(index, index_max)
                 return tabs.get_id(index)
 
         def find_right_left_id(right_or_left):
@@ -373,25 +384,24 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
                     return tabs.get_id(index)
             log.error('No tab with matching title: {!r}'.format(pos_str))
 
-        try:
-            index = int(pos)
-        except ValueError:
-            pass
-        else:
-            tabid = find_id_by_index(index)
-            log.debug('Found tab ID by index=%r: %r', index, tabid)
+        # Try to use pos as an index
+        tabid = find_id_by_index(pos)
+        if tabid is not None:
+            log.debug('Found tab ID by index: %r -> %r', pos, tabid)
             return tabid
 
         pos_str = str(pos)
 
+        # Move to left/right tab
         tabid = find_right_left_id(pos_str)
         if tabid is not None:
-            log.debug('Found tab ID by direction=%r: %r', pos, tabid)
+            log.debug('Found tab ID by direction: %r -> %r', pos, tabid)
             return tabid
 
+        # Try to find tab title
         tabid = find_id_by_title(pos_str)
         if tabid is not None:
-            log.debug('Found tab ID by title=%r: %r', pos, tabid)
+            log.debug('Found tab ID by title: %r -> %r', pos, tabid)
             return tabid
 
 
