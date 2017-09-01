@@ -278,7 +278,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         """Remove all list items"""
         self._table.clear()
         self._listbox.body[:] = ()
-        # self._listbox.body[:] = []
         self._listbox._invalidate()
         self._marked.clear()
 
@@ -382,7 +381,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         focused_widget = self._listbox.focus
         if focused_widget is not None:
             return focused_widget.id
-        # return self._listbox.focus.id
 
     @property
     def focused_torrent_id(self):
@@ -390,7 +388,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         focused_widget = self._listbox.focus
         if focused_widget is not None:
             return focused_widget.torrent_id
-        # return self._listbox.focus.torrent_id
 
     @property
     def focus_position(self):

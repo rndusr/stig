@@ -222,12 +222,6 @@ class FileListWidget(ListWidgetBase):
         self._table.clear()
         self._marked.clear()
 
-    # def update(self):
-    #     """Call `clear` and then poll immediately"""
-    #     # TODO: Doesn't look like we need this method
-    #     self.clear()
-    #     self._poller.poll()
-
 
     @property
     def count(self):
