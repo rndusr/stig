@@ -247,18 +247,29 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
     argspecs = (
         { 'names': ('--background', '-b'), 'default': False, 'action': 'store_true',
           'description': 'Opens tab in background, instead of focusing it' },
-        { 'names': ('--close', '-c'), 'nargs': '?', 'const': None, 'default': False,
-          'description': 'Close tab at index or with partial title CLOSE' },
         { 'names': ('--close-all', '-ca'), 'default': False, 'action': 'store_true',
           'description': 'Close all tabs' },
+        { 'names': ('--close', '-c'), 'nargs': '?', 'const': None, 'default': False,
+          'description': 'Close tab (see TAB IDENTIFIERS SECTION)' },
         { 'names': ('--focus', '-f'),
-          'description': ('Focus tab; FOCUS can be an index (first tab is 1), '
-                          'part of a tab title, "left" or "right"') },
+          'description': 'Focus tab (see TAB IDENTIFIERS SECTION)' },
         { 'names': ('--title', '-t'),
           'description': 'Manually set tab title instead of generating one' },
         { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
           'description': ('Command to run in new tab') },
     )
+    more_sections = {
+        'TAB IDENTIFIERS': (
+            'There are three ways to specify a tab (e.g. to close it):',
+            ('  - \tIntegers specify the position of the tab.  Positive numbers '
+             'start from the left and negative numbers start from the right '
+             '(1 (and 0) is the leftmost tab and -1 is the rightmost tab).'),
+            ('  - \t"left" and "right" specify the tabs right and left to the '
+             'currently focused tab.'),
+            ('  - \tAnything else is assumed to be a part of a tab title.  If there '
+             'are multiple matches, the first match from the left wins.'),
+        ),
+    }
 
     tui = ExpectedResource
     cmdmgr = ExpectedResource
