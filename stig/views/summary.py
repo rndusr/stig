@@ -139,6 +139,15 @@ def _date_mr(key, t):
     return '%d\t%d' % (date, date.delta)
 
 
+def _timespan_hr(key, t):
+    timespan = t[key]
+    return str(timespan) if timespan != 0 else '0'
+
+def _timespan_mr(key, t):
+    timespan = t[key]
+    return int(timespan)
+
+
 class Item():
     def __init__(self, label, needed_keys, human_readable=None, machine_readable=None):
         self.label = label
@@ -189,11 +198,16 @@ SECTIONS = (
         Item('Downloading', ('peers-downloading',)),
     )},
 
-    {'title': 'Dates', 'width': 39, 'items': (
+    {'title': 'Dates and Times', 'width': 41, 'items': (
         Item('Created',    ('time-created',),   partial(_date_hr, 'time-created'),   partial(_date_mr, 'time-created')),
         Item('Added',      ('time-added',),     partial(_date_hr, 'time-added'),     partial(_date_mr, 'time-added')),
         Item('Started',    ('time-started',),   partial(_date_hr, 'time-started'),   partial(_date_mr, 'time-started')),
         Item('Completed',  ('time-completed',), partial(_date_hr, 'time-completed'), partial(_date_mr, 'time-completed')),
         Item('Active',     ('time-activity',),  partial(_date_hr, 'time-activity'),  partial(_date_mr, 'time-activity')),
+
+        Item('Seeding', ('timespan-seeding',),
+             partial(_timespan_hr, 'timespan-seeding'),  partial(_timespan_mr, 'timespan-seeding')),
+        Item('Downloading', ('timespan-downloading',),
+             partial(_timespan_hr, 'timespan-downloading'),  partial(_timespan_mr, 'timespan-downloading')),
     )},
 )
