@@ -64,7 +64,7 @@ class Table():
     @property
     def columns(self):
         """Currently enabled/displayed column IDs"""
-        return self._enabled_columns
+        return tuple(self._enabled_columns)
 
     @columns.setter
     def columns(self, columns):
