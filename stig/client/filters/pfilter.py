@@ -62,7 +62,7 @@ class SingleTorrentPeerFilter(Filter):
             value_type=TorrentPeer.TYPES['tsize']),
         '%downloaded': CmpFilterSpec(
             lambda p, op, v: op(p['progress'], v),
-            aliases=('%down',),
+            aliases=('%down', 'progress'),
             description='Match VALUE against percentage of bytes peer has downloaded',
             value_type=TorrentPeer.TYPES['progress']),
     }
