@@ -377,6 +377,8 @@ DEPENDENCIES = {
     'peers-seeding'     : ('trackerStats',),
 
     'timespan-eta'      : ('eta',),
+    'timespan-seeding'  : ('secondsSeeding',),
+    'timespan-downloading' : ('secondsDownloading',),
     'time-created'      : ('dateCreated',),
     'time-added'        : ('addedDate',),
     'time-started'      : ('startDate',),

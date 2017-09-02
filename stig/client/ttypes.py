@@ -668,6 +668,8 @@ TYPES = {
     'peers-seeding'     : Count,
 
     'timespan-eta'      : Timedelta,
+    'timespan-seeding'  : Timedelta,
+    'timespan-downloading' : Timedelta,
     'time-created'      : Timestamp,
     'time-added'        : Timestamp,
     'time-started'      : Timestamp,
