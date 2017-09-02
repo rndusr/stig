@@ -186,7 +186,7 @@ SECTIONS = (
         Item('Error',      ('error',)),
     )},
 
-    {'title': 'Limits', 'width': 30, 'items': (
+    {'title': 'Limits', 'width': 24, 'items': (
         Item('Upload rate',   ('rate-limit-up',), partial(_rate_limit_hr, 'up'), partial(_rate_limit_mr, 'up')),
         Item('Download rate',   ('rate-limit-down',), partial(_rate_limit_hr, 'down'), partial(_rate_limit_mr, 'down')),
     )},
