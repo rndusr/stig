@@ -187,7 +187,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._sort = sort
         self._sort_orig = sort
 
-        self._title = title
+        self._title = title or 'No title'
         self.title_updater = None
 
         self._table = Table(**self.tuicolumns)
