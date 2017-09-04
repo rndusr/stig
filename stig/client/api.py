@@ -145,15 +145,14 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
 
         async def manage():
             for poller in self._existing_pollers:
-                running = poller.running
-                needed = is_needed(poller)
-
-                if not running and needed:
-                    log.debug('Starting because not running and has callbacks: %r', poller)
-                    await poller.start()
-                elif running and not needed:
-                    log.debug('Stopping because running and no callbacks: %r', poller)
-                    await poller.stop()
+                if is_needed(poller):
+                    if not poller.running:
+                        log.debug('  Starting because not running and has callbacks: %r', poller)
+                        await poller.start()
+                else:
+                    if poller.running:
+                        log.debug('  Stopping because running and no callbacks: %r', poller)
+                        await poller.stop()
                     if poller in self._pollers:
                         self._pollers.remove(poller)
 
