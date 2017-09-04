@@ -20,7 +20,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                    mixin.create_list_widget):
     provides = {'tui'}
 
-    async def make_flist(self, tfilter, ffilter, columns):
+    def make_flist(self, tfilter, ffilter, columns):
         from ...tui.views.filelist import FileListWidget
         self.create_list_widget(FileListWidget, theme_name='filelist',
                                 tfilter=tfilter, ffilter=ffilter,

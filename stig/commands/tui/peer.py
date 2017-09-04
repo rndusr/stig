@@ -20,7 +20,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
                    mixin.create_list_widget):
     provides = {'tui'}
 
-    async def make_plist(self, tfilter, pfilter, sort, columns):
+    def make_plist(self, tfilter, pfilter, sort, columns):
         from ...tui.views.peerlist import PeerListWidget
         self.create_list_widget(PeerListWidget, theme_name='peerlist',
                                 tfilter=tfilter, pfilter=pfilter,

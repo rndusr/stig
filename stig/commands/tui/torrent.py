@@ -22,7 +22,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.create_list_widget):
     provides = {'tui'}
 
-    async def make_tlist(self, tfilter, sort, columns):
+    def make_tlist(self, tfilter, sort, columns):
         from ...tui.views.torrentlist import TorrentListWidget
         self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
                                 tfilter=tfilter, sort=sort, columns=columns,
