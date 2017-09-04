@@ -281,6 +281,15 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._listbox._invalidate()
         self._marked.clear()
 
+
+    @property
+    def columns(self):
+        return self._table.columns
+
+    @columns.setter
+    def columns(self, columns):
+        self._table.columns = columns
+
     @property
     def sort(self):
         """*Sorter object or `None` to keep list items unsorted"""
