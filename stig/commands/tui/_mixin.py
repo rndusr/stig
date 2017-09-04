@@ -16,8 +16,10 @@ log = make_logger(__name__)
 
 from .. import ExpectedResource
 from .. import utils
+from ._common import make_tab_title_widget
 
 from collections import abc
+from functools import partial
 
 
 class make_request():
@@ -167,6 +169,45 @@ class generate_tab_title():
                 return 'Could not find torrent with ID %s' % tfilter[0]
         else:
             return None
+
+
+class create_list_widget():
+    tui    = ExpectedResource
+    srvapi = ExpectedResource
+
+    async def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
+        # Helper function that creates a tab title widget
+        make_titlew = partial(make_tab_title_widget,
+                              attr_unfocused='tabs.%s.unfocused' % theme_name,
+                              attr_focused='tabs.%s.focused' % theme_name)
+
+        # If tab is specified by the user, pass it on to the list widget
+        if hasattr(self, 'title'):
+            kwargs['title'] = self.title
+
+        # Create list widget
+        log.debug('Creating %s(%s, %s)', list_cls.__name__, args, kwargs)
+        listw = list_cls(self.srvapi, self.tui.keymap, *args, **kwargs)
+
+        # Add list to tabs
+        tabid = self.tui.tabs.load(make_titlew(listw.title), listw)
+
+        # If list items are markable, automatically add the 'marked' column
+        if markable_items:
+            columns = listw.columns
+            if 'marked' not in columns:
+                listw.columns = ('marked',) + columns
+
+        # Tell list widget how to change the tab title
+        def set_tab_title(text, count):
+            # There is a race condition that can result in the list widget
+            # setting a new title for a tab that has already been removed, which
+            # raises an IndexError here.
+            try:
+                self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
+            except IndexError:
+                pass
+        listw.title_updater = set_tab_title
 
 
 class polling_frenzy():
