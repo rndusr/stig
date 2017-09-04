@@ -210,8 +210,10 @@ class FileListWidget(ListWidgetBase):
             self._filetree.update(torrents)
 
     def clear(self):
-        # We can't call super().clear() because it runs `self._listbox.body[:] = ()`,
-        # which work here because urwidtrees.TreeListWalker doesn't support item assignment.
+        # We can't call super().clear() because it runs the more efficient
+        # `self._listbox.body[:] = ()`
+        # That doesn't work here because urwidtrees.TreeListWalker doesn't
+        # support item assignment.
         self._listbox.body = urwid.SimpleListWalker([])
         self._listbox._invalidate()
         self._initialized = False
