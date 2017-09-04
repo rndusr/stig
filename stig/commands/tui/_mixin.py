@@ -20,40 +20,6 @@ from .. import utils
 from collections import abc
 
 
-class generate_tab_title():
-    async def generate_tab_title(self, tfilter):
-        if hasattr(self, 'title'):
-            # Title is preset - we are not allowed to generate one
-            return self.title
-        elif isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
-            # tfilter is a torrent ID - resolve it to a name for the title
-            response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
-            if response.success:
-                return response.torrents[0]['name']
-            else:
-                return 'Could not find torrent with ID %s' % tfilter[0]
-        else:
-            return None
-
-
-class polling_frenzy():
-    aioloop = ExpectedResource
-
-    def polling_frenzy(self, duration=2, short_interval=0.5):
-        """Reduce polling interval to `short_interval` for `duration` seconds"""
-        srvapi = self.srvapi
-        if srvapi.interval > 1:
-            import asyncio
-            async def coro():
-                log.debug('Setting poll interval to %s for %s seconds', short_interval, duration)
-                orig_interval = srvapi.interval
-                srvapi.interval = short_interval
-                await asyncio.sleep(duration, loop=self.aioloop)
-                srvapi.interval = orig_interval
-                log.debug('Interval restored to %s', srvapi.interval)
-            self.aioloop.create_task(coro())
-
-
 class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
@@ -183,3 +149,40 @@ class select_files():
            focused_widget.focused_file_ids is not None:
             return tuple((focused_widget.focused_torrent_id, fid)
                          for fid in focused_widget.focused_file_ids)
+
+
+class generate_tab_title():
+    srvapi = ExpectedResource
+
+    async def generate_tab_title(self, tfilter):
+        if hasattr(self, 'title'):
+            # Title is preset - we are not allowed to generate one
+            return self.title
+        elif isinstance(tfilter, abc.Sequence) and len(tfilter) == 1:
+            # tfilter is a torrent ID - resolve it to a name for the title
+            response = await self.srvapi.torrent.torrents(tfilter, keys=('name',))
+            if response.success:
+                return response.torrents[0]['name']
+            else:
+                return 'Could not find torrent with ID %s' % tfilter[0]
+        else:
+            return None
+
+
+class polling_frenzy():
+    aioloop = ExpectedResource
+    srvapi  = ExpectedResource
+
+    def polling_frenzy(self, duration=2, short_interval=0.5):
+        """Reduce polling interval to `short_interval` for `duration` seconds"""
+        srvapi = self.srvapi
+        if srvapi.interval > 1:
+            import asyncio
+            async def coro():
+                log.debug('Setting poll interval to %s for %s seconds', short_interval, duration)
+                orig_interval = srvapi.interval
+                srvapi.interval = short_interval
+                await asyncio.sleep(duration, loop=self.aioloop)
+                srvapi.interval = orig_interval
+                log.debug('Interval restored to %s', srvapi.interval)
+            self.aioloop.create_task(coro())
