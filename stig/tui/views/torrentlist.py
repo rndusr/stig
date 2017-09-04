@@ -47,7 +47,7 @@ class TorrentListWidget(ListWidgetBase):
 
     def _register_request(self):
         # Get keys needed for sort order, tfilter and columns
-        keys = []
+        keys = ['name']
         if self._sort is not None:
             keys.extend(self._sort.needed_keys)
         if hasattr(self._tfilter, 'needed_keys'):
@@ -63,8 +63,11 @@ class TorrentListWidget(ListWidgetBase):
         self._srvapi.treqpool.poll()
 
     def _handle_torrents(self, torrents):
+        # Auto-generate title from our filters if not set
+        if self._title_name is None:
+            self._title_name = stringify_torrent_filter(self._tfilter, torrents)
         self._items = {t['id']:t for t in torrents}
-        super()._invalidate()
+        self._invalidate()
 
     def clear(self):
         """Remove all list items"""
@@ -83,10 +86,3 @@ class TorrentListWidget(ListWidgetBase):
         self._srvapi.treqpool.remove(self.id)
         ListWidgetBase.sort.fset(self, sort)
         self._register_request()
-
-    @property
-    def title_name(self):
-        if self._title is None:
-            return stringify_torrent_filter(self._tfilter)
-        else:
-            return ListWidgetBase.title_name.fget(self)

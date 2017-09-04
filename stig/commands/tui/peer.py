@@ -12,32 +12,18 @@
 from ..base import peer as base
 from . import _mixin as mixin
 from .. import (ExpectedResource, InitCommand)
-from ._common import make_tab_title_widget
-
-from functools import partial
 
 
 class ListPeersCmd(base.ListPeersCmdbase,
-                   mixin.make_request, mixin.select_torrents, mixin.generate_tab_title):
+                   mixin.make_request,
+                   mixin.select_torrents,
+                   mixin.create_list_widget):
     provides = {'tui'}
-    tui = ExpectedResource
-    srvapi = ExpectedResource
 
     async def make_plist(self, tfilter, pfilter, sort, columns):
-        make_titlew = partial(make_tab_title_widget,
-                              attr_unfocused='tabs.peerlist.unfocused',
-                              attr_focused='tabs.peerlist.focused')
-
-        title_str = await self.generate_tab_title(tfilter)
-
         from ...tui.views.peerlist import PeerListWidget
-        plistw = PeerListWidget(self.srvapi, self.tui.keymap,
+        self.create_list_widget(PeerListWidget, theme_name='peerlist',
                                 tfilter=tfilter, pfilter=pfilter,
-                                sort=sort, columns=columns, title=title_str)
-        tabid = self.tui.tabs.load(make_titlew(plistw.title), plistw)
-
-        def set_tab_title(text, count):
-            self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
-        plistw.title_updater = set_tab_title
-
+                                sort=sort, columns=columns,
+                                markable_items=False)
         return True

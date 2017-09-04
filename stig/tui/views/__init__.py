@@ -187,7 +187,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._sort = sort
         self._sort_orig = sort
 
-        self._title = title or 'No title'
+        self._title_name = title
         self.title_updater = None
 
         self._table = Table(**self.tuicolumns)
@@ -302,7 +302,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         else:
             self._sort = sort
 
-
     @property
     def count(self):
         """Number of listed items"""
@@ -318,7 +317,7 @@ class ListWidgetBase(urwid.WidgetWrap):
     @property
     def title_name(self):
         """The base name of the title"""
-        return str(self._title)
+        return str(self._title_name or 'No title')
 
     @property
     def title_sort_order(self):
@@ -408,14 +407,19 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._listbox.focus_position = min(focus_position, len(self._listbox.body)-1)
 
 
-def stringify_torrent_filter(tfilter):
+def stringify_torrent_filter(tfilter, torrents):
     if tfilter is None:
         return 'all'
     elif isinstance(tfilter, collections.abc.Sequence):
         # tfilter is a sequence of torrent IDs
-        return ','.join(str(tid) for tid in tfilter)
+        if len(tfilter) == 1:
+            # Just one specific torrent requested
+            return torrents[0]['name']
+        else:
+            # Multiple specific torrents requested
+            return ','.join(str(tid) for tid in tfilter)
     else:
-        # Probably a TorrentFilter instance
+        # Should be a TorrentFilter instance
         return str(tfilter)
 
 

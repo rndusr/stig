@@ -171,17 +171,7 @@ class FileListWidget(ListWidgetBase):
     focusable_items = True
 
     def __init__(self, srvapi, keymap, tfilter, ffilter, columns=None, title=None):
-        # If title is not given, create the static part of the title (file
-        # filter + torrent filter)
-        if title is None:
-            tfilter_str = stringify_torrent_filter(tfilter)
-            if ffilter is None:
-                title = tfilter_str
-            else:
-                title = '%s files of %s torrents' % (ffilter, tfilter_str)
-
         super().__init__(srvapi, keymap, columns=columns, title=title)
-
         self._tfilter = tfilter
         self._ffilter = ffilter
         self._initialized = False
@@ -201,6 +191,12 @@ class FileListWidget(ListWidgetBase):
         self._invalidate()
 
     def _init_listitems(self, torrents):
+        # Auto-generate title from our filters
+        if self._title_name is None:
+            self._title_name = stringify_torrent_filter(self._tfilter, torrents)
+            if self._ffilter:
+                self._title_name += ' %s' % self._ffilter
+
         self.clear()
         if torrents:
             self._filetree = FileTreeDecorator(torrents, self._keymap,

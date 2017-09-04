@@ -18,30 +18,15 @@ from functools import partial
 
 
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
-                      mixin.select_torrents, mixin.generate_tab_title):
+                      mixin.select_torrents,
+                      mixin.create_list_widget):
     provides = {'tui'}
-    tui = ExpectedResource
-    srvapi = ExpectedResource
 
     async def make_tlist(self, tfilter, sort, columns):
-        if 'marked' not in columns:
-            columns.insert(0, 'marked')
-
-        make_titlew = partial(make_tab_title_widget,
-                              attr_unfocused='tabs.torrentlist.unfocused',
-                              attr_focused='tabs.torrentlist.focused')
-
-        title_str = await self.generate_tab_title(tfilter)
-
         from ...tui.views.torrentlist import TorrentListWidget
-        tlistw = TorrentListWidget(self.srvapi, self.tui.keymap, tfilter=tfilter,
-                                   sort=sort, columns=columns, title=title_str)
-        tabid = self.tui.tabs.load(make_titlew(tlistw.title), tlistw)
-
-        def set_tab_title(text, count):
-            self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
-        tlistw.title_updater = set_tab_title
-
+        self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
+                                tfilter=tfilter, sort=sort, columns=columns,
+                                markable_items=True)
         return True
 
 

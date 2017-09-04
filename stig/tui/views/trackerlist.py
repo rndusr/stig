@@ -54,6 +54,13 @@ class TrackerListWidget(ListWidgetBase):
         if response is None or not response.torrents:
             self.clear()
         else:
+            # Auto-generate title from our filters if not set
+            if self._title_name is None:
+                self._title_name = stringify_torrent_filter(self._torfilter, response.torrents)
+                if self._trkfilter:
+                    self._title_name += ' %s' % self._trkfilter
+
+            # Create list items our base widget can handle
             def trackers_combined(torrents):
                 for t in torrents:
                     yield from self._maybe_filter_trackers(t['trackers'])
@@ -68,13 +75,3 @@ class TrackerListWidget(ListWidgetBase):
     def sort(self, sort):
         ListWidgetBase.sort.fset(self, sort)
         self._poller.poll()
-
-    @property
-    def title_name(self):
-        if self._title is None:
-            title = stringify_torrent_filter(self._torfilter)
-            if self._trkfilter:
-                title += ' %s' % self._trkfilter
-            return title
-        else:
-            return ListWidgetBase.title_name.fget(self)

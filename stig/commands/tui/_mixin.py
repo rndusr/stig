@@ -175,7 +175,7 @@ class create_list_widget():
     tui    = ExpectedResource
     srvapi = ExpectedResource
 
-    async def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
+    def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
         # Helper function that creates a tab title widget
         make_titlew = partial(make_tab_title_widget,
                               attr_unfocused='tabs.%s.unfocused' % theme_name,
