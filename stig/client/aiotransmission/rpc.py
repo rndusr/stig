@@ -395,8 +395,6 @@ class TransmissionRPC():
 
         Raises RPCError, ConnectionError, AuthError
         """
-        realmethod = method.replace('_', '-')
-
         async def request(arguments={}, autoconnect=True, **kwargs):
             if not self.connected:
                 if autoconnect:
@@ -408,7 +406,8 @@ class TransmissionRPC():
                     return None
 
             arguments.update(**kwargs)
-            rpc_request = json.dumps( {'method':realmethod, 'arguments':arguments} )
+            rpc_request = json.dumps({'method'    : method.replace('_', '-'),
+                                      'arguments' : arguments})
 
             await self.__request_lock.acquire()
             try:
