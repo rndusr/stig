@@ -358,7 +358,29 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
         super().__init__(*args, **kwargs)
 
     def update(self, torrent):
-        new_status = self.make_status(torrent)
+        progress = torrent['%downloaded']
+        Status = type(torrent['status'])
+        if Status.STOPPED in torrent['status']:
+            mode = 'stopped'
+        elif Status.ISOLATED in torrent['status']:
+            mode = 'isolated'
+        elif Status.INIT in torrent['status']:
+            mode = 'discovering'
+            progress = torrent['%metadata']
+        elif Status.VERIFY in torrent['status']:
+            mode = 'verifying'
+            progress = torrent['%verified']
+        elif Status.DOWNLOAD in torrent['status']:
+            mode = 'downloading'
+        elif Status.UPLOAD in torrent['status']:
+            mode = 'uploading'
+        elif Status.QUEUED in torrent['status']:
+            mode = 'queued'
+        elif Status.CONNECTED in torrent['status']:
+            mode = 'connected'
+        else:
+            mode = 'idle'
+        new_status = (torrent['name'], mode, progress)
         if new_status != self.status:
             self.status = new_status
             self._invalidate()
@@ -382,33 +404,5 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
 
     def get_mode(self):
         return self.status[1]
-
-    @staticmethod
-    def make_status(t):
-        progress = t['%downloaded']
-        Status = type(t['status'])
-        if Status.STOPPED in t['status']:
-            mode = 'stopped'
-        elif Status.ISOLATED in t['status']:
-            mode = 'isolated'
-        elif Status.INIT in t['status']:
-            mode = 'discovering'
-            progress = t['%metadata']
-        elif Status.VERIFY in t['status']:
-            mode = 'verifying'
-            progress = t['%verified']
-        elif Status.DOWNLOAD in t['status']:
-            mode = 'downloading'
-        elif Status.UPLOAD in t['status']:
-            mode = 'uploading'
-        elif Status.QUEUED in t['status']:
-            mode = 'queued'
-        elif Status.CONNECTED in t['status']:
-            mode = 'connected'
-        else:
-            mode = 'idle'
-        return (t['name'], mode, progress)
-
-
 
 TUICOLUMNS['name'] = TorrentName
