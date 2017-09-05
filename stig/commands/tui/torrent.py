@@ -31,7 +31,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
 
 
 class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
-                        mixin.select_torrents, mixin.make_request, mixin.generate_tab_title):
+                        mixin.select_torrents, mixin.make_request):
     provides = {'tui'}
     tui = ExpectedResource
 
@@ -44,11 +44,10 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
                               attr_unfocused='tabs.torrentsummary.unfocused',
                               attr_focused='tabs.torrentsummary.focused')
 
-        title_str = await self.generate_tab_title(tfilter)
         from ...tui.views.summary import TorrentSummaryWidget
         TorrentSummaryWidget_keymapped = self.tui.keymap.wrap(TorrentSummaryWidget,
                                                               context='torrent')
-        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, tid, title=title_str)
+        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, torrent['id'])
         tabid = self.tui.tabs.load(make_titlew(summaryw.title), summaryw)
 
         def set_tab_title(text):
