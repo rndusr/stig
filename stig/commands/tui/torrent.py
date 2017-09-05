@@ -36,8 +36,8 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
     tui = ExpectedResource
 
     async def display_summary(self, tfilter):
-        tid = await self.get_torrent_id(tfilter)
-        if tid is None:
+        torrent = await self.get_torrent(tfilter, keys=('name', 'id'))
+        if torrent is None:
             return False
 
         make_titlew = partial(make_tab_title_widget,

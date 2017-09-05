@@ -18,14 +18,21 @@ log = make_logger(__name__)
 from .. import utils
 
 
-class get_torrent_id():
-    async def get_torrent_id(self, tfilter):
-        request = self.srvapi.torrent.torrents(tfilter, keys=('name', 'id'))
+class get_torrent():
+    async def get_torrent(self, tfilter, keys=()):
+        """Get a single torrent that matches TorrentFilter `tfilter`
+
+        If there are multple matches, they are sorted by name and the first
+        match is returned.
+
+        Return None if no match is found.
+        """
+        request = self.srvapi.torrent.torrents(tfilter, keys=keys)
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
             from ...client import TorrentSorter
             torrents = TorrentSorter(('name',)).apply(response.torrents)
-            return torrents[0]['id']
+            return torrents[0]
 
 class get_torrent_sorter():
     def get_torrent_sorter(self, args):

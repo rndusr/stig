@@ -79,7 +79,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                 return self.make_tlist(tfilter, sort, columns)
 
 
-class TorrentSummaryCmdbase(mixin.get_torrent_id, metaclass=InitCommand):
+class TorrentSummaryCmdbase(mixin.get_torrent, metaclass=InitCommand):
     name = 'summary'
     aliases = ('info', 'details')
     provides = set()

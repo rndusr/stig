@@ -52,9 +52,10 @@ class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
     provides = {'cli'}
 
     async def display_summary(self, tfilter):
-        tid = await self.get_torrent_id(tfilter)
-        if tid is None:
+        torrent = await self.get_torrent(tfilter, keys=('id',))
+        if torrent is None:
             return False
+        tid = torrent['id']
 
         from ...views.summary import SECTIONS
         needed_keys = set(('name',))
