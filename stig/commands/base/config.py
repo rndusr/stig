@@ -38,9 +38,8 @@ class RcCmdbase(metaclass=InitCommand):
         import os
 
         if FILE[0] not in (os.sep, '.', '~'):
-            FILE = '{}{}{}'.format(os.path.dirname(DEFAULT_RCFILE),
-                                   os.sep,
-                                   FILE)
+            default_dir = os.path.dirname(DEFAULT_RCFILE)
+            FILE = os.path.join(default_dir, FILE)
 
         try:
             lines = rcfile.read(FILE)
