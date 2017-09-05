@@ -51,7 +51,13 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
         tabid = self.tui.tabs.load(make_titlew(summaryw.title), summaryw)
 
         def set_tab_title(text):
-            self.tui.tabs.set_title(make_titlew(text), position=tabid)
+            # set_title() throws IndexError if the tab was removed, which may
+            # have happened while TorrentSummaryWidget was waiting for a
+            # response.
+            try:
+                self.tui.tabs.set_title(make_titlew(text), position=tabid)
+            except IndexError:
+                pass
         summaryw.title_updater = set_tab_title
 
         return True
