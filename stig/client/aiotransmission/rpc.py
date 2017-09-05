@@ -126,7 +126,7 @@ class TransmissionRPC():
         self.__headers = {'content-type': 'application/json'}
         self.__session = None
         self.__connect_exception = None
-        self.__connecting_lock = asyncio.Lock(loop=loop)
+        self.__connection_lock = asyncio.Lock(loop=loop)
         self.__connection_tested = False
         self.__timeout = TIMEOUT
         self.__on_connected = Signal()
@@ -211,12 +211,12 @@ class TransmissionRPC():
 
         Raises RPCError, ConnectionError or AuthError.
         """
-        if self.__connecting_lock.locked():
+        if self.__connection_lock.locked():
             # Someone else is currently connecting.  Wait for them to finish.
             log.debug('Waiting for other connection to establish')
-            await self.__connecting_lock.acquire()
+            await self.__connection_lock.acquire()
             log.debug('Other connect() call finished')
-            self.__connecting_lock.release()
+            self.__connection_lock.release()
 
             # Check if connection has the url we want
             if url is not None and self.url != TransmissionURL(url):
@@ -238,7 +238,7 @@ class TransmissionRPC():
                 self.timeout = timeout
 
         else:
-            async with self.__connecting_lock:
+            async with self.__connection_lock:
                 log.debug('Acquired connect() lock')
                 if timeout is not None:
                     self.timeout = timeout
