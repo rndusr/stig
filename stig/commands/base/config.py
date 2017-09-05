@@ -15,8 +15,6 @@ log = make_logger(__name__)
 from .. import (InitCommand, ExpectedResource, utils)
 from ._common import make_X_FILTER_spec
 
-from asyncio import iscoroutinefunction
-
 
 class RcCmdbase(metaclass=InitCommand):
     name = 'rc'
