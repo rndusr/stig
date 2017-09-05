@@ -52,7 +52,6 @@ class RcCmdbase(metaclass=InitCommand):
         else:
             log.debug('Running commands from rc file: %r', FILE)
             for cmdline in lines:
-                log.debug('  %r', cmdline)
                 success = await self.cmdmgr.run_async(cmdline)
                 if success is False:
                     return False
