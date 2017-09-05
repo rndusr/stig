@@ -127,6 +127,7 @@ class TransmissionRPC():
         self.__session = None
         self.__connect_exception = None
         self.__connection_lock = asyncio.Lock(loop=loop)
+        self.__request_lock = asyncio.Lock(loop=loop)
         self.__connection_tested = False
         self.__timeout = TIMEOUT
         self.__on_connected = Signal()
@@ -408,6 +409,8 @@ class TransmissionRPC():
 
             arguments.update(**kwargs)
             rpc_request = json.dumps( {'method':realmethod, 'arguments':arguments} )
+
+            await self.__request_lock.acquire()
             try:
                 return await self.__send_request(rpc_request)
             except ClientError as e:
@@ -420,6 +423,8 @@ class TransmissionRPC():
 
                 self.__on_error.send(self.__url, error=e)
                 raise
+            finally:
+                self.__request_lock.release()
 
         request.__name__ = method
         request.__qualname__ = method
