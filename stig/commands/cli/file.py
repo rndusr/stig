@@ -17,6 +17,8 @@ from . import _mixin as mixin
 from .. import ExpectedResource
 from ._common import (print_table, TERMSIZE)
 
+import os
+
 
 class ListFilesCmd(base.ListFilesCmdbase,
                    mixin.make_request, mixin.select_torrents, mixin.select_files,
