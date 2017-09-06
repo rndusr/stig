@@ -613,7 +613,7 @@ class TorrentTracker(abc.Mapping):
         'time-next-scrape'   : Timestamp,
     }
 
-    _MODIFIERS = {
+    _GENERATORS = {
         'id'     : lambda self: hash((self['tid'], self['url-announce'])),
         'domain' : lambda self: self['url-announce'].domain,
         'state'  : lambda self: (self['state-scrape'] if self['state-announce'] == 'idle'
@@ -629,13 +629,18 @@ class TorrentTracker(abc.Mapping):
         self._cache = {}
 
     def __getitem__(self, key):
+        cache = self._cache
         if key not in self._cache:
-            if key in self._MODIFIERS:
-                val = self._MODIFIERS[key](self)
+            types = self.TYPES
+            generators = self._GENERATORS
+
+            if key in generators:
+                val = generators[key](self)
             else:
                 val = self._dct[key]
-            self._cache[key] = self.TYPES[key](val)
-        return self._cache[key]
+            cache[key] = types[key](val)
+
+        return cache[key]
 
     def __repr__(self): return '<%s %s>' % (type(self).__name__, self['url-announce'])
     def __iter__(self): return iter(self.TYPES)
