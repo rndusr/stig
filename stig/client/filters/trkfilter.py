@@ -54,11 +54,11 @@ class SingleTrackerFilter(Filter):
         'seeds'          : _make_cmp_filter('count-seeds',
                                             description='Match VALUE against number of known seeding peers'),
         'last-announce'  : _make_cmp_filter('time-last-announce',
-                                            description='Match VALUE against last time of a successful announce'),
+                                            description='Match VALUE against time of last announce'),
         'next-announce'  : _make_cmp_filter('time-next-announce',
                                             description='Match VALUE against time of next announce'),
         'last-scrape'    : _make_cmp_filter('time-last-scrape',
-                                            description='Match VALUE against last time of a successful scrape'),
+                                            description='Match VALUE against time of last scrape'),
         'next-scrape'    : _make_cmp_filter('time-next-scrape',
                                             description='Match VALUE against time of next scrape'),
     }
