@@ -79,8 +79,19 @@ def _count_seeds(t):
 def _bytes_available(t):
     return t['desiredAvailable'] + t['haveValid'] + t['haveUnchecked']
 
+
 def _percent_available(t):
-    return _bytes_available(t) / t['sizeWhenDone'] * 100
+    try:
+        return _bytes_available(t) / t['sizeWhenDone'] * 100
+    except ZeroDivisionError:
+        return 0
+
+
+def _percent_uploaded(t):
+    try:
+        return t['uploadedEver'] / t['totalSize'] * 100
+    except ZeroDivisionError:
+        return 0
 
 
 def _is_isolated(t):
@@ -416,7 +427,7 @@ DEPENDENCIES = {
 # values from existing RPC values.
 _MODIFY = {
     '%downloaded'                  : lambda raw: raw['percentDone'] * 100,
-    '%uploaded'                    : lambda raw: raw['uploadedEver'] / raw['totalSize'] * 100,
+    '%uploaded'                    : _percent_uploaded,
     '%metadata'                    : lambda raw: raw['metadataPercentComplete'] * 100,
     '%verified'                    : lambda raw: raw['recheckProgress'] * 100,
     '%available'                   : _percent_available,
@@ -480,18 +491,11 @@ class Torrent(base.TorrentBase):
             raw = self._raw
             if key in _MODIFY:
                 # Modifier gets the whole raw torrent
-                try:
-                    value = _MODIFY[key](raw)
-                except ZeroDivisionError:
-                    value = 0
+                value = _MODIFY[key](raw)
             else:
                 # Copy raw value unmodified
                 fields = DEPENDENCIES[key]
-                assert len(fields) == 1
-                try:
-                    value = raw[fields[0]]
-                except KeyError:
-                    raise KeyError(key)
+                value = raw[fields[0]]
             cache[key] = ttypes.TYPES[key](value)
         return cache[key]
 
