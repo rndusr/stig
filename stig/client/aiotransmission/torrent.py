@@ -245,6 +245,21 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         update_files(self._items, fileStats)
 
 
+
+class PeerList(tuple):
+    def __new__(cls, t):
+        TorrentPeer = ttypes.TorrentPeer
+        return super().__new__(cls,
+            (TorrentPeer(tid=t['id'], tname=t['name'],
+                         tsize=t['totalSize'],
+                         ip=p['address'], port=p['port'], client=p['clientName'],
+                         progress=p['progress']*100,
+                         rate_up=p['rateToPeer'], rate_down=p['rateToClient'])
+             for p in t['peers'])
+        )
+
+
+
 class TrackerList(tuple):
     _STATES_ANNOUNCE = {
         # From libtransmission/transmission.h:
@@ -336,18 +351,6 @@ class TrackerList(tuple):
                 }))) for raw_tracker in raw_torrent['trackerStats'])
         )
 
-
-class PeerList(tuple):
-    def __new__(cls, t):
-        TorrentPeer = ttypes.TorrentPeer
-        return super().__new__(cls,
-            (TorrentPeer(tid=t['id'], tname=t['name'],
-                         tsize=t['totalSize'],
-                         ip=p['address'], port=p['port'], client=p['clientName'],
-                         progress=p['progress']*100,
-                         rate_up=p['rateToPeer'], rate_down=p['rateToClient'])
-             for p in t['peers'])
-        )
 
 
 # Map our keys to tuples of needed RPC field names for those keys
