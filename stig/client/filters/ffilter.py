@@ -14,9 +14,9 @@
 from ..ttypes import (TorrentFile, TorrentFilePriority)
 from . import (BoolFilterSpec, make_cmp_filter, Filter, FilterChain)
 
+
 def _make_cmp_filter(*args, **kwargs):
     return make_cmp_filter(TorrentFile.TYPES, *args, **kwargs)
-
 
 class SingleTorrentFileFilter(Filter):
     DEFAULT_FILTER = 'name'
@@ -36,18 +36,18 @@ class SingleTorrentFileFilter(Filter):
     }
 
     COMPARATIVE_FILTERS = {
-        'name': _make_cmp_filter('name', 'Match VALUE against file name'),
-        'path': _make_cmp_filter('path', 'Match VALUE against path in torrent'),
-        'size': _make_cmp_filter('size-total', 'Match VALUE against file size'),
-        'downloaded': _make_cmp_filter('size-downloaded',
-                                       'Match VALUE against number of downloaded bytes',
-                                       aliases=('down',)),
-        '%downloaded': _make_cmp_filter('progress',
-                                        'Match VALUE against percentage of downloaded bytes',
-                                        aliases=('%down',)),
-        'priority': _make_cmp_filter('priority',
-                                     'Match VALUE against download priority (low, normal, high or shun)',
-                                     aliases=('prio',)),
+        'name'        : _make_cmp_filter('name', 'Match VALUE against file name'),
+        'path'        : _make_cmp_filter('path', 'Match VALUE against path in torrent'),
+        'size'        : _make_cmp_filter('size-total', 'Match VALUE against file size'),
+        'downloaded'  : _make_cmp_filter('size-downloaded',
+                                         'Match VALUE against number of downloaded bytes',
+                                         aliases=('down',)),
+        '%downloaded' : _make_cmp_filter('progress',
+                                         'Match VALUE against percentage of downloaded bytes',
+                                         aliases=('%down',)),
+        'priority'    : _make_cmp_filter('priority',
+                                         'Match VALUE against download priority (low, normal, high or shun)',
+                                         aliases=('prio',)),
     }
 
 
