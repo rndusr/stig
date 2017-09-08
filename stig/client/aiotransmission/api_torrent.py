@@ -69,7 +69,7 @@ class _TorrentCache():
         tdict = self._tdict
         return len(tdict) > 0 and all('files' in t
                                       for t in tdict.values()
-                                      if t['id'] in ids)
+                                      if ids is None or t['id'] in ids)
 
     def __len__(self):
         return len(self._tdict)
