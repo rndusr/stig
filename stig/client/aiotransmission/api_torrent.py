@@ -52,6 +52,8 @@ class _TorrentCache():
         tdict = self._tdict
         known_tids = set(tdict)
         removed_tids = known_tids.difference(existing_tids)
+        if removed_tids:
+            log.debug('Clearing cached torrents: %r', removed_tids)
         for tid in removed_tids:
             del tdict[tid]
 
