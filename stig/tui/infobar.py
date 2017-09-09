@@ -224,7 +224,7 @@ class TorrentCountersWidget(urwid.WidgetWrap):
 
     def _update_counters(self, status):
         counters = status.count
-        if counters.total is const.DISCONNECTED:
+        if const.DISCONNECTED in counters:
             self._text.set_text('')
             return
 
@@ -234,7 +234,7 @@ class TorrentCountersWidget(urwid.WidgetWrap):
             if count > 0:
                 parts.append('%d %s' % (count, name))
 
-        text = ['{} torrents'.format(str(counters.total))]
+        text = ['%s torrents' % counters.total]
         if parts:
             text[-1] += ': ' + ', '.join(parts)
 
