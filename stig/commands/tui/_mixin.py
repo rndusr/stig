@@ -36,7 +36,7 @@ class select_torrents():
     tui = ExpectedResource
 
     def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True):
-        """Get TorrentFilter instance, focused torrent ID in a tuple or None
+        """Get TorrentFilter instance or focused/marked torrent IDs
 
         If `FILTER` evaluates to True, it is passed to TorrentFilter and the
         resulting object is returned.
@@ -61,49 +61,56 @@ class select_torrents():
             else:
                 raise ValueError('No torrent specified')
 
-    def discover_torrent_ids(self, widget=None):
-        """Return IDs of selected torrents
+    def discover_torrent_ids(self):
+        """Auto-detect which torrents are currently selected by the user
 
-        Return tuple of torrent IDs that are either focused, marked or otherwise
-        selected by the user.
+        Try `get_marked_torrent_ids` first, then `get_focused_torrent_id`.
 
-        Return None if no torrents are selected.
-
-        widget: Widget that is used to discover torrent IDs or None to use
-                widget in focused tab
-
-        Torrents are discovered by getting the:
-            - `selected_torrent_ids` attribute in this command's object
-              (e.g. set by the 'tab' command),
-            - `marked` attribute of the focused tab's widget
-              (e.g. TorrentListWidget), which must be an iterable of objects
-              with an `id` attribute that returns a torrent ID
-            - `focused_torrent_id` attribute of the focused tab's widget
-              (e.g. FileListWidget).
-
+        If any torrents are found, return a tuple of torrent IDs, otherwise
+        None.
         """
-        # Get torrent IDs from attribute set by 'tab' command (this happens when
-        # you run 'tab filelist' while a torrent is focused)
-        if hasattr(self, 'selected_torrent_ids') and len(self.selected_torrent_ids) > 0:
-            log.debug('Found torrents specified by tab command: %r', self.selected_torrent_ids)
-            return self.selected_torrent_ids
+        tids = self.get_marked_torrent_ids()
+        if tids:
+            return tids
+        tid = self.get_focused_torrent_id()
+        if tid:
+            return (tid,)
 
-        focused_widget = widget if widget is not None else self.tui.tabs.focus
-        log.debug('Finding torrent in focused tab: %r', focused_widget)
+    def get_marked_torrent_ids(self):
+        """Return IDs of marked items in the current or previous tab
 
-        # Get torrent IDs from marked items
-        if hasattr(focused_widget, 'marked'):
-            tids = tuple(twidget.id for twidget in focused_widget.marked)
+        This relies on the widget having a `marked` attribute.
+        """
+        widget = self._get_current_or_previous_tab()
+        if hasattr(widget, 'marked'):
+            tids = tuple(twidget.id for twidget in widget.marked)
             if tids:
-                log.debug('Found marked torrents: %r', tids)
                 return tids
 
-        # Get torrent ID from widget in focused tab (e.g. FileListWidget)
-        if hasattr(focused_widget, 'focused_torrent_id'):
-            tid = focused_widget.focused_torrent_id
+    def get_focused_torrent_id(self):
+        """Return torrent ID of focused item in the current or previous tab
+
+        This relies on the widget having a `focused_torrent_id` attribute.
+        """
+        widget = self._get_current_or_previous_tab()
+        if hasattr(widget, 'focused_torrent_id'):
+            tid = widget.focused_torrent_id
             if tid is not None:
-                log.debug('Found focused torrent: %r', tid)
-                return (tid,)
+                return tid
+
+    def _get_current_or_previous_tab(self):
+        """Return currently focused tab content if not empty, or the previous one"""
+        widget = self.tui.tabs.focus
+        if widget is not None:
+            return widget
+
+        if hasattr(self, 'previous_tab_id'):
+            try:
+                widget = self.tui.tabs.get_content(self.previous_tab_id)
+            except IndexError:
+                pass
+            else:
+                return widget
 
 
 class select_files():

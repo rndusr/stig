@@ -293,26 +293,14 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         # COMMAND may get additional hidden arguments as instance attributes
         cmd_attrs = {}
 
-        # The command we're running might be interested in the items the
-        # user had selected in the previously focused tab.  For example, you
-        # can run `tab peerlist` to list peers of the focused torrent or all
-        # marked torrents.
-        #
-        # If we open, close or focused a tab, at first the focused tab is empty
-        # or has other irrelevant content, so the command we're supposed to run
-        # can't find out which torrents were marked in the previous tab.
-        #
-        # To help out, we use the `discover_torrent_ids` method of the
-        # `select_torrents` mixin on the widget of the previously focused tab.
-        # If the previously focused tab doesn't exist anymore or doesn't have
-        # any discoverable items, everything should return None and we don't
-        # pass any selected torrent IDs.
+        # The command we're running might be interested in the items the user
+        # had selected in the previously focused tab.  To let the command know
+        # which torrents it is supposed to target, we provide the ID of the
+        # previously focused tab as a command attribute.  The command can then
+        # use that to look up the relevant torrents (usually via the
+        # select_torrents() mixin class).
         if tabid_old is not None:
-            previous_tab_content = tabs.get_content(tabid_old)
-            selected_tids = self.discover_torrent_ids(previous_tab_content)
-            log.debug('Found selected torrent IDs: %r', selected_tids)
-            if selected_tids:
-                cmd_attrs['selected_torrent_ids'] = selected_tids
+            cmd_attrs['previous_tab_id'] = tabid_old
 
         # Apply close/focus operations
         if focus is not None:
