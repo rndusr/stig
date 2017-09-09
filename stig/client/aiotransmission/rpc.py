@@ -396,34 +396,32 @@ class TransmissionRPC():
         Raises RPCError, ConnectionError, AuthError
         """
         async def request(arguments={}, autoconnect=True, **kwargs):
-            if not self.connected:
-                if autoconnect:
-                    log.debug('Autoconnecting for %r', method)
-                    await self.connect()
-                else:
-                    log.debug('Not connected and autoconnect=%r - %r returns None',
-                              autoconnect, method)
-                    return None
+            with await self.__request_lock:
+                if not self.connected:
+                    if autoconnect:
+                        log.debug('Autoconnecting for %r', method)
+                        await self.connect()
+                    else:
+                        log.debug('Not connected and autoconnect=%r - %r returns None',
+                                  autoconnect, method)
+                        return None
 
-            arguments.update(**kwargs)
-            rpc_request = json.dumps({'method'    : method.replace('_', '-'),
-                                      'arguments' : arguments})
+                arguments.update(**kwargs)
+                rpc_request = json.dumps({'method'    : method.replace('_', '-'),
+                                          'arguments' : arguments})
 
-            await self.__request_lock.acquire()
-            try:
-                return await self.__send_request(rpc_request)
-            except ClientError as e:
-                log.debug('Caught ClientError in %r request: %r', method, e)
+                try:
+                    return await self.__send_request(rpc_request)
+                except ClientError as e:
+                    log.debug('Caught ClientError in %r request: %r', method, e)
 
-                # RPCError does not mean host is unreachable, there was just a
-                # misunderstanding, so we're still connected.
-                if not isinstance(e, RPCError) and self.connected:
-                    await self.disconnect(str(e))
+                    # RPCError does not mean host is unreachable, there was just a
+                    # misunderstanding, so we're still connected.
+                    if not isinstance(e, RPCError) and self.connected:
+                        await self.disconnect(str(e))
 
-                self.__on_error.send(self.__url, error=e)
-                raise
-            finally:
-                self.__request_lock.release()
+                    self.__on_error.send(self.__url, error=e)
+                    raise
 
         request.__name__ = method
         request.__qualname__ = method
