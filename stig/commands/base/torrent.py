@@ -102,7 +102,7 @@ class TorrentSummaryCmdbase(mixin.get_torrent, metaclass=InitCommand):
             log.error(e)
             return False
         else:
-            log.debug('Showing summary of torrent %r', tfilter)
+            log.debug('Showing summary of torrent: %r', tfilter)
             if asyncio.iscoroutinefunction(self.display_summary):
                 return await self.display_summary(tfilter)
             else:
