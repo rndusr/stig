@@ -36,9 +36,22 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
     tui = ExpectedResource
 
     async def display_summary(self, tfilter):
-        torrent = await self.get_torrent(tfilter, keys=('name', 'id'))
-        if torrent is None:
-            return False
+        from collections import abc
+        if isinstance(tfilter, abc.Sequence):
+            # If tfilter is a bunch of IDs, the user probably has torrents
+            # marked.  But we can't display details of multiple torrents, so we
+            # have to pick one.  The most logical solution is to ignore the
+            # marked torrents and pick the focused one.
+            torrent_id = self.get_focused_torrent_id()
+
+        else:
+            # If an actual filter is specified (e.g. 'summary foo|bar'), use the
+            # first matching torrent (in alphabetical order).
+            torrent = await self.get_torrent(tfilter, keys=('id',))
+            if torrent is None:
+                return False
+            else:
+                torrent_id = torrent['id']
 
         make_titlew = partial(make_tab_title_widget,
                               attr_unfocused='tabs.torrentsummary.unfocused',
@@ -47,7 +60,7 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
         from ...tui.views.summary import TorrentSummaryWidget
         TorrentSummaryWidget_keymapped = self.tui.keymap.wrap(TorrentSummaryWidget,
                                                               context='torrent')
-        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, torrent['id'])
+        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, torrent_id)
         tabid = self.tui.tabs.load(make_titlew(summaryw.title), summaryw)
 
         def set_tab_title(text):
