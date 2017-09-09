@@ -13,11 +13,15 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 import blinker
-from types import SimpleNamespace
+from collections import namedtuple
 
 from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
+
+
+TorrentCount = namedtuple('TorrentCount', ('active', 'downloading', 'isolated',
+                                           'stopped', 'total', 'uploading'))
 
 
 class StatusAPI():
@@ -75,21 +79,16 @@ class StatusAPI():
         self._poller_tcount.on_response(self._handle_tlist)
 
     def _reset_session_stats(self):
-        self._session_stats = {}
+        self._session_stats = None
 
     def _reset_tcounts(self):
-        self._tcounts = SimpleNamespace(
-            active=const.DISCONNECTED, downloading=const.DISCONNECTED, isolated=const.DISCONNECTED,
-            stopped=const.DISCONNECTED, total=const.DISCONNECTED, uploading=const.DISCONNECTED)
+        self._tlist = None
 
     def _handle_session_stats(self, stats):
         if stats is None:
             self._reset_session_stats()
         else:
             self._session_stats = stats
-            self._tcounts.total = stats['torrentCount']
-            self._tcounts.stopped = stats['pausedTorrentCount']
-            self._tcounts.active = stats['activeTorrentCount']
         self._session_stats_updated = True
         self._maybe_run_callbacks()
 
@@ -97,16 +96,7 @@ class StatusAPI():
         if response is None:
             self._reset_tcounts()
         else:
-            tlist = response.torrents
-            self._tcounts.isolated = len(tuple(filter(
-                lambda t: t['status'].ISOLATED in t['status'],
-                tlist)))
-            self._tcounts.downloading = len(tuple(filter(
-                lambda t: t['rate-down'] > 0,
-                tlist)))
-            self._tcounts.uploading = len(tuple(filter(
-                lambda t: t['rate-up'] > 0,
-                tlist)))
+            self._tlist = response.torrents
         self._tcounts_updated = True
         self._maybe_run_callbacks()
 
@@ -131,20 +121,38 @@ class StatusAPI():
     @property
     def count(self):
         """Torrent counts by category"""
-        return self._tcounts
+        stats = self._session_stats
+        tlist = self._tlist
+        tc_args = {field:const.DISCONNECTED for field in TorrentCount._fields}
+        if stats is not None:
+            tc_args.update(
+                total=stats['torrentCount'],
+                stopped=stats['pausedTorrentCount'],
+                active=stats['activeTorrentCount']
+            )
+        if tlist is not None:
+            from ..ttypes import Status
+            ISOLATED = Status.ISOLATED
+            tc_args.update(
+                isolated=len(tuple(filter(lambda t: ISOLATED in t['status'], tlist))),
+                downloading=len(tuple(filter(lambda t: t['rate-down'] > 0, tlist))),
+                uploading=len(tuple(filter(lambda t: t['rate-up'] > 0, tlist)))
+            )
+        return TorrentCount(**tc_args)
+
+    def _get_transfer_rate(self, direction):
+        stats = self._session_stats
+        if stats is None:
+            return const.DISCONNECTED
+        else:
+            return convert.bandwidth(self._session_stats[direction + 'loadSpeed'], unit='byte')
 
     @property
     def rate_down(self):
         """Total download rate or `constants.DISCONNECTED`"""
-        if 'downloadSpeed' in self._session_stats:
-            return convert.bandwidth(self._session_stats['downloadSpeed'], unit='byte')
-        else:
-            return const.DISCONNECTED
+        return self._get_transfer_rate('down')
 
     @property
     def rate_up(self):
         """Total upload rate or `constants.DISCONNECTED`"""
-        if 'downloadSpeed' in self._session_stats:
-            return convert.bandwidth(self._session_stats['uploadSpeed'], unit='byte')
-        else:
-            return const.DISCONNECTED
+        return self._get_transfer_rate('up')
