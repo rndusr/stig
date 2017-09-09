@@ -277,7 +277,7 @@ class TorrentAPI():
             from time import time
             start = time()
 
-            if ids:
+            if ids is not None:
                 tlist = self._tcache.get(*ids)
                 for tid in ids:
                     # Torrent objects are equal to an integer of the torrent's ID
