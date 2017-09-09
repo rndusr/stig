@@ -195,13 +195,14 @@ class TorrentAPI():
             # Convert hash to magnet link
             args['filename'] = 'magnet:?xt=urn:btih:' + torrent_str
         else:
-            # It's probably a link, let the daemon figure it out
+            # It's either a link or a torrent file on the server - let the
+            # daemon figure it out
             args['filename'] = torrent_str
 
         response = await self._request(self.rpc.torrent_add, **args)
         if not response.success:
             if 'Invalid or corrupt' in str(response.msgs[0]):
-                msgs = (ClientError('Invalid or corrupt torrent: {!r}'.format(torrent_str)),)
+                msgs = (ClientError('Torrent file is corrupt or doesn\'t exist: {!r}'.format(torrent_str)),)
             else:
                 msgs = response.msgs
             return Response(success=False, torrent=None, msgs=msgs)
