@@ -609,7 +609,7 @@ class TorrentAPI():
 
         def create_info_msg(t):
             if t['path'] != path:
-                return (True, 'Moved to %s: %s' % (path, t['name']))
+                return (True, 'Moving to %s: %s' % (path, t['name']))
             else:
                 return (False, 'Already in %s: %s' % (path, t['name']))
 
