@@ -180,24 +180,18 @@ def _make_status(t):
 
 
 def _create_TorrentFileTree(t):
-    filelist = t['fileStats']
-    if not filelist:
+    fileStats = t['fileStats']
+    if len(fileStats) < 1:
         # filelist is empty if torrent was added by hash and metadata isn't
         # downloaded yet.
-        filelist = [{'name': t['name'], 'priority': 0, 'length': 0,
-                     'wanted': True, 'id': 0, 'bytesCompleted': 0}]
+        files = [{'name': t['name'], 'priority': 0, 'length': 0,
+                  'wanted': True, 'id': 0, 'bytesCompleted': 0}]
     else:
-        # Combine 'files' and 'fileStats' fields and add the 'id' field, which
-        # is the index in the list provided by Transmission.
-        if 'files' in t:
-            for i,(f1,f2) in enumerate(zip(filelist, t['files'])):
-                f1['id'] = i
-                f1.update(f2)
-        else:
-            for i,f in enumerate(filelist):
-                f['id'] = i
-
-    return TorrentFileTree(t['id'], entries=filelist)
+        # Combine 'files' and 'fileStats' fields and add the 'id' key to each
+        # file, which is the index in the list provided by Transmission.
+        files = ({'id': i, **f, **fS}
+                 for i,(f,fS) in enumerate(zip(t['files'], fileStats)))
+    return TorrentFileTree(t['id'], entries=files)
 
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
@@ -417,10 +411,7 @@ DEPENDENCIES = {
     'trackers'                     : ('trackerStats', 'name', 'id'),
     'error'                        : ('errorString', 'error', 'trackerStats'),
     'peers'                        : ('peers', 'totalSize', 'name'),
-
-    # The RPC field 'files' is called once to initialize file names and sizes by
-    # api_torrent.TorrentAPI._get_torrents_by_ids when files are requested.
-    'files'                        : ('fileStats',),
+    'files'                        : ('files', 'fileStats',),
 }
 
 # Map our keys to callables that adjust the raw RPC values or create new

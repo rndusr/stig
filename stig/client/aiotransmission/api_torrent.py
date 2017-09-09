@@ -64,13 +64,6 @@ class _TorrentCache():
         else:
             return tuple(self._tdict.values())
 
-    def files_initialized(self, ids):
-        """Wether all cached Torrents have a 'files' key"""
-        tdict = self._tdict
-        return len(tdict) > 0 and all('files' in t
-                                      for t in tdict.values()
-                                      if ids is None or t['id'] in ids)
-
     def __len__(self):
         return len(self._tdict)
 
@@ -272,16 +265,6 @@ class TorrentAPI():
             fields = TorrentFields(keys)
         else:
             fields = TorrentFields(*keys)
-
-        # The 'files' RPC field only returns static information while variable
-        # information is in 'filestats'. Since all Torrent values are cached
-        # anyway, we only have to request 'files' once if 'fileStats' is
-        # requested.
-        if 'fileStats' in fields and not self._tcache.files_initialized(ids):
-            log.debug('Initializing files for torrents: %s', ids)
-            response = await self._request_torrents(('files',), ids)
-            if not response.success:
-                return Response(success=False, torrents=(), msgs=response.msgs)
 
         tlist = ()
         msgs = []
