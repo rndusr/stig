@@ -248,6 +248,13 @@ class TorrentAPI():
             return Response(success=False, raw_torrents=[], msgs=[e])
         else:
             self._tcache.update(raw_tlist)
+
+            # If we just got a list of all torrents, we can check for torrents
+            # that we still have cached but don't exist anymore and purge them.
+            if ids is None:
+                tids = tuple(t['id'] for t in raw_tlist)
+                self._tcache.purge(existing_tids=tids)
+
             return Response(success=True, raw_torrents=raw_tlist)
 
     async def _get_torrents_by_ids(self, keys, ids=None, autoconnect=True):
@@ -287,7 +294,6 @@ class TorrentAPI():
             from time import time
             start = time()
 
-            raw_tlist = response.raw_torrents
             if ids:
                 tlist = self._tcache.get(*ids)
                 for tid in ids:
@@ -295,8 +301,6 @@ class TorrentAPI():
                     if tid not in tlist:
                         msgs.append(ClientError('No torrent with ID: {}'.format(tid)))
             else:
-                tids = tuple(t['id'] for t in raw_tlist)
-                self._tcache.purge(existing_tids=tids)  # Remove deleted torrents from cache
                 tlist = self._tcache.get()
             success = len(tlist) > 0 or not ids
 
