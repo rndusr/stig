@@ -278,18 +278,21 @@ class TorrentAPI():
             from time import time
             start = time()
 
-            if ids is not None:
+            # Get torrents from cache
+            if ids is None:
+                tlist = self._tcache.get()
+            elif len(ids) < 1:
+                tlist = ()
+            else:
                 tlist = self._tcache.get(*ids)
+                # Provide error requested IDs that don't exist
                 for tid in ids:
                     # Torrent objects are equal to an integer of the torrent's ID
                     if tid not in tlist:
                         msgs.append(ClientError('No torrent with ID: {}'.format(tid)))
-            else:
-                tlist = self._tcache.get()
             success = len(tlist) > 0 or not ids
 
             log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
-
         return Response(success=success, torrents=tlist, msgs=msgs)
 
     async def _get_torrents_by_filter(self, keys, tfilter=None, autoconnect=True):
