@@ -60,6 +60,7 @@ tabs.help.focused             black         on yellow
 $topbar_bg = dark blue
 topbar                    light gray    on $topbar_bg
 topbar.host.connected     light green   on $topbar_bg
+topbar.host.connecting    black         on light magenta
 topbar.host.disconnected  black         on light red
 topbar.help.key           light cyan    on $topbar_bg
 topbar.help.equals        light cyan    on $topbar_bg
