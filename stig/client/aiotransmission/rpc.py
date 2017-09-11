@@ -130,12 +130,13 @@ class TransmissionRPC():
         self.__request_lock = asyncio.Lock(loop=loop)
         self.__connection_tested = False
         self.__timeout = TIMEOUT
-        self.__on_connected = Signal()
-        self.__on_disconnected = Signal()
-        self.__on_error = Signal()
         self.__version = None
         self.__rpcversion = None
         self.__rpcversionmin = None
+        self.__on_connecting = Signal()
+        self.__on_connected = Signal()
+        self.__on_disconnected = Signal()
+        self.__on_error = Signal()
 
     def __del__(self, _warnings=warnings):
         if self.__session is not None and not self.__session.closed:
@@ -145,7 +146,7 @@ class TransmissionRPC():
     def on(self, signal, callback, autoremove=True):
         """Register `callback` for `signal`
 
-        signal: 'connected', 'disconnected' or 'error'
+        signal: 'connecting', 'connected', 'disconnected' or 'error'
         callback: a callable that receives the RPC URL and, for 'error', the
                   exception
 
@@ -250,6 +251,7 @@ class TransmissionRPC():
                         log.debug('Reconnecting to %s', url)
                         await self.disconnect('reconnecting to %s' % url)
                     self.__url = TransmissionURL(url)
+                self.__on_connecting.send(self.url)
 
                 # If we're not connected (because new URL or we weren't
                 # connected in the first place), create new session.
