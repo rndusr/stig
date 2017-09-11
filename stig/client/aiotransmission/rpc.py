@@ -248,7 +248,6 @@ class TransmissionRPC():
                 # Reconnect if URL is specified
                 if url is not None:
                     if self.connected:
-                        log.debug('Reconnecting to %s', url)
                         await self.disconnect('reconnecting to %s' % url)
                     self.__url = TransmissionURL(url)
                 self.__on_connecting.send(self.url)
