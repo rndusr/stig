@@ -47,7 +47,9 @@ class TrackerListWidget(ListWidgetBase):
         self._maybe_filter_trackers = filter_trackers
 
         self._poller = self._srvapi.create_poller(
-            self._srvapi.torrent.torrents, torfilter, keys=('trackers', 'name', 'id'))
+            self._srvapi.torrent.torrents, torfilter, keys=('trackers', 'name', 'id'),
+            autoconnect=False
+        )
         self._poller.on_response(self._handle_trackers)
 
     def _handle_trackers(self, response):
