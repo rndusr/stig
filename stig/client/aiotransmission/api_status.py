@@ -54,7 +54,7 @@ class StatusAPI():
         self._poller_tcount.interval = interval
 
 
-    def __init__(self, srvapi, interval=1):
+    def __init__(self, srvapi, interval=1, autoconnect=True):
         self._session_stats_updated = False
         self._tcounts_updated = False
         self._reset_session_stats()
@@ -62,7 +62,7 @@ class StatusAPI():
         self._on_update = blinker.Signal()
 
         self._poller_stats = RequestPoller(srvapi.rpc.session_stats,
-                                           autoconnect=True,
+                                           autoconnect=autoconnect,
                                            interval=interval,
                                            loop=srvapi.loop)
         self._poller_stats.on_response(self._handle_session_stats)
@@ -73,7 +73,7 @@ class StatusAPI():
         # request a minimalistic torrent list.
         self._poller_tcount = RequestPoller(srvapi.torrent.torrents,
                                             keys=('rate-down', 'rate-up', 'status'),
-                                            autoconnect=True,
+                                            autoconnect=autoconnect,
                                             interval=interval,
                                             loop=srvapi.loop)
         self._poller_tcount.on_response(self._handle_tlist)
