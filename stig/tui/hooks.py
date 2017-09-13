@@ -33,9 +33,10 @@ def _connect_to_new_url(url):
 cfg['srv.url'].on_change(_connect_to_new_url)
 
 
-def _update_pollers(seconds):
+def _update_pollers(url):
     tui.srvapi.poll()
 srvapi.rpc.on('connected', _update_pollers)
+srvapi.rpc.on('disconnected', _update_pollers)
 
 
 def _refresh_lists(value):
