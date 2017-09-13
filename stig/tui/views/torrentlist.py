@@ -43,7 +43,7 @@ class TorrentListWidget(ListWidgetBase):
     @property
     def id(self):
         """Hashable object that is unique among all torrent lists"""
-        return repr(self)
+        return id(self)
 
     def _register_request(self):
         # Get keys needed for sort order, tfilter and columns
