@@ -290,7 +290,7 @@ class TransmissionRPC():
                 except ClientError as e:
                     log.debug('Caught during initialization: %r', e)
                     self.__connect_exception = e
-                    await self.disconnect('Connection failed during initialization')
+                    await self.__reset()
                     self.__on_error.send(self.__url, error=e)
                     raise
                 else:
@@ -310,10 +310,12 @@ class TransmissionRPC():
 
         reason: Why are we disconnecting? Only used in a debugging message.
         """
-        await self.__reset()
-        log.debug('Disconnecting from %s (%s)',
-                  self.url, reason if reason is not None else 'for no reason')
-        self.__on_disconnected.send(self.__url)
+        if self.connected:
+            await self.__reset()
+            log.debug('Disconnecting from %s (%s)',
+                      self.url, reason if reason is not None else 'for no reason')
+            log.debug('Calling "disconnected" callbacks for %s', self.url)
+            self.__on_disconnected.send(self.__url)
 
     async def __reset(self):
         if self.__session is not None:
