@@ -9,6 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ..logging import make_logger
+log = make_logger(__name__)
+
 from functools import partial
 
 from ..main import (cfg, srvapi, aioloop)
@@ -28,7 +31,7 @@ def _connect_to_new_url(url):
         try:
             await srvapi.rpc.connect(url.value)
         except srvapi.ClientError as e:
-            pass
+            log.error(str(e))
     aioloop.create_task(coro())
 cfg['srv.url'].on_change(_connect_to_new_url)
 
