@@ -91,28 +91,26 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
         await self.rp.start()
         self.assertEqual(self.rp.running, True)
         await self.advance(0)
-        self.assert_api_request(calls=1,
-                                tfilter=None,
-                                keys='ALL')
+        self.assert_api_request(calls=0)  # No requests registered yet
 
         foo = Subscriber('name~foo', 'name', 'rate-down')
         self.rp.register('foo', foo.callback, keys=foo.keys, tfilter=foo.tfilter)
         await self.advance(self.rp.interval)
-        self.assert_api_request(calls=2,
+        self.assert_api_request(calls=1,
                                 tfilter=foo.tfilter,
                                 keys=foo.keys_needed)
 
         bar = Subscriber('name~bar', 'name', 'rate-up')
         self.rp.register('bar', bar.callback, keys=bar.keys, tfilter=bar.tfilter)
         await self.advance(self.rp.interval)
-        self.assert_api_request(calls=3,
+        self.assert_api_request(calls=2,
                                 tfilter=(foo+bar).tfilter,
                                 keys=(foo+bar).keys_needed)
 
         baz = Subscriber('private', 'id', 'size-total')
         self.rp.register('baz', baz.callback, keys=baz.keys, tfilter=baz.tfilter)
         await self.advance(self.rp.interval)
-        self.assert_api_request(calls=4,
+        self.assert_api_request(calls=3,
                                 tfilter=(foo+bar+baz).tfilter,
                                 keys=(foo+bar+baz).keys_needed)
 
@@ -185,11 +183,12 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
         await self.rp.stop()
 
     async def test_raising_fatal_exception(self):
-        self.api.exc = ValueError('Something is wrong!')
+        self.api.exc = RuntimeError('Something is wrong!')
         await self.rp.start()
+        self.rp.register('my ID', callback=lambda torrents: None)  # Register simple callback to trigger request
         self.assertEqual(self.rp.running, True)
         await self.advance(0)
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(RuntimeError) as cm:
             await self.rp.stop()
         self.assertEqual(str(cm.exception), 'Something is wrong!')
 
