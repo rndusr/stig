@@ -38,13 +38,6 @@ def _update_pollers(seconds):
 srvapi.rpc.on('connected', _update_pollers)
 
 
-def _clear_list_widgets(seconds):
-    for widget in tui.tabs.contents:
-        if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
-            widget.clear()
-srvapi.rpc.on('disconnected', _clear_list_widgets)
-
-
 def _refresh_lists(value):
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
