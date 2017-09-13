@@ -88,7 +88,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
             await self.client.connect(bad_url)
         self.assertIn(str(bad_url), str(cm.exception))
         self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=1, args=[(bad_url,)])
+        self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
                                     args=[(bad_url,)],
                                     kwargs=[{'error': r'Connection failed.*'+str(bad_url)}])
@@ -115,13 +115,11 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assert_not_connected_to(self.url)
 
         await self.client.connect(self.url)
-        self.assert_cb_connected_called(calls=1, args=[(self.url,)])
-
-        url_id1 = id(self.client.url)
         self.assert_connected_to(self.url)
         self.assert_cb_connected_called(calls=1, args=[(self.url,)])
         self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=0)
+        url_id1 = id(self.client.url)
 
         other_url = rsrc.make_url()
         with self.assertRaises(ConnectionError):
@@ -129,10 +127,8 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         url_id2 = id(self.client.other_url)
         self.assertNotEqual(url_id1, url_id2)
 
-        self.assert_cb_disconnected_called(calls=2, args=[(self.url,),
-                                                          (other_url,)])
-        self.assert_cb_disconnected_called(calls=2, args=[(self.url,),
-                                                          (other_url,)])
+        self.assert_cb_connected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
         self.assert_cb_error_called(calls=1,
                                     args=[(other_url,)],
                                     kwargs=[{'error': r'Connection failed.*'+str(other_url)}])
@@ -146,7 +142,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertEqual(self.client.connected, False)
 
         self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
                                     args=[(self.url,)],
                                     kwargs=[{'error': r'Error from daemon'}])
@@ -176,7 +172,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertEqual(self.client.connected, False)
 
         self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
                                     args=[(self.url,)],
                                     kwargs=[{'error': r'Connection failed.*'+str(self.url)}])
@@ -206,7 +202,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertEqual(self.client.connected, False)
 
         self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
                                     args=[(self.url,)],
                                     kwargs=[{'error': r'Authentication failed.*'+str(self.url)}])
@@ -239,7 +235,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertEqual(self.client.connected, False)
 
         self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=1, args=[(wrong_path_url,)])
+        self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
                                     args=[(wrong_path_url,)],
                                     kwargs=[{'error': r'malformed JSON'}])
@@ -274,7 +270,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertIn(str(self.url), str(cm.exception))
 
         self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
                                     args=[(self.url,)],
                                     kwargs=[{'error': r'{}.*{}'.format(self.client.timeout,
