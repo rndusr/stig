@@ -114,19 +114,20 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     def status(self):
         """StatusAPI singleton"""
         log.debug('Creating StatusAPI singleton')
-        return StatusAPI(self, interval=self._interval)
+        return StatusAPI(self, interval=self._interval, autoconnect=True)
 
     @_lazy_property
     def settings(self):
         """SettingsAPI singleton"""
         log.debug('Creating SettingsAPI singleton')
-        return SettingsAPI(self, interval=self._interval)
+        return SettingsAPI(self, interval=self._interval, autoconnect=True)
 
     @_lazy_property
     def treqpool(self):
         """TorrentRequestPool singleton"""
         log.debug('Creating TorrentRequestPool singleton')
-        return TorrentRequestPool(self, interval=self._interval)
+        return TorrentRequestPool(self, interval=self._interval, autoconnect=True)
+
 
     def create_poller(self, *args, interval=None, loop=None, **kwargs):
         """Create, start and return new RequestPoller instance
