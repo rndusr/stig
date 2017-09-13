@@ -82,6 +82,18 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
         if self.created('rpc'):
             self.rpc.url = url
 
+    @property
+    def interval(self):
+        """Delay between polls of all pollers"""
+        return self._interval
+
+    @interval.setter
+    def interval(self, interval):
+        self._interval = interval
+        for poller in self._existing_pollers:
+            poller.interval = interval
+
+
     def created(self, prop):
         """Whether property `prop` was created"""
         return hasattr(self, prop+'_created')
@@ -188,17 +200,6 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
             if self.created(pname):
                 yield getattr(self, pname)
         yield from self._pollers
-
-    @property
-    def interval(self):
-        """Delay between polls of all pollers"""
-        return self._interval
-
-    @interval.setter
-    def interval(self, interval):
-        self._interval = interval
-        for poller in self._existing_pollers:
-            poller.interval = interval
 
     @property
     def pollers_running(self):
