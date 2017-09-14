@@ -58,7 +58,7 @@ for section in SECTIONS:
 class TorrentSummaryWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tid, title=None):
         self._title = title
-        self._tid = None
+        self._torrent = {}
 
         sections = []
         self._sections = {}

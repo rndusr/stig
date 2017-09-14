@@ -60,7 +60,8 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
         from ...tui.views.summary import TorrentSummaryWidget
         TorrentSummaryWidget_keymapped = self.tui.keymap.wrap(TorrentSummaryWidget,
                                                               context='torrent')
-        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, torrent_id)
+        title_str = self.title if hasattr(self, 'title') else None
+        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, torrent_id, title=title_str)
         tabid = self.tui.tabs.load(make_titlew(summaryw.title), summaryw)
 
         def set_tab_title(text):
