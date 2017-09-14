@@ -91,23 +91,26 @@ class TorrentSummaryWidget(urwid.WidgetWrap):
 
     def _handle_response(self, response):
         if response is not None and response.success:
-            torrent = response.torrents[0]
-            self._tid = torrent['id']
+            self._torrent = response.torrents[0]
             for w in self._sections.values():
-                w.update(torrent)
+                w.update(self._torrent)
 
             # Set new tab title if necessary
-            if self._title is None:
-                self._title = torrent['name']
             if self.title_updater is not None:
-                self.title_updater(self._title)
+                self.title_updater(self.title)
         else:
-            self._tid = None
+            self._torrent = {}
 
     @property
     def title(self):
-        return self._title or ''
+        # self._title is user-specified title
+        if self._title is not None:
+            return self._title
+        elif 'name' in self._torrent:
+            return self._torrent['name']
+        else:
+            return 'No title'
 
     @property
     def focused_torrent_id(self):
-        return self._tid
+        return self._torrent['id'] if 'id' in self._torrent else None
