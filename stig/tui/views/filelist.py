@@ -222,6 +222,8 @@ class FileListWidget(ListWidgetBase):
         self._table.clear()
         self._marked.clear()
 
+    def refresh(self):
+        self._poller.poll()
 
     @property
     def count(self):

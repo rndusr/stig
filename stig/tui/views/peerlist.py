@@ -65,6 +65,9 @@ class PeerListWidget(ListWidgetBase):
             self._items = {p['id']:p for p in peers_combined(response.torrents)}
         self._invalidate()
 
+    def refresh(self):
+        self._poller.poll()
+
     @property
     def sort(self):
         return self._sort

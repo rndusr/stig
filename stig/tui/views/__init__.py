@@ -281,6 +281,10 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._listbox._invalidate()
         self._marked.clear()
 
+    def refresh(self):
+        """Update list items"""
+        raise NotImplementedError
+
 
     @property
     def columns(self):

@@ -70,15 +70,15 @@ class TorrentListWidget(ListWidgetBase):
         self._invalidate()
 
     def clear(self):
-        """Remove all list items"""
         for w in self._listbox.body:
             w.item.clearcache()
         super().clear()
+
+    def refresh(self):
         self._srvapi.treqpool.poll()
 
     @property
     def sort(self):
-        """TorrentSorter object (set to `None` to restore original sort order)"""
         return self._sort
 
     @sort.setter
