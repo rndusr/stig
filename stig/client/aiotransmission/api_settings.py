@@ -33,7 +33,7 @@ def setting(method):
     return property(wrapped)
 
 
-class SettingsAPI(abc.Mapping):
+class SettingsAPI(abc.Mapping, RequestPoller):
     """Transmission daemon settings
 
     get_* methods are coroutine functions and fetch values from the server.
@@ -48,22 +48,6 @@ class SettingsAPI(abc.Mapping):
 
     To update cached values, use `update` (async) or `poll` (sync).
     """
-
-    # Forward some methods and properties to the internal poller
-    def __getattr__(self, attr):
-        if attr in ('start', 'stop', 'poll', 'running'):
-            return getattr(self._poller, attr)
-        raise AttributeError('{!r} object has no attribute {!r}'
-                             .format(type(self).__name__, attr))
-
-    @property
-    def interval(self):
-        return self._poller.interval
-
-    @interval.setter
-    def interval(self, interval):
-        self._poller.interval = interval
-
 
     # Mandatory abc.Mapping methods
     def __iter__(self):
@@ -84,15 +68,10 @@ class SettingsAPI(abc.Mapping):
 
         # autoconnect must be True so the CLI 'help' command can display
         # current values (e.g. 'help srv.limit.rate.down').
-        self._poller = RequestPoller(self._srvapi.rpc.session_get,
-                                     autoconnect=autoconnect,
-                                     interval=interval,
-                                     loop=srvapi.loop)
-        self._poller.on_response(self._handle_session_get)
-        self._poller.on_error(self._handle_error)
-
-    def _handle_error(self, e):
-        log.debug('Ignoring {!r}'.format(e))
+        super().__init__(self._srvapi.rpc.session_get, autoconnect=autoconnect,
+                         interval=interval, loop=srvapi.loop)
+        self.on_response(self._handle_session_get)
+        self.on_error(lambda error: log.debug('Ignoring %r', error), autoremove=False)
 
     def clearcache(self):
         """Clear cached settings"""
@@ -120,7 +99,7 @@ class SettingsAPI(abc.Mapping):
     async def update(self):
         """Request update from server"""
         log.debug('Requesting settings update')
-        self._handle_session_get(await self._poller.request())
+        self._handle_session_get(await self.request())
 
     def __getitem__(self, key):
         return getattr(self, key.replace('-', '_'))
