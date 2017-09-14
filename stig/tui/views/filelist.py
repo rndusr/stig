@@ -175,6 +175,7 @@ class FileListWidget(ListWidgetBase):
         self._tfilter = tfilter
         self._ffilter = ffilter
         self._initialized = False
+        self._torrents = None
 
         self._poller = self._srvapi.create_poller(
             self._srvapi.torrent.torrents, tfilter, keys=('files', 'name'),
@@ -193,12 +194,6 @@ class FileListWidget(ListWidgetBase):
         self._invalidate()
 
     def _init_listitems(self, torrents):
-        # Auto-generate title from our filters
-        if self._title_name is None:
-            self._title_name = stringify_torrent_filter(self._tfilter, torrents)
-            if self._ffilter:
-                self._title_name += ' %s' % self._ffilter
-
         self.clear()
         if torrents:
             self._filetree = FileTreeDecorator(torrents, self._keymap,
@@ -206,10 +201,25 @@ class FileListWidget(ListWidgetBase):
             self._listbox.body = urwidtrees.widgets.TreeListWalker(self._filetree)
             self._listbox._invalidate()
             self._initialized = True
+            self._torrents = torrents
 
     def _update_listitems(self, torrents=()):
         if torrents:
             self._filetree.update(torrents)
+            self._torrents = torrents
+
+    @property
+    def title(self):
+        if self._title_name is None:
+            if self._torrents is None:
+                return ''
+            else:
+                title = stringify_torrent_filter(self._tfilter, self._torrents)
+                if self._ffilter:
+                    title += ' %s' % self._ffilter
+                return title
+        else:
+            return super().title
 
     def clear(self):
         # We can't call super().clear() because it runs the more efficient
