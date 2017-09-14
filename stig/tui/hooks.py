@@ -46,7 +46,7 @@ def _refresh_lists(value):
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
-    tui.srvapi.poll()
+            widget.refresh()
 cfg['unit.bandwidth'].on_change(_refresh_lists)
 cfg['unit.size'].on_change(_refresh_lists)
 cfg['unitprefix.bandwidth'].on_change(_refresh_lists)
