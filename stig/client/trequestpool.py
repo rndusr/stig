@@ -21,7 +21,7 @@ from .poll import RequestPoller
 from .filters.tfilter import TorrentFilter
 
 
-class TorrentRequestPool():
+class TorrentRequestPool(RequestPoller):
     """Combine multiple `TorrentAPI.torrents` requests into one
 
     The wanted Torrent keys from all subscribers are combined and added to the
@@ -35,10 +35,8 @@ class TorrentRequestPool():
         self._tfilters = {}
         self._keys = {}
         self._autoconnect = autoconnect
-        self._poller = RequestPoller(request=None,
-                                     interval=interval,
-                                     loop=srvapi.loop)
-        self._poller.on_response(self._handle_tlist)
+        super().__init__(request=None, interval=interval, loop=srvapi.loop)
+        self.on_response(self._handle_tlist)
 
     def register(self, sid, callback, keys=(), tfilter=None):
         """Add new request to request pool
@@ -63,8 +61,8 @@ class TorrentRequestPool():
         # lacking keys, resuling in a KeyError.
         # Therefore we ask the poller to dump the result of a currently
         # ongoing request to prevent this.
-        if self._poller.running:
-            self._poller.skip_ongoing_request()
+        if self.running:
+            self.skip_ongoing_request()
 
         self._combine_requests()
 
@@ -73,7 +71,7 @@ class TorrentRequestPool():
         if not self.has_subscribers:
             # Don't request anything
             log.debug('No subscribers - setting request to None')
-            self._poller.set_request(None)
+            self.set_request(None)
         else:
             kwargs = {}
 
@@ -94,7 +92,7 @@ class TorrentRequestPool():
             kwargs['autoconnect'] = self._autoconnect
             log.debug('Combined filters: %s', kwargs['torrents'])
             log.debug('Combined keys: %s', kwargs['keys'])
-            self._poller.set_request(self._api.torrents, **kwargs)
+            self.set_request(self._api.torrents, **kwargs)
 
     def _handle_tlist(self, response):
         # If the request failed, response is None and tlist is empty.
@@ -147,17 +145,3 @@ class TorrentRequestPool():
     def has_subscribers(self):
         """Whether any subscribers are registered"""
         return bool(self._tfilters)
-
-    def __getattr__(self, attr):
-        if attr in ('start', 'stop', 'poll', 'running'):
-            return getattr(self._poller, attr)
-        raise AttributeError('{!r} object has no attribute {!r}'
-                             .format(type(self).__name__, attr))
-
-    @property
-    def interval(self):
-        return self._poller.interval
-
-    @interval.setter
-    def interval(self, interval):
-        self._poller.interval = interval
