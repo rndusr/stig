@@ -36,6 +36,9 @@ questions and point out issues.
 
 * tui
 
+** TODO Display sort orders in column headers
+   In each column header, show an up/down arrow if the list is sorted by it.
+
 ** TODO Create view that lists all settings
    The view is opened when the TUI version of the command 'set' is called
    without any arguments.  The user can navigate to settings and change them
