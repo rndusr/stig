@@ -81,23 +81,29 @@ class PriorityCmdbase(metaclass=InitCommand):
              'priority <PRIORITY> <TORRENT FILTER> <FILE FILTER>')
     examples = ('priority low',
                 'priority high "that torrent" size>12M')
+    _PRIORITY = {'off'    : ('o', '0', 'off'),
+                 'low'    : ('l', '-', 'low'),
+                 'normal' : ('n', '=', 'normal'),
+                 'high'   : ('h', '+', 'high')}
     argspecs = (
         { 'names': ('PRIORITY',),
-          'description': 'File priority; must be low/normal/high/shun, l/n/h/s or -/./+/0'},
+          'description': 'File priority; must be %s, %s or %s' % (
+              '/'.join(p[2] for p in _PRIORITY.values()),
+              '/'.join(p[0] for p in _PRIORITY.values()),
+              '/'.join(p[1] for p in _PRIORITY.values()),
+          )},
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('FILE', or_focused=True, nargs='?'),
     )
     srvapi = ExpectedResource
 
-    _PRIORITY = {'l': 'low',    '-': 'low',    'low': 'low',
-                 'n': 'normal', '.': 'normal', 'normal': 'normal',
-                 'h': 'high',   '+': 'high'  , 'high': 'high',
-                 's': 'shun',   '0': 'shun',   'shun': 'shun'}
-
     async def run(self, PRIORITY, TORRENT_FILTER, FILE_FILTER):
-        try:
-            priority = self._PRIORITY[PRIORITY.lower()]
-        except KeyError:
+        priority = None
+        for p,names in self._PRIORITY.items():
+            if PRIORITY in names:
+                priority = p
+                break
+        if priority is None:
             log.error('Invalid priority: {!r}'.format(PRIORITY))
             return False
 

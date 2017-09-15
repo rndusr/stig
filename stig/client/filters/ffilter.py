@@ -46,7 +46,7 @@ class SingleTorrentFileFilter(Filter):
                                          'Match VALUE against percentage of downloaded bytes',
                                          aliases=('%down',)),
         'priority'    : _make_cmp_filter('priority',
-                                         'Match VALUE against download priority (low, normal, high or shun)',
+                                         'Match VALUE against download priority (off, low, normal, high)',
                                          aliases=('prio',)),
     }
 

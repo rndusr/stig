@@ -36,7 +36,7 @@ class Test_FileFilter(unittest.TestCase):
         self.assertEqual(f('priority=low'), (flist[2],))
         self.assertEqual(f('priority=normal'), (flist[0],))
         self.assertEqual(f('priority=high'), (flist[3],))
-        self.assertEqual(f('priority=shun'), (flist[1], flist[4]))
+        self.assertEqual(f('priority=off'), (flist[1], flist[4]))
 
         with self.assertRaises(ValueError) as cm:
             f('priority=foo')

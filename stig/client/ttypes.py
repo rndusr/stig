@@ -388,8 +388,8 @@ class Timestamp(int):
 
 
 class TorrentFilePriority(str):
-    INT2STR = {-2:'shun', -1:'low', 0:'normal', 1:'high'}
-    STR2INT = {'shun':-2, 'low':-1, 'normal':0, 'high':1}
+    INT2STR = {-2:'off', -1:'low', 0:'normal', 1:'high'}
+    STR2INT = {'off':-2, 'low':-1, 'normal':0, 'high':1}
 
     def __new__(cls, prio):
         if isinstance(prio, int):
@@ -435,7 +435,7 @@ class TorrentFile(abc.Mapping):
         'size-total'      : lambda raw: raw['size-total'],
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
-        'priority'        : lambda raw: 'shun' if not raw['is-wanted'] else raw['priority'],
+        'priority'        : lambda raw: 'off' if not raw['is-wanted'] else raw['priority'],
         'progress'        : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
 

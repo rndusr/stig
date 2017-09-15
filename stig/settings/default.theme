@@ -424,8 +424,8 @@ filelist.priority.low.unfocused            $priority_fg           on $flist_bg.u
 filelist.priority.low.focused              $priority_fg           on $flist_bg.f
 filelist.priority.high.unfocused           $priority_hl           on $flist_bg.uf
 filelist.priority.high.focused             $priority_hl           on $flist_bg.f
-filelist.priority.shun.unfocused           dark blue              on $flist_bg.uf
-filelist.priority.shun.focused             dark blue              on $flist_bg.f
+filelist.priority.off.unfocused            dark blue              on $flist_bg.uf
+filelist.priority.off.focused              dark blue              on $flist_bg.f
 
 
 $plist_bg = black

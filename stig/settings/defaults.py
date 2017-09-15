@@ -311,7 +311,7 @@ DEFAULT_KEYMAP = (
     {'context': 'file', 'key': '+',         'action': 'priority high'},
     {'context': 'file', 'key': '=',         'action': 'priority normal'},
     {'context': 'file', 'key': '-',         'action': 'priority low'},
-    {'context': 'file', 'key': '0',         'action': 'priority shun'},
+    {'context': 'file', 'key': '0',         'action': 'priority off'},
     {'context': 'file', 'key': 'space',     'action': 'mark --toggle --focus-next'},
     {'context': 'file', 'key': 'alt-space', 'action': 'mark --toggle --all'},
 

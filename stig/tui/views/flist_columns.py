@@ -88,12 +88,12 @@ TUICOLUMNS['progress'] = Progress
 
 class Priority(_COLUMNS['priority'], CellWidgetBase):
     style = Style(prefix='filelist.priority', focusable=True,
-                  extras=('header',), modes=('low', 'high', 'shun'))
+                  extras=('header',), modes=('off', 'low', 'high'))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['priority'].header),
                            style.attrs('header'))
 
     def get_mode(self):
         val = self.value
-        return val if val in ('low', 'high', 'shun') else None
+        return val if val in ('off', 'low', 'high') else None
 
 TUICOLUMNS['priority'] = Priority

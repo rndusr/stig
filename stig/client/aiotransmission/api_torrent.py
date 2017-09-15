@@ -627,7 +627,7 @@ class TorrentAPI():
         """Change download priority of individual torrent files
 
         torrents: See `torrents` method
-        priority: 'high', 'low', 'normal' or 'shun'
+        priority: 'off', 'low', 'normal' or 'high'
         files: TorrentFileFilter object (or its string representation), sequence
                of (torrent ID, file ID) tuples or None for all files
         autoconnect: See `torrents` method
@@ -705,7 +705,7 @@ class TorrentAPI():
                 self.rpc.torrent_set, (torrent_id,),
                 method_args={'priority-%s' % priority: fi, 'files-wanted': fi},
                 autoconnect=autoconnect)
-        elif priority == 'shun':
+        elif priority == 'off':
             return await self._torrent_action(
                 self.rpc.torrent_set, (torrent_id,),
                 method_args={'files-unwanted': fi},
