@@ -97,15 +97,16 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
             colwidth = get_max_colwidth(colindex)
             set_colwidth(colindex, colwidth)
 
-        # Rows should have identical column widths from now on, so we can
-        # use the first row to check our progress.
+        # Make sure table isn't wider than the terminal.  All rows should have
+        # identical column widths now, so we can use the first row to check our
+        # progress.
         current_line = assemble_line(rows[0])
         current_width = strwidth(current_line)
         while current_width > TERMSIZE.columns:
             excess = current_width - TERMSIZE.columns
             widest = widest_columns()
-            widest_0 = get_max_colwidth(widest[0])
-            widest_1 = get_max_colwidth(widest[1])
+            widest0 = get_max_colwidth(widest[0])
+            widest1 = get_max_colwidth(widest[1])
 
             # Shorten widest column by difference to second widest column
             # (leaving them at the same width), but not by more than `excess`
@@ -114,9 +115,10 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
             # TODO: This is very slow when listing lots of rows in a small
             # terminal because the widest column is shrunk by only 1 character
             # before checking again.
-            shorten_by = max(1, min(excess, widest_0 - widest_1))
-            set_colwidth(widest[0], widest_0 - shorten_by)
-
+            shorten_by = max(1, min(excess, widest0 - widest1))
+            log.debug('current_width:%s excess:%s  widest0:%s  widest1:%s  shorten_by:%s',
+                      current_width, excess, widest0, widest1, shorten_by)
+            set_colwidth(widest[0], widest0 - shorten_by)
             current_line = assemble_line(rows[0])
             current_width = strwidth(current_line)
 
