@@ -1,5 +1,6 @@
 2017-??-?? ?.?.?
   Breaking changes:
+    * The file priority 'shun' is now called 'off'
     * The 'details' command has been renamed to 'summary' ('details' still still
       works as an alias)
     * The default keybindings to start/stop torrents have changed from <t+p> and
