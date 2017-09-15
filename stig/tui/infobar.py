@@ -110,8 +110,10 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
         self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
 
     def _handle_error(self, url, error):
-        self._text.set_text(str(error))  # error should also contain url
-        self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
+        from ..client import RPCError
+        if not isinstance(error, RPCError):
+            self._text.set_text(str(error))  # error should also contain url
+            self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
 
 
 class BandwidthStatusWidget(urwid.Widget):
