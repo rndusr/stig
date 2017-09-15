@@ -41,6 +41,7 @@
     * Don't crash with 'KeyError' exception when opening many torrent lists at
       once while being connected to the daemon
     * Some columns in torrent, peer and file lists were unnecessarily wide
+    * Don't crash with BrokenPipeError when piping output to tools like 'head'
 
 
 2017-06-13 0.7.3a
