@@ -259,6 +259,21 @@ class TestKeyChain(unittest.TestCase):
             self.assertEqual(kc.given, ('a', 'b', 'c'))
             kc.advance()
 
+    def test_reduce(self):
+        kc = KeyChain('a', 'b', 'c')
+        for _ in range(10):
+            self.assertEqual(kc.given, ())
+            kc.advance()
+            self.assertEqual(kc.given, ('a',))
+            kc.advance()
+            self.assertEqual(kc.given, ('a', 'b'))
+            kc.reduce()
+            self.assertEqual(kc.given, ('a',))
+            kc.reduce()
+            self.assertEqual(kc.given, ())
+            kc.reduce()
+            self.assertEqual(kc.given, ())
+
     def test_reset(self):
         kc = KeyChain('a', 'b', 'c')
         for i in range(10):

@@ -165,12 +165,16 @@ class KeyChain(tuple):
             return self.ABORTED
 
     def advance(self):
-        """Look for next key in chain or call `reset` if complete"""
+        """Move one key forward in chain or call `reset` if complete"""
         if self.is_complete:
-            log.debug('Completed %r', self)
             self.reset()
         else:
             self._pos += 1
+
+    def reduce(self):
+        """Move one key backward in chain if possible"""
+        if self._pos > -1:
+            self._pos -= 1
 
     def reset(self):
         """Start looking for first key in chain"""
