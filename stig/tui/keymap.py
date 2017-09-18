@@ -303,7 +303,7 @@ class KeyMap():
         """
         key = self.mkkey(key)
         if isinstance(action, Key) and key == action:
-            raise ValueError('Mapping {} to {} is silly'.format(key, action))
+            raise ValueError('Circular key mapping: %s -> %s' % (key, action))
 
         if context not in self._contexts:
             self._contexts[context] = {}

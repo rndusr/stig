@@ -169,6 +169,12 @@ class TestKeyMap(unittest.TestCase):
     def setUp(self):
         self.km = KeyMap()
 
+    def test_circular_bind_detection(self):
+        with self.assertRaises(ValueError) as cm:
+            self.km.bind(key='a', action=self.km.mkkey('a'))
+        self.assertIn('Circular', str(cm.exception))
+        self.assertIn('<a>', str(cm.exception))
+
     def test_unbind(self):
         self.km.bind(key='a', action='foo')
         self.assertIn(Key('a'), self.km.keys())
