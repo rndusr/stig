@@ -123,8 +123,8 @@ class Key(str):
 class KeyChain(tuple):
     class COMPLETED(): pass
     class ADVANCED(): pass
+    class REJECTED(): pass
     class ABORTED(): pass
-    class REFUSED(): pass
 
     def __new__(cls, *keys):
         obj = super().__new__(cls, (Key(k) for k in keys))
@@ -146,7 +146,7 @@ class KeyChain(tuple):
         Return one of the constants:
           - COMPLETED: chain was completed with `key`
           - ADVANCED: chain was advanced with `key` but is not complete yet
-          - REFUSED: `key` != `next_key` and `given` is empty
+          - REJECTED: `key` != `next_key` and `given` is empty
           - ABORTED: `key` != `next_key` and `given` is not empty
         """
         if self.next_key == key:
@@ -158,7 +158,7 @@ class KeyChain(tuple):
             else:
                 return self.ADVANCED
         elif self._pos == -1:
-            return self.REFUSED
+            return self.REJECTED
         else:
             # log.debug('Expected %r, got %r', self.next_key, key)
             self.reset()
@@ -374,7 +374,7 @@ class KeyMap():
                 self._keychain_partial.clear()
                 self._run_keychain_callbacks(())
                 return None
-            elif action is KeyChain.REFUSED:
+            elif action is KeyChain.REJECTED:
                 log.debug('%r was refused by all keychains', key)
                 self._keychain_context = NOCONTEXT
                 self._keychain_partial.clear()
@@ -423,7 +423,7 @@ class KeyMap():
 
     def _get_keychain_action(self, key, context, partial_keys):
         # Go through all actions in this context and feed them the new key.
-        action = KeyChain.ABORTED if partial_keys else KeyChain.REFUSED
+        action = KeyChain.ABORTED if partial_keys else KeyChain.REJECTED
         for kc,act in self._keychains(context, partial_keys):
             log.debug('   Feeding %r to %r', key, kc)
             result = kc.feed(key)
@@ -444,7 +444,7 @@ class KeyMap():
             log.debug('At least one key chain was advanced, returning %r', action)
         elif action is KeyChain.ABORTED:
             log.debug('No key chain was advanced or completed, returning %r', action)
-        elif action is KeyChain.REFUSED:
+        elif action is KeyChain.REJECTED:
             log.debug('%r did not start or advance a keychain, returning %r', key, action)
         else:
             log.debug('There should be no keychains in context %r: %r', context, tuple(self._keychains(context)))

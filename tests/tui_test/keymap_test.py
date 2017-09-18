@@ -309,7 +309,7 @@ class TestKeyChain(unittest.TestCase):
 
     def test_feed_with_wrong_chain(self):
         kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.feed('x'), KeyChain.REFUSED)
+        self.assertEqual(kc.feed('x'), KeyChain.REJECTED)
 
         self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
         self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
