@@ -133,13 +133,8 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
             shrink_and_expand_to_fit()
             headerstr = '\033[1;4m' + assemble_headers() + '\033[0m'
 
-        try:
-            for linenum,row in enumerate(rows):
-                # Print column headers after every screen full
-                if headerstr is not None and linenum % (TERMSIZE.lines-1) == 0:
-                    print(headerstr)
-                print(assemble_line(row))
-        except BrokenPipeError:
-            # When piping output to CLI tools like 'head', we will get our
-            # stdout closed before we are finished printing.
-            pass
+        for linenum,row in enumerate(rows):
+            # Print column headers after every screen full
+            if headerstr is not None and linenum % (TERMSIZE.lines-1) == 0:
+                log.info(headerstr)
+            log.info(assemble_line(row))
