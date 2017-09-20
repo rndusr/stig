@@ -102,10 +102,9 @@ class Key(str):
         return obj
 
     def __eq__(self, other):
-        if super().__eq__(other):
-            return True
-        else:
-            return super().__eq__(Key(other))
+        if not isinstance(other, Key) and isinstance(other, str):
+            other = Key(other)
+        return super().__eq__(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
