@@ -1,6 +1,6 @@
 import unittest
 from stig.tui.keymap import (Key, KeyChain, KeyMap)
-from urwid import (Text, ListBox, SimpleFocusListWalker)
+from urwid import (Text, ListBox, SimpleFocusListWalker, Pile)
 import stig.tui.urwidpatches
 
 from .resources_tui import get_canvas_text
@@ -429,6 +429,20 @@ class TestKeyMap_with_keychains(unittest.TestCase):
                            widget_text='bar1',
                            active_keychains=())
 
+    def test_abort_chain_with_builtin_key(self):
+        self.km.bind('1 2 3', 'foo')
+
+        self.widget.keypress((80,), '1')
+        self.assert_status(keys_given=('1',),
+                           widget_text='Original Text',
+                           active_keychains=((('1', '2', '3'), 'foo'),))
+
+        # Abort the started chain
+        self.widget.keypress((80,), 'down')
+        self.assert_status(keys_given=(),
+                           widget_text='Original Text',
+                           active_keychains=())
+
     def test_competing_chains(self):
         self.km.bind('1 2 a', 'foo')
         self.km.bind('1 2 b', 'bar')
@@ -466,3 +480,351 @@ class TestKeyMap_with_keychains(unittest.TestCase):
         self.assert_status(keys_given=(),
                            widget_text='bar2',
                            active_keychains=())
+
+
+class TestKeyMap_with_nested_widgets(unittest.TestCase):
+    def setUp(self):
+        self.km = KeyMap(callback=self.handle_action)
+        self.km.on_keychain(self.handle_keychain_changed)
+        self.last_action = None
+        self.action_widget = None
+        self.action_counter = 0
+        self.active_keychains = set()
+
+        # Create a Pile of two ListBoxes with some Text items
+        def mk_item(i, context):
+            return self.km.wrap(Text, context=context)('%s: %s' % (context, i))
+        self.listw1 = self.km.wrap(ListBox, context='list1')(
+            SimpleFocusListWalker([mk_item(i, context='item1')
+                                   for i in range(1, 10)])
+        )
+        self.listw2 = self.km.wrap(ListBox, context='list2')(
+            SimpleFocusListWalker([mk_item(i, context='item2')
+                                   for i in range(100, 1000, 100)])
+        )
+        self.mainw = self.km.wrap(Pile, context='main')([self.listw1, self.listw2])
+
+        self.km.bind('A',     'A in main',   context='main')
+        self.km.bind('B',     'B in main',   context='main')
+        self.km.bind('1 2 A', '12A in main', context='main')
+        self.km.bind('1 2 B', '12B in main', context='main')
+
+        self.km.bind('C',     'C in list1',   context='list1')
+        self.km.bind('D',     'D in list1',   context='list1')
+        self.km.bind('2 3 A', '23A in list1', context='list1')
+        self.km.bind('2 3 B', '23B in list1', context='list1')
+
+        self.km.bind('C',     'C in list2',   context='list2')
+        self.km.bind('D',     'D in list2',   context='list2')
+        self.km.bind('2 3 A', '23A in list2', context='list2')
+        self.km.bind('2 3 B', '23B in list2', context='list2')
+
+        self.km.bind('E',     'E in item1',   context='item1')
+        self.km.bind('F',     'F in item1',   context='item1')
+        self.km.bind('3 4 A', '34A in item1', context='item1')
+        self.km.bind('3 4 B', '34B in item1', context='item1')
+
+        self.km.bind('E',     'E in item2',   context='item2')
+        self.km.bind('F',     'F in item2',   context='item2')
+        self.km.bind('3 4 A', '34A in item2', context='item2')
+        self.km.bind('3 4 B', '34B in item2', context='item2')
+
+
+    def handle_action(self, action, widget):
+        self.last_action = action
+        self.action_counter += 1
+        self.action_widget = widget
+
+    def handle_keychain_changed(self, active_keychains):
+        self.active_keychains = set(active_keychains)
+
+    def press_key(self, key):
+        self.mainw.keypress((80, 25), key)
+
+
+    def assert_active_keychains(self, *active_keychains):
+        self.assertEqual(self.active_keychains, set(active_keychains))
+
+    def assert_current_keychain(self, *keys):
+        # If there are no active keychains, we don't want this test to pass if
+        # given keys are expected.
+        ak = tuple(self.active_keychains)
+        if len(keys) < 1:
+            self.assertEqual(ak, ())
+        else:
+            for keychain,action in ak:
+                self.assertEqual(keychain.given, keys)
+
+    def assert_action(self, exp_action=None, exp_count=0, exp_widget=None):
+        self.assertEqual(self.last_action, exp_action)
+        self.assertEqual(self.action_counter, exp_count)
+        self.assertEqual(self.action_widget, exp_widget)
+
+
+    def test_mapped_singlekeys_in_main_context(self):
+        self.press_key('A')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='A in main', exp_count=1, exp_widget=self.mainw)
+        self.assert_active_keychains()
+
+        self.press_key('B')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='B in main', exp_count=2, exp_widget=self.mainw)
+        self.assert_active_keychains()
+
+    def test_mapped_singlekeys_in_list_context(self):
+        exp_count = 0
+        for focuspos,context,listw in ((0, 'list1', self.listw1),
+                                       (1, 'list2', self.listw2)):
+            self.mainw.focus_position = focuspos
+            exp_count += 1
+            self.press_key('C')
+            self.assert_current_keychain()
+            self.assert_action(exp_action='C in %s' % context, exp_count=exp_count, exp_widget=listw)
+            self.assert_active_keychains()
+            exp_count += 1
+            self.press_key('D')
+            self.assert_current_keychain()
+            self.assert_action(exp_action='D in %s' % context, exp_count=exp_count, exp_widget=listw)
+            self.assert_active_keychains()
+
+    def test_mapped_singlekeys_in_item_context(self):
+        exp_count = 0
+        for focuspos,context,listw in ((0, 'item1', self.listw1),
+                                       (1, 'item2', self.listw2)):
+            self.mainw.focus_position = focuspos
+            exp_count += 1
+            self.press_key('E')
+            self.assert_current_keychain()
+            self.assert_action(exp_action='E in %s' % context, exp_count=exp_count, exp_widget=listw.focus)
+            self.assert_active_keychains()
+            exp_count += 1
+            self.press_key('F')
+            self.assert_current_keychain()
+            self.assert_action(exp_action='F in %s' % context, exp_count=exp_count, exp_widget=listw.focus)
+            self.assert_active_keychains()
+
+    def test_unmapped_singlekeys(self):
+        self.press_key('Z')
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+
+
+    def test_keychain_in_main_context(self):
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('1')
+            self.assert_current_keychain('1')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+            self.press_key('2')
+            self.assert_current_keychain('1', '2')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('A')
+        self.assert_action(exp_action='12A in main', exp_count=1, exp_widget=self.mainw)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+        start_keychain(exp_action='12A in main', exp_count=1, exp_widget=self.mainw)
+        self.press_key('B')
+        self.assert_action(exp_action='12B in main', exp_count=2, exp_widget=self.mainw)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+    def test_keychain_in_list1_context(self):
+        self.mainw.focus_position = 0
+
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('2')
+            self.assert_current_keychain('2')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('2', '3', 'A'), '23A in list1'),
+                                         (('2', '3', 'B'), '23B in list1'))
+            self.press_key('3')
+            self.assert_current_keychain('2', '3')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('2', '3', 'A'), '23A in list1'),
+                                         (('2', '3', 'B'), '23B in list1'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('A')
+        self.assert_action(exp_action='23A in list1', exp_count=1, exp_widget=self.listw1)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+        start_keychain(exp_action='23A in list1', exp_count=1, exp_widget=self.listw1)
+        self.press_key('B')
+        self.assert_action(exp_action='23B in list1', exp_count=2, exp_widget=self.listw1)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+    def test_keychain_in_list2_context(self):
+        self.mainw.focus_position = 1
+
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('2')
+            self.assert_current_keychain('2')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('2', '3', 'A'), '23A in list2'),
+                                         (('2', '3', 'B'), '23B in list2'))
+            self.press_key('3')
+            self.assert_current_keychain('2', '3')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('2', '3', 'A'), '23A in list2'),
+                                         (('2', '3', 'B'), '23B in list2'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('A')
+        self.assert_action(exp_action='23A in list2', exp_count=1, exp_widget=self.listw2)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+        start_keychain(exp_action='23A in list2', exp_count=1, exp_widget=self.listw2)
+        self.press_key('B')
+        self.assert_action(exp_action='23B in list2', exp_count=2, exp_widget=self.listw2)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+    def test_keychain_in_item1_context(self):
+        self.mainw.focus_position = 0
+
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('3')
+            self.assert_current_keychain('3')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('3', '4', 'A'), '34A in item1'),
+                                         (('3', '4', 'B'), '34B in item1'))
+            self.press_key('4')
+            self.assert_current_keychain('3', '4')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('3', '4', 'A'), '34A in item1'),
+                                         (('3', '4', 'B'), '34B in item1'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('A')
+        self.assert_action(exp_action='34A in item1', exp_count=1, exp_widget=self.listw1.focus)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+        start_keychain(exp_action='34A in item1', exp_count=1, exp_widget=self.listw1.focus)
+        self.press_key('B')
+        self.assert_action(exp_action='34B in item1', exp_count=2, exp_widget=self.listw1.focus)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+    def test_keychain_in_item2_context(self):
+        self.mainw.focus_position = 1
+
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('3')
+            self.assert_current_keychain('3')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('3', '4', 'A'), '34A in item2'),
+                                         (('3', '4', 'B'), '34B in item2'))
+            self.press_key('4')
+            self.assert_current_keychain('3', '4')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('3', '4', 'A'), '34A in item2'),
+                                         (('3', '4', 'B'), '34B in item2'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('A')
+        self.assert_action(exp_action='34A in item2', exp_count=1, exp_widget=self.listw2.focus)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+        start_keychain(exp_action='34A in item2', exp_count=1, exp_widget=self.listw2.focus)
+        self.press_key('B')
+        self.assert_action(exp_action='34B in item2', exp_count=2, exp_widget=self.listw2.focus)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+
+    def test_abort_chain_with_builtin_key(self):
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('1')
+            self.assert_current_keychain('1')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+            self.press_key('2')
+            self.assert_current_keychain('1', '2')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('down')
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+    def test_abort_chain_with_mapped_key(self):
+        self.km.bind('x', 'x in main', context='main')
+
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('1')
+            self.assert_current_keychain('1')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+            self.press_key('2')
+            self.assert_current_keychain('1', '2')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('x')
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+    def test_abort_chain_with_unmapped_key(self):
+        def start_keychain(exp_action, exp_count, exp_widget):
+            self.press_key('1')
+            self.assert_current_keychain('1')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+            self.press_key('2')
+            self.assert_current_keychain('1', '2')
+            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
+            self.assert_active_keychains((('1', '2', 'A'), '12A in main'),
+                                         (('1', '2', 'B'), '12B in main'))
+
+        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
+        self.press_key('x')
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_current_keychain()
+        self.assert_active_keychains()
+
+
+    def test_chain_with_builtin_key(self):
+        self.km.bind('up down', 'jumping', context='item1')
+        self.km.bind('up up', 'flying', context='item1')
+
+        self.press_key('up')
+        self.assert_current_keychain('up')
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains((('up', 'down'), 'jumping'),
+                                     (('up', 'up'), 'flying'))
+        self.press_key('down')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='jumping', exp_count=1, exp_widget=self.listw1.focus)
+        self.assert_active_keychains()
+
+        self.press_key('up')
+        self.assert_current_keychain('up')
+        self.assert_action(exp_action='jumping', exp_count=1, exp_widget=self.listw1.focus)
+        self.assert_active_keychains((('up', 'down'), 'jumping'),
+                                     (('up', 'up'), 'flying'))
+        self.press_key('up')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='flying', exp_count=2, exp_widget=self.listw1.focus)
+        self.assert_active_keychains()
