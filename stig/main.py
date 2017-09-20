@@ -65,7 +65,7 @@ cmdmgr.load_cmds_from_module(
 )
 
 
-def run():
+def main():
     from .commands.guess_ui import (guess_ui, UIGuessError)
     from .commands import CmdError
     from . import hooks
@@ -138,3 +138,23 @@ def run():
 
     aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
     aioloop.close()
+
+
+def run():
+    # Dirty hack to prevent "Exception ignored in:" being printed on exit when
+    # BrokenPipeError happened
+    # https://bugs.python.org/issue11380,#msg248579
+    import sys
+    try:
+        main()
+    finally:
+        try:
+            sys.stdout.flush()
+        finally:
+            try:
+                sys.stdout.close()
+            finally:
+                try:
+                    sys.stderr.flush()
+                finally:
+                    sys.stderr.close()

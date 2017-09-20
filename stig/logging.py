@@ -28,6 +28,17 @@ def make_logger(modname=None):
 
 log = make_logger()
 
+
+class ForgivingStreamHandler(logging.StreamHandler):
+    """Catch BrokenPipeError"""
+
+    def flush(self):
+        try:
+            return super().flush()
+        except BrokenPipeError as e:
+            pass
+
+
 def setup(debugmods, filepath=None):
     class PerLevelFormatter(logging.Formatter):
         """Use different formatter per level"""
@@ -43,7 +54,7 @@ def setup(debugmods, filepath=None):
 
     root_logger = logging.getLogger()
     formatter = PerLevelFormatter()
-    stream_handler = logging.StreamHandler()
+    stream_handler = ForgivingStreamHandler()
     stream_handler.setFormatter(formatter)
     root_logger.addHandler(stream_handler)
     root_logger.setLevel(logging.INFO)
@@ -72,7 +83,7 @@ def redirect_level(level, stream=sys.stderr):
         h.addFilter(lambda record: record.levelname != level)
 
     # Add new handler that only logs the specified level
-    lvlhandler = logging.StreamHandler(stream)
+    lvlhandler = ForgivingStreamHandler(stream)
     lvlhandler.addFilter(lambda record: record.levelname == level)
     root_logger.addHandler(lvlhandler)
 
