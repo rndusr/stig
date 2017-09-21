@@ -176,16 +176,16 @@ def init_server_defaults(cfg, settingsapi):
 
 DEFAULT_KEYMAP = (
     # Use some vi and emacs keybindings
-    {'context': None, 'key': 'h', 'action': '<left>'},
-    {'context': None, 'key': 'j', 'action': '<down>'},
-    {'context': None, 'key': 'k', 'action': '<up>'},
-    {'context': None, 'key': 'l', 'action': '<right>'},
-    {'context': None, 'key': 'g', 'action': '<home>'},
-    {'context': None, 'key': 'G', 'action': '<end>'},
-    {'context': None, 'key': 'ctrl-n', 'action': '<down>'},
-    {'context': None, 'key': 'ctrl-p', 'action': '<up>'},
-    {'context': None, 'key': 'ctrl-f', 'action': '<right>'},
-    {'context': None, 'key': 'ctrl-b', 'action': '<left>'},
+    {'key': 'h',      'action': '<left>'},
+    {'key': 'j',      'action': '<down>'},
+    {'key': 'k',      'action': '<up>'},
+    {'key': 'l',      'action': '<right>'},
+    {'key': 'g',      'action': '<home>'},
+    {'key': 'G',      'action': '<end>'},
+    {'key': 'ctrl-n', 'action': '<down>'},
+    {'key': 'ctrl-p', 'action': '<up>'},
+    {'key': 'ctrl-f', 'action': '<right>'},
+    {'key': 'ctrl-b', 'action': '<left>'},
 
     # Global TUI keys
     {'context': 'main', 'key': 'q', 'action': 'quit'},
