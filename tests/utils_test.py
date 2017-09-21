@@ -41,6 +41,16 @@ class TestNumberFloat(unittest.TestCase):
         self.assertEqual(n.with_unit, '1M')
         self.assertEqual(n.without_unit, '1M')
 
+    def test_string_has_reasonable_number_of_decimal_points(self):
+        self.assertEqual(NumberFloat(float('inf')).without_unit, '∞')
+        self.assertEqual(NumberFloat(0).without_unit, '0')
+        self.assertEqual(NumberFloat(0.009).without_unit, '0.01')
+        self.assertEqual(NumberFloat(0.09).without_unit, '0.09')
+        self.assertEqual(NumberFloat(9.09).without_unit, '9.09')
+        self.assertEqual(NumberFloat(10.09).without_unit, '10.1')
+        self.assertEqual(NumberFloat(99.09).without_unit, '99.1')
+        self.assertEqual(NumberFloat(99.95).without_unit, '100')
+
     def test_parsing_without_unit(self):
         for string,num,prefix in ( ('23', 23, 'metric'),
                                    ('23.1', 23.1, 'metric'),

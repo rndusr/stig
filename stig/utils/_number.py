@@ -17,17 +17,17 @@ import re
 
 def pretty_float(n):
     """Format float with a reasonable amount of decimal places"""
-    if n == float('inf'):
+    if n >= float('inf'):
         return '∞'
-    n_abs = round(abs(n), 2)
-    n_abs_int = int(n_abs)
+    n_abs = abs(n)
+    n_abs_r2 = round(n_abs, 2)
     if n_abs == 0:
         return '0'
-    elif n_abs == n_abs_int:
+    elif n_abs_r2 == int(n_abs):
         return '%.0f' % n
-    elif n_abs < 10:
+    elif n_abs_r2 < 10:
         return '%.2f' % n
-    elif n_abs < 100:
+    elif round(n_abs, 1) < 100:
         return '%.1f' % n
     else:
         return '%.0f' % n
