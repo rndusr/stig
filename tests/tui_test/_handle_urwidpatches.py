@@ -10,9 +10,12 @@ def setUpModule():
         importlib.reload(stig.tui.urwidpatches)
     import urwid
     assert hasattr(urwid.ListBox, 'get_scrollpos')
+    assert ' ' not in urwid.command_map._command
 
 def tearDownModule(self):
     # Remove monkey patches
     import urwid
+    urwid.command_map.restore_defaults()
     importlib.reload(urwid)
     assert not hasattr(urwid.ListBox, 'get_scrollpos')
+    assert ' ' in urwid.command_map._command

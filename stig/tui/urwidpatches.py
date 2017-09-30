@@ -23,9 +23,9 @@ urwid.DELETE_WORD_LEFT         = 'delete word left'
 urwid.DELETE_WORD_RIGHT        = 'delete word right'
 urwid.CANCEL                   = 'cancel'
 
-# Remove urwid's default keybindings
+# Remove urwid's default keybindings and create our own built-in command_map
 for key in tuple(urwid.command_map._command):
-    del urwid.command_map[key]
+    del urwid.command_map._command[key]
 
 from .keymap import Key
 urwid.command_map[Key('pgup')]           = urwid.CURSOR_PAGE_UP

@@ -1,12 +1,9 @@
-import unittest
 from stig.tui.keymap import (Key, KeyChain, KeyMap)
-from urwid import (Text, ListBox, SimpleFocusListWalker, Pile)
-import stig.tui.urwidpatches
+
+import unittest
+import urwid
 
 from .resources_tui import get_canvas_text
-
-import logging
-log = logging.getLogger(__name__)
 
 
 class TestKey(unittest.TestCase):
@@ -47,6 +44,10 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('ins'), 'insert')
         self.assertEqual(Key('insert'), 'ins')
 
+    def test_compare_Key_with_invalid_value(self):
+        self.assertNotEqual(Key('space'), 'foo')
+        self.assertNotEqual(Key('space'), range(10))
+
     def test_convert_shift_modifier(self):
         self.assertEqual(Key('shift-E'), Key('E'))
         self.assertEqual(Key('shift-e'), Key('E'))
@@ -76,12 +77,49 @@ class TestKey(unittest.TestCase):
             Key('')
         self.assertIn('No key', str(cm.exception))
 
+        with self.assertRaises(TypeError) as cm:
+            Key(object())
+        self.assertIn('Not a string', str(cm.exception))
+
+
+class TestKeyChain(unittest.TestCase):
+    def test_minimum_number_of_keys(self):
+        with self.assertRaises(ValueError) as cm:
+            KeyChain('a')
+        self.assertIn('Not enough keys', str(cm.exception))
+
+    def test_equality(self):
+        kc = KeyChain('F1', 'space', 'page down')
+        self.assertEqual(kc, ('F1', 'space', 'page down'))
+        self.assertEqual(kc, ['F1', ' ', 'pgdn'])
+        self.assertEqual(kc, (k for k in ('F1', ' ', 'page down')))
+        self.assertNotEqual(kc, ('F1', 'space', 'page down', 'X'))
+        self.assertNotEqual(kc, ('F1', 'space'))
+        self.assertNotEqual(kc, ('F1', 'space', 'X'))
+        self.assertNotEqual(kc, ())
+
+    def test_startswith(self):
+        kc = KeyChain('a', 'b', 'c')
+        self.assertTrue(kc.startswith(()))
+        self.assertTrue(kc.startswith(('a',)))
+        self.assertTrue(kc.startswith(('a', 'b')))
+        self.assertTrue(kc.startswith(('a', 'b', 'c')))
+        self.assertFalse(kc.startswith(('a', 'b', 'c', 'd')))
+        self.assertFalse(kc.startswith(('a', 'b', 'X')))
+        self.assertFalse(kc.startswith(('a', 'X')))
+        self.assertFalse(kc.startswith(('X')))
+
 
 class FakeAction():
     def __init__(self, action=None):
         self.callnum = 0
         self.action = action
-    def run(self, widget):
+        self.args = ()
+        self.kwargs = {}
+
+    def __call__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
         self.callnum += 1
         if self.action is not None:
             return self.action()
@@ -102,9 +140,9 @@ class TestKeyMapped(unittest.TestCase):
             self.assertEqual(widget.focus_position, exp_focus_pos)
 
     def test_hardcoded_keys_keep_working(self):
-        list_contents = [Text(str(i)) for i in range(1, 10)]
-        widget = self.mk_widget(ListBox, SimpleFocusListWalker(list_contents),
-                                context='foocon')
+        list_contents = [urwid.Text(str(i)) for i in range(1, 10)]
+        widget = self.mk_widget(urwid.ListBox, urwid.SimpleFocusListWalker(list_contents),
+                                context='list')
         size = (3, 3)
         self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
         widget.keypress(size, 'down')
@@ -117,39 +155,42 @@ class TestKeyMapped(unittest.TestCase):
         self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
 
     def test_non_hardcoded_keys_are_evaluated(self):
-        list_contents = [Text(str(i)) for i in range(1, 10)]
-        widget = self.mk_widget(ListBox, SimpleFocusListWalker(list_contents),
-                                context='foocon')
+        list_contents = [urwid.Text(str(i)) for i in range(1, 10)]
+        widget = self.mk_widget(urwid.ListBox, urwid.SimpleFocusListWalker(list_contents),
+                                context='list')
         action = FakeAction()
-        self.keymap.bind('a', context='foocon', action=action.run)
+        self.keymap.bind('a', context='list', action=action)
         size = (3, 3)
         self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
         widget.keypress(size, 'a')
         self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
         self.assertEqual(action.callnum, 1)
+        self.assertEqual(action.args, (widget,))
 
     def test_evaluated_keys_are_offered_to_parent_again(self):
-        list_contents = [Text(str(i)) for i in range(1, 10)]
-        widget = self.mk_widget(ListBox, SimpleFocusListWalker(list_contents),
-                                context='foocon')
-        self.keymap.bind('j', context='foocon', action=Key('down'))
+        list_contents = [urwid.Text(str(i)) for i in range(1, 10)]
+        action = FakeAction()
+        widget = self.mk_widget(urwid.ListBox, urwid.SimpleFocusListWalker(list_contents),
+                                context='list', callback=action)
+        self.keymap.bind('j', context='list', action=Key('down'))
         size = (3, 3)
         self.assert_lines(widget, size, exp_lines=('1  ', '2  ', '3  '))
         widget.keypress(size, 'j')
+        self.assertEqual(action.callnum, 0)
         self.assert_lines(widget, size, exp_lines=('2  ', '3  ', '4  '))
 
     def test_evaluated_key_does_not_replace_original_key(self):
         # Create a list of widgets that translate 'j' to 'down' in their
         # keypress() methods.
-        lst_contents = [self.mk_widget(Text, str(i), context='barcon')
+        lst_contents = [self.mk_widget(urwid.Text, str(i), context='item')
                         for i in range(1, 10)]
-        self.keymap.bind('j', context='barcon', action=Key('down'))
+        self.keymap.bind('j', context='item', action=Key('down'))
 
         # Create ListBox with separate key context.  If the ListBox gets to
         # handle 'j', it just checks a mark we can look for.
-        lst_widget = self.mk_widget(ListBox, SimpleFocusListWalker(lst_contents), context='foocon')
+        lst_widget = self.mk_widget(urwid.ListBox, urwid.SimpleFocusListWalker(lst_contents), context='list')
         lst_got_j = FakeAction()
-        self.keymap.bind('j', context='foocon', action=lst_got_j.run)
+        self.keymap.bind('j', context='list', action=lst_got_j)
 
         # Make sure everything works regularly
         size = (3, 3)
@@ -157,23 +198,16 @@ class TestKeyMapped(unittest.TestCase):
         lst_widget.keypress(size, 'down')
         self.assert_lines(lst_widget, size, exp_lines=('1  ', '2  ', '3  '), exp_focus_pos=1)
 
-        # Do the actual test: Pressing 'j' should pass 'j' to the focused list
-        # item, which evaluates it to 'down'.  But 'down' must NOT be used to
-        # move focus down.
+        # Do the actual test: Pressing 'j' should pass 'j' to the focused item,
+        # which evaluates it to 'down'.  But the list widget must get 'j'.
         lst_widget.keypress(size, 'j')
         self.assert_lines(lst_widget, size, exp_lines=('1  ', '2  ', '3  '), exp_focus_pos=1)
         self.assertEqual(lst_got_j.callnum, 1)
 
 
-class TestKeyMap(unittest.TestCase):
+class TestKeyMap_with_single_keys(unittest.TestCase):
     def setUp(self):
         self.km = KeyMap()
-
-    def test_circular_bind_detection(self):
-        with self.assertRaises(ValueError) as cm:
-            self.km.bind(key='a', action=self.km.mkkey('a'))
-        self.assertIn('Circular', str(cm.exception))
-        self.assertIn('<a>', str(cm.exception))
 
     def test_unbind(self):
         self.km.bind(key='a', action='foo')
@@ -182,12 +216,21 @@ class TestKeyMap(unittest.TestCase):
         self.assertNotIn(Key('a'), self.km.keys())
 
         self.km.bind(key='b', action='foo')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             self.km.unbind(key='c')
+        self.assertIn("Key not mapped in context 'default'", str(cm.exception))
+        self.assertIn(str(Key('c')), str(cm.exception))
 
         self.km.bind(key='d', action='foo')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as cm:
             self.km.unbind(key='d', context='bar')
+        self.assertIn("Unknown context: 'bar'", str(cm.exception))
+
+        self.km.bind(key='e', action='foo', context='kablam')
+        with self.assertRaises(ValueError) as cm:
+            self.km.unbind(key='e')
+        self.assertIn("Key not mapped in context 'default'", str(cm.exception))
+        self.assertIn(str(Key('e')), str(cm.exception))
 
     def test_mkkey(self):
         self.assertEqual(self.km.mkkey(Key('x')), Key('x'))
@@ -203,18 +246,35 @@ class TestKeyMap(unittest.TestCase):
         self.assertEqual(self.km.mkkey('+ y z'), KeyChain('+', 'y', 'z'))
         self.assertEqual(self.km.mkkey('+ + +'), KeyChain('+', '+', '+'))
 
+    def test_circular_bind_detection(self):
+        with self.assertRaises(ValueError) as cm:
+            self.km.bind(key='a', action=self.km.mkkey('a'))
+        self.assertIn('Circular', str(cm.exception))
+        self.assertIn('<a>', str(cm.exception))
+
     def test_key_translation(self):
+        widget = self.km.wrap(urwid.Text)('Test Text')
         self.km.bind(key='a',
                      action=lambda widget: widget.set_text('Key pressed: a'))
         self.km.bind(key='b', action=Key('a'))
-        widget = self.km.wrap(Text)('Test Text')
         widget.keypress((80,), 'b')
         self.assertEqual(widget.text, 'Key pressed: a')
+
+    def test_key_translation_to_builtin_key(self):
+        class SelectableText(urwid.Text):
+            def selectable(self): return True
+            def keypress(self, size, key): return key
+        list_contents = [SelectableText(str(i)) for i in range(1, 10)]
+        listw = self.km.wrap(urwid.ListBox, context='list')(urwid.SimpleFocusListWalker(list_contents))
+        self.km.bind(key='j', action=Key('down'))
+        self.assertEqual(listw.focus_position, 0)
+        listw.keypress((3, 3), 'j')
+        self.assertEqual(listw.focus_position, 1)
 
     def test_action_is_callback(self):
         self.km.bind(key='a',
                      action=lambda widget: widget.set_text('foo'))
-        widget = self.km.wrap(Text)('Test Text')
+        widget = self.km.wrap(urwid.Text)('Test Text')
         widget.keypress((80,), 'a')
         self.assertEqual(widget.text, 'foo')
 
@@ -223,7 +283,7 @@ class TestKeyMap(unittest.TestCase):
             widget.set_text(action)
 
         self.km.bind(key='a', action='foo')
-        widget = self.km.wrap(Text, callback=cb)('Test Text')
+        widget = self.km.wrap(urwid.Text, callback=cb)('Test Text')
         widget.keypress((80,), 'a')
         self.assertEqual(widget.text, 'foo')
 
@@ -233,7 +293,7 @@ class TestKeyMap(unittest.TestCase):
 
         self.km = KeyMap(callback=cb)
         self.km.bind(key='a', action='foo')
-        widget = self.km.wrap(Text)('Test Text')
+        widget = self.km.wrap(urwid.Text)('Test Text')
         widget.keypress((80,), 'a')
         self.assertEqual(widget.text, 'foo')
 
@@ -246,119 +306,41 @@ class TestKeyMap(unittest.TestCase):
 
         self.km = KeyMap(callback=default_cb)
         self.km.bind(key='a', action='foo')
-        widget = self.km.wrap(Text, callback=widget_cb)('Test Text')
+        widget = self.km.wrap(urwid.Text, callback=widget_cb)('Test Text')
         widget.keypress((80,), 'a')
         self.assertEqual(widget.text, 'FOO')
-
-
-class TestKeyChain(unittest.TestCase):
-    def test_advance(self):
-        kc = KeyChain('a', 'b', 'c')
-        for _ in range(10):
-            self.assertEqual(kc.given, ())
-            kc.advance()
-            self.assertEqual(kc.given, ('a',))
-            kc.advance()
-            self.assertEqual(kc.given, ('a', 'b'))
-            kc.advance()
-            self.assertEqual(kc.given, ('a', 'b', 'c'))
-            kc.advance()
-
-    def test_reduce(self):
-        kc = KeyChain('a', 'b', 'c')
-        for _ in range(10):
-            self.assertEqual(kc.given, ())
-            kc.advance()
-            self.assertEqual(kc.given, ('a',))
-            kc.advance()
-            self.assertEqual(kc.given, ('a', 'b'))
-            kc.reduce()
-            self.assertEqual(kc.given, ('a',))
-            kc.reduce()
-            self.assertEqual(kc.given, ())
-            kc.reduce()
-            self.assertEqual(kc.given, ())
-
-    def test_reset(self):
-        kc = KeyChain('a', 'b', 'c')
-        for i in range(10):
-            for _ in range(i): kc.advance()
-            kc.reset()
-            self.assertEqual(kc.given, ())
-
-    def test_next_key(self):
-        kc = KeyChain('a', 'b', 'c')
-        for i in range(10):
-            self.assertEqual(kc.next_key, 'a')
-            kc.advance()
-            self.assertEqual(kc.next_key, 'b')
-            kc.advance()
-            self.assertEqual(kc.next_key, 'c')
-            kc.advance()
-            self.assertEqual(kc.next_key, None)  # chain is complete
-            kc.advance()  # same as reset() if complete
-
-    def test_startswith(self):
-        kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.startswith(('a',)), True)
-        self.assertEqual(kc.startswith(('a', 'b')), True)
-        self.assertEqual(kc.startswith(('a', 'b', 'c')), True)
-        self.assertEqual(kc.startswith(('a', 'b', 'c', 'x')), False)
-        self.assertEqual(kc.startswith(('a', 'b', 'x')), False)
-        self.assertEqual(kc.startswith(('a', 'x')), False)
-        self.assertEqual(kc.startswith(('x')), False)
-        self.assertEqual(kc.startswith(()), True)
-
-    def test_is_complete(self):
-        kc = KeyChain('a', 'b', 'c')
-        for i in range(10):
-            self.assertEqual(kc.is_complete, False)
-            kc.advance()
-            self.assertEqual(kc.is_complete, False)
-            kc.advance()
-            self.assertEqual(kc.is_complete, False)
-            kc.advance()
-            self.assertEqual(kc.is_complete, True)
-            kc.reset()
-
-    def test_feed_with_correct_chain(self):
-        kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('b'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('c'), KeyChain.COMPLETED)
-
-    def test_feed_with_wrong_chain(self):
-        kc = KeyChain('a', 'b', 'c')
-        self.assertEqual(kc.feed('x'), KeyChain.REJECTED)
-
-        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
-
-        self.assertEqual(kc.feed('a'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('b'), KeyChain.ADVANCED)
-        self.assertEqual(kc.feed('x'), KeyChain.ABORTED)
 
 
 class TestKeyMap_with_keychains(unittest.TestCase):
     def setUp(self):
         self.km = KeyMap(callback=self.handle_action)
-        self.widget = self.km.wrap(Text)('Original Text')
+        self.widget = self.km.wrap(urwid.Edit)('', 'Original Text')
         self.km.on_keychain(self.handle_keychain_changed)
         self._action_counter = 0
 
     def handle_action(self, action, widget):
         self._action_counter += 1
-        widget.set_text('%s%d' % (str(action), self._action_counter))
+        widget.set_edit_text('%s%d' % (str(action), self._action_counter))
 
-    def handle_keychain_changed(self, active_keychains):
+    def handle_keychain_changed(self, keymap, active_keychains, keys_given):
         self.active_keychains = set(active_keychains)
 
     def assert_status(self, active_keychains=(), keys_given=(), widget_text=None):
         self.assertEqual(self.active_keychains, set(active_keychains))
-        for keychain,action in self.active_keychains:
-            self.assertEqual(keychain.given, keys_given)
+        self.assertEqual(self.km.current_keychain, tuple(keys_given))
         self.assertEqual(self.widget.text, widget_text)
 
+
+    def test_any_keychain_started(self):
+        cb = lambda _, __: None
+        self.km.bind(key='a+b+c', action='foo')
+        self.assertFalse(self.km.any_keychain_started)
+        self.km.evaluate('a', callback=cb)
+        self.assertTrue(self.km.any_keychain_started)
+        self.km.evaluate('b', callback=cb)
+        self.assertTrue(self.km.any_keychain_started)
+        self.km.evaluate('c', callback=cb)
+        self.assertFalse(self.km.any_keychain_started)
 
     def test_unbind(self):
         kc = '1 2 3'
@@ -373,110 +355,160 @@ class TestKeyMap_with_keychains(unittest.TestCase):
             self.assertIn(KeyChain('1', '2', '3'), self.km.keys())
             with self.assertRaises(ValueError) as cm:
                 self.km.unbind(keys)
-            self.assertIn('Key not mapped', str(cm.exception))
-            self.assertIn('default context', str(cm.exception))
+            self.assertIn('Key not mapped in context', str(cm.exception))
             self.assertIn(str(self.km.mkkey(keys)), str(cm.exception))
 
-    def test_correct_chain(self):
-        self.km.bind('1 2 3', 'foo')
+    def test_complete_chain(self):
+        self.km.bind('alt-1 alt-2 alt-3', 'foo')
 
-        self.widget.keypress((80,), '1')
-        self.assert_status(keys_given=('1',),
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', '3'), 'foo'),))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-3'), 'foo'),))
 
-        self.widget.keypress((80,), '2')
-        self.assert_status(keys_given=('1', '2'),
+        self.widget.keypress((80,), 'alt-2')
+        self.assert_status(keys_given=('alt-1', 'alt-2'),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', '3'), 'foo'),))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-3'), 'foo'),))
 
-        self.widget.keypress((80,), '3')
+        self.widget.keypress((80,), 'alt-3')
         self.assert_status(keys_given=(),
                            widget_text='foo1',
                            active_keychains=())
 
-    def test_abort_chain_with_unbound_key(self):
-        self.km.bind('1 2 3', 'foo')
+    def test_reverse_chain_with_backspace(self):
+        self.km.bind('alt-1 alt-f alt-x', 'foo')
+        self.km.bind('alt-1 alt-b alt-x', 'bar')
 
-        self.widget.keypress((80,), '1')
-        self.assert_status(keys_given=('1',),
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', '3'), 'foo'),))
+                           active_keychains=((('alt-1', 'alt-f', 'alt-x'), 'foo'),
+                                             (('alt-1', 'alt-b', 'alt-x'), 'bar')))
 
-        self.widget.keypress((80,), 'x')
+        self.widget.keypress((80,), 'alt-f')
+        self.assert_status(keys_given=('alt-1', 'alt-f'),
+                           widget_text='Original Text',
+                           active_keychains=((('alt-1', 'alt-f', 'alt-x'), 'foo'),))
+
+        self.widget.keypress((80,), 'backspace')
+        self.assert_status(keys_given=('alt-1',),
+                           widget_text='Original Text',
+                           active_keychains=((('alt-1', 'alt-f', 'alt-x'), 'foo'),
+                                             (('alt-1', 'alt-b', 'alt-x'), 'bar')))
+
+        self.widget.keypress((80,), 'alt-b')
+        self.assert_status(keys_given=('alt-1', 'alt-b'),
+                           widget_text='Original Text',
+                           active_keychains=((('alt-1', 'alt-b', 'alt-x'), 'bar'),))
+
+        self.widget.keypress((80,), 'alt-x')
+        self.assert_status(keys_given=(),
+                           widget_text='bar1',
+                           active_keychains=())
+
+    def test_binding_backspace(self):
+        self.km.bind('alt-1 backspace', 'foo')
+
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
+                           widget_text='Original Text',
+                           active_keychains=((('alt-1', 'backspace'), 'foo'),))
+
+        self.widget.keypress((80,), 'backspace')
+        self.assert_status(keys_given=(),
+                           widget_text='foo1',
+                           active_keychains=())
+
+    def test_abort_chain_with_unmapped_key(self):
+        self.km.bind('alt-1 alt-2 alt-3', 'foo')
+
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
+                           widget_text='Original Text',
+                           active_keychains=((('alt-1', 'alt-2', 'alt-3'), 'foo'),))
+
+        self.widget.keypress((80,), 'alt-x')
         self.assert_status(keys_given=(),
                            widget_text='Original Text',
                            active_keychains=())
 
-    def test_abort_chain_with_bound_key(self):
-        self.km.bind('1 2 3', 'foo')
-        self.km.bind('x', 'bar')
+    def test_abort_chain_with_mapped_key(self):
+        self.km.bind('alt-1 alt-2 alt-3', 'foo')
+        self.km.bind('alt-x', 'bar')
 
-        self.widget.keypress((80,), '1')
-        self.assert_status(keys_given=('1',),
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', '3'), 'foo'),))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-3'), 'foo'),))
 
         # Abort the started chain
-        self.widget.keypress((80,), 'x')
+        self.widget.keypress((80,), 'alt-x')
         self.assert_status(keys_given=(),
                            widget_text='Original Text',
                            active_keychains=())
 
-        # Regular single-key evaluation works again
-        self.widget.keypress((80,), 'x')
+        # Mapped single-key evaluation works again
+        self.widget.keypress((80,), 'alt-x')
         self.assert_status(keys_given=(),
                            widget_text='bar1',
                            active_keychains=())
 
     def test_abort_chain_with_builtin_key(self):
-        self.km.bind('1 2 3', 'foo')
+        self.km.bind('alt-1 alt-2 alt-3', 'foo')
 
-        self.widget.keypress((80,), '1')
-        self.assert_status(keys_given=('1',),
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', '3'), 'foo'),))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-3'), 'foo'),))
 
-        # Abort the started chain
-        self.widget.keypress((80,), 'down')
+        # This would usually append 'x' to the Edit widget text, but we want it
+        # to abort the started chain instead.
+        self.widget.keypress((80,), 'x')
         self.assert_status(keys_given=(),
                            widget_text='Original Text',
+                           active_keychains=())
+
+        # Now we can change the text again
+        self.widget.keypress((80,), 'x')
+        self.assert_status(keys_given=(),
+                           widget_text='Original Textx',
                            active_keychains=())
 
     def test_competing_chains(self):
-        self.km.bind('1 2 a', 'foo')
-        self.km.bind('1 2 b', 'bar')
+        self.km.bind('alt-1 alt-2 alt-a', 'foo')
+        self.km.bind('alt-1 alt-2 alt-b', 'bar')
 
-        self.widget.keypress((80,), '1')
-        self.assert_status(keys_given=('1',),
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', 'a'), 'foo'),
-                                             (('1', '2', 'b'), 'bar')))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-a'), 'foo'),
+                                             (('alt-1', 'alt-2', 'alt-b'), 'bar')))
 
-        self.widget.keypress((80,), '2')
-        self.assert_status(keys_given=('1', '2'),
+        self.widget.keypress((80,), 'alt-2')
+        self.assert_status(keys_given=('alt-1', 'alt-2'),
                            widget_text='Original Text',
-                           active_keychains=((('1', '2', 'a'), 'foo'),
-                                             (('1', '2', 'b'), 'bar')))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-a'), 'foo'),
+                                             (('alt-1', 'alt-2', 'alt-b'), 'bar')))
 
-        self.widget.keypress((80,), 'a')
+        self.widget.keypress((80,), 'alt-a')
         self.assert_status(keys_given=(),
                            widget_text='foo1',
                            active_keychains=())
 
-        self.widget.keypress((80,), '1')
-        self.assert_status(keys_given=('1',),
+        self.widget.keypress((80,), 'alt-1')
+        self.assert_status(keys_given=('alt-1',),
                            widget_text='foo1',
-                           active_keychains=((('1', '2', 'a'), 'foo'),
-                                             (('1', '2', 'b'), 'bar')))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-a'), 'foo'),
+                                             (('alt-1', 'alt-2', 'alt-b'), 'bar')))
 
-        self.widget.keypress((80,), '2')
-        self.assert_status(keys_given=('1', '2'),
+        self.widget.keypress((80,), 'alt-2')
+        self.assert_status(keys_given=('alt-1', 'alt-2'),
                            widget_text='foo1',
-                           active_keychains=((('1', '2', 'a'), 'foo'),
-                                             (('1', '2', 'b'), 'bar')))
+                           active_keychains=((('alt-1', 'alt-2', 'alt-a'), 'foo'),
+                                             (('alt-1', 'alt-2', 'alt-b'), 'bar')))
 
-        self.widget.keypress((80,), 'b')
+        self.widget.keypress((80,), 'alt-b')
         self.assert_status(keys_given=(),
                            widget_text='bar2',
                            active_keychains=())
@@ -492,17 +524,17 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.active_keychains = set()
 
         # Create a Pile of two ListBoxes with some Text items
-        def mk_item(i, context):
-            return self.km.wrap(Text, context=context)('%s: %s' % (context, i))
-        self.listw1 = self.km.wrap(ListBox, context='list1')(
-            SimpleFocusListWalker([mk_item(i, context='item1')
-                                   for i in range(1, 10)])
+        def mk_item(widgetcls, i, context):
+            return self.km.wrap(widgetcls, context=context)('%s: %s' % (context, i))
+        self.listw1 = self.km.wrap(urwid.ListBox, context='list1')(
+            urwid.SimpleFocusListWalker([mk_item(urwid.Text, i, context='item1')
+                                         for i in range(1, 10)])
         )
-        self.listw2 = self.km.wrap(ListBox, context='list2')(
-            SimpleFocusListWalker([mk_item(i, context='item2')
-                                   for i in range(100, 1000, 100)])
+        self.listw2 = self.km.wrap(urwid.ListBox, context='list2')(
+            urwid.SimpleFocusListWalker([mk_item(urwid.Edit, i, context='item2')
+                                         for i in range(100, 1000, 100)])
         )
-        self.mainw = self.km.wrap(Pile, context='main')([self.listw1, self.listw2])
+        self.mainw = self.km.wrap(urwid.Pile, context='main')([self.listw1, self.listw2])
 
         self.km.bind('A',     'A in main',   context='main')
         self.km.bind('B',     'B in main',   context='main')
@@ -535,7 +567,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.action_counter += 1
         self.action_widget = widget
 
-    def handle_keychain_changed(self, active_keychains):
+    def handle_keychain_changed(self, keymap, active_keychains, keys_given):
         self.active_keychains = set(active_keychains)
 
     def press_key(self, key):
@@ -552,8 +584,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         if len(keys) < 1:
             self.assertEqual(ak, ())
         else:
-            for keychain,action in ak:
-                self.assertEqual(keychain.given, keys)
+            self.assertEqual(self.km.current_keychain, keys)
 
     def assert_action(self, exp_action=None, exp_count=0, exp_widget=None):
         self.assertEqual(self.last_action, exp_action)
@@ -572,37 +603,63 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.assert_action(exp_action='B in main', exp_count=2, exp_widget=self.mainw)
         self.assert_active_keychains()
 
-    def test_mapped_singlekeys_in_list_context(self):
-        exp_count = 0
-        for focuspos,context,listw in ((0, 'list1', self.listw1),
-                                       (1, 'list2', self.listw2)):
-            self.mainw.focus_position = focuspos
-            exp_count += 1
-            self.press_key('C')
-            self.assert_current_keychain()
-            self.assert_action(exp_action='C in %s' % context, exp_count=exp_count, exp_widget=listw)
-            self.assert_active_keychains()
-            exp_count += 1
-            self.press_key('D')
-            self.assert_current_keychain()
-            self.assert_action(exp_action='D in %s' % context, exp_count=exp_count, exp_widget=listw)
-            self.assert_active_keychains()
 
-    def test_mapped_singlekeys_in_item_context(self):
-        exp_count = 0
-        for focuspos,context,listw in ((0, 'item1', self.listw1),
-                                       (1, 'item2', self.listw2)):
-            self.mainw.focus_position = focuspos
-            exp_count += 1
-            self.press_key('E')
-            self.assert_current_keychain()
-            self.assert_action(exp_action='E in %s' % context, exp_count=exp_count, exp_widget=listw.focus)
-            self.assert_active_keychains()
-            exp_count += 1
-            self.press_key('F')
-            self.assert_current_keychain()
-            self.assert_action(exp_action='F in %s' % context, exp_count=exp_count, exp_widget=listw.focus)
-            self.assert_active_keychains()
+    def test_mapped_singlekeys_in_list_with_Text_widgets(self):
+        self.mainw.focus_position = 0
+
+        self.press_key('C')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='C in list1', exp_count=1, exp_widget=self.listw1)
+        self.assert_active_keychains()
+
+        self.press_key('D')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='D in list1', exp_count=2, exp_widget=self.listw1)
+        self.assert_active_keychains()
+
+    def test_mapped_singlekeys_in_list_with_Edit_widgets(self):
+        self.mainw.focus_position = 1
+
+        self.press_key('C')
+        self.assertEqual(self.mainw.focus.focus.edit_text, 'C')
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+
+        self.press_key('D')
+        self.assertEqual(self.mainw.focus.focus.edit_text, 'CD')
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+
+
+    def test_mapped_singlekeys_in_Text_widget(self):
+        self.mainw.focus_position = 0
+        self.press_key('E')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='E in item1', exp_count=1, exp_widget=self.listw1.focus)
+        self.assert_active_keychains()
+
+        self.press_key('F')
+        self.assert_current_keychain()
+        self.assert_action(exp_action='F in item1', exp_count=2, exp_widget=self.listw1.focus)
+        self.assert_active_keychains()
+
+    def test_mapped_singlekeys_in_Edit_widget(self):
+        self.mainw.focus_position = 1
+
+        self.press_key('E')
+        self.assertEqual(self.mainw.focus.focus.edit_text, 'E')
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+
+        self.press_key('F')
+        self.assertEqual(self.mainw.focus.focus.edit_text, 'EF')
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+
 
     def test_unmapped_singlekeys(self):
         self.press_key('Z')
@@ -636,6 +693,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.assert_current_keychain()
         self.assert_active_keychains()
 
+
     def test_keychain_in_list1_context(self):
         self.mainw.focus_position = 0
 
@@ -660,33 +718,6 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         start_keychain(exp_action='23A in list1', exp_count=1, exp_widget=self.listw1)
         self.press_key('B')
         self.assert_action(exp_action='23B in list1', exp_count=2, exp_widget=self.listw1)
-        self.assert_current_keychain()
-        self.assert_active_keychains()
-
-    def test_keychain_in_list2_context(self):
-        self.mainw.focus_position = 1
-
-        def start_keychain(exp_action, exp_count, exp_widget):
-            self.press_key('2')
-            self.assert_current_keychain('2')
-            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
-            self.assert_active_keychains((('2', '3', 'A'), '23A in list2'),
-                                         (('2', '3', 'B'), '23B in list2'))
-            self.press_key('3')
-            self.assert_current_keychain('2', '3')
-            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
-            self.assert_active_keychains((('2', '3', 'A'), '23A in list2'),
-                                         (('2', '3', 'B'), '23B in list2'))
-
-        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
-        self.press_key('A')
-        self.assert_action(exp_action='23A in list2', exp_count=1, exp_widget=self.listw2)
-        self.assert_current_keychain()
-        self.assert_active_keychains()
-
-        start_keychain(exp_action='23A in list2', exp_count=1, exp_widget=self.listw2)
-        self.press_key('B')
-        self.assert_action(exp_action='23B in list2', exp_count=2, exp_widget=self.listw2)
         self.assert_current_keychain()
         self.assert_active_keychains()
 
@@ -717,32 +748,56 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.assert_current_keychain()
         self.assert_active_keychains()
 
+
+    def test_keychain_in_list2_context(self):
+        self.mainw.focus_position = 1
+
+        text = ''
+        def press_key(key):
+            nonlocal text
+            text += key
+            self.press_key(key)
+
+        def start_keychain():
+            for key in ('2', '3'):
+                press_key(key)
+                self.assertEqual(self.listw2.focus.edit_text, text)
+                self.assert_current_keychain()
+                self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+                self.assert_active_keychains()
+
+        for key in ('A', 'B'):
+            start_keychain()
+            press_key(key)
+            self.assertEqual(self.listw2.focus.edit_text, text)
+            self.assert_current_keychain()
+            self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+            self.assert_active_keychains()
+
     def test_keychain_in_item2_context(self):
         self.mainw.focus_position = 1
 
-        def start_keychain(exp_action, exp_count, exp_widget):
-            self.press_key('3')
-            self.assert_current_keychain('3')
-            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
-            self.assert_active_keychains((('3', '4', 'A'), '34A in item2'),
-                                         (('3', '4', 'B'), '34B in item2'))
-            self.press_key('4')
-            self.assert_current_keychain('3', '4')
-            self.assert_action(exp_action=exp_action, exp_count=exp_count, exp_widget=exp_widget)
-            self.assert_active_keychains((('3', '4', 'A'), '34A in item2'),
-                                         (('3', '4', 'B'), '34B in item2'))
+        text = ''
+        def press_key(key):
+            nonlocal text
+            text += key
+            self.press_key(key)
 
-        start_keychain(exp_action=None, exp_count=0, exp_widget=None)
-        self.press_key('A')
-        self.assert_action(exp_action='34A in item2', exp_count=1, exp_widget=self.listw2.focus)
-        self.assert_current_keychain()
-        self.assert_active_keychains()
+        def start_keychain():
+            for key in ('3', '4'):
+                press_key(key)
+                self.assertEqual(self.listw2.focus.edit_text, text)
+                self.assert_current_keychain()
+                self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+                self.assert_active_keychains()
 
-        start_keychain(exp_action='34A in item2', exp_count=1, exp_widget=self.listw2.focus)
-        self.press_key('B')
-        self.assert_action(exp_action='34B in item2', exp_count=2, exp_widget=self.listw2.focus)
-        self.assert_current_keychain()
-        self.assert_active_keychains()
+        for key in ('A', 'B'):
+            start_keychain()
+            press_key(key)
+            self.assertEqual(self.listw2.focus.edit_text, text)
+            self.assert_current_keychain()
+            self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+            self.assert_active_keychains()
 
 
     def test_abort_chain_with_builtin_key(self):
@@ -805,26 +860,38 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.assert_active_keychains()
 
 
-    def test_chain_with_builtin_key(self):
-        self.km.bind('up down', 'jumping', context='item1')
-        self.km.bind('up up', 'flying', context='item1')
+    def test_builtin_keys_have_precedence_over_keychain_if_no_keychain_started(self):
+        self.km.bind('z', 'impossible action', context='list2')  # This should go to an Edit widget
+        self.mainw.focus_position = 1  # Focus list2
+        self.press_key('z')
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+        self.assertEqual(self.listw2.focus.edit_text, 'z')
+
+    def test_chain_with_builtin_key_if_parent_needs_it(self):
+        self.km.bind('up down', 'jump', context='list1')
+
+        # Make sure parent uses 'up' key to move focus up
+        self.listw1.focus_position = 1
+
+        self.press_key('up')
+        self.assertEqual(self.listw1.focus_position, 0)
+        self.assert_current_keychain()
+        self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
+        self.assert_active_keychains()
+
+    def test_chain_with_builtin_key_if_parent_doesnt_need_it(self):
+        self.km.bind('up down', 'jump', context='list1')
+
+        # Make sure parent doesn't need 'up' key
+        self.listw1.focus_position = 0
 
         self.press_key('up')
         self.assert_current_keychain('up')
         self.assert_action(exp_action=None, exp_count=0, exp_widget=None)
-        self.assert_active_keychains((('up', 'down'), 'jumping'),
-                                     (('up', 'up'), 'flying'))
+        self.assert_active_keychains((('up', 'down'), 'jump'))
         self.press_key('down')
         self.assert_current_keychain()
-        self.assert_action(exp_action='jumping', exp_count=1, exp_widget=self.listw1.focus)
-        self.assert_active_keychains()
-
-        self.press_key('up')
-        self.assert_current_keychain('up')
-        self.assert_action(exp_action='jumping', exp_count=1, exp_widget=self.listw1.focus)
-        self.assert_active_keychains((('up', 'down'), 'jumping'),
-                                     (('up', 'up'), 'flying'))
-        self.press_key('up')
-        self.assert_current_keychain()
-        self.assert_action(exp_action='flying', exp_count=2, exp_widget=self.listw1.focus)
+        self.assert_action(exp_action='jump', exp_count=1, exp_widget=self.listw1)
         self.assert_active_keychains()

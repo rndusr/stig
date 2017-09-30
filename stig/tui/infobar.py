@@ -18,39 +18,60 @@ from ..client import constants as const
 
 
 class KeyChainsWidget(urwid.WidgetWrap):
+    _selectable = False
+    _sizing = ['flow']
+
     def __init__(self):
         self._pile = urwid.Pile([])
         super().__init__(urwid.AttrMap(self._pile, 'keychains'))
 
-    def update(self, keychains):
+    def update(self, keymap, active_keychains, keys_given):
+        active_keychains = tuple(active_keychains)
         self._pile.contents[:] = []
-        if not keychains:
+        if not active_keychains:
             return
 
-        lines = []
-        keys_col_width = 0
-        for kc,action in sorted(keychains, key=lambda x: str(x[0]).lower()):
-            given = ' '.join(kc.given)
-            current = kc.next_key
-            rest = ' '.join(kc[len(kc.given)+1:])
-            keys_col_width = max(len(' '.join((given, current, rest))), keys_col_width)
-            lines.append((given, current, rest, str(action)))
+        # Find widest key for each column (each key is in its own cell)
+        key_colnum = max(len(kc) for kc,action in active_keychains)
+        key_colwidths = [0] * key_colnum
+        for kc,action in active_keychains:
+            for colnum in range(key_colnum):
+                try:
+                    width = len(kc[colnum])
+                except IndexError:
+                    width = 0
+                key_colwidths[colnum] = max(key_colwidths[colnum], width)
 
-        for given,current,rest,action in lines:
-            keys_widget = urwid.Text([('keychains.keys', given), ' ',
-                                      ('keychains.keys.next', current), ' ',
-                                      ('keychains.keys', rest)])
-            action_widget = urwid.Text(('keychains.action', action))
-            line_widget = urwid.Columns([(keys_col_width, keys_widget),
-                                         ('pack', urwid.Text('  -  ')),
-                                         action_widget])
-            self._pile.contents.append((line_widget, self._pile.options('pack')))
+        # Create list of rows
+        rows = []
+        index_next_key = len(keys_given)
+        for kc,action in active_keychains:
+            row = []
+            for colnum in range(key_colnum):
+                colwidth = key_colwidths[colnum]
+                try:
+                    keytext = kc[colnum].ljust(colwidth)
+                except IndexError:
+                    # This keychain is shorter than the longest one
+                    row.append(('pack', urwid.Text(('keychains', ''.ljust(colwidth)))))
+                else:
+                    # Highlight the key the user needs to press to advance keychain
+                    attrs = ('keychains.keys.next' if colnum == index_next_key else 'keychains.keys')
+                    row.append(('pack', urwid.Text((attrs, keytext))))
+
+                # Add space between this key cell and the next unless this is the last column
+                if colnum < key_colnum-1:
+                    row.append(('pack', urwid.Text(('keychains', ' '))))
+
+            row.append(('pack' , urwid.Text(('keychains', '  '))))      # Spacer
+            row.append(urwid.Text(('keychains.action', str(action))))   # Action
+            rows.append(urwid.Columns(row))
+
+        for row in rows:
+            self._pile.contents.append((row, self._pile.options('pack')))
 
     def rows(self, size, focus=False):
         return len(self._pile.contents)
-
-    _selectable = False
-    _sizing = ['flow']
 
 
 class QuickHelpWidget(urwid.Text):

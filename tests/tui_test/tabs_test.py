@@ -2,7 +2,6 @@ from stig.tui.tabs import (Tabs, TabID, _find_unused_id)
 
 import unittest
 import urwid
-from urwid import Text
 
 import logging
 log = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ from stig.tui import tabs
 tabs._find_unused_id = make_large_id
 
 
-class SelectableText(Text):
+class SelectableText(urwid.Text):
     _selectable = True
     def keypress(self, size, key):
         return key
@@ -35,8 +34,8 @@ class SelectableText(Text):
 
 class TestTabs(unittest.TestCase):
     def setUp(self):
-        self.tabs = Tabs((Text('Tab1'), Text('Tab one')),
-                         (Text('Tab2'), Text('Tab two')))
+        self.tabs = Tabs((urwid.Text('Tab1'), urwid.Text('Tab one')),
+                         (urwid.Text('Tab2'), urwid.Text('Tab two')))
 
     def test_get_index_focused(self):
         self.tabs.focus_position = 0
@@ -160,16 +159,16 @@ class TestTabs(unittest.TestCase):
 
     def test_set_title(self):
         self.tabs.focus_position = 0
-        self.tabs.set_title(Text('foo'))
+        self.tabs.set_title(urwid.Text('foo'))
         self.assertEqual(self.tabs.get_title(0).text, 'foo')
 
-        self.tabs.set_title(Text('bar'), position=1)
+        self.tabs.set_title(urwid.Text('bar'), position=1)
         self.assertEqual(self.tabs.get_title(1).text, 'bar')
 
-        self.tabs.set_title(Text('FOO'), position=self.tabs.get_id(0))
+        self.tabs.set_title(urwid.Text('FOO'), position=self.tabs.get_id(0))
         self.assertEqual(self.tabs.get_title(0).text, 'FOO')
 
-        self.tabs.set_title(Text('BAR'), position=self.tabs.get_id(1))
+        self.tabs.set_title(urwid.Text('BAR'), position=self.tabs.get_id(1))
         self.assertEqual(self.tabs.get_title(1).text, 'BAR')
 
     def test_get_content(self):
@@ -183,20 +182,20 @@ class TestTabs(unittest.TestCase):
 
     def test_set_content(self):
         self.tabs.focus_position = 0
-        self.tabs.set_content(Text('foo'))
+        self.tabs.set_content(urwid.Text('foo'))
         self.assertEqual(self.tabs.get_content().text, 'foo')
 
-        self.tabs.set_content(Text('bar'), position=1)
+        self.tabs.set_content(urwid.Text('bar'), position=1)
         self.assertEqual(self.tabs.get_content(1).text, 'bar')
 
-        self.tabs.set_content(Text('FOO'), position=self.tabs.get_id(0))
+        self.tabs.set_content(urwid.Text('FOO'), position=self.tabs.get_id(0))
         self.assertEqual(self.tabs.get_content(0).text, 'FOO')
 
-        self.tabs.set_content(Text('BAR'), position=self.tabs.get_id(1))
+        self.tabs.set_content(urwid.Text('BAR'), position=self.tabs.get_id(1))
         self.assertEqual(self.tabs.get_content(1).text, 'BAR')
 
     def test_remove(self):
-        self.tabs.insert(Text('Tab3'), Text('Tab three'))
+        self.tabs.insert(urwid.Text('Tab3'), urwid.Text('Tab three'))
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab1', 'Tab2', 'Tab3'))
         self.assertEqual(tuple(t.text for t in self.tabs.contents),
@@ -223,25 +222,25 @@ class TestTabs(unittest.TestCase):
 
     def test_insert(self):
         self.tabs.focus_position = len(self.tabs) - 1
-        self.tabs.insert(Text('Tab3'), Text('Tab three'))
+        self.tabs.insert(urwid.Text('Tab3'), urwid.Text('Tab three'))
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab1', 'Tab2', 'Tab3'))
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
                          ('Tab one', 'Tab two', 'Tab three'))
 
-        self.tabs.insert(Text('Tab0'), Text('Tab zero'), position=0)
+        self.tabs.insert(urwid.Text('Tab0'), urwid.Text('Tab zero'), position=0)
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab0', 'Tab1', 'Tab2', 'Tab3'))
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
                          ('Tab zero', 'Tab one', 'Tab two', 'Tab three'))
 
-        self.tabs.insert(Text('Tab4'), Text('Tab four'), position=-1)
+        self.tabs.insert(urwid.Text('Tab4'), urwid.Text('Tab four'), position=-1)
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab0', 'Tab1', 'Tab2', 'Tab3', 'Tab4'))
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
                          ('Tab zero', 'Tab one', 'Tab two', 'Tab three', 'Tab four'))
 
-        self.tabs.insert(Text('Tab2.5'), Text('Tab two point five'), position=3)
+        self.tabs.insert(urwid.Text('Tab2.5'), urwid.Text('Tab two point five'), position=3)
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab0', 'Tab1', 'Tab2', 'Tab2.5', 'Tab3', 'Tab4'))
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
@@ -249,7 +248,7 @@ class TestTabs(unittest.TestCase):
                           'Tab two point five', 'Tab three', 'Tab four'))
 
         self.tabs.focus_position = 2
-        self.tabs.insert(Text('Tab1.5'), Text('Tab one point five'), position='left')
+        self.tabs.insert(urwid.Text('Tab1.5'), urwid.Text('Tab one point five'), position='left')
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab0', 'Tab1', 'Tab1.5', 'Tab2', 'Tab2.5', 'Tab3', 'Tab4'))
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
@@ -257,7 +256,7 @@ class TestTabs(unittest.TestCase):
                           'Tab two point five', 'Tab three', 'Tab four'))
 
         self.tabs.focus_position = 6
-        self.tabs.insert(Text('Tab4.5'), Text('Tab four point five'), position='right')
+        self.tabs.insert(urwid.Text('Tab4.5'), urwid.Text('Tab four point five'), position='right')
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab0', 'Tab1', 'Tab1.5', 'Tab2', 'Tab2.5', 'Tab3', 'Tab4', 'Tab4.5'))
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
@@ -269,25 +268,25 @@ class TestTabs(unittest.TestCase):
         self.assertEqual(tuple(self.tabs.titles), ())
         self.assertEqual(self.tabs.focus_position, None)
 
-        self.tabs.load(title=Text('Foo'), widget=Text('Tab foo'))
+        self.tabs.load(title=urwid.Text('Foo'), widget=urwid.Text('Tab foo'))
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Foo',))
         self.assertEqual(self.tabs.focus_position, 0)
 
     def test_load_content_at_specific_position(self):
-        self.tabs.load(title=Text('Foo'), widget=Text('Tab foo'), position=0)
+        self.tabs.load(title=urwid.Text('Foo'), widget=urwid.Text('Tab foo'), position=0)
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Foo', 'Tab2'))
         self.assertEqual(self.tabs.focus_position, 0)
 
     def test_load_content_at_focus(self):
-        self.tabs.load(title=Text('Foo'), widget=Text('Tab foo'))
+        self.tabs.load(title=urwid.Text('Foo'), widget=urwid.Text('Tab foo'))
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Tab1', 'Foo'))
         self.assertEqual(self.tabs.focus_position, 1)
 
     def test_load_content_without_focusing_it(self):
-        self.tabs.load(title=Text('Bar'), widget=Text('Tab bar'), position=0, focus=False)
+        self.tabs.load(title=urwid.Text('Bar'), widget=urwid.Text('Tab bar'), position=0, focus=False)
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
                          ('Bar', 'Tab2'))
         self.assertEqual(self.tabs.focus_position, 1)
@@ -310,9 +309,9 @@ class TestTabsKeyPress(unittest.TestCase):
         ]
         self.editbox = self.content[1].body[1]
         self.editbox.edit_pos = 0
-        self.tabs = Tabs((Text('Edit fields'), self.content[0]),
-                         (Text('empty'),),
-                         (Text('Text rows'), self.content[1]))
+        self.tabs = Tabs((urwid.Text('Edit fields'), self.content[0]),
+                         (urwid.Text('empty'),),
+                         (urwid.Text('Text rows'), self.content[1]))
 
     def check(self, tab_pos, content_pos, edit_pos=None):
         self.assertEqual(self.tabs.focus_position, tab_pos)
