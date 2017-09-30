@@ -4,6 +4,8 @@ import unittest
 import tempfile
 import os
 
+from . _handle_urwidpatches import (setUpModule, tearDownModule)
+
 
 class TestCLIEditWidget(unittest.TestCase):
     def setUp(self):
