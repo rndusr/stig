@@ -231,10 +231,6 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
 
         existing_reqs = tuple(map(comparable_request, self.daemon.requests))
         expected_req = comparable_request(expected_request)
-        for r in existing_reqs:
-            print(r)
-        print()
-        print(expected_req)
         self.assertIn(expected_req, existing_reqs)
 
 
