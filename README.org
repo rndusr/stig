@@ -56,14 +56,14 @@
    #+END_SRC
 
 ** Configuration and Scripting
-   All configuration is done in ~$XDG_CONFIG_HOME/stig/rc~, which expands to
-   ~$HOME/.config/stig/rc~ if you haven't changed XDG_CONFIG_HOME.  Each line is
-   a command that is called during startup.  Commands given as CLI arguments are
-   called after the rc commands.
+   All configuration is done in an rc file which contains a list of commands
+   that are executed during startup.  The default rc file is
+   ~$XDG_CONFIG_HOME/stig/rc~.  ~XDG_CONFIG_HOME~ defaults to ~~/.config~ if not
+   set.
 
-   Run ~stig help rcfile~ for more information.
+   See ~stig help rcfile~ for more information.
 
-*** Example ~rc~-file
+*** Example rc file
    #+BEGIN_SRC
    # Host that runs Transmission daemon
    set srv.url otherhost:123
