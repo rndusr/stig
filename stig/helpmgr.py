@@ -402,16 +402,14 @@ class HelpManager():
              "An existing rc file at the default path can be ignored with the "
              "'--norcfile' option."),
             '',
-            ('\tHINT: To permanently change the default config file, create an '
-             'alias or a function.  This works in bash and zsh:'),
+            '\tTo permanently change the default config file, create an alias:',
             '',
             '\t\t$ alias stig="command stig --rcfile ~/.stigrc"',
             '',
             ("\tTo load an additional rc file after the default one, use the "
-             "'rc' command.  (Note that, if given as a CLI command, this will "
-             "suppress the TUI from being loaded unless you provide the "
-             "'--tui' option aswell. See the GUESSING THE USER INTERFACE section "
-             "in the 'commands' help for more information.)"),
+             "'rc' command.  (Note that this will prevent the TUI from being "
+             "loaded unless you provide the '--tui' option.  See the GUESSING "
+             "THE USER INTERFACE section in the 'commands' help for more information.)"),
             '',
             ('\tCommands in an rc file are called during startup before the '
              'commands given on the command line.'),
