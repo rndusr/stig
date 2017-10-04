@@ -129,13 +129,16 @@ class _NumberBase():
 
     @property
     def without_unit(self):
-        if self >= float('inf'):
+        absolute = abs(self)
+        if absolute >= float('inf'):
             return pretty_float(self)
-
-        for prefix,size in self._prefixes:
-            if self >= size:
-                return pretty_float(self/size) + prefix
-        return pretty_float(self)
+        elif self == 0:
+            return '0'
+        else:
+            for prefix,size in self._prefixes:
+                if absolute >= size:
+                    return pretty_float(self/size) + prefix
+            return pretty_float(self)
 
     @property
     def unit(self):

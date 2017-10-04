@@ -5,24 +5,32 @@ import unittest
 
 class TestNumberFloat(unittest.TestCase):
     def test_prefix(self):
-        for value,str_metric,str_binary in ((pow(1000, 1), '1k', '1000'),
+        for value,str_metric,str_binary in ((pow(1000, 1), '1k',    '1000'),
                                             (pow(1024, 1), '1.02k', '1Ki'),
-                                            (pow(1000, 2), '1M', '977Ki'),
+                                            (pow(1000, 2), '1M',    '977Ki'),
                                             (pow(1024, 2), '1.05M', '1Mi'),
-                                            (pow(1000, 3), '1G', '954Mi'),
+                                            (pow(1000, 3), '1G',    '954Mi'),
                                             (pow(1024, 3), '1.07G', '1Gi'),
-                                            (pow(1000, 4), '1T', '931Gi'),
+                                            (pow(1000, 4), '1T',    '931Gi'),
                                             (pow(1024, 4), '1.10T', '1Ti')):
             for prefix in ('metric', 'binary'):
                 n = NumberFloat(value, prefix=prefix)
+                n_neg = NumberFloat(-value, prefix=prefix)
                 self.assertEqual(n, value)
+                self.assertEqual(n_neg, -value)
                 self.assertEqual(n.prefix, prefix)
                 n.prefix = 'metric'
+                n_neg.prefix = 'metric'
                 self.assertEqual(n.prefix, 'metric')
+                self.assertEqual(n_neg.prefix, 'metric')
                 self.assertEqual(n.without_unit, str_metric)
+                self.assertEqual(n_neg.without_unit, '-'+str_metric)
                 n.prefix = 'binary'
+                n_neg.prefix = 'binary'
                 self.assertEqual(n.prefix, 'binary')
+                self.assertEqual(n_neg.prefix, 'binary')
                 self.assertEqual(n.without_unit, str_binary)
+                self.assertEqual(n_neg.without_unit, '-'+str_binary)
 
         with self.assertRaises(ValueError) as cm:
             n.prefix = 'foo'
