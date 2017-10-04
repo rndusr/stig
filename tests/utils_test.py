@@ -72,8 +72,8 @@ class TestNumberFloat(unittest.TestCase):
             self.assertEqual(n.prefix, prefix)
 
     def test_parsing_with_unit(self):
-        for string,num,prefix in ( ('23X', 23, 'metric'),
-                                   ('23.1X', 23.1, 'metric'),
+        for string,num,prefix in ( ('23X',     23,                'metric'),
+                                   ('23.1X',   23.1,              'metric'),
                                    ('23.2kX',  23.2*pow(1000, 1), 'metric'),
                                    ('23.3MiX', 23.3*pow(1024, 2), 'binary'),
                                    ('23.4GX',  23.4*pow(1000, 3), 'metric'),
