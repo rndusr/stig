@@ -90,6 +90,18 @@ class TestNumberFloat(unittest.TestCase):
         self.assertEqual(n, 123000)
         self.assertEqual(n.unit, 'F')
 
+    def test_parsing_signs(self):
+        self.assertEqual(NumberFloat('-10'), -10)
+        self.assertEqual(NumberFloat('+10'), 10)
+        self.assertEqual(NumberFloat('-10k'), -10000)
+        self.assertEqual(NumberFloat('+10M'), 10e6)
+        n = NumberFloat('-10GX')
+        self.assertEqual(n, -10e9)
+        self.assertEqual(n.unit, 'X')
+        n = NumberFloat('-10Ty')
+        self.assertEqual(n, -10e12)
+        self.assertEqual(n.unit, 'y')
+
     def test_passing_NumberFloat_instance_copies_properties(self):
         for orig_prefix in ('binary', 'metric'):
             for orig_unit in ('A', 'B'):
@@ -130,18 +142,6 @@ class TestNumberFloat(unittest.TestCase):
                 NumberFloat(value)
             self.assertIn('Not a number', str(cm.exception))
             self.assertIn(str(value), str(cm.exception))
-
-    def test_signs(self):
-        self.assertEqual(NumberFloat('-10'), -10)
-        self.assertEqual(NumberFloat('+10'), 10)
-        self.assertEqual(NumberFloat('-10k'), -10000)
-        self.assertEqual(NumberFloat('+10M'), 10e6)
-        n = NumberFloat('-10GX')
-        self.assertEqual(n, -10e9)
-        self.assertEqual(n.unit, 'X')
-        n = NumberFloat('-10Ty')
-        self.assertEqual(n, -10e12)
-        self.assertEqual(n.unit, 'y')
 
     def test_equality(self):
         self.assertEqual(NumberFloat(0), 0)
