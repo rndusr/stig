@@ -369,7 +369,7 @@ class TorrentAPI():
             raise ValueError("Invalid 'torrents' argument: {!r}".format(torrents))
 
     async def _torrent_action(self, method, torrents=None, method_args={}, check=None,
-                              keys_check=(), keys_return=(), autoconnect=True):
+                              keys_check=(), autoconnect=True):
         """Helper method that operates on torrents (start, stop, remove, etc)
 
         method: Any method from TransmissionRPC that accepts torrent ids
@@ -381,8 +381,6 @@ class TorrentAPI():
                True, `method` is applied to the torrent, otherwise not.
         keys_check: List of Torrent keys the check function needs ('id' and
                     'name' are always included)
-        keys_return: List of Torrent keys of returned torrents ('id' and 'name'
-                    are always included)
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
@@ -399,9 +397,8 @@ class TorrentAPI():
         msgs = []
         success = False
 
-        # Always provide some keys
+        # Always provide some basic keys
         keys_check = set(tuple(keys_check) + ('id', 'name'))
-        keys_return = set(tuple(keys_return) + ('id', 'name'))
 
         response = await self.torrents(torrents, keys=keys_check)
         if not response.success:
@@ -424,23 +421,18 @@ class TorrentAPI():
                         msgs.append(ClientError(msg))
 
         # Apply method to torrents that passed the check function
-        if len(tlist) > 0:
+        if len(tlist) <= 0:
+            return Response(success=False, torrents=(), msgs=msgs)
+        else:
             try:
                 # Ignore response because it is always {}, except for
                 # 'torrent-get' requests, which this method is not meant for.
                 await method(ids=tuple(t['id'] for t in tlist), **method_args)
             except ClientError as e:
                 msgs.append(e)
-                tlist = ()
-
-        # Get the requested keys for returned torrents
-        if len(tlist) > 0:
-            response = await self._get_torrents_by_ids(keys_return, tuple(t['id'] for t in tlist))
-            if not response.success:
-                return Response(success=False, torrents=(), msgs=response.msgs)
-            return Response(success=True, torrents=response.torrents, msgs=msgs)
-        else:
-            return Response(success=False, torrents=(), msgs=msgs)
+                return Response(success=False, torrents=(), msgs=msgs)
+            else:
+                return Response(success=True, torrents=tuple(tlist), msgs=msgs)
 
     async def stop(self, torrents, autoconnect=True):
         """Stop down-/uploading torrents
@@ -619,7 +611,6 @@ class TorrentAPI():
 
         return await self._torrent_action(self.rpc.torrent_set_location, torrents,
                                           check=create_info_msg, keys_check=('path',),
-                                          keys_return=('path',),
                                           method_args={'move': True, 'location': path})
 
 
@@ -1015,7 +1006,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            torrents: tuple of Torrents with the keys 'id' and 'name'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
@@ -1035,5 +1026,4 @@ class TorrentAPI():
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
                                           check=check, keys_check=('status', 'trackers',
                                                                    'time-manual-announce-allowed'),
-                                          keys_return=('trackers',),
                                           autoconnect=autoconnect)
