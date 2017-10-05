@@ -578,17 +578,16 @@ class TorrentAPI():
                                           autoconnect=autoconnect)
 
 
-    async def move(self, torrents, path, autoconnect=True):
+    async def move(self, torrents, destination, autoconnect=True):
         """Change torrents' location in the file system
 
         torrents: See `torrents` method
-        path: Destination of the specified torrents; relative paths are relative
-              to the default download path.
+        destination: New path of the specified torrents; relative paths are
+                     relative to the default download path
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that were removed with the keys 'id',
-                      'name' and 'path' (after the move)
+            torrents: tuple of Torrents that were moved with the keys 'id' and 'name'
             success: True if any torrents were found and had matching files,
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
@@ -597,21 +596,21 @@ class TorrentAPI():
             return None
 
         # Transmission wants an absolute path
-        response = await self._abs_download_path(path)
+        response = await self._abs_download_path(destination)
         if not response.success:
             return Response(torrents=(), success=False, msgs=response.msgs)
         else:
-            path = response.path
+            destination = response.path
 
         def create_info_msg(t):
-            if t['path'] != path:
-                return (True, 'Moving to %s: %s' % (path, t['name']))
+            if t['path'] != destination:
+                return (True, 'Moving to %s: %s' % (destination, t['name']))
             else:
-                return (False, 'Already in %s: %s' % (path, t['name']))
+                return (False, 'Already in %s: %s' % (destination, t['name']))
 
         return await self._torrent_action(self.rpc.torrent_set_location, torrents,
                                           check=create_info_msg, keys_check=('path',),
-                                          method_args={'move': True, 'location': path})
+                                          method_args={'move': True, 'location': destination})
 
 
     async def file_priority(self, torrents, priority, files, autoconnect=True):
