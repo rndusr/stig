@@ -130,10 +130,11 @@ class _NumberBase():
     @property
     def without_unit(self):
         absolute = abs(self)
-        if absolute >= float('inf'):
-            return pretty_float(self)
-        elif self == 0:
+        if self == 0:
+            # This should increase efficiency since 0 is a common value
             return '0'
+        elif absolute >= float('inf'):
+            return pretty_float(self)
         else:
             for prefix,size in self._prefixes:
                 if absolute >= size:
