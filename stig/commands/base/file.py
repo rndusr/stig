@@ -146,6 +146,6 @@ class PriorityCmdbase(metaclass=InitCommand):
                   priority, ffilter, tfilter)
 
         response = await self.make_request(
-            self.srvapi.torrent.file_priority(tfilter, priority, ffilter),
+            self.srvapi.torrent.file_priority(tfilter, ffilter, priority),
             polling_frenzy=True, quiet=quiet)
         return response.success

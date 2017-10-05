@@ -608,13 +608,13 @@ class TorrentAPI():
                                           method_args={'move': True, 'location': destination})
 
 
-    async def file_priority(self, torrents, priority, files, autoconnect=True):
+    async def file_priority(self, torrents, files, priority, autoconnect=True):
         """Change download priority of individual torrent files
 
         torrents: See `torrents` method
-        priority: 'off', 'low', 'normal' or 'high'
         files: TorrentFileFilter object (or its string representation), sequence
                of (torrent ID, file ID) tuples or None for all files
+        priority: 'off', 'low', 'normal' or 'high'
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
