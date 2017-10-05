@@ -115,8 +115,8 @@ class TorrentAPI():
     async def _map_tid_to_torrent_values(self, torrents, keys):
         """Map torrent ID to Torrent value(s)
 
-        If `keys` lists only one key, the returned map maps torrent IDs to each
-        torrent's value of that key.
+        If `keys` lists only one key, the returned map maps each torrent's ID to
+        its value of that key.
 
         If `keys` lists two or more keys, the returned map maps torrent IDs to a
         dict with the keys `keys` and their corresponding values for each torrent.
@@ -441,8 +441,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that were stopped with the keys 'id'
-                      and 'name'
+            torrents: tuple of stopped Torrents with the keys 'id' and 'name'
             success: True if any torrents were found and stopped, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
@@ -464,8 +463,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that were started with the keys 'id'
-                      and 'name'
+            torrents: tuple of started Torrents with the keys 'id' and 'name'
             success: True if any torrents were found and started, False
                      otherwise
             msgs: list of strings/`ClientError`s caused by the request
@@ -494,8 +492,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that were toggled with the keys 'id'
-                      and 'name'
+            torrents: tuple of toggled Torrents with the keys 'id' and 'name'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
@@ -531,8 +528,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that will be verified with the keys
-                      'id' and 'name'
+            torrents: tuple of to be verified Torrents with the keys 'id' and 'name'
             success: True if any torrents were found and will be verified,
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
@@ -558,8 +554,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that were removed with the keys 'id'
-                      and 'name'
+            torrents: tuple of removed Torrents  with the keys 'id' and 'name'
             success: True if any torrents were found and removed, False
                      otherwise
             msgs: list of strings/`ClientError`s caused by the request
@@ -587,7 +582,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that were moved with the keys 'id' and 'name'
+            torrents: tuple of moved Torrents with the keys 'id' and 'name'
             success: True if any torrents were found and had matching files,
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
@@ -623,8 +618,8 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of matching Torrents that have matching files with
-                      the keys 'id', 'name' and 'files'
+            torrents: tuple of matching Torrents with matching files with the
+                      keys 'id', 'name' and 'files'
             success: True if any torrents were found and had matching files,
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
@@ -644,7 +639,7 @@ class TorrentAPI():
             if isinstance(files, str):
                 files = TorrentFileFilter(files)
 
-            # Set filter_files to a function that takes a TorrentFileTree and
+            # Set filter_files to a lambda that takes a TorrentFileTree and
             # returns a list of TorrentFiles.
             if files is None:
                 filter_files = lambda ftree: tuple(ftree.files)
@@ -875,7 +870,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            torrents: tuple of Torrents with the keys 'id' and 'name'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
@@ -934,7 +929,7 @@ class TorrentAPI():
         autoconnect: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            torrents: tuple of Torrents with the keys 'id' and 'name'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
 
