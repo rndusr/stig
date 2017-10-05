@@ -676,7 +676,7 @@ class TorrentAPI():
                     msgs.extend(response.msgs)
 
         if torrent_ids:
-            response = await self.torrents(torrent_ids, keys=('name', 'files'))
+            response = await self.torrents(torrent_ids, keys=('id', 'name', 'files'))
             if response.success:
                 torrents = response.torrents
         return Response(torrents=torrents, success=success, msgs=msgs)
