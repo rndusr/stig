@@ -198,6 +198,10 @@ class create_list_widget():
                 pass
         listw.title_updater = set_tab_title
 
+        # Set a temporary title until the tab has finished loading its content
+        # and the title_updater is called with the actual title
+        self.tui.tabs.set_title(make_titlew('Loading...', ''), position=tabid)
+
 
 class polling_frenzy():
     aioloop = ExpectedResource
