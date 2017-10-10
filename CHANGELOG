@@ -26,6 +26,7 @@
     * New default keybinding: <t+p> opens a torrent's peer list
     * New default keybinding: <t+t> opens a torrent's tracker list
     * <ctrl-l> now hides/shows the log instead of clearing it
+    * <backspace> reverts a partially entered keychain by one character
     * The 'rc' command is now available on the CLI
     * The 'rc' command no longer fails if it encounters a command that is not
       supported by the active interface
