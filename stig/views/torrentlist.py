@@ -28,11 +28,8 @@ class Path(ColumnBase):
     align = 'left'
     needed_keys = ('path',)
 
-    def get_value(self):
-        path = self.data['path'].rstrip(PATHSEP)
-        if self.width is None:
-            return path
-
+    @staticmethod
+    def _shorten_path(path, width):
         # Remove characters from the end of the most toplevel directory
         # until there's only one left. Then do the same with the next
         # level.
@@ -40,23 +37,47 @@ class Path(ColumnBase):
         # -> /th/path/to/your/torrents
         # -> /t/path/to/your/torrents
         # -> /t/pat/to/your/torrents
-        while len(path) > self.width:
-            dirs = [d for d in path.split(PATHSEP) if d]
+
+        dirs = [d for d in path.split(PATHSEP) if d]
+        calc_cur_len = lambda dirs: (sum(map(len, dirs)) +  # combined dir names
+                                     len(dirs))             # path separators
+
+        cur_len = calc_cur_len(dirs)
+        while cur_len > width:
             for i,d in enumerate(dirs):
                 if len(d) > 1:
                     dirs[i] = d[:-1]
                     break
-            path = PATHSEP + PATHSEP.join(dirs)
-            if len(path) <= len(dirs)*2:
-                break  # Each dir is now exactly one character long.
 
-        # If "/t/p/t/y/t" is still too long, simply remove enough characters
-        # from the front.
-        if len(path) > self.width:
-            excess = len(path) - self.width + 1
+            # Stop when every dir is one character long
+            if cur_len <= len(dirs)*2:
+                break
+
+            cur_len = calc_cur_len(dirs)
+
+        # Re-assemble shortened path
+        path = PATHSEP + PATHSEP.join(dirs)
+
+        # If "/t/p/t/y/t" is still too long, simply remove enough
+        # characters from the front.
+        if len(path) > width:
+            excess = len(path) - width + 1
             path = '…' + path[excess:]
 
         return path
+
+    _previous = (None, None)
+    _shortened_path = None
+    def get_value(self):
+        full_path = self.data['path'].rstrip(PATHSEP)
+        width = self.width
+        if width is None:
+            return full_path
+        else:
+            if self._previous != (full_path, width):
+                self._previous = (full_path, width)
+                self._shortened_path = self._shorten_path(full_path, width)
+            return self._shortened_path
 
 COLUMNS['path'] = Path
 
