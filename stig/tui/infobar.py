@@ -26,7 +26,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
         super().__init__(urwid.AttrMap(self._pile, 'keychains'))
 
     def update(self, keymap, active_keychains, keys_given):
-        active_keychains = tuple(active_keychains)
+        active_keychains = list(active_keychains)
         self._pile.contents[:] = []
         if not active_keychains:
             return
@@ -45,7 +45,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
         # Create list of rows
         rows = []
         index_next_key = len(keys_given)
-        for kc,action in active_keychains:
+        for kc,action in sorted(active_keychains, key=lambda k: str(k).lower()):
             row = []
             for colnum in range(key_colnum):
                 colwidth = key_colwidths[colnum]
