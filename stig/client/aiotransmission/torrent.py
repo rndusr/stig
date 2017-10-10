@@ -408,8 +408,8 @@ DEPENDENCIES = {
     'size-corrupt'                 : ('corruptEver',),
     'size-piece'                   : ('pieceSize',),
 
-    'trackers'                     : ('trackerStats', 'name', 'id'),
     'error'                        : ('errorString', 'error', 'trackerStats'),
+    'trackers'                     : ('trackerStats', 'name', 'id'),
     'peers'                        : ('peers', 'totalSize', 'name'),
     'files'                        : ('files', 'fileStats',),
 }
@@ -443,8 +443,8 @@ _MODIFY = {
     'time-completed'               : lambda raw: _modify_timestamp_completed(raw),
     'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
-    'trackers'                     : TrackerList,
     'error'                        : _find_error,
+    'trackers'                     : TrackerList,
     'peers'                        : PeerList,
     'files'                        : _create_TorrentFileTree,
 }

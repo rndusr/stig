@@ -694,8 +694,8 @@ TYPES = {
     'size-corrupt'                 : lambda size: convert.size(size, unit='byte'),
     'size-piece'                   : lambda size: convert.size(size, unit='byte'),
 
-    'trackers'                     : tuple,
     'error'                        : str,
+    'trackers'                     : tuple,
     'peers'                        : tuple,
     'files'                        : _ensure_TorrentFileTree,
 }
