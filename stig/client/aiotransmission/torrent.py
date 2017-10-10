@@ -229,7 +229,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
             items[subdir] = TorrentFileTree(torrent_id, entries, path=path+[subdir])
         self._items = items
 
-    def update(self, fileStats):
+    def update(self, raw_torrent):
         def update_files(ftree, fileStats):
             if not fileStats:
                 # If fileStats is empty (e.g. no metadata yet), there is a dummy
@@ -247,7 +247,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 else:
                     update_files(entry, fileStats)
 
-        update_files(self._items, fileStats)
+        update_files(self._items, raw_torrent['fileStats'])
 
 
 
@@ -462,17 +462,21 @@ class Torrent(base.TorrentBase):
     def update(self, raw_torrent):
         cache = self._cache
 
-        # Update an existing TorrentFileTree instead of creating a new one
-        if 'fileStats' in raw_torrent and 'files' in cache:
-            cache['files'].update(raw_torrent.pop('fileStats'))
-
         # Remove cached values if their original/raw value(s) differ
         old = self._raw
         for k,v in tuple(cache.items()):
             fields = DEPENDENCIES[k]
             for field in fields:
                 if field in old and field in raw_torrent and old[field] != raw_torrent[field]:
-                    del cache[k]
+                    # New and previous value differ - if we are dealing with
+                    # more complex data structures (e.g. a file tree), use the
+                    # update() method to update the object in cache instead of
+                    # removing it from the cache.
+                    value = cache[k]
+                    if hasattr(value, 'update'):
+                        value.update(raw_torrent)
+                    else:
+                        del cache[k]
                     break
         old.update(raw_torrent)
 
