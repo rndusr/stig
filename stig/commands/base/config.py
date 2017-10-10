@@ -179,8 +179,6 @@ class RateLimitCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
     cmdmgr = ExpectedResource
 
-    # TODO: Make omitting "global" work in CLI mode but discover torrent in TUI mode.
-
     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
         directions = tuple('down' if d == 'dn' else d
                            for d in map(str.lower, DIRECTION.split(',')))
