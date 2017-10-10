@@ -447,10 +447,7 @@ class TorrentFile(abc.Mapping):
 
     def __getitem__(self, key):
         if key not in self._cache:
-            if key in self._MODIFIERS:
-                val = self._MODIFIERS[key](self._raw)
-            else:
-                val = self._raw[key]
+            val = self._MODIFIERS[key](self._raw)
             self._cache[key] = self.TYPES[key](val)
         return self._cache[key]
 
