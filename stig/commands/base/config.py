@@ -224,7 +224,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
         try:
             new_limit = TorrentRateLimitValue('_new_limit', default=limit).get()
         except ValueError as e:
-            log.error(e)
+            log.error('%s: %r', e, limit)
             return False
 
         log.debug('Setting %s rate limit for %s torrents: %r',
