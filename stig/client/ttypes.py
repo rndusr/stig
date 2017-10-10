@@ -471,7 +471,7 @@ def _ensure_TorrentFileTree(obj):
     if isinstance(obj, base.TorrentFileTreeBase):
         return obj
     else:
-        raise RuntimeError('Not a TorrentFileTreeBase instance: {!r}'.format(obj))
+        raise RuntimeError('Not a TorrentFileTreeBase: %r' % obj)
 
 
 
