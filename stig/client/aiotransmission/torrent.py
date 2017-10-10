@@ -113,7 +113,7 @@ def _is_isolated(t):
     return True  # No way to find any peers
 
 
-def _find_tracker_error(t):
+def _find_error(t):
     error = t['error']
     if error == 1:
         return 'Tracker warning: %s' % t['errorString']
@@ -444,7 +444,7 @@ _MODIFY = {
     'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
 
     'trackers'                     : TrackerList,
-    'error'                        : _find_tracker_error,
+    'error'                        : _find_error,
     'peers'                        : PeerList,
     'files'                        : _create_TorrentFileTree,
 }
