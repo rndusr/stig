@@ -159,7 +159,7 @@ def InitCommand(clsname, bases, attrs):
     attrs['names'].insert(0, attrs['name'])
 
     # Create argument parser
-    argp = StayAliveArgParser()
+    argp = StayAliveArgParser(prog=attrs['name'], add_help=False)
     for argspec in attrs['argspecs']:
         # Check if all mandatory keys are in the spec
         for mandatory_key in ('names',):
