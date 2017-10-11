@@ -186,10 +186,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
                 log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
                 return False
 
-        if TORRENT_FILTER == ['global']:
-            return await self._set_global_limit(directions, LIMIT)
-        else:
-            return await self._set_individual_limit(TORRENT_FILTER, directions, LIMIT)
+        return await self._set_limits(TORRENT_FILTER, directions, LIMIT)
 
     async def _set_global_limit(self, directions, LIMIT):
         # Change the srv.limit.rate.* setting for each direction
