@@ -148,9 +148,8 @@ class SetCmdbase(metaclass=InitCommand):
         return False
 
 
-# Abuse some *Value classes from the settings to allow the same
-# user-input for individual torrents as we do for the global settings
-# srv.limit.rate.*.
+# Abuse some *Value classes from the settings to allow the same user-input for
+# individual torrents as we do for the global settings srv.limit.rate.*.
 from ...settings.types_srv import (MultiValue, BooleanValue, UnlimitedValue, BandwidthValue)
 class TorrentRateLimitValue(MultiValue(UnlimitedValue, BandwidthValue, BooleanValue)):
     pass
