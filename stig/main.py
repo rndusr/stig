@@ -64,6 +64,34 @@ cmdmgr.load_cmds_from_module(
     'stig.commands.cli', 'stig.commands.tui',
 )
 
+def _pre_run_hook(cmdline):
+    # Change command before it is executed
+
+    # If there is '-h' or '--help' in the arguments, replace it with 'help
+    # <cmd>'.  This is dirty but easier than forcing argparse to ignore all
+    # other arguments without calling sys.exit().
+    if '-h' in cmdline or '--help' in cmdline:
+        cmdcls = cmdmgr.get_cmdcls(cmdline[0], interface='ANY')
+        if cmdcls is not None:
+            if cmdcls.name != 'tab':
+                return ['help', cmdcls.name]
+            else:
+                # 'tab ls -h' is a little trickier because both 'tab' and 'ls'
+                # can have arbitrary additional arguments which we must remove.
+                #
+                # Find first argument to 'tab' that is also a valid command
+                # name.  Preserve all arguments before that.
+                tab_args = []
+                for arg in cmdline[1:]:
+                    if cmdmgr.get_cmdcls(arg, interface='ANY') is not None:
+                        return ['tab'] + tab_args + ['help', arg]
+                    else:
+                        tab_args.append(arg)
+                return ['help', 'tab']
+    return cmdline
+cmdmgr.pre_run_hook = _pre_run_hook
+
+
 
 def run():
     from .commands.guess_ui import (guess_ui, UIGuessError)
