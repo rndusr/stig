@@ -352,8 +352,9 @@ class _CommandBase():
 
 
 class CommandManager():
-    def __init__(self, loop=None):
+    def __init__(self, loop=None, pre_run_hook=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
+        self.pre_run_hook = pre_run_hook
         self._cmds = {}
         self._active_interface = None
         self._resources = CallbackDict(callback=self._update_resources)
@@ -609,6 +610,12 @@ class CommandManager():
 
         if not isinstance(cmdline, list):
             cmdline = list(cmdline)
+
+        if self.pre_run_hook is not None:
+            old_cmdline = cmdline.copy()
+            cmdline = self.pre_run_hook(cmdline)
+            log.debug('Pre-run-hook %r converted %r to %r',
+                      self.pre_run_hook.__name__, old_cmdline, cmdline)
 
         cmdname = cmdline.pop(0)
         cmdargs = cmdline
