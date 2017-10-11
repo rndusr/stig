@@ -328,7 +328,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if COMMAND:
             # Execute command
             cmd_str = ' '.join(shlex.quote(arg) for arg in COMMAND)
-            log.debug('Running command in tab %d with args %s: %r',
+            log.debug('Running command in tab %s with args %s: %r',
                       tabs.focus_position,
                       ', '.join('%s=%r' % (k,v) for k,v in cmd_attrs.items()),
                       cmd_str)
