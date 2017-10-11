@@ -174,7 +174,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*',
                            more_text=('"global" to set global limit (same as setting '
                                       "srv.limit.rate.<DIRECTION>'); may be omitted in CLI mode "
-                                      'for the same effect of specifying "global"')),
+                                      'for the same effect as specifying "global"')),
     )
     srvapi = ExpectedResource
     cmdmgr = ExpectedResource
