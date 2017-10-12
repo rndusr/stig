@@ -78,7 +78,7 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
                        for row in rows)
 
         def set_colwidth(colindex, width):
-            # Set column width of all rows
+            # Set width of all cells in a column
             for row in rows:
                 cell = row[colindex]
                 cell.width = width
@@ -88,9 +88,9 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
             colwidth = get_max_colwidth(colindex)
             set_colwidth(colindex, colwidth)
 
-        # Make sure table isn't wider than the terminal.  All rows should have
-        # identical column widths now, so we can use the first row to check our
-        # progress.
+        # Make sure table isn't wider than the terminal.  All cells in each
+        # column should have identical widths now, so we can use the first/top
+        # cell to check our progress.
         current_line = assemble_line(rows[0])
         current_width = strwidth(current_line)
         while current_width > TERMSIZE.columns:
