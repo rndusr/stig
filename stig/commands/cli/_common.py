@@ -83,12 +83,6 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
                 cell = row[colindex]
                 cell.width = width
 
-        def widest_columns():
-            # List of columns sorted by width
-            return sorted(range(len(columns_wanted)),
-                          key=lambda colindex: get_max_colwidth(colindex),
-                          reverse=True)
-
         # Expand column widths to make all cell values fit
         for colindex in range(len(columns_wanted)):
             colwidth = get_max_colwidth(colindex)
@@ -101,7 +95,13 @@ def print_table(items, columns_wanted, COLUMN_SPECS):
         current_width = strwidth(current_line)
         while current_width > TERMSIZE.columns:
             excess = current_width - TERMSIZE.columns
-            widest = widest_columns()
+
+            # List of column indexes sorted by column width
+            widest = sorted(range(len(columns_wanted)),
+                            key=lambda colindex: get_max_colwidth(colindex),
+                            reverse=True)
+
+            # We only need the width of the two widest columns
             widest0 = get_max_colwidth(widest[0])
             widest1 = get_max_colwidth(widest[1])
 
