@@ -82,8 +82,8 @@ def stralign(string, width, side='left'):
     fill = width - strwidth(string)
     if fill < 0:
         string = strcrop(string, width)
+        fill = width - strwidth(string)
 
-    fill = width - strwidth(string)
     if fill > 0:
         if side == 'left':
             string = string + ' '*fill
