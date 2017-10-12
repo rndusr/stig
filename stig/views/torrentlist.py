@@ -27,6 +27,7 @@ class Path(ColumnBase):
     width = None
     align = 'left'
     needed_keys = ('path',)
+    may_have_wide_chars = True
 
     @staticmethod
     def _shorten_path(path, width):
