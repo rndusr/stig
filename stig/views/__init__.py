@@ -15,6 +15,8 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 from ..utils import stralign
+from collections import defaultdict
+from time import time
 
 
 class ColumnBase():
@@ -27,6 +29,49 @@ class ColumnBase():
     def __init__(self, data=None):
         self.data = data if data is not None else {}
         super().__init__()
+
+    _cache = defaultdict(lambda: {'value': None, 'last_hit': time(), 'hits': 0})
+    _last_cache_prune = 0
+    def _from_cache(self, create_value, *args):
+        cache_id = (create_value, args)
+        if cache_id not in self._cache:
+            # log.debug('Calling %r with %r', create_value.__qualname__, args)
+            value = self._cache[cache_id]['value'] = create_value(*args)
+        else:
+            cache_item = self._cache[cache_id]
+            value = cache_item['value']
+            cache_item['last_hit'] = time()
+
+            # Remove any cached items that haven't been used recently
+            now = time()
+            if now-ColumnBase._last_cache_prune > 30:
+                ColumnBase._last_cache_prune = now
+
+                prune_counter = 0
+                for cid,citem in tuple(self._cache.items()):
+                    if now-citem['last_hit'] > 60:
+                        del self._cache[cid]
+                        prune_counter += 1
+
+                # # Debugging stuff
+                # items_without_hits = tuple(citem for citem in self._cache.values()
+                #                            if citem['hits'] < 1)
+
+                # log.debug('Cell cache: %r values pruned, %r remaining, '
+                #           '%r with no hits, %r hits combined',
+                #           prune_counter, len(self._cache), len(items_without_hits),
+                #           sum((citem['hits'] for citem in self._cache.values())))
+
+
+                # items_with_hits = tuple(citem for citem in self._cache.values()
+                #                         if citem['hits'] > 0)
+                # from time import (strftime, localtime)
+                # for citem in items_with_hits:
+                #     log.debug('  %5d hits, last hit: %s: %s',
+                #               citem['hits'],
+                #               strftime('%H:%M:%S', localtime(citem['last_hit'])),
+                #               citem['value'])
+        return value
 
     def get_value(self):
         raise NotImplementedError()
