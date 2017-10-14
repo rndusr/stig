@@ -87,25 +87,33 @@ class ColumnBase():
         align the returned string (`align` attribute must be 'left' or
         'right').
         """
-        width = self.width
-        align = self.align
-        string = str(self.get_value())
-        if not isinstance(width, int):
+        def crop_and_align(string, width, align):
+            if isinstance(width, int):
+                # Cropping and justifying is more expensive when there are wide
+                # characters involved
+                if self.may_have_wide_chars:
+                    string = stralign(string, width, align)
+                else:
+                    err = TypeError("'align' attribute must be 'left' or 'right', not %r}" % align)
+                    string_len = len(string)
+                    if string_len > width:
+                        if align == 'right':
+                            string = string[string_len-width:]
+                        elif align == 'left':
+                            string = string[:width]
+                        else:
+                            raise err
+                    else:
+                        if align == 'right':
+                            string = string.rjust(width)
+                        elif align == 'left':
+                            string = string.ljust(width)
+                        else:
+                            raise err
             return string
-        else:
-            # Crop string or fill it with spaces and align to left/right
-            if self.may_have_wide_chars:
-                return stralign(string, width, align)
 
-            if len(string) > width:
-                string = string[:width]
-
-            if align == 'right':
-                return string.rjust(width)
-            elif align == 'left':
-                return string.ljust(width)
-            else:
-                raise TypeError("'align' attribute must be 'left' or 'right', not {!r}".format(align))
+        return self._from_cache(crop_and_align, str(self.get_value()),
+                                self.width, self.align)
 
     def __repr__(self):
         if self.data:
