@@ -16,9 +16,7 @@ log = make_logger(__name__)
 
 from . import (ColumnBase, _ensure_string_without_unit)
 
-
 COLUMNS = {}
-
 
 import os
 PATHSEP = os.sep
@@ -32,13 +30,15 @@ class Path(ColumnBase):
 
     @staticmethod
     def _shorten_path(path, width):
-        # Remove characters from the end of the most toplevel directory
-        # until there's only one left. Then do the same with the next
-        # level.
-        # /the/path/to/your/torrents
-        # -> /th/path/to/your/torrents
-        # -> /t/path/to/your/torrents
-        # -> /t/pat/to/your/torrents
+        if width is None:
+            return path
+
+        # Remove characters from the end of the most toplevel directory until
+        # there's only one left. Then do the same with the next level.
+        #    /the/path/to/your/torrents
+        #    /th/path/to/your/torrents
+        #    /t/path/to/your/torrents
+        #    /t/pat/to/your/torrents
 
         dirs = [d for d in path.split(PATHSEP) if d]
         calc_cur_len = lambda dirs: (sum(map(len, dirs)) +  # combined dir names
