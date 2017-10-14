@@ -32,8 +32,10 @@
       supported by the active interface
     * Foreground colors in the tab bar are now all bright in the default theme
     * Time deltas now show seconds if less than two minutes away
+    * Removed appdirs depdendency
 
   Fixed bugs:
+    * Long torrent lists in narrow terminals no longer take ages to print
     * In torrent details, the 'Completed' date was displayed as the unix epoch
       (1970-01-01 ...) if unknown, and the 'Ratio' was displayed as negative
       values if unknown/not applicable
