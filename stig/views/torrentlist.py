@@ -68,18 +68,10 @@ class Path(ColumnBase):
 
         return path
 
-    _previous = (None, None)
-    _shortened_path = None
     def get_value(self):
-        full_path = self.data['path'].rstrip(PATHSEP)
-        width = self.width
-        if width is None:
-            return full_path
-        else:
-            if self._previous != (full_path, width):
-                self._previous = (full_path, width)
-                self._shortened_path = self._shorten_path(full_path, width)
-            return self._shortened_path
+        return self._from_cache(self._shorten_path,
+                                self.data['path'].rstrip(PATHSEP),
+                                self.width)
 
 COLUMNS['path'] = Path
 
@@ -120,16 +112,19 @@ class Progress(ColumnBase):
     min_width = 4
     needed_keys = ('%verified', '%downloaded', '%metadata')
 
+    @staticmethod
+    def _get_value(verified, downloaded, metadata):
+        if 0 < verified < 100:
+            value = verified
+        elif 0 < metadata < 100:
+            value = metadata
+        else:
+            value = downloaded
+        return _ensure_string_without_unit(value)
+
     def get_value(self):
         t = self.data
-        v, d, m = (t['%verified'], t['%downloaded'], t['%metadata'])
-        if 0 < v < 100:
-            value = v
-        elif 0 < m < 100:
-            value = m
-        else:
-            value = d
-        return _ensure_string_without_unit(value)
+        return self._from_cache(self._get_value, t['%verified'], t['%downloaded'], t['%metadata'])
 
     def get_raw(self):
         return float(self.get_value()) / 100
@@ -143,13 +138,17 @@ class PercentAvailable(ColumnBase):
     min_width = 7
     needed_keys = ('%available', 'peers-seeding')
 
-    def get_value(self):
-        data = self.data
-        if data['peers-seeding'] > 0:
-            NumberFloat = type(data['%available'])
+    @staticmethod
+    def _get_value(perc_available, peers_seeding):
+        if peers_seeding > 0:
+            NumberFloat = type(perc_available)
             return NumberFloat(100, str_includes_unit=False)
         else:
-            return _ensure_string_without_unit(data['%available'])
+            return _ensure_string_without_unit(perc_available)
+
+    def get_value(self):
+        t = self.data
+        return self._from_cache(self._get_value, t['%available'], t['peers-seeding'])
 
     def get_raw(self):
         return float(self.get_value()) / 100
@@ -179,7 +178,7 @@ class Size(ColumnBase):
     needed_keys = ('size-final',)
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['size-final'])
+        return self._from_cache(_ensure_string_without_unit, self.data['size-final'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -198,7 +197,7 @@ class Downloaded(ColumnBase):
     needed_keys = ('size-downloaded', 'size-final')
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['size-downloaded'])
+        return self._from_cache(_ensure_string_without_unit, self.data['size-downloaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -217,7 +216,7 @@ class Uploaded(ColumnBase):
     needed_keys = ('size-uploaded', 'size-downloaded')
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['size-uploaded'])
+        return self._from_cache(_ensure_string_without_unit, self.data['size-uploaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -235,12 +234,16 @@ class BytesAvailable(ColumnBase):
     min_width = 7
     needed_keys = ('size-available', 'size-final', 'peers-seeding')
 
-    def get_value(self):
-        data = self.data
-        if data['peers-seeding'] > 0:
-            return _ensure_string_without_unit(data['size-final'])
+    @staticmethod
+    def _get_value(size_final, size_available, peers_seeding):
+        if peers_seeding > 0:
+            return _ensure_string_without_unit(size_final)
         else:
-            return _ensure_string_without_unit(data['size-available'])
+            return _ensure_string_without_unit(size_available)
+
+    def get_value(self):
+        t = self.data
+        return self._from_cache(self._get_value, t['size-final'], t['size-available'], t['peers-seeding'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -259,7 +262,7 @@ class RateDown(ColumnBase):
     needed_keys = ('rate-down',)
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-down'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -278,7 +281,7 @@ class RateUp(ColumnBase):
     needed_keys = ('rate-up',)
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-up'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-up'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -297,7 +300,7 @@ class RateLimitDown(ColumnBase):
     needed_keys = ('rate-limit-down',)
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-limit-down'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-limit-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -316,7 +319,7 @@ class RateLimitUp(ColumnBase):
     needed_keys = ('rate-limit-up',)
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-limit-up'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-limit-up'])
 
     def get_raw(self):
         return int(self.get_value())
