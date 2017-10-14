@@ -25,6 +25,7 @@ PATHSEP = os.sep
 class Path(ColumnBase):
     header = {'left': 'Path'}
     width = None
+    min_width = 10
     align = 'left'
     needed_keys = ('path',)
     may_have_wide_chars = True
@@ -86,6 +87,7 @@ COLUMNS['path'] = Path
 class Connections(ColumnBase):
     header = {'left': 'Conn'}
     width = 5
+    min_width = 5
     needed_keys = ('peers-connected',)
 
     def get_value(self):
@@ -100,6 +102,7 @@ COLUMNS['connections'] = Connections
 class Seeds(ColumnBase):
     header = {'left': 'Seeds'}
     width = 5
+    min_width = 5
     needed_keys = ('peers-seeding',)
 
     def get_value(self):
@@ -114,6 +117,7 @@ COLUMNS['seeds'] = Seeds
 class Progress(ColumnBase):
     header = {'right': '%'}
     width = 4
+    min_width = 4
     needed_keys = ('%verified', '%downloaded', '%metadata')
 
     def get_value(self):
@@ -136,6 +140,7 @@ COLUMNS['progress'] = Progress
 class PercentAvailable(ColumnBase):
     header = {'left': 'Avail', 'right': '%'}
     width = 7
+    min_width = 7
     needed_keys = ('%available', 'peers-seeding')
 
     def get_value(self):
@@ -155,6 +160,7 @@ COLUMNS['%available'] = PercentAvailable
 class Ratio(ColumnBase):
     header = {'left': 'Ratio'}
     width = 5
+    min_width = 5
     needed_keys = ('ratio',)
 
     def get_value(self):
@@ -169,6 +175,7 @@ COLUMNS['ratio'] = Ratio
 class Size(ColumnBase):
     header = {'left': 'Size', 'right': '?'}
     width = 6
+    min_width = 6
     needed_keys = ('size-final',)
 
     def get_value(self):
@@ -187,6 +194,7 @@ COLUMNS['size'] = Size
 class Downloaded(ColumnBase):
     header = {'left': 'Dn', 'right': '?'}
     width = 6
+    min_width = 6
     needed_keys = ('size-downloaded', 'size-final')
 
     def get_value(self):
@@ -205,6 +213,7 @@ COLUMNS['downloaded'] = Downloaded
 class Uploaded(ColumnBase):
     header = {'left': 'Up', 'right': '?'}
     width = 6
+    min_width = 6
     needed_keys = ('size-uploaded', 'size-downloaded')
 
     def get_value(self):
@@ -223,6 +232,7 @@ COLUMNS['uploaded'] = Uploaded
 class BytesAvailable(ColumnBase):
     header = {'left': 'Avail', 'right': '?'}
     width = 7
+    min_width = 7
     needed_keys = ('size-available', 'size-final', 'peers-seeding')
 
     def get_value(self):
@@ -245,6 +255,7 @@ COLUMNS['available'] = BytesAvailable
 class RateDown(ColumnBase):
     header = {'left': 'Dn', 'right': '?/s'}
     width = 6
+    min_width = 6
     needed_keys = ('rate-down',)
 
     def get_value(self):
@@ -263,6 +274,7 @@ COLUMNS['rate-down'] = RateDown
 class RateUp(ColumnBase):
     header = {'left': 'Up', 'right': '?/s'}
     width = 6
+    min_width = 6
     needed_keys = ('rate-up',)
 
     def get_value(self):
@@ -281,6 +293,7 @@ COLUMNS['rate-up'] = RateUp
 class RateLimitDown(ColumnBase):
     header = {'left': 'LmtDn', 'right': '?/s'}
     width = 9
+    min_width = 9
     needed_keys = ('rate-limit-down',)
 
     def get_value(self):
@@ -299,6 +312,7 @@ COLUMNS['rate-limit-down'] = RateLimitDown
 class RateLimitUp(ColumnBase):
     header = {'left': 'LmtUp', 'right': '?/s'}
     width = 9
+    min_width = 9
     needed_keys = ('rate-limit-up',)
 
     def get_value(self):
@@ -317,6 +331,7 @@ COLUMNS['rate-limit-up'] = RateLimitUp
 class EtaComplete(ColumnBase):
     header = {'left': 'ETA'}
     width = 5
+    min_width = 9
     needed_keys = ('timespan-eta',)
 
     def get_value(self):
@@ -331,6 +346,7 @@ COLUMNS['eta'] = EtaComplete
 class TorrentName(ColumnBase):
     header = {'left': 'Name'}
     width = None
+    min_width = 5
     needed_keys = ('name',)
     align = 'left'
     may_have_wide_chars = True
@@ -344,6 +360,7 @@ COLUMNS['name'] = TorrentName
 class Status(ColumnBase):
     header = {'left': 'Status'}
     width = 11
+    min_width = 11
     needed_keys = ('status',)
 
     def get_value(self):
@@ -355,6 +372,7 @@ COLUMNS['status'] = Status
 class Tracker(ColumnBase):
     header = {'left': 'Tracker'}
     width = 10
+    min_width = 5
     needed_keys = ('trackers',)
     align = 'left'
 
@@ -370,6 +388,7 @@ COLUMNS['tracker'] = Tracker
 class Error(ColumnBase):
     header = {'left': 'Error'}
     width = ('weight', 300)
+    min_width = 10
     needed_keys = ('error',)
     align = 'left'
 
@@ -387,6 +406,7 @@ COLUMNS['marked'] = Marked
 
 class TimeBase(ColumnBase):
     width = 10
+    min_width = 10
 
     def get_raw(self):
         return int(self.get_value())

@@ -24,6 +24,7 @@ class TorrentName(ColumnBase):
     header = {'left': 'Torrent'}
     align = 'left'
     width = None
+    min_width = 7
     may_have_wide_chars = True
 
     def get_value(self):
@@ -36,6 +37,7 @@ class Tier(ColumnBase):
     header = {'left': 'Tier'}
     align = 'right'
     width = 4
+    min_width = 4
 
     def get_value(self):
         return self.data['tier']
@@ -47,6 +49,7 @@ class Domain(ColumnBase):
     header = {'left': 'Domain'}
     align = 'left'
     width = None
+    min_width = 5
 
     def get_value(self):
         return self.data['domain']
@@ -58,6 +61,7 @@ class AnnounceURL(ColumnBase):
     header = {'left': 'Announce'}
     align = 'left'
     width = None
+    min_width = 10
 
     def get_value(self):
         return self.data['url-announce']
@@ -69,6 +73,7 @@ class ScrapeURL(ColumnBase):
     header = {'left': 'Scrape'}
     align = 'left'
     width = None
+    min_width = 10
 
     def get_value(self):
         return self.data['url-scrape']
@@ -80,6 +85,7 @@ class State(ColumnBase):
     header = {'left': 'State'}
     align = 'right'
     width = 10
+    min_width = 5
 
     def get_value(self):
         return self.data['state']
@@ -91,6 +97,7 @@ class Error(ColumnBase):
     header = {'left': 'Error'}
     align = 'left'
     width = None
+    min_width = 20
 
     def get_value(self):
         return self.data['error']
@@ -102,6 +109,7 @@ class ErrorAnnounce(ColumnBase):
     header = {'left': 'Announce Error'}
     align = 'left'
     width = None
+    min_width = 10
 
     def get_value(self):
         return self.data['error-announce']
@@ -113,6 +121,7 @@ class ErrorScrape(ColumnBase):
     header = {'left': 'Scrape Error'}
     align = 'left'
     width = None
+    min_width = 10
 
     def get_value(self):
         return self.data['error-scrape']
@@ -124,6 +133,7 @@ class Downloads(ColumnBase):
     header = {'left': 'Downloads'}
     align = 'right'
     width = 9
+    min_width = 5
 
     def get_value(self):
         return self.data['count-downloads']
@@ -138,6 +148,7 @@ class Leeches(ColumnBase):
     header = {'left': 'Leeches'}
     align = 'right'
     width = 7
+    min_width = 5
 
     def get_value(self):
         return self.data['count-leeches']
@@ -152,6 +163,7 @@ class Seeds(ColumnBase):
     header = {'left': 'Seeds'}
     align = 'right'
     width = 5
+    min_width = 5
 
     def get_value(self):
         return self.data['count-seeds']
@@ -166,6 +178,7 @@ class LastAnnounce(ColumnBase):
     header = {'left': 'Last Announce'}
     align = 'right'
     width = 13
+    min_width = 10
 
     def get_value(self):
         return self.data['time-last-announce']
@@ -177,6 +190,7 @@ class NextAnnounce(ColumnBase):
     header = {'left': 'Next Announce'}
     align = 'right'
     width = 13
+    min_width = 10
 
     def get_value(self):
         return self.data['time-next-announce']
@@ -188,6 +202,7 @@ class LastScrape(ColumnBase):
     header = {'left': 'Last Scrape'}
     align = 'right'
     width = 11
+    min_width = 10
 
     def get_value(self):
         return self.data['time-last-scrape']
@@ -199,6 +214,7 @@ class NextScrape(ColumnBase):
     header = {'left': 'Next Scrape'}
     align = 'right'
     width = 11
+    min_width = 10
 
     def get_value(self):
         return self.data['time-next-scrape']

@@ -24,6 +24,7 @@ class Filename(ColumnBase):
     header = {'left': 'Filename'}
     align = 'left'
     width = None
+    min_width = 10
     may_have_wide_chars = True
 
     def get_value(self):
@@ -35,6 +36,7 @@ COLUMNS['name'] = Filename
 class Size(ColumnBase):
     header = {'left': 'Size', 'right': '?'}
     width = 6
+    min_width = 6
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['size-total'])
@@ -52,6 +54,7 @@ COLUMNS['size'] = Size
 class Downloaded(ColumnBase):
     header = {'left': 'Dn', 'right': '?'}
     width = 6
+    min_width = 6
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['size-downloaded'])
@@ -69,6 +72,7 @@ COLUMNS['downloaded'] = Downloaded
 class Progress(ColumnBase):
     header = {'right': '%'}
     width = 4
+    min_width = 4
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['progress'])
@@ -82,6 +86,7 @@ COLUMNS['progress'] = Progress
 class Priority(ColumnBase):
     header = {'left': 'Priority'}
     width = 4
+    min_width = 4
     align = 'left'
 
     def get_value(self):

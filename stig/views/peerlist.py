@@ -24,6 +24,7 @@ class TorrentName(ColumnBase):
     header = {'left': 'Torrent'}
     align = 'left'
     width = None
+    min_width = 7
     may_have_wide_chars = True
 
     def get_value(self):
@@ -36,6 +37,7 @@ class Client(ColumnBase):
     header = {'left': 'Client'}
     align = 'left'
     width = None
+    min_width = 6
 
     def get_value(self):
         return self.data['client']
@@ -47,6 +49,7 @@ class Country(ColumnBase):
     header = {'left': 'Country'}
     align = 'right'
     width = 7
+    min_width = 7
 
     def get_value(self):
         return self.data['country']
@@ -58,6 +61,7 @@ class IPAddress(ColumnBase):
     header = {'left': 'IP'}
     align = 'right'
     width = 15
+    min_width = 15
 
     def get_value(self):
         return self.data['ip']
@@ -69,6 +73,7 @@ class Port(ColumnBase):
     header = {'left': 'Port'}
     align = 'right'
     width = 5
+    min_width = 5
 
     def get_value(self):
         return self.data['port']
@@ -79,6 +84,7 @@ COLUMNS['port'] = Port
 class Progress(ColumnBase):
     header = {'right': '%'}
     width = 4
+    min_width = 4
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['progress'])
@@ -89,6 +95,7 @@ COLUMNS['progress'] = Progress
 class RateDown(ColumnBase):
     header = {'left': 'Dn', 'right': '?/s'}
     width = 6
+    min_width = 6
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['rate-down'])
@@ -106,6 +113,7 @@ COLUMNS['rate-down'] = RateDown
 class RateUp(ColumnBase):
     header = {'left': 'Up', 'right': '?/s'}
     width = 6
+    min_width = 6
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['rate-up'])
@@ -123,6 +131,7 @@ COLUMNS['rate-up'] = RateUp
 class ETA(ColumnBase):
     header = {'left': 'ETA'}
     width = 5
+    min_width = 3
 
     def get_value(self):
         return self.data['eta']
@@ -136,6 +145,7 @@ COLUMNS['eta'] = ETA
 class EstimatedPeerRate(ColumnBase):
     header = {'left': 'Est', 'right': '?/s'}
     width = 7
+    min_width = 7
 
     def get_value(self):
         return _ensure_string_without_unit(self.data['rate-est'])

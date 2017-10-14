@@ -22,6 +22,7 @@ from time import time
 class ColumnBase():
     header = {'left': '', 'right': ''}
     width = None
+    min_width = 1
     align = 'right'
     interfaces = ('cli', 'tui')
     may_have_wide_chars = False
