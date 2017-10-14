@@ -15,7 +15,7 @@ log = make_logger(__name__)
 from ..base import file as base
 from . import _mixin as mixin
 from .. import ExpectedResource
-from ._common import (print_table, TERMSIZE)
+from ._table import (print_table, TERMSIZE)
 
 import os
 
