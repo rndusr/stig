@@ -13,125 +13,189 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from ...utils import strwidth
+
+from types import SimpleNamespace
 from shutil import get_terminal_size
 TERMSIZE = get_terminal_size(fallback=(None, None))
 
 
-def print_table(items, columns_wanted, COLUMN_SPECS):
+def _assemble_line(table, line_index, pretty=True):
+    # Concatenate all cells in a row with delimiters
+    row = table.rows[line_index]
+    line = []
+    for cell in row:
+        if pretty:
+            line.append(cell.get_string())
+        else:
+            line.append(str(cell.get_raw()))
+    return table.delimiter.join(line)
+
+def _assemble_headers(table):
+    # Concatenate all column headers with delimiters
+    # This must be called after shrink_and_expand_to_fit() so we can
+    # grab the final column widths from the first row.
+    headers = []
+    for colname in table.colorder:
+        width = table.colwidths[colname]
+        header_items = table.colspecs[colname].header
+        left  = header_items.get('left', '')
+        right = header_items.get('right', '')
+        space = ' '*(width - len(left) - len(right))
+        header = ''.join((left, space, right))[:width]
+        headers.append(header)
+    return table.delimiter.join(headers)
+
+def _get_header_width(table, colname):
+    header = table.colspecs[colname].header
+    return strwidth(' '.join((header.get('left', ''),
+                              header.get('right', ''))).strip())
+
+def _get_colwidth(table, colindex):
+    # Return width of widest cell in column
+    return max(strwidth(str(row[colindex].get_value()))
+               for row in table.rows)
+
+def _get_min_colwidth(table, colindex):
+    # Return minimum column width according to column specs (column becomes
+    # useless if narrower)
+    return table.rows[0][colindex].min_width
+
+def _column_has_variable_width(table, colname):
+    # Whether column has fixed or variable width
+    return not isinstance(table.colspecs[colname].width, int)
+
+def _column_is_shrinkable(table, colname):
+    # Whether the current width of column is larger than its minimum width
+    return table.colwidths[colname] > table.colspecs[colname].min_width
+
+def _set_colwidth(table, colindex, width):
+    # Set width of all cells in a column
+    colname = table.colorder[colindex]
+    table.colwidths[colname] = width
+    for row in table.rows:
+        row[colindex].width = width
+
+def _get_excess_width(table):
+    # Return width by which table must be narrowed to fit in max_width
+    return strwidth(_assemble_line(table, 0)) - table.max_width
+
+def _remove_column(table, colindex):
+    # Delete column from internal structures
+    del table.colwidths[table.colorder[colindex]]
+    del table.colorder[colindex]
+    for row in table.rows:
+        del row[colindex]
+
+def _shrink_to_widest_value(table):
+    # Reduce width of columns where header and all values are narrower than the
+    # current width
+    for colindex,colname in enumerate(table.colorder):
+        max_value_width = max(_get_header_width(table, colname),
+                              _get_colwidth(table, colindex))
+        _set_colwidth(table, colindex, max_value_width)
+
+def _shrink_variable_width_columns(table):
+    # Reduce width of columns that haven't reached their min_size yet
+    excess = _get_excess_width(table)
+    while excess > 0:
+        candidates = [(colname,table.colwidths[colname])
+                      for colname in table.colorder
+                      if _column_is_shrinkable(table, colname)]
+
+        if len(candidates) >= 2:
+            # Sort by width (first item is widest)
+            candidates_sorted = sorted(candidates, key=lambda col: col[1], reverse=True)
+            widest0_name, widest0_width = candidates_sorted[0]
+            widest1_name, widest1_width = candidates_sorted[1]
+            # Shrink widest column by difference to second widest column
+            # (leaving them at the same width), but not by more than `excess`
+            # characters.
+            shrink_amount = max(1, min(excess, widest0_width - widest1_width))
+        elif len(candidates) >= 1:
+            # Only one column left to shrink
+            widest0_name = candidates[0][0]
+            shrink_amount = 1
+        else:
+            # No shrinkable columns
+            break
+
+        new_width = table.colwidths[widest0_name] - shrink_amount
+        _set_colwidth(table, table.colorder.index(widest0_name), new_width)
+        excess = _get_excess_width(table)
+
+def _shrink_by_removing_columns(table):
+    # Remove columns until table is no longer wider than terminal
+    while _get_excess_width(table) > 0:
+        _remove_column(table, 0)
+
+    # We may have freed up space to give back to columns of variable width
+    freed_width = -_get_excess_width(table)
+    if freed_width > 0:
+        while freed_width > 0:
+            freed_width -= 1
+            # Find non-fixed columns
+            candidates = [(colname,table.colwidths[colname])
+                          for colname in table.colorder
+                          if _column_has_variable_width(table, colname)]
+            candidates_sorted = sorted(candidates, key=lambda col: col[1])
+            colname = candidates_sorted[0][0]
+            new_width = table.colwidths[candidates_sorted[0][0]] + 1
+            _set_colwidth(table, table.colorder.index(colname), new_width)
+
+def _fit_table_into_terminal(table):
+    # Expand all cells in each colum to the width of the widest cell
+    # Keep track of each column width in table namespace
+    for colindex,colname in enumerate(table.colorder):
+        if _column_has_variable_width(table, colname):
+            colwidth = _get_colwidth(table, colindex)
+        else:
+            colwidth = table.colspecs[colname].width
+        _set_colwidth(table, colindex, colwidth)
+
+    _shrink_to_widest_value(table)
+    _shrink_variable_width_columns(table)
+    _shrink_by_removing_columns(table)
+
+def print_table(items, order, column_specs):
     """Print table from a two-dimensional array of column objects
 
-    `COLUMN_SPECS` maps column IDs to ColumnBase classes.  A column ID is any
+    `column_specs` maps column IDs to ColumnBase classes.  A column ID is any
     hashable object, but you probably want strings like 'name', 'id', 'date',
     etc.
 
-    `columns_wanted` is a sequence of column IDs.
+    `order` is a sequence of column IDs.
 
     `items` is a sequence of arbitrary objects that are used to create cell
-    objects by passing them to the classes in `COLUMN_SPECS`.
+    objects by passing them to the classes in `column_specs`.
     """
-
-    # Create two-dimensional list to represent a table.  Each cell must be a
-    # ColumnBase instance (see columns.tlist module).
-    rows  = []
-    for item in items:
-        row = []
-        for i,colname in enumerate(columns_wanted):
-            cell = COLUMN_SPECS[colname](item)
-            cell.index = i
-            row.append(cell)
-        rows.append(row)
-
-    delimiter = '\t' if TERMSIZE.columns is None else '│'
-
     # Whether to print for a human or for a machine to read our output
     pretty_output = all(x is not None for x in (TERMSIZE.columns, TERMSIZE.lines))
 
-    def assemble_line(row):
-        line = []
-        for cell in row:
-            if pretty_output:
-                line.append(cell.get_string())
-            else:
-                line.append(str(cell.get_raw()))
-        return delimiter.join(line)
+    table = SimpleNamespace(colspecs=column_specs,
+                            colorder=order,
+                            colwidths={},  # Will filled when needed
+                            delimiter='\t' if TERMSIZE.columns is None else '│',
+                            max_width=TERMSIZE.columns)
 
-    def assemble_headers():
-        # This must be called after shrink_and_expand_to_fit() so we can
-        # grab the final column widths from the first row.
-        widths = tuple(cell.width for cell in rows[0])
-        headers = []
-        for colname,width in zip(columns_wanted, widths):
-            header_items = COLUMN_SPECS[colname].header
-            left  = header_items.get('left', '')
-            right = header_items.get('right', '')
-            space = ' '*(width - len(left) - len(right))
-            header = ''.join((left, space, right))[:width]
-            headers.append(header)
-        return delimiter.join(headers)
+    # Create two-dimensional list of cells.  Each cell must be a ColumnBase
+    # instance (see stig.views.__init__.py).
+    table.rows = []
+    for item in items:
+        row = []
+        for i,colname in enumerate(table.colorder):
+            row.append(table.colspecs[colname](item))
+        table.rows.append(row)
 
-    def shrink_and_expand_to_fit():
-        log.debug('TTY width is %dx%d', TERMSIZE.columns, TERMSIZE.lines)
-
-        def get_max_colwidth(colindex):
-            # Return width of widest cell in all rows
-            return max(strwidth(row[colindex].get_string())
-                       for row in rows)
-
-        def set_colwidth(colindex, width):
-            # Set width of all cells in a column
-            for row in rows:
-                cell = row[colindex]
-                cell.width = width
-
-        # Expand column widths to make all cell values fit
-        for colindex in range(len(columns_wanted)):
-            colwidth = get_max_colwidth(colindex)
-            set_colwidth(colindex, colwidth)
-
-        # Make sure table isn't wider than the terminal.  All cells in each
-        # column should have identical widths now, so we can use the first/top
-        # cell to check our progress.
-        current_line = assemble_line(rows[0])
-        current_width = strwidth(current_line)
-        while current_width > TERMSIZE.columns:
-            excess = current_width - TERMSIZE.columns
-
-            # List of column indexes sorted by column width
-            widest = sorted(range(len(columns_wanted)),
-                            key=lambda colindex: get_max_colwidth(colindex),
-                            reverse=True)
-
-            # We only need the width of the two widest columns
-            widest0 = get_max_colwidth(widest[0])
-            widest1 = get_max_colwidth(widest[1])
-
-            # Shorten widest column by difference to second widest column
-            # (leaving them at the same width), but not by more than `excess`
-            # characters and at least one character.
-
-            # TODO: This is very slow when listing lots of rows in a small
-            # terminal because the widest column is shrunk by only 1 character
-            # before checking again.
-            shorten_by = max(1, min(excess, widest0 - widest1))
-            log.debug('current_width:%s excess:%s  widest0:%s  widest1:%s  shorten_by:%s',
-                      current_width, excess, widest0, widest1, shorten_by)
-            set_colwidth(widest[0], widest0 - shorten_by)
-            current_line = assemble_line(rows[0])
-            current_width = strwidth(current_line)
-
-    if rows:
-        if not pretty_output:
-            log.debug('Could not detect TTY size - assuming stdout is no TTY')
-            headerstr = None
-        elif TERMSIZE.columns < len(columns_wanted)*3:
-            log.error('Terminal is too narrow for %d columns', len(columns_wanted))
-            return False
+    if len(table.rows) > 0:
+        if pretty_output:
+            _fit_table_into_terminal(table)
+            headerstr = '\033[1;4m' + _assemble_headers(table) + '\033[0m'
         else:
-            shrink_and_expand_to_fit()
-            headerstr = '\033[1;4m' + assemble_headers() + '\033[0m'
+            log.debug('Could not detect TTY size - assuming stdout is no TTY')
 
-        for linenum,row in enumerate(rows):
+        for line_index in range(len(table.rows)):
             # Print column headers after every screen full
-            if headerstr is not None and linenum % (TERMSIZE.lines-1) == 0:
+            if pretty_output and line_index % (TERMSIZE.lines-1) == 0:
                 log.info(headerstr)
-            log.info(assemble_line(row))
+            log.info(_assemble_line(table, line_index, pretty=pretty_output))
+
