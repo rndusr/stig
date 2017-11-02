@@ -87,7 +87,7 @@ class Progress(ColumnBase):
     min_width = 4
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['progress'])
+        return self._from_cache(_ensure_string_without_unit, self.data['progress'])
 
 COLUMNS['progress'] = Progress
 
@@ -98,7 +98,7 @@ class RateDown(ColumnBase):
     min_width = 6
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-down'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -116,7 +116,7 @@ class RateUp(ColumnBase):
     min_width = 6
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-up'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-up'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -148,7 +148,7 @@ class EstimatedPeerRate(ColumnBase):
     min_width = 7
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['rate-est'])
+        return self._from_cache(_ensure_string_without_unit, self.data['rate-est'])
 
     def get_raw(self):
         return int(self.get_value())
