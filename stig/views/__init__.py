@@ -14,7 +14,6 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from ..utils import stralign
 from collections import defaultdict
 from time import time
 
@@ -79,41 +78,6 @@ class ColumnBase():
 
     def get_raw(self):
         return self.get_value()
-
-    def get_string(self):
-        """Return `get_value` as spaced and aligned string
-
-        If the `width` attribute is not set to None, expand or shrink and
-        align the returned string (`align` attribute must be 'left' or
-        'right').
-        """
-        def crop_and_align(string, width, align):
-            if isinstance(width, int):
-                # Cropping and justifying is more expensive when there are wide
-                # characters involved
-                if self.may_have_wide_chars:
-                    string = stralign(string, width, align)
-                else:
-                    err = TypeError("'align' attribute must be 'left' or 'right', not %r}" % align)
-                    string_len = len(string)
-                    if string_len > width:
-                        if align == 'right':
-                            string = string[string_len-width:]
-                        elif align == 'left':
-                            string = string[:width]
-                        else:
-                            raise err
-                    else:
-                        if align == 'right':
-                            string = string.rjust(width)
-                        elif align == 'left':
-                            string = string.ljust(width)
-                        else:
-                            raise err
-            return string
-
-        return self._from_cache(crop_and_align, str(self.get_value()),
-                                self.width, self.align)
 
     def __repr__(self):
         if self.data:

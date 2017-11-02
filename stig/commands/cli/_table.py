@@ -12,12 +12,22 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ...utils import strwidth
+from ...utils import (strwidth, crop_and_align)
 
 from types import SimpleNamespace
 from shutil import get_terminal_size
 TERMSIZE = get_terminal_size(fallback=(None, None))
 
+
+def _get_cell_string(cell):
+    # Return string of single cell correctly cropped/padded and aligned
+    value = cell.get_value()
+    width = cell.width
+    if isinstance(width, int):
+        return crop_and_align(str(value), width, cell.align,
+                              has_wide_chars=cell.may_have_wide_chars)
+    else:
+        return str(value)
 
 def _assemble_line(table, line_index, pretty=True):
     # Concatenate all cells in a row with delimiters
@@ -25,7 +35,7 @@ def _assemble_line(table, line_index, pretty=True):
     line = []
     for cell in row:
         if pretty:
-            line.append(cell.get_string())
+            line.append(_get_cell_string(cell))
         else:
             line.append(str(cell.get_raw()))
     return table.delimiter.join(line)
