@@ -564,23 +564,33 @@ class CommandManager():
         failed, and None if it is async and `block` is False.
         """
         log.debug('Running command chain synchronously: %r', commands)
-        cmdchain = self.split_cmdchain(commands)
-        process = None
-        for process in self._yield_from_cmdchain(cmdchain, **kwargs):
-            if not process.finished:
-                process.wait_sync()
+        try:
+            cmdchain = self.split_cmdchain(commands)
+        except CmdError as e:
+            process = _dummy_process(exception=e)
             self._maybe_run_callbacks(process, on_success, on_error)
-        return self._handle_final_process(process, reraise=not bool(on_error))
+        else:
+            process = None
+            for process in self._yield_from_cmdchain(cmdchain, **kwargs):
+                if not process.finished:
+                    process.wait_sync()
+                self._maybe_run_callbacks(process, on_success, on_error)
+            return self._handle_final_process(process, reraise=not bool(on_error))
 
     async def run_async(self, commands, on_success=None, on_error=None, **kwargs):
         """Same as `run_sync` but for async code"""
         log.debug('Running command chain asynchronously: %r', commands)
-        cmdchain = self.split_cmdchain(commands)
-        process = None
-        for process in self._yield_from_cmdchain(cmdchain, **kwargs):
-            if not process.finished:
-                await process.wait_async()
+        try:
+            cmdchain = self.split_cmdchain(commands)
+        except CmdError as e:
+            process = _dummy_process(exception=e)
             self._maybe_run_callbacks(process, on_success, on_error)
+        else:
+            process = None
+            for process in self._yield_from_cmdchain(cmdchain, **kwargs):
+                if not process.finished:
+                    await process.wait_async()
+                self._maybe_run_callbacks(process, on_success, on_error)
         return self._handle_final_process(process, reraise=not bool(on_error))
 
     def run_task(self, commands, on_success=None, on_error=None, **kwargs):
@@ -656,7 +666,11 @@ class CommandManager():
         [ ['do', 'that'], '&', ['act', 'like this'] ]
         """
         if isinstance(commands, str):
-            args = shlex.split(commands)
+            try:
+                args = shlex.split(commands)
+            except ValueError as e:
+                raise CmdError(str(e))
+
             cmdchain = []
             cmd = []
             while args:
@@ -690,7 +704,7 @@ class CommandManager():
 
         for item in cmdchain:
             self._validate_cmdchain_item(item)
-            yield item
+        return cmdchain
 
     def _validate_cmdchain_item(self, item):
         # Test if item is of a valid type

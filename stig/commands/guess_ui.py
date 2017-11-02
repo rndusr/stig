@@ -31,7 +31,13 @@ def guess_ui(clicmds, cmdmgr, cfg):
     tui_needed = False
     cli_needed = False
     guess = 'cli'
-    for cmdline in cmdmgr.split_cmdchain(clicmds):
+
+    try:
+        cmdlines = cmdmgr.split_cmdchain(clicmds)
+    except CmdError as e:
+        raise UIGuessError('Unable to guess user interface: %s' % e)
+
+    for cmdline in cmdlines:
         if is_cmd_op(cmdline):
             continue
 
