@@ -351,6 +351,23 @@ class _CommandBase():
         return string + '>'
 
 
+def _dummy_process(**kwargs):
+    # We can't create a _CommandBase instance for non-existing commands, and
+    # raising/returning an exception instead of a _CommandBase instance
+    # complicates everything.
+    # This creates a rudimentary process with only the needed attributes
+    # so the caller can report success or failure as if it were a proper
+    # _CommandBase derivative.
+    attrs = {'finished': True, 'success': False, 'exception': None}
+    attrs.update(kwargs)
+    def __repr__(self):
+        kws = ', '.join('%s=%r' % (k,v) for k,v in attrs.items()
+                    if k[0] != '_')
+        return '<{} {}>'.format(type(self).__name__, kws)
+    attrs['__repr__'] = __repr__
+    return type('FakeCommand', (), attrs)()
+
+
 class CommandManager():
     def __init__(self, loop=None, pre_run_hook=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
@@ -592,22 +609,6 @@ class CommandManager():
 
     def _create_process(self, cmdline, **kwargs):
         """Call one command and return its instance or None on error"""
-        # We can't create a _CommandBase instance for non-existing commands,
-        # and raising/returning an exception instead of a _CommandBase
-        # instance complicates everything.
-        # This creates a rudimentary process with only the needed attributes
-        # so the caller can report success or failure as if it were a proper
-        # _CommandBase derivative.
-        def fake_process(**kwargs):
-            attrs = {'finished': True, 'success': False, 'exception': None}
-            attrs.update(kwargs)
-            def __repr__(self):
-                kws = ', '.join('%s=%r' % (k,v) for k,v in attrs.items()
-                                if k[0] != '_')
-                return '<{} {}>'.format(type(self).__name__, kws)
-            attrs['__repr__'] = __repr__
-            return type('FakeCommand', (), attrs)()
-
         if not isinstance(cmdline, list):
             cmdline = list(cmdline)
 
@@ -624,14 +625,14 @@ class CommandManager():
             if self.get_cmdcls(cmdname, interface='ANY') is not None:
                 # Command exists but not in active interface - we ignore it
                 log.debug('Ignoring inactive command: %r', cmdname)
-                process = fake_process(success=None)
+                process = _dummy_process(success=None)
             else:
                 exc = CmdNotFoundError('Unknown command: {}'.format(cmdname))
-                process = fake_process(exception=exc)
+                process = _dummy_process(exception=exc)
         elif cmdcls not in self.active_commands:
             exc = CmdError('{}: No support for {} interface'
                            .format(cmdname, self._active_interface))
-            process = fake_process(exception=exc)
+            process = _dummy_process(exception=exc)
         else:
             process = cmdcls(cmdargs, loop=self.loop, **kwargs)
         return process
