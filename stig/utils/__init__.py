@@ -92,3 +92,33 @@ def stralign(string, width, side='left'):
         else:
             raise TypeError("side argument must be 'left' or 'right', not {!r}".format(side))
     return string
+
+
+def crop_and_align(string, width, align, has_wide_chars=True):
+    """Make `string` exactly `width` spaces long and align it
+
+    If `has_wide_chars` evaluates to True, the more expensive `stralign`
+    function is used, which considers wide characters.
+
+    `align` must be 'left' or 'right'.
+    """
+    if has_wide_chars:
+        string = stralign(string, width, align)
+    else:
+        err = TypeError("'align' attribute must be 'left' or 'right', not %r}" % align)
+        string_len = len(string)
+        if string_len > width:
+            if align == 'right':
+                string = string[string_len-width:]
+            elif align == 'left':
+                string = string[:width]
+            else:
+                raise err
+        else:
+            if align == 'right':
+                string = string.rjust(width)
+            elif align == 'left':
+                string = string.ljust(width)
+            else:
+                raise err
+    return string
