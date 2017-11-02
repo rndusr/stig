@@ -1,6 +1,6 @@
 from stig.client.aiotransmission.rpc import (TransmissionURL,
-                                              CSRF_ERROR_CODE, CSRF_HEADER,
-                                              AUTH_ERROR_CODE)
+                                             CSRF_ERROR_CODE, CSRF_HEADER,
+                                             AUTH_ERROR_CODE)
 from aiohttp import web
 from aiohttp.test_utils import unused_port
 import asyncio
