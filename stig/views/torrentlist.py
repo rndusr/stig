@@ -32,6 +32,10 @@ class Path(ColumnBase):
     def _shorten_path(path, width):
         if width is None:
             return path
+        elif width == 1:
+            return '…'
+        elif width <= 0:
+            return ''
 
         # Remove characters from the end of the most toplevel directory until
         # there's only one left. Then do the same with the next level.
