@@ -45,12 +45,12 @@ class ColumnBase():
 
             # Remove any cached items that haven't been used recently
             now = time()
-            if now-ColumnBase._last_cache_prune > 30:
+            if now-ColumnBase._last_cache_prune > 60:
                 ColumnBase._last_cache_prune = now
 
                 prune_counter = 0
                 for cid,citem in tuple(self._cache.items()):
-                    if now-citem['last_hit'] > 60:
+                    if now-citem['last_hit'] > 600:
                         del self._cache[cid]
                         prune_counter += 1
 
