@@ -113,11 +113,11 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
 
 
     def create_poller(self, *args, interval=None, loop=None, **kwargs):
-        """Create, start and return new RequestPoller instance
+        """Create, start and return custom RequestPoller instance
 
         All arguments are used to create the poller, except for `interval` and
         `loop`, which are ignored and replaced with this object's `interval`
-        and `loop` attributes.
+        and `loop` attributes so all pollers have the same interval.
 
         The RequestPoller instance is treated like all other pollers, i.e. it
         is polled when `poll` is called, its interval is changed when
