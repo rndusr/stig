@@ -119,11 +119,11 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
         srvapi.rpc.on('error', self._handle_error)
 
     def _handle_connecting(self, url):
-        self._text.set_text('Connecting to {}:{}'.format(url.hostname, url.port))
+        self._text.set_text('Connecting to {}:{}'.format(url.host, url.port))
         self._attrmap.set_attr_map({None: 'topbar.host.connecting'})
 
     def _handle_connected(self, url):
-        self._text.set_text('{}:{} Transmission {}'.format(url.hostname, url.port, srvapi.rpc.version))
+        self._text.set_text('{}:{} Transmission {}'.format(url.host, url.port, srvapi.rpc.version))
         self._attrmap.set_attr_map({None: 'topbar.host.connected'})
 
     def _handle_disconnected(self, url):

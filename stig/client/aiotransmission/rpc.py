@@ -24,6 +24,7 @@ import re
 import warnings
 
 from ..errors import (URLParserError, ConnectionError, RPCError, AuthError, ClientError)
+from ..utils import URL
 
 
 AUTH_ERROR_CODE = 401
@@ -32,81 +33,18 @@ CSRF_HEADER = 'X-Transmission-Session-Id'
 TIMEOUT = 10
 
 
-class TransmissionURL():
-    _DEFAULT = urlsplit('http://localhost:9091/transmission/rpc')
-    _ATTRS = ('scheme', 'netloc', 'path', 'query', 'fragment', 'username',
-              'password', 'hostname', 'port')
+class TransmissionURL(URL):
+    DEFAULT = URL('http://localhost:9091/transmission/rpc')
 
-    _SCHEME_REGEX = re.compile('^\w+://')
+    def __new__(cls, url=str(DEFAULT)):
+        obj = super().__new__(cls, url)
 
-    def __init__(self, url='http://localhost:9091/transmission/rpc'):
-        url = str(url)
-        # Insert default scheme before parsing the URL. Otherwise, urlsplit
-        # is confused.
-        if not self._SCHEME_REGEX.match(url):
-            url = self._DEFAULT.scheme + '://' + url
+        # Fill in defaults
+        for attr in ('scheme', 'host', 'port', 'path'):
+            if getattr(obj, attr) is None:
+                setattr(obj, attr, getattr(cls.DEFAULT, attr))
 
-        # urlsplit doesn't seem to raise meaningful errors,
-        # e.g. 'localhost:123:456' raises:
-        # ValueError: invalid literal for int() with base 10: '123:456'
-        try:
-            parsed_url = urlsplit(url, allow_fragments=False)
-            urldict = {}
-            for attr in self._ATTRS:
-                urldict[attr] = getattr(parsed_url, attr)
-        except Exception:
-            raise URLParserError(url)
-
-        if urldict['username'] is not None and urldict['password'] is None:
-            raise URLParserError('Missing password: %s' % url)
-
-        # Some more defaults
-        if urldict['port'] is None:
-            urldict['port'] = self._DEFAULT.port
-        if urldict['path'] in ('/', ''):
-            urldict['path'] = self._DEFAULT.path
-        self.url = urldict
-
-    @property
-    def has_auth(self):
-        return bool(self.url['username'] and self.url['password'])
-
-    def str(self, path=False, scheme=False, port=False, password=False):
-        urlfmt = ''
-        if self.url['username'] is not None:
-            urlfmt += '{username}'
-            if password and self.url['password'] is not None:
-                urlfmt += ':{password}'
-            urlfmt += '@'
-        urlfmt += '{hostname}'
-        if scheme:
-            urlfmt = '{scheme}://' + urlfmt
-        if port:
-            urlfmt = urlfmt + ':{port}'
-        if path:
-            urlfmt = urlfmt + '{path}'
-        return urlfmt.format(**self.url)
-
-    def __repr__(self):
-        return self.str(path=True, scheme=True, port=True, password=True)
-
-    def __str__(self):
-        scheme = self.url['scheme'] != self._DEFAULT.scheme
-        path   = self.url['path']   != self._DEFAULT.path
-        port   = self.url['port']   != self._DEFAULT.port
-        return self.str(path=path, scheme=scheme, port=port, password=False)
-
-    def __getattr__(self, attr):
-        try:
-            return self.url[attr]
-        except KeyError:
-            raise AttributeError(attr)
-
-    def __eq__(self, other):
-        return str(self) == str(other)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
+        return obj
 
 
 class TransmissionRPC():
@@ -329,7 +267,7 @@ class TransmissionRPC():
     async def __post(self, data):
         with aiohttp.Timeout(self.timeout, loop=self.loop):
             try:
-                response = await self.__session.post(repr(self.__url), data=data, headers=self.__headers)
+                response = await self.__session.post(str(self.__url), data=data, headers=self.__headers)
             except aiohttp.ClientError as e:
                 log.debug('Caught during POST request: %r', e)
                 raise ConnectionError(str(self.url))

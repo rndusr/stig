@@ -16,7 +16,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
     async def setUp(self):
         self.daemon = rsrc.FakeTransmissionDaemon(loop=self.loop)
         self.daemon.response = rsrc.SESSION_GET_RESPONSE   # Default response
-        self.url = str(self.daemon.url)
+        self.url = self.daemon.url
         await self.daemon.start()
         self.client = TransmissionRPC(self.url, loop=self.loop)
 
@@ -228,7 +228,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         # error cases like 404.
         self.daemon.response = '<html><body>Fake Web Interface</body></html>'
 
-        wrong_path_url = '{}/wrong_path'.format(self.url, self.client.url.path)
+        wrong_path_url = TransmissionURL('{}/wrong_path'.format(self.url, self.client.url.path))
         with self.assertRaises(RPCError) as cm:
             await self.client.connect(wrong_path_url)
         self.assertIn('malformed JSON', str(cm.exception))

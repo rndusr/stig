@@ -76,39 +76,111 @@ class LazyDict(dict):
         return value
 
 
-from urllib.parse import (urlsplit, urlunsplit)
-class URL(str):
-    """Provide the same attributes as `urllib.parse.urlsplit` plus 'domain'"""
-    def __init__(self, url):
+from urllib.parse import urlsplit
+from .errors import URLParserError
+class URL():
+    """Wrapper around `urllib.parse.urlsplit`"""
+
+    @staticmethod
+    def _parse_url(url_string):
         # If no scheme is given, urlsplit() thinks the whole string is the path
-        if '://' not in url:
-            url = 'http://' + url
-        self._split_url = split_url = urlsplit(url)
+        if '://' not in str(url_string):
+            url_string = 'http://' + str(url_string)
 
-        # Find domain name
-        if split_url.hostname.count('.') <= 1:
-            self.__domain = split_url.hostname
-        else:
-            parts = split_url.hostname.split('.')
-            self.__domain = '.'.join(parts[-2:])
+        # urlsplit() can raise all kinds of errors, and some of them only occur
+        # when accessing its attributes, e.g. when port is not a number
+        try:
+            url = urlsplit(url_string)
+            try:
+                url.port
+            except ValueError:
+                raise ValueError('Port is not an integer')
+            url_dict = {
+                'scheme': url.scheme, 'host': url.hostname, 'port': url.port, 'path': url.path,
+                'user': url.username, 'password': url.password,
+            }
+        except Exception as e:
+            raise URLParserError('%r: %s' % (url_string, e))
 
-    def __getattr__(self, name):
-        if name == 'domain':
-            return self.__domain
-        else:
-            return getattr(self._split_url, name)
+        # Undefined parts should be None
+        for key in url_dict:
+            if url_dict[key] == '':
+                url_dict[key] = None
+
+        return url_dict
+
+    _obj_cache = {}
+    def __new__(cls, url):
+        if isinstance(url, cls):
+            return url
+
+        cache_id = url
+        cache = cls._obj_cache
+        url_dict = cache.get(cache_id)
+        if url_dict is None:
+            url_dict = cache[cache_id] = cls._parse_url(url)
+
+        obj = super().__new__(cls)
+        for attr in ('scheme', 'host', 'port', 'path', 'user', 'password'):
+            setattr(obj, attr, url_dict[attr])
+        return obj
+
+    @property
+    def has_auth(self):
+        """Whether user and password properties are set"""
+        return self.user is not None and self.password is not None
+
+    @property
+    def domain(self):
+        """TLD Domain"""
+        if not hasattr(self, '_domain_cached'):
+            host = self.host
+            if not host:
+                self._domain_cached = None
+            else:
+                if host.count('.') <= 1:
+                    self._domain_cached = host
+                else:
+                    parts = host.rsplit('.', maxsplit=2)
+                    self._domain_cached = '.'.join(parts[-2:])
+        return self._domain_cached
 
     def __str__(self):
-        return urlunsplit(self._split_url)
+        if not hasattr(self, '_cached_string'):
+            parts = []
+            if self.scheme:
+                parts.append('%s://' % self.scheme)
+            if self.user:
+                parts.append('%s' % self.user)
+                if self.password:
+                    parts.append(':%s' % self.password)
+                parts.append('@')
+            if self.host:
+                parts.append(self.host)
+            if self.port:
+                parts.append(':%s' % self.port)
+            if self.path:
+                parts.append('%s' % self.path)
+            self._cached_string = ''.join(parts)
+        return self._cached_string
 
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return self._split_url == other._split_url
-        else:
-            return NotImplemented
-
-    def __hash__(self):
-        return hash(self._split_url)
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if name[0] != '_':
+            # Clear caches
+            if hasattr(self, '_cached_string'):
+                del self._cached_string
+            if name == 'host' and hasattr(self, '_domain_cached'):
+                del self._domain_cached
 
     def __repr__(self):
-        return '<URL %s>' % self
+        return '<%s %s>' % (type(self).__name__, str(self))
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __ne__(self, other):
+        return str(self) != str(other)

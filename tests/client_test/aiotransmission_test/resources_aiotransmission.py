@@ -159,7 +159,7 @@ class FakeTransmissionDaemon:
     async def start(self):
         self.handler = self.app.make_handler()
         self.server = await self.loop.create_server(
-            self.handler, self.url.hostname, self.url.port)
+            self.handler, self.url.host, self.url.port)
 
     async def stop(self):
         self.server.close()
