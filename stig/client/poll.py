@@ -17,7 +17,7 @@ import functools
 import blinker
 
 from . import errors
-from .utils import (SleepUneasy, PerfectInterval)
+from .utils import SleepUneasy
 
 
 def _func_call_str(func, *posargs, **kwargs):
@@ -78,8 +78,6 @@ class RequestPoller():
     async def _poll_loop(self):
         self._prev_error = None
         while True:
-            pinterval = PerfectInterval(self.loop)
-
             self._poll_task = self.loop.create_task(self._do_poll())
             try:
                 await self._poll_task
@@ -95,7 +93,7 @@ class RequestPoller():
                 self._poll_task = None
                 self._skip_ongoing_request = False
 
-            await self._sleep.sleep(pinterval(self._interval))
+            await self._sleep.sleep(self._interval)
 
     async def _do_poll(self):
         """Send request and send response or error

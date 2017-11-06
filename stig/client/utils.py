@@ -9,34 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-
-# Only needed until asyncio gets a timeout again.
-# https://github.com/python/asyncio/commit/e39449787dedd839e31946915fa933a08955b667
-from aiohttp import Timeout as AsyncIOTimeout
-import asyncio
-class SleepUneasy():
-    """Asynchronous sleep() that can be aborted"""
-
-    def __init__(self, loop):
-        self.loop = loop
-        self._interrupt = asyncio.Event(loop=self.loop)
-
-    async def sleep(self, seconds=None):
-        """Sleep for `seconds` or until `interrupt` is called"""
-        self._interrupt.clear()
-        try:
-            with AsyncIOTimeout(seconds, loop=self.loop):
-                await self._interrupt.wait()
-        except asyncio.TimeoutError:
-            pass  # Interval passed without interrupt
-        finally:
-            self._interrupt.clear()
-
-    def interrupt(self):
-        """Stop sleeping"""
-        self._interrupt.set()
-
-
 class PerfectInterval():
     """Remove processing time from intervals"""
 
@@ -48,6 +20,36 @@ class PerfectInterval():
         stop_at = int(now) + seconds
         diff = stop_at - now
         return diff
+
+
+# Borrow Timeout class from aiohttp until asyncio this is solved:
+# https://github.com/python/asyncio/issues/392
+from aiohttp import Timeout as AsyncIOTimeout
+import asyncio
+class SleepUneasy():
+    """Asynchronous sleep() that can be aborted"""
+
+    def __init__(self, loop):
+        self.loop = loop
+        self._interrupt = asyncio.Event(loop=self.loop)
+        self._perfint = PerfectInterval(self.loop)
+
+    async def sleep(self, seconds):
+        """Sleep for `seconds` or until `interrupt` is called"""
+        self._interrupt.clear()
+        # Remove processing time from seconds
+        seconds = self._perfint(seconds)
+        try:
+            with AsyncIOTimeout(seconds, loop=self.loop):
+                await self._interrupt.wait()
+        except asyncio.TimeoutError:
+            pass  # Interval passed without interrupt
+        finally:
+            self._interrupt.clear()
+
+    def interrupt(self):
+        """Stop sleeping"""
+        self._interrupt.set()
 
 
 from types import SimpleNamespace
