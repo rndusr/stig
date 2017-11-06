@@ -66,6 +66,30 @@ class Response(SimpleNamespace):
         super().__init__(success=bool(success), msgs=tuple(msgs), **kwargs)
 
 
+def lazy_property(after_creation=None):
+    """Property that replaces itself with the requested object when accessed
+
+    `after_creation` is called with the instance of the property.
+    """
+    # https://stackoverflow.com/a/6849299
+    class _lazy_property():
+        def __init__(self, fget):
+            self.fget = fget
+            self.func_name = fget.__name__
+            self.after_creation = after_creation
+
+        def __get__(self, obj, cls):
+            if obj is None:
+                return None
+            value = self.fget(obj)
+            setattr(obj, self.func_name, value)
+            if self.after_creation is not None:
+                self.after_creation(obj)
+            return value
+
+    return _lazy_property
+
+
 class LazyDict(dict):
     """Dictionary with callables as values that return the actual value on demand"""
     def __getitem__(self, key):

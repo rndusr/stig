@@ -25,24 +25,7 @@ from .aiotransmission.api_torrent import TorrentAPI
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
 from .errors import *
-
-
-# https://stackoverflow.com/a/6849299
-class _lazy_property():
-    """Property that replaces itself with the requested object"""
-
-    def __init__(self, fget):
-        self.fget = fget
-        self.func_name = fget.__name__
-
-    def __get__(self, obj, cls):
-        if obj is None:
-            return None
-        value = self.fget(obj)
-        setattr(obj, self.func_name, value)
-        setattr(obj, self.func_name + '_created', True)
-        obj.manage_pollers_now()
-        return value
+from .utils import lazy_property
 
 
 class API(convert.bandwidth_mixin, convert.size_mixin):
@@ -98,31 +81,31 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
         """Whether property `prop` was created"""
         return hasattr(self, prop+'_created')
 
-    @_lazy_property
+    @lazy_property(after_creation=lambda self: setattr(self, 'rpc_created', True))
     def rpc(self):
         """TransmissionRPC singleton"""
         log.debug('Creating RPC singleton')
         return TransmissionRPC(self._url, loop=self.loop)
 
-    @_lazy_property
+    @lazy_property(after_creation=lambda self: setattr(self, 'torrent_created', True))
     def torrent(self):
         """TorrentAPI singleton"""
         log.debug('Creating TorrentAPI singleton')
         return TorrentAPI(self.rpc)
 
-    @_lazy_property
+    @lazy_property(after_creation=lambda self: setattr(self, 'status_created', True))
     def status(self):
         """StatusAPI singleton"""
         log.debug('Creating StatusAPI singleton')
         return StatusAPI(self, interval=self._interval, autoconnect=True)
 
-    @_lazy_property
+    @lazy_property(after_creation=lambda self: setattr(self, 'settings_created', True))
     def settings(self):
         """SettingsAPI singleton"""
         log.debug('Creating SettingsAPI singleton')
         return SettingsAPI(self, interval=self._interval, autoconnect=True)
 
-    @_lazy_property
+    @lazy_property(after_creation=lambda self: setattr(self, 'treqpool_created', True))
     def treqpool(self):
         """TorrentRequestPool singleton"""
         log.debug('Creating TorrentRequestPool singleton')
