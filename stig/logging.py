@@ -44,7 +44,7 @@ def setup(debugmods, filepath=None):
         """Use different formatter per level"""
         datefmt = '%H:%M:%S'
         formatters = {
-            logging.DEBUG: logging.Formatter('%(asctime)s: [%(name)s] %(message)s', datefmt=datefmt),
+            logging.DEBUG: logging.Formatter('%(asctime)s.%(msecs)03d: [%(name)s] %(message)s', datefmt=datefmt),
         }
         default_fmtr = logging.Formatter('%(message)s', datefmt=datefmt)
 
