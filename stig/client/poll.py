@@ -21,7 +21,9 @@ from .utils import SleepUneasy
 
 
 def _func_call_str(func, *posargs, **kwargs):
-    if hasattr(func, '__qualname__'):
+    if func is None:
+        return '<None>'
+    elif hasattr(func, '__qualname__'):
         name = func.__qualname__
     elif hasattr(func, '__name__'):
         name = func.__name__
