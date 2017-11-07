@@ -59,17 +59,19 @@ class RequestPoller():
         self._poll_loop_task = None
         self._sleep = SleepUneasy(loop=loop)
         self._skip_ongoing_request = False
+        self._debug_info = {'request': 'No request specified yet',
+                            'update_cbs': [], 'error_cbs': []}
         self.set_request(request, *args, **kwargs)
 
     async def start(self):
         """Start polling"""
         if self.running:
-            log.debug('Already polling: %s', self._request_str)
+            log.debug('Already polling: %s', self._debug_info['request'])
         else:
-            log.debug('Starting polling: %s', self._request_str)
+            log.debug('Starting polling: %s', self._debug_info['request'])
             self._poll_loop_task = self.loop.create_task(self._poll_loop())
             def reraise(task):
-                log.debug('Polling loop is finished: %s', self._request_str)
+                log.debug('Polling loop is finished: %s', self._debug_info['request'])
                 # Ignore if _poll_loop() was cancelled, raise all other exceptions
                 try:
                     task.result()
@@ -85,12 +87,12 @@ class RequestPoller():
                 await self._poll_task
             except asyncio.CancelledError:
                 if self._skip_ongoing_request:
-                    log.debug('Skipping polling result once: %s', self._request_str)
+                    log.debug('Skipping polling result once: %s', self._debug_info['request'])
                     continue  # Skip the sleep() at the end of the loop
                 else:
                     raise
             else:
-                log.debug('Finished polling gracefully: %s', self._request_str)
+                log.debug('Finished polling gracefully: %s', self._debug_info['request'])
             finally:
                 self._poll_task = None
                 self._skip_ongoing_request = False
@@ -107,9 +109,9 @@ class RequestPoller():
         and, except for `ConnectionError`, `stop` is called.
         """
         if self._request is None:
-            log.debug('Request is set to None - not requesting anything')
+            log.debug('No request: %s', self._debug_info)
         else:
-            log.debug('Polling: %s', self._request_str)
+            log.debug('Polling: %s', self._debug_info['request'])
             try:
                 response = await self._request()
             except asyncio.CancelledError:
@@ -123,10 +125,10 @@ class RequestPoller():
 
     def _run_callbacks(self, response=None, error=None):
         if self._skip_ongoing_request:
-            log.debug('Not running callbacks for: %s', self._request_str)
+            log.debug('Not running callbacks: %s', self)
             self._skip_ongoing_request = False
         else:
-            log.debug('Running callbacks for: %s', self._request_str)
+            log.debug('Running callbacks: %s', self)
             self._on_response.send(response)
             # Ignore duplicate errors
             if error is not None and str(self._prev_error) != str(error):
@@ -140,16 +142,16 @@ class RequestPoller():
     def skip_ongoing_request(self):
         """Stop a currently ongoing request; do nothing if there is no ongoing request"""
         if self._poll_task is not None:
-            log.debug('Skipping ongoing request: %s', self._request_str)
+            log.debug('Skipping ongoing request: %s', self._debug_info['request'])
             self._skip_ongoing_request = True
             self._poll_task.cancel()
 
     async def stop(self):
         """Stop polling"""
         if not self.running:
-            log.debug('Already stopped polling: %s', self._request_str)
+            log.debug('Already stopped polling: %s', self._debug_info['request'])
         else:
-            log.debug('Stopping polling %s', self._request_str)
+            log.debug('Stopping polling %s', self._debug_info['request'])
             self._poll_loop_task.cancel()
             try:
                 await asyncio.wait_for(self._poll_loop_task, timeout=0, loop=self.loop)
@@ -161,7 +163,7 @@ class RequestPoller():
 
     def __del__(self):
         if self._poll_loop_task is not None:
-            raise RuntimeError('You forgot to call stop() on {!r}'.format(self))
+            raise RuntimeError('You forgot to call stop() on %r' % self)
 
     def poll(self):
         """Poll immediately instead of waiting for next interval
@@ -185,8 +187,8 @@ class RequestPoller():
         Any positional or keyword arguments are passed to `request` at each
         call.
         """
-        self._request_str = _func_call_str(request, *args, **kwargs)
-        log.debug('Setting new request: %s', self._request_str)
+        self._debug_info['request'] = _func_call_str(request, *args, **kwargs)
+        log.debug('Setting new request: %s', self)
         if args or kwargs:
             self._request = functools.partial(request, *args, **kwargs)
         else:
@@ -211,12 +213,16 @@ class RequestPoller():
         If the request raises an exception, 'response' callbacks are called
         with `None` and 'error' callbacks are called with the exception.
         """
-        log.debug('Registering %r to receive %s responses', _func_call_str(callback), self._request_str)
+        self._debug_info['update_cbs'].append(_func_call_str(callback))
+        log.debug('Registering %r to receive %s responses',
+                  self._debug_info['update_cbs'][-1], self._debug_info['request'])
         self._on_response.connect(callback, weak=autoremove)
 
     def on_error(self, callback, autoremove=True):
         """Register `callback` to receive request exceptions (see `on_response`)"""
-        log.debug('Registering %r to receive %s errors', _func_call_str(callback), self._request_str)
+        self._debug_info['error_cbs'].append(_func_call_str(callback))
+        log.debug('Registering %r to receive %s errors',
+                  self._debug_info['error_cbs'][-1], self._debug_info['request'])
         self._on_error.connect(callback, weak=autoremove)
 
     @property
@@ -237,4 +243,6 @@ class RequestPoller():
             self.poll()
 
     def __repr__(self):
-        return '<{} {}>'.format(type(self).__name__, self._request_str)
+        return '<%s %s, callbacks=%s, error_callbacks=%s>' % (
+            type(self).__name__, self._debug_info['request'],
+            self._debug_info['update_cbs'], self._debug_info['error_cbs'])
