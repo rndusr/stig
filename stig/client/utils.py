@@ -9,17 +9,25 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+
 class PerfectInterval():
     """Remove processing time from intervals"""
 
     def __init__(self, loop):
         self._loop = loop
+        self._last_timestamp = 0
 
     def __call__(self, seconds):
         now = self._loop.time()
-        stop_at = int(now) + seconds
-        diff = stop_at - now
-        return diff
+        if self._last_timestamp <= 0:
+            self._last_timestamp = int(now)
+            return seconds
+        else:
+            expected = self._last_timestamp + seconds
+            diff = now - expected
+            interval = seconds - diff
+            self._last_timestamp += seconds
+            return interval
 
 
 # Borrow Timeout class from aiohttp until asyncio this is solved:
