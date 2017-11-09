@@ -213,9 +213,9 @@ class Filter():
         """Yield matching objects or `key` of each matching object"""
         invert = self._invert ^ bool(invert)  # xor
         wanted = self._filter_func
-        for i in objs:
-            if wanted(i) ^ invert:
-                yield i if key is None else i[key]
+        for obj in objs:
+            if wanted(obj) ^ invert:
+                yield obj if key is None else obj[key]
 
     def match(self, obj):
         """Return True if `obj` matches, False otherwise"""
