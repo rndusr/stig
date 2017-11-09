@@ -13,7 +13,7 @@ from . import (SortSpecBase, SorterBase)
 
 class _SortSpec(SortSpecBase):
     def __init__(self, *args, description='', **kwargs):
-        description = 'Sort tracker by %s' % description
+        description = 'Sort trackers by %s' % description
         super().__init__(*args, description=description, **kwargs)
 
 
