@@ -27,31 +27,57 @@ class make_request():
 
 
 class user_confirmation():
+    aioloop = ExpectedResource
+
     ANSWERS = {'y': True, 'n': False,
                'Y': True, 'N': False}
-    def ask_yes_no(self, question):
-        """Ask user a yes/no question and return True/False"""
 
-        def getch():
-            import sys, tty, termios
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
-            try:
-                tty.setraw(sys.stdin.fileno())
-                ch = sys.stdin.read(1)
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-            return ch
+    async def ask_yes_no(self, question, yes=None, no=None, after=None):
+        """Ask user a yes/no question
 
+        The `yes` and `no` arguments are callbacks (or None) that are called
+        depending on the user's answer.
+
+        Callables may be normal functions, coroutine functions or coroutines.
+        """
+        import sys, tty, termios
+        async def aiogetch(loop):
+            # Disable printing of typed characters
+            old_settings = termios.tcgetattr(sys.stdin.fileno())
+            tty.setcbreak(sys.stdin.fileno())
+
+            # Read exactly one character
+            key = await loop.run_in_executor(None, sys.stdin.read, 1)
+
+            # Restore terminal settings and remove question
+            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
+            print('\r\033[2K', end='', flush=True)
+
+            return key
+
+        # Get an answer from user
         print(question, end=' [y|n] ', flush=True)
         answer = None
-        while answer not in self.ANSWERS:
-            answer = getch()
+        while answer is None:
+            key = await aiogetch(self.aioloop)
+            answer = self.ANSWERS.get(key, None)
 
-        # Clear line
-        print('\r\033[2K', end='', flush=True)
+        # Run yes, no and after callbacks
+        import asyncio
+        async def run_func_or_coro(func_or_coro):
+            if asyncio.iscoroutinefunction(func_or_coro):
+                await func_or_coro()
+            elif asyncio.iscoroutine(func_or_coro):
+                await func_or_coro
+            elif func_or_coro is not None:
+                func_or_coro()
 
-        return self.ANSWERS[answer]
+        if answer:
+            await run_func_or_coro(yes)
+        else:
+            await run_func_or_coro(no)
+        await run_func_or_coro(after)
+        return answer
 
 
 class select_torrents():

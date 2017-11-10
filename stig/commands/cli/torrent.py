@@ -109,8 +109,16 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
-                        mixin.make_request, mixin.select_torrents):
+                        mixin.make_request, mixin.select_torrents, mixin.user_confirmation):
     provides = {'cli'}
+    cmdmgr = ExpectedResource
+
+    async def show_list_of_hits(self, tfilter):
+        cmd = 'ls --sort name %s' % tfilter
+        await self.cmdmgr.run_async(cmd)
+
+    def remove_list_of_hits(self):
+        pass
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,

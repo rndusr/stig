@@ -32,6 +32,54 @@ class make_request():
         return response
 
 
+class user_confirmation():
+    tui     = ExpectedResource
+    aioloop = ExpectedResource
+
+    ANSWERS = {'y': True, 'n': False,
+               'Y': True, 'N': False}
+
+    async def ask_yes_no(self, question, yes=None, no=None, after=None):
+        """Ask user a yes/no question
+
+        The `yes` and `no` arguments are callbacks (or None) that are called
+        depending on the user's answer.
+
+        Callables may be normal functions, coroutine functions or coroutines.
+        """
+        tui = self.tui
+
+        import asyncio
+        def run_func_or_coro(func_or_coro):
+            if asyncio.iscoroutinefunction(func_or_coro):
+                self.aioloop.create_task(func_or_coro())
+            elif asyncio.iscoroutine(func_or_coro):
+                self.aioloop.create_task(func_or_coro)
+            elif func_or_coro is not None:
+                func_or_coro()
+
+        class YesNoEditWidget(tui.urwid.Edit):
+            def keypress(slf, size, key):
+                answer = self.ANSWERS.get(key, None)
+                if answer is not None:
+                    tui.widgets.remove('yesnoprompt')
+                    tui.widgets.focus_name = focus_name
+                    if answer:
+                        run_func_or_coro(yes)
+                    else:
+                        run_func_or_coro(no)
+                    run_func_or_coro(after)
+                return None
+
+        # Remember focused widget
+        focus_name = tui.widgets.focus_name
+
+        widget = tui.urwid.AttrMap(YesNoEditWidget(question + ' [y|n] '), 'prompt')
+        pos = tui.widgets.get_position('main') + 1
+        tui.widgets.add(widget=widget, name='yesnoprompt', removable=True,
+                        options='pack', position=pos)
+
+
 class select_torrents():
     tui = ExpectedResource
 

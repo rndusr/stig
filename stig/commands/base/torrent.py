@@ -194,6 +194,9 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
           'description': 'Delete any downloaded files' },
     )
     srvapi = ExpectedResource
+    cfg = ExpectedResource
+
+    CONFIRMATION_TAB_TITLE = "Removal Confirmation"
 
     async def run(self, TORRENT_FILTER, delete_files):
         try:
@@ -204,10 +207,21 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
             log.error(e)
             return False
         else:
-            response = await self.make_request(
-                self.srvapi.torrent.remove(tfilter, delete=delete_files),
-                polling_frenzy=True)
-            return response.success
+            async def do_remove(tfilter=tfilter, delete_files=delete_files):
+                response = await self.make_request(
+                    self.srvapi.torrent.remove(tfilter, delete=delete_files),
+                    polling_frenzy=True)
+                return response.success
+
+            response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
+            hits = len(response.torrents)
+            if hits > self.cfg['remove.max-hits']:
+                await self.show_list_of_hits(tfilter)
+                question = 'Are you sure you want to remove %d torrents?' % hits
+                return await self.ask_yes_no(question, yes=do_remove,
+                                             after=self.remove_list_of_hits)
+            else:
+                return await do_remove()
 
 
 # Argument definitions that are shared between commands

@@ -88,9 +88,18 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
-                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
+                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents,
+                        mixin.user_confirmation):
     provides = {'tui'}
+    cmdmgr = ExpectedResource
 
+    async def show_list_of_hits(self, tfilter):
+        cmd = 'tab --title %r ls --sort name %s' % (self.CONFIRMATION_TAB_TITLE, tfilter)
+        await self.cmdmgr.run_async(cmd)
+
+    async def remove_list_of_hits(self):
+        cmd = 'tab --close %r --focus left' % self.CONFIRMATION_TAB_TITLE
+        await self.cmdmgr.run_async(cmd)
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
