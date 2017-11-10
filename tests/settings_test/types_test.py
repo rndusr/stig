@@ -230,6 +230,15 @@ class TestNumberValue(unittest.TestCase):
         self.assertEqual(val.string(), '1000')
         self.assertEqual(val.prefix, 'binary')
 
+    def test_comparison_with_normal_floats(self):
+        i = IntegerValue(name='foo', default=10)
+        self.assertTrue(100 > i)
+        self.assertTrue(100 >= i)
+        self.assertTrue(10 >= i)
+        self.assertTrue(i < 100)
+        self.assertTrue(i <= 100)
+        self.assertTrue(i <= 10)
+
 
 class TestIntegerValue(unittest.TestCase):
     def test_valid_values(self):

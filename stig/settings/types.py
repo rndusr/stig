@@ -190,6 +190,38 @@ class ValueBase():
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __gt__(self, other):
+        if isinstance(other, type(self)):
+            return self.value > other.value
+        try:
+            return self.value > other
+        except TypeError:
+            return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, type(self)):
+            return self.value < other.value
+        try:
+            return self.value < other
+        except TypeError:
+            return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, type(self)):
+            return self.value >= other.value
+        try:
+            return self.value >= other
+        except TypeError:
+            return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, type(self)):
+            return self.value <= other.value
+        try:
+            return self.value <= other
+        except TypeError:
+            return NotImplemented
+
     def on_change(self, callback, autoremove=True):
         """Pass this object to `callback` every time its value changes
 
