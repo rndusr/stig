@@ -26,6 +26,34 @@ class make_request():
         return response
 
 
+class user_confirmation():
+    ANSWERS = {'y': True, 'n': False,
+               'Y': True, 'N': False}
+    def ask_yes_no(self, question):
+        """Ask user a yes/no question and return True/False"""
+
+        def getch():
+            import sys, tty, termios
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.setraw(sys.stdin.fileno())
+                ch = sys.stdin.read(1)
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            return ch
+
+        print(question, end=' [y|n] ', flush=True)
+        answer = None
+        while answer not in self.ANSWERS:
+            answer = getch()
+
+        # Clear line
+        print('\r\033[2K', end='', flush=True)
+
+        return self.ANSWERS[answer]
+
+
 class select_torrents():
     def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=None):
         """Get TorrentFilter instance or None
