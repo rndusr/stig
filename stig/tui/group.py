@@ -43,7 +43,7 @@ class Group(urwid.WidgetWrap):
             self.add(**widget)
         super().__init__(self._main)
 
-    def _get_item(self, name=None, position=None, visible=False):
+    def get_item(self, name=None, position=None, visible=False):
         """Return item dict identified by `name` or `position`
 
         visible: If True, return None instead of widget if widget is hidden
@@ -73,7 +73,7 @@ class Group(urwid.WidgetWrap):
         else:
             raise TypeError('Neither name nor position specified')
 
-    def _get_position(self, name, visible=False):
+    def get_position(self, name, visible=False):
         """Return position of item
 
         visible: If True, return None instead of widget if widget is hidden
@@ -81,7 +81,7 @@ class Group(urwid.WidgetWrap):
         Raises ValueError if no widget with `name` exists.
         """
         try:
-            item = self._get_item(name)
+            item = self.get_item(name)
         except ValueError:
             raise ValueError('Unknown name: {}'.format(name))
         else:
@@ -149,8 +149,8 @@ class Group(urwid.WidgetWrap):
     def remove(self, name):
         """Remove widget from group"""
         if self.exists(name):
-            position = self._get_position(name)
-            item = self._get_item(name)
+            position = self.get_position(name)
+            item = self.get_item(name)
             if not item['removable']:
                 raise ValueError('Item is not removable: {}'.format(name))
             self._main.contents.pop(position)
@@ -170,7 +170,7 @@ class Group(urwid.WidgetWrap):
             raise ValueError('Unknown item name: {}'.format(name))
         else:
             visible = self.visible(name)
-            item = self._get_item(name=name)
+            item = self.get_item(name=name)
             item['widget'] = widget
             self.hide(name)
             if visible:
@@ -187,7 +187,7 @@ class Group(urwid.WidgetWrap):
                 - Any tuple Pile/Columns accepts as 'options' when adding to
                   the contents attribute.
         """
-        item = self._get_item(name=name)
+        item = self.get_item(name=name)
         item['options'] = self._parse_options(opts)
         self.hide(name)  # Refresh content in self._main
         self.show(name)
@@ -197,8 +197,8 @@ class Group(urwid.WidgetWrap):
         if not self.exists(name):
             raise ValueError('Unknown item name: {}'.format(name))
         elif not self.visible(name):
-            item = self._get_item(name)
-            position = self._get_position(name)
+            item = self.get_item(name)
+            position = self.get_position(name)
             content = (item['widget'], item['options'])
             self._main.contents.insert(position, content)
             if item['widget'].selectable():
@@ -209,8 +209,8 @@ class Group(urwid.WidgetWrap):
         if not self.exists(name):
             raise ValueError('Unknown item name: {!r}'.format(name))
         elif self.visible(name):
-            position = self._get_position(name)
-            opts = self._get_item(name)['options']
+            position = self.get_position(name)
+            opts = self.get_item(name)['options']
 
             if opts[0] == 'weight':
                 self._main.contents[position] = (_FlowFill(),
@@ -231,7 +231,7 @@ class Group(urwid.WidgetWrap):
 
     def visible(self, name):
         """Whether widget is hidden or not"""
-        item = self._get_item(name)
+        item = self.get_item(name)
         content = (item['widget'], item['options'])
         return content in self._main.contents
 
@@ -242,7 +242,7 @@ class Group(urwid.WidgetWrap):
     def __getattr__(self, name):
         """Return widget"""
         try:
-            return self._get_item(name)['widget']
+            return self.get_item(name)['widget']
         except ValueError as e:
             raise AttributeError(e)
 
@@ -277,7 +277,7 @@ class Group(urwid.WidgetWrap):
     def focus(self):
         """Focused widget or None"""
         try:
-            item = self._get_item(position=self._main.focus_position)
+            item = self.get_item(position=self._main.focus_position)
             return item['widget']
         except IndexError:
             return None
@@ -295,7 +295,7 @@ class Group(urwid.WidgetWrap):
     def focus_name(self):
         """Name of currently focused widget or None"""
         try:
-            item = self._get_item(position=self._main.focus_position)
+            item = self.get_item(position=self._main.focus_position)
             return item['name']
         except IndexError as e:
             return None
@@ -303,7 +303,7 @@ class Group(urwid.WidgetWrap):
     @focus_name.setter
     def focus_name(self, name):
         if self.exists(name):
-            position = self._get_position(name, visible=True)
+            position = self.get_position(name, visible=True)
             if position is not None:
                 self._main.focus_position = position
         else:
@@ -321,7 +321,7 @@ class Group(urwid.WidgetWrap):
         new_pos = op(self.focus_position, 1)
         try:
             while True:
-                item = self._get_item(position=new_pos, visible=True)
+                item = self.get_item(position=new_pos, visible=True)
                 if item is not None and item['widget'].selectable():
                     break
                 else:
