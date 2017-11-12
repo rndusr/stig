@@ -30,7 +30,8 @@ class ColumnBase():
         self.data = data if data is not None else {}
         super().__init__()
 
-    _cache = defaultdict(lambda: {'value': None, 'last_hit': time(), 'hits': 0})
+    # _cache = defaultdict(lambda: {'value': None, 'last_hit': time(), 'hits': 0})
+    _cache = defaultdict(lambda: {'value': None, 'last_hit': time()})
     _last_cache_prune = 0
     def _from_cache(self, create_value, *args):
         cache_id = (create_value, args)
@@ -41,19 +42,21 @@ class ColumnBase():
             cache_item = self._cache[cache_id]
             value = cache_item['value']
             cache_item['last_hit'] = time()
+            # cache_item['hits'] += 1
 
             # Remove any cached items that haven't been used recently
             now = time()
             if now-ColumnBase._last_cache_prune > 60:
                 ColumnBase._last_cache_prune = now
 
-                prune_counter = 0
+                # prune_counter = 0
                 for cid,citem in tuple(self._cache.items()):
                     if now-citem['last_hit'] > 600:
                         del self._cache[cid]
-                        prune_counter += 1
+                        # prune_counter += 1
 
-                # # Debugging stuff
+                # # Debugging stuff; also uncomment the lines containing
+                # # 'prune_counter' and 'hits'
                 # items_without_hits = tuple(citem for citem in self._cache.values()
                 #                            if citem['hits'] < 1)
 
