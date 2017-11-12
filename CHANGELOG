@@ -23,6 +23,8 @@
       srv.port-forwarding, srv.limit.peers.global, srv.limit.peers.torrent,
       srv.autostart-torrents, srv.part-files, srv.encryption
     * New setting: tui.cli.history-size
+    * New setting: remove.max-hits sets the maximum number of torrents that are
+      deleted without extra user confirmation
     * New default keybinding: <t+p> opens a torrent's peer list
     * New default keybinding: <t+t> opens a torrent's tracker list
     * <ctrl-l> now hides/shows the log instead of clearing it
