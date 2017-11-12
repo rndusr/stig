@@ -215,9 +215,10 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
 
             response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
-            if hits > self.cfg['remove.max-hits']:
+            if hits >= self.cfg['remove.max-hits']:
                 await self.show_list_of_hits(tfilter)
-                question = 'Are you sure you want to remove %d torrents?' % hits
+                question = 'Are you sure you want to remove %d torrent%s?' % (
+                    hits, '' if hits == 1 else 's')
                 return await self.ask_yes_no(question, yes=do_remove,
                                              after=self.remove_list_of_hits)
             else:
