@@ -141,10 +141,11 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         super().setUp()
         RemoveTorrentsCmd.srvapi = self.api
         RemoveTorrentsCmd.select_torrents = mock_select_torrents
+        RemoveTorrentsCmd.cfg = self.cfg
 
-    async def do(self, args, msgs, delete=False):
+    async def do(self, args, msgs, tlist, delete=False):
         success_exp = all(isinstance(msg, str) for msg in msgs)
-        self.api.torrent.response = Response(success=success_exp, msgs=msgs)
+        self.api.torrent.response = Response(success=success_exp, msgs=msgs, torrents=tlist)
         process = RemoveTorrentsCmd(args, loop=self.loop)
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
@@ -155,16 +156,22 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         self.assert_logged(logged, *exp_msgs)
 
     async def test_remove(self):
-        await self.do(['seeds>50'], delete=False, msgs=('Removed Some Torrent',))
+        tlist = (MockTorrent(id=1, name='Some Torrent', seeds='51'),)
+        await self.do(['seeds>50'], tlist=tlist, delete=False,
+                      msgs=('Removed Some Torrent',))
 
     async def test_delete_files(self):
-        await self.do(['--delete-files', 'seeds>50'], delete=True, msgs=('Removed Some Torrent',))
+        tlist = (MockTorrent(id=1, name='Some Torrent', seeds='51'),)
+        await self.do(['--delete-files', 'seeds>50'], tlist=tlist, delete=True,
+                      msgs=('Removed Some Torrent',))
 
     async def test_delete_files_short(self):
-        await self.do(['-d', 'seeds>50'], delete=True, msgs=('Removed Some Torrent',))
+        tlist = (MockTorrent(id=1, name='Some Torrent', seeds='51'),)
+        await self.do(['-d', 'seeds>50'], tlist=tlist, delete=True,
+                      msgs=('Removed Some Torrent',))
 
     async def test_no_torrents_found(self):
-        await self.do(['seeds>5000'], delete=False,
+        await self.do(['seeds>5000'], delete=False, tlist=(),
                       msgs=(ClientError('no torrents found'),))
 
 

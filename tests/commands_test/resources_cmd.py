@@ -171,6 +171,10 @@ def MockSettings():
                                            value='blue', options=('red', 'green', 'blue'),
                                            typename='option: red, green, blue',
                                            string=lambda value=None, default=False: str(value)),
+           'remove.max-hits'  : mk_setting(name='remove.max-hits',
+                                           value=10,
+                                           typename='integer',
+                                           string=lambda value=None, default=False: str(value)),
     }
 
     for ns in cfg.values():
