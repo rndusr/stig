@@ -201,3 +201,5 @@ class CommandTestCase(asynctest.TestCase):
         if not process.finished:
             await process.wait_async()
         self.assertEqual(process.finished, True)
+        if process.exception is not None:
+            print('process failed: %r: %r' % (process, process.exception))
