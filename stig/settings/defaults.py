@@ -119,7 +119,7 @@ def init_defaults(cfg):
                     description=('Character displayed in "marked" column for unmarked '
                                  'list items (see "mark" command)')),
 
-        IntegerValue('remove.max-hits', default=10, min=1,
+        IntegerValue('remove.max-hits', default=10, min=0,
                      description=('Maximum number of torrents to remove without '
                                   'getting extra user confirmation')),
     )
