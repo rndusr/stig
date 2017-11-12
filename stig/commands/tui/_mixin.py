@@ -18,9 +18,6 @@ from .. import ExpectedResource
 from .. import utils
 from ._common import make_tab_title_widget
 
-from collections import abc
-from functools import partial
-
 
 class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
@@ -217,6 +214,7 @@ class create_list_widget():
 
     def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
         # Helper function that creates a tab title widget
+        from functools import partial
         make_titlew = partial(make_tab_title_widget,
                               attr_unfocused='tabs.%s.unfocused' % theme_name,
                               attr_focused='tabs.%s.focused' % theme_name)
