@@ -36,9 +36,12 @@ class user_confirmation():
         """Ask user a yes/no question
 
         The `yes` and `no` arguments are callbacks (or None) that are called
-        depending on the user's answer.
+        depending on the user's answer. `after` is called after the user
+        answered and after `yes` or `no` has been called.
 
-        Callables may be normal functions, coroutine functions or coroutines.
+        Callbacks may be normal functions, coroutine functions or
+        coroutines. They don't get any arguments and their return value is
+        ignored.
         """
         import sys, tty, termios
         async def aiogetch(loop):
