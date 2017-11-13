@@ -169,10 +169,18 @@ class Group(urwid.WidgetWrap):
         if not self.exists(name):
             raise ValueError('Unknown item name: {}'.format(name))
         else:
+            # Remember if widget is currently visible or not
             visible = self.visible(name)
+
+            # Remove widget from internal Pile/Columns
+            position = self.get_position(name)
+            self._main.contents.pop(position)
+
+            # Replace widget of item
             item = self.get_item(name=name)
             item['widget'] = widget
-            self.hide(name)
+
+            # If old widget was visible, show new widget
             if visible:
                 self.show(name)
 
