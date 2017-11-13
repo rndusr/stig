@@ -125,17 +125,17 @@ class Group(urwid.WidgetWrap):
 
         Raises ValueError if `name` already exists.
         """
-        options = self._parse_options(options)
-        item = dict(
-            name = name,           # String handle
-            widget = widget,       # Bare widget
-            options = options,     # urwid options tuple, e.g. ('given',10) or ('weight',50)
-            removable = removable, # Wether this item can be deleted
-        )
-
         if self.exists(name):
             raise ValueError('Already added: {!r}'.format(name))
         else:
+            options = self._parse_options(options)
+            item = dict(
+                name = name,           # Descriptive, unique handle
+                widget = widget,       # Bare widget
+                options = options,     # urwid options tuple, e.g. ('given',10) or ('weight',50)
+                removable = removable, # Wether this item can be deleted
+            )
+
             if position == 'start':
                 position = 0
             elif position == 'end':
