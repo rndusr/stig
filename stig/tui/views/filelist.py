@@ -148,7 +148,6 @@ class FileItemWidget(ItemWidgetBase):
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
 
-
     @property
     def torrent_id(self):
         return self._item['tid']
