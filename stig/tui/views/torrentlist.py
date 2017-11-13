@@ -62,6 +62,14 @@ class TorrentListWidget(ListWidgetBase):
                                        keys=keys, tfilter=self._tfilter)
         self._srvapi.treqpool.poll()
 
+    # # Enable this to measure rendering performance
+    # def render(self, *args, **kwargs):
+    #     import time
+    #     start = time.time()
+    #     canvas = super().render(*args, **kwargs)
+    #     log.debug('Rendered torrent list in %.3fms', (time.time()-start)*1000)
+    #     return canvas
+
     def _handle_torrents(self, torrents):
         # Auto-generate title from our filters if not set
         if self._title_name is None:
