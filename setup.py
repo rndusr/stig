@@ -8,9 +8,9 @@ try:
 except ImportError:
     pass
 
-
+# Load __version__ variable without importing the whole stig module
 with open('stig/version.py') as f:
-    exec(f.read())  # Load __version__ into globals()
+    exec(f.read())
 
 from setuptools import setup, find_packages
 setup(
