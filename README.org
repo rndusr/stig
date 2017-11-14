@@ -94,18 +94,19 @@
    #+END_SRC
 
 ** Installation
-   The latest release can be installed from [[https://pypi.python.org/pypi/stig][PyPI]].
+   For Arch Linux stig is available on AUR as [[https://aur.archlinux.org/packages/stig][stig]] and the latest development
+   version as [[https://aur.archlinux.org/packages/stig-git][stig-git]].
+
+   The [[https://pypi.python.org/pypi/stig][latest release]] can be installed from PyPI.
    #+BEGIN_SRC sh
-   $ pip3 install stig
+   $ pip3 install stig         # Installs stig system-wide (/usr/local/)
+   $ pip3 install --user stig  # Installs stig in your home (~/.local/)
    #+END_SRC
 
-   The latest development version is in the ~dev~ branch.
+   Install the latest development version from GitHub.
    #+BEGIN_SRC sh
-   $ pip3 install git+https://github.com/rndusr/stig.git@dev
+   $ pip3 install [--user] git+https://github.com/rndusr/stig.git
    #+END_SRC
-
-   For Arch Linux stig is available on AUR as [[https://aur.archlinux.org/packages/stig][stig]] and the development version
-   as [[https://aur.archlinux.org/packages/stig-git][stig-git]].
 
    Developers can either install stig with ~pip3~ from a local path and pass the
    ~--editable~ option or run ~python3 -m stig~ in the project directory.
@@ -123,14 +124,11 @@
 
 ** Contributing
    Pull requests, bug reports, features requests, ideas for improvement and all
-   other kinds of constructive contributions are welcome.
+   other constructive contributions are welcome.
 
-   Development happens in the ~dev~ branch while ~master~ is the current
-   stable release.
-
-   If you want to contribute code and get stuck, don't know where to even
-   begin, or just to make sure you're not duplicating someone else's efforts,
-   open an issue.
+   If you want to contribute code and get stuck, don't know where to even begin,
+   or just to make sure you're not duplicating someone else's efforts, open an
+   issue.
 
 ** License
    stig is free software: you can redistribute it and/or modify it under the
@@ -139,9 +137,9 @@
    version.
 
    This program is distributed in the hope that it will be useful but WITHOUT
-   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-   FITNESS FOR A PARTICULAR PURPOSE.  See the [[https://www.gnu.org/licenses/gpl-3.0.txt][GNU General Public License]] for
-   more details.
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+   FOR A PARTICULAR PURPOSE.  See the [[https://www.gnu.org/licenses/gpl-3.0.txt][GNU General Public License]] for more
+   details.
 
 #+STARTUP: showeverything
 #+OPTIONS: num:nil
