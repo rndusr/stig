@@ -13,7 +13,8 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import os
-from xdg import (XDG_CONFIG_HOME, XDG_CACHE_HOME)
+from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
+from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
 
 from .. import APPNAME
 from ..views.torrentlist import COLUMNS as TORRENT_COLUMNS

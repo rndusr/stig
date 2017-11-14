@@ -34,7 +34,8 @@
       supported by the active interface
     * Foreground colors in the tab bar are now all bright in the default theme
     * Time deltas now show seconds if less than two minutes away
-    * Removed appdirs depdendency
+    * Use pyxdg module instead of appdirs (if you installed with pip, run
+      `pip3 uninstall --yes xdg`)
 
   Fixed bugs:
     * Long torrent lists in narrow terminals no longer take ages to print

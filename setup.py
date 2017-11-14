@@ -33,7 +33,7 @@ setup(
         'urwid>=1.3.0',
         'urwidtrees>=1.0.3dev0',
         'aiohttp>=0.22.5',
-        'xdg',
+        'pyxdg',
         'blinker',
         'natsort',
     ],
