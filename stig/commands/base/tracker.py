@@ -77,7 +77,7 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
         # ID, automatically add the 'torrent' column.
         if 'torrent' not in columns and \
            (not isinstance(torfilter, abc.Sequence) or len(torfilter) != 1):
-            columns.insert(0, 'torrent')
+            columns.append('torrent')
 
         log.debug('Listing %s trackers of %s torrents', trkfilter, torfilter)
 
