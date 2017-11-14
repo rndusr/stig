@@ -1,4 +1,4 @@
-This is list a of rough ideas.  Feel free to contribute your own, ask/answer
+This is a list of rough ideas.  Feel free to contribute your own, ask/answer
 questions and point out issues.
 
 * commands
