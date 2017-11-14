@@ -29,6 +29,7 @@ setup(
     packages         = find_packages(),
     package_data     = {'stig': ['settings/default.theme']},
 
+    python_requires  = '>=3.5',
     install_requires = [
         'urwid>=1.3.0',
         'urwidtrees>=1.0.3dev0',
