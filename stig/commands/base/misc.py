@@ -34,7 +34,7 @@ class HelpCmdbase(metaclass=InitCommand):
     )
     helpmgr = ExpectedResource
 
-    TOPIC_DELIMITER = ['', '='*50, '']
+    TOPIC_DELIMITER = ['', '-  '*20, '']
 
     def run(self, TOPIC):
         topics = TOPIC
