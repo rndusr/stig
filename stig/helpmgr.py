@@ -109,10 +109,9 @@ class HelpManager():
     def setting(self, name):
         """Return help text for setting"""
         v = self._settings[name]
-        lines = [v.name,
-                 '\t' + v.description,
-                 '\tType: \t' + v.typename,
+        lines = ['%s - \t%s' % (v.name, v.description),
                  '\tValue: \t' + v.string(default=False),
+                 '\tType: \t' + v.typename,
                  '\tDefault: \t' + v.string(default=True)]
         if hasattr(v, 'options'):
             lines.append('\tOptions: \t' + \
