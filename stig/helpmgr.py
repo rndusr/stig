@@ -33,7 +33,7 @@ ALIASES = {
 def finalize_lines(lines):
     return tuple(
         striplines(line.format(APPNAME=APPNAME)
-                   for line in expandtabs.expand(lines))
+                   for line in expandtabs.expand(lines, indent=2))
     )
 
 
