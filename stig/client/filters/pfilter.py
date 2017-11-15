@@ -26,15 +26,15 @@ class SingleTorrentPeerFilter(Filter):
             description='All peers'),
         'uploading': BoolFilterSpec(
             lambda p: p['rate-up'] > 0,
-            aliases=('ul',),
+            aliases=('upg',),
             description='Peers we are uploading to'),
         'downloading': BoolFilterSpec(
             lambda p: p['rate-down'] > 0,
-            aliases=('dl',),
+            aliases=('dng',),
             description='Peers we are downloading from'),
         'seeding': BoolFilterSpec(
             lambda p: p['progress'] >= 100,
-            aliases=('done',),
+            aliases=('sdg',),
             description='Peers that have downloaded all data'),
     }
 
@@ -57,12 +57,12 @@ class SingleTorrentPeerFilter(Filter):
             value_type=TorrentPeer.TYPES['port']),
         'downloaded': CmpFilterSpec(
             lambda p, op, v: op(p['tsize'] * (p['progress']/100), v),
-            aliases=('down',),
+            aliases=('dn',),
             description='Match VALUE against number of bytes peer has downloaded',
             value_type=TorrentPeer.TYPES['tsize']),
         '%downloaded': CmpFilterSpec(
             lambda p, op, v: op(p['progress'], v),
-            aliases=('%down', 'progress'),
+            aliases=('%dn',),
             description='Match VALUE against percentage of bytes peer has downloaded',
             value_type=TorrentPeer.TYPES['progress']),
     }

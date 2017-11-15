@@ -37,12 +37,16 @@ class TorrentTrackerSorter(SorterBase):
         'seeds':           _SortSpec(lambda t: t['count-seeds'],
                                      description='number of known seeding peers'),
         'last-announce':   _SortSpec(lambda t: t['time-last-announce'],
+                                     aliases=('l-an',),
                                      description='last time the torrent was successfully announce'),
         'next-announce':   _SortSpec(lambda t: t['time-next-announce'],
+                                     aliases=('n-an',),
                                      description='next time the torrent is announced'),
         'last-scrape':     _SortSpec(lambda t: t['time-last-scrape'],
+                                     aliases=('l-scrp',),
                                      description='last time the torrent was successfully scrape'),
         'next-scrape':     _SortSpec(lambda t: t['time-next-scrape'],
+                                     aliases=('n-scrp',),
                                      description='next time the torrent is scraped'),
     }
     DEFAULT_SORT = 'torrent'
