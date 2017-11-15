@@ -17,7 +17,6 @@ log = make_logger(__name__)
 from .. import (InitCommand, ExpectedResource)
 from ... import (APPNAME, __version__)
 
-TOPIC_DELIMITER = ['', '='*50, '']
 
 class HelpCmdbase(metaclass=InitCommand):
     name = 'help'
@@ -34,6 +33,8 @@ class HelpCmdbase(metaclass=InitCommand):
           'description': 'Name of command, setting or category' },
     )
     helpmgr = ExpectedResource
+
+    TOPIC_DELIMITER = ['', '='*50, '']
 
     def run(self, TOPIC):
         topics = TOPIC
@@ -52,12 +53,12 @@ class HelpCmdbase(metaclass=InitCommand):
                     success = False
                 else:
                     lines.extend(l)
-                    lines.extend(TOPIC_DELIMITER)
+                    lines.extend(self.TOPIC_DELIMITER)
                     existing_topics.append(topic)
 
             if lines:
                 # Remove last TOPIC_DELIMITER
-                for _ in range(len(TOPIC_DELIMITER)):
+                for _ in range(len(self.TOPIC_DELIMITER)):
                     lines.pop(-1)
 
         if not existing_topics:
