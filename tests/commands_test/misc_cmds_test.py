@@ -32,7 +32,7 @@ class TestHelpCmd(CommandTestCase):
         self.assert_logged(logged,
                            ('INFO', '^Mock help for foo'),
                            ('INFO', ' *'),  # Topic delimiter
-                           ('INFO', '=+'),  # Topic delimiter
+                           ('INFO', '-+'),  # Topic delimiter
                            ('INFO', ' *'),  # Topic delimiter
                            ('INFO', '^Mock help for bar'))
 
