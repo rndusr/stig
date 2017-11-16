@@ -114,8 +114,14 @@ class HelpManager():
                  '\tType: \t' + v.typename,
                  '\tDefault: \t' + v.string(default=True)]
         if hasattr(v, 'options'):
-            lines.append('\tOptions: \t' + \
-                         ', '.join(str(o) for o in sorted(v.options)))
+            opt_strs = []
+            for opt in sorted(v.options):
+                opt_strs.append(str(opt))
+                aliases = [alias for alias,option in v.aliases.items()
+                           if option == opt]
+                if aliases:
+                    opt_strs[-1] += ' (%s)' % (', '.join(aliases))
+            lines.append('\tOptions: \t' + ', '.join(opt_strs))
         if hasattr(v, 'valuesyntax'):
             lines.append('\tSyntax: \t{}'.format(v.valuesyntax))
         return finalize_lines(lines)
