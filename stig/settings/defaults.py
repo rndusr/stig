@@ -17,10 +17,7 @@ from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
 
 from .. import APPNAME
-from ..views.torrentlist import COLUMNS as TORRENT_COLUMNS
-from ..views.filelist import COLUMNS as FILE_COLUMNS
-from ..views.peerlist import COLUMNS as PEER_COLUMNS
-from ..views.trackerlist import COLUMNS as TRACKER_COLUMNS
+from ..views import (torrentlist, filelist, peerlist, trackerlist)
 from ..client.sorters.tsorter import TorrentSorter
 from ..client.sorters.psorter import TorrentPeerSorter
 from ..client.sorters.trksorter import TorrentTrackerSorter
@@ -70,16 +67,16 @@ def init_defaults(cfg):
                                  'to Transmission daemon fails')),
 
         SetValue('columns.torrents', default=DEFAULT_TORRENT_COLUMNS,
-                 options=tuple(TORRENT_COLUMNS),
+                 options=torrentlist.COLUMNS,
                  description='List of columns in new torrent lists'),
         SetValue('columns.peers', default=DEFAULT_PEER_COLUMNS,
-                 options=tuple(PEER_COLUMNS),
+                 options=peerlist.COLUMNS,
                  description='List of columns in new peer lists'),
         SetValue('columns.files', default=DEFAULT_FILE_COLUMNS,
-                 options=tuple(FILE_COLUMNS),
+                 options=filelist.COLUMNS,
                  description='List of columns in new torrent file lists'),
         SetValue('columns.trackers', default=DEFAULT_TRACKER_COLUMNS,
-                 options=tuple(TRACKER_COLUMNS),
+                 options=trackerlist.COLUMNS,
                  description='List of columns in new tracker lists'),
 
         SortOrderValue(TorrentSorter, 'sort.torrents', default=DEFAULT_TORRENT_SORT,
