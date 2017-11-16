@@ -251,44 +251,44 @@ class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
 TUICOLUMNS['eta'] = EtaComplete
 
 
-class TimeCreated(_COLUMNS['created'], CellWidgetBase):
+class TimeCreated(_COLUMNS['time-created'], CellWidgetBase):
     style = Style(prefix='torrentlist.created', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['created'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-created'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['created'] = TimeCreated
+TUICOLUMNS['time-created'] = TimeCreated
 
-class TimeAdded(_COLUMNS['added'], CellWidgetBase):
+class TimeAdded(_COLUMNS['time-added'], CellWidgetBase):
     style = Style(prefix='torrentlist.added', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['added'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-added'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['added'] = TimeAdded
+TUICOLUMNS['time-added'] = TimeAdded
 
-class TimeStarted(_COLUMNS['started'], CellWidgetBase):
+class TimeStarted(_COLUMNS['time-started'], CellWidgetBase):
     style = Style(prefix='torrentlist.started', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['started'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-started'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['started'] = TimeStarted
+TUICOLUMNS['time-started'] = TimeStarted
 
-class TimeActive(_COLUMNS['activity'], CellWidgetBase):
+class TimeActive(_COLUMNS['time-activity'], CellWidgetBase):
     style = Style(prefix='torrentlist.activity', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['activity'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-activity'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['activity'] = TimeActive
+TUICOLUMNS['time-activity'] = TimeActive
 
-class TimeCompleted(_COLUMNS['completed'], CellWidgetBase):
+class TimeCompleted(_COLUMNS['time-completed'], CellWidgetBase):
     style = Style(prefix='torrentlist.completed', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['completed'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-completed'].header),
                            style.attrs('header'))
 
     def get_mode(self):
         return 'highlighted' if self.value.in_future else ''
 
-TUICOLUMNS['completed'] = TimeCompleted
+TUICOLUMNS['time-completed'] = TimeCompleted
 
 
 class Tracker(_COLUMNS['tracker'], CellWidgetBase):

@@ -425,7 +425,7 @@ class TimeCreated(TimeBase):
     def get_value(self):
         return self.data['time-created']
 
-COLUMNS['created'] = TimeCreated
+COLUMNS['time-created'] = TimeCreated
 
 class TimeAdded(TimeBase):
     header = {'left': 'Added'}
@@ -434,7 +434,7 @@ class TimeAdded(TimeBase):
     def get_value(self):
         return self.data['time-added']
 
-COLUMNS['added'] = TimeAdded
+COLUMNS['time-added'] = TimeAdded
 
 class TimeStarted(TimeBase):
     header = {'left': 'Started'}
@@ -443,7 +443,7 @@ class TimeStarted(TimeBase):
     def get_value(self):
         return self.data['time-started']
 
-COLUMNS['started'] = TimeStarted
+COLUMNS['time-started'] = TimeStarted
 
 class TimeActivity(TimeBase):
     header = {'left': 'Activity'}
@@ -452,7 +452,7 @@ class TimeActivity(TimeBase):
     def get_value(self):
         return self.data['time-activity']
 
-COLUMNS['activity'] = TimeActivity
+COLUMNS['time-activity'] = TimeActivity
 
 class TimeCompleted(TimeBase):
     header = {'left': 'Completed'}
@@ -461,4 +461,4 @@ class TimeCompleted(TimeBase):
     def get_value(self):
         return self.data['time-completed']
 
-COLUMNS['completed'] = TimeCompleted
+COLUMNS['time-completed'] = TimeCompleted
