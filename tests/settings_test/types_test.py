@@ -371,7 +371,7 @@ class TestOptionValue(unittest.TestCase):
             self.assertIn('Not one of', str(cm.exception))
             self.assertIn(', '.join(str(no) for no in new_opts), str(cm.exception))
 
-        for x in new_opts:
+        for x in val.options:
             val.set(x)
             self.assertEqual(val.get(), x)
             self.assertEqual(val.get_default(), new_opts[0])
