@@ -17,6 +17,27 @@ log = make_logger(__name__)
 from . import (ColumnBase, _ensure_string_without_unit)
 
 COLUMNS = {}
+ALIASES = { '%avail'   : '%available',
+            'avail'    : 'available',
+            'dn'       : 'downloaded',
+            'up'       : 'uploaded',
+            'con'      : 'connections',
+            'mark'     : 'marked',
+            'torrent'  : 'name',
+            '%'        : 'progress',
+            'dir'      : 'path',
+            'rdn'      : 'rate-down',
+            'rup'      : 'rate-up',
+            'rldn'     : 'rate-limit-down',
+            'rlup'     : 'rate-limit-up',
+            'state'    : 'status',
+            'trk'      : 'tracker',
+            't-create' : 'time-created',
+            't-add'    : 'time-added',
+            't-start'  : 'time-started',
+            't-active' : 'time-activity',
+            't-comp'   : 'time-completed' }
+
 
 import os
 PATHSEP = os.sep

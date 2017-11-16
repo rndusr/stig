@@ -68,6 +68,7 @@ def init_defaults(cfg):
 
         SetValue('columns.torrents', default=DEFAULT_TORRENT_COLUMNS,
                  options=torrentlist.COLUMNS,
+                 aliases=torrentlist.ALIASES,
                  description='List of columns in new torrent lists'),
         SetValue('columns.peers', default=DEFAULT_PEER_COLUMNS,
                  options=peerlist.COLUMNS,
