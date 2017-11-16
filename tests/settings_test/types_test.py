@@ -376,6 +376,15 @@ class TestOptionValue(unittest.TestCase):
             self.assertEqual(val.get(), x)
             self.assertEqual(val.get_default(), new_opts[0])
 
+    def test_aliases(self):
+        val = OptionValue(name='test',
+                          options=[1, 2, 3, 'apple', 'orange', 'cherry'],
+                          aliases={'one': 1, 'two': 2, 'three': 3})
+
+        for alias in val.aliases:
+            val.set(alias)
+            self.assertEqual(val.value, val.aliases[alias])
+
 
 class TestListValue(unittest.TestCase):
     def test_valid_values(self):
@@ -436,6 +445,15 @@ class TestListValue(unittest.TestCase):
         v.options = [2, 3]
         self.assertEqual(v.get(), [])
         self.assertEqual(v.get_default(), [2, 2, 2, 2])
+
+    def test_aliases(self):
+        v = ListValue(name='test',
+                      default=[1, 'foo', 'bar'],
+                      options=[1, 2, 3, 'foo', 'bar', 'baz'],
+                      aliases={'f': 'foo', 'b': 'bar'})
+
+        v.set(['bar', 'b', 'f', 3, 'b', 'baz'])
+        self.assertEqual(v.value, ['bar', 'bar', 'foo', 3, 'bar', 'baz'])
 
 
 class TestMultiValue(unittest.TestCase):

@@ -554,7 +554,30 @@ class BooleanValue(ValueBase):
         else:              return v
 
 
-class OptionValue(ValueBase):
+class _AliasCapabilities():
+    _aliases = {}
+
+    @property
+    def aliases(self):
+        return self._aliases
+
+    @aliases.setter
+    def aliases(self, aliases):
+        self._aliases = aliases
+
+    def resolve_alias(self, value):
+        # Return `value` if it can't be used as a dict key
+        try:
+            hash(value)
+        except Exception:
+            return value
+        else:
+            # Return `value` if it's not in our alias dictionary, otherwise return
+            # what is mapped to `value`.
+            return self._aliases.get(value, value)
+
+
+class OptionValue(_AliasCapabilities, ValueBase):
     """Single value that can only be one of a predefined set of values"""
 
     @property
@@ -562,15 +585,20 @@ class OptionValue(ValueBase):
         optvals = (str(o) for o in self.options)
         return 'option: ' + ', '.join(optvals)
 
-    def __init__(self, *args, options=(), **kwargs):
+    def __init__(self, *args, options=(), aliases={}, **kwargs):
         self._options = tuple(options)
+        self.aliases = aliases
         ValueBase.__init__(self, *args, **kwargs)
 
     def validate(self, value):
+        value = self.resolve_alias(value)
         value = self.convert(value)
         if value not in self.options:
             optvals = (str(o) for o in self.options)
             raise ValueError('Not one of: {}'.format(', '.join(optvals)))
+
+    def convert(self, value):
+        return ValueBase.convert(self, self.resolve_alias(value))
 
     @property
     def options(self):
@@ -588,7 +616,7 @@ class OptionValue(ValueBase):
                     setattr(self, name, self.options[0])
 
 
-class ListValue(ValueBase):
+class ListValue(_AliasCapabilities, ValueBase):
     """A sequence of values
 
     Set `options` to any iterable to limit the items allowed in the list.
@@ -596,8 +624,9 @@ class ListValue(ValueBase):
     type = list
     typename = 'list'
 
-    def __init__(self, *args, options=None, **kwargs):
+    def __init__(self, *args, options=None, aliases={}, **kwargs):
         self._options = options
+        self.aliases = aliases
         ValueBase.__init__(self, *args, **kwargs)
 
     def validate(self, value):
@@ -618,11 +647,14 @@ class ListValue(ValueBase):
 
     def convert(self, value):
         if isinstance(value, str):
-            return self.type(value.strip() for value in value.split(','))
+            lst = self.type(value.strip() for value in value.split(','))
         elif isinstance(value, abc.Iterable):
-            return self.type(value)
+            lst = self.type(value)
         else:
             raise ValueError('Not a {}'.format(self.typename))
+
+        # Resolve aliases
+        return [self.resolve_alias(item) for item in lst]
 
     def string(self, value=None, default=False):
         if default:
