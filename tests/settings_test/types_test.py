@@ -425,12 +425,12 @@ class TestListValue(unittest.TestCase):
 
         with self.assertRaises(ValueError) as cm:
             v.set([4, 5, 6, 0])
-        self.assertIn('invalid', str(cm.exception).lower())
+        self.assertIn('invalid option', str(cm.exception).lower())
         self.assertIn('0', str(cm.exception))
 
         with self.assertRaises(ValueError) as cm:
             v.set([4, 12, 5, 6, 0])
-        self.assertIn('invalid', str(cm.exception).lower())
+        self.assertIn('invalid option', str(cm.exception).lower())
         self.assertIn('12', str(cm.exception))
         self.assertIn('0', str(cm.exception))
 

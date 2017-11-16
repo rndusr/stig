@@ -641,7 +641,7 @@ class ListValue(_AliasCapabilities, ValueBase):
                     invalid_items.append(item)
 
             if invalid_items:
-                raise ValueError('Invalid value{}: {}'.format(
+                raise ValueError('Invalid option{}: {}'.format(
                     's' if len(invalid_items) != 1 else '',
                     self.string(invalid_items)))
 
