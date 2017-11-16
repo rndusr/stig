@@ -43,11 +43,9 @@ from collections import abc
 def listify_args(args):
     """Make list from `args`
 
-    If `args` is a string, use split(',') on it.  If `args` is any other
-    iterable, recurse on each item and add the return values to the result.
-    Otherwise make `args` a single item.
-
-    All items are turned into strings and strip()ed.
+    Ensure `args` is a string and use split(',') to turn it into a list.  If
+    `args` is any non-string iterable, recursively listify each item and append
+    it to the final list.
 
     Despite the name, return a tuple.
     """
