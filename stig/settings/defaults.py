@@ -40,11 +40,11 @@ DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',
 
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:
-    DEFAULT_PEER_COLUMNS = ('client', 'progress', 'rate-down', 'rate-up', 'rate-est',
-                            'eta', 'ip', 'country')
+    DEFAULT_PEER_COLUMNS = ('client', 'country', 'ip', 'progress', 'rate-down',
+                            'rate-up', 'rate-est', 'eta')
 else:
-    DEFAULT_PEER_COLUMNS = ('client', 'progress', 'rate-down', 'rate-up', 'rate-est',
-                            'eta', 'ip')
+    DEFAULT_PEER_COLUMNS = ('client', 'ip', 'progress', 'rate-down', 'rate-up',
+                            'rate-est', 'eta', )
 
 
 def init_defaults(cfg):
