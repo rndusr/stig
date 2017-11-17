@@ -220,7 +220,7 @@ def print_table(items, order, column_specs):
 
         for line_index in range(len(table.rows)):
             # Print column headers after every screen full
-            if pretty_output and line_index % (TERMSIZE.lines-1) == 0:
+            if pretty_output and line_index % (TERMSIZE.lines-2) == 0:
                 log.info(headerstr)
             log.info(_assemble_line(table, line_index, pretty=pretty_output))
 
