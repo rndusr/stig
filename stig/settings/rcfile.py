@@ -23,6 +23,24 @@ def _tildify(p):
     return p
 
 
+def _unescape_linebreaks(lines):
+    unescaped = []
+    append_next = False
+    for line in lines:
+        if append_next:
+            unescaped[-1] += line
+        else:
+            unescaped.append(line)
+
+        if unescaped[-1][-1] == '\\':
+            unescaped[-1] = unescaped[-1][:-1]
+            append_next = True
+        else:
+            append_next = False
+
+    return unescaped
+
+
 class RcFileError(Exception):
     pass
 
@@ -46,4 +64,4 @@ def read(filepath=DEFAULT_RCFILE):
     except PermissionError as e:
         raise RcFileError('No read permission for rc file: {}'.format(_tildify(filepath)))
 
-    return cmdstrs
+    return _unescape_linebreaks(cmdstrs)
