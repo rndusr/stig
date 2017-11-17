@@ -43,10 +43,10 @@ class TorrentTrackerSorter(SorterBase):
                                      aliases=('n-an',),
                                      description='next time the torrent is announced'),
         'last-scrape':     _SortSpec(lambda t: t['time-last-scrape'],
-                                     aliases=('l-scrp',),
+                                     aliases=('l-sc',),
                                      description='last time the torrent was successfully scrape'),
         'next-scrape':     _SortSpec(lambda t: t['time-next-scrape'],
-                                     aliases=('n-scrp',),
+                                     aliases=('n-sc',),
                                      description='next time the torrent is scraped'),
     }
     DEFAULT_SORT = 'torrent'

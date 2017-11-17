@@ -42,7 +42,7 @@ class SingleTrackerFilter(Filter):
                                             aliases=('u-an',),
                                             description='Match VALUE against announce URL'),
         'url-scrape'     : _make_cmp_filter('url-scrape',
-                                            aliases=('u-scrp',),
+                                            aliases=('u-sc',),
                                             description='Match VALUE against scrape URL'),
         'state'          : _make_cmp_filter('state',
                                             description=('Match VALUE against tracker state '
@@ -62,10 +62,10 @@ class SingleTrackerFilter(Filter):
                                             aliases=('n-an',),
                                             description='Match VALUE against time of next announce'),
         'last-scrape'    : _make_cmp_filter('time-last-scrape',
-                                            aliases=('l-scrp',),
+                                            aliases=('l-sc',),
                                             description='Match VALUE against time of last scrape'),
         'next-scrape'    : _make_cmp_filter('time-next-scrape',
-                                            aliases=('n-scrp',),
+                                            aliases=('n-sc',),
                                             description='Match VALUE against time of next scrape'),
     }
 
