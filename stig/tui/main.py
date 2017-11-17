@@ -159,13 +159,13 @@ def run(command_runner):
 
     # If no tabs have been opened by cli or rc file, open default tab
     if len(tabs) <= 0:
-        for cmd in ( 'tab ls -c size,ratio,seeds,status,tracker,path,name,activity',
+        for cmd in ( 'tab ls -c size,ratio,seeds,status,tracker,path,name,time-activity',
                      'tab ls active|incomplete',
                     ('tab ls downloading -c size,downloaded,progress,'
-                     'rate-down,completed,eta,path,name'),
+                     'rate-down,time-completed,eta,path,name'),
                     ('tab ls uploading -c size,uploaded,ratio,'
                      'rate-up,connections,seeds,tracker,path,name -s ratio'),
-                    'tab ls stopped -c size,progress,seeds,activity,path,name',
+                    'tab ls stopped -c size,progress,seeds,time-activity,path,name',
                     'tab ls isolated -c error,tracker,path,name -s tracker',
                     'tab -t peers lsp -s eta,torrent',):
             cmdmgr.run_sync(cmd, on_error=log.error)
