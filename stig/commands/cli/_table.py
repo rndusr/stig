@@ -74,6 +74,10 @@ def _column_has_variable_width(table, colname):
     # Whether column has fixed or variable width
     return not isinstance(table.colspecs[colname].width, int)
 
+def _column_could_use_more_width(table, colname):
+    # Whether any cell in a column is cropped
+    return table.colwidths[colname] < table.maxcolwidths[colname]
+
 def _column_is_shrinkable(table, colname):
     # Whether the current width of column is larger than its minimum width
     return table.colwidths[colname] > table.colspecs[colname].min_width
@@ -84,6 +88,12 @@ def _set_colwidth(table, colindex, width):
     table.colwidths[colname] = width
     for row in table.rows:
         row[colindex].width = width
+
+def _set_maxcolwidth(table, colindex, maxwidth):
+    # Set maximum width a column can make use of (no cell needs more horizontal
+    # space than `maxwidth`)
+    colname = table.colorder[colindex]
+    table.maxcolwidths[colname] = maxwidth
 
 def _get_excess_width(table):
     # Return width by which table must be narrowed to fit in max_width
@@ -103,6 +113,7 @@ def _shrink_to_widest_value(table):
         max_value_width = max(_get_header_width(table, colname),
                               _get_colwidth(table, colindex))
         _set_colwidth(table, colindex, max_value_width)
+        _set_maxcolwidth(table, colindex, max_value_width)
 
 def _shrink_variable_width_columns(table):
     # Reduce width of columns that haven't reached their min_size yet
@@ -143,10 +154,14 @@ def _shrink_by_removing_columns(table):
     if freed_width > 0:
         while freed_width > 0:
             freed_width -= 1
-            # Find non-fixed columns
+            # Find non-fixed-width columns that could use more width
             candidates = [(colname,table.colwidths[colname])
                           for colname in table.colorder
-                          if _column_has_variable_width(table, colname)]
+                          if _column_has_variable_width(table, colname) and \
+                             _column_could_use_more_width(table, colname)]
+            if not candidates:
+                # We have space left, but no column wants it
+                break
             candidates_sorted = sorted(candidates, key=lambda col: col[1])
             colname = candidates_sorted[0][0]
             new_width = table.colwidths[candidates_sorted[0][0]] + 1
@@ -183,7 +198,7 @@ def print_table(items, order, column_specs):
 
     table = SimpleNamespace(colspecs=column_specs,
                             colorder=order,
-                            colwidths={},  # Will filled when needed
+                            colwidths={}, maxcolwidths={},  # Calculated when needed
                             delimiter='\t' if TERMSIZE.columns is None else '│',
                             max_width=TERMSIZE.columns)
 
