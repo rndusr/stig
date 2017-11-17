@@ -18,6 +18,17 @@ from . import (ColumnBase, _ensure_string_without_unit)
 
 
 COLUMNS = {}
+ALIASES = { 'host'   : 'domain',
+            'u-an'   : 'url-announce',
+            'u-sc'   : 'url-scrape',
+            'e-an'   : 'error-announce',
+            'e-sc'   : 'error-scrape',
+            'l-an'   : 'last-announce',
+            'n-an'   : 'next-announce',
+            'l-sc'   : 'last-scrape',
+            'n-sc'   : 'next-scrape',
+            'dns'    : 'downloads',
+            'status' : 'state' }
 
 
 class TorrentName(ColumnBase):

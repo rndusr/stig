@@ -18,6 +18,11 @@ from . import (ColumnBase, _ensure_string_without_unit)
 
 
 COLUMNS = {}
+ALIASES = { 'dn'   : 'downloaded',
+            'mark' : 'marked',
+            'file' : 'name',
+            'prio' : 'priority',
+            '%'    : 'progress' }
 
 
 class Filename(ColumnBase):

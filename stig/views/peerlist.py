@@ -18,6 +18,11 @@ from . import (ColumnBase, _ensure_string_without_unit)
 
 
 COLUMNS = {}
+ALIASES = { '%' : 'progress',
+            'rdn' : 'rate-down',
+            'rup' : 'rate-up',
+            'rest' : 'rate-est',
+            'name' : 'torrent' }
 
 
 class TorrentName(ColumnBase):
