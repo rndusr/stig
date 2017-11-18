@@ -87,7 +87,7 @@ class CellWidgetBase(urwid.WidgetWrap):
         return super().__init__(self.attrmap)
 
     def update(self, data):
-        self.data.update(data)
+        self.data = data
         new_value = self.get_value()
         if self.value != new_value:
             self.value = new_value
