@@ -14,7 +14,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import (ColumnBase, _ensure_string_without_unit)
+from . import ColumnBase
 
 
 COLUMNS = {}
