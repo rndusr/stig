@@ -157,7 +157,7 @@ def run(command_runner):
 
     topbar.help.update()
 
-    # If no tabs have been opened by cli or rc file, open default tab
+    # If no tab has been opened by cli or rc file, open default tabs
     if len(tabs) <= 0:
         for cmd in ( 'tab ls -c size,ratio,seeds,status,tracker,path,name,time-activity',
                      'tab ls active|incomplete',
