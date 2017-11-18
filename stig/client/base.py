@@ -40,18 +40,17 @@ class TorrentBase(abc.Mapping):
         return r + '>'
 
     def __eq__(self, other):
-        if isinstance(other, int):
-            return self['id'] == other
-        elif isinstance(other, TorrentBase):
-            return self['id'] == other['id']
-        else:
-            return NotImplemented
+        if hasattr(other, 'get'):
+            return self['id'] == other.get('id')
+        return NotImplemented
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __lt__(self, other):
-        return self['id'] > other['id']
+        if hasattr(other, 'get'):
+            return self['id'] > other.get('id')
+        return NotImplemented
 
     def __len__(self):
         return len(tuple(iter(self)))

@@ -480,7 +480,6 @@ class Torrent(base.TorrentBase):
         # Now we can forget the old values
         raw_old.update(raw_torrent)
 
-
     def __getitem__(self, key):
         cache = self._cache
         if key not in cache:
@@ -514,15 +513,16 @@ class Torrent(base.TorrentBase):
                 yield key
 
     def __eq__(self, other):
-        if isinstance(other, int):
-            return self._raw['id'] == other
-        elif isinstance(other, Torrent):
+        if hasattr(other, '_raw'):
             return self._raw['id'] == other._raw['id']
         else:
             return NotImplemented
 
     def __lt__(self, other):
-        return self._raw['id'] > other._raw['id']
+        if hasattr(other, '_raw'):
+            return self._raw['id'] > other._raw['id']
+        else:
+            return NotImplemented
 
     def __hash__(self):
         return hash(self._raw['id'])
