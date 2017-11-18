@@ -458,13 +458,14 @@ class Torrent(base.TorrentBase):
 
     def update(self, raw_torrent):
         cache = self._cache
+        raw_old = self._raw
 
         # Remove cached values if their original/raw value(s) differ
-        old = self._raw
         for k,v in tuple(cache.items()):
+            # Each key depends on one or more RPC field
             fields = DEPENDENCIES[k]
             for field in fields:
-                if field in old and field in raw_torrent and old[field] != raw_torrent[field]:
+                if field in raw_old and field in raw_torrent and raw_old[field] != raw_torrent[field]:
                     # New and previous value differ - if we are dealing with
                     # more complex data structures (e.g. a file tree), use the
                     # update() method to update the object in cache instead of
@@ -475,7 +476,10 @@ class Torrent(base.TorrentBase):
                     else:
                         del cache[k]
                     break
-        old.update(raw_torrent)
+
+        # Now we can forget the old values
+        raw_old.update(raw_torrent)
+
 
     def __getitem__(self, key):
         cache = self._cache
