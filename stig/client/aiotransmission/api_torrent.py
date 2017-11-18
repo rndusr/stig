@@ -285,11 +285,14 @@ class TorrentAPI():
                 tlist = ()
             else:
                 tlist = self._tcache.get(*ids)
-                # Provide error requested IDs that don't exist
+
+                # Provide error for requested IDs that don't exist
+                existing_ids = tuple(t['id'] for t in tlist)
                 for tid in ids:
                     # Torrent objects are equal to an integer of the torrent's ID
-                    if tid not in tlist:
+                    if tid not in existing_ids:
                         msgs.append(ClientError('No torrent with ID: {}'.format(tid)))
+
             success = len(tlist) > 0 or not ids
 
             log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
