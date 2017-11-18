@@ -165,8 +165,8 @@ class _NumberBase():
         # Get the new value as int or float
         if self == float('inf'):
             # No need to do any calculations with infinity, especially because
-            # of round() throwing and OverflowError because `int` has no
-            # infinity implemented.
+            # of round() throwing an OverflowError because `int` has no infinity
+            # value implemented.
             new_value = float('inf')
         else:
             new_value = getattr(self._numtype, method)(self, *args, **kwargs)
