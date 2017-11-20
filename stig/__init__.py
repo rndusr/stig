@@ -14,4 +14,9 @@ APPNAME = 'stig'
 
 def run():
     from . import main
-    main.run()
+    if main.cliargs['profile_file'] is not None:
+        main.logging.start_profiling(main.run,
+                                     filepath=main.cliargs['profile_file'],
+                                     statistical=False)
+    else:
+        main.run()

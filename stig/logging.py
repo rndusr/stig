@@ -88,12 +88,30 @@ def redirect_level(level, stream=sys.stderr):
     root_logger.addHandler(lvlhandler)
 
 
-def enable_profiling(filepath):
-    import cProfile, signal
-    p = cProfile.Profile()
-    p.enable()
-    def stop_profiling(signum, frame):
-        p.disable()
-        p.dump_stats(filepath)
-        sys.exit(1)
-    signal.signal(signal.SIGTERM, stop_profiling)
+def start_profiling(func, filepath, statistical=True):
+    import pprofile, signal
+    if statistical:
+        prof = pprofile.StatisticalProfile()
+    else:
+        prof = pprofile.Profile()
+
+    def stop_profiling(prof, filepath):
+        print('Writing profiling data: %s' % filepath, file=sys.stderr)
+        print('You can use kcachegrind to analyze it.', file=sys.stderr)
+        with open(filepath, 'w') as f:
+            prof.callgrind(f)
+
+    # This makes the `finally` block work as expected if we're terminated by
+    # SIGTERM, which happens by default when running `timeout 30 stig ...`.
+    # https://stackoverflow.com/a/42200623
+    # https://mail.python.org/pipermail/python-ideas/2016-February/038474.html
+    import signal
+    class SigTerm(SystemExit): pass
+    def sigterm(sig, frame): raise SigTerm
+    signal.signal(15, sigterm)
+
+    try:
+        with prof():
+            func()
+    finally:
+        stop_profiling(prof, filepath)

@@ -17,8 +17,8 @@ aioloop = asyncio.get_event_loop()
 from . import cliopts
 from . import logging
 cliargs, clicmds = cliopts.parse()
-if cliargs['profile_file'] is not None:
-    logging.enable_profiling(cliargs['profile_file'])
+
+
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 log = logging.make_logger()
