@@ -31,7 +31,7 @@ TUICOLUMNS['torrent'] = TorrentName
 
 
 class Client(_COLUMNS['client'], CellWidgetBase):
-    width = ('weight', 100)
+    width = 30
     style = Style(prefix='peerlist.client', focusable=False,
                   extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['client'].header),
