@@ -208,7 +208,13 @@ class Group(urwid.WidgetWrap):
             item = self.get_item(name)
             position = self.get_position(name)
             content = (item['widget'], item['options'])
-            self._main.contents.insert(position, content)
+
+            contents = self._main.contents
+            if position >= len(contents):
+                contents.append(content)
+            else:
+                contents[position] = content
+
             if item['widget'].selectable():
                 self.focus_name = item['name']
 
