@@ -38,7 +38,7 @@ class BindCmd(metaclass=InitCommand):
                 'bind --context torrent alt-! start --force',
                 'bind ctrl-a tab ls active',
                 "bind 'd .' delete",
-                "bind 'd !' delete --delete-files",
+                "bind 'd+!' delete --delete-files",
                 'bind u <up>',
                 'bind d <down>')
     argspecs = (
