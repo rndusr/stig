@@ -258,6 +258,18 @@ class KeyMap():
             contexts[context] = {}
         self._bindunbind_callbacks.send(self)
 
+    def _unbind_from_urwid_command_map(self, key):
+        """Remove key from urwid's internal command map if possible"""
+        import urwid
+        if isinstance(key, KeyChain):
+            key = key[0]
+        try:
+            del urwid.command_map[key]
+        except KeyError as e:
+            return False
+        else:
+            return True
+
     def bind(self, key, action, context=DEFAULT_CONTEXT):
         """Bind `key` to `action` in `context`
 
