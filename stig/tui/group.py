@@ -227,11 +227,10 @@ class Group(urwid.WidgetWrap):
             opts = self.get_item(name)['options']
 
             if opts[0] == 'weight':
-                self._main.contents[position] = (_FlowFill(),
-                                                 self._main.options('weight', opts[1]))
+                content = (_FlowFill(), self._main.options('weight', opts[1]))
             else:
-                self._main.contents[position] = (_FlowFill(),
-                                                 self._main.options('given', 0))
+                content = (_FlowFill(), self._main.options('given', 0))
+            self._main.contents[position] = content
             # Try to focus next selectable item
             self.focus_selectable(forward=False)
             self.focus_selectable(forward=True)
