@@ -6,12 +6,27 @@ import urwid
 
 class TestGroup(unittest.TestCase):
     def setUp(self):
-        self.grp = Group(
-            {'name': 'one',
-             'widget': urwid.Text('This is text one.')},
-            {'name': 'two',
-             'widget': urwid.Text('This is text two.')},
-        )
+        self.items = {
+            'one': {'name': 'one',
+                    'widget': urwid.Text('This is text one.')},
+            'two': {'name': 'two',
+                    'widget': urwid.Text('This is text two.')},
+        }
+        self.grp = Group(*tuple(self.items.values()))
+
+    def test_get_item(self):
+        self.assertEqual(self.grp.get_item('one')['name'], 'one')
+        self.assertEqual(self.grp.get_item('two')['name'], 'two')
+
+        with self.assertRaises(ValueError):
+            self.grp.get_item('three')
+        self.grp.add(name='three', widget=urwid.Text('This is text three.'),
+                     removable=True)
+        self.assertEqual(self.grp.get_item('three')['name'], 'three')
+
+        self.grp.remove(name='three')
+        with self.assertRaises(ValueError):
+            self.grp.get_item('three')
 
     def test_widget_attributes(self):
         self.assertEqual(self.grp.names, ['one', 'two'])
