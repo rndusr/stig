@@ -285,6 +285,9 @@ class KeyMap():
         if isinstance(action, Key) and key == action:
             raise ValueError('Circular key mapping: %s -> %s' % (key, action))
 
+        if context == DEFAULT_CONTEXT:
+            self._unbind_from_urwid_command_map(key)
+
         if context not in self._actions:
             self._actions[context] = {}
         self._actions[context][key] = action
