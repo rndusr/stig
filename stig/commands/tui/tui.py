@@ -21,7 +21,7 @@ from ._common import make_tab_title_widget
 import shlex
 
 
-# Import tui module only on demand
+# Import tui.main module only on demand
 def _get_KEYMAP_CONTEXTS():
     from ...tui.main import KEYMAP_CONTEXTS
     return sorted(KEYMAP_CONTEXTS)
