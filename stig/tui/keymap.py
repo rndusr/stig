@@ -306,7 +306,11 @@ class KeyMap():
             del self._actions[context][key]
             log.debug('%s: Unmapped %r', context, key)
         else:
-            key_removed = False
+            if context == DEFAULT_CONTEXT:
+                key_removed = self._unbind_from_urwid_command_map(key)
+            else:
+                key_removed = False
+
             for k in tuple(self._actions[context]):
                 if isinstance(k, KeyChain) and k.startswith(key):
                     del self._actions[context][k]
