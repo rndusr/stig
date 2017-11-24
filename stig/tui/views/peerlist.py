@@ -12,7 +12,6 @@
 import urwid
 
 from ..scroll import ScrollBar
-from ..table import Table
 from .plist_columns import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 
