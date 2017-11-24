@@ -465,7 +465,7 @@ class Torrent(base.TorrentBase):
             # Each key depends on one or more RPC field
             fields = DEPENDENCIES[k]
             for field in fields:
-                if field in raw_old and field in raw_torrent and raw_old[field] != raw_torrent[field]:
+                if raw_old.get(field) != raw_torrent.get(field):
                     # New and previous value differ - if we are dealing with
                     # more complex data structures (e.g. a file tree), use the
                     # update() method to update the object in cache instead of
