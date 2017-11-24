@@ -257,7 +257,8 @@ class ScrollBar(urwid.WidgetDecoration):
         `widget` must be a box widget with the following methods:
           - `get_scrollpos` takes the arguments `size` and `focus` and returns
             the index of the first visible row.
-          - `set_scrollpos` (optional) takes the index of the first visible row.
+          - `set_scrollpos` (optional; needed for mouse click support) takes the
+            index of the first visible row.
           - `rows_max` takes `size` and `focus` and returns the total number of
             rows `widget` can render.
 
