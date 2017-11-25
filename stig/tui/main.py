@@ -125,7 +125,16 @@ def unhandled_input(key):
     if key is not None:
         log.debug('Unhandled key: %s', key)
 
-urwidscreen = urwid.raw_display.Screen()
+class ScreenRaw(urwid.raw_display.Screen):
+    """Set raw mode so that ctrl-c doesn't raise KeyboardInterrupt"""
+    def _start(self, *args, **kwargs):
+        super()._start(*args, **kwargs)
+        import os, tty
+        fd = self._term_input_file.fileno()
+        if os.isatty(fd):
+            tty.setraw(fd)
+
+urwidscreen = ScreenRaw()
 urwidloop = urwid.MainLoop(widgets,
                            screen=urwidscreen,
                            event_loop=urwid.AsyncioEventLoop(loop=aioloop),
