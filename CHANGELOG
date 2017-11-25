@@ -1,12 +1,11 @@
 2017-??-?? ?.?.?
   Breaking changes:
+    * Some filters, sorters and columns have been renamed for consistency
     * The file priority 'shun' is now called 'off'
-    * The 'details' command has been renamed to 'summary' ('details' still still
-      works as an alias)
+    * The 'details' command has been renamed to 'summary' ('details' still works
+      as an alias)
     * The default keybindings to start/stop torrents have changed from <t+p> and
       <t+P> to <t+s> and <t+S> (so we can open the peer list with <t+p>)
-    * For peer lists, the 'name' column is now called 'torrent' when specifying
-      it via peerlist's '--columns' option and when setting 'columns.peers'
     * For boolean settings, the values 'enable'/'disable' have been replaced by
       'enabled'/'disabled'
     * The 'clearlog' command has been removed (see new 'log' command)
@@ -25,10 +24,13 @@
     * New setting: tui.cli.history-size
     * New setting: remove.max-hits sets the maximum number of torrents that are
       deleted without extra user confirmation
+    * Filters, sorters and columns now have shorthand aliases
     * New default keybinding: <t+p> opens a torrent's peer list
     * New default keybinding: <t+t> opens a torrent's tracker list
-    * <ctrl-l> now hides/shows the log instead of clearing it
+    * <ctrl-l> now hides/shows the log and <alt-l> clears it
     * <backspace> reverts a partially entered keychain by one character
+    * <ctrl-c> is now bindable and no longer raises KeyboardInterrupt
+    * Newlines in rc files can now be escaped with "\" to break up long lines
     * The 'rc' command is now available on the CLI
     * The 'rc' command no longer fails if it encounters a command that is not
       supported by the active interface
