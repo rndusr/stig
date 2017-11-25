@@ -143,6 +143,10 @@ def run():
 
     # Run commands either in CLI or TUI mode
     if cmdmgr.active_interface == 'cli':
+        # Exit when pipe is closed (e.g. `stig help | head -1`)
+        import signal
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
         if not run_commands():
             sys.exit(1)
     elif cmdmgr.active_interface == 'tui':
