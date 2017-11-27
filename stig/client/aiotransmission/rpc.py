@@ -199,7 +199,7 @@ class TransmissionRPC():
                     if aiohttp.__version__[0] == '2':
                         session_args['connector'] = aiohttp.TCPConnector(limit_per_host=1)
                     if self.__url.has_auth:
-                        session_args['auth'] = aiohttp.BasicAuth(self.__url.username,
+                        session_args['auth'] = aiohttp.BasicAuth(self.__url.user,
                                                                  self.__url.password)
 
                     # It is possible that the connection test below was
