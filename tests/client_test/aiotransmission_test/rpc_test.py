@@ -82,6 +82,33 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
         self.assert_cb_error_called(calls=0)
 
+    async def test_authentication_with_good_url(self):
+        self.client.url.user = 'foo'
+        self.client.url.password = 'bar'
+
+        self.assertEqual(str(self.client.url),
+                         '%s://foo:bar@%s:%s%s' % (self.client.url.scheme,
+                                                   self.client.url.host,
+                                                   self.client.url.port,
+                                                   self.client.url.path))
+        # TransmissionRPC requests 'session-get' to test the connection and
+        # set version properties.
+        self.daemon.response = rsrc.SESSION_GET_RESPONSE
+
+        self.assert_not_connected_to(self.url)
+        await self.client.connect(self.url)
+
+        self.assert_connected_to(self.url)
+        self.assert_cb_connected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=0)
+        self.assert_cb_error_called(calls=0)
+
+        await self.client.disconnect()
+        self.assert_not_connected_to(self.url)
+        self.assert_cb_connected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_disconnected_called(calls=1, args=[(self.url,)])
+        self.assert_cb_error_called(calls=0)
+
     async def test_connect_to_bad_url(self):
         bad_url = rsrc.make_url()
         with self.assertRaises(ConnectionError) as cm:
