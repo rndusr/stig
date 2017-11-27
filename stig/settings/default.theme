@@ -32,8 +32,8 @@
 #     $<VARIABLE> = <VALUE>
 #
 # Any occurence of '$<VARIABLE>' after this declaration is replaced by
-# '<VALUE>'.  Variable names cannot contain any non-whitespace characters.  All
-# other characters are fine.
+# '<VALUE>'.  Variable names consist of one or more printable, non-whitespace
+# characters.
 
 # Uncomment the next line to automatically make light colors bold.
 # light_is_bold
