@@ -1,3 +1,10 @@
+2017-11-27 0.8.1a
+  Fixed bugs:
+    * stig crashed with "'TransmissionURL' object has no attribute 'username'"
+      when trying to connect to daemon with user and password
+    * Documentation in default.theme file was confused about double negatives
+
+
 2017-11-25 0.8.0a
   Breaking changes:
     * Some filters, sorters and columns have been renamed for consistency
