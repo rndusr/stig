@@ -250,7 +250,7 @@ class ScrollBar(urwid.WidgetDecoration):
     def selectable(self):
         return True
 
-    def __init__(self, widget, thumb_char='\u2588', trough_char=' ',
+    def __init__(self, widget, thumb_char=u'\u2588', trough_char=' ',
                  side=SCROLLBAR_RIGHT, width=1):
         """Box widget that adds a scrollbar to `widget`
 
@@ -300,7 +300,7 @@ class ScrollBar(urwid.WidgetDecoration):
         thumb_height = max(1, round(thumb_weight * maxrow))
 
         # Thumb may only touch top/bottom if the first/last row is visible
-        top_weight = pos / max(1, posmax)
+        top_weight = float(pos) / max(1, posmax)
         top_height = int((maxrow-thumb_height) * top_weight)
         if top_height == 0 and top_weight > 0:
             top_height = 1
