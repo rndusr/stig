@@ -30,6 +30,12 @@ class TestTransmissionURL(unittest.TestCase):
         self.assertEqual(url.password, None)
         self.assertEqual(url.host, 'localhost')
 
+    def test_authentication_no_password(self):
+        url = TransmissionURL('foo@localhost')
+        self.assertEqual(url.user, 'foo')
+        self.assertEqual(url.password, None)
+        self.assertEqual(url.host, 'localhost')
+
     def test_authentication_empty_user(self):
         url = TransmissionURL(':bar@localhost')
         self.assertEqual(url.user, None)
