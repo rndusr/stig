@@ -196,8 +196,6 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
     cfg = ExpectedResource
 
-    CONFIRMATION_TAB_TITLE = "Removal Confirmation"
-
     async def run(self, TORRENT_FILTER, delete_files):
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,

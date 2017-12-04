@@ -92,6 +92,7 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.user_confirmation):
     provides = {'tui'}
     cmdmgr = ExpectedResource
+    CONFIRMATION_TAB_TITLE = "Removal Confirmation"
 
     async def show_list_of_hits(self, tfilter):
         cmd = 'tab --title %r ls --sort name %s' % (self.CONFIRMATION_TAB_TITLE, tfilter)
