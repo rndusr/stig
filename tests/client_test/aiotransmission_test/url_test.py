@@ -42,6 +42,12 @@ class TestTransmissionURL(unittest.TestCase):
         self.assertEqual(url.password, None)
         self.assertEqual(url.host, 'localhost')
 
+    def test_invalid_port(self):
+        url = TransmissionURL('foohost:70123')
+        self.assertEqual(url.scheme, 'http')
+        self.assertEqual(url.host, 'foohost')
+        self.assertEqual(url.port, 70123)
+
     def test_no_scheme(self):
         url = TransmissionURL('foohost')
         self.assertEqual(url.scheme, 'http')
