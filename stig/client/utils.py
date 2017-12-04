@@ -110,38 +110,62 @@ class LazyDict(dict):
         return value
 
 
-from urllib.parse import urlsplit
-from .errors import URLParserError
+import re
 class URL():
-    """Wrapper around `urllib.parse.urlsplit`"""
+    """Parse URL as lenient as possible (no validation)"""
 
-    @staticmethod
-    def _parse_url(url_string):
-        # If no scheme is given, urlsplit() thinks the whole string is the path
-        if '://' not in str(url_string):
-            url_string = 'http://' + str(url_string)
+    ### Pilfered from yurl: https://github.com/homm/yurl
+    # This is not validating regexp.
+    # It splits url to unambiguous parts according RFC.
+    _split_re = re.compile(r'''
+        (?:([^:/?#]+):)?            # scheme
+        (?://                       # authority
+            (?:([^/?\#@]*)@)?       # userinfo
+            ([^/?\#]*)              # host:port
+        )?
+        ([^?\#]*)                   # path
+        \??([^\#]*)                 # query
+        \#?(.*)                     # fragment
+        ''', re.VERBOSE | re.DOTALL).match
 
-        # urlsplit() can raise all kinds of errors, and some of them only occur
-        # when accessing its attributes, e.g. when port is not a number
-        try:
-            url = urlsplit(url_string)
-            try:
-                url.port
-            except ValueError:
-                raise ValueError('Port is not an integer')
-            url_dict = {
-                'scheme': url.scheme, 'host': url.hostname, 'port': url.port, 'path': url.path,
-                'user': url.username, 'password': url.password,
-            }
-        except Exception as e:
-            raise URLParserError('%r: %s' % (url_string, e))
+    @classmethod
+    def _parse_url(cls, url):
+        # Default to http scheme so 'host:123' is not interpreted as 'host://123/'
+        if '://' not in str(url):
+            url = 'http://' + str(url)
 
-        # Undefined parts should be None
-        for key in url_dict:
-            if url_dict[key] == '':
-                url_dict[key] = None
+        groups = cls._split_re(url).groups('')
+        # Order: scheme, user+password, host+port, path, query, fragment
+        dct = {}
+        dct['scheme']   = groups[0] or None
+        dct['path']     = groups[3] or None
+        dct['query']    = groups[4] or None
+        dct['fragment'] = groups[5] or None
 
-        return url_dict
+        auth = groups[1]
+        user, pw = None, None
+        if auth:
+            # Password in authentication is optional
+            if ':' in auth:
+                user, pw = auth.split(':')
+            else:
+                user, pw = auth, None
+        dct['user'] = user or None
+        dct['password'] = pw or None
+
+        # Split port from host only if it consists of digits.
+        host = groups[2]
+        port = None
+        port_idx = host.rfind(':')
+        if port_idx >= 0:
+            port_str = host[port_idx+1:]
+            if port_str.isdigit():
+                host = host[:port_idx]
+                port = int(port_str)
+        dct['host'] = host or None
+        dct['port'] = port or None
+
+        return dct
 
     _obj_cache = {}
     def __new__(cls, url):
