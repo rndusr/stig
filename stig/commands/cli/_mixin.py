@@ -33,7 +33,7 @@ class user_confirmation():
                'Y': True, 'N': False}
 
     async def ask_yes_no(self, question, yes=None, no=None, after=None):
-        """Ask user a yes/no question
+        """Ask user a yes/no question and return True/False
 
         The `yes` and `no` arguments are callbacks (or None) that are called
         depending on the user's answer. `after` is called after the user
