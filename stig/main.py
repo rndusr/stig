@@ -147,8 +147,12 @@ def run():
         import signal
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-        if not run_commands():
-            sys.exit(1)
+        try:
+            if not run_commands():
+                sys.exit(1)
+        except KeyboardInterrupt:
+            log.debug('Caught SIGINT')
+
     elif cmdmgr.active_interface == 'tui':
         from .tui import main as tui
         cmdmgr.resources.update(tui=tui)
