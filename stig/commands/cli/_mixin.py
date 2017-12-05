@@ -30,7 +30,10 @@ class user_confirmation():
     aioloop = ExpectedResource
 
     ANSWERS = {'y': True, 'n': False,
-               'Y': True, 'N': False}
+               'Y': True, 'N': False,
+               '\x03': False,  # ctrl-c
+               '\x07': False,  # ctrl-g
+               '\x1b': False}  # escape
 
     async def ask_yes_no(self, question, yes=None, no=None, after=None):
         """Ask user a yes/no question and return True/False
@@ -47,7 +50,7 @@ class user_confirmation():
         async def aiogetch(loop):
             # Disable printing of typed characters
             old_settings = termios.tcgetattr(sys.stdin.fileno())
-            tty.setcbreak(sys.stdin.fileno())
+            tty.setraw(sys.stdin.fileno())
 
             # Read exactly one character
             key = await loop.run_in_executor(None, sys.stdin.read, 1)
