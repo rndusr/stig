@@ -155,18 +155,22 @@ def run():
         if not tui.run(run_commands):
             sys.exit(1)
 
-    # Terminate any remaining tasks
-    tasks = tuple(task for task in asyncio.Task.all_tasks() if not task.done())
-    if tasks:
-        log.debug('Not all tasks have been properly canceled.')
-        for task in tasks:
-            log.debug('Terminating leftover task: %r', task)
-            task.cancel()
-            try:
-                aioloop.run_until_complete(asyncio.wait_for(task, timeout=None))
-                task.result()
-            except (asyncio.CancelledError, asyncio.TimeoutError):
-                pass
-
+    _cancel_unfinished_tasks()
     aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
-    aioloop.close()
+
+    # # Closing the event loop raises "RuntimeError: Event loop is closed" (not
+    # # always) when a `run_in_executor` command (i.e. a thread; e.g. `stig create
+    # # ...`) is cancelled.
+    # # https://github.com/python/asyncio/issues/258
+    # aioloop.close()
+
+def _cancel_unfinished_tasks():
+    pending = (task for task in asyncio.Task.all_tasks() if not task.done())
+    for task in pending:
+        log.debug('Cancelling pending task: %r', task)
+        task.cancel()
+        try:
+            log.debug('Finishing pending task: %r', task)
+            aioloop.run_until_complete(task)
+        except asyncio.CancelledError:
+            pass
