@@ -16,6 +16,7 @@ log = make_logger(__name__)
 
 from .. import ExpectedResource
 from .. import utils
+from ._common import clear_line
 
 
 class make_request():
@@ -57,15 +58,15 @@ class user_confirmation():
 
             # Restore terminal settings and remove question
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
-            print('\r\033[2K', end='', flush=True)
 
             return key
 
         # Get an answer from user
-        print(question, end=' [y|n] ', flush=True)
         answer = None
         while answer is None:
+            print(question, end=' [y|n] ', flush=True)
             key = await aiogetch(self.aioloop)
+            clear_line()
             answer = self.ANSWERS.get(key, None)
 
         # Run yes, no and after callbacks
