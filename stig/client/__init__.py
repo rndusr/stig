@@ -16,7 +16,7 @@ from ..utils import (NumberFloat, NumberInt)
 from .errors import *
 from .constants import *
 
-from .utils import Response
+from .utils import (Response, URL)
 
 from .sorters.tsorter import TorrentSorter
 from .sorters.psorter import TorrentPeerSorter
