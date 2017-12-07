@@ -1,6 +1,7 @@
 2017-??-?? ?.?.?a
   Fixed bugs:
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
+    * Catch SIGINT (<ctrl-c>) in CLI mode
 
 
 2017-11-27 0.8.1a
