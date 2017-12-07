@@ -1,23 +1,35 @@
-from stig.client.aiotransmission.rpc import (TransmissionURL, URLParserError)
+from stig.client.utils import URL
 
 import unittest
 
 
-class TestTransmissionURL(unittest.TestCase):
-    def test_default(self):
-        url = TransmissionURL()
-        self.assertNotEqual(url.scheme, None)
-        self.assertNotEqual(url.host, None)
-        self.assertNotEqual(url.port, None)
+# See also aiotransmission_test/url_test.py
+class TestURL(unittest.TestCase):
+    def test_empty_string(self):
+        url = URL('')
+        self.assertEqual(url.scheme, None)
+        self.assertEqual(url.host, None)
+        self.assertEqual(url.port, None)
+        self.assertEqual(str(url), '')
 
     def test_attributes(self):
-        url = TransmissionURL('http://localhost:123')
+        url = URL('http://user:pw@localhost:123/foo')
         self.assertEqual(url.scheme, 'http')
+        self.assertEqual(url.user, 'user')
+        self.assertEqual(url.password, 'pw')
         self.assertEqual(url.host, 'localhost')
         self.assertEqual(url.port, 123)
+        self.assertEqual(url.path, '/foo')
+
+    def test_no_scheme(self):
+        url = URL('localhost/foo')
+        self.assertEqual(url.scheme, 'http')
+        self.assertEqual(url.host, 'localhost')
+        self.assertEqual(url.port, None)
+        self.assertEqual(url.path, '/foo')
 
     def test_authentication(self):
-        url = TransmissionURL('https://foo:bar@localhost:123')
+        url = URL('https://foo:bar@localhost:123')
         self.assertEqual(url.scheme, 'https')
         self.assertEqual(url.host, 'localhost')
         self.assertEqual(url.port, 123)
@@ -25,49 +37,49 @@ class TestTransmissionURL(unittest.TestCase):
         self.assertEqual(url.password, 'bar')
 
     def test_authentication_empty_password(self):
-        url = TransmissionURL('foo:@localhost')
+        url = URL('foo:@localhost')
         self.assertEqual(url.user, 'foo')
         self.assertEqual(url.password, None)
         self.assertEqual(url.host, 'localhost')
 
     def test_authentication_no_password(self):
-        url = TransmissionURL('foo@localhost')
+        url = URL('foo@localhost')
         self.assertEqual(url.user, 'foo')
         self.assertEqual(url.password, None)
         self.assertEqual(url.host, 'localhost')
 
     def test_authentication_empty_user(self):
-        url = TransmissionURL(':bar@localhost')
+        url = URL(':bar@localhost')
         self.assertEqual(url.user, None)
         self.assertEqual(url.password, 'bar')
         self.assertEqual(url.host, 'localhost')
 
     def test_authentication_empty_user_and_password(self):
-        url = TransmissionURL(':@localhost')
+        url = URL(':@localhost')
         self.assertEqual(url.user, None)
         self.assertEqual(url.password, None)
         self.assertEqual(url.host, 'localhost')
 
     def test_invalid_port(self):
-        url = TransmissionURL('foohost:70123')
+        url = URL('foohost:70123')
         self.assertEqual(url.scheme, 'http')
         self.assertEqual(url.host, 'foohost')
         self.assertEqual(url.port, 70123)
 
     def test_no_scheme(self):
-        url = TransmissionURL('foohost')
+        url = URL('foohost')
         self.assertEqual(url.scheme, 'http')
         self.assertEqual(url.host, 'foohost')
-        self.assertEqual(url.port, 9091)
+        self.assertEqual(url.port, None)
 
     def test_no_scheme_with_port(self):
-        url = TransmissionURL('foohost:9999')
+        url = URL('foohost:9999')
         self.assertEqual(url.scheme, 'http')
         self.assertEqual(url.host, 'foohost')
         self.assertEqual(url.port, 9999)
 
     def test_no_scheme_user_and_pw(self):
-        url = TransmissionURL('foo:bar@foohost:9999')
+        url = URL('foo:bar@foohost:9999')
         self.assertEqual(url.scheme, 'http')
         self.assertEqual(url.host, 'foohost')
         self.assertEqual(url.port, 9999)
@@ -75,17 +87,17 @@ class TestTransmissionURL(unittest.TestCase):
         self.assertEqual(url.password, 'bar')
 
     def test_str(self):
-        url = TransmissionURL('https://foo:bar@localhost:123')
-        self.assertEqual(str(url), 'https://foo:bar@localhost:123/transmission/rpc')
-        url = TransmissionURL('localhost')
-        self.assertEqual(str(url), 'http://localhost:9091/transmission/rpc')
+        url = URL('https://foo:bar@localhost:123')
+        self.assertEqual(str(url), 'https://foo:bar@localhost:123')
+        url = URL('localhost')
+        self.assertEqual(str(url), 'http://localhost')
 
     def test_repr(self):
-        url = TransmissionURL('https://foo:bar@localhost:123')
-        self.assertEqual(repr(url), '<TransmissionURL https://foo:bar@localhost:123/transmission/rpc>')
+        url = URL('https://foo:bar@localhost:123/foo/bar/baz')
+        self.assertEqual(repr(url), '<URL https://foo:bar@localhost:123/foo/bar/baz>')
 
     def test_mutability_and_cache(self):
-        url = TransmissionURL('https://foo.example.com:123/foo')
+        url = URL('https://foo.example.com:123/foo')
         url.port = 321
         url.host = 'bar.example.com'
         url.scheme = 'http'

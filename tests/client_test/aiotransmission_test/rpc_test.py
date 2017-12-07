@@ -12,6 +12,27 @@ import logging
 log = logging.getLogger(__name__)
 
 
+import unittest
+class TestTransmissionURL(unittest.TestCase):
+    def test_default_url(self):
+        url = TransmissionURL()
+        self.assertEqual(url.scheme, 'http')
+        self.assertEqual(url.host, 'localhost')
+        self.assertEqual(url.port, 9091)
+
+    def test_default_scheme(self):
+        url = TransmissionURL('localhost')
+        self.assertEqual(url.scheme, 'http')
+
+    def test_default_port(self):
+        url = TransmissionURL('localhost')
+        self.assertEqual(url.port, 9091)
+
+    def test_default_path(self):
+        url = TransmissionURL('localhost')
+        self.assertEqual(url.path, '/transmission/rpc')
+
+
 class TestTransmissionRPC(asynctest.ClockedTestCase):
     async def setUp(self):
         self.daemon = rsrc.FakeTransmissionDaemon(loop=self.loop)
