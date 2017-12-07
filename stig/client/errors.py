@@ -33,5 +33,3 @@ class RPCError(ClientError):
 class AuthError(ClientError):
     prefix = 'Authentication failed: '
 
-class URLParserError(ClientError, ValueError):
-    prefix = 'Invalid URL: '

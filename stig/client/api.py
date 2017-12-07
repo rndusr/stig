@@ -41,7 +41,6 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     ConnectionError = ConnectionError
     RPCError        = RPCError
     AuthError       = AuthError
-    URLParserError  = URLParserError
 
     def __init__(self, url, interval=1, loop=None):
         if loop is None:

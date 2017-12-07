@@ -23,7 +23,7 @@ from urllib.parse import urlsplit
 import re
 import warnings
 
-from ..errors import (URLParserError, ConnectionError, RPCError, AuthError, ClientError)
+from ..errors import (ConnectionError, RPCError, AuthError, ClientError)
 from ..utils import URL
 
 
