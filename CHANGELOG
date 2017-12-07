@@ -1,3 +1,8 @@
+2017-??-?? ?.?.?a
+  Fixed bugs:
+    * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
+
+
 2017-11-27 0.8.1a
   Fixed bugs:
     * stig crashed with "'TransmissionURL' object has no attribute 'username'"
