@@ -131,7 +131,7 @@ class URL():
     @classmethod
     def _parse_url(cls, url):
         # Default to http scheme so 'host:123' is not interpreted as 'host://123/'
-        if '://' not in str(url):
+        if len(url) > 0 and '://' not in str(url):
             url = 'http://' + str(url)
 
         groups = cls._split_re(url).groups('')
