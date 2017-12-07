@@ -13,10 +13,13 @@ from .version import __version__
 APPNAME = 'stig'
 
 def run():
-    from . import main
-    if main.cliargs['profile_file'] is not None:
-        main.logging.start_profiling(main.run,
-                                     filepath=main.cliargs['profile_file'],
-                                     statistical=False)
-    else:
-        main.run()
+    try:
+        from . import main
+        if main.cliargs['profile_file'] is not None:
+            main.logging.start_profiling(main.run,
+                                         filepath=main.cliargs['profile_file'],
+                                         statistical=False)
+        else:
+            main.run()
+    except KeyboardInterrupt:
+        pass
