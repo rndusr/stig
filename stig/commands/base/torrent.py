@@ -34,7 +34,6 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                 'ls seeds<10',
                 'ls active&tracker~example.org',
                 'ls active|idle&tracker~example')
-
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=False, nargs='*'),
 
