@@ -18,6 +18,161 @@ from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
 import asyncio
+import os
+
+
+class CreateTorrentCmdbase(metaclass=InitCommand):
+    name = 'create'
+    aliases = ()
+    provides = set()
+    category = 'torrent'
+    description = 'Create torrent file or magnet link'
+    usage = ('create [<OPTIONS>] <PATH>',)
+    examples = ('create path/to/dir -f ~/some.torrent -t http://my.tracker:1234/announce',
+                'create path/to/file -m -f ~/another.torrent',
+                'create path/to/file -t tracker1:1234/announce -t tracker2:5678/announce')
+
+    NO_TORRENT_FILE = object()
+    argspecs = (
+        { 'names': ('PATH',),
+          'description': "Path to torrent's content" },
+
+        { 'names': ('--name', '-n'),
+          'default_description': 'Basename of PATH',
+          'description': 'Torrent name' },
+
+        { 'names': ('--file', '-f'), 'nargs': '?', 'default': NO_TORRENT_FILE,
+          'default_description': "Torrent name + '.torrent'",
+          'description': 'Path to the torrent file' },
+
+        { 'names': ('--yes', '-y'), 'action': 'store_true',
+          'description': 'Overwrite FILE without asking' },
+
+        { 'names': ('--magnet', '-m'), 'action': 'store_true',
+          'description': 'Create magnet link' },
+
+        { 'names': ('--tracker', '-t'), 'action': 'append',
+          'description': "Tracker's announce URL (repeatable)"},
+
+        { 'names': ('--webseed', '-w'), 'action': 'append',
+          'description': "Webseed URL (repeatable)"},
+
+        { 'names': ('--httpseed', '-s'), 'action': 'append',
+          'description': "HTTP seed URL (repeatable)"},
+
+        { 'names': ('--private', '-p'), 'action': 'store_true',
+          'description': 'Only use tracker(s) for peer discovery (no DHT/PEX)'},
+
+        { 'names': ('--comment', '-c'),
+          'description': 'Comment that is stored in the torrent file'},
+
+        { 'names': ('--date', '-d'),
+          'default_description': 'Current UTC date with time set to 00:00:00',
+          'description': ('Creation date as YYYY-MM-DD[ HH:MM[:SS]] '
+                          "or '-' to not include creation date") },
+
+        { 'names': ('--xseed', '-x'), 'action': 'store_true',
+          'description': 'Randomize info hash to help with cross-seeding' },
+    )
+
+    srvapi = ExpectedResource
+
+    DATE_FORMATS = ('%Y-%m-%d %H:%M:%S',
+                    '%Y-%m-%dT%H:%M:%S',
+                    '%Y-%m-%d %H:%M',
+                    '%Y-%m-%dT%H:%M',
+                    '%Y-%m-%d')
+
+    async def run(self, **args):
+        from torf import Torrent
+        from ...client import URL
+        from datetime import datetime
+
+        self.torrent = Torrent(
+            path               = args['PATH'],
+            name               = args['name'],
+            trackers           = (str(URL(url)) for url in args['tracker'] or ()),
+            webseeds           = (str(URL(url)) for url in args['webseed'] or ()),
+            httpseeds          = (str(URL(url)) for url in args['httpseed'] or ()),
+            comment            = args['comment'],
+            private            = args['private'],
+            randomize_infohash = args['xseed'],
+        )
+
+        def get_date(date_str):
+            if date_str == '-':
+                return None
+            elif date_str is None:
+                return datetime.utcnow().replace(hour=0, minute=0, second=0,
+                                                 microsecond=0)
+            else:
+                for f in self.DATE_FORMATS:
+                    try:
+                        date = datetime.strptime(date_str, f)
+                    except ValueError:
+                        pass
+                    else:
+                        return date
+                raise ValueError('Invalid date: %r' % date_str)
+
+        try:
+            self.torrent.creation_date = get_date(args['date'])
+        except ValueError as e:
+            log.error(str(e))
+            return False
+
+        generate_args = {'torrent_filehandle': None, 'create_magnet': False}
+        remove_torrent_file_on_failure = True
+        self.torrent_filepath = torrent_filepath = None
+
+        if args['magnet']:
+            generate_args['create_magnet'] = True
+
+        if not args['magnet'] or args['file'] is not None:
+            if args['file'] is None:
+                self.torrent_filepath = torrent_filepath = self.torrent.name + '.torrent'
+            else:
+                self.torrent_filepath = torrent_filepath = args['file']
+
+            # Open file now so we can fail early or have a guaranteed place to
+            # write the generated torrent data
+            overwrite_question = 'Overwrite torrent file %s?' % torrent_filepath
+            if os.path.exists(torrent_filepath):
+                if os.path.isdir(torrent_filepath):
+                    log.error('Torrent file is a directory: %s' % torrent_filepath)
+                    return False
+
+                if args['yes'] or await self.ask_yes_no(overwrite_question):
+                    generate_args['torrent_filehandle'] = \
+                        self._get_torrent_filehandle(torrent_filepath)
+                    remove_torrent_file_on_failure = False
+            else:
+                generate_args['torrent_filehandle'] = \
+                    self._get_torrent_filehandle(torrent_filepath)
+
+        # Torrent creation and progress display is implemented per UI
+        if generate_args['torrent_filehandle'] or generate_args['create_magnet']:
+            success = False
+            try:
+                success = self.generate(**generate_args)
+            finally:
+                # If generate() failed and torrent_filepath didn't exist
+                # already, we should remove it
+                if not success and torrent_filepath and remove_torrent_file_on_failure:
+                    try:
+                        os.remove(torrent_filepath)
+                        log.debug('Removed unfinished torrent file: %r', torrent_filepath)
+                    except Exception:
+                        pass
+
+    def _get_torrent_filehandle(self, torrent_filepath):
+        try:
+            # Open file for writing without truncating in case it already exists
+            fd = os.open(torrent_filepath, os.O_RDWR | os.O_CREAT,
+                         mode=0o666)  # No execution
+            return os.fdopen(fd, 'rb+')
+        except OSError as e:
+            log.error('Unable to write torrent file: %s' % torrent_filepath)
 
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,

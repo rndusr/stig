@@ -37,6 +37,7 @@ setup(
         'pyxdg',
         'blinker',
         'natsort',
+        'torf',
     ],
 
     entry_points = { 'console_scripts': [ 'stig = stig:run' ] },

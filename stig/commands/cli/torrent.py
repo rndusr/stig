@@ -14,8 +14,110 @@ log = make_logger(__name__)
 
 from ..base import torrent as base
 from . import _mixin as mixin
+from ._common import clear_line
 from .. import ExpectedResource
 from ._table import (print_table, TERMSIZE)
+
+
+class CreateTorrentCmd(base.CreateTorrentCmdbase,
+                       mixin.user_confirmation):
+    provides = {'cli'}
+    LABEL_WIDTH = 13
+
+    def generate(self, torrent_filehandle=None, create_magnet=False):
+        from torf import TorfError
+        self._display_torrent_info()
+        try:
+            canceled = not self.torrent.generate(callback=self._progress_callback,
+                                                 interval=0.5)
+        except TorfError as e:
+            clear_line()
+            log.error(e)
+            return False
+        else:
+            clear_line()
+            if canceled:
+                return False
+            else:
+                self._info_line('Info Hash', self.torrent.infohash)
+                if create_magnet:
+                    self._info_line('Magnet URI', self.torrent.magnet())
+                if torrent_filehandle:
+                    self.torrent.write(torrent_filehandle)
+                    torrent_filehandle.close()
+                    self._info_line('Torrent File', self.torrent_filepath)
+                return True
+
+    def _info_line(self, label, value):
+        if label:
+            log.info('%s: %s' % (label.rjust(self.LABEL_WIDTH), value))
+        else:
+            log.info('%s  %s' % (label.rjust(self.LABEL_WIDTH), value))
+
+    def _progress_callback(self, filename, pieces_completed, pieces_total):
+        progress = pieces_completed / pieces_total * 100
+        if progress < 100:
+            msg = '%s: Hashed %d of %d pieces (%.2f %%)' % \
+                  ('Progress'.rjust(self.LABEL_WIDTH), pieces_completed,
+                   pieces_total, progress)
+            clear_line()
+            print(msg, end='', flush=True)
+
+    def _display_torrent_info(self):
+        lines = []
+        t = self.torrent
+        lines.append(('Name', t.name))
+        lines.append(('Content Path', t.path))
+        if t.comment:
+            lines.append(('Comment', t.comment))
+        if t.creation_date:
+            lines.append(('Creation Date', t.creation_date.isoformat(sep=' ', timespec='seconds')))
+        else:
+            lines.append(('Creation Date', 'Unknown'))
+        if t.created_by:
+            lines.append(('Created By', t.created_by))
+        lines.append(('Private', 'yes' if t.private else 'no'))
+
+        trackers = []  # List of lines
+        if t.trackers:
+            if all(len(tier) <= 1 for tier in t.trackers):
+                # One tracker per tier - print tracker per line
+                for tier in t.trackers:
+                    if tier:
+                        trackers.append(tier[0])
+            else:
+                # At least one tier has multiple trackers
+                for i,tier in enumerate(t.trackers, 1):
+                    if tier:
+                        trackers.append('Tier #%d: %s' % (i, tier[0]))
+                        for tracker in tier[1:]:
+                            trackers.append(' '*9 + tracker)
+
+        # Prepend 'Trackers' to first line and indent the remaining ones
+        if trackers:
+            label = 'Tracker' + ('s' if len(trackers) > 1 else '')
+            lines.append((label, trackers[0]))
+            for line in trackers[1:]:
+                lines.append(('', line))
+
+        if t.webseeds:
+            label = 'Webseed' + ('s' if len(t.webseeds) > 1 else '')
+            lines.append((label, t.webseeds[0]))
+            for webseed in t.webseeds[1:]:
+                lines.append(('', webseed))
+
+        if t.httpseeds:
+            label = 'HTTP Seed' + ('s' if len(t.httpseeds) > 1 else '')
+            lines.append((label, t.httpseeds[0]))
+            for httpseed in t.httpseeds[1:]:
+                lines.append(('', httpseed))
+
+        from ...client import convert
+        lines.append(('Piece Size', convert.size(t.piece_size)))
+
+        # Print assembled lines
+        for label,value in lines:
+            self._info_line(label, value)
 
 
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
