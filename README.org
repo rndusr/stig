@@ -108,8 +108,9 @@
    $ pip3 install [--user] git+https://github.com/rndusr/stig.git
    #+END_SRC
 
-   Developers can either install stig with ~pip3~ from a local path and pass the
-   ~--editable~ option or run ~python3 -m stig~ in the project directory.
+   To makes changes to the source code effective immediately, developers can
+   either install stig with ~pip3~ from a local path and pass the ~--editable~
+   option or run ~python3 -m stig~ in the project directory.
 
 ** Requirements
    - Python >=3.5
