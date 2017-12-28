@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from .__version__ import __version__
-APPNAME = __name__.split('.')[0]
+__appname__ = __name__.split('.')[0]
 
 def run():
     try:

@@ -31,7 +31,7 @@ def make_SCRIPTING_doc(cmdname):
              ("To enforce human-readable, formatted output, set the environment "
               "variables COLUMNS and LINES."),
              "",
-             "\t$ \tCOLUMNS=80 LINES=24 {{APPNAME}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
+             "\t$ \tCOLUMNS=80 LINES=24 {{__appname__}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
 
 
 def make_SORT_ORDERS_doc(sortercls, option, setting, append=()):

@@ -15,7 +15,7 @@ from .logging import make_logger
 log = make_logger(__name__)
 
 from collections import abc
-from . import (APPNAME, __version__)
+from . import (__appname__, __version__)
 from .utils import (striplines, expandtabs)
 
 from .cliopts import DESCRIPTIONS
@@ -32,7 +32,7 @@ ALIASES = {
 
 def finalize_lines(lines):
     return tuple(
-        striplines(line.format(APPNAME=APPNAME)
+        striplines(line.format(__appname__=__appname__)
                    for line in expandtabs.expand(lines, indent=2))
     )
 
@@ -63,10 +63,10 @@ class HelpManager():
     @property
     def overview(self):
         lines = [
-            '{} {}'.format(APPNAME, __version__),
+            '{} {}'.format(__appname__, __version__),
             '',
             'SYNTAX',
-            '\t{APPNAME} [<OPTIONS>] [<COMMAND> ; <COMMAND> ; <COMMAND>...]',
+            '\t{____appname____} [<OPTIONS>] [<COMMAND> ; <COMMAND> ; <COMMAND>...]',
             '',
         ]
 
@@ -156,11 +156,11 @@ class HelpManager():
             '',
             '\tGUESSING THE USER INTERFACE (CLI/TUI)',
             ("\t\tIf commands are given as command line arguments and neither "
-             "'--tui' nor '--notui' are provided, {APPNAME} tries to guess "
+             "'--tui' nor '--notui' are provided, {__appname__} tries to guess "
              "whether it makes sense to start the TUI or just run the commands "
-             "and exit.  For example, if you run '{APPNAME} stop foo', "
+             "and exit.  For example, if you run '{__appname__} stop foo', "
              "it is reasonable to assume that you want to run 'stop foo' and "
-             "get your shell prompt back.  But if you run '{APPNAME} set srv.url foo.bar', "
+             "get your shell prompt back.  But if you run '{__appname__} set srv.url foo.bar', "
              "you probably expect the TUI to pop up."),
              '',
              "\t\tThis is how this works basically:",
@@ -400,7 +400,7 @@ class HelpManager():
             ("\tAn rc file contains a list of arbitrary commands, one per line.  "
              "Lines starting with '#' (more precisely: '\s*#') are ignored."),
             '',
-            ("\tThe default rc file path is '$XDG_CONFIG_HOME/{APPNAME}/rc', "
+            ("\tThe default rc file path is '$XDG_CONFIG_HOME/{__appname__}/rc', "
              "where XDG_CONFIG_HOME defaults to '~/.config' if it is not set."),
             '',
             ("\tA different path can be provided with the '--rcfile' option.  "

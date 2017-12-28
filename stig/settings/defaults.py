@@ -16,14 +16,14 @@ import os
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
 
-from .. import APPNAME
+from .. import __appname__
 from ..views import (torrentlist, filelist, peerlist, trackerlist)
 from ..client.sorters.tsorter import TorrentSorter
 from ..client.sorters.psorter import TorrentPeerSorter
 from ..client.sorters.trksorter import TorrentTrackerSorter
 
-DEFAULT_RCFILE        = os.path.join(XDG_CONFIG_HOME, APPNAME, 'rc')
-DEFAULT_HISTORY_FILE  = os.path.join(XDG_CACHE_HOME, APPNAME, 'history')
+DEFAULT_RCFILE        = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
+DEFAULT_HISTORY_FILE  = os.path.join(XDG_CACHE_HOME, __appname__, 'history')
 DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TORRENT_SORT = ('name',)

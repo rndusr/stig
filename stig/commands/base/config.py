@@ -23,11 +23,11 @@ class RcCmdbase(metaclass=InitCommand):
     provides = set()
     description = 'Run commands in rc file'
     usage = ('rc <FILE>',)
-    examples = ('rc rc.example   # Load $XDG_CONFIG_HOME/.config/{APPNAME}/rc.example',)
+    examples = ('rc rc.example   # Load $XDG_CONFIG_HOME/.config/{__appname__}/rc.example',)
     argspecs = (
         {'names': ('FILE',),
          'description': ('Path to rc file; if FILE does not start with '
-                         "'.', '~' or '/', $XDG_CONFIG_HOME/.config/{APPNAME}/ "
+                         "'.', '~' or '/', $XDG_CONFIG_HOME/.config/{__appname__}/ "
                          'is prepended')},
     )
     cmdmgr = ExpectedResource

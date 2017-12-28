@@ -15,7 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource)
-from ... import (APPNAME, __version__)
+from ... import (__appname__, __version__)
 
 
 class HelpCmdbase(metaclass=InitCommand):
@@ -62,7 +62,7 @@ class HelpCmdbase(metaclass=InitCommand):
                     lines.pop(-1)
 
         if not existing_topics:
-            existing_topics.append(APPNAME)
+            existing_topics.append(__appname__)
 
         self.display_help(existing_topics, lines)
         return success
@@ -72,10 +72,10 @@ class VersionCmdbase(metaclass=InitCommand):
     name = 'version'
     category = 'miscellaneous'
     provides = set()
-    description = 'Show {} version'.format(APPNAME)
+    description = 'Show {} version'.format(__appname__)
 
     def run(self):
-        log.info('{} version {}'.format(APPNAME, __version__))
+        log.info('{} version {}'.format(__appname__, __version__))
         return True
 
 
