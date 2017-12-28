@@ -287,7 +287,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
                 'add --stopped http://example.org/something.torrent')
     argspecs = (
         { 'names': ('TORRENT',), 'nargs': '+',
-          'description': 'Link or path to torrent file, magnet link or hash' },
+          'description': 'Link or path to torrent file, magnet link or info hash' },
 
         { 'names': ('--stopped','-s'), 'action': 'store_true',
           'description': 'Do not start downloading the added torrent(s)' },
