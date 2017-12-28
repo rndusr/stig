@@ -146,19 +146,19 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                         self._get_torrent_filehandle(torrent_filepath)
 
         # Torrent creation and progress display is implemented per UI
-        if generate_args['torrent_filehandle'] or generate_args['create_magnet']:
-            success = False
-            try:
-                success = self.generate(**generate_args)
-            finally:
-                # If generate() failed and torrent_filepath didn't exist
-                # already, remove it
-                if not success and torrent_filepath and remove_torrent_file_on_failure:
-                    try:
-                        os.remove(torrent_filepath)
-                        log.debug('Removed unfinished torrent file: %r', torrent_filepath)
-                    except Exception:
-                        pass
+        success = False
+        try:
+            success = self.generate(**generate_args)
+        finally:
+            # If generate() failed and torrent_filepath didn't exist
+            # already, remove it
+            if not success and torrent_filepath and remove_torrent_file_on_failure:
+                try:
+                    os.remove(torrent_filepath)
+                    log.debug('Removed unfinished torrent file: %r', torrent_filepath)
+                except Exception:
+                    pass
+            return success
 
     def _get_torrent_filehandle(self, torrent_filepath):
         try:
