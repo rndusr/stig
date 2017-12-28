@@ -41,6 +41,9 @@ setup(
     extras_require = {
         'create': ['torf'],
     },
+    tests_require = [
+        'asynctest>=0.11',
+    ],
 
     entry_points = { 'console_scripts': [ 'stig = stig:run' ] },
 
