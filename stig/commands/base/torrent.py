@@ -88,16 +88,20 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
         from ...client import URL
         from datetime import datetime
 
-        self.torrent = Torrent(
-            path               = args['PATH'],
-            name               = args['name'],
-            trackers           = (str(URL(url)) for url in args['tracker'] or ()),
-            webseeds           = (str(URL(url)) for url in args['webseed'] or ()),
-            httpseeds          = (str(URL(url)) for url in args['httpseed'] or ()),
-            comment            = args['comment'],
-            private            = args['private'],
-            randomize_infohash = args['xseed'],
-        )
+        try:
+            self.torrent = torf.Torrent(
+                path               = args['PATH'],
+                name               = args['name'],
+                trackers           = (str(URL(url)) for url in args['tracker'] or ()),
+                webseeds           = (str(URL(url)) for url in args['webseed'] or ()),
+                httpseeds          = (str(URL(url)) for url in args['httpseed'] or ()),
+                comment            = args['comment'],
+                private            = args['private'],
+                randomize_infohash = args['xseed'],
+            )
+        except torf.TorfError as e:
+            log.error(str(e))
+            return False
 
         def get_date(date_str):
             if date_str == '-':
