@@ -1,4 +1,7 @@
 2017-??-?? ?.?.?a
+  Other changes:
+    * New command: 'create' (adds optional dependency for 'torf' module)
+
   Fixed bugs:
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
     * Catch SIGINT (<ctrl-c>) in CLI mode
