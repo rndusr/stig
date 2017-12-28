@@ -37,8 +37,10 @@ setup(
         'pyxdg',
         'blinker',
         'natsort',
-        'torf',
     ],
+    extras_require = {
+        'create': ['torf'],
+    },
 
     entry_points = { 'console_scripts': [ 'stig = stig:run' ] },
 
