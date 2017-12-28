@@ -40,6 +40,7 @@ setup(
     ],
     extras_require = {
         'create': ['torf'],
+        'geoip': ['GeoIP'],
     },
     tests_require = [
         'asynctest>=0.11',
