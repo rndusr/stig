@@ -119,6 +119,7 @@
    - [[https://pypi.python.org/pypi/pyxdg][pyxdg]]
    - [[https://pypi.python.org/pypi/blinker][blinker]]
    - [[https://pypi.python.org/pypi/natsort][natsort]]
+   - [[https://pypi.python.org/pypi/torf][torf]] (optional; enables torrent creation)
    - [[https://pypi.python.org/pypi/GeoIP][GeoIP]] (optional; shows country codes in peer lists)
    - [[https://pypi.python.org/pypi/asynctest/][asynctest]] (only needed to run tests)
 
