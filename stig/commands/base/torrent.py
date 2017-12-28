@@ -31,8 +31,6 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
     examples = ('create path/to/dir -f ~/some.torrent -t http://my.tracker:1234/announce',
                 'create path/to/file -m -f ~/another.torrent',
                 'create path/to/file -t tracker1:1234/announce -t tracker2:5678/announce')
-
-    NO_TORRENT_FILE = object()
     argspecs = (
         { 'names': ('PATH',),
           'description': "Path to torrent's content" },
@@ -41,7 +39,7 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
           'default_description': 'Basename of PATH',
           'description': 'Torrent name' },
 
-        { 'names': ('--file', '-f'), 'nargs': '?', 'default': NO_TORRENT_FILE,
+        { 'names': ('--file', '-f'),
           'default_description': "Torrent name + '.torrent'",
           'description': 'Path to the torrent file' },
 
@@ -113,46 +111,41 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                 log.error(str(e))
                 return False
 
-
         # Prepare for generate() call
-        generate_args = {'torrent_filehandle': None, 'create_magnet': False}
+        generate_args = {'torrent_filehandle': None,
+                         'create_magnet': args['magnet']}
 
-        if args['magnet']:
-            generate_args['create_magnet'] = True
+        if args['file'] is None:
+            self.torrent_filepath = torrent_filepath = self.torrent.name + '.torrent'
+        else:
+            self.torrent_filepath = torrent_filepath = args['file']
 
-        remove_torrent_file_on_failure = True
-        self.torrent_filepath = torrent_filepath = None
-        if not args['magnet'] or args['file'] is not None:
-            if args['file'] is None:
-                self.torrent_filepath = torrent_filepath = (self.torrent.name + '.torrent')
-            elif args['file'] is not self.NO_TORRENT_FILE:
-                self.torrent_filepath = torrent_filepath = args['file']
+        # Open file now so we can fail early or have a guaranteed place to write
+        # the generated torrent data
+        overwrite_question = 'Overwrite torrent file %s?' % torrent_filepath
+        if os.path.exists(torrent_filepath):
+            if os.path.isdir(torrent_filepath):
+                log.error('Torrent file is a directory: %s' % torrent_filepath)
+                return False
+            elif not args['yes'] and not await self.ask_yes_no(overwrite_question):
+                return False
+            else:
+                remove_torrent_file_on_failure = False
+        else:
+            remove_torrent_file_on_failure = True
+        torrent_filehandle = self._get_torrent_filehandle(torrent_filepath)
+        log.debug('Creating torrent file: %r' % torrent_filepath)
 
-            if torrent_filepath is not None:
-                # Open file now so we can fail early or have a guaranteed place to
-                # write the generated torrent data
-                overwrite_question = 'Overwrite torrent file %s?' % torrent_filepath
-                if os.path.exists(torrent_filepath):
-                    if os.path.isdir(torrent_filepath):
-                        log.error('Torrent file is a directory: %s' % torrent_filepath)
-                        return False
-
-                    if args['yes'] or await self.ask_yes_no(overwrite_question):
-                        generate_args['torrent_filehandle'] = \
-                            self._get_torrent_filehandle(torrent_filepath)
-                        remove_torrent_file_on_failure = False
-                else:
-                    generate_args['torrent_filehandle'] = \
-                        self._get_torrent_filehandle(torrent_filepath)
-
-        # Torrent creation and progress display is implemented per UI
+        # Torrent creation and progress display is implemented per UI in
+        # generate() method
         success = False
         try:
-            success = self.generate(**generate_args)
+            success = self.generate(torrent_filehandle, create_magnet=args['magnet'])
         finally:
-            # If generate() failed and torrent_filepath didn't exist
-            # already, remove it
+            # This block runs even in case of SIGTERM
             if not success and torrent_filepath and remove_torrent_file_on_failure:
+                # If generate() failed and torrent_filepath didn't exist
+                # already, remove it
                 try:
                     os.remove(torrent_filepath)
                     log.debug('Removed unfinished torrent file: %r', torrent_filepath)
