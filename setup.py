@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 # Load __version__ variable without importing the whole stig module
-with open('stig/version.py') as f:
+with open('stig/__version__.py') as f:
     exec(f.read())
 
 from setuptools import setup, find_packages

@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .version import __version__
+from .__version__ import __version__
 APPNAME = 'stig'
 
 def run():
