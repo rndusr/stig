@@ -165,13 +165,7 @@ class FakeTransmissionDaemon:
         self.server.close()
         await self.server.wait_closed()
         await self.app.shutdown()
-        # TODO: aiohttp has changed behaviour again and this is the easiest
-        # fix for now.  But this should be solved in the future.
-        # (Haha! Fuck you, future me!)
-        try:
-            await self.handler.finish_connections()
-        except AttributeError as e:
-            pass
+        await self.handler.shutdown()
         await self.app.cleanup()
 
 
