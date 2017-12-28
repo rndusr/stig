@@ -11,6 +11,7 @@
 
 from .__version__ import __version__
 __appname__ = __name__.split('.')[0]
+__url__ = 'https://github.com/rndusr/stig'
 
 def run():
     try:
