@@ -16,6 +16,7 @@ from .. import (InitCommand, ExpectedResource)
 from . import _mixin as mixin
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
+from ... import (__appname__, __version__, __url__)
 
 import asyncio
 import os
@@ -100,6 +101,7 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                 comment            = args['comment'],
                 private            = args['private'],
                 randomize_infohash = args['xseed'],
+                created_by         = '%s/%s <%s>' % (__appname__, __version__, __url__),
             )
         except torf.TorfError as e:
             log.error(str(e))
