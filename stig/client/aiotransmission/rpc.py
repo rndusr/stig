@@ -19,7 +19,6 @@ import aiohttp
 import json
 import textwrap
 from blinker import Signal
-from urllib.parse import urlsplit
 import re
 import warnings
 
