@@ -28,7 +28,7 @@ class ConnectionError(ClientError):
     prefix = 'Connection failed: '
 
 class RPCError(ClientError):
-    prefix = 'Invalid RPC request: '
+    prefix = 'Invalid RPC response: '
 
 class AuthError(ClientError):
     prefix = 'Authentication failed: '
