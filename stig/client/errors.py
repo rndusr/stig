@@ -25,7 +25,7 @@ class ClientError(Exception):
         return hash(type(self).__name__ + str(self))
 
 class ConnectionError(ClientError):
-    prefix = 'Connection failed: '
+    prefix = 'Failed to connect: '
 
 class RPCError(ClientError):
     prefix = 'Invalid RPC response: '
