@@ -66,7 +66,7 @@ class HelpManager():
             '{} {}'.format(__appname__, __version__),
             '',
             'SYNTAX',
-            '\t{____appname____} [<OPTIONS>] [<COMMAND> ; <COMMAND> ; <COMMAND>...]',
+            '\t{__appname__} [<OPTIONS>] [<COMMAND> ; <COMMAND> ; <COMMAND>...]',
             '',
         ]
 
