@@ -1,6 +1,4 @@
-from stig.client.aiotransmission.rpc import (TransmissionURL,
-                                             CSRF_ERROR_CODE, CSRF_HEADER,
-                                             AUTH_ERROR_CODE)
+from stig.client.aiotransmission.rpc import (CSRF_ERROR_CODE, CSRF_HEADER, AUTH_ERROR_CODE)
 from aiohttp import web
 from aiohttp.test_utils import unused_port
 import asyncio
@@ -107,17 +105,15 @@ def response_torrents(*torrents):
     return {'result': 'success',
             'arguments': {'torrents': tlist}}
 
-def make_url():
-    return TransmissionURL('localhost:' + str(unused_port()))
-
 
 class FakeTransmissionDaemon:
     def __init__(self, loop):
-        self.url = make_url()
+        self.host = 'localhost'
+        self.port = unused_port()
         self.loop = loop
         self.app = web.Application(loop=loop)
         self.app.router.add_route(method='POST',
-                                  path=self.url.path,
+                                  path='/{path:.*}',
                                   handler=self.handle_POST)
         self.handler = None
         self.server = None
@@ -159,7 +155,7 @@ class FakeTransmissionDaemon:
     async def start(self):
         self.handler = self.app.make_handler()
         self.server = await self.loop.create_server(
-            self.handler, self.url.host, self.url.port)
+            self.handler, self.host, self.port)
 
     async def stop(self):
         self.server.close()

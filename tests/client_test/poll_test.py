@@ -169,7 +169,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
                                      'no response'])
         self.assertEqual(len(errors), 2)
         self.assertIsInstance(errors[0], ConnectionError)
-        self.assertEqual(str(errors[0]), 'Connection failed: Server unreachable')
+        self.assertEqual(str(errors[0]), 'Failed to connect: Server unreachable')
         self.assertIsInstance(errors[1], AuthError)
         self.assertEqual(str(errors[1]), 'Authentication failed: Another error')
 

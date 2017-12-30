@@ -16,13 +16,13 @@ class TorrentAPITestCase(asynctest.TestCase):
     async def setUp(self):
         self.daemon = rsrc.FakeTransmissionDaemon(loop=self.loop)
         await self.daemon.start()
-        self.rpc = TransmissionRPC(str(self.daemon.url), loop=self.loop)
+        self.rpc = TransmissionRPC(self.daemon.host, self.daemon.port, loop=self.loop)
         self.api = TorrentAPI(self.rpc)
-        await self.rpc.connect(self.daemon.url)
+        await self.rpc.connect()
         assert self.rpc.connected == True
 
     async def tearDown(self):
-        await self.rpc.disconnect()
+        self.rpc.disconnect()
         await self.daemon.stop()
 
     def assert_torrentkeys_equal(self, key, tlist, *exp):
