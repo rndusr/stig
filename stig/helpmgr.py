@@ -160,7 +160,8 @@ class HelpManager():
              "whether it makes sense to start the TUI or just run the commands "
              "and exit.  For example, if you run '{__appname__} stop foo', "
              "it is reasonable to assume that you want to run 'stop foo' and "
-             "get your shell prompt back.  But if you run '{__appname__} set srv.url foo.bar', "
+             "get your shell prompt back.  But if you run "
+             "'{__appname__} set connect.host foo.bar', "
              "you probably expect the TUI to pop up."),
              '',
              "\t\tThis is how this works basically:",

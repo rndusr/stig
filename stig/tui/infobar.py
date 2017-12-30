@@ -118,19 +118,26 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
         srvapi.rpc.on('disconnected', self._handle_disconnected)
         srvapi.rpc.on('error', self._handle_error)
 
-    def _handle_connecting(self, url):
-        self._text.set_text('Connecting to {}:{}'.format(url.host, url.port))
+    @staticmethod
+    def _connection_string(rpc):
+        string = '%s:%s' % (rpc.host, int(rpc.port))
+        if rpc.tls:
+            string = 'https://' + string
+        return string
+
+    def _handle_connecting(self, rpc):
+        self._text.set_text('Connecting to %s' % self._connection_string(rpc))
         self._attrmap.set_attr_map({None: 'topbar.host.connecting'})
 
-    def _handle_connected(self, url):
-        self._text.set_text('{}:{} Transmission {}'.format(url.host, url.port, srvapi.rpc.version))
+    def _handle_connected(self, rpc):
+        self._text.set_text('%s Transmission %s' % (self._connection_string(rpc), rpc.version))
         self._attrmap.set_attr_map({None: 'topbar.host.connected'})
 
-    def _handle_disconnected(self, url):
-        self._text.set_text(str(url))
+    def _handle_disconnected(self, rpc):
+        self._text.set_text(self._connection_string(rpc))
         self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
 
-    def _handle_error(self, url, error):
+    def _handle_error(self, rpc, error):
         from ..client import RPCError
         if not isinstance(error, RPCError):
             self._text.set_text(str(error))  # error should also contain url

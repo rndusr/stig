@@ -60,11 +60,18 @@ def init_defaults(cfg):
             super().validate(name.strip('!.') for name in names)
 
     cfg.load(
-        StringValue('srv.url', default='localhost:9091',
-                    description='URL of the Transmission RPC interface ([USER:PASSWORD@]HOST[:PORT])'),
-        NumberValue('srv.timeout', default=10, min=0,
-                    description=('Number of seconds before connecting '
-                                 'to Transmission daemon fails')),
+        StringValue('connect.host', default='localhost',
+                    description='Hostname or IP of Transmission RPC interface'),
+        IntegerValue('connect.port', default=9091, min=1, max=65535,
+                     description='Port of Transmission RPC interface'),
+        StringValue('connect.user', default='',
+                    description='Username to use for authentication with Transmission RPC interface'),
+        StringValue('connect.password', default='',
+                    description='Password to use for authentication with Transmission RPC interface'),
+        NumberValue('connect.timeout', default=10, min=0,
+                    description='Number of seconds before connecting to Transmission RPC interface fails'),
+        BooleanValue('connect.tls', default=False,
+                    description='Whether to connect via HTTPS to the Transmission RPC interface'),
 
         SetValue('columns.torrents', default=DEFAULT_TORRENT_COLUMNS,
                  options=torrentlist.COLUMNS,

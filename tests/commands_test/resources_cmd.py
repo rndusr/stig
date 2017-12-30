@@ -135,11 +135,7 @@ def MockSettings():
         setting.reset = reset
         return setting
 
-    cfg = {'srv.url'          : mk_setting(name='srv.url',
-                                           value='http://localhost:9091',
-                                           typename='string',
-                                           string=lambda value=None, default=False: str(value)),
-           'sort.torrents'    : mk_setting(name='sort.torrents',
+    cfg = {'sort.torrents'    : mk_setting(name='sort.torrents',
                                            value=['name'],
                                            typename='list',
                                            string=lambda value=None, default=False: str(value)),

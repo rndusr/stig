@@ -61,14 +61,14 @@ class ResetCmdbase(metaclass=InitCommand):
     provides = set()
     description = 'Reset settings to their default values'
     usage = ('reset <NAME> <NAME> <NAME> ...',)
-    examples = ('reset srv.url',)
+    examples = ('reset connect.port',)
     argspecs = (
         {'names': ('NAME',), 'nargs': '+',
          'description': 'Name of setting'},
     )
     more_sections = {
         'SEE ALSO': (('Run `help settings` for a list of all available settings.  Note that '
-                      'server settings (srv.* except for srv.url and srv.timeout) cannot be reset.'),),
+                      'server settings (srv.*) cannot be reset.'),),
     }
     cfg = ExpectedResource
 
@@ -93,7 +93,7 @@ class SetCmdbase(metaclass=InitCommand):
     provides = set()
     description = 'Change values of settings'
     usage = ('set <NAME> <VALUE>',)
-    examples = ('set srv.url my.server.example.org:12345',)
+    examples = ('set connect.host my.server.example.org',)
     argspecs = (
         {'names': ('NAME',),
          'description': 'Name of setting'},

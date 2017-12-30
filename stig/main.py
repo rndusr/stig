@@ -42,7 +42,11 @@ helpmgr.settings = cfg
 
 
 from .client import API
-srvapi = API(url=cfg['srv.url'].value,
+srvapi = API(host=cfg['connect.host'].value,
+             port=cfg['connect.port'].value,
+             user=cfg['connect.user'].value,
+             password=cfg['connect.password'].value,
+             tls=cfg['connect.tls'].value,
              interval=cfg['tui.poll'].value,
              loop=aioloop)
 srvapi.bandwidth_unit = cfg['unit.bandwidth'].value
@@ -160,7 +164,6 @@ def run():
             sys.exit(1)
 
     _cancel_unfinished_tasks()
-    aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
 
     # # Closing the event loop raises "RuntimeError: Event loop is closed" (not
     # # always) when a `run_in_executor` command (i.e. a thread; e.g. `stig create

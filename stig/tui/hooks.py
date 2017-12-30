@@ -25,15 +25,20 @@ from .views.tlist_columns import TUICOLUMNS as TORRENT_COLUMNS
 from .views.flist_columns import TUICOLUMNS as FILE_COLUMNS
 
 
-def _connect_to_new_url(url):
+def _reconnect(setting):
     # See also ..hooks
     async def coro():
+        log.debug('Reconnecting because %s changed to %r', setting.name, setting.value)
         try:
-            await srvapi.rpc.connect(url.value)
+            await srvapi.rpc.connect()
         except srvapi.ClientError as e:
             log.error(str(e))
     aioloop.create_task(coro())
-cfg['srv.url'].on_change(_connect_to_new_url)
+cfg['connect.host'].on_change(_reconnect)
+cfg['connect.port'].on_change(_reconnect)
+cfg['connect.user'].on_change(_reconnect)
+cfg['connect.password'].on_change(_reconnect)
+cfg['connect.tls'].on_change(_reconnect)
 
 
 def _update_pollers(url):
@@ -89,7 +94,6 @@ cfg['tui.theme'].on_change(_set_theme)
 def _set_tui_marked_char(methodname, setting):
     getattr(TORRENT_COLUMNS['marked'], methodname)(setting.value)
     getattr(FILE_COLUMNS['marked'], methodname)(setting.value)
-
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget)):
             widget.refresh_marks()

@@ -11,20 +11,26 @@
 
 """General hooks that are always needed regardless of the interface"""
 
+from .logging import make_logger
+log = make_logger(__name__)
+
 from .main import (cfg, srvapi)
 from .views.torrentlist import COLUMNS as TORRENT_COLUMNS
 from .views.filelist import COLUMNS as FILE_COLUMNS
 from .views.peerlist import COLUMNS as PEER_COLUMNS
 
 
-def _set_rpc_timeout(timeout):
-    srvapi.rpc.timeout = timeout.value
-cfg['srv.timeout'].on_change(_set_rpc_timeout)
-
-
-def _set_rpc_url(url):
-    srvapi.url = url.value
-cfg['srv.url'].on_change(_set_rpc_url)
+def _make_connection_callback(name):
+    def on_set(setting):
+        log.debug('Setting rpc.%s=%r', name, setting.value)
+        setattr(srvapi.rpc, name, setting.value)
+    return on_set
+cfg['connect.host'].on_change(_make_connection_callback('host'), autoremove=False)
+cfg['connect.port'].on_change(_make_connection_callback('port'), autoremove=False)
+cfg['connect.user'].on_change(_make_connection_callback('user'), autoremove=False)
+cfg['connect.password'].on_change(_make_connection_callback('password'), autoremove=False)
+cfg['connect.tls'].on_change(_make_connection_callback('tls'), autoremove=False)
+cfg['connect.timeout'].on_change(_make_connection_callback('timeout'), autoremove=False)
 
 
 def _set_bandwidth_unit(unit):

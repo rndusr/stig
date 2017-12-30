@@ -29,11 +29,13 @@ from .utils import lazy_property
 
 
 class API(convert.bandwidth_mixin, convert.size_mixin):
-    """Provide and manage *API classes as singletons
+    """
+    Provide and manage *API classes as singletons
 
-    A convenience class that creates instances of TransmissionRPC, TorrentAPI,
-    StatusAPI, TorrentRequestPool and TorrentCounters in a lazy manner on
-    demand.
+    A convenience class that provides instances of TransmissionRPC, TorrentAPI,
+    StatusAPI, TorrentRequestPool and TorrentCounters and all ClientError
+    exceptions in one object. All instances except TransmissionRPC are created
+    lazily on demand.
     """
 
     # Make errors available without having to import them everywhere
@@ -42,27 +44,19 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     RPCError        = RPCError
     AuthError       = AuthError
 
-    def __init__(self, url, interval=1, loop=None):
-        if loop is None:
-            raise TypeError('Missing argument: loop')
-        self.loop = loop
-        self._url = url
+    def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
+                 password=None, loop=None, interval=1):
+        self.loop = loop if loop is not None else asyncio.get_event_loop()
+        self._rpc = TransmissionRPC(host=host, port=port, tls=tls, user=user,
+                                    password=password, loop=self.loop)
         self._interval = interval
         self._pollers = []
         self._manage_pollers_interval = SleepUneasy(loop=self.loop)
 
     @property
-    def url(self):
-        """URL to API interface"""
-        if self.created('rpc'):
-            return self.rpc.url
-        return self._url
-
-    @url.setter
-    def url(self, url):
-        self._url = url
-        if self.created('rpc'):
-            self.rpc.url = url
+    def rpc(self):
+        """TransmissionRPC singleton"""
+        return self._rpc
 
     @property
     def interval(self):
@@ -79,12 +73,6 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     def created(self, prop):
         """Whether property `prop` was created"""
         return hasattr(self, prop+'_created')
-
-    @lazy_property(after_creation=lambda self: setattr(self, 'rpc_created', True))
-    def rpc(self):
-        """TransmissionRPC singleton"""
-        log.debug('Creating RPC singleton')
-        return TransmissionRPC(self._url, loop=self.loop)
 
     @lazy_property(after_creation=lambda self: setattr(self, 'torrent_created', True))
     def torrent(self):
@@ -112,11 +100,12 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
 
 
     def create_poller(self, *args, interval=None, loop=None, **kwargs):
-        """Create, start and return custom RequestPoller instance
+        """
+        Create, start and return custom RequestPoller instance
 
         All arguments are used to create the poller, except for `interval` and
-        `loop`, which are ignored and replaced with this object's `interval`
-        and `loop` attributes so all pollers have the same interval.
+        `loop`, which are ignored and replaced with this object's `interval` and
+        `loop` attributes so all pollers have the same interval.
 
         The RequestPoller instance is treated like all other pollers, i.e. it
         is polled when `poll` is called, its interval is changed when
@@ -193,7 +182,8 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
         return pollers[0].running
 
     def poll(self):
-        """Poll all created and running pollers immediately
+        """
+        Poll all created and running pollers immediately
 
         This also resets the interval - the next polls are made `interval`
         seconds later.
