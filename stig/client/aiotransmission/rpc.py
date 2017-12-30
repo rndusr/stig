@@ -225,9 +225,13 @@ class TransmissionRPC():
 
                 session_args = {'loop': self.loop}
                 if self.user and not self.password:
-                    raise AuthError('Missing password')
+                    e = AuthError('Missing password')
+                    self._on_error.send(self, error=e)
+                    raise e
                 elif not self.user and self.password:
-                    raise AuthError('Missing username')
+                    e = AuthError('Missing username')
+                    self._on_error.send(self, error=e)
+                    raise e
                 elif self.user and self.password:
                     session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                              encoding='utf-8')
