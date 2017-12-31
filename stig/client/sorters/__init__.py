@@ -45,15 +45,15 @@ class SorterBase():
         obj = super().__new__(cls)
 
         # Map aliases to their original name
-        obj._aliases = {alias: sname
-                       for sname,s in cls.SORTSPECS.items()
-                       for alias in s.aliases}
+        obj._aliases = {alias:sname
+                        for sname,s in cls.SORTSPECS.items()
+                        for alias in s.aliases}
         return obj
 
     def __init__(self, sortstrings=()):
         sortspecs = []
         sortfuncs = []
-        strings = []         # String representations of sortspecs
+        strings = []   # String representations of sortspecs
 
         # Go through items in reverse because to want to deduplicate sort orders
         # while keeping the most recent one.
