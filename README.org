@@ -1,8 +1,15 @@
 * stig
+  [[https://pypi.python.org/pypi/stig][file:https://img.shields.io/pypi/v/stig.svg]]
+  [[file:https://img.shields.io/pypi/status/stig.svg]]
+  [[file:https://img.shields.io/pypi/l/stig.svg]]
+  [[file:https://img.shields.io/pypi/pyversions/stig.svg]]
+  [[file:https://img.shields.io/github/last-commit/rndusr/stig.svg]]
+
+  [[file:https://raw.githubusercontent.com/rndusr/stig/master/screenshot.png]]
+
   stig is a TUI (text user interface) and CLI (command line interface) client
   for the [[http://www.transmissionbt.com/][BitTorrent client Transmission]].
 
-  [[file:https://raw.githubusercontent.com/rndusr/stig/master/screenshot.png]]
 
 ** Features
    - *Filters* are used to list/start/stop/remove/etc torrents matching any
