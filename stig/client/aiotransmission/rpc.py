@@ -15,7 +15,6 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 import asyncio
-import aiohttp
 import json
 import textwrap
 from blinker import Signal
@@ -215,6 +214,7 @@ class TransmissionRPC():
 
         else:
             async with self._connection_lock:
+                import aiohttp
                 log.debug('Acquired connect() lock')
 
                 if self.connected:
@@ -283,6 +283,7 @@ class TransmissionRPC():
 
     _RPC_PATH = '/transmission/rpc'
     async def _post(self, data):
+        import aiohttp
         with aiohttp.Timeout(self.timeout, loop=self.loop):
             try:
                 response = await self._session.post(self._url + self._RPC_PATH,
