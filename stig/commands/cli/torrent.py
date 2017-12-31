@@ -24,35 +24,31 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
     provides = {'cli'}
     LABEL_WIDTH = 13
 
-    def generate(self, torrent_filehandle=None, create_magnet=False):
+    def generate(self, torrent, torrent_filepath=None, torrent_filehandle=None,
+                 create_magnet=False):
         from torf import TorfError
-        self._display_torrent_info()
+        self._display_torrent_info(torrent)
+        canceled = True
         try:
-            canceled = not self.torrent.generate(callback=self._progress_callback,
-                                                 interval=0.5)
+            canceled = not torrent.generate(callback=self._progress_callback,
+                                            interval=0.5)
         except TorfError as e:
             clear_line()
             log.error(e)
             return False
-        else:
+        finally:
             clear_line()
             if canceled:
                 return False
             else:
-                self._info_line('Info Hash', self.torrent.infohash)
+                self._info_line('Info Hash', torrent.infohash)
                 if create_magnet:
-                    self._info_line('Magnet URI', self.torrent.magnet())
-                if torrent_filehandle:
-                    self.torrent.write(torrent_filehandle)
+                    self._info_line('Magnet URI', torrent.magnet())
+                if torrent_filepath and torrent_filehandle:
+                    torrent.write(torrent_filehandle)
                     torrent_filehandle.close()
-                    self._info_line('Torrent File', self.torrent_filepath)
+                    self._info_line('Torrent File', torrent_filepath)
                 return True
-
-    def _info_line(self, label, value):
-        if label:
-            log.info('%s: %s' % (label.rjust(self.LABEL_WIDTH), value))
-        else:
-            log.info('%s  %s' % (label.rjust(self.LABEL_WIDTH), value))
 
     def _progress_callback(self, filename, pieces_completed, pieces_total):
         progress = pieces_completed / pieces_total * 100
@@ -63,31 +59,36 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
             clear_line()
             print(msg, end='', flush=True)
 
-    def _display_torrent_info(self):
+    def _info_line(self, label, value):
+        if label:
+            log.info('%s: %s' % (label.rjust(self.LABEL_WIDTH), value))
+        else:
+            log.info('%s  %s' % (label.rjust(self.LABEL_WIDTH), value))
+
+    def _display_torrent_info(self, torrent):
         lines = []
-        t = self.torrent
-        lines.append(('Name', t.name))
-        lines.append(('Content Path', t.path))
-        if t.comment:
-            lines.append(('Comment', t.comment))
-        if t.creation_date:
-            lines.append(('Creation Date', t.creation_date.isoformat(sep=' ', timespec='seconds')))
+        lines.append(('Name', torrent.name))
+        lines.append(('Content Path', torrent.path))
+        if torrent.comment:
+            lines.append(('Comment', torrent.comment))
+        if torrent.creation_date:
+            lines.append(('Creation Date', torrent.creation_date.isoformat(sep=' ', timespec='seconds')))
         else:
             lines.append(('Creation Date', 'Unknown'))
-        if t.created_by:
-            lines.append(('Created By', t.created_by))
-        lines.append(('Private', 'yes' if t.private else 'no'))
+        if torrent.created_by:
+            lines.append(('Created By', torrent.created_by))
+        lines.append(('Private', 'yes' if torrent.private else 'no'))
 
         trackers = []  # List of lines
-        if t.trackers:
-            if all(len(tier) <= 1 for tier in t.trackers):
+        if torrent.trackers:
+            if all(len(tier) <= 1 for tier in torrent.trackers):
                 # One tracker per tier - print tracker per line
-                for tier in t.trackers:
+                for tier in torrent.trackers:
                     if tier:
                         trackers.append(tier[0])
             else:
                 # At least one tier has multiple trackers
-                for i,tier in enumerate(t.trackers, 1):
+                for i,tier in enumerate(torrent.trackers, 1):
                     if tier:
                         trackers.append('Tier #%d: %s' % (i, tier[0]))
                         for tracker in tier[1:]:
@@ -100,20 +101,20 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
             for line in trackers[1:]:
                 lines.append(('', line))
 
-        if t.webseeds:
-            label = 'Webseed' + ('s' if len(t.webseeds) > 1 else '')
-            lines.append((label, t.webseeds[0]))
-            for webseed in t.webseeds[1:]:
+        if torrent.webseeds:
+            label = 'Webseed' + ('s' if len(torrent.webseeds) > 1 else '')
+            lines.append((label, torrent.webseeds[0]))
+            for webseed in torrent.webseeds[1:]:
                 lines.append(('', webseed))
 
-        if t.httpseeds:
-            label = 'HTTP Seed' + ('s' if len(t.httpseeds) > 1 else '')
-            lines.append((label, t.httpseeds[0]))
-            for httpseed in t.httpseeds[1:]:
+        if torrent.httpseeds:
+            label = 'HTTP Seed' + ('s' if len(torrent.httpseeds) > 1 else '')
+            lines.append((label, torrent.httpseeds[0]))
+            for httpseed in torrent.httpseeds[1:]:
                 lines.append(('', httpseed))
 
         from ...client import convert
-        lines.append(('Piece Size', convert.size(t.piece_size)))
+        lines.append(('Piece Size', convert.size(torrent.piece_size)))
 
         # Print assembled lines
         for label,value in lines:

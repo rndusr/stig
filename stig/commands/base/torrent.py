@@ -22,6 +22,7 @@ import asyncio
 import os
 
 
+class CreateError(Exception): pass
 class CreateTorrentCmdbase(metaclass=InitCommand):
     name = 'create'
     aliases = ()
@@ -82,90 +83,110 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                     '%Y-%m-%dT%H:%M',
                     '%Y-%m-%d')
 
-    async def run(self, **args):
-        # Create Torrent instance
+    async def run(self, **kwargs):
+        # All the helper methods should raise CreateError on failure
+        try:
+            # Create Torrent object
+            torrent = self._init_torrent(**kwargs)
+
+            # Allow magnet-only generation
+            if kwargs['file'] or not kwargs['magnet']:
+                # Get torrent filepath and open it early so we can fail before we went
+                # through the time consuming piece hashing
+                torrent_filepath = await self._get_torrent_filepath(torrent, **kwargs)
+                remove_torrent_file_on_failure = not os.path.exists(torrent_filepath)
+                torrent_filehandle = self._get_torrent_filehandle(torrent_filepath)
+            else:
+                torrent_filepath = None
+                remove_torrent_file_on_failure = False
+                torrent_filehandle = None
+        except CreateError as e:
+            log.error(str(e))
+            return False
+
+        log.debug('Creating torrent file: %r',
+                  (torrent_filepath or '<magnet-only generation>'))
+
+        # Torrent creation is implemented per UI in generate() method because
+        # progress display differs
+        success = False
+        try:
+            success = self.generate(torrent, torrent_filepath, torrent_filehandle,
+                                    create_magnet=kwargs['magnet'])
+        # Using 'finally:' ensures that this block runs even in case of SIGTERM
+        finally:
+            if not success:
+                log.error('Canceled torrent creation: %s', torrent.name)
+                if torrent_filepath and remove_torrent_file_on_failure:
+                    # If generate() failed and torrent_filepath didn't exist
+                    # already, remove it
+                    try:
+                        os.remove(torrent_filepath)
+                        log.debug('Removed unfinished torrent file: %r', torrent_filepath)
+                    except Exception:
+                        pass
+            return success
+
+    def _init_torrent(self, **kwargs):
         from ...client import URL
         try:
             import torf
-        except ImportError as e:
-            log.error('Command unavailable: %s (Missing python module: torf)', self.name)
-            return False
+        except ImportError:
+            raise CreateError('Command unavailable: %s (Missing python module: torf)' % self.name)
 
         try:
-            self.torrent = torf.Torrent(
-                path               = args['PATH'],
-                name               = args['name'],
-                trackers           = (str(URL(url)) for url in args['tracker'] or ()),
-                webseeds           = (str(URL(url)) for url in args['webseed'] or ()),
-                httpseeds          = (str(URL(url)) for url in args['httpseed'] or ()),
-                comment            = args['comment'],
-                private            = args['private'],
-                randomize_infohash = args['xseed'],
+            torrent = torf.Torrent(
+                path               = kwargs['PATH'],
+                name               = kwargs['name'],
+                trackers           = (str(URL(url)) for url in kwargs['tracker'] or ()),
+                webseeds           = (str(URL(url)) for url in kwargs['webseed'] or ()),
+                httpseeds          = (str(URL(url)) for url in kwargs['httpseed'] or ()),
+                comment            = kwargs['comment'],
+                private            = kwargs['private'],
+                randomize_infohash = kwargs['xseed'],
                 created_by         = '%s/%s <%s>' % (__appname__, __version__, __url__),
             )
         except torf.TorfError as e:
-            log.error(str(e))
-            return False
+            raise CreateError(str(e))
         else:
             try:
-                self.torrent.creation_date = self.get_date(args['date'])
+                torrent.creation_date = self._get_date(kwargs['date'])
             except ValueError as e:
-                log.error(str(e))
-                return False
+                raise CreateError(str(e))
+            else:
+                return torrent
 
-        # Prepare for generate() call
-        generate_args = {'torrent_filehandle': None,
-                         'create_magnet': args['magnet']}
-
-        if args['file'] is None:
-            self.torrent_filepath = torrent_filepath = self.torrent.name + '.torrent'
+    async def _get_torrent_filepath(self, torrent, **kwargs):
+        if kwargs['file'] is None:
+            torrent_filepath = torrent.name + '.torrent'
         else:
-            self.torrent_filepath = torrent_filepath = args['file']
+            torrent_filepath = kwargs['file']
 
         # Open file now so we can fail early or have a guaranteed place to write
         # the generated torrent data
         overwrite_question = 'Overwrite torrent file %s?' % torrent_filepath
         if os.path.exists(torrent_filepath):
             if os.path.isdir(torrent_filepath):
-                log.error('Torrent file is a directory: %s' % torrent_filepath)
-                return False
-            elif not args['yes'] and not await self.ask_yes_no(overwrite_question):
-                return False
+                raise CreateError('Torrent file is a directory: %s' % torrent_filepath)
+            elif not kwargs['yes'] and not await self.ask_yes_no(overwrite_question):
+                raise CreateError('Not touching output file: %s' % torrent_filepath)
             else:
-                remove_torrent_file_on_failure = False
-        else:
-            remove_torrent_file_on_failure = True
-        torrent_filehandle = self._get_torrent_filehandle(torrent_filepath)
-        log.debug('Creating torrent file: %r' % torrent_filepath)
+                log.debug('Overwriting output file: %s', torrent_filepath)
 
-        # Torrent creation and progress display is implemented per UI in
-        # generate() method
-        success = False
-        try:
-            success = self.generate(torrent_filehandle, create_magnet=args['magnet'])
-        finally:
-            # This block runs even in case of SIGTERM
-            if not success and torrent_filepath and remove_torrent_file_on_failure:
-                # If generate() failed and torrent_filepath didn't exist
-                # already, remove it
-                try:
-                    os.remove(torrent_filepath)
-                    log.debug('Removed unfinished torrent file: %r', torrent_filepath)
-                except Exception:
-                    pass
-            return success
+        return torrent_filepath
 
     def _get_torrent_filehandle(self, torrent_filepath):
         try:
-            # Open file for writing without truncating in case it already exists
+            # Open file for writing without truncating, so if it already exists,
+            # generate() can fail without destroying its contents
             fd = os.open(torrent_filepath, os.O_RDWR | os.O_CREAT,
-                         mode=0o666)  # No execution
+                         mode=0o666)  # No execution bit
             return os.fdopen(fd, 'rb+')
         except OSError as e:
-            log.error('Unable to write torrent file: %s' % torrent_filepath)
+            raise CreateError('Unable to write torrent file: %s' % torrent_filepath)
 
     @staticmethod
-    def get_date(date_str):
+    def _get_date(date_str):
         from datetime import datetime
         if date_str == '-':
             return None
