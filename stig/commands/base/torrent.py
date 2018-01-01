@@ -202,6 +202,40 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
             raise ValueError('Invalid date: %r' % date_str)
 
 
+class ShowTorrentCmdbase(metaclass=InitCommand):
+    name = 'show'
+    aliases = ()
+    provides = set()
+    category = 'torrent'
+    description = 'Display torrent file info'
+    usage = ('show <PATH>',)
+    examples = ('show path/to/file.torrent',)
+    argspecs = (
+        { 'names': ('PATH',),
+          'description': "Path to torrent file" },
+    )
+
+    async def run(self, PATH):
+        try:
+            import torf
+        except ImportError:
+            raise CreateTorrentError('Command unavailable: %s (Missing python module: torf)' % self.name)
+
+        try:
+            with open(PATH, 'rb') as fh:
+                try:
+                    torrent = torf.Torrent.read(fh, validate=False)
+                except torf.TorfError as e:
+                    log.error(e)
+                    return False
+                else:
+                    self.show_torrent(torrent)
+                    return True
+        except OSError as e:
+            log.error('Unable to read torrent file: %s' % PATH)
+            return False
+
+
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                           metaclass=InitCommand):
     name = 'list'

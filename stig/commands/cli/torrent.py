@@ -59,6 +59,13 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
             print(msg, end='', flush=True)
 
 
+class ShowTorrentCmd(base.ShowTorrentCmdbase):
+    provides = {'cli'}
+
+    def show_torrent(self, torrent):
+        _display_torrent_info(torrent)
+
+
 SHOW_TORRENT_LABEL_WIDTH = 13
 def _info_line(label, value):
     if label:
