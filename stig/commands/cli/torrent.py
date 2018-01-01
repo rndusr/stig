@@ -118,6 +118,13 @@ def _display_torrent_info(torrent):
         from ...client import convert
         lines.append(('Piece Size', convert.size(torrent.piece_size)))
 
+    # Show non-standard values
+    standard_keys = ('info', 'announce', 'announce-list', 'creation date',
+                     'created by', 'comment', 'encoding', 'url-list', 'httpseeds')
+    for key,value in torrent.metainfo.items():
+        if key not in standard_keys:
+            lines.append((key.capitalize(), value))
+
     # Print assembled lines
     for label,value in lines:
         _info_line(label, value)
