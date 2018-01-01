@@ -22,7 +22,7 @@ import asyncio
 import os
 
 
-class CreateError(Exception): pass
+class CreateTorrentError(Exception): pass
 class CreateTorrentCmdbase(metaclass=InitCommand):
     name = 'create'
     aliases = ()
@@ -84,7 +84,7 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                     '%Y-%m-%d')
 
     async def run(self, **kwargs):
-        # All the helper methods should raise CreateError on failure
+        # All the helper methods should raise CreateTorrentError on failure
         try:
             # Create Torrent object
             torrent = self._init_torrent(**kwargs)
@@ -100,7 +100,7 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                 torrent_filepath = None
                 remove_torrent_file_on_failure = False
                 torrent_filehandle = None
-        except CreateError as e:
+        except CreateTorrentError as e:
             log.error(str(e))
             return False
 
@@ -132,7 +132,7 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
         try:
             import torf
         except ImportError:
-            raise CreateError('Command unavailable: %s (Missing python module: torf)' % self.name)
+            raise CreateTorrentError('Command unavailable: %s (Missing python module: torf)' % self.name)
 
         try:
             torrent = torf.Torrent(
@@ -147,12 +147,12 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                 created_by         = '%s/%s <%s>' % (__appname__, __version__, __url__),
             )
         except torf.TorfError as e:
-            raise CreateError(str(e))
+            raise CreateTorrentError(str(e))
         else:
             try:
                 torrent.creation_date = self._get_date(kwargs['date'])
             except ValueError as e:
-                raise CreateError(str(e))
+                raise CreateTorrentError(str(e))
             else:
                 return torrent
 
@@ -167,9 +167,9 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
         overwrite_question = 'Overwrite torrent file %s?' % torrent_filepath
         if os.path.exists(torrent_filepath):
             if os.path.isdir(torrent_filepath):
-                raise CreateError('Torrent file is a directory: %s' % torrent_filepath)
+                raise CreateTorrentError('Torrent file is a directory: %s' % torrent_filepath)
             elif not kwargs['yes'] and not await self.ask_yes_no(overwrite_question):
-                raise CreateError('Not touching output file: %s' % torrent_filepath)
+                raise CreateTorrentError('Not touching output file: %s' % torrent_filepath)
             else:
                 log.debug('Overwriting output file: %s', torrent_filepath)
 
@@ -183,7 +183,7 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                          mode=0o666)  # No execution bit
             return os.fdopen(fd, 'rb+')
         except OSError as e:
-            raise CreateError('Unable to write torrent file: %s' % torrent_filepath)
+            raise CreateTorrentError('Unable to write torrent file: %s' % torrent_filepath)
 
     @staticmethod
     def _get_date(date_str):
