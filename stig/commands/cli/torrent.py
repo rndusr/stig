@@ -22,12 +22,11 @@ from ._table import (print_table, TERMSIZE)
 class CreateTorrentCmd(base.CreateTorrentCmdbase,
                        mixin.user_confirmation):
     provides = {'cli'}
-    LABEL_WIDTH = 13
 
     def generate(self, torrent, torrent_filepath=None, torrent_filehandle=None,
                  create_magnet=False):
         from torf import TorfError
-        self._display_torrent_info(torrent)
+        _display_torrent_info(torrent)
         canceled = True
         try:
             canceled = not torrent.generate(callback=self._progress_callback,
@@ -41,84 +40,87 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
             if canceled:
                 return False
             else:
-                self._info_line('Info Hash', torrent.infohash)
+                _info_line('Info Hash', torrent.infohash)
                 if create_magnet:
-                    self._info_line('Magnet URI', torrent.magnet())
+                    _info_line('Magnet URI', torrent.magnet())
                 if torrent_filepath and torrent_filehandle:
                     torrent.write(torrent_filehandle)
                     torrent_filehandle.close()
-                    self._info_line('Torrent File', torrent_filepath)
+                    _info_line('Torrent File', torrent_filepath)
                 return True
 
     def _progress_callback(self, filename, pieces_completed, pieces_total):
         progress = pieces_completed / pieces_total * 100
         if progress < 100:
             msg = '%s: Hashed %d of %d pieces (%.2f %%)' % \
-                  ('Progress'.rjust(self.LABEL_WIDTH), pieces_completed,
+                  ('Progress'.rjust(SHOW_TORRENT_LABEL_WIDTH), pieces_completed,
                    pieces_total, progress)
             clear_line()
             print(msg, end='', flush=True)
 
-    def _info_line(self, label, value):
-        if label:
-            log.info('%s: %s' % (label.rjust(self.LABEL_WIDTH), value))
+
+SHOW_TORRENT_LABEL_WIDTH = 13
+def _info_line(label, value):
+    if label:
+        log.info('%s: %s' % (label.rjust(SHOW_TORRENT_LABEL_WIDTH), value))
+    else:
+        log.info('%s  %s' % (label.rjust(SHOW_TORRENT_LABEL_WIDTH), value))
+
+def _display_torrent_info(torrent):
+    lines = []
+    lines.append(('Name', torrent.name))
+    lines.append(('Content Path', torrent.path))
+    if torrent.comment:
+        lines.append(('Comment', torrent.comment))
+    if torrent.creation_date:
+        lines.append(('Creation Date', torrent.creation_date.isoformat(sep=' ', timespec='seconds')))
+    else:
+        lines.append(('Creation Date', 'Unknown'))
+    if torrent.created_by:
+        lines.append(('Created By', torrent.created_by))
+    lines.append(('Private', 'yes' if torrent.private else 'no'))
+
+    trackers = []  # List of lines
+    if torrent.trackers:
+        if all(len(tier) <= 1 for tier in torrent.trackers):
+            # One tracker per tier - print tracker per line
+            for tier in torrent.trackers:
+                if tier:
+                    trackers.append(tier[0])
         else:
-            log.info('%s  %s' % (label.rjust(self.LABEL_WIDTH), value))
+            # At least one tier has multiple trackers
+            for i,tier in enumerate(torrent.trackers, 1):
+                if tier:
+                    trackers.append('Tier #%d: %s' % (i, tier[0]))
+                    for tracker in tier[1:]:
+                        trackers.append(' '*9 + tracker)
 
-    def _display_torrent_info(self, torrent):
-        lines = []
-        lines.append(('Name', torrent.name))
-        lines.append(('Content Path', torrent.path))
-        if torrent.comment:
-            lines.append(('Comment', torrent.comment))
-        if torrent.creation_date:
-            lines.append(('Creation Date', torrent.creation_date.isoformat(sep=' ', timespec='seconds')))
-        else:
-            lines.append(('Creation Date', 'Unknown'))
-        if torrent.created_by:
-            lines.append(('Created By', torrent.created_by))
-        lines.append(('Private', 'yes' if torrent.private else 'no'))
+    # Prepend 'Trackers' to first line and indent the remaining ones
+    if trackers:
+        label = 'Tracker' + ('s' if len(trackers) > 1 else '')
+        lines.append((label, trackers[0]))
+        for line in trackers[1:]:
+            lines.append(('', line))
 
-        trackers = []  # List of lines
-        if torrent.trackers:
-            if all(len(tier) <= 1 for tier in torrent.trackers):
-                # One tracker per tier - print tracker per line
-                for tier in torrent.trackers:
-                    if tier:
-                        trackers.append(tier[0])
-            else:
-                # At least one tier has multiple trackers
-                for i,tier in enumerate(torrent.trackers, 1):
-                    if tier:
-                        trackers.append('Tier #%d: %s' % (i, tier[0]))
-                        for tracker in tier[1:]:
-                            trackers.append(' '*9 + tracker)
+    if torrent.webseeds:
+        label = 'Webseed' + ('s' if len(torrent.webseeds) > 1 else '')
+        lines.append((label, torrent.webseeds[0]))
+        for webseed in torrent.webseeds[1:]:
+            lines.append(('', webseed))
 
-        # Prepend 'Trackers' to first line and indent the remaining ones
-        if trackers:
-            label = 'Tracker' + ('s' if len(trackers) > 1 else '')
-            lines.append((label, trackers[0]))
-            for line in trackers[1:]:
-                lines.append(('', line))
+    if torrent.httpseeds:
+        label = 'HTTP Seed' + ('s' if len(torrent.httpseeds) > 1 else '')
+        lines.append((label, torrent.httpseeds[0]))
+        for httpseed in torrent.httpseeds[1:]:
+            lines.append(('', httpseed))
 
-        if torrent.webseeds:
-            label = 'Webseed' + ('s' if len(torrent.webseeds) > 1 else '')
-            lines.append((label, torrent.webseeds[0]))
-            for webseed in torrent.webseeds[1:]:
-                lines.append(('', webseed))
-
-        if torrent.httpseeds:
-            label = 'HTTP Seed' + ('s' if len(torrent.httpseeds) > 1 else '')
-            lines.append((label, torrent.httpseeds[0]))
-            for httpseed in torrent.httpseeds[1:]:
-                lines.append(('', httpseed))
-
+    if isinstance(torrent.piece_size, int):
         from ...client import convert
         lines.append(('Piece Size', convert.size(torrent.piece_size)))
 
-        # Print assembled lines
-        for label,value in lines:
-            self._info_line(label, value)
+    # Print assembled lines
+    for label,value in lines:
+        _info_line(label, value)
 
 
 class ListTorrentsCmd(base.ListTorrentsCmdbase,
