@@ -23,15 +23,15 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
                        mixin.user_confirmation):
     provides = {'cli'}
 
-    def generate(self, torrent, torrent_filepath=None, torrent_filehandle=None,
-                 create_magnet=False):
-        from torf import TorfError
+    def generate(self, torrent):
+        import torf
+
         _display_torrent_info(torrent)
         canceled = True
         try:
             canceled = not torrent.generate(callback=self._progress_callback,
                                             interval=0.5)
-        except TorfError as e:
+        except torf.TorfError as e:
             clear_line()
             log.error(e)
             return False
@@ -41,12 +41,21 @@ class CreateTorrentCmd(base.CreateTorrentCmdbase,
                 return False
             else:
                 _info_line('Info Hash', torrent.infohash)
-                if create_magnet:
-                    _info_line('Magnet URI', torrent.magnet())
-                if torrent_filepath and torrent_filehandle:
-                    torrent.write(torrent_filehandle)
-                    torrent_filehandle.close()
-                    _info_line('Torrent File', torrent_filepath)
+                return True
+
+    def write(self, torrent, torrent_filepath, create_magnet=False):
+        if create_magnet:
+            _info_line('Magnet URI', torrent.magnet())
+
+        if torrent_filepath:
+            import torf
+            try:
+                torrent.write(torrent_filepath, overwrite=True)
+            except torf.TorfError as e:
+                log.error(e)
+                return False
+            else:
+                _info_line('Torrent File', torrent_filepath)
                 return True
 
     def _progress_callback(self, filename, pieces_completed, pieces_total):

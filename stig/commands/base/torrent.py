@@ -92,12 +92,10 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
                 # Get torrent filepath and open it early so we can fail before we went
                 # through the time consuming piece hashing
                 torrent_filepath = await self._get_torrent_filepath(torrent, **kwargs)
-                remove_torrent_file_on_failure = not os.path.exists(torrent_filepath)
-                torrent_filehandle = self._get_torrent_filehandle(torrent_filepath)
+                if not torrent_filepath:
+                    return False
             else:
                 torrent_filepath = None
-                remove_torrent_file_on_failure = False
-                torrent_filehandle = None
         except CreateTorrentError as e:
             log.error(str(e))
             return False
@@ -109,20 +107,13 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
         # progress display differs
         success = False
         try:
-            success = self.generate(torrent, torrent_filepath, torrent_filehandle,
-                                    create_magnet=kwargs['magnet'])
+            success = self.generate(torrent)
         # Using 'finally:' ensures that this block runs even in case of SIGTERM
         finally:
-            if not success:
+            if success:
+                self.write(torrent, torrent_filepath, create_magnet=kwargs['magnet'])
+            else:
                 log.error('Canceled torrent creation: %s', torrent.name)
-                if torrent_filepath and remove_torrent_file_on_failure:
-                    # If generate() failed and torrent_filepath didn't exist
-                    # already, remove it
-                    try:
-                        os.remove(torrent_filepath)
-                        log.debug('Removed unfinished torrent file: %r', torrent_filepath)
-                    except Exception:
-                        pass
             return success
 
     def _init_torrent(self, **kwargs):
@@ -167,21 +158,9 @@ class CreateTorrentCmdbase(metaclass=InitCommand):
             if os.path.isdir(torrent_filepath):
                 raise CreateTorrentError('Torrent file is a directory: %s' % torrent_filepath)
             elif not kwargs['yes'] and not await self.ask_yes_no(overwrite_question):
-                raise CreateTorrentError('Not touching output file: %s' % torrent_filepath)
-            else:
-                log.debug('Overwriting output file: %s', torrent_filepath)
+                return False
 
         return torrent_filepath
-
-    def _get_torrent_filehandle(self, torrent_filepath):
-        try:
-            # Open file for writing without truncating, so if it already exists,
-            # generate() can fail without destroying its contents
-            fd = os.open(torrent_filepath, os.O_RDWR | os.O_CREAT,
-                         mode=0o666)  # No execution bit
-            return os.fdopen(fd, 'rb+')
-        except OSError as e:
-            raise CreateTorrentError('Unable to write torrent file: %s' % torrent_filepath)
 
     @staticmethod
     def _get_date(date_str):
@@ -222,18 +201,13 @@ class ShowTorrentCmdbase(metaclass=InitCommand):
             raise CreateTorrentError('Command unavailable: %s (Missing python module: torf)' % self.name)
 
         try:
-            with open(PATH, 'rb') as fh:
-                try:
-                    torrent = torf.Torrent.read(fh, validate=False)
-                except torf.TorfError as e:
-                    log.error(e)
-                    return False
-                else:
-                    self.show_torrent(torrent)
-                    return True
-        except OSError as e:
-            log.error('Unable to read torrent file: %s' % PATH)
+            torrent = torf.Torrent.read(PATH, validate=False)
+        except torf.TorfError as e:
+            log.error(e)
             return False
+        else:
+            self.show_torrent(torrent)
+            return True
 
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
