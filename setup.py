@@ -39,7 +39,7 @@ setup(
         'natsort',
     ],
     extras_require = {
-        'create': ['torf'],
+        'create': ['torf>=1.0rc4'],
         'geoip': ['GeoIP'],
     },
     tests_require = [
