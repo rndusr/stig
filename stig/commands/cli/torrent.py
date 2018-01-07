@@ -17,6 +17,7 @@ from . import _mixin as mixin
 from ._common import clear_line
 from .. import ExpectedResource
 from ._table import (print_table, TERMSIZE)
+from ...client import convert
 
 
 class CreateTorrentCmd(base.CreateTorrentCmdbase,
@@ -86,6 +87,7 @@ def _display_torrent_info(torrent):
     lines = []
     lines.append(('Name', torrent.name))
     lines.append(('Content Path', torrent.path))
+    lines.append(('Size', convert.size(torrent.size)))
     if torrent.comment:
         lines.append(('Comment', torrent.comment))
     if torrent.creation_date:
@@ -131,7 +133,6 @@ def _display_torrent_info(torrent):
             lines.append(('', httpseed))
 
     if isinstance(torrent.piece_size, int):
-        from ...client import convert
         lines.append(('Piece Size', convert.size(torrent.piece_size)))
 
     # Show non-standard values
