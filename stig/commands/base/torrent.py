@@ -187,10 +187,10 @@ class ShowTorrentCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Display torrent file info'
-    usage = ('show <PATH>',)
+    usage = ('show <PATH> <PATH> ...',)
     examples = ('show path/to/file.torrent',)
     argspecs = (
-        { 'names': ('PATH',),
+        { 'names': ('PATH',), 'nargs':'+',
           'description': "Path to torrent file" },
     )
 
@@ -200,14 +200,15 @@ class ShowTorrentCmdbase(metaclass=InitCommand):
         except ImportError:
             raise CreateTorrentError('Command unavailable: %s (Missing python module: torf)' % self.name)
 
-        try:
-            torrent = torf.Torrent.read(PATH, validate=False)
-        except torf.TorfError as e:
-            log.error(e)
-            return False
-        else:
-            self.show_torrent(torrent)
-            return True
+        for path in PATH:
+            try:
+                torrent = torf.Torrent.read(path, validate=False)
+            except torf.TorfError as e:
+                log.error(e)
+                return False
+            else:
+                self.show_torrent(torrent)
+        return True
 
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
