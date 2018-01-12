@@ -56,7 +56,7 @@ class user_confirmation():
             # Read exactly one character
             key = await loop.run_in_executor(None, sys.stdin.read, 1)
 
-            # Restore terminal settings and remove question
+            # Restore terminal settings
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_settings)
 
             return key
