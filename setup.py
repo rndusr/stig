@@ -33,7 +33,7 @@ setup(
     install_requires = [
         'urwid>=1.3.0',
         'urwidtrees>=1.0.3dev0',
-        'aiohttp>=0.22.5',
+        'aiohttp>=2.3.6',
         'pyxdg',
         'blinker',
         'natsort',
