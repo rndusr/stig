@@ -3,10 +3,6 @@
     * The setting 'srv.url' was replaced by the new settings 'connect.host',
       'connect.port', 'connect.user', 'connect.password' and 'connect.tls'
 
-  Other changes:
-    * New commands: 'create' and show to create and show torrent files (adds
-      optional dependency for 'torf' module)
-
   Fixed bugs:
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
     * Catch SIGINT (<ctrl-c>) in CLI mode

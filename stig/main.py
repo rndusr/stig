@@ -166,8 +166,7 @@ def run():
     _cancel_unfinished_tasks()
 
     # # Closing the event loop raises "RuntimeError: Event loop is closed" (not
-    # # always) when a `run_in_executor` command (i.e. a thread; e.g. `stig create
-    # # ...`) is cancelled.
+    # # always) when a `run_in_executor` command (i.e. a thread) is cancelled.
     # # https://github.com/python/asyncio/issues/258
     # aioloop.close()
 
