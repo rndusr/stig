@@ -214,8 +214,11 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
             hits = len(response.torrents)
             if hits > self.cfg['remove.max-hits'].value:
                 await self.show_list_of_hits(tfilter)
-                question = 'Are you sure you want to remove %d torrent%s?' % (
+                question = 'Are you sure you want to remove %d torrent%s' % (
                     hits, '' if hits == 1 else 's')
+                if delete_files:
+                    question += ' and their files'
+                question += '?'
                 return await self.ask_yes_no(question, yes=do_remove,
                                              after=self.remove_list_of_hits)
             else:
