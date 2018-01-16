@@ -110,7 +110,7 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
-                        mixin.make_request, mixin.select_torrents, mixin.user_confirmation):
+                        mixin.make_request, mixin.select_torrents, mixin.ask_yes_no):
     provides = {'cli'}
     cmdmgr = ExpectedResource
 

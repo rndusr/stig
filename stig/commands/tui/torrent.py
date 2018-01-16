@@ -89,7 +89,7 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.polling_frenzy, mixin.make_request, mixin.select_torrents,
-                        mixin.user_confirmation):
+                        mixin.ask_yes_no):
     provides = {'tui'}
     cmdmgr = ExpectedResource
     CONFIRMATION_TAB_TITLE = "Removal Confirmation"

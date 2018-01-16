@@ -29,7 +29,7 @@ class make_request():
         return response
 
 
-class user_confirmation():
+class ask_yes_no():
     tui     = ExpectedResource
     aioloop = ExpectedResource
 

@@ -27,7 +27,7 @@ class make_request():
         return response
 
 
-class user_confirmation():
+class ask_yes_no():
     aioloop = ExpectedResource
 
     ANSWERS = {'y': True, 'n': False,
