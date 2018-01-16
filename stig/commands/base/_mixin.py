@@ -36,7 +36,8 @@ def _get_columns(columns, setting, interface, COLSPECS, cfg):
 
 class get_torrent():
     async def get_torrent(self, tfilter, keys=()):
-        """Get a single torrent that matches TorrentFilter `tfilter`
+        """
+        Get a single torrent that matches TorrentFilter `tfilter`
 
         If there are multple matches, they are sorted by name and the first
         match is returned.
@@ -52,7 +53,8 @@ class get_torrent():
 
 class get_torrent_sorter():
     def get_torrent_sorter(self, args):
-        """Return TorrentSorter instance or None
+        """
+        Return TorrentSorter instance or None
 
         If `args` evaluates to True, it is passed to TorrentSorter and the
         result is returned.
@@ -65,7 +67,8 @@ class get_torrent_sorter():
 
 class get_torrent_columns():
     def get_torrent_columns(self, columns, interface=None):
-        """Check if each item in iterable `columns` is a valid torrent list column name
+        """
+        Check if each item in iterable `columns` is a valid torrent list column name
 
         If `interface` is not None, also remove all columns that don't have
         `interface` in their `interfaces` attribute.
@@ -79,7 +82,8 @@ class get_torrent_columns():
 
 class get_file_columns():
     def get_file_columns(self, columns, interface=None):
-        """Check if each item in iterable `columns` is a valid file list column name
+        """
+        Check if each item in iterable `columns` is a valid file list column name
 
         Raise ValueError or return a new list of `columns`.
         """
@@ -90,7 +94,8 @@ class get_file_columns():
 
 class get_peer_sorter():
     def get_peer_sorter(self, args):
-        """Return TorrentPeerSorter instance or None
+        """
+        Return TorrentPeerSorter instance or None
 
         If `args` evaluates to True, it is passed to TorrentPeerSorter and the
         result is returned.
@@ -103,10 +108,11 @@ class get_peer_sorter():
 
 class get_peer_filter():
     def get_peer_filter(self, FILTER):
-        """Return TorrentPeerFilter instance or None
+        """
+        Return TorrentPeerFilter instance or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentPeerFilter and
-        the resulting object is returned.
+        If `FILTER` evaluates to True, it is passed to TorrentPeerFilter and the
+        resulting object is returned.
 
         If `FILTER` evaluates to False, None is returned.
         """
@@ -116,7 +122,8 @@ class get_peer_filter():
 
 class get_peer_columns():
     def get_peer_columns(self, columns, interface=None):
-        """Check if each item in iterable `columns` is a valid peer list column name
+        """
+        Check if each item in iterable `columns` is a valid peer list column name
 
         Raise ValueError or return a new list of `columns`.
         """
@@ -127,7 +134,8 @@ class get_peer_columns():
 
 class get_tracker_sorter():
     def get_tracker_sorter(self, args):
-        """Return TorrentTrackerSorter instance or None
+        """
+        Return TorrentTrackerSorter instance or None
 
         If `args` evaluates to True, it is passed to TorrentTrackerSorter and
         the result is returned.
@@ -140,7 +148,8 @@ class get_tracker_sorter():
 
 class get_tracker_filter():
     def get_tracker_filter(self, FILTER):
-        """Return TorrentTrackerFilter instance or None
+        """
+        Return TorrentTrackerFilter instance or None
 
         If `FILTER` evaluates to True, it is passed to TorrentTrackerFilter and
         the resulting object is returned.
@@ -153,7 +162,8 @@ class get_tracker_filter():
 
 class get_tracker_columns():
     def get_tracker_columns(self, columns, interface=None):
-        """Check if each item in iterable `columns` is a valid tracker list column name
+        """
+        Check if each item in iterable `columns` is a valid tracker list column name
 
         Raise ValueError or return a new list of `columns`.
         """

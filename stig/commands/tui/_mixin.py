@@ -37,7 +37,8 @@ class ask_yes_no():
                'Y': True, 'N': False}
 
     async def ask_yes_no(self, question, yes=None, no=None, after=None):
-        """Ask user a yes/no question
+        """
+        Ask user a yes/no question
 
         The `yes` and `no` arguments are callbacks (or None) that are called
         depending on the user's answer. `after` is called after the user
@@ -84,7 +85,8 @@ class select_torrents():
     tui = ExpectedResource
 
     def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True):
-        """Get TorrentFilter instance or focused/marked torrent IDs
+        """
+        Get TorrentFilter instance or focused/marked torrent IDs
 
         If `FILTER` evaluates to True, it is passed to TorrentFilter and the
         resulting object is returned.
@@ -110,7 +112,8 @@ class select_torrents():
                 raise ValueError('No torrent specified')
 
     def discover_torrent_ids(self):
-        """Auto-detect which torrents are currently selected by the user
+        """
+        Auto-detect which torrents are currently selected by the user
 
         Try `get_marked_torrent_ids` first, then `get_focused_torrent_id`.
 
@@ -125,7 +128,8 @@ class select_torrents():
             return (tid,)
 
     def get_marked_torrent_ids(self):
-        """Return IDs of marked items in the current or previous tab
+        """
+        Return IDs of marked items in the current or previous tab
 
         This relies on the widget having a `marked` attribute.
         """
@@ -136,7 +140,8 @@ class select_torrents():
                 return tids
 
     def get_focused_torrent_id(self):
-        """Return torrent ID of focused item in the current or previous tab
+        """
+        Return torrent ID of focused item in the current or previous tab
 
         This relies on the widget having a `focused_torrent_id` attribute.
         """
@@ -165,10 +170,11 @@ class select_files():
     tui = ExpectedResource
 
     def select_files(self, FILTER, allow_no_filter=True, discover_file=True):
-        """Get TorrentFileFilter instance, focused file ID or None
+        """
+        Get TorrentFileFilter instance, focused file ID or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and
-        the resulting object is returned.
+        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and the
+        resulting object is returned.
 
         If `FILTER` evaluates to False and `discover_file` evaluates to True,
         the file ID (or IDs) are returned in a tuple if possible. Otherwise,

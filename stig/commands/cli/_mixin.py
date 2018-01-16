@@ -37,7 +37,8 @@ class ask_yes_no():
                '\x1b': False}  # escape
 
     async def ask_yes_no(self, question, yes=None, no=None, after=None):
-        """Ask user a yes/no question and return True/False
+        """
+        Ask user a yes/no question and return True/False
 
         The `yes` and `no` arguments are callbacks (or None) that are called
         depending on the user's answer. `after` is called after the user
@@ -89,7 +90,8 @@ class ask_yes_no():
 
 class select_torrents():
     def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=None):
-        """Get TorrentFilter instance or None
+        """
+        Get TorrentFilter instance or None
 
         If `FILTER` evaluates to True, it is passed to TorrentFilter and the
         resulting object is returned.
@@ -112,10 +114,11 @@ class select_torrents():
 
 class select_files():
     def select_files(self, FILTER, allow_no_filter=True, discover_file=None):
-        """Get TorrentFileFilter instance or None
+        """
+        Get TorrentFileFilter instance or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and
-        the resulting object is returned.
+        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and the
+        resulting object is returned.
 
         If `FILTER` evaluates to False, None is returned if allow_no_filter
         evaluates to True, otherwise a ValueError is raised.
