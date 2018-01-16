@@ -86,7 +86,7 @@ class select_torrents():
 
     def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True):
         """
-        Get TorrentFilter instance or focused/marked torrent IDs
+        Get TorrentFilter instance or None
 
         If `FILTER` evaluates to True, it is passed to TorrentFilter and the
         resulting object is returned.
@@ -103,7 +103,7 @@ class select_torrents():
             if discover_torrent:
                 tids = self.discover_torrent_ids()
                 if tids is not None:
-                    return tids
+                    return self.ids2tfilter(tids)
 
             if allow_no_filter:
                 return None
@@ -164,6 +164,15 @@ class select_torrents():
                 pass
             else:
                 return widget
+
+    @staticmethod
+    def ids2tfilter(ids):
+        """Turn an iterable of ids into a TorrentFilter instance"""
+        if all(isinstance(x, int) for x in ids):
+            from ...client import TorrentFilter
+            return TorrentFilter('|'.join(('id=%d' % id for id in ids)))
+        else:
+            raise RuntimeError('Not a list of IDs: %r' % ids)
 
 
 class select_files():

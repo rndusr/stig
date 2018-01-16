@@ -414,16 +414,7 @@ class ListWidgetBase(urwid.WidgetWrap):
 def stringify_torrent_filter(tfilter, torrents):
     if tfilter is None:
         return 'all'
-    elif isinstance(tfilter, collections.abc.Sequence):
-        # tfilter is a sequence of torrent IDs
-        if len(tfilter) == 1:
-            # Just one specific torrent requested
-            return torrents[0]['name']
-        else:
-            # Multiple specific torrents requested
-            return ','.join(str(tid) for tid in tfilter)
     else:
-        # Should be a TorrentFilter instance
         return str(tfilter)
 
 

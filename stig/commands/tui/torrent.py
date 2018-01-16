@@ -36,17 +36,16 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
     tui = ExpectedResource
 
     async def display_summary(self, tfilter):
-        from collections import abc
-        if isinstance(tfilter, abc.Sequence):
-            # If tfilter is a bunch of IDs, the user probably has torrents
-            # marked.  But we can't display details of multiple torrents, so we
-            # have to pick one.  The most logical solution is to ignore the
-            # marked torrents and pick the focused one.
+        if tfilter.needed_keys == ('id',):
+            # If the filter is looking exclusively for IDs, we assume that it
+            # specifies either a bunch of marked torrents or a focused torrent
+            # in a list.  Since we can't show a summary for multiple torrents,
+            # ignore the marks and pick the focused torrent.
             torrent_id = self.get_focused_torrent_id()
-
         else:
-            # If an actual filter is specified (e.g. 'summary foo|bar'), use the
-            # first matching torrent (in alphabetical order).
+            # The user specified an arbitrary filter (e.g. 'summary foo|bar')
+            # that we have to apply to get an ID.
+            # Pick the first matching torrent.
             torrent = await self.get_torrent(tfilter, keys=('id',))
             if torrent is None:
                 return False

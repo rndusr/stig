@@ -46,9 +46,6 @@ class TorrentRequestPool(RequestPoller):
         keys: Wanted Torrent keys
         tfilter: None for all torrents or TorrentFilter instance
         """
-        if isinstance(tfilter, abc.Sequence):
-            tfilter = TorrentFilter('|'.join('id=%s' % tid for tid in tfilter))
-
         log.debug('Registering subscriber: %s', sid)
         event = blinker.signal(sid)
         event.connect(callback)
