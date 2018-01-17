@@ -222,52 +222,45 @@ class TransmissionRPC():
                     log.debug('Found connection error: %r', self._connection_exception)
                     raise self._connection_exception
 
-        else:
-            async with self._connection_lock:
-                import aiohttp
-                log.debug('Acquired connect() lock')
+        async with self._connection_lock:
+            import aiohttp
+            log.debug('Acquired connect() lock')
 
-                if self.connected:
-                    self.disconnect('Reconnecting')
+            if self.connected:
+                self.disconnect('Reconnecting')
 
-                log.debug('Connecting to %s (timeout=%ss)', self._url, self.timeout)
-                self._on_connecting.send(self)
+            log.debug('Connecting to %s (timeout=%ss)', self._url, self.timeout)
+            self._on_connecting.send(self)
 
-                session_args = {'loop': self.loop}
-                if self.user and not self.password:
-                    e = AuthError('Missing password')
-                    self._on_error.send(self, error=e)
-                    raise e
-                elif not self.user and self.password:
-                    e = AuthError('Missing username')
-                    self._on_error.send(self, error=e)
-                    raise e
-                elif self.user and self.password:
-                    session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
-                                                             encoding='utf-8')
-                self._session = aiohttp.ClientSession(**session_args)
+            session_args = {'loop': self.loop}
+            if self.user and self.password:
+                session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
+                                                         encoding='utf-8')
+            else:
+                log.debug(f'connecting without auth')
+            self._session = aiohttp.ClientSession(**session_args)
 
-                # Check if connection works
-                log.debug('Testing connection to %s', self._url)
-                try:
-                    test_request = json.dumps({'method':'session-get'})
-                    info = await self._send_request(test_request)
-                except ClientError as e:
-                    self._connection_exception = e
-                    log.debug('Caught during connection test: %r', e)
-                    self._reset()
-                    self._on_error.send(self, error=e)
-                    raise
-                else:
-                    self._version = info['version']
-                    self._rpcversion = info['rpc-version']
-                    self._rpcversionmin = info['rpc-version-minimum']
-                    self._connection_tested = True
-                    self._connection_exception = None
-                    log.debug('Connection established: %s', self._url)
-                    self._on_connected.send(self)
+            # Check if connection works
+            log.debug('Testing connection to %s', self._url)
+            try:
+                test_request = json.dumps({'method':'session-get'})
+                info = await self._send_request(test_request)
+            except ClientError as e:
+                self._connection_exception = e
+                log.debug('Caught during connection test: %r', e)
+                self._reset()
+                self._on_error.send(self, error=e)
+                raise
+            else:
+                self._version = info['version']
+                self._rpcversion = info['rpc-version']
+                self._rpcversionmin = info['rpc-version-minimum']
+                self._connection_tested = True
+                self._connection_exception = None
+                log.debug('Connection established: %s', self._url)
+                self._on_connected.send(self)
 
-                log.debug('Releasing connect() lock')
+            log.debug('Releasing connect() lock')
 
     def disconnect(self, reason=None):
         """
