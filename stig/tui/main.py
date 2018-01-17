@@ -49,7 +49,8 @@ from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
 from . import theme
 
 def load_theme(themeobj):
-    """Load theme from `themeobj`
+    """
+    Load theme from `themeobj`
 
     themeobj: See `theme.load`
 
@@ -143,7 +144,8 @@ urwidloop = urwid.MainLoop(widgets,
 
 
 def run(command_runner):
-    """Run commands and start TUI
+    """
+    Run commands and start TUI
 
     Return False if any of the commands failed, True otherwise.
     """

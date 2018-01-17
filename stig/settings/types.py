@@ -69,12 +69,12 @@ class ValueBase():
         return self._value
 
     def set(self, value):
-        """Set current value
+        """
+        Set current value
 
         When setting this property, callbacks connected to `on_change` get the
-        current value (after validation) every time it is changed.  If one of
-        the callbacks raises ValueError, the change is reverted and ValueError
-        is raised.
+        current value (after validation).  If one of the callbacks raises
+        ValueError, the change is reverted and ValueError is raised.
         """
         # convert() and validate() may raise ValueError
         new_value = self.convert(value)
@@ -98,7 +98,8 @@ class ValueBase():
         return self._default
 
     def set_default(self, default):
-        """Change default value
+        """
+        Change default value
 
         Raise ValueError if `default` doesn't pass through `convert` and
         `validate` methods.
@@ -119,7 +120,8 @@ class ValueBase():
         self.value = self.default
 
     def validate(self, value):
-        """Raise ValueError if `value` is not valid
+        """
+        Raise ValueError if `value` is not valid
 
         The default implementation checks if `value` is of the type specified in
         the class attribute `type`.  If `type` is None (the default), all values
@@ -132,7 +134,8 @@ class ValueBase():
             raise ValueError('Not a {}'.format(self.typename))
 
     def convert(self, value, *args, **kwargs):
-        """Try to convert value to correct type before validation (e.g. str->int)
+        """
+        Try to convert value to correct type before validation (e.g. str->int)
 
         Raise ValueError if impossible
         """
@@ -144,7 +147,8 @@ class ValueBase():
             raise ValueError('Not a {}'.format(self.typename))
 
     def string(self, value=None, default=False):
-        """Return prettily stringified value
+        """
+        Return prettily stringified value
 
         value: The value to stringify or `None` to use `value` property
         default: Whether to stringify current or default value (setting this to
@@ -223,7 +227,8 @@ class ValueBase():
             return NotImplemented
 
     def on_change(self, callback, autoremove=True):
-        """Pass this object to `callback` every time its value changes
+        """
+        Pass this object to `callback` every time its value changes
 
         `callback` may raise ValueError to revert the change (see `set`).
 
@@ -234,7 +239,8 @@ class ValueBase():
 
 
 class StringValue(ValueBase):
-    """String value
+    """
+    String value
 
     Specify `minlen` and/or `maxlen` to limit the length of the string.
     """
@@ -312,7 +318,8 @@ class StringValue(ValueBase):
 
 
 class PathValue(StringValue):
-    """File system path
+    """
+    File system path
 
     If `mustexist` evaluates to True, the path must exist on the local file
     system.
@@ -350,7 +357,8 @@ class PathValue(StringValue):
 
 
 class NumberValue(ValueBase):
-    """Float or integer value
+    """
+    Float or integer value
 
     Specify `min` and/or `max` to limit the range of valid numbers.
     """
@@ -523,7 +531,8 @@ class IntegerValue(NumberValue):
 TRUE = ('enabled', 'yes', 'on', 'true', '1')
 FALSE = ('disabled', 'no', 'off', 'false', '0')
 class BooleanValue(ValueBase):
-    """Boolean value
+    """
+    Boolean value
 
     Supported strings are specified in the module variables `TRUE` and `FALSE`.
     Valid values are also the numbers 1/0 and `True`/`False`.  All other values
@@ -617,7 +626,8 @@ class OptionValue(_AliasCapabilities, ValueBase):
 
 
 class ListValue(_AliasCapabilities, ValueBase):
-    """A sequence of values
+    """
+    A sequence of values
 
     Set `options` to any iterable to limit the items allowed in the list.
     """
@@ -670,10 +680,11 @@ class ListValue(_AliasCapabilities, ValueBase):
 
     @property
     def options(self):
-        """tuple of allowed values or None to allow all values
+        """
+        tuple of allowed values or None to allow all values
 
-        Calling `set` with a sequence that contains items not in `options`
-        will raise a ValueError.
+        Calling `set` with a sequence that contains items not in `options` will
+        raise a ValueError.
         """
         return self._options
 
@@ -907,7 +918,8 @@ class Settings():
         yield from self._values_dict.keys()
 
     def on_change(self, callback, autoremove=True):
-        """Run `callback` every time a value changes
+        """
+        Run `callback` every time a value changes
 
         `callback` gets the value instances as the only argument.
 
