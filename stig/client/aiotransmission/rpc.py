@@ -195,8 +195,18 @@ class TransmissionRPC():
         """
         Connect to running daemon
 
+        This does nothing if only one of `user` and `password` are specified.
+
         Raises RPCError, ConnectionError or AuthError.
         """
+        if bool(self.user) != bool(self.password):
+            # If user or password is set, but not both, we're likely facing a
+            # race condition. By refusing to connect until both are set, we're
+            # avoiding unwarranted error messages.
+            log.debug('Refusing to connect with incomplete auth data: user=%r, password=%r',
+                      self.user, self.password)
+            return
+
         if self._connection_lock.locked():
             log.debug('Connection is already being established')
             while True:
