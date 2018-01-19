@@ -182,7 +182,7 @@ class TransmissionRPC():
         return self._timeout
     @timeout.setter
     def timeout(self, timeout):
-        self._timeout = timeout
+        self._timeout = float(timeout)
 
     @property
     def connected(self):
