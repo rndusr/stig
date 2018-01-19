@@ -236,8 +236,6 @@ class TransmissionRPC():
             if self.user and self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')
-            else:
-                log.debug(f'connecting without auth')
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works
