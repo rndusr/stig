@@ -15,6 +15,8 @@ log = make_logger(__name__)
 from .. import (InitCommand, ExpectedResource, utils)
 from ._common import make_X_FILTER_spec
 
+import subprocess
+
 
 class RcCmdbase(metaclass=InitCommand):
     name = 'rc'
@@ -92,13 +94,14 @@ class SetCmdbase(metaclass=InitCommand):
     category = 'configuration'
     provides = set()
     description = 'Change values of settings'
-    usage = ('set <NAME> <VALUE>',)
-    examples = ('set connect.host my.server.example.org',)
+    usage = ('set <NAME>[:eval] <VALUE>',)
+    examples = ('set connect.host my.server.example.org',
+                'set connect.password:eval getpw --id transmission')
     argspecs = (
         {'names': ('NAME',),
-         'description': 'Name of setting'},
+         'description': "Name of setting; append ':eval' to turn VALUE into a shell command"},
         {'names': ('VALUE',), 'nargs': 'REMAINDER',
-         'description': 'New value'},
+         'description': 'New value or shell command that prints the new value to stdout'},
     )
     more_sections = {
         'SEE ALSO': (('Run `help settings` for a list of all available '
@@ -108,44 +111,71 @@ class SetCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, NAME, VALUE):
-        if NAME not in self.cfg:
-            log.error('Unknown setting: {}'.format(NAME))
+        if NAME.endswith(':eval'):
+            NAME = NAME[:-5]
+            if isinstance(VALUE, list):
+                VALUE = ' '.join(VALUE)
+            get_value = lambda: [self._eval_cmd(VALUE)]
         else:
-            setting = self.cfg[NAME]
+            get_value = lambda: VALUE
 
-            # Make sure strings are strings and lists are lists
-            if setting.typename in ('list', 'set'):
-                val = utils.listify_args(VALUE)
+        if NAME not in self.cfg:
+            log.error('Unknown setting: %s' % NAME)
+            return False
+
+        setting = self.cfg[NAME]
+
+        try:
+            value = get_value()
+        except ValueError as e:
+            log.error('%s: %s: %s', NAME, VALUE, e)
+            return False
+
+        # Make sure strings are strings and lists are lists
+        if setting.typename in ('list', 'set'):
+            value = utils.listify_args(value)
+        else:
+            value = ' '.join(value)
+
+        from ...settings import is_srv_setting
+        if is_srv_setting(setting):
+            return await self._set_async(setting, value)
+        else:
+            return self._set_sync(setting, value)
+
+    def _set_sync(self, setting, value):
+        try:
+            setting.set(value)
+        except ValueError as e:
+            log.error('%s = %s: %s', setting.name, setting.string(value), e)
+            return False
+        else:
+            return True
+
+    async def _set_async(self, setting, value):
+        # Fetch current values from server first
+        try:
+            await self.srvapi.settings.update()
+        except self.srvapi.ClientError as e:
+            log.error(str(e))
+            return False
+        else:
+            try:
+                await setting.set(value)
+            except ValueError as e:
+                log.error('%s = %s: %s', setting.name, setting.string(value), e)
+                return False
             else:
-                val = ' '.join(VALUE)
+                return True
 
-            from ...settings import is_srv_setting
-            if is_srv_setting(setting):
-                # Fetch current values from server first
-                try:
-                    await self.srvapi.settings.update()
-                except self.srvapi.ClientError as e:
-                    log.error(str(e))
-                    return False
-                else:
-                    # Send new setting to server
-                    try:
-                        await setting.set(val)
-                    except ValueError as e:
-                        log.error('%s = %s: %s', setting.name, setting.string(val), e)
-                    else:
-                        return True
-
-            else:
-                # Client setting
-                try:
-                    setting.set(val)
-                except ValueError as e:
-                    log.error('%s = %s: %s', setting.name, setting.string(val), e)
-                else:
-                    return True
-
-        return False
+    def _eval_cmd(self, cmd):
+        proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout = proc.stdout.decode('utf-8').strip('\n')
+        stderr = proc.stderr.decode('utf-8').strip('\n')
+        if stderr:
+            raise ValueError(stderr)
+        else:
+            return stdout
 
 
 # Abuse some *Value classes from the settings to allow the same user-input for

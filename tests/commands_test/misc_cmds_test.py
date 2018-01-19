@@ -128,6 +128,17 @@ class TestSetCmd(CommandTestCase):
         self.assertEqual(process.success, True)
         self.assertEqual(self.cfg['some.list'].value, ['alice', 'bert'])
 
+    async def test_setting_with_eval(self):
+        process = SetCmd(['some.boolean:eval', 'echo', 'true'], loop=self.loop)
+        await self.finish(process)
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'].value, 'true')
+
+        process = SetCmd(['some.boolean:eval', 'echo false'], loop=self.loop)
+        await self.finish(process)
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'].value, 'false')
+
     async def test_setting_raises_error(self):
         def sabotaged_set_func(value):
             raise ValueError('value no good: {}'.format(value))
