@@ -18,7 +18,6 @@ import asyncio
 import json
 import textwrap
 from blinker import Signal
-import re
 import warnings
 
 from ..errors import (ConnectionError, RPCError, AuthError, ClientError)
