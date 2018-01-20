@@ -3,6 +3,10 @@
     * The setting 'srv.url' was replaced by the new settings 'connect.host',
       'connect.port', 'connect.user', 'connect.password' and 'connect.tls'
 
+  Other changes:
+    * Get the value of a setting from shell command
+      (e.g. `set connect.password:eval pass transmission`)
+
   Fixed bugs:
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
     * Catch SIGINT (<ctrl-c>) in CLI mode
