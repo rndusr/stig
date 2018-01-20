@@ -177,8 +177,7 @@ class FileListWidget(ListWidgetBase):
         self._torrents = None
 
         self._poller = self._srvapi.create_poller(
-            self._srvapi.torrent.torrents, tfilter, keys=('files', 'name'),
-            autoconnect=False
+            self._srvapi.torrent.torrents, tfilter, keys=('files', 'name')
         )
         self._poller.on_response(self._handle_files)
 

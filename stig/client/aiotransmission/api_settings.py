@@ -59,17 +59,14 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         return len(tuple(iter(self)))
 
 
-    def __init__(self, srvapi, interval=1, autoconnect=True):
+    def __init__(self, srvapi, interval=1):
         self._raw = None      # Raw dict from 'session-get' or None if not connected
         self._cache = {}      # Cached values convert by _AFTER_GET
         self._srvapi = srvapi
         self._get_timestamp = 0
         self._on_update = blinker.Signal()
 
-        # autoconnect must be True so the CLI 'help' command can display
-        # current values (e.g. 'help srv.limit.rate.down').
-        super().__init__(self._srvapi.rpc.session_get, autoconnect=autoconnect,
-                         interval=interval, loop=srvapi.loop)
+        super().__init__(self._srvapi.rpc.session_get, interval=interval, loop=srvapi.loop)
         self.on_response(self._handle_session_get)
         self.on_error(lambda error: log.debug('Ignoring %r', error), autoremove=False)
 

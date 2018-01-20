@@ -16,7 +16,7 @@ class FakeTransmissionRPC():
     def __init__(self, *args, **kwargs):
         self.fake_settings = deepcopy(rsrc.SESSION_GET_RESPONSE['arguments'])
 
-    async def session_get(self, autoconnect=True):
+    async def session_get(self):
         return self.fake_settings
 
     async def session_set(self, settings):

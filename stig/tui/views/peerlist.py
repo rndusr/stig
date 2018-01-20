@@ -42,8 +42,7 @@ class PeerListWidget(ListWidgetBase):
         self._maybe_filter_peers = filter_peers
 
         self._poller = self._srvapi.create_poller(
-            self._srvapi.torrent.torrents, tfilter, keys=('peers', 'name', 'id'),
-            autoconnect=False
+            self._srvapi.torrent.torrents, tfilter, keys=('peers', 'name', 'id')
         )
         self._poller.on_response(self._handle_peers)
 

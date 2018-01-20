@@ -135,11 +135,9 @@ class TorrentAPI():
                                   for t in response.torrents}
             return Response(success=True, torrent_values=torrent_values)
 
-    async def _abs_download_path(self, path, autoconnect=True):
+    async def _abs_download_path(self, path):
         """Turn relative `path` into absolute path based on default download path"""
-        if not autoconnect and not self.rpc.connected:
-            return None
-        elif not os.path.isabs(path):
+        if not os.path.isabs(path):
             response = await self._request(self.rpc.session_get)
             if not response.success:
                 return Response(path=None, success=False, msgs=response.msgs)
@@ -251,18 +249,14 @@ class TorrentAPI():
 
             return Response(success=True, raw_torrents=raw_tlist)
 
-    async def _get_torrents_by_ids(self, keys, ids=None, autoconnect=True):
+    async def _get_torrents_by_ids(self, keys, ids=None):
         """Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: 'ALL' for all supported Torrent keys or a sequence of key
               strings (see client.ttypes.TYPES for available keys)
         ids: None for all torrents or a sequence of wanted IDs
-        autoconnect: Wether to attempt to connect automatically if not
-                     connected; if False and not connected, return None
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
-        elif keys == 'ALL':
+        if keys == 'ALL':
             fields = TorrentFields(keys)
         else:
             fields = TorrentFields(*keys)
@@ -298,16 +292,13 @@ class TorrentAPI():
             log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
         return Response(success=success, torrents=tlist, msgs=msgs)
 
-    async def _get_torrents_by_filter(self, keys, tfilter=None, autoconnect=True):
+    async def _get_torrents_by_filter(self, keys, tfilter=None):
         """Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: See _get_torrents_by_ids
         tfilter: A TorrentFilter instance or None
-        autoconnect: See _get_torrents_by_ids
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
-        elif tfilter == None:
+        if tfilter == None:
             log.debug('Looking for all torrents with keys: %s', keys)
             # No filter specified - just return all torrents with the specified keys
             return await self._get_torrents_by_ids(keys=keys)
@@ -345,23 +336,19 @@ class TorrentAPI():
 
             return Response(success=success, torrents=tlist, msgs=msgs)
 
-    async def torrents(self, torrents=None, keys='ALL', autoconnect=True):
+    async def torrents(self, torrents=None, keys='ALL'):
         """Fetch and return torrents
 
         torrents: Iterator of torrent IDs, TorrentFilter object (or its string
                   representation) or None for all torrents
         keys: tuple of Torrent keys to fetch or 'ALL' for all torrents
-        autoconnect: Wether to attempt to connect automatically if not
-                     connected; if False and not connected, return None
 
         Return Response with the following properties:
             torrents: tuple of Torrent objects with requested torrents
             success: False if no torrents were found, True otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
-        elif torrents is None:
+        if torrents is None:
             return await self._get_torrents_by_ids(keys)
         elif isinstance(torrents, (str, TorrentFilter)):
             return await self._get_torrents_by_filter(keys, tfilter=torrents)
@@ -372,7 +359,7 @@ class TorrentAPI():
             raise ValueError("Invalid 'torrents' argument: {!r}".format(torrents))
 
     async def _torrent_action(self, method, torrents=None, method_args={}, check=None,
-                              keys_check=(), autoconnect=True):
+                              keys_check=()):
         """Helper method that operates on torrents (start, stop, remove, etc)
 
         method: Any method from TransmissionRPC that accepts torrent ids
@@ -384,7 +371,6 @@ class TorrentAPI():
                True, `method` is applied to the torrent, otherwise not.
         keys_check: List of Torrent keys the check function needs ('id' and
                     'name' are always included)
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents that `method` was applied to with the
@@ -393,9 +379,6 @@ class TorrentAPI():
                      torrent, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
-
         tlist = []
         msgs = []
         success = False
@@ -437,11 +420,10 @@ class TorrentAPI():
             else:
                 return Response(success=True, torrents=tuple(tlist), msgs=msgs)
 
-    async def stop(self, torrents, autoconnect=True):
+    async def stop(self, torrents):
         """Stop down-/uploading torrents
 
         torrents: See `torrents` method
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of stopped Torrents with the keys 'id' and 'name'
@@ -455,15 +437,13 @@ class TorrentAPI():
                 return (True, 'Stopping ' + t['name'])
 
         return await self._torrent_action(self.rpc.torrent_stop, torrents,
-                                          check=check, keys_check=('status',),
-                                          autoconnect=autoconnect)
+                                          check=check, keys_check=('status',))
 
-    async def start(self, torrents, force=False, autoconnect=True):
+    async def start(self, torrents, force=False):
         """Start down-/uploading torrents
 
         torrents: See `torrents` method
         force: Start downloading even if download queue is active and full
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of started Torrents with the keys 'id' and 'name'
@@ -484,15 +464,13 @@ class TorrentAPI():
 
         return await self._torrent_action(method, torrents,
                                           check=check, keys_check=('status',),
-                                          method_args={'force':force},
-                                          autoconnect=autoconnect)
+                                          method_args={'force':force})
 
-    async def toggle_stopped(self, torrents, force=False, autoconnect=True):
+    async def toggle_stopped(self, torrents, force=False):
         """Start down-/uploading torrents
 
         torrents: See `torrents` method
         force: See `start` method
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of toggled Torrents with the keys 'id' and 'name'
@@ -524,11 +502,10 @@ class TorrentAPI():
                         success=len(torrents) > 0,
                         msgs=msgs)
 
-    async def verify(self, torrents, autoconnect=True):
+    async def verify(self, torrents):
         """Verify torrents's downloaded data
 
         torrents: See `torrents` method
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of to be verified Torrents with the keys 'id' and 'name'
@@ -546,15 +523,13 @@ class TorrentAPI():
                 return (True, 'Verifying ' + t['name'])
 
         return await self._torrent_action(self.rpc.torrent_verify, torrents,
-                                          check=check, keys_check=('status',),
-                                          autoconnect=autoconnect)
+                                          check=check, keys_check=('status',))
 
-    async def remove(self, torrents, delete=False, autoconnect=True):
+    async def remove(self, torrents, delete=False):
         """Remove torrents
 
         torrents: See `torrents` method
         delete: True if downloaded files should be deleted
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of removed Torrents  with the keys 'id' and 'name'
@@ -572,17 +547,15 @@ class TorrentAPI():
 
         return await self._torrent_action(self.rpc.torrent_remove, torrents,
                                           check=create_info_msg,
-                                          method_args={'delete-local-data': delete},
-                                          autoconnect=autoconnect)
+                                          method_args={'delete-local-data': delete})
 
 
-    async def move(self, torrents, destination, autoconnect=True):
+    async def move(self, torrents, destination):
         """Change torrents' location in the file system
 
         torrents: See `torrents` method
         destination: New path of the specified torrents; relative paths are
                      relative to the default download path
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of moved Torrents with the keys 'id' and 'name'
@@ -590,9 +563,6 @@ class TorrentAPI():
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
-
         # Transmission wants an absolute path
         response = await self._abs_download_path(destination)
         if not response.success:
@@ -611,14 +581,13 @@ class TorrentAPI():
                                           method_args={'move': True, 'location': destination})
 
 
-    async def file_priority(self, torrents, files, priority, autoconnect=True):
+    async def file_priority(self, torrents, files, priority):
         """Change download priority of individual torrent files
 
         torrents: See `torrents` method
         files: TorrentFileFilter object (or its string representation), sequence
                of (torrent ID, file ID) tuples or None for all files
         priority: 'off', 'low', 'normal' or 'high'
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of matching Torrents with matching files with the
@@ -627,9 +596,6 @@ class TorrentAPI():
                      False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
-
         response = await self.torrents(torrents, keys=('name', 'files'))
         if not response.success:
             return Response(torrents=(), success=False, msgs=response.msgs)
@@ -684,26 +650,21 @@ class TorrentAPI():
                 torrents = response.torrents
         return Response(torrents=torrents, success=success, msgs=msgs)
 
-    async def _set_files_priority(self, priority, torrent_id, file_indexes, autoconnect=True):
+    async def _set_files_priority(self, priority, torrent_id, file_indexes):
         fi = tuple(file_indexes)
         if priority in ('high', 'normal', 'low'):
             return await self._torrent_action(
                 self.rpc.torrent_set, (torrent_id,),
-                method_args={'priority-%s' % priority: fi, 'files-wanted': fi},
-                autoconnect=autoconnect)
+                method_args={'priority-%s' % priority: fi, 'files-wanted': fi})
         elif priority == 'off':
             return await self._torrent_action(
                 self.rpc.torrent_set, (torrent_id,),
-                method_args={'files-unwanted': fi},
-                autoconnect=autoconnect)
+                method_args={'files-unwanted': fi})
         else:
             raise ValueError('Invalid priority: {!r}'.format(priority))
 
 
-    async def _limit_rate_absolute(self, torrents, direction, limit, autoconnect=True):
-        if not autoconnect and not self.rpc.connected:
-            return None
-
+    async def _limit_rate_absolute(self, torrents, direction, limit):
         # Disable limits for negative values
         if isinstance(limit, (float, int)):
             limit = False if limit < 0 or limit >= float('inf') else limit
@@ -711,10 +672,7 @@ class TorrentAPI():
         log.debug('Setting new %sload limit for torrents %s: %r', direction, torrents, limit)
         return await self._limit_rate(torrents, direction, get_new_limit=lambda _: limit)
 
-    async def _limit_rate_relative(self, torrents, direction, adjustment, autoconnect=True):
-        if not autoconnect and not self.rpc.connected:
-            return None
-
+    async def _limit_rate_relative(self, torrents, direction, adjustment):
         # Only numbers are allowed
         if not isinstance(adjustment, (float, int)):
             raise ValueError('Invalid rate limit adjustment: %r', adjustment)
@@ -812,7 +770,7 @@ class TorrentAPI():
                 msgs.append('%s %sload rate: %s' % (t['name'], direction, limit_str))
         return Response(torrents=response.torrents, success=success, msgs=msgs)
 
-    async def set_rate_limit_up(self, torrents, limit, autoconnect=True):
+    async def set_rate_limit_up(self, torrents, limit):
         """Limit upload rate for individual torrent(s)
 
         torrents: See `torrents` method
@@ -823,60 +781,54 @@ class TorrentAPI():
                    and UNLIMITED disable the current limit
                  - `True` and the constant ENABLED enable a previously disabled
                    limit
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-up'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
-
         """
-        return await self._limit_rate_absolute(torrents, 'up', limit, autoconnect)
+        return await self._limit_rate_absolute(torrents, 'up', limit)
 
-    async def set_rate_limit_down(self, torrents, limit, autoconnect=True):
+    async def set_rate_limit_down(self, torrents, limit):
         """Limit download rate for individual torrent(s)
 
         torrents: See `torrents` method
         limit: See `set_rate_limit_up` method
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-down'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        return await self._limit_rate_absolute(torrents, 'down', limit, autoconnect)
+        return await self._limit_rate_absolute(torrents, 'down', limit)
 
-    async def adjust_rate_limit_up(self, torrents, adjustment, autoconnect=True):
+    async def adjust_rate_limit_up(self, torrents, adjustment):
         """Same as `set_rate_limit_up` but set new limit relative to current limit
 
         adjustment: Negative or positive number to add to the current limit of
                     each matching torrent
         """
-        return await self._limit_rate_relative(torrents, 'up', adjustment, autoconnect)
+        return await self._limit_rate_relative(torrents, 'up', adjustment)
 
-    async def adjust_rate_limit_down(self, torrents, adjustment, autoconnect=True):
+    async def adjust_rate_limit_down(self, torrents, adjustment):
         """Same as `set_rate_limit_down` but set new limit relative to current limit
 
         adjustment: See `adjust_rate_limit_up` method
         """
-        return await self._limit_rate_relative(torrents, 'down', adjustment, autoconnect)
+        return await self._limit_rate_relative(torrents, 'down', adjustment)
 
 
-    async def tracker_add(self, torrents, urls, autoconnect=True):
+    async def tracker_add(self, torrents, urls):
         """Add tracker(s) to torrents
 
         torrents: See `torrents` method
         urls: Iterable of announce URLs
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id' and 'name'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
         if not urls:
             return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
 
@@ -920,14 +872,13 @@ class TorrentAPI():
         else:
             return Response(success=True, torrents=response.torrents, msgs=msgs)
 
-    async def tracker_remove(self, torrents, urls, partial_match=False, autoconnect=True):
+    async def tracker_remove(self, torrents, urls, partial_match=False):
         """Remove tracker(s) from torrents
 
         torrents: See `torrents` method
         urls: Iterable of announce URLs
         partial_match: True if given URLs match existing URLs partially
                        (e.g. 'example.org' matches 'http://tracker.example.org/')
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id' and 'name'
@@ -935,8 +886,6 @@ class TorrentAPI():
             msgs: list of strings/`ClientError`s caused by the request
 
         """
-        if not autoconnect and not self.rpc.connected:
-            return None
         if not urls:
             return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
 
@@ -994,11 +943,10 @@ class TorrentAPI():
         else:
             return Response(success=True, torrents=response.torrents, msgs=msgs)
 
-    async def announce(self, torrents, autoconnect=True):
+    async def announce(self, torrents):
         """Announce torrents' to its tracker(s)
 
         torrents: See `torrents` method
-        autoconnect: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id' and 'name'
@@ -1020,5 +968,4 @@ class TorrentAPI():
 
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
                                           check=check, keys_check=('status', 'trackers',
-                                                                   'time-manual-announce-allowed'),
-                                          autoconnect=autoconnect)
+                                                                   'time-manual-announce-allowed'))

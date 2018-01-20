@@ -30,11 +30,10 @@ class TorrentRequestPool(RequestPoller):
     After the combined torrents have arrived, split it back up by using each
     subscriber's filter and provide it to its callbacks as tuples.
     """
-    def __init__(self, srvapi, interval=1, autoconnect=True):
+    def __init__(self, srvapi, interval=1):
         self._api = srvapi.torrent
         self._tfilters = {}
         self._keys = {}
-        self._autoconnect = autoconnect
         super().__init__(request=None, interval=interval, loop=srvapi.loop)
         self.on_response(self._handle_tlist)
 
@@ -86,7 +85,6 @@ class TorrentRequestPool(RequestPoller):
                     kwargs['keys'] += f.needed_keys
 
             kwargs['keys'] = tuple(set(kwargs['keys']))
-            kwargs['autoconnect'] = self._autoconnect
             log.debug('Combined filters: %s', kwargs['torrents'])
             log.debug('Combined keys: %s', kwargs['keys'])
             self.set_request(self._api.torrents, **kwargs)

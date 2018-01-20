@@ -28,7 +28,7 @@ class FakeTorrentAPI():
         self.tlist = FAKE_TORRENTS
         self.delay = 0
 
-    async def torrents(self, torrents=None, keys='ALL', autoconnect=True):
+    async def torrents(self, torrents=None, keys='ALL'):
         if self.delay:
             await asyncio.sleep(self.delay, loop=asyncio.get_event_loop())
         self.calls += 1
