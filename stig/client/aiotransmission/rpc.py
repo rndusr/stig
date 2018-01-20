@@ -40,7 +40,8 @@ class TransmissionRPC():
     are done in the *API classes.
     """
 
-    def __init__(self, host='localhost', port=9091, *, tls=False, user=None, password=None, loop=None):
+    def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
+                 password=None, enabled=True, loop=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._host = host
         self._port = port
@@ -49,8 +50,10 @@ class TransmissionRPC():
         self._password = password
         self._headers = {'content-type': 'application/json'}
         self._session = None
-        self._connection_lock = asyncio.Lock(loop=loop)
+        self._enabled_event = asyncio.Event(loop=loop)
+        self.enabled = enabled
         self._request_lock = asyncio.Lock(loop=loop)
+        self._connecting_lock = asyncio.Lock(loop=loop)
         self._connection_tested = False
         self._connection_exception = None
         self._timeout = TIMEOUT
@@ -185,6 +188,28 @@ class TransmissionRPC():
         self._timeout = float(timeout)
 
     @property
+    def enabled(self):
+        """
+        Whether requests should connect
+
+        If this is set to False, requests will wait for it to be set to True.
+        This allows you to block any connection attempts until the connection
+        parameters (host, user, password, etc) are specified to prevent any
+        unwarranted error messages.
+        """
+        return self._enabled_event.is_set()
+    @enabled.setter
+    def enabled(self, enabled):
+        if enabled:
+            log.debug('Enabling %r', self)
+            self._enabled_event.set()
+        else:
+            log.debug('Disabling %r', self)
+            self._enabled_event.clear()
+            if self.connected:
+                self.disconnect()
+
+    @property
     def connected(self):
         """Return True if connected, False otherwise"""
         return (self._session is not None
@@ -195,19 +220,12 @@ class TransmissionRPC():
         """
         Connect to running daemon
 
-        This does nothing if only one of `user` and `password` are specified.
+        If the `enabled` property is set to False, this method blocks until
+        `enabled` is set to True.
 
         Raises RPCError, ConnectionError or AuthError.
         """
-        if bool(self.user) != bool(self.password):
-            # If user or password is set, but not both, we're likely facing a
-            # race condition. By refusing to connect until both are set, we're
-            # avoiding unwarranted error messages.
-            log.debug('Refusing to connect with incomplete auth data: user=%r, password=%r',
-                      self.user, self.password)
-            return
-
-        if self._connection_lock.locked():
+        if self._connecting_lock.locked():
             log.debug('Connection is already being established')
             while True:
                 log.debug('Waiting for connection to come up ...')
@@ -222,12 +240,15 @@ class TransmissionRPC():
                     log.debug('Found connection error: %r', self._connection_exception)
                     raise self._connection_exception
 
-        async with self._connection_lock:
+        async with self._connecting_lock:
             import aiohttp
             log.debug('Acquired connect() lock')
 
             if self.connected:
                 self.disconnect('Reconnecting')
+
+            # Block until we're enabled
+            await self._enabled_event.wait()
 
             log.debug('Connecting to %s (timeout=%ss)', self._url, self.timeout)
             self._on_connecting.send(self)

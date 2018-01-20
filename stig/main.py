@@ -49,6 +49,7 @@ srvapi = API(host=cfg['connect.host'].value,
              tls=cfg['connect.tls'].value,
              interval=cfg['tui.poll'].value,
              loop=aioloop)
+srvapi.rpc.enabled = False
 srvapi.bandwidth_unit = cfg['unit.bandwidth'].value
 srvapi.bandwidth_prefix = cfg['unitprefix.bandwidth'].value
 srvapi.size_unit = cfg['unit.size'].value
@@ -140,9 +141,18 @@ def run():
 
         # Exit if CLI commands fail
         if clicmds:
+            if cmdmgr.active_interface == 'cli':
+                # CLI commands (e.g. 'ls') will block indefinitely unless we enable now.
+                srvapi.rpc.enabled = True
+
             success = cmdmgr.run_sync(clicmds, on_error=log.error)
             if not success:
                 return False
+
+        # Now that potential connect.* settings are made either via rc file or
+        # command line arguments, we can allow any requests to go through.
+        srvapi.rpc.enabled = True
+
         return True
 
     # Run commands either in CLI or TUI mode
