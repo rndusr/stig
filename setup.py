@@ -40,6 +40,7 @@ setup(
     ],
     extras_require = {
         'geoip': ['GeoIP'],
+        'setproctitle': ['setproctitle'],
     },
     tests_require = [
         'asynctest>=0.11',
