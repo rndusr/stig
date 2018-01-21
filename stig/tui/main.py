@@ -126,16 +126,7 @@ def unhandled_input(key):
     if key is not None:
         log.debug('Unhandled key: %s', key)
 
-class ScreenRaw(urwid.raw_display.Screen):
-    """Set raw mode so that ctrl-c doesn't raise KeyboardInterrupt"""
-    def _start(self, *args, **kwargs):
-        super()._start(*args, **kwargs)
-        import os, tty
-        fd = self._term_input_file.fileno()
-        if os.isatty(fd):
-            tty.setraw(fd)
-
-urwidscreen = ScreenRaw()
+urwidscreen = urwid.raw_display.Screen()
 urwidloop = urwid.MainLoop(widgets,
                            screen=urwidscreen,
                            event_loop=urwid.AsyncioEventLoop(loop=aioloop),
@@ -185,8 +176,11 @@ def run(command_runner):
     try:
         # Start polling torrent lists, counters, bandwidth usage, etc.
         aioloop.run_until_complete(srvapi.start_polling())
+        old = urwidscreen.tty_signal_keys('undefined','undefined',
+                                          'undefined','undefined','undefined')
         urwidloop.run()
     finally:
+        urwidscreen.tty_signal_keys(*old)
         logwidget.disable()
         aioloop.run_until_complete(srvapi.stop_polling())
 
