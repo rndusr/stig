@@ -40,10 +40,11 @@ class TransmissionRPC():
     """
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
-                 password=None, enabled=True, loop=None):
+                 password=None, path='/transmission/rpc', enabled=True, loop=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._host = host
         self._port = port
+        self._path = path
         self._tls = tls
         self._user = user
         self._password = password
@@ -121,6 +122,21 @@ class TransmissionRPC():
         self.disconnect('Changing host: %r' % self._host)
 
     @property
+    def path(self):
+        """
+        Path of the Transmission RPC interface
+
+        Setting this property calls disconnect().
+        """
+        return self._path
+    @path.setter
+    def path(self, path):
+       if not path or path[0] != '/':
+           path = '/' + path
+       self._path = path
+       self.disconnect('Changing path: %r' % self._path)
+
+    @property
     def port(self):
         """
         Port of the Transmission RPC interface
@@ -174,9 +190,9 @@ class TransmissionRPC():
 
     @property
     def _url(self):
-        """Host, port, user and password combined as a string (not a valid URL)"""
-        return '%s://%s:%d' % (
-            'https' if self.tls else 'http', self.host, self.port)
+        """Schema, host, port, and path combined as a string"""
+        return '%s://%s:%d%s' % (
+            'https' if self.tls else 'http', self.host, self.port, self.path)
 
     @property
     def timeout(self):
@@ -302,12 +318,11 @@ class TransmissionRPC():
         self._rpcversionmin = None
         self._connection_tested = False
 
-    _RPC_PATH = '/transmission/rpc'
     async def _post(self, data):
         import aiohttp
         with aiohttp.Timeout(self.timeout, loop=self.loop):
             try:
-                response = await self._session.post(self._url + self._RPC_PATH,
+                response = await self._session.post(self._url,
                                                     data=data,
                                                     headers=self._headers)
             except aiohttp.ClientError as e:

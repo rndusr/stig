@@ -64,6 +64,8 @@ def init_defaults(cfg):
                     description='Hostname or IP of Transmission RPC interface'),
         IntegerValue('connect.port', default=9091, min=1, max=65535,
                      description='Port of Transmission RPC interface'),
+        StringValue('connect.path', default='/transmission/rpc',
+                    description='Path of Transmission RPC interface'),
         StringValue('connect.user', default='',
                     description='Username to use for authentication with Transmission RPC interface'),
         StringValue('connect.password', default='',

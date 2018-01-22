@@ -45,10 +45,10 @@ class API(convert.bandwidth_mixin, convert.size_mixin):
     AuthError       = AuthError
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
-                 password=None, loop=None, interval=1):
+                 password=None, path='/transmission/rpc', loop=None, interval=1):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._rpc = TransmissionRPC(host=host, port=port, tls=tls, user=user,
-                                    password=password, loop=self.loop)
+                                    password=password, loop=self.loop, path=path)
         self._interval = interval
         self._pollers = []
         self._manage_pollers_interval = SleepUneasy(loop=self.loop)

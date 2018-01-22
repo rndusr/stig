@@ -27,6 +27,7 @@ def _make_connection_callback(name):
     return on_set
 cfg['connect.host'].on_change(_make_connection_callback('host'), autoremove=False)
 cfg['connect.port'].on_change(_make_connection_callback('port'), autoremove=False)
+cfg['connect.path'].on_change(_make_connection_callback('path'), autoremove=False)
 cfg['connect.user'].on_change(_make_connection_callback('user'), autoremove=False)
 cfg['connect.password'].on_change(_make_connection_callback('password'), autoremove=False)
 cfg['connect.tls'].on_change(_make_connection_callback('tls'), autoremove=False)

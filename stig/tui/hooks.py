@@ -36,6 +36,7 @@ def _reconnect(setting):
     aioloop.create_task(coro())
 cfg['connect.host'].on_change(_reconnect)
 cfg['connect.port'].on_change(_reconnect)
+cfg['connect.path'].on_change(_reconnect)
 cfg['connect.user'].on_change(_reconnect)
 cfg['connect.password'].on_change(_reconnect)
 cfg['connect.tls'].on_change(_reconnect)

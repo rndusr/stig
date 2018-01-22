@@ -56,6 +56,7 @@ helpmgr.settings = cfg
 from .client import API
 srvapi = API(host=cfg['connect.host'].value,
              port=cfg['connect.port'].value,
+             path=cfg['connect.path'].value,
              user=cfg['connect.user'].value,
              password=cfg['connect.password'].value,
              tls=cfg['connect.tls'].value,

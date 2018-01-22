@@ -66,13 +66,15 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.client.host = 'foo'
         self.client.port = 123
         self.client.tls = True
-        self.assertEqual(self.client._url, 'https://foo:123')
+        self.assertEqual(self.client._url, 'https://foo:123/transmission/rpc')
         self.client.tls = False
-        self.assertEqual(self.client._url, 'http://foo:123')
+        self.assertEqual(self.client._url, 'http://foo:123/transmission/rpc')
         self.client.host = 'fuu'
-        self.assertEqual(self.client._url, 'http://fuu:123')
+        self.assertEqual(self.client._url, 'http://fuu:123/transmission/rpc')
         self.client.port = '1724'
-        self.assertEqual(self.client._url, 'http://fuu:1724')
+        self.assertEqual(self.client._url, 'http://fuu:1724/transmission/rpc')
+        self.client.path = 'user/transmission/rpc'
+        self.assertEqual(self.client._url, 'http://fuu:1724/user/transmission/rpc')
 
     async def test_connect_to_good_url(self):
         # TransmissionRPC requests 'session-get' to test the connection and
