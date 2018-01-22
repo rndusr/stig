@@ -10,9 +10,10 @@
   stig is a TUI (text user interface) and CLI (command line interface) client
   for the [[http://www.transmissionbt.com/][BitTorrent client Transmission]].
 
-  stig is still in alpha status to indicate that behaviour may change
-  (i.e. "breaking userspace") with a new release. It does *not* mean you should
-  expect bugs.
+  stig being in alpha status does *not* mean you should expect bugs.  It's
+  supposed to indicate that behaviour may change with a new release since I'm
+  still experimenting with what works best.  If you know how to make stig more
+  flexible, convenient, intuitive or just /better/, feel free to open an issue.
 
 ** Features
    - *Filters* are used to list/start/stop/remove/etc torrents matching any
@@ -150,6 +151,9 @@
    If you want to contribute code and get stuck, don't know where to even begin,
    or just to make sure you're not duplicating someone else's efforts, open an
    issue.
+
+   Please submit your custom themes if you would like them to be included in
+   stig.
 
 ** License
    stig is free software: you can redistribute it and/or modify it under the
