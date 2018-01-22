@@ -189,7 +189,7 @@ class TransmissionRPC():
         self.disconnect('Changing tls: %r' % self._tls)
 
     @property
-    def _url(self):
+    def url(self):
         """Schema, host, port, and path combined as a string"""
         return '%s://%s:%d%s' % (
             'https' if self.tls else 'http', self.host, self.port, self.path)
@@ -247,7 +247,7 @@ class TransmissionRPC():
                 await asyncio.sleep(0.1, loop=self.loop)
 
                 if self.connected:
-                    log.debug('Connection is up: %r', self._url)
+                    log.debug('Connection is up: %r', self.url)
                     return
 
                 elif self._connection_exception is not None:
@@ -265,7 +265,7 @@ class TransmissionRPC():
             # Block until we're enabled
             await self._enabled_event.wait()
 
-            log.debug('Connecting to %s (timeout=%ss)', self._url, self.timeout)
+            log.debug('Connecting to %s (timeout=%ss)', self.url, self.timeout)
             self._on_connecting.send(self)
 
             session_args = {'loop': self.loop}
@@ -275,7 +275,7 @@ class TransmissionRPC():
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works
-            log.debug('Testing connection to %s', self._url)
+            log.debug('Testing connection to %s', self.url)
             try:
                 test_request = json.dumps({'method':'session-get'})
                 info = await self._send_request(test_request)
@@ -291,7 +291,7 @@ class TransmissionRPC():
                 self._rpcversionmin = info['rpc-version-minimum']
                 self._connection_tested = True
                 self._connection_exception = None
-                log.debug('Connection established: %s', self._url)
+                log.debug('Connection established: %s', self.url)
                 self._on_connected.send(self)
 
             log.debug('Releasing connect() lock')
@@ -304,9 +304,9 @@ class TransmissionRPC():
         """
         if self.connected:
             self._reset()
-            log.debug('Disconnecting from %s (%s)', self._url,
+            log.debug('Disconnecting from %s (%s)', self.url,
                       reason if reason is not None else 'for no reason')
-            log.debug('Calling "disconnected" callbacks for %s', self._url)
+            log.debug('Calling "disconnected" callbacks for %s', self.url)
             self._on_disconnected.send(self)
 
     def _reset(self):
@@ -322,12 +322,12 @@ class TransmissionRPC():
         import aiohttp
         with aiohttp.Timeout(self.timeout, loop=self.loop):
             try:
-                response = await self._session.post(self._url,
+                response = await self._session.post(self.url,
                                                     data=data,
                                                     headers=self._headers)
             except aiohttp.ClientError as e:
                 log.debug('Caught during POST request: %r', e)
-                raise ConnectionError(self._url)
+                raise ConnectionError(self.url)
             else:
                 if response.status == CSRF_ERROR_CODE:
                     # Send request again with CSRF header
@@ -340,8 +340,8 @@ class TransmissionRPC():
                 elif response.status == AUTH_ERROR_CODE:
                     await response.release()
                     log.debug('Authentication failed: %s: user=%r, password=%r' % (
-                        self._url, self.user, self.password))
-                    raise AuthError(self._url)
+                        self.url, self.user, self.password))
+                    raise AuthError(self.url)
 
                 else:
                     try:
@@ -368,10 +368,10 @@ class TransmissionRPC():
             answer = await self._post(post_data)
         except OSError as e:
             log.debug('Caught OSError: %r', e)
-            raise ConnectionError(self._url)
+            raise ConnectionError(self.url)
         except asyncio.TimeoutError as e:
             log.debug('Caught TimeoutError: %r', e)
-            raise ConnectionError('Timeout after %ds: %s' % (self.timeout, self._url))
+            raise ConnectionError('Timeout after %ds: %s' % (self.timeout, self.url))
         else:
             if answer['result'] != 'success':
                 raise RPCError(answer['result'].capitalize())
