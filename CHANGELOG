@@ -1,11 +1,14 @@
 2017-??-?? ?.?.?a
   Breaking changes:
     * The setting 'srv.url' was replaced by the new settings 'connect.host',
-      'connect.port', 'connect.user', 'connect.password' and 'connect.tls'
+      'connect.port', 'connect.path', 'connect.user', 'connect.password' and
+      'connect.tls' (Thanks to David Blajda for adding 'connect.path')
 
   Other changes:
     * Get the value of a setting from shell command
       (e.g. `set connect.password:eval pass transmission`)
+    * Process name in tmux sessions is set to 'stig' if setproctitle module is
+      installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
 
   Fixed bugs:
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
