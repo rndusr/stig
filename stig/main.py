@@ -9,16 +9,16 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-# Remove python from process name
-try:
-    from setproctitle import setproctitle
-except ImportError:
-    pass
-else:
-    from . import __appname__
-    import sys
-    from shlex import quote
-    setproctitle('stig %s' % ' '.join((quote(arg) for arg in sys.argv[1:])))
+# Remove python from process name when running inside tmux
+import os
+if 'TMUX' in os.environ:
+    try:
+        from setproctitle import setproctitle
+    except ImportError:
+        pass
+    else:
+        from . import __appname__
+        setproctitle(__appname__)
 
 
 import sys
