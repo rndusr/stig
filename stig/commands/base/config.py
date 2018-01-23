@@ -89,14 +89,42 @@ class ResetCmdbase(metaclass=InitCommand):
         return success
 
 
-def _eval_cmd(cmd):
-    proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout = proc.stdout.decode('utf-8').strip('\n')
-    stderr = proc.stderr.decode('utf-8').strip('\n')
-    if stderr:
-        raise ValueError(stderr)
+def _parse_name_value(NAME, VALUE, cfg):
+    # This code is shared between SetCmdbase and SetRemoteCmdbase
+
+    def _eval_cmd(cmd):
+        proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout = proc.stdout.decode('utf-8').strip('\n')
+        stderr = proc.stderr.decode('utf-8').strip('\n')
+        if stderr:
+            raise ValueError(stderr)
+        else:
+            return stdout
+
+    if NAME.endswith(':eval'):
+        NAME = NAME[:-5]
+        if isinstance(VALUE, list):
+            VALUE = ' '.join(VALUE)
+        get_value = lambda: [_eval_cmd(VALUE)]
     else:
-        return stdout
+        get_value = lambda: VALUE
+
+    if NAME not in cfg:
+        raise ValueError('Unknown setting: %s' % NAME)
+
+    try:
+        VALUE = get_value()
+    except ValueError as e:
+        raise ValueError('%s: %s: %s' % (NAME, VALUE, e))
+
+    # Make sure strings are strings and lists are lists
+    if cfg[NAME].typename in ('list', 'set'):
+        VALUE = utils.listify_args(VALUE)
+    else:
+        VALUE = ' '.join(VALUE)
+
+    return NAME, VALUE
+
 
 class SetCmdbase(metaclass=InitCommand):
     name = 'set'
@@ -117,42 +145,14 @@ class SetCmdbase(metaclass=InitCommand):
                       'client and server settings.'),),
     }
     cfg = ExpectedResource
-    srvapi = ExpectedResource
 
     async def run(self, NAME, VALUE):
-        if NAME.endswith(':eval'):
-            NAME = NAME[:-5]
-            if isinstance(VALUE, list):
-                VALUE = ' '.join(VALUE)
-            get_value = lambda: [_eval_cmd(VALUE)]
-        else:
-            get_value = lambda: VALUE
-
-        if NAME not in self.cfg:
-            log.error('Unknown setting: %s' % NAME)
-            return False
-
-        setting = self.cfg[NAME]
-
         try:
-            value = get_value()
+            name, value = _parse_name_value(NAME, VALUE, self.cfg)
         except ValueError as e:
-            log.error('%s: %s: %s', NAME, VALUE, e)
+            log.error(e)
             return False
-
-        # Make sure strings are strings and lists are lists
-        if setting.typename in ('list', 'set'):
-            value = utils.listify_args(value)
-        else:
-            value = ' '.join(value)
-
-        from ...settings import is_srv_setting
-        if is_srv_setting(setting):
-            return await self._set_async(setting, value)
-        else:
-            return self._set_sync(setting, value)
-
-    def _set_sync(self, setting, value):
+        setting = self.cfg[name]
         try:
             setting.set(value)
         except ValueError as e:
@@ -160,22 +160,6 @@ class SetCmdbase(metaclass=InitCommand):
             return False
         else:
             return True
-
-    async def _set_async(self, setting, value):
-        # Fetch current values from server first
-        try:
-            await self.srvapi.settings.update()
-        except self.srvapi.ClientError as e:
-            log.error(str(e))
-            return False
-        else:
-            try:
-                await setting.set(value)
-            except ValueError as e:
-                log.error('%s = %s: %s', setting.name, setting.string(value), e)
-                return False
-            else:
-                return True
 
 
 # Abuse some *Value classes from the settings to allow the same user-input for
