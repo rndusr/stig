@@ -48,8 +48,8 @@ else:
 
 
 def init_defaults(cfg):
-    from .types import (StringValue, IntegerValue, NumberValue, BooleanValue,
-                        PathValue, ListValue, SetValue, OptionValue)
+    from ..values import (StringValue, IntegerValue, NumberValue, BooleanValue,
+                          PathValue, ListValue, SetValue, OptionValue)
 
     class SortOrderValue(SetValue):
         """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
