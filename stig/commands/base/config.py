@@ -89,6 +89,15 @@ class ResetCmdbase(metaclass=InitCommand):
         return success
 
 
+def _eval_cmd(cmd):
+    proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout = proc.stdout.decode('utf-8').strip('\n')
+    stderr = proc.stderr.decode('utf-8').strip('\n')
+    if stderr:
+        raise ValueError(stderr)
+    else:
+        return stdout
+
 class SetCmdbase(metaclass=InitCommand):
     name = 'set'
     category = 'configuration'
@@ -115,7 +124,7 @@ class SetCmdbase(metaclass=InitCommand):
             NAME = NAME[:-5]
             if isinstance(VALUE, list):
                 VALUE = ' '.join(VALUE)
-            get_value = lambda: [self._eval_cmd(VALUE)]
+            get_value = lambda: [_eval_cmd(VALUE)]
         else:
             get_value = lambda: VALUE
 
@@ -167,15 +176,6 @@ class SetCmdbase(metaclass=InitCommand):
                 return False
             else:
                 return True
-
-    def _eval_cmd(self, cmd):
-        proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout = proc.stdout.decode('utf-8').strip('\n')
-        stderr = proc.stderr.decode('utf-8').strip('\n')
-        if stderr:
-            raise ValueError(stderr)
-        else:
-            return stdout
 
 
 # Abuse some *Value classes from the settings to allow the same user-input for
