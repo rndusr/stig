@@ -102,7 +102,7 @@ class SetCmdbase(metaclass=InitCommand):
     name = 'set'
     category = 'configuration'
     provides = set()
-    description = 'Change values of settings'
+    description = 'Change {__appname__} settings'
     usage = ('set <NAME>[:eval] <VALUE>',)
     examples = ('set connect.host my.server.example.org',
                 'set connect.password:eval getpw --id transmission')
