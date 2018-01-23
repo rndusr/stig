@@ -17,8 +17,6 @@ from collections import abc
 from blinker import Signal
 import inspect
 
-from ..utils import (NumberFloat, NumberInt)
-
 UNSPECIFIED = '<unspecified>'
 
 
@@ -125,10 +123,10 @@ class ValueBase():
 
         The default implementation checks if `value` is of the type specified in
         the class attribute `type`.  If `type` is None (the default), all values
-        valid.
+        are valid.
 
-        Additionally, subclasses may check for things like max/min length/number
-        (see `StringValue` and `NumberValue` for examples).
+        Additionally, subclasses may check for things like minimum or maximum
+        values (see `StringValue` and `NumberValue` for examples).
         """
         if self.type is not None and not isinstance(value, self.type):
             raise ValueError('Not a {}'.format(self.typename))
@@ -362,9 +360,9 @@ class NumberValue(ValueBase):
 
     Specify `min` and/or `max` to limit the range of valid numbers.
     """
-    type = NumberFloat
+    type = float
     _numbertype = 'rational'
-    valuesyntax = '[+=|-=]<NUMBER>[%s]' % '|'.join(NumberFloat.UNIT_PREFIXES)
+    valuesyntax = '[+=|-=]<NUMBER>'
 
     @property
     def typename(self):
@@ -377,13 +375,11 @@ class NumberValue(ValueBase):
             text += ' (<= {})'.format(self.max)
         return text
 
-    def __init__(self, *args, min=None, max=None, prefix='metric', unit=None, **kwargs):
+    def __init__(self, *args, min=None, max=None, **kwargs):
         self._check_min_max(min, max)
         self._min = min
         self._max = max
         ValueBase.__init__(self, *args, **kwargs)
-        self.prefix = prefix
-        self.unit = unit
 
     @staticmethod
     def _check_min_max(min, max):
@@ -417,16 +413,9 @@ class NumberValue(ValueBase):
 
         if not isinstance(value, self.type):
             try:
-                value = self.type(value, prefix=self.prefix, unit=self.unit)
+                value = self.type(value)
             except (ValueError, TypeError) as e:
                 raise ValueError('Not a %s' % self.typename)
-
-        if hasattr(self, '_set_unit_when_possible'):
-            value.unit = self._set_unit_when_possible
-            delattr(self, '_set_unit_when_possible')
-        if hasattr(self, '_set_prefix_when_possible'):
-            value.prefix = self._set_prefix_when_possible
-            delattr(self, '_set_prefix_when_possible')
 
         return value
 
@@ -442,10 +431,10 @@ class NumberValue(ValueBase):
         if min is not None:
             default = self.default
             if default is not None and default < min:
-                self.default = self.type(min, prefix=self.prefix, unit=self.unit)
+                self.default = self.type(min)
             value = self.value
             if value is not None and value < min:
-                self.value = self.type(min, prefix=self.prefix, unit=self.unit)
+                self.value = self.type(min)
 
     @property
     def max(self):
@@ -459,46 +448,12 @@ class NumberValue(ValueBase):
         if max is not None:
             default = self.default
             if default is not None and default > max:
-                self.default = self.type(max, prefix=self.prefix, unit=self.unit)
+                self.default = self.type(max)
             value = self.value
             if value is not None and value > max:
-                self.value = self.type(max, prefix=self.prefix, unit=self.unit)
+                self.value = self.type(max)
 
-    @property
-    def unit(self):
-        """Any string or `None` for no unit"""
-        value = self.value
-        if value is not None:
-            return value.unit
-        elif hasattr(self, '_set_unit_when_possible'):
-            return self._set_unit_when_possible
-    @unit.setter
-    def unit(self, unit):
-        value = self.value
-        if value is not None:
-            value.unit = unit
-        else:
-            self._set_unit_when_possible = unit
-
-    @property
-    def prefix(self):
-        """Unit prefix; 'binary' or 'metric'"""
-        value = self.value
-        if value is not None:
-            return value.prefix
-        elif hasattr(self, '_set_prefix_when_possible'):
-            return self._set_prefix_when_possible
-        else:
-            return 'metric'
-    @prefix.setter
-    def prefix(self, prefix):
-        value = self.value
-        if value is None and prefix is not None:
-            self._set_prefix_when_possible = prefix
-        else:
-            value.prefix = prefix
-
-    def string(self, value=None, default=False, with_unit=True):
+    def string(self, value=None, default=False):
         if default:
             num = self.default
         elif value is not None:
@@ -512,7 +467,7 @@ class NumberValue(ValueBase):
         if num is None:
             return UNSPECIFIED
         else:
-            return num.with_unit if with_unit is True else num.without_unit
+            return str(num)
 
     def __repr__(self):
         v = self.value
@@ -521,7 +476,7 @@ class NumberValue(ValueBase):
 
 class IntegerValue(NumberValue):
     """NumberValue that rounds numbers off to an integer"""
-    type = NumberInt
+    type = int
     _numbertype = 'integer'
 
     def convert(self, value):

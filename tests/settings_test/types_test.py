@@ -1,8 +1,7 @@
 import unittest
-from stig.settings.types import (ValueBase, StringValue, IntegerValue,
-                                 NumberValue, BooleanValue, PathValue,
-                                 ListValue, OptionValue, MultiValue, TRUE,
-                                 FALSE)
+from stig.values import (ValueBase, StringValue, IntegerValue, NumberValue,
+                         BooleanValue, PathValue, ListValue, OptionValue,
+                         MultiValue, TRUE, FALSE)
 
 
 class TestValueBase(unittest.TestCase):
@@ -122,13 +121,13 @@ class TestNumberValue(unittest.TestCase):
 
     def test_string_from_current_value(self):
         val = NumberValue(name='foo', default=42)
-        self.assertEqual(val.string(), '42')
+        self.assertEqual(val.string(), '42.0')
 
     def test_string_from_default_value(self):
         val = NumberValue(name='foo', default=42.0)
         val.set(-5)
-        self.assertEqual(val.string(), '-5')
-        self.assertEqual(val.string(default=True), '42')
+        self.assertEqual(val.string(), '-5.0')
+        self.assertEqual(val.string(default=True), '42.0')
 
     def test_string_from_specific_value(self):
         val = NumberValue(name='foo', default=42.3)
@@ -136,11 +135,10 @@ class TestNumberValue(unittest.TestCase):
         self.assertEqual(val.string(default=True), '42.3')
 
     def test___repr__(self):
-        val = NumberValue(name='foo', default=42e3, unit='m', prefix='metric')
-        self.assertEqual(repr(val), 'foo=42km')
+        val = NumberValue(name='foo', default=42e3)
+        self.assertEqual(repr(val), 'foo=42000.0')
         val.set(1024)
-        val.prefix = 'binary'
-        self.assertEqual(repr(val), 'foo=1Kim')
+        self.assertEqual(repr(val), 'foo=1024.0')
 
     def test_typename(self):
         self.assertEqual(NumberValue(name='foo').typename,
@@ -197,39 +195,6 @@ class TestNumberValue(unittest.TestCase):
             val.max = 49
         self.assertIn('minimum must be smaller than or equal to maximum', str(cm.exception))
 
-    def test_unit(self):
-        val = NumberValue('test', default=15, unit='m')
-        self.assertEqual(val.get(), 15)
-        self.assertEqual(val.unit, 'm')
-        self.assertEqual(val.string(with_unit=True), '15m')
-        self.assertEqual(val.string(with_unit=False), '15')
-        val.unit = 'x'
-        self.assertEqual(val.unit, 'x')
-        self.assertEqual(val.string(with_unit=True), '15x')
-        self.assertEqual(val.string(with_unit=False), '15')
-        val.unit = None
-        self.assertEqual(val.unit, None)
-        self.assertEqual(val.string(with_unit=True), '15')
-        self.assertEqual(val.string(with_unit=False), '15')
-
-    def test_prefix(self):
-        val = NumberValue('test', default=1024, prefix='binary')
-        self.assertEqual(val.get(), 1024)
-        self.assertEqual(val.string(), '1Ki')
-        self.assertEqual(val.prefix, 'binary')
-        val.prefix = 'metric'
-        self.assertEqual(val.get(), 1024)
-        self.assertEqual(val.string(), '1.02k')
-        self.assertEqual(val.prefix, 'metric')
-        val.set(1000)
-        self.assertEqual(val.get(), 1000)
-        self.assertEqual(val.string(), '1k')
-        self.assertEqual(val.prefix, 'metric')
-        val.prefix = 'binary'
-        self.assertEqual(val.get(), 1000)
-        self.assertEqual(val.string(), '1000')
-        self.assertEqual(val.prefix, 'binary')
-
     def test_comparison_with_normal_floats(self):
         i = IntegerValue(name='foo', default=10)
         self.assertTrue(100 > i)
@@ -245,7 +210,7 @@ class TestIntegerValue(unittest.TestCase):
         val = IntegerValue(name='foo', default=10)
         self.assertEqual(val.get(), 10)
         for newval,exp in ((0.3, 0), ('-23.34', -23), (123.4, 123), ('-500', -500),
-                           ('1.234k', 1234), ('1.23456789k', 1234)):
+                           ('1234', 1234), ('1234.56789', 1234)):
             val.set(newval)
             self.assertEqual(val.get(), exp)
 
@@ -566,7 +531,7 @@ class TestMultiValue(unittest.TestCase):
     def test_valuesyntax(self):
         options = ('this', 'that')
         val = self.IntOrOptOrBool('foo', options=options)
-        valsyntaxes = ['[+=|-=]<NUMBER>[Ti|T|Gi|G|Mi|M|Ki|k]',
+        valsyntaxes = ['[+=|-=]<NUMBER>',
                        'option: %s' % ', '.join(options),
                        BooleanValue.valuesyntax]
         self.assert_attrs(val, valuesyntax=' or '.join(valsyntaxes))
@@ -624,7 +589,7 @@ class TestMultiValue(unittest.TestCase):
         val = self.IntOrOptOrBool('foo', default='this', options=options)
         val.set(1000)
         self.assertEqual(val.get(), 1000)
-        for v,exp in (('+=1', 1001), ('false', False), ('-=2k', -999)):
+        for v,exp in (('+=1', 1001), ('false', False), ('-=2000', -999)):
             val.set(v)
             self.assertEqual(val.get(), exp)
 
