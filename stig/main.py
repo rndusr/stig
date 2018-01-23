@@ -40,13 +40,6 @@ from . import settings
 cfg = settings.Settings()
 settings.init_defaults(cfg)
 
-def _log_cfg_change(setting):
-    msg = '{} = {!s}'.format(setting.name, setting)
-    if setting.value == setting.default:
-        msg += ' (default)'
-    log.debug(msg)
-cfg.on_change(_log_cfg_change)
-
 
 from .helpmgr import HelpManager
 helpmgr = HelpManager()
