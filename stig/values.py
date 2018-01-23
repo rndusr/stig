@@ -362,11 +362,12 @@ class NumberValue(ValueBase):
     """
     type = float
     _numbertype = 'rational'
+    _converter = float
     valuesyntax = '[+=|-=]<NUMBER>'
 
     @property
     def typename(self):
-        text = '{} number'.format(self._numbertype)
+        text = '%s number' % self._numbertype
         if self.min is not None and self.max is not None:
             text += ' ({} - {})'.format(self.min, self.max)
         elif self.min is not None:
@@ -389,10 +390,7 @@ class NumberValue(ValueBase):
 
     def validate(self, value):
         num = self.convert(value)
-        # bools are integers but not invalid in this case
-        if isinstance(value, bool):
-            raise ValueError('Not a %s' % self.typename)
-        elif self.min is not None and num < self.min:
+        if self.min is not None and num < self.min:
             raise ValueError('Too small (minimum is {})'.format(self.min))
         elif self.max is not None and num > self.max:
             raise ValueError('Too large (maximum is {})'.format(self.max))
@@ -413,7 +411,8 @@ class NumberValue(ValueBase):
 
         if not isinstance(value, self.type):
             try:
-                value = self.type(value)
+                # Convert to float first in case we want to convert str to int
+                value = self._converter(float(value))
             except (ValueError, TypeError) as e:
                 raise ValueError('Not a %s' % self.typename)
 
@@ -478,9 +477,7 @@ class IntegerValue(NumberValue):
     """NumberValue that rounds numbers off to an integer"""
     type = int
     _numbertype = 'integer'
-
-    def convert(self, value):
-        return round(NumberValue.convert(self, value))
+    _converter = round
 
 
 TRUE = ('enabled', 'yes', 'on', 'true', '1')
