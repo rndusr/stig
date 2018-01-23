@@ -12,7 +12,6 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from ..settings import is_srv_setting
 from ..commands import is_op as is_cmd_op
 
 
@@ -70,9 +69,6 @@ def guess_ui(clicmds, cmdmgr, cfg):
             if setting.startswith('tui.'):
                 debugmsg += 'TUI setting: %r - guessing TUI' % setting
                 guess = 'tui'
-            elif is_srv_setting(setting, cfg):
-                debugmsg += 'server setting: %r - guessing CLI' % setting
-                guess = 'cli'
             else:
                 debugmsg += 'other setting: %r - guessing TUI' % setting
                 guess = 'tui'
