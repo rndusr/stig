@@ -61,8 +61,6 @@ srvapi.bandwidth_prefix = cfg['unitprefix.bandwidth'].value
 srvapi.size_unit = cfg['unit.size'].value
 srvapi.size_prefix = cfg['unitprefix.size'].value
 
-settings.init_server_defaults(cfg, srvapi.settings)
-
 
 from .commands import CommandManager
 cmdmgr = CommandManager(loop=aioloop)
