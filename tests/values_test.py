@@ -1,5 +1,5 @@
 import unittest
-from stig.values import (ValueBase, StringValue, IntegerValue, NumberValue,
+from stig.values import (ValueBase, StringValue, IntegerValue, FloatValue,
                          BooleanValue, PathValue, ListValue, OptionValue,
                          MultiValue, TRUE, FALSE)
 
@@ -88,9 +88,9 @@ class TestBooleanValue(unittest.TestCase):
         self.assertEqual(val.string(value='on'), 'enabled')
 
 
-class TestNumberValue(unittest.TestCase):
+class TestFloatValue(unittest.TestCase):
     def test_valid_values(self):
-        val = NumberValue(name='foo', default=10)
+        val = FloatValue(name='foo', default=10)
         self.assertEqual(val.get(), 10)
         for newval,exp in ((0, 0), (0.0, 0), ('0', 0), ('0.0', 0),
                            (0.123456789, 0.123456789), (-1e3, -1000),
@@ -99,14 +99,14 @@ class TestNumberValue(unittest.TestCase):
             self.assertEqual(val.get(), exp)
 
     def test_invalid_values(self):
-        val = NumberValue(name='foo')
+        val = FloatValue(name='foo')
         for v in (True, False, [1, 2, 3]):
             with self.assertRaises(ValueError) as cm:
                 val.set(v)
             self.assertIn('Not a %s' % val.typename, str(cm.exception))
 
     def test_adjusting_current_value(self):
-        val = NumberValue(name='foo', default=10)
+        val = FloatValue(name='foo', default=10)
         val.set('+=23')
         self.assertEqual(val.get(), 33)
         val.set('-=3')
@@ -115,49 +115,49 @@ class TestNumberValue(unittest.TestCase):
         self.assertEqual(val.get(), 20)
 
     def test_adjusting_current_value_without_default_value(self):
-        val = NumberValue(name='foo')
+        val = FloatValue(name='foo')
         val.set('+=23')
         self.assertEqual(val.get(), 23)
 
     def test_string_from_current_value(self):
-        val = NumberValue(name='foo', default=42)
+        val = FloatValue(name='foo', default=42)
         self.assertEqual(val.string(), '42.0')
 
     def test_string_from_default_value(self):
-        val = NumberValue(name='foo', default=42.0)
+        val = FloatValue(name='foo', default=42.0)
         val.set(-5)
         self.assertEqual(val.string(), '-5.0')
         self.assertEqual(val.string(default=True), '42.0')
 
     def test_string_from_specific_value(self):
-        val = NumberValue(name='foo', default=42.3)
+        val = FloatValue(name='foo', default=42.3)
         self.assertEqual(val.string(value=-0.12), '-0.12')
         self.assertEqual(val.string(default=True), '42.3')
 
     def test___repr__(self):
-        val = NumberValue(name='foo', default=42e3)
+        val = FloatValue(name='foo', default=42e3)
         self.assertEqual(repr(val), 'foo=42000.0')
         val.set(1024)
         self.assertEqual(repr(val), 'foo=1024.0')
 
     def test_typename(self):
-        self.assertEqual(NumberValue(name='foo').typename,
+        self.assertEqual(FloatValue(name='foo').typename,
                          'rational number')
-        self.assertEqual(NumberValue(name='foo', min=5).typename,
+        self.assertEqual(FloatValue(name='foo', min=5).typename,
                          'rational number (>= 5)')
-        self.assertEqual(NumberValue(name='foo', max=5).typename,
+        self.assertEqual(FloatValue(name='foo', max=5).typename,
                          'rational number (<= 5)')
-        self.assertEqual(NumberValue(name='foo', min=-5, max=5).typename,
+        self.assertEqual(FloatValue(name='foo', min=-5, max=5).typename,
                          'rational number (-5 - 5)')
 
     def test_min(self):
-        val = NumberValue(name='foo', min=10)
+        val = FloatValue(name='foo', min=10)
         with self.assertRaises(ValueError) as cm:
             val.set(9)
         self.assertIn('Too small', str(cm.exception))
         self.assertIn('minimum is 10', str(cm.exception))
 
-        val = NumberValue(name='foo', default=100)
+        val = FloatValue(name='foo', default=100)
         val.min = 150
         self.assertEqual(val.min, 150)
         self.assertEqual(val.get(), 150)
@@ -168,13 +168,13 @@ class TestNumberValue(unittest.TestCase):
         self.assertIn('minimum is 150', str(cm.exception))
 
     def test_max(self):
-        val = NumberValue(name='foo', max=100)
+        val = FloatValue(name='foo', max=100)
         with self.assertRaises(ValueError) as cm:
             val.set(100.001)
         self.assertIn('Too large', str(cm.exception))
         self.assertIn('maximum is 100', str(cm.exception))
 
-        val = NumberValue(name='foo', default=100)
+        val = FloatValue(name='foo', default=100)
         val.max = 50
         self.assertEqual(val.max, 50)
         self.assertEqual(val.get(), 50)
@@ -186,10 +186,10 @@ class TestNumberValue(unittest.TestCase):
 
     def test_min_larger_than_max(self):
         with self.assertRaises(ValueError) as cm:
-            NumberValue(name='foo', min=100, max=99)
+            FloatValue(name='foo', min=100, max=99)
         self.assertIn('minimum must be smaller than or equal to maximum', str(cm.exception))
 
-        val = NumberValue(name='foo')
+        val = FloatValue(name='foo')
         val.min = 50
         with self.assertRaises(ValueError) as cm:
             val.max = 49
@@ -603,8 +603,8 @@ class TestMultiValue(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'Too (small|large|short|long)'):
                     val.set(i)
 
-        NumberOrPath = MultiValue(NumberValue, StringValue)
-        val = NumberOrPath('test', min=-42, max=42, minlen=4)
+        FloatOrPath = MultiValue(FloatValue, StringValue)
+        val = FloatOrPath('test', min=-42, max=42, minlen=4)
         self.assert_attrs(val, min=-42, max=42, minlen=4, maxlen=None)
         with self.assertRaises(AttributeError):
             val.this_attribute_does_not_exist

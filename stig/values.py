@@ -126,7 +126,7 @@ class ValueBase():
         are valid.
 
         Additionally, subclasses may check for things like minimum or maximum
-        values (see `StringValue` and `NumberValue` for examples).
+        values (see `StringValue` and `FloatValue` for examples).
         """
         if self.type is not None and not isinstance(value, self.type):
             raise ValueError('Not a {}'.format(self.typename))
@@ -354,9 +354,9 @@ class PathValue(StringValue):
         self._mustexist = bool(mustexist)
 
 
-class NumberValue(ValueBase):
+class FloatValue(ValueBase):
     """
-    Float or integer value
+    Floating point number
 
     Specify `min` and/or `max` to limit the range of valid numbers.
     """
@@ -473,8 +473,8 @@ class NumberValue(ValueBase):
         return '%s=%s' % (self.name, UNSPECIFIED if v is None else str(v))
 
 
-class IntegerValue(NumberValue):
-    """NumberValue that rounds numbers off to an integer"""
+class IntegerValue(FloatValue):
+    """FloatValue that rounds numbers off to an integer"""
     type = int
     _numbertype = 'integer'
     _converter = round
@@ -825,7 +825,7 @@ def MultiValue(*clses):
             return
 
         # Look for special attributes on the other instances (e.g. OptionValue's
-        # "options" or NumberValue's "min/max")
+        # "options" or FloatValue's "min/max")
         for inst in self._instances_list:
             if hasattr(inst, name):
                 setattr(inst, name, value)

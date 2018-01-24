@@ -48,7 +48,7 @@ else:
 
 
 def init_defaults(cfg):
-    from ..values import (StringValue, IntegerValue, NumberValue, BooleanValue,
+    from ..values import (StringValue, IntegerValue, FloatValue, BooleanValue,
                           PathValue, ListValue, SetValue, OptionValue)
 
     class SortOrderValue(SetValue):
@@ -70,8 +70,8 @@ def init_defaults(cfg):
                     description='Username to use for authentication with Transmission RPC interface'),
         StringValue('connect.password', default='',
                     description='Password to use for authentication with Transmission RPC interface'),
-        NumberValue('connect.timeout', default=10, min=0,
-                    description='Number of seconds before connecting to Transmission RPC interface fails'),
+        FloatValue('connect.timeout', default=10, min=0,
+                   description='Number of seconds before connecting to Transmission RPC interface fails'),
         BooleanValue('connect.tls', default=False,
                     description='Whether to connect via HTTPS to the Transmission RPC interface'),
 
@@ -103,15 +103,15 @@ def init_defaults(cfg):
                   description='Path to theme file'),
         IntegerValue('tui.log.height', default=10, min=1,
                      description='Maximum height of the log section'),
-        NumberValue('tui.log.autohide', default=10, min=0,
-                    description=('If the log is hidden, show it for this many seconds '
-                                 'for new log entries before hiding it again')),
+        FloatValue('tui.log.autohide', default=10, min=0,
+                   description=('If the log is hidden, show it for this many seconds '
+                                'for new log entries before hiding it again')),
         PathValue('tui.cli.history-file', default=DEFAULT_HISTORY_FILE,
                   description='Path to TUI command line history file'),
         PathValue('tui.cli.history-size', default=10000,
                   description='Maximum number of lines in history file'),
-        NumberValue('tui.poll', default=5, min=0.1,
-                    description='Interval in seconds between TUI updates'),
+        FloatValue('tui.poll', default=5, min=0.1,
+                   description='Interval in seconds between TUI updates'),
 
         OptionValue('unit.bandwidth', default='byte', options=('bit', 'byte'),
                     description="Unit for bandwidth rates ('bit' or 'byte')"),
