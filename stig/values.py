@@ -73,10 +73,16 @@ class ValueBase():
         When setting this property, callbacks connected to `on_change` get the
         current value (after validation).  If one of the callbacks raises
         ValueError, the change is reverted and ValueError is raised.
+
+        Raise ValueError if `convert` or `validate` fail.
         """
-        # convert() and validate() may raise ValueError
-        new_value = self.convert(value)
-        self.validate(new_value)
+        if value is None:
+            # Reset to 'undefined'
+            new_value = None
+        else:
+            # convert() and validate() may raise ValueError
+            new_value = self.convert(value)
+            self.validate(new_value)
 
         # Set new value
         prev_value = self._value
