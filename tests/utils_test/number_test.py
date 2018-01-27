@@ -1,6 +1,9 @@
-from stig.utils import (NumberFloat, NumberInt, strwidth, strcrop, stralign)
+from stig.utils import (DataCountConverter, NumberFloat, NumberInt)
 
 import unittest
+
+import logging
+log = logging.getLogger(__name__)
 
 
 class TestNumberFloat(unittest.TestCase):
@@ -197,88 +200,143 @@ class TestNumberFloat(unittest.TestCase):
         n.str_includes_unit = True
         self.assertEqual(str(n), string)
 
+    def test_convert_to_argument(self):
+        n = NumberFloat(1000, unit='B', convert_to='b')
+        self.assertEqual(n.unit, 'b')
+        self.assertEqual(n, 8000)
+        n = NumberFloat('1000b')
+        self.assertEqual(n.unit, 'b')
+        self.assertEqual(n, 1000)
 
-class Test_strwidth(unittest.TestCase):
-    def test_empty_string(self):
-        self.assertEqual(strwidth(''), 0)
-
-    def test_ascii_string(self):
-        self.assertEqual(strwidth('123'), 3)
-
-    def test_double_wide_characters(self):
-        self.assertEqual(strwidth('123／456'), 8)
-        self.assertEqual(strwidth('ツ123／456'), 10)
-        self.assertEqual(strwidth('ツ123／456ツ'), 12)
-        self.assertEqual(strwidth('ツ／ツ'), 6)
-
-
-class Test_strcrop(unittest.TestCase):
-    def test_empty_string(self):
-        self.assertEqual(strcrop('', 0), '')
-        self.assertEqual(strcrop('', 100), '')
-
-    def test_ascii_string(self):
-        self.assertEqual(strcrop('123456', 100), '123456')
-        self.assertEqual(strcrop('123456', 3), '123')
-        self.assertEqual(strcrop('123456', 0), '')
-
-    def test_one_double_wide_character(self):
-        self.assertEqual(strcrop('123／456', 0), '')
-        self.assertEqual(strcrop('123／456', 1), '1')
-        self.assertEqual(strcrop('123／456', 2), '12')
-        self.assertEqual(strcrop('123／456', 3), '123')
-        self.assertEqual(strcrop('123／456', 4), '123')
-        self.assertEqual(strcrop('123／456', 5), '123／')
-        self.assertEqual(strcrop('123／456', 6), '123／4')
-        self.assertEqual(strcrop('123／456', 7), '123／45')
-        self.assertEqual(strcrop('123／456', 8), '123／456')
-        self.assertEqual(strcrop('123／456', 9), '123／456')
-
-    def test_multiple_double_wide_characters(self):
-        self.assertEqual(strcrop('ツ123／456ツ', 100), 'ツ123／456ツ')
-        self.assertEqual(strcrop('ツ123／456ツ', 1), '')
-        self.assertEqual(strcrop('ツ123／456ツ', 2), 'ツ')
-        self.assertEqual(strcrop('ツ123／456ツ', 3), 'ツ1')
-        self.assertEqual(strcrop('ツ123／456ツ', 4), 'ツ12')
-        self.assertEqual(strcrop('ツ123／456ツ', 5), 'ツ123')
-        self.assertEqual(strcrop('ツ123／456ツ', 6), 'ツ123')
-        self.assertEqual(strcrop('ツ123／456ツ', 7), 'ツ123／')
-        self.assertEqual(strcrop('ツ123／456ツ', 8), 'ツ123／4')
-        self.assertEqual(strcrop('ツ123／456ツ', 9), 'ツ123／45')
-        self.assertEqual(strcrop('ツ123／456ツ', 10), 'ツ123／456')
-        self.assertEqual(strcrop('ツ123／456ツ', 11), 'ツ123／456')
-        self.assertEqual(strcrop('ツ123／456ツ', 12), 'ツ123／456ツ')
-        self.assertEqual(strcrop('ツ123／456ツ', 13), 'ツ123／456ツ')
+        n = NumberFloat(NumberFloat.from_string('1kb', convert_to='B'))
+        self.assertEqual(n.unit, 'B')
+        self.assertEqual(n, 125)
+        n = NumberFloat(1000, unit='B')
+        self.assertEqual(n.unit, 'B')
+        self.assertEqual(n, 1000)
 
 
-class Test_stralign(unittest.TestCase):
-    def test_empty_string(self):
-        self.assertEqual(stralign('', 0, 'left'), '')
-        self.assertEqual(stralign('', 0, 'right'), '')
-        self.assertEqual(stralign('', 10, 'left'), ' '*10)
-        self.assertEqual(stralign('', 10, 'right'), ' '*10)
+class Test_DataCountConverter(unittest.TestCase):
+    def setUp(self):
+        self.conv = DataCountConverter()
 
-    def test_ascii_string(self):
-        self.assertEqual(stralign('123', 1, 'left'), '1')
-        self.assertEqual(stralign('123', 2, 'left'), '12')
-        self.assertEqual(stralign('123', 3, 'left'), '123')
-        self.assertEqual(stralign('123', 4, 'left'), '123 ')
-        self.assertEqual(stralign('123', 5, 'left'), '123  ')
-        self.assertEqual(stralign('123', 5, 'right'), '  123')
-        self.assertEqual(stralign('123', 4, 'right'), ' 123')
-        self.assertEqual(stralign('123', 3, 'right'), '123')
+    def test_from_string_parse_unit(self):
+        self.conv.unit = 'B'
+        n = self.conv.from_string('10kB')
+        self.assertEqual((n, n.unit), (10e3, 'B'))
+        n = self.conv.from_string('80kb')
+        self.assertEqual((n, n.unit), (10e3, 'B'))
+        n = self.conv.from_string('10k')
+        self.assertEqual((n, n.unit), (10e3, 'B'))
 
-    def test_double_wide_characters(self):
-        self.assertEqual(stralign('1／2／3', 0, 'left'), '')
-        self.assertEqual(stralign('1／2／3', 1, 'left'), '1')
-        self.assertEqual(stralign('1／2／3', 2, 'left'), '1 ')
-        self.assertEqual(stralign('1／2／3', 3, 'left'), '1／')
-        self.assertEqual(stralign('1／2／3', 4, 'left'), '1／2')
-        self.assertEqual(stralign('1／2／3', 5, 'left'), '1／2 ')
-        self.assertEqual(stralign('1／2／3', 6, 'left'), '1／2／')
-        self.assertEqual(stralign('1／2／3', 7, 'left'), '1／2／3')
-        self.assertEqual(stralign('1／2／3', 8, 'left'), '1／2／3 ')
-        self.assertEqual(stralign('1／2／3', 9, 'left'), '1／2／3  ')
-        self.assertEqual(stralign('1／2／3', 9, 'right'), '  1／2／3')
-        self.assertEqual(stralign('1／2／3', 8, 'right'), ' 1／2／3')
-        self.assertEqual(stralign('1／2／3', 7, 'right'), '1／2／3')
+        self.conv.unit = 'b'
+        n = self.conv.from_string('10kb')
+        self.assertEqual((n, n.unit), (10e3, 'b'))
+        n = self.conv.from_string('10kB')
+        self.assertEqual((n, n.unit), (80e3, 'b'))
+        n = self.conv.from_string('10k')
+        self.assertEqual((n, n.unit), (10e3, 'b'))
+
+    def test_from_string_default_unit(self):
+        self.conv.unit = 'B'
+        n = self.conv.from_string('10k')
+        self.assertEqual(n, 10e3)
+        self.assertEqual(n.unit, 'B')
+
+        self.conv.unit = 'b'
+        n = self.conv.from_string('10k')
+        self.assertEqual(n, 10e3)
+        self.assertEqual(n.unit, 'b')
+
+    def test_from_string_pass_unit_as_argument(self):
+        self.conv.unit = 'B'
+        n = self.conv.from_string('100k', unit='b')
+        self.assertEqual(str(n), '12.5kB')
+        n = self.conv.from_string('100k', unit='B')
+        self.assertEqual(str(n), '100kB')
+
+        self.conv.unit = 'b'
+        n = self.conv.from_string('100k', unit='b')
+        self.assertEqual(str(n), '100kb')
+        n = self.conv.from_string('100k', unit='B')
+        self.assertEqual(str(n), '800kb')
+
+    def test_unit_as_argument(self):
+        self.conv.unit = 'B'
+        n = self.conv(100e3, unit='b')
+        self.assertEqual(str(n), '12.5kB')
+        n = self.conv(100e3, unit='B')
+        self.assertEqual(str(n), '100kB')
+
+        self.conv.unit = 'b'
+        n = self.conv(100e3, unit='b')
+        self.assertEqual(str(n), '100kb')
+        n = self.conv(100e3, unit='B')
+        self.assertEqual(str(n), '800kb')
+
+    def test_default_unit(self):
+        self.conv.unit = 'B'
+        self.assertEqual(self.conv(10e6).with_unit, '10MB')
+        self.conv.unit = 'b'
+        self.assertEqual(self.conv(10e6).with_unit, '10Mb')
+
+    def test_unit_conversion(self):
+        self.conv.unit = 'B'
+        self.conv.prefix = 'metric'
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '100kB')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '12.5kB')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '102kB')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '12.8kB')
+
+        self.conv.unit = 'b'
+        self.conv.prefix = 'metric'
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '800kb')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '100kb')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '819kb')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '102kb')
+
+        self.conv.unit = 'B'
+        self.conv.prefix = 'binary'
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '97.7KiB')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '12.2KiB')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '100KiB')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '12.5KiB')
+
+        self.conv.unit = 'b'
+        self.conv.prefix = 'binary'
+        self.assertEqual(self.conv(NumberFloat('100kB')).with_unit, '781Kib')
+        self.assertEqual(self.conv(NumberFloat('100kb')).with_unit, '97.7Kib')
+        self.assertEqual(self.conv(NumberFloat('100KiB')).with_unit, '800Kib')
+        self.assertEqual(self.conv(NumberFloat('100Kib')).with_unit, '100Kib')
+
+    def test_invalid_unit(self):
+        with self.assertRaises(ValueError) as cm:
+            self.conv.from_string('10km')
+        self.assertIn('Unit must be', str(cm.exception))
+        self.assertIn("'m'", str(cm.exception))
+
+    def test_prefix_property(self):
+        self.conv.unit = 'B'
+        self.conv.prefix = 'metric'
+        self.assertEqual(self.conv(10*1000).with_unit, '10kB')
+        self.conv.prefix = 'binary'
+        self.assertEqual(self.conv(10*1024).with_unit, '10KiB')
+
+        self.conv.unit = 'b'
+        self.conv.prefix = 'metric'
+        self.assertEqual(self.conv(10*1000).with_unit, '10kb')
+        self.conv.prefix = 'binary'
+        self.assertEqual(self.conv(10*1024).with_unit, '10Kib')
+
+    def test_chained_calls(self):
+        self.conv.unit = 'B'
+        x = self.conv(10e3)
+        for _ in range(5):
+            x = self.conv(x)
+            self.assertEqual(x.with_unit, '10kB')
+
+        self.conv.unit = 'b'
+        x = self.conv(10e3)
+        for _ in range(5):
+            x = self.conv(x)
+            self.assertEqual(x.with_unit, '10kb')

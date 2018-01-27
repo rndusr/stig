@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ..logging import make_logger
+log = make_logger(__name__)
 
 from itertools import chain
 from types import MethodType
@@ -34,25 +36,28 @@ def pretty_float(n):
 
 
 class _NumberBase():
-    _PREFIXES_BINARY = (('Ti', 1024**4), ('Gi', 1024**3), ('Mi', 1024**2), ('Ki', 1024))
-    _PREFIXES_METRIC = (('T', 1000**4), ('G', 1000**3), ('M', 1000**2), ('k', 1000))
-    _PREFIXES = tuple((prefix.lower(), size)
-                      for prefix,size in chain.from_iterable(zip(_PREFIXES_BINARY,
-                                                                 _PREFIXES_METRIC)))
-    _PREFIXES_DCT = dict(_PREFIXES)
+    _prefixes_binary = (('Ti', 1024**4), ('Gi', 1024**3), ('Mi', 1024**2), ('Ki', 1024))
+    _prefixes_metric = (('T', 1000**4), ('G', 1000**3), ('M', 1000**2), ('k', 1000))
+    _prefixes = tuple((prefix.lower(), size)
+                      for prefix,size in chain.from_iterable(zip(_prefixes_binary,
+                                                                 _prefixes_metric)))
+    _prefixes_dct = dict(_prefixes)
 
-    _REGEX = re.compile('^([-+]?(?:\d+\.\d+|\d+|\.\d+)) ?(' +\
-                        '|'.join(p[0] for p in _PREFIXES) + \
+    _regex = re.compile('^([-+]?(?:\d+\.\d+|\d+|\.\d+)) ?(' +\
+                        '|'.join(p[0] for p in _prefixes) + \
                         '|)(\S*?)$',
                         flags=re.IGNORECASE)
 
-    # Public tuple of all supported unit prefixes
-    UNIT_PREFIXES = tuple(prefix for prefix,size in chain.from_iterable(zip(_PREFIXES_BINARY,
-                                                                            _PREFIXES_METRIC)))
+    # Tuple of all supported unit prefixes
+    UNIT_PREFIXES = tuple(prefix for prefix,size in chain.from_iterable(zip(_prefixes_binary,
+                                                                            _prefixes_metric)))
+
+    converters = {}
 
     @classmethod
-    def from_string(cls, string, *, prefix=None, unit=None, str_includes_unit=None):
-        match = cls._REGEX.match(str(string))
+    def from_string(cls, string, *, prefix=None, unit=None, convert_to=None, str_includes_unit=None):
+        string = str(string)
+        match = cls._regex.match(string)
         if match is None:
             raise ValueError('Not a number: %r' % string)
         else:
@@ -62,7 +67,7 @@ class _NumberBase():
             unit = match.group(3) or unit
             prfx = match.group(2)
             if prfx:
-                all_prfxs = cls._PREFIXES_DCT
+                all_prfxs = cls._prefixes_dct
                 prfx_lower = prfx.lower()
                 # _REGEX matches, so we can be sure that prfx_lower is in all_prfxs
                 num *= all_prfxs[prfx_lower]
@@ -74,26 +79,40 @@ class _NumberBase():
             elif prfx_len == 1:
                 prefix = 'metric'
 
-            return cls(num, prefix=prefix, unit=unit, str_includes_unit=str_includes_unit)
+            return cls(num, prefix=prefix, unit=unit, convert_to=convert_to,
+                       str_includes_unit=str_includes_unit)
 
-    def __new__(cls, num, *, prefix=None, unit=None, str_includes_unit=None):
+    def __new__(cls, num, *, prefix=None, unit=None, convert_to=None, str_includes_unit=None):
         if isinstance(num, _NumberBase):
             # Copy properties from existing Number instance unless they are
             # overridden by arguments.
             prefix = num.prefix if prefix is None else prefix
             unit = num.unit if unit is None else unit
             str_includes_unit = num.str_includes_unit if str_includes_unit is None else str_includes_unit
-            # return cls(float(num), prefix=prefix, unit=unit, str_includes_unit=str_includes_unit)
-            return cls(cls._numtype(num), prefix=prefix, unit=unit, str_includes_unit=str_includes_unit)
+            return cls(cls._numtype(num), prefix=prefix, unit=unit,
+                       convert_to=convert_to,
+                       str_includes_unit=str_includes_unit)
 
         # We can't specify defaults in the arguments because then we don't know
-        # which arguments are passed and which are default.
+        # which arguments are passed and which are default. And we need to know
+        # that in case `num` is a _NumberBase.
         prefix = 'metric' if prefix is None else prefix
         str_includes_unit = True if str_includes_unit is None else str_includes_unit
 
         if isinstance(num, str):
-            return cls.from_string(num, prefix=prefix, unit=unit, str_includes_unit=str_includes_unit)
+            return cls.from_string(num, prefix=prefix, unit=unit,
+                                   convert_to=convert_to,
+                                   str_includes_unit=str_includes_unit)
         elif isinstance(num, (int, float)):
+            if convert_to is not None and unit != convert_to:
+                converters = cls.converters
+                if unit in converters and convert_to in converters[unit]:
+                    converter = converters[unit][convert_to]
+                    num = converter(num)
+                    unit = convert_to
+                else:
+                    raise ValueError('Cannot convert %s to %s' % (unit, convert_to))
+
             obj = super().__new__(cls, num)
             obj.unit = unit
             obj.prefix = prefix
@@ -107,6 +126,7 @@ class _NumberBase():
 
     @property
     def str_includes_unit(self):
+        """Whether the default string representation uses `with_unit` or `without_unit`"""
         return self._str_includes_unit
     @str_includes_unit.setter
     def str_includes_unit(self, str_includes_unit):
@@ -122,6 +142,7 @@ class _NumberBase():
 
     @property
     def with_unit(self):
+        """String representation including unit"""
         s = self.without_unit
         if self.unit is not None:
             s += self.unit
@@ -129,6 +150,7 @@ class _NumberBase():
 
     @property
     def without_unit(self):
+        """String representation excluding unit"""
         absolute = abs(self)
         if self == 0:
             # This should increase efficiency since 0 is a common value
@@ -138,7 +160,9 @@ class _NumberBase():
         else:
             for prefix,size in self._prefixes:
                 if absolute >= size:
-                    return pretty_float(self/size) + prefix
+                    # Converting to float/int before doing the math is faster
+                    # because we overload math operators.
+                    return pretty_float(self._numtype(self) / size) + prefix
             return pretty_float(self)
 
     @property
@@ -154,9 +178,9 @@ class _NumberBase():
     @prefix.setter
     def prefix(self, prefix):
         if prefix == 'binary':
-            self._prefixes = self._PREFIXES_BINARY
+            self._prefixes = self._prefixes_binary
         elif prefix == 'metric':
-            self._prefixes = self._PREFIXES_METRIC
+            self._prefixes = self._prefixes_metric
         else:
             raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
         self._prefix = prefix
@@ -216,3 +240,74 @@ class NumberFloat(_NumberBase, float):
 
 class NumberInt(_NumberBase, int):
     _numtype = int
+
+
+class DataCountConverter():
+    """
+    Convert bits to bytes or vice versa, ensuring a NumberFloat instance with a
+    common unit prefix
+    """
+
+    def __init__(self):
+        self.prefix = 'metric'
+        self.unit = 'B'
+        # Ensure the needed converters are registered
+        NumberFloat.converters['B'] = {'b': lambda value: value * 8}  # bytes to bits
+        NumberFloat.converters['b'] = {'B': lambda value: value / 8}  # bits to bytes
+
+    def from_string(self, string, *, unit=None):
+        """
+        Parse number of bytes/bits from `string`
+
+        All arguments are passed to `NumberFloat.from_string`.  `unit` defaults
+        to the `unit` property of this object.
+        """
+        num = NumberFloat.from_string(string, prefix=self._prefix,
+                                      unit=unit or self._unit)
+        return self._ensure_unit_and_prefix(num)
+
+    def __call__(self, num, unit=None):
+        """
+        Make NumberFloat from `num`
+
+        The returned NumberFloat is converted to bits or bytes depending on what
+        the `unit` property is set to.
+
+        If no unit is given by passing a NumberFloat object with a specified
+        `unit` property or by passing the `unit` argument, it is assumed to be
+        in what the `unit` property of this object is set to.
+        """
+        if not isinstance(num, NumberFloat):
+            num = NumberFloat(num, prefix=self._prefix, unit=unit or self._unit)
+        return self._ensure_unit_and_prefix(num)
+
+    def _ensure_unit_and_prefix(self, num):
+        unit_given = num.unit or self._unit
+        if unit_given not in ('b', 'B'):
+            raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not %r" % unit_given)
+        else:
+            return NumberFloat(num, convert_to=self._unit, prefix=self._prefix)
+
+    @property
+    def unit(self):
+        """'b' (bits) or 'B' (bytes)"""
+        return self._unit
+
+    @unit.setter
+    def unit(self, unit):
+        if unit not in ('b', 'B'):
+            raise ValueError("Unit must be 'b' (bits) or 'B' (bytes)")
+        else:
+            self._unit = unit
+
+    @property
+    def prefix(self):
+        """'binary' or 'metric'"""
+        return self._prefix
+
+    @prefix.setter
+    def prefix(self, prefix):
+        if prefix not in ('binary', 'metric'):
+            raise ValueError("Unit must be 'binary' or 'metric'")
+        else:
+            self._prefix = prefix
