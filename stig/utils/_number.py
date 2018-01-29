@@ -108,13 +108,17 @@ class _NumberBase():
                                    str_includes_unit=str_includes_unit)
         elif isinstance(num, (int, float)):
             if convert_to is not None and unit != convert_to:
-                converters = cls.converters
-                if unit in converters and convert_to in converters[unit]:
-                    converter = converters[unit][convert_to]
-                    num = converter(num)
+                if unit is None:
+                    # num has no unit - assume num is already in target unit
                     unit = convert_to
                 else:
-                    raise ValueError('Cannot convert %s to %s' % (unit, convert_to))
+                    converters = cls.converters
+                    if unit in converters and convert_to in converters[unit]:
+                        converter = converters[unit][convert_to]
+                        num = converter(num)
+                        unit = convert_to
+                    else:
+                        raise ValueError('Cannot convert %s to %s' % (unit, convert_to))
 
             obj = super().__new__(cls, num)
             obj.unit = unit
