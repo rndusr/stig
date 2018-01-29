@@ -193,11 +193,12 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def update(self):
         """Request update from server"""
-        log.debug('Requesting settings update')
+        log.debug('Requesting immediate settings update')
         self._handle_session_get(await self.request())
 
     async def _set(self, request):
         """Send 'session-set' request with dictionary `request` and call `update`"""
+        log.debug('Sending session-set request: %r', request)
         await self._srvapi.rpc.session_set(request)
         await self.update()
 
