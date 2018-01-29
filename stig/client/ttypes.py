@@ -31,9 +31,8 @@ import os
 import re
 import time
 
-from . import (NumberFloat, NumberInt)
+from . import (NumberFloat, NumberInt, convert)
 from . import constants as const
-from . import convert
 from . import utils
 
 
