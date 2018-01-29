@@ -285,12 +285,19 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
 
+        await self.api.set_rate_limit_up('+=10k')
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 10)
+        await self.api.set_rate_limit_down('+=100k')
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100)
+
         await self.api.set_rate_limit_up(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50e3)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 10)
         await self.api.set_rate_limit_down(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100)
 
     async def test_get_alt_rate_limits(self):
         convert.bandwidth.unit = 'byte'
