@@ -15,6 +15,7 @@ from .logging import make_logger
 log = make_logger(__name__)
 
 from .main import (cfg, srvapi)
+from .utils import convert
 from .views.torrentlist import COLUMNS as TORRENT_COLUMNS
 from .views.filelist import COLUMNS as FILE_COLUMNS
 from .views.peerlist import COLUMNS as PEER_COLUMNS
@@ -35,8 +36,9 @@ cfg['connect.timeout'].on_change(_make_connection_callback('timeout'), autoremov
 
 
 def _set_bandwidth_unit(unit):
-    srvapi.bandwidth_unit = unit.value
-    u = {'bit': 'b', 'byte': 'B'}[unit.value]
+    u = unit.value
+    convert.bandwidth.unit = u
+
     TORRENT_COLUMNS['rate-up'].set_unit(u)
     TORRENT_COLUMNS['rate-down'].set_unit(u)
     TORRENT_COLUMNS['rate-limit-up'].set_unit(u)
@@ -50,16 +52,16 @@ def _set_bandwidth_unit(unit):
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 _set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
-
 def _set_bandwidth_prefix(prefix):
-    srvapi.bandwidth_prefix = prefix.value
+    convert.bandwidth.prefix = prefix.value
     srvapi.torrent.clearcache()
 cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 
 
 def _set_size_unit(unit):
-    srvapi.size_unit = unit.value
-    u = {'bit': 'b', 'byte': 'B'}[unit.value]
+    u = unit.value
+    convert.size.unit = u
+
     TORRENT_COLUMNS['size'].set_unit(u)
     TORRENT_COLUMNS['downloaded'].set_unit(u)
     TORRENT_COLUMNS['uploaded'].set_unit(u)
@@ -72,8 +74,7 @@ def _set_size_unit(unit):
 cfg['unit.size'].on_change(_set_size_unit)
 _set_size_unit(cfg['unit.size'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
-
 def _set_size_prefix(prefix):
-    srvapi.size_prefix = prefix.value
+    convert.size.prefix = prefix.value
     srvapi.torrent.clearcache()
 cfg['unitprefix.size'].on_change(_set_size_prefix)
