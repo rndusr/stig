@@ -121,13 +121,13 @@ class TestFloatValue(unittest.TestCase):
 
     def test_string_from_current_value(self):
         val = FloatValue(name='foo', default=42)
-        self.assertEqual(val.string(), '42.0')
+        self.assertEqual(val.string(), '42')
 
     def test_string_from_default_value(self):
         val = FloatValue(name='foo', default=42.0)
         val.set(-5)
-        self.assertEqual(val.string(), '-5.0')
-        self.assertEqual(val.string(default=True), '42.0')
+        self.assertEqual(val.string(), '-5')
+        self.assertEqual(val.string(default=True), '42')
 
     def test_string_from_specific_value(self):
         val = FloatValue(name='foo', default=42.3)
@@ -136,9 +136,9 @@ class TestFloatValue(unittest.TestCase):
 
     def test___repr__(self):
         val = FloatValue(name='foo', default=42e3)
-        self.assertEqual(repr(val), 'foo=42000.0')
+        self.assertEqual(repr(val), 'foo=42k')
         val.set(1024)
-        self.assertEqual(repr(val), 'foo=1024.0')
+        self.assertEqual(repr(val), 'foo=1.02k')
 
     def test_typename(self):
         self.assertEqual(FloatValue(name='foo').typename,
@@ -531,7 +531,7 @@ class TestMultiValue(unittest.TestCase):
     def test_valuesyntax(self):
         options = ('this', 'that')
         val = self.IntOrOptOrBool('foo', options=options)
-        valsyntaxes = ['[+=|-=]<NUMBER>',
+        valsyntaxes = ['[+=|-=]<NUMBER>[Ti|T|Gi|G|Mi|M|Ki|k]',
                        'option: %s' % ', '.join(options),
                        BooleanValue.valuesyntax]
         self.assert_attrs(val, valuesyntax=' or '.join(valsyntaxes))

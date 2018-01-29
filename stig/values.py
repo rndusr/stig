@@ -17,6 +17,8 @@ from collections import abc
 from blinker import Signal
 import inspect
 
+from .utils import (NumberFloat, NumberInt)
+
 UNSPECIFIED = '<unspecified>'
 
 
@@ -34,8 +36,7 @@ class ValueBase():
         if default is not None:
             initial_value = self.convert(default)
             self.validate(initial_value)
-            self._value = initial_value
-            self._default = self._value
+            self._value = self._default = initial_value
         log.debug('Initialized ValueBase: %s=%r', self._name, self._value)
 
     @property
@@ -366,10 +367,10 @@ class FloatValue(ValueBase):
 
     Specify `min` and/or `max` to limit the range of valid numbers.
     """
-    type = float
+    type = NumberFloat
+    _convert_to_type = lambda self, value: float(value)
     _numbertype = 'rational'
-    _converter = float
-    valuesyntax = '[+=|-=]<NUMBER>'
+    valuesyntax = '[+=|-=]<NUMBER>[%s]' % '|'.join(NumberFloat.UNIT_PREFIXES)
 
     @property
     def typename(self):
@@ -417,8 +418,8 @@ class FloatValue(ValueBase):
 
         if not isinstance(value, self.type):
             try:
-                # Convert to float first in case we want to convert str to int
-                value = self._converter(float(value))
+                # If this is a NumberInt instance, we have to round
+                value = self.type(self._convert_to_type(value))
             except (ValueError, TypeError) as e:
                 raise ValueError('Not a %s' % self.typename)
 
@@ -431,15 +432,16 @@ class FloatValue(ValueBase):
 
     @min.setter
     def min(self, min):
+        min = self._convert_to_type(min)
         self._check_min_max(min, self.max)
         self._min = min
         if min is not None:
             default = self.default
             if default is not None and default < min:
-                self.default = self.type(min)
+                self.default = min
             value = self.value
             if value is not None and value < min:
-                self.value = self.type(min)
+                self.value = min
 
     @property
     def max(self):
@@ -448,17 +450,18 @@ class FloatValue(ValueBase):
 
     @max.setter
     def max(self, max):
+        max = self._convert_to_type(max)
         self._check_min_max(self.min, max)
         self._max = max
         if max is not None:
             default = self.default
             if default is not None and default > max:
-                self.default = self.type(max)
+                self.default = max
             value = self.value
             if value is not None and value > max:
-                self.value = self.type(max)
+                self.value = max
 
-    def string(self, value=None, default=False):
+    def string(self, value=None, default=False, with_unit=True):
         if default:
             num = self.default
         elif value is not None:
@@ -472,7 +475,7 @@ class FloatValue(ValueBase):
         if num is None:
             return UNSPECIFIED
         else:
-            return str(num)
+            return num.with_unit if with_unit is True else num.without_unit
 
     def __repr__(self):
         v = self.value
@@ -481,9 +484,10 @@ class FloatValue(ValueBase):
 
 class IntegerValue(FloatValue):
     """FloatValue that rounds numbers off to an integer"""
-    type = int
+    type = NumberInt
+    _convert_to_type = lambda self, value: round(float(value))
     _numbertype = 'integer'
-    _converter = round
+
 
 
 TRUE = ('enabled', 'yes', 'on', 'true', '1')
