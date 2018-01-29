@@ -259,6 +259,8 @@ class DataCountConverter():
     common unit prefix
     """
 
+    _short = {'bit': 'b', 'byte': 'B'}
+
     def __init__(self):
         self.prefix = 'metric'
         self.unit = 'B'
@@ -285,13 +287,14 @@ class DataCountConverter():
         `unit` property or by passing the `unit` argument, it is assumed to be
         in what the `unit` property of this object is set to.
         """
+        unit = self._short.get(unit, unit)
         if not isinstance(num, NumberFloat):
             num = NumberFloat(num, prefix=self._prefix, unit=unit or self._unit)
         return self._ensure_unit_and_prefix(num)
 
     def _ensure_unit_and_prefix(self, num):
         unit_given = num.unit or self._unit
-        if unit_given not in ('b', 'B'):
+        if unit_given not in ('bit', 'byte', 'b', 'B'):
             raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not %r" % unit_given)
         else:
             return NumberFloat(num, convert_to=self._unit, prefix=self._prefix)
@@ -303,10 +306,10 @@ class DataCountConverter():
 
     @unit.setter
     def unit(self, unit):
-        if unit not in ('b', 'B'):
-            raise ValueError("Unit must be 'b' (bits) or 'B' (bytes)")
+        if unit not in ('bit', 'byte', 'b', 'B'):
+            raise ValueError("Unit must be 'bit or 'byte'")
         else:
-            self._unit = unit
+            self._unit = self._short.get(unit, unit)
 
     @property
     def prefix(self):
