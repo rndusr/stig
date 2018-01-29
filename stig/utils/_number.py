@@ -74,7 +74,6 @@ class _NumberBase():
                 prfx_lower = prfx.lower()
                 # _REGEX matches, so we can be sure that prfx_lower is in all_prfxs
                 num *= all_prfxs[prfx_lower]
-            num = cls._numtype(num)
 
             prfx_len = len(prfx)
             if prfx_len == 2:
@@ -107,6 +106,9 @@ class _NumberBase():
                                    convert_to=convert_to,
                                    str_includes_unit=str_includes_unit)
         elif isinstance(num, (int, float)):
+            if cls._numtype is int:
+                num = round(num)
+
             if convert_to is not None and unit != convert_to:
                 if unit is None:
                     # num has no unit - assume num is already in target unit
@@ -129,8 +131,8 @@ class _NumberBase():
             raise ValueError('Not a number: %r' % num)
 
     def convert_to(self, unit):
-        return type(self)(self._numtype(self), convert_to=unit,
-                          prefix=self.prefix, unit=self.unit, str_includes_unit=self.str_includes_unit)
+        return type(self)(self._numtype(self), prefix=self.prefix, unit=self.unit,
+                          convert_to=unit, str_includes_unit=self.str_includes_unit)
 
     def __str__(self):
         return self.__str()
