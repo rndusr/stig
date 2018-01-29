@@ -113,7 +113,8 @@ class TorrentAPI():
             raise RuntimeError('Cannot convert %r to bytes: %r', unit, number)
 
     async def _map_tid_to_torrent_values(self, torrents, keys):
-        """Map torrent ID to Torrent value(s)
+        """
+        Map torrent ID to Torrent value(s)
 
         If `keys` lists only one key, the returned map maps each torrent's ID to
         its value of that key.
@@ -148,7 +149,8 @@ class TorrentAPI():
         return Response(path=path, success=True)
 
     async def add(self, torrent, stopped=False, path=None):
-        """Add torrent from file, URL or hash
+        """
+        Add torrent from file, URL or hash
 
         torrent: Path to local file, web/magnet link or hash
         stopped: False to start downloading immediately, True otherise
@@ -250,7 +252,8 @@ class TorrentAPI():
             return Response(success=True, raw_torrents=raw_tlist)
 
     async def _get_torrents_by_ids(self, keys, ids=None):
-        """Return a Response object with 'torrents' set to a tuple of Torrents
+        """
+        Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: 'ALL' for all supported Torrent keys or a sequence of key
               strings (see client.ttypes.TYPES for available keys)
@@ -293,7 +296,8 @@ class TorrentAPI():
         return Response(success=success, torrents=tlist, msgs=msgs)
 
     async def _get_torrents_by_filter(self, keys, tfilter=None):
-        """Return a Response object with 'torrents' set to a tuple of Torrents
+        """
+        Return a Response object with 'torrents' set to a tuple of Torrents
 
         keys: See _get_torrents_by_ids
         tfilter: A TorrentFilter instance or None
@@ -337,7 +341,8 @@ class TorrentAPI():
             return Response(success=success, torrents=tlist, msgs=msgs)
 
     async def torrents(self, torrents=None, keys='ALL'):
-        """Fetch and return torrents
+        """
+        Fetch and return torrents
 
         torrents: Iterator of torrent IDs, TorrentFilter object (or its string
                   representation) or None for all torrents
@@ -360,7 +365,8 @@ class TorrentAPI():
 
     async def _torrent_action(self, method, torrents=None, method_args={}, check=None,
                               keys_check=()):
-        """Helper method that operates on torrents (start, stop, remove, etc)
+        """
+        Helper method that operates on torrents (start, stop, remove, etc)
 
         method: Any method from TransmissionRPC that accepts torrent ids
         torrents: See `torrents` method
@@ -421,7 +427,8 @@ class TorrentAPI():
                 return Response(success=True, torrents=tuple(tlist), msgs=msgs)
 
     async def stop(self, torrents):
-        """Stop down-/uploading torrents
+        """
+        Stop down-/uploading torrents
 
         torrents: See `torrents` method
 
@@ -440,7 +447,8 @@ class TorrentAPI():
                                           check=check, keys_check=('status',))
 
     async def start(self, torrents, force=False):
-        """Start down-/uploading torrents
+        """
+        Start down-/uploading torrents
 
         torrents: See `torrents` method
         force: Start downloading even if download queue is active and full
@@ -467,7 +475,8 @@ class TorrentAPI():
                                           method_args={'force':force})
 
     async def toggle_stopped(self, torrents, force=False):
-        """Start down-/uploading torrents
+        """
+        Start down-/uploading torrents
 
         torrents: See `torrents` method
         force: See `start` method
@@ -503,7 +512,8 @@ class TorrentAPI():
                         msgs=msgs)
 
     async def verify(self, torrents):
-        """Verify torrents's downloaded data
+        """
+        Verify torrents's downloaded data
 
         torrents: See `torrents` method
 
@@ -526,7 +536,8 @@ class TorrentAPI():
                                           check=check, keys_check=('status',))
 
     async def remove(self, torrents, delete=False):
-        """Remove torrents
+        """
+        Remove torrents
 
         torrents: See `torrents` method
         delete: True if downloaded files should be deleted
@@ -551,7 +562,8 @@ class TorrentAPI():
 
 
     async def move(self, torrents, destination):
-        """Change torrents' location in the file system
+        """
+        Change torrents' location in the file system
 
         torrents: See `torrents` method
         destination: New path of the specified torrents; relative paths are
@@ -582,7 +594,8 @@ class TorrentAPI():
 
 
     async def file_priority(self, torrents, files, priority):
-        """Change download priority of individual torrent files
+        """
+        Change download priority of individual torrent files
 
         torrents: See `torrents` method
         files: TorrentFileFilter object (or its string representation), sequence
@@ -771,7 +784,8 @@ class TorrentAPI():
         return Response(torrents=response.torrents, success=success, msgs=msgs)
 
     async def set_rate_limit_up(self, torrents, limit):
-        """Limit upload rate for individual torrent(s)
+        """
+        Limit upload rate for individual torrent(s)
 
         torrents: See `torrents` method
         limit: Allowed values:
@@ -790,7 +804,8 @@ class TorrentAPI():
         return await self._limit_rate_absolute(torrents, 'up', limit)
 
     async def set_rate_limit_down(self, torrents, limit):
-        """Limit download rate for individual torrent(s)
+        """
+        Limit download rate for individual torrent(s)
 
         torrents: See `torrents` method
         limit: See `set_rate_limit_up` method
@@ -803,7 +818,8 @@ class TorrentAPI():
         return await self._limit_rate_absolute(torrents, 'down', limit)
 
     async def adjust_rate_limit_up(self, torrents, adjustment):
-        """Same as `set_rate_limit_up` but set new limit relative to current limit
+        """
+        Same as `set_rate_limit_up` but set new limit relative to current limit
 
         adjustment: Negative or positive number to add to the current limit of
                     each matching torrent
@@ -811,7 +827,8 @@ class TorrentAPI():
         return await self._limit_rate_relative(torrents, 'up', adjustment)
 
     async def adjust_rate_limit_down(self, torrents, adjustment):
-        """Same as `set_rate_limit_down` but set new limit relative to current limit
+        """
+        Same as `set_rate_limit_down` but set new limit relative to current limit
 
         adjustment: See `adjust_rate_limit_up` method
         """
@@ -819,7 +836,8 @@ class TorrentAPI():
 
 
     async def tracker_add(self, torrents, urls):
-        """Add tracker(s) to torrents
+        """
+        Add tracker(s) to torrents
 
         torrents: See `torrents` method
         urls: Iterable of announce URLs
@@ -873,7 +891,8 @@ class TorrentAPI():
             return Response(success=True, torrents=response.torrents, msgs=msgs)
 
     async def tracker_remove(self, torrents, urls, partial_match=False):
-        """Remove tracker(s) from torrents
+        """
+        Remove tracker(s) from torrents
 
         torrents: See `torrents` method
         urls: Iterable of announce URLs
@@ -884,7 +903,6 @@ class TorrentAPI():
             torrents: tuple of Torrents with the keys 'id' and 'name'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
-
         """
         if not urls:
             return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
@@ -944,7 +962,8 @@ class TorrentAPI():
             return Response(success=True, torrents=response.torrents, msgs=msgs)
 
     async def announce(self, torrents):
-        """Announce torrents' to its tracker(s)
+        """
+        Announce torrents' to its tracker(s)
 
         torrents: See `torrents` method
 
