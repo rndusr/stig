@@ -94,23 +94,12 @@ class TorrentAPI():
             return Response(result=result, msgs=(), success=True)
 
     @staticmethod
-    def _ensure_bytes(number, converter):
+    def _ensure_bytes(number):
         if number is const.UNLIMITED:
             return number
         elif not hasattr(number, 'unit'):
-            if isinstance(number, str):
-                number = converter.from_string(number)
-            else:
-                number = converter(number)
-        unit = number.unit
-        if unit == 'b':
-            number = number / 8
-            number.unit = 'B'
-            return number
-        elif unit == 'B':
-            return number
-        else:
-            raise RuntimeError('Cannot convert %r to bytes: %r', unit, number)
+            number = convert.bandwidth(number)
+        return number.convert_to('B')
 
     async def _map_tid_to_torrent_values(self, torrents, keys):
         """
@@ -716,7 +705,7 @@ class TorrentAPI():
             elif any(limit is x for x in (True, const.ENABLED)):
                 return True
             else:
-                return self._ensure_bytes(convert.bandwidth(limit), convert.bandwidth)
+                return self._ensure_bytes(limit)
 
         # Generate 'torrent-set' arguments for each torrent ID.  To de-duplicate
         # requests (same args for multiple torrents), we map the args to a list
