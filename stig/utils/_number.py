@@ -319,6 +319,6 @@ class DataCountConverter():
     @prefix.setter
     def prefix(self, prefix):
         if prefix not in ('binary', 'metric'):
-            raise ValueError("Unit must be 'binary' or 'metric'")
+            raise ValueError("Prefix must be 'binary' or 'metric'")
         else:
             self._prefix = prefix
