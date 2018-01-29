@@ -12,8 +12,10 @@
 import unicodedata
 
 from ._number import (NumberFloat, NumberInt, pretty_float, DataCountConverter)
-bandwidth = DataCountConverter()
-size = DataCountConverter()
+
+from types import SimpleNamespace
+convert = SimpleNamespace(bandwidth=DataCountConverter(),
+                          size=DataCountConverter())
 
 
 def striplines(lines):
