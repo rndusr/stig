@@ -700,9 +700,9 @@ class TorrentAPI():
 
         def normalize_rate_limit(limit):
             if limit >= float('inf') or \
-               any(limit is x for x in (None, False, const.DISABLED, const.UNLIMITED)):
+               any(limit is x for x in (None, False, const.UNLIMITED)):
                 return None
-            elif any(limit is x for x in (True, const.ENABLED)):
+            elif limit is True:
                 return True
             else:
                 return self._ensure_bytes(limit)
@@ -780,10 +780,9 @@ class TorrentAPI():
         limit: Allowed values:
                  - Any positive number (bytes per second) sets the new limit to
                    that
-                 - A negative number, `None`, `False` and the constants DISABLED
-                   and UNLIMITED disable the current limit
-                 - `True` and the constant ENABLED enable a previously disabled
-                   limit
+                 - A negative number, `None`, `False` and the constant UNLIMITED
+                   disable the current limit
+                 - `True` enables a previously disabled limit
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-up'

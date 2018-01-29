@@ -43,6 +43,4 @@ def get_constant(name, repr=None, bases=(), init_value=None, attrs={}):
 
 DISCONNECTED = get_constant('disconnected', repr='<disconnected>')
 UNLIMITED = get_constant('unlimited', bases=(float,), init_value='inf')
-DISABLED = get_constant('disabled', attrs={'__bool__': lambda self: False})
-ENABLED = get_constant('enabled', attrs={'__bool__': lambda self: True})
 RANDOM = get_constant('random', repr="'random'")
