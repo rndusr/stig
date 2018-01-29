@@ -128,6 +128,10 @@ class _NumberBase():
         else:
             raise ValueError('Not a number: %r' % num)
 
+    def convert_to(self, unit):
+        return type(self)(self._numtype(self), convert_to=unit,
+                          prefix=self.prefix, unit=self.unit, str_includes_unit=self.str_includes_unit)
+
     def __str__(self):
         return self.__str()
 
