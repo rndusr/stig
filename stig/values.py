@@ -526,7 +526,9 @@ class BooleanValue(ValueBase):
 
 
 class _AliasCapabilities():
-    _aliases = {}
+    def __init__(self, *args, **kwargs):
+        self._aliases = {}
+        super().__init__(*args, **kwargs)
 
     @property
     def aliases(self):
