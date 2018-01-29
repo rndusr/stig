@@ -738,9 +738,9 @@ class TorrentAPI():
                 if new_limit_norm >= float('inf'):
                     args = (('%sloadLimited' % direction, False),)
                 else:
-                    rpc_value = int(round(new_limit_norm/1000))
+                    rpc_value = int(round(int(new_limit_norm)/1000))  # Transmission expects kilobytes
                     args = (('%sloadLimited' % direction, True),
-                            ('%sloadLimit' % direction, rpc_value))  # Transmission expects kilobytes
+                            ('%sloadLimit' % direction, rpc_value))
 
             if args in torrent_set_args:
                 torrent_set_args[args].append(tid)
