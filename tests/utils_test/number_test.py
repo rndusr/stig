@@ -215,6 +215,26 @@ class TestNumberFloat(unittest.TestCase):
         self.assertEqual(n.unit, 'B')
         self.assertEqual(n, 1000)
 
+        n = NumberFloat(50e3, convert_to='ducks')
+        self.assertEqual(n.unit, 'ducks')
+        self.assertEqual(n, 50000)
+
+    def test_convert_to_method(self):
+        n = NumberFloat(1000, unit='B')
+        n_ = n.convert_to('b')
+        self.assertEqual(n_.unit, 'b')
+        self.assertEqual(n_, 8000)
+
+        n = NumberFloat('1000b')
+        n_ = n.convert_to('B')
+        self.assertEqual(n_.unit, 'B')
+        self.assertEqual(n_, 125)
+
+        n = NumberFloat('1000')
+        n_ = n.convert_to('B')
+        self.assertEqual(n_.unit, 'B')
+        self.assertEqual(n_, 1000)
+
 
 class Test_DataCountConverter(unittest.TestCase):
     def setUp(self):
