@@ -730,7 +730,7 @@ def MultiValue(*clses):
 
         # Fill _name, _default, etc with actual values
         ValueBase.__init__(self, name, default=default, description=description)
-        log.debug('Initialized of MultiValue %s: %r', clsname, self)
+        log.debug('Initialized MultiValue %s: %r', clsname, self)
     clsattrs['__init__'] = __init__
 
     clsattrs['instances'] = property(fget=lambda self: self._instances_dict,
