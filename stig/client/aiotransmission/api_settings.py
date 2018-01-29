@@ -248,7 +248,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
                              field_value: raw_limit})
 
 
-    @setting(BandwidthValue)
+    @setting(RateLimitValue)
     def rate_limit_up(self):
         """
         Cached upload rate limit
@@ -278,7 +278,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'up', alt=False)
 
 
-    @setting(BandwidthValue)
+    @setting(RateLimitValue)
     def rate_limit_down(self):
         """Cached download rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('down', alt=False)
@@ -293,7 +293,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'down', alt=False)
 
 
-    @setting(BandwidthValue)
+    @setting(RateLimitValue)
     def alt_rate_limit_up(self):
         """Cached alternative upload rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('up', alt=True)
@@ -308,7 +308,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'up', alt=True)
 
 
-    @setting(BandwidthValue)
+    @setting(RateLimitValue)
     def alt_rate_limit_down(self):
         """Cached alternative download rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('down', alt=True)
