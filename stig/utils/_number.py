@@ -52,7 +52,10 @@ class _NumberBase():
     UNIT_PREFIXES = tuple(prefix for prefix,size in chain.from_iterable(zip(_prefixes_binary,
                                                                             _prefixes_metric)))
 
-    converters = {}
+    converters = {
+        'B': {'b': lambda value: value * 8},  # bytes to bits
+        'b': {'B': lambda value: value / 8},  # bits to bytes
+    }
 
     @classmethod
     def from_string(cls, string, *, prefix=None, unit=None, convert_to=None, str_includes_unit=None):
@@ -251,9 +254,6 @@ class DataCountConverter():
     def __init__(self):
         self.prefix = 'metric'
         self.unit = 'B'
-        # Ensure the needed converters are registered
-        NumberFloat.converters['B'] = {'b': lambda value: value * 8}  # bytes to bits
-        NumberFloat.converters['b'] = {'B': lambda value: value / 8}  # bits to bytes
 
     def from_string(self, string, *, unit=None):
         """
