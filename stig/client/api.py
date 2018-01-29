@@ -14,7 +14,6 @@ log = make_logger(__name__)
 
 import weakref
 
-from . import convert
 from .utils import SleepUneasy
 
 from .aiotransmission.rpc import TransmissionRPC
@@ -28,7 +27,7 @@ from .errors import *
 from .utils import lazy_property
 
 
-class API(convert.bandwidth_mixin, convert.size_mixin):
+class API():
     """
     Provide and manage *API classes as singletons
 

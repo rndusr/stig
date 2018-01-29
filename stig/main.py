@@ -56,10 +56,6 @@ srvapi = API(host=cfg['connect.host'].value,
              interval=cfg['tui.poll'].value,
              loop=aioloop)
 srvapi.rpc.enabled = False
-srvapi.bandwidth_unit = cfg['unit.bandwidth'].value
-srvapi.bandwidth_prefix = cfg['unitprefix.bandwidth'].value
-srvapi.size_unit = cfg['unit.size'].value
-srvapi.size_prefix = cfg['unitprefix.size'].value
 
 
 from .commands import CommandManager
