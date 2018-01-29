@@ -368,7 +368,6 @@ class FloatValue(ValueBase):
     Specify `min` and/or `max` to limit the range of valid numbers.
     """
     type = NumberFloat
-    _convert_to_type = lambda self, value: float(value)
     _numbertype = 'rational'
     valuesyntax = '[+=|-=]<NUMBER>[%s]' % '|'.join(NumberFloat.UNIT_PREFIXES)
 
@@ -418,8 +417,7 @@ class FloatValue(ValueBase):
 
         if not isinstance(value, self.type):
             try:
-                # If this is a NumberInt instance, we have to round
-                value = self.type(self._convert_to_type(value))
+                value = self.type(value)
             except (ValueError, TypeError) as e:
                 raise ValueError('Not a %s' % self.typename)
 
@@ -432,7 +430,7 @@ class FloatValue(ValueBase):
 
     @min.setter
     def min(self, min):
-        min = self._convert_to_type(min)
+        min = self.type(min)
         self._check_min_max(min, self.max)
         self._min = min
         if min is not None:
@@ -450,7 +448,7 @@ class FloatValue(ValueBase):
 
     @max.setter
     def max(self, max):
-        max = self._convert_to_type(max)
+        max = self.type(max)
         self._check_min_max(self.min, max)
         self._max = max
         if max is not None:
@@ -485,7 +483,6 @@ class FloatValue(ValueBase):
 class IntegerValue(FloatValue):
     """FloatValue that rounds numbers off to an integer"""
     type = NumberInt
-    _convert_to_type = lambda self, value: round(float(value))
     _numbertype = 'integer'
 
 

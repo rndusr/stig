@@ -94,7 +94,8 @@ class TestFloatValue(unittest.TestCase):
         self.assertEqual(val.get(), 10)
         for newval,exp in ((0, 0), (0.0, 0), ('0', 0), ('0.0', 0),
                            (0.123456789, 0.123456789), (-1e3, -1000),
-                           ('+=7', -993), ('-= 3', -996)):
+                           ('100k', 100e3), ('-100k', -100e3),
+                           ('+=7k', -93e3), ('-= 1', -93001)):
             val.set(newval)
             self.assertEqual(val.get(), exp)
 
@@ -158,14 +159,14 @@ class TestFloatValue(unittest.TestCase):
         self.assertIn('minimum is 10', str(cm.exception))
 
         val = FloatValue(name='foo', default=100)
-        val.min = 150
-        self.assertEqual(val.min, 150)
-        self.assertEqual(val.get(), 150)
-        self.assertEqual(val.get_default(), 150)
+        val.min = '150k'
+        self.assertEqual(val.min, 150e3)
+        self.assertEqual(val.get(), 150e3)
+        self.assertEqual(val.get_default(), 150e3)
         with self.assertRaises(ValueError) as cm:
-            val.set(149)
+            val.set(149999)
         self.assertIn('Too small', str(cm.exception))
-        self.assertIn('minimum is 150', str(cm.exception))
+        self.assertIn('minimum is 150k', str(cm.exception))
 
     def test_max(self):
         val = FloatValue(name='foo', max=100)
