@@ -228,18 +228,24 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         return setting
 
     async def _set_rate_limit(self, limit, direction, alt=False):
+        # Get current value in case `limit` is an adjustment (e.g. '+=100kB')
+        method_name = 'get_%srate_limit_%s' % ('alt_' if alt is True else '', direction)
+        await getattr(self, method_name)()
+
+        key = 'rate-limit-' + direction
+        setting = self._cache[key]
+        setting.set(limit)
+        limit = setting.value
+
         field_value, field_enabled = self._rate_limit_fields(direction, alt)
         if limit is True:
             await self._set({field_enabled: True})
-        elif limit in (const.UNLIMITED, False) or \
-             isinstance(limit, (int, float)) and limit < 0:
+        elif limit in (const.UNLIMITED, False) or limit < 0:
             await self._set({field_enabled: False})
         else:
-            l = convert.bandwidth(limit)
-            if l.unit == 'b':
-                l /= 8  # Convert bits to bytes
+            raw_limit = int(int(limit.convert_to('B')) / 1000)  # Transmission expects kilobytes
             await self._set({field_enabled: True,
-                             field_value: int(l/1000)})  # Convert to kilobytes
+                             field_value: raw_limit})
 
 
     @setting(BandwidthValue)
