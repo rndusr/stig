@@ -828,19 +828,15 @@ def MultiValue(*clses):
         try:
             attr = object.__getattribute__(self, name)
         except AttributeError:
-            pass
+            # Look for special attributes on the other instances (e.g. OptionValue's
+            # "options" or FloatValue's "min/max")
+            for inst in self._instances_list:
+                if hasattr(inst, name):
+                    setattr(inst, name, value)
+                    return
+            raise AttributeError('%r object has no attribute %r' % (type(self).__name__, name))
         else:
             object.__setattr__(self, name, value)
-            return
-
-        # Look for special attributes on the other instances (e.g. OptionValue's
-        # "options" or FloatValue's "min/max")
-        for inst in self._instances_list:
-            if hasattr(inst, name):
-                setattr(inst, name, value)
-                return
-
-        raise AttributeError('%r object has no attribute %r' % (type(self).__name__, name))
     clsattrs['__setattr__'] = __setattr__
 
     cls = type(clsname, (ValueBase,), clsattrs)
