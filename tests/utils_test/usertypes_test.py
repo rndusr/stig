@@ -1,7 +1,7 @@
 import unittest
-from stig.values import (ValueBase, StringValue, IntegerValue, FloatValue,
-                         BooleanValue, PathValue, ListValue, OptionValue,
-                         MultiValue, TRUE, FALSE)
+from stig.utils.usertypes import (ValueBase, StringValue, IntegerValue, FloatValue,
+                                  BooleanValue, PathValue, ListValue, OptionValue,
+                                  MultiValue, TRUE, FALSE)
 
 
 class TestValueBase(unittest.TestCase):

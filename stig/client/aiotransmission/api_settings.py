@@ -20,9 +20,9 @@ from functools import wraps
 from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
-from ...values import (BooleanValue, IntegerValue, ListValue, FloatValue,
-                       OptionValue, PathValue, SetValue, StringValue, ValueBase,
-                       MultiValue)
+from ...utils.usertypes import (BooleanValue, IntegerValue, ListValue,
+                                FloatValue, OptionValue, PathValue, SetValue,
+                                StringValue, ValueBase, MultiValue)
 
 
 def _mk_constantValue(constant, typename=None, valuesyntax=None):
