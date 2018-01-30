@@ -35,44 +35,43 @@ cfg['connect.tls'].on_change(_make_connection_callback('tls'), autoremove=False)
 cfg['connect.timeout'].on_change(_make_connection_callback('timeout'), autoremove=False)
 
 
+_BANDWIDTH_COLUMNS = (TORRENT_COLUMNS['rate-up'], TORRENT_COLUMNS['rate-down'],
+                      TORRENT_COLUMNS['rate-limit-up'], TORRENT_COLUMNS['rate-limit-down'],
+                      PEER_COLUMNS['rate-up'], PEER_COLUMNS['rate-down'], PEER_COLUMNS['rate-est'])
 def _set_bandwidth_unit(unit):
     convert.bandwidth.unit = unit.value
-
-    TORRENT_COLUMNS['rate-up'].set_unit(convert.bandwidth.unit)
-    TORRENT_COLUMNS['rate-down'].set_unit(convert.bandwidth.unit)
-    TORRENT_COLUMNS['rate-limit-up'].set_unit(convert.bandwidth.unit)
-    TORRENT_COLUMNS['rate-limit-down'].set_unit(convert.bandwidth.unit)
-
-    PEER_COLUMNS['rate-up'].set_unit(convert.bandwidth.unit)
-    PEER_COLUMNS['rate-down'].set_unit(convert.bandwidth.unit)
-    PEER_COLUMNS['rate-est'].set_unit(convert.bandwidth.unit)
-
+    unit_short = convert.bandwidth.unit
+    for column in _BANDWIDTH_COLUMNS:
+        column.set_unit(unit_short)
+        column.clearcache()
     srvapi.torrent.clearcache()
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 _set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
 def _set_bandwidth_prefix(prefix):
     convert.bandwidth.prefix = prefix.value
+    for column in _BANDWIDTH_COLUMNS:
+        column.clearcache()
     srvapi.torrent.clearcache()
 cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 
 
+_SIZE_COLUMNS = (TORRENT_COLUMNS['size'], TORRENT_COLUMNS['downloaded'],
+                 TORRENT_COLUMNS['uploaded'], TORRENT_COLUMNS['available'],
+                 FILE_COLUMNS['size'], FILE_COLUMNS['downloaded'])
 def _set_size_unit(unit):
     convert.size.unit = unit.value
-
-    TORRENT_COLUMNS['size'].set_unit(convert.size.unit)
-    TORRENT_COLUMNS['downloaded'].set_unit(convert.size.unit)
-    TORRENT_COLUMNS['uploaded'].set_unit(convert.size.unit)
-    TORRENT_COLUMNS['available'].set_unit(convert.size.unit)
-
-    FILE_COLUMNS['size'].set_unit(convert.size.unit)
-    FILE_COLUMNS['downloaded'].set_unit(convert.size.unit)
-
+    unit_short = convert.size.unit
+    for column in _SIZE_COLUMNS:
+        column.set_unit(unit_short)
+        column.clearcache()
     srvapi.torrent.clearcache()
 cfg['unit.size'].on_change(_set_size_unit)
 _set_size_unit(cfg['unit.size'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
 def _set_size_prefix(prefix):
     convert.size.prefix = prefix.value
+    for column in _SIZE_COLUMNS:
+        column.clearcache()
     srvapi.torrent.clearcache()
 cfg['unitprefix.size'].on_change(_set_size_prefix)

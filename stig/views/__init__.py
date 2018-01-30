@@ -76,6 +76,10 @@ class ColumnBase():
                 #               citem['value'])
         return value
 
+    @classmethod
+    def clearcache(cls):
+        cls._cache.clear()
+
     def get_value(self):
         raise NotImplementedError()
 
