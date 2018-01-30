@@ -36,17 +36,16 @@ cfg['connect.timeout'].on_change(_make_connection_callback('timeout'), autoremov
 
 
 def _set_bandwidth_unit(unit):
-    u = unit.value
-    convert.bandwidth.unit = u
+    convert.bandwidth.unit = unit.value
 
-    TORRENT_COLUMNS['rate-up'].set_unit(u)
-    TORRENT_COLUMNS['rate-down'].set_unit(u)
-    TORRENT_COLUMNS['rate-limit-up'].set_unit(u)
-    TORRENT_COLUMNS['rate-limit-down'].set_unit(u)
+    TORRENT_COLUMNS['rate-up'].set_unit(convert.bandwidth.unit)
+    TORRENT_COLUMNS['rate-down'].set_unit(convert.bandwidth.unit)
+    TORRENT_COLUMNS['rate-limit-up'].set_unit(convert.bandwidth.unit)
+    TORRENT_COLUMNS['rate-limit-down'].set_unit(convert.bandwidth.unit)
 
-    PEER_COLUMNS['rate-up'].set_unit(u)
-    PEER_COLUMNS['rate-down'].set_unit(u)
-    PEER_COLUMNS['rate-est'].set_unit(u)
+    PEER_COLUMNS['rate-up'].set_unit(convert.bandwidth.unit)
+    PEER_COLUMNS['rate-down'].set_unit(convert.bandwidth.unit)
+    PEER_COLUMNS['rate-est'].set_unit(convert.bandwidth.unit)
 
     srvapi.torrent.clearcache()
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
@@ -59,16 +58,15 @@ cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 
 
 def _set_size_unit(unit):
-    u = unit.value
-    convert.size.unit = u
+    convert.size.unit = unit.value
 
-    TORRENT_COLUMNS['size'].set_unit(u)
-    TORRENT_COLUMNS['downloaded'].set_unit(u)
-    TORRENT_COLUMNS['uploaded'].set_unit(u)
-    TORRENT_COLUMNS['available'].set_unit(u)
+    TORRENT_COLUMNS['size'].set_unit(convert.size.unit)
+    TORRENT_COLUMNS['downloaded'].set_unit(convert.size.unit)
+    TORRENT_COLUMNS['uploaded'].set_unit(convert.size.unit)
+    TORRENT_COLUMNS['available'].set_unit(convert.size.unit)
 
-    FILE_COLUMNS['size'].set_unit(u)
-    FILE_COLUMNS['downloaded'].set_unit(u)
+    FILE_COLUMNS['size'].set_unit(convert.size.unit)
+    FILE_COLUMNS['downloaded'].set_unit(convert.size.unit)
 
     srvapi.torrent.clearcache()
 cfg['unit.size'].on_change(_set_size_unit)
