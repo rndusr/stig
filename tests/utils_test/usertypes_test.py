@@ -23,19 +23,6 @@ class TestValueBase(unittest.TestCase):
         self.val.set('hello')
         self.assertEqual(self.val.string(['x', 'y', 'z']), "['x', 'y', 'z']")
 
-    def test_prev_value(self):
-        self.assertEqual(self.val.get(), (1, 2, 3))
-        self.assertEqual(self.val.prev_value(), None)
-        self.val.set((4, 5, 6))
-        self.assertEqual(self.val.get(), (4, 5, 6))
-        self.assertEqual(self.val.prev_value(), (1, 2, 3))
-        self.val.set('the end')
-        self.assertEqual(self.val.get(), 'the end')
-        self.assertEqual(self.val.prev_value(), (4, 5, 6))
-        self.val.set(0)
-        self.assertEqual(self.val.get(), 0)
-        self.assertEqual(self.val.prev_value(), 'the end')
-
     def test_value_is_converted_to_correct_type(self):
         for basetype,testval1,testval2 in ((str, (1, 2, 3), []),
                                            (int, 1.234, -3.21),

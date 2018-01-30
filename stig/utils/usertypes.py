@@ -32,7 +32,7 @@ class ValueBase():
         self._name = str(name)
         self._description = str(description) or 'No description available'
         self._on_change = Signal()
-        self._default = self._value = self._prev_value = None
+        self._default = self._value = None
         if default is not None:
             initial_value = self.convert(default)
             self.validate(initial_value)
@@ -95,8 +95,6 @@ class ValueBase():
         except ValueError:
             self._value = prev_value
             raise
-        else:
-            self._prev_value = prev_value
 
     def get_default(self):
         """Return default value or `None` if no default is specified"""
@@ -116,9 +114,6 @@ class ValueBase():
             raise ValueError('{} = {}: {}'.format(self.name, self.string(default), e))
         else:
             self._default = new_default
-
-    def prev_value(self):
-        return self._prev_value
 
     def reset(self):
         """Reset current value back to default"""
