@@ -122,7 +122,7 @@ class ValueBase():
 
     def reset(self):
         """Reset current value back to default"""
-        self.value = self.default
+        self.set(self.default)
 
     def validate(self, value):
         """
@@ -439,7 +439,7 @@ class FloatValue(ValueBase):
                 self.default = min
             value = self.value
             if value is not None and value < min:
-                self.value = min
+                self.set(min)
 
     @property
     def max(self):
@@ -457,7 +457,7 @@ class FloatValue(ValueBase):
                 self.default = max
             value = self.value
             if value is not None and value > max:
-                self.value = max
+                self.set(max)
 
     def string(self, value=None, default=False, with_unit=True):
         if default:
