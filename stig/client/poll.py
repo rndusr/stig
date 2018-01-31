@@ -243,6 +243,10 @@ class RequestPoller():
             self.poll()
 
     def __repr__(self):
-        return '<%s %s, callbacks=%s, error_callbacks=%s>' % (
-            type(self).__name__, self._debug_info['request'],
-            self._debug_info['update_cbs'], self._debug_info['error_cbs'])
+        if hasattr(self, '_debug_info'):
+            return '<%s %s, callbacks=%s, error_callbacks=%s>' % (
+                type(self).__name__, self._debug_info.get('request'),
+                self._debug_info.get('update_cbs'), self._debug_info.get('error_cbs'))
+        else:
+            return '<%s>' % type(self).__name__
+
