@@ -194,9 +194,9 @@ class BandwidthStatusWidget(urwid.Widget):
 
         # Empty display if DISCONNECTED or UNLIMITED
         as_str = lambda rate: '' if rate in (const.DISCONNECTED, const.UNLIMITED) \
-                              else '/%s' % rate.value.without_unit
-        self._text_up_limit.set_text(as_str(up))
-        self._text_dn_limit.set_text(as_str(dn))
+                              else '/%s' % rate.without_unit
+        self._text_up_limit.set_text(as_str(up.value))
+        self._text_dn_limit.set_text(as_str(dn.value))
 
         self._up_limit_width = len(self._text_up_limit.text)
         self._dn_limit_width = len(self._text_dn_limit.text)
