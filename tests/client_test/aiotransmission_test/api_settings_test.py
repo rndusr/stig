@@ -205,6 +205,7 @@ class TestSettingsAPI(asynctest.TestCase):
         srvapi = SimpleNamespace(rpc=self.rpc, loop=self.loop)
         self.api = SettingsAPI(srvapi)
 
+
     async def test_attrs_have_corresponding_methods(self):
         for attr in self.api:
             method = 'get_' + attr.replace('-', '_')
@@ -221,140 +222,164 @@ class TestSettingsAPI(asynctest.TestCase):
         self.rpc.fake_settings = {}
         self.rpc.fake_settings['foo'] = 'bar'
 
-        self.assertIs(self.api.pex, DISCONNECTED)
+        self.assertIs(self.api.pex.value, DISCONNECTED)
         with self.assertRaises(ClientError):
             await self.api.get_pex()
+        with self.assertRaises(ClientError):
+            await self.api['pex'].get()
 
-    async def test_get_rate_limit(self):
+        with self.assertRaises(ClientError):
+            await self.api.set_pex(True)
+        with self.assertRaises(ValueError):
+            await self.api['pex'].set(False)
+
+
+    async def test_get_rate_limit_up(self):
+        convert.bandwidth.unit = 'byte'
         self.rpc.fake_settings['speed-limit-up'] = 100
-        self.rpc.fake_settings['speed-limit-down'] = 10
         self.rpc.fake_settings['speed-limit-up-enabled'] = False
-        self.rpc.fake_settings['speed-limit-down-enabled'] = False
-        self.assertEqual((await self.api.get_rate_limit_up()), const.UNLIMITED)
-        self.assertEqual((await self.api.get_rate_limit_down()), const.UNLIMITED)
+        self.assertEqual((await self.api.get_rate_limit_up()).value, const.UNLIMITED)
 
         self.rpc.fake_settings['speed-limit-up-enabled'] = True
-        self.rpc.fake_settings['speed-limit-down-enabled'] = True
-        convert.bandwidth.unit = 'byte'
-        self.assertEqual((await self.api.get_rate_limit_up()), 100e3)
-        self.assertEqual((await self.api.get_rate_limit_down()), 10e3)
+        self.assertEqual(await self.api['rate_limit_up'].get(), 100e3)
 
         convert.bandwidth.unit = 'bit'
-        self.assertEqual((await self.api.get_rate_limit_up()), 800e3)
-        self.assertEqual((await self.api.get_rate_limit_down()), 80e3)
+        self.assertEqual((await self.api.get_rate_limit_up()).value, 800e3)
 
-    async def test_set_rate_limit(self):
-        convert.bandwidth.unit = 'byte'
-        self.rpc.fake_settings['speed-limit-up'] = 0
-        self.rpc.fake_settings['speed-limit-up-enabled'] = False
-        self.rpc.fake_settings['speed-limit-down'] = 0
+    async def test_get_rate_limit_down(self):
+        convert.bandwidth.unit = 'bit'
+        self.rpc.fake_settings['speed-limit-down'] = 1e3
+        self.rpc.fake_settings['speed-limit-down-enabled'] = True
+        self.assertEqual(await self.api['rate-limit-down'].get(), 8e6)
+
         self.rpc.fake_settings['speed-limit-down-enabled'] = False
+        self.assertEqual((await self.api.get_rate_limit_down()).value, const.UNLIMITED)
 
-        await self.api.set_rate_limit_up(50e6)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50e3)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
-        await self.api.set_rate_limit_down(100e6)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+        self.rpc.fake_settings['speed-limit-down-enabled'] = True
+        convert.bandwidth.unit = 'byte'
+        self.assertEqual((await self.api.get_rate_limit_down()).value, 1e6)
 
-        await self.api.set_rate_limit_up(True)
+
+    async def test_set_rate_limit_up(self):
+        self.rpc.fake_settings['speed-limit-up'] = 12345
+        self.rpc.fake_settings['speed-limit-up-enabled'] = False
+        convert.bandwidth.unit = 'byte'
+
+        await self.api.set_rate_limit_up('50k')
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50e3)
-        await self.api.set_rate_limit_down(True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
 
         await self.api.set_rate_limit_up(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50e3)
-        await self.api.set_rate_limit_down(False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
         await self.api.set_rate_limit_up(True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50e3)
-        await self.api.set_rate_limit_down(True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
-        await self.api.set_rate_limit_up(const.UNLIMITED)
+        await self.api['rate_limit_up'].set(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50e3)
-        await self.api.set_rate_limit_down(const.UNLIMITED)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100e3)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
-        await self.api.set_rate_limit_up('+=10k')
+        await self.api.set_rate_limit_up('+=1Mb')
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 10)
-        await self.api.set_rate_limit_down('+=100k')
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 125)
 
-        await self.api.set_rate_limit_up(False)
+        await self.api['rate_limit_up'].set(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 10)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 125)
+
+    async def test_set_rate_limit_down(self):
+        self.rpc.fake_settings['speed-limit-down'] = 100
+        self.rpc.fake_settings['speed-limit-down-enabled'] = True
+        convert.bandwidth.unit = 'bit'
+
+        await self.api['rate_limit_down'].set('+=80k')
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+
         await self.api.set_rate_limit_down(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
-        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 100)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
+
+        await self.api['rate_limit_down'].set(True)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
+
+        convert.bandwidth.unit = 'byte'
+        await self.api.set_rate_limit_down('+=1M')
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
+
+        await self.api['rate_limit_down'].set(const.UNLIMITED)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
+
+
+    async def test_description_rate_limit_up(self):
+        self.assertEqual(type(self.api).rate_limit_up.__doc__, self.api['rate-limit-up'].description)
+
+    async def test_description_rate_limit_down(self):
+        self.assertEqual(type(self.api).rate_limit_down.__doc__, self.api['rate-limit-down'].description)
+
 
     async def test_get_alt_rate_limits(self):
         convert.bandwidth.unit = 'byte'
         self.rpc.fake_settings['alt-speed-up'] = 200
         self.rpc.fake_settings['alt-speed-down'] = 20
         self.rpc.fake_settings['alt-speed-enabled'] = False
-        self.assertEqual((await self.api.get_alt_rate_limit_up()), const.UNLIMITED)
-        self.assertEqual((await self.api.get_alt_rate_limit_down()), const.UNLIMITED)
+        self.assertEqual((await self.api.get_alt_rate_limit_up()).value, const.UNLIMITED)
+        self.assertEqual(await self.api['alt-rate-limit-down'].get(), const.UNLIMITED)
 
         self.rpc.fake_settings['alt-speed-enabled'] = True
-        self.assertEqual((await self.api.get_alt_rate_limit_up()), 200e3)
-        self.assertEqual((await self.api.get_alt_rate_limit_down()), 20e3)
+        self.assertEqual(await self.api['alt_rate_limit_up'].get(), 200e3)
+        self.assertEqual((await self.api.get_alt_rate_limit_down()).value, 20e3)
 
     async def test_set_alt_rate_limits(self):
-        self.rpc.fake_settings['alt-speed-up'] = 0
-        self.rpc.fake_settings['alt-speed-down'] = 0
-        self.rpc.fake_settings['alt-speed-enabled'] = False
-        convert.bandwidth.unit = 'byte'
+        convert.bandwidth.unit = 'bit'
+        self.rpc.fake_settings['alt-speed-up'] = 1000
+        self.rpc.fake_settings['alt-speed-down'] = 1000
+        self.rpc.fake_settings['alt-speed-enabled'] = True
 
-        await self.api.set_alt_rate_limit_up(50e6)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 50e3)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 0)
+        await self.api.set_alt_rate_limit_up('+=1000k')
+        await self.api.set_alt_rate_limit_up('+=1000k')
+        await self.api['alt-rate-limit-down'].set('-=1000k')
+        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 1250)
+        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 875)
         self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], True)
 
-        await self.api.set_alt_rate_limit_down(500e6)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 50e3)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 500e3)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], True)
-
-        await self.api.set_alt_rate_limit_down(False)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 50e3)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 500e3)
+        await self.api.set_alt_rate_limit_down(const.UNLIMITED)
+        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 1250)
+        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 875)
         self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], False)
 
-        await self.api.set_alt_rate_limit_up(True)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 50e3)
-        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 500e3)
+        await self.api['alt-rate-limit-up'].set(True)
+        self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 1250)
+        self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 875)
         self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], True)
 
 
     async def test_get_path_complete(self):
         self.rpc.fake_settings['download-dir'] = '/foo/bar'
-        self.assertEqual((await self.api.get_path_complete()), '/foo/bar')
+        self.assertEqual((await self.api.get_path_complete()).value, '/foo/bar')
+        self.assertEqual(await self.api['path_complete'].get(), '/foo/bar')
 
     async def test_set_path_complete(self):
         self.rpc.fake_settings['download-dir'] = '/foo/bar'
-        await self.api.set_path_complete('/foo/baz')
-        self.assertEqual(self.rpc.fake_settings['download-dir'], '/foo/baz')
+        await self.api.set_path_complete('/bar/baz')
+        self.assertEqual(self.rpc.fake_settings['download-dir'], '/bar/baz')
 
-        await self.api.set_path_complete('things/stuff')
-        self.assertEqual(self.rpc.fake_settings['download-dir'], '/foo/baz/things/stuff')
+        await self.api['path-complete'].set('blam')
+        self.assertEqual(self.rpc.fake_settings['download-dir'], '/bar/baz/blam')
+
+        await self.api['path-complete'].set('////bli/bloop///di/blop//')
+        self.assertEqual(self.rpc.fake_settings['download-dir'], '/bli/bloop/di/blop')
 
 
     async def test_get_path_incomplete(self):
         self.rpc.fake_settings['incomplete-dir-enabled'] = True
         self.rpc.fake_settings['incomplete-dir'] = '/fim/fam'
-        self.assertEqual((await self.api.get_path_incomplete()), '/fim/fam')
+        self.assertEqual(await self.api['path_incomplete'].get(), '/fim/fam')
         self.rpc.fake_settings['incomplete-dir-enabled'] = False
         self.assertIs((await self.api.get_path_incomplete()).value, False)
 
@@ -368,16 +393,16 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_path_incomplete(False)
         self.rpc.fake_settings['incomplete-dir-enabled'] = False
         self.rpc.fake_settings['incomplete-dir'] = '/baa/boo'
-        await self.api.set_path_incomplete(True)
+        await self.api['path-incomplete'].set(True)
         self.rpc.fake_settings['incomplete-dir-enabled'] = True
         self.rpc.fake_settings['incomplete-dir'] = '/baa/boo'
 
-        await self.api.set_path_incomplete('/absolute/path')
+        await self.api['path-incomplete'].set('/absolute/path')
         self.rpc.fake_settings['incomplete-dir-enabled'] = True
         self.rpc.fake_settings['incomplete-dir'] = '/absolute/path'
 
         await self.api.set_path_incomplete(False)
-        await self.api.set_path_incomplete('relative/path')
+        await self.api['path-incomplete'].set('relative/path')
         self.rpc.fake_settings['incomplete-dir-enabled'] = True
         self.rpc.fake_settings['incomplete-dir'] = '/absolute/path/relative/path'
         await self.api.set_path_incomplete('..')
@@ -387,7 +412,7 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_get_part_files(self):
         self.rpc.fake_settings['rename-partial-files'] = False
-        self.assertIs((await self.api.get_part_files()).value, False)
+        self.assertIs(await self.api['part-files'].get(), False)
         self.rpc.fake_settings['rename-partial-files'] = True
         self.assertIs((await self.api.get_part_files()).value, True)
 
@@ -396,7 +421,7 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_part_files(True)
         self.assertEqual(self.rpc.fake_settings['rename-partial-files'], True)
 
-        await self.api.set_part_files(False)
+        await self.api['part-files'].set(False)
         self.assertEqual(self.rpc.fake_settings['rename-partial-files'], False)
 
         with self.assertRaises(ValueError):
@@ -408,12 +433,12 @@ class TestSettingsAPI(asynctest.TestCase):
         self.rpc.fake_settings['peer-port'] = 123
         self.assertEqual((await self.api.get_port()).value, 123)
         self.rpc.fake_settings['peer-port-random-on-start'] = True
-        self.assertIs((await self.api.get_port()).value, const.RANDOM)
+        self.assertIs(await self.api['port'].get(), const.RANDOM)
 
     async def test_set_port(self):
         self.rpc.fake_settings['peer-port-random-on-start'] = False
         self.rpc.fake_settings['peer-port'] = 123
-        await self.api.set_port(456)
+        await self.api['port'].set(456)
         self.assertEqual(self.rpc.fake_settings['peer-port-random-on-start'], False)
         self.assertEqual(self.rpc.fake_settings['peer-port'], 456)
 
@@ -421,13 +446,16 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['peer-port-random-on-start'], True)
         self.assertEqual(self.rpc.fake_settings['peer-port'], 456)
 
-        await self.api.set_port(234)
+        await self.api['port'].set(234)
         self.assertEqual(self.rpc.fake_settings['peer-port-random-on-start'], False)
         self.assertEqual(self.rpc.fake_settings['peer-port'], 234)
 
         await self.api.set_port('random')
         self.assertEqual(self.rpc.fake_settings['peer-port-random-on-start'], True)
         self.assertEqual(self.rpc.fake_settings['peer-port'], 234)
+
+        with self.assertRaises(ValueError):
+            await self.api.set_port('Pick one!')
 
 
     async def test_get_port_forwarding(self):
@@ -440,17 +468,17 @@ class TestSettingsAPI(asynctest.TestCase):
         self.rpc.fake_settings['port-forwarding-enabled'] = False
         await self.api.set_port_forwarding('on')
         self.assertEqual(self.rpc.fake_settings['port-forwarding-enabled'], True)
-        await self.api.set_port_forwarding('no')
+        await self.api['port-forwarding'].set('no')
         self.assertEqual(self.rpc.fake_settings['port-forwarding-enabled'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_part_files('over my dead body')
+            await self.api.set_port_forwarding('over my dead body')
 
 
     async def test_get_utp(self):
         self.rpc.fake_settings['utp-enabled'] = True
-        self.assertEqual((await self.api.get_utp()), True)
+        self.assertEqual((await self.api.get_utp()).value, True)
         self.rpc.fake_settings['utp-enabled'] = False
-        self.assertEqual((await self.api.get_utp()), False)
+        self.assertEqual(await self.api['utp'].get(), False)
 
     async def test_set_utp(self):
         await self.api.set_utp(True)
@@ -458,14 +486,14 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_utp(False)
         self.assertEqual(self.rpc.fake_settings['utp-enabled'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_part_files('a fishy value')
+            await self.api.set_utp('a fishy value')
 
 
     async def test_get_dht(self):
         self.rpc.fake_settings['dht-enabled'] = True
-        self.assertEqual((await self.api.get_dht()), True)
+        self.assertEqual(await self.api['dht'].get(), True)
         self.rpc.fake_settings['dht-enabled'] = False
-        self.assertEqual((await self.api.get_dht()), False)
+        self.assertEqual((await self.api.get_dht()).value, False)
 
     async def test_set_dht(self):
         await self.api.set_dht(True)
@@ -473,29 +501,32 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_dht(False)
         self.assertEqual(self.rpc.fake_settings['dht-enabled'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_part_files('not a boolean')
+            await self.api.set_dht('not a boolean')
 
 
     async def test_get_pex(self):
         self.rpc.fake_settings['pex-enabled'] = True
-        self.assertEqual((await self.api.get_pex()), True)
+        self.assertEqual((await self.api.get_pex()).value, True)
         self.rpc.fake_settings['pex-enabled'] = False
-        self.assertEqual((await self.api.get_pex()), False)
+        self.assertEqual(await self.api['pex'].get(), False)
 
     async def test_set_pex(self):
         await self.api.set_pex(True)
         self.assertEqual(self.rpc.fake_settings['pex-enabled'], True)
-        await self.api.set_pex(False)
+        await self.api['pex'].set(False)
         self.assertEqual(self.rpc.fake_settings['pex-enabled'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_part_files('not a boolean')
+            await self.api.set_pex('not a boolean')
+
+    async def test_description_pex(self):
+        self.assertEqual(type(self.api).pex.__doc__, self.api['pex'].description)
 
 
     async def test_get_lpd(self):
         self.rpc.fake_settings['lpd-enabled'] = True
-        self.assertEqual((await self.api.get_lpd()), True)
+        self.assertEqual((await self.api.get_lpd()).value, True)
         self.rpc.fake_settings['lpd-enabled'] = False
-        self.assertEqual((await self.api.get_lpd()), False)
+        self.assertEqual(await self.api['lpd'].get(), False)
 
     async def test_set_lpd(self):
         await self.api.set_lpd(True)
@@ -503,33 +534,41 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_lpd(False)
         self.assertEqual(self.rpc.fake_settings['lpd-enabled'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_part_files('One ValueError, please.')
+            await self.api.set_lpd('One ValueError, please.')
 
 
     async def test_get_peer_limit_global(self):
+        self.assertIs(self.api['peer-limit-global'].value, DISCONNECTED)
         self.rpc.fake_settings['peer-limit-global'] = 17
         self.assertEqual((await self.api.get_peer_limit_global()).value, 17)
         self.rpc.fake_settings['peer-limit-global'] = 17000
         self.assertEqual((await self.api.get_peer_limit_global()).value, 17000)
 
     async def test_set_peer_limit_global(self):
+        self.assertIs(self.api['peer-limit-global'].value, DISCONNECTED)
         self.assertNotEqual(self.rpc.fake_settings['peer-limit-global'], 583)
-        await self.api.set_peer_limit_global(583)
+        await self.api['peer-limit-global'].set(583)
         self.assertEqual(self.rpc.fake_settings['peer-limit-global'], 583)
+        await self.api.set_peer_limit_global(123)
+        self.assertEqual(self.rpc.fake_settings['peer-limit-global'], 123)
         with self.assertRaises(ValueError):
             await self.api.set_peer_limit_global('all of them')
 
 
     async def test_get_peer_limit_torrent(self):
+        self.assertIs(self.api['peer-limit-torrent'].value, DISCONNECTED)
         self.rpc.fake_settings['peer-limit-per-torrent'] = 17
         self.assertEqual((await self.api.get_peer_limit_torrent()).value, 17)
         self.rpc.fake_settings['peer-limit-per-torrent'] = 17000
         self.assertEqual((await self.api.get_peer_limit_torrent()).value, 17000)
 
     async def test_set_peer_limit_torrent(self):
+        self.assertIs(self.api['peer-limit-torrent'].value, DISCONNECTED)
         self.rpc.fake_settings['peer-limit-per-torrent'] = 2
         await self.api.set_peer_limit_torrent(583)
         self.assertEqual(self.rpc.fake_settings['peer-limit-per-torrent'], 583)
+        await self.api['peer-limit-torrent'].set(28)
+        self.assertEqual(self.rpc.fake_settings['peer-limit-per-torrent'], 28)
         with self.assertRaises(ValueError):
             await self.api.set_peer_limit_torrent('all of them')
 
@@ -538,7 +577,7 @@ class TestSettingsAPI(asynctest.TestCase):
         self.rpc.fake_settings['encryption'] = 'tolerated'
         self.assertEqual((await self.api.get_encryption()).value, 'tolerated')
         self.rpc.fake_settings['encryption'] = 'preferred'
-        self.assertEqual((await self.api.get_encryption()).value, 'preferred')
+        self.assertEqual(await self.api['encryption'].get(), 'preferred')
         self.rpc.fake_settings['encryption'] = 'required'
         self.assertEqual((await self.api.get_encryption()).value, 'required')
 
@@ -556,9 +595,9 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_get_autostart_torrents(self):
         self.rpc.fake_settings['start-added-torrents'] = True
-        self.assertEqual((await self.api.get_autostart_torrents()), True)
+        self.assertEqual((await self.api.get_autostart_torrents()).value, True)
         self.rpc.fake_settings['start-added-torrents'] = False
-        self.assertEqual((await self.api.get_autostart_torrents()), False)
+        self.assertEqual(await self.api['autostart-torrents'].get(), False)
 
     async def test_set_autostart_torrents(self):
         await self.api.set_autostart_torrents(True)
@@ -566,4 +605,4 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api.set_autostart_torrents(False)
         self.assertEqual(self.rpc.fake_settings['start-added-torrents'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_part_files('hello?')
+            await self.api.set_autostart_torrents('hello?')

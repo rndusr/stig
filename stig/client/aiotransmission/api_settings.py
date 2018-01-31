@@ -20,6 +20,7 @@ from functools import wraps
 from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
+from .. import errors
 from ...utils.usertypes import (BooleanValue, IntegerValue, ListValue,
                                 FloatValue, OptionValue, PathValue, SetValue,
                                 StringValue, ValueBase, MultiValue)
@@ -36,7 +37,7 @@ def _mk_constantValue(constant, typename=None, valuesyntax=None):
 
     def validate(self, value):
         if value is not self.__constant and value != self.__constant.name:
-            raise ValueError('Not %r: %r' % (self.__constant, value))
+            raise ValueError('Not %r' % self.__constant)
     clsattrs['validate'] = validate
 
     def convert(self, value):
@@ -50,8 +51,6 @@ DisconnectedValue = _mk_constantValue(const.DISCONNECTED)
 UnlimitedValue    = _mk_constantValue(const.UNLIMITED)
 RandomValue       = _mk_constantValue(const.RANDOM, typename='random', valuesyntax="'random'")
 
-BooleanOrPathValue   = MultiValue(BooleanValue, PathValue)
-RandomOrIntegerValue = MultiValue(RandomValue, IntegerValue)
 
 class BandwidthValue(FloatValue):
     """FloatValue that passes values through `client.convert.bandwidth`"""
@@ -103,35 +102,129 @@ class RateLimitValue(MultiValue(BooleanValue, UnlimitedValue, BandwidthValue)):
             return value                    # Must be a BandwidthValue object
 
 
-_EMPTY_CACHE = {}  # SettingsAPI._cache with default values
+def RemoteValue(*value_clses):
+    """Create new class for remote value"""
+    cls = MultiValue(DisconnectedValue, *value_clses)
+    clsname = cls.__name__[:-5] + 'RemoteValue'  # Replace 'Value' at the end with 'RemoteValue'
+    clsattrs = {}
+
+    def __init__(self, *args, getter, setter, **kwargs):
+        self._getter = getter
+        self._setter = setter
+        self._value = cls(*args, **kwargs)
+    clsattrs['__init__'] = __init__
+
+    def _set_local(self, raw_value):
+        """Update internal value without setting remote value"""
+        self._value.set(raw_value)
+    clsattrs['_set_local'] = _set_local
+
+    def reset(self):
+        self._value.reset()
+    clsattrs['reset'] = reset
+
+    async def set_(self, value):
+        # Make sure we have an actual value.  This is important when adjusting
+        # numbers relatively (e.g. '+=100kB').
+        if self._value.value is const.DISCONNECTED:
+            try:
+                await self.get()
+            except errors.ClientError as e:
+                raise ValueError("Can't change setting %s: %s" % (self.name, e))
+
+        # Parse value and raise any validation/conversion errors
+        self._value.set(value)
+        value = self._value.get()
+
+        # Push new value to server
+        try:
+            log.debug('Calling %s(%r)', self._setter.__qualname__, value)
+            await self._setter(value)
+        except errors.ClientError as e:
+            raise ValueError("Can't change setting %s: %s" % (self.name, e))
+    clsattrs['set'] = set_
+
+    async def get(self):
+        value = (await self._getter()).value
+        self._value.set(value)
+        return value
+    clsattrs['get'] = get
+
+    for attr in ('name', 'value', 'description'):
+        clsattrs[attr] = property(lambda self, attr=attr: getattr(self._value, attr))
+
+    return type(clsname, (), clsattrs)
+
+
+# Settings are cached as descendants of RemoteValue instances
+BooleanRemoteValue   = RemoteValue(BooleanValue)
+IntegerRemoteValue   = RemoteValue(IntegerValue)
+OptionRemoteValue    = RemoteValue(OptionValue)
+RateLimitRemoteValue = RemoteValue(RateLimitValue)
+PortRemoteValue      = RemoteValue(IntegerValue, RandomValue)
+
+class PathCompleteRemoteValue(RemoteValue(PathValue)):
+    """Make new path absolute relative to current path if not already absolute"""
+    async def set(self, path):
+        # Fetch current path if necessary before setting new path
+        if self.value is None:
+            await self.get()
+        basedir = self.value
+        await super().set(os.path.join(basedir, path))
+
+class PathIncompleteRemoteValue(RemoteValue(BooleanValue, PathValue)):
+    """Same as PathCompleteRemoteValue but also accepts booleans"""
+    async def set(self, path):
+        # Fetch current path if necessary before setting new path
+        if self.value is None:
+            await self.get()
+        if self.value not in (True, False):
+            basedir = self.value
+            await super().set(os.path.join(basedir, path))
+        else:
+            await super().set(path)
+
+
+# Transform key (as in `settings[key]`) to property name and vice versa
+def _property_to_key(property_name):
+    return property_name.replace('_', '-').replace('.', '-')
+def _key_to_property(key):
+    return key.replace('.', '-').replace('-', '_')
+
+# Map names of settings to callables that return a new *RemoteValue instance
+_TYPES = {}
 def setting(value_cls, **kwargs):
     """Decorator for SettingsAPI properties"""
     def wrap(method):
-        setting_name = method.__name__.replace('_', '-')
-        kwargs['default'] = None
-        _EMPTY_CACHE[setting_name] = value_cls(setting_name, **kwargs)
-        @wraps(method)
-        def wrapped(self):
-            if self._raw is None:
-                return const.DISCONNECTED
-            else:
-                return method(self)
-        return property(wrapped)
+        property_name = method.__name__
+        setting_name = _property_to_key(property_name)
+        def mk_value_inst(api):
+            if 'description' not in kwargs:
+                kwargs['description'] = getattr(SettingsAPI, property_name).__doc__
+            getter = getattr(api, 'get_' + property_name)
+            setter = getattr(api, 'set_' + property_name)
+            return value_cls(setting_name, getter=getter, setter=setter, **kwargs)
+        _TYPES[setting_name] = mk_value_inst
+        return property(method)
     return wrap
 
-
 class SettingsAPI(abc.Mapping, RequestPoller):
-    """Transmission daemon settings
+    """
+    Transmission daemon settings
 
-    get_* methods are coroutine functions and fetch values from the server.
+    `set_*` methods are coroutine functions that request value changes from the
+    server.
+
+    `get_*` methods are coroutine functions that fetch values from the server.
 
     Cached values that are updated every `interval` seconds are available as
-    properties with 'get_' removed from the equivalent method name.  For
-    example, `get_path_incomplete` is an asyncronous method, `path_incomplete`
-    is a syncronous property.
+    properties with 'get_' removed from the equivalent method name.  Use
+    `on_change` to set a callback for interval updates.
 
-    Cached values are also available as items, e.g. settings['path-incomplete'].
-    (Remove 'get_' from the method name and replace '_' with '-'.)
+    Values are also available as mapping items with '-' instead of '_', e.g.
+    `settings['port-forwarding']`.  These values have the coroutines `set` and
+    `get` methods that are identical to the `set_*` and `get_*` methods
+    described above, aswell as a `value` property for synchronous access.
 
     To update cached values, use `update` (async) or `poll` (sync).
     """
@@ -139,7 +232,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     # Mapping methods
     def __getitem__(self, key):
         try:
-            item = getattr(self, key.replace('-', '_'))
+            item = getattr(self, _key_to_property(key))
         except AttributeError as e:
             raise KeyError(key)
         else:
@@ -156,10 +249,13 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
 
     def __init__(self, srvapi, interval=1):
-        self._raw = None            # Raw dict from 'session-get' or None if not connected
-        self._cache = _EMPTY_CACHE  # Cached values with proper types
+        # Generate a *RemoteValue instance for each setting
+        self._cache = {
+            setting_name:mk_value_inst(self)
+            for setting_name,mk_value_inst in _TYPES.items()
+        }
+        self._raw = None    # Raw dict from 'session-get' or None if not connected
         self._srvapi = srvapi
-        self._get_timestamp = 0
         self._on_update = blinker.Signal()
 
         super().__init__(self._srvapi.rpc.session_get, interval=interval, loop=srvapi.loop)
@@ -168,9 +264,11 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     def clearcache(self):
         """Clear cached settings"""
+        log.debug('Clearing %s cache', type(self).__name__)
         self._raw = None
         for value in self._cache.values():
             value.reset()
+        self._on_update.send(self)
 
     def on_update(self, callback, autoremove=True):
         """
@@ -202,6 +300,19 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._srvapi.rpc.session_set(request)
         await self.update()
 
+    def _get(self, key, field_or_callable):
+        """Get setting from cache if possible"""
+        setting = self._cache[key]
+        if setting.value is None:
+            if self._raw is None:
+                raw_value = const.DISCONNECTED
+            elif callable(field_or_callable):
+                raw_value = field_or_callable()
+            else:
+                raw_value = self._raw[field_or_callable]
+            setting._set_local(raw_value)
+        return setting
+
 
     # Rate limits
 
@@ -214,27 +325,35 @@ class SettingsAPI(abc.Mapping, RequestPoller):
             field_enabled = 'speed-limit-'+direction+'-enabled'
         return (field_value, field_enabled)
 
+    def _rate_limit_key(self, direction, alt):
+        return '%srate-limit-%s' % ('alt-' if alt else '', direction)
+
     def _get_rate_limit(self, direction, alt=False):
-        key = 'rate-limit-' + direction
+        key = self._rate_limit_key(direction, alt)
         setting = self._cache[key]
         if setting.value is None:
             field_value, field_enabled = self._rate_limit_fields(direction, alt)
-            if self._raw[field_enabled]:
+            if self._raw is None:
+                setting._set_local(const.DISCONNECTED)
+            elif self._raw[field_enabled]:
                 # Transmission reports kilobytes
                 value = convert.bandwidth(self._raw[field_value]*1000, unit='byte')
-                setting.set(value)
+                setting._set_local(value)
             else:
-                setting.set(const.UNLIMITED)
+                setting._set_local(False)
         return setting
 
     async def _set_rate_limit(self, limit, direction, alt=False):
-        # Get current value in case `limit` is an adjustment (e.g. '+=100kB')
-        method_name = 'get_%srate_limit_%s' % ('alt_' if alt is True else '', direction)
-        await getattr(self, method_name)()
+        # Make sure we have the current value in case `limit` is an adjustment
+        # (e.g. '+=100kB'), which wouldn't work if `setting.value` would return
+        # None.
+        if self._raw is None:
+            await self.update()
+        self._get_rate_limit(direction, alt=alt)
 
-        key = 'rate-limit-' + direction
+        key = self._rate_limit_key(direction, alt)
         setting = self._cache[key]
-        setting.set(limit)
+        setting._set_local(limit)
         limit = setting.value
 
         field_value, field_enabled = self._rate_limit_fields(direction, alt)
@@ -248,10 +367,10 @@ class SettingsAPI(abc.Mapping, RequestPoller):
                              field_value: raw_limit})
 
 
-    @setting(RateLimitValue)
+    @setting(RateLimitRemoteValue)
     def rate_limit_up(self):
         """
-        Cached upload rate limit
+        Upload rate limit
 
         Returns a NumberFloat object created by the `bandwidth` converter in the
         `convert` module or one of the constants: UNLIMITED, DISCONNECTED
@@ -273,14 +392,14 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         An existing limit is disabled if `limit` is False, the constant
         UNLIMITED, or a number < 0.
 
-        An existing limit is enabled if `limit` is True.
+        A previously set and then disabled limit is enabled if `limit` is True.
         """
         await self._set_rate_limit(limit, 'up', alt=False)
 
 
-    @setting(RateLimitValue)
+    @setting(RateLimitRemoteValue)
     def rate_limit_down(self):
-        """Cached download rate limit (see `rate_limit_up`)"""
+        """Download rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('down', alt=False)
 
     async def get_rate_limit_down(self):
@@ -289,11 +408,11 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         return self.rate_limit_down
 
     async def set_rate_limit_down(self, limit):
-        """Set upload rate limit to `limit` (see `set_rate_limit_up`)"""
+        """Set download rate limit to `limit` (see `set_rate_limit_up`)"""
         await self._set_rate_limit(limit, 'down', alt=False)
 
 
-    @setting(RateLimitValue)
+    @setting(RateLimitRemoteValue)
     def alt_rate_limit_up(self):
         """Cached alternative upload rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('up', alt=True)
@@ -308,7 +427,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'up', alt=True)
 
 
-    @setting(RateLimitValue)
+    @setting(RateLimitRemoteValue)
     def alt_rate_limit_down(self):
         """Cached alternative download rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('down', alt=True)
@@ -326,50 +445,40 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Paths
 
-    def _absolute_path(self, path, basedir):
-        return os.path.normpath(os.path.join(basedir, path))
-
-
-    @setting(PathValue)
+    @setting(PathCompleteRemoteValue)
     def path_complete(self):
-        """Path to directory where torrent files are put"""
-        setting = self._cache['path-complete']
-        if setting.value is None:
-            setting.set(self._raw['download-dir'])
-        return setting
+        """Where to put downloaded files"""
+        return self._get('path-complete', 'download-dir')
 
     async def get_path_complete(self):
-        """Get path to directory where torrent files are put"""
+        """Refresh cache and return `path_complete`"""
         await self.update()
         return self.path_complete
 
     async def set_path_complete(self, path):
         """
-        Set path to directory where torrent files are put
+        Set path to directory where downloaded files are put
 
-        If path is relative (i.e. doesn't start with '/'), it is relative to
-        `get_path_complete`.
+        If path is relative (i.e. doesn't start with a path separator
+        (e.g. '/')), it is relative to what `get_path_complete` returns.
         """
-        base_path = (await self.get_path_complete()).value
-        abs_path = self._absolute_path(path, base_path)
-        self._cache['path-complete'].set(abs_path)
-        await self._set({'download-dir': self._cache['path-complete'].value})
+        setting = self._cache['path-complete']
+        setting._set_local(path)
+        await self._set({'download-dir': setting.value})
 
 
-    @setting(BooleanOrPathValue)
+    @setting(PathIncompleteRemoteValue)
     def path_incomplete(self):
         """
         Path to directory where incomplete torrent files are put or `False` if they
         are put in `path_complete`
         """
-        setting = self._cache['path-incomplete']
-        if setting.value is None:
+        def get_raw_value():
             if self._raw['incomplete-dir-enabled']:
-                setting.set(self._raw['incomplete-dir'])
+                return self._raw['incomplete-dir']
             else:
-                setting.set(False)
-        print(f'path_incomplete: {setting!r}')
-        return setting
+                return False
+        return self._get('path-incomplete', get_raw_value)
 
     async def get_path_incomplete(self):
         """Refresh cache and return `path_incomplete`"""
@@ -384,27 +493,17 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         feature is enabled or disabled accordingly without changing the path.
         """
         setting = self._cache['path-incomplete']
-        print(f'path: {path!r}')
-        setting.set(path)
-        path = setting.value
-        if isinstance(path, str):
-            base_path = (await self.get_path_complete()).value
-            abs_path = self._absolute_path(path, base_path)
-            setting.set(abs_path)
-            request = {'incomplete-dir': abs_path,
-                       'incomplete-dir-enabled': True}
-        else:
-            request = {'incomplete-dir-enabled': bool(path)}
+        setting._set_local(path)
+        request = {'incomplete-dir-enabled': setting.value is not False}
+        if setting.value:
+            request['incomplete-dir'] = setting.value
         await self._set(request)
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def part_files(self):
-        """Whether ".part" is appended to incomplete file names"""
-        setting = self._cache['part-files']
-        if setting.value is None:
-            setting.set(self._raw['rename-partial-files'])
-        return setting
+        """Whether '.part' is appended to incomplete file names"""
+        return self._get('part-files', 'rename-partial-files')
 
     async def get_part_files(self):
         """Refresh cache and return `part_files`"""
@@ -413,24 +512,22 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_part_files(self, enabled):
         """See `part_files`"""
-        self._cache['part-files'].set(enabled)
-        await self._set({'rename-partial-files': self._cache['part-files'].value})
-
+        setting = self._cache['part-files']
+        setting._set_local(enabled)
+        await self._set({'rename-partial-files': setting.value})
 
 
     # Network settings
 
-    @setting(RandomOrIntegerValue)
+    @setting(PortRemoteValue)
     def port(self):
         """Port used to communicate with peers or 'random' to pick a random port"""
-        setting = self._cache['port']
-        if setting.value is None:
+        def get_raw_value():
             if self._raw['peer-port-random-on-start']:
-                raw_value = const.RANDOM
+                return const.RANDOM
             else:
-                raw_value = self._raw['peer-port']
-            setting.set(raw_value)
-        return setting
+                return self._raw['peer-port']
+        return self._get('port', get_raw_value)
 
     async def get_port(self):
         """Refresh cache and return `port`"""
@@ -440,20 +537,17 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_port(self, port):
         """See `port`"""
         setting = self._cache['port']
-        setting.set(port)
+        setting._set_local(port)
         request = {'peer-port-random-on-start': setting.value is const.RANDOM}
         if setting.value is not const.RANDOM:
             request['peer-port'] = setting.value
         await self._set(request)
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def port_forwarding(self):
         """Whether UPnP/NAT-PMP is enabled"""
-        setting = self._cache['port-forwarding']
-        if setting.value is None:
-            setting.set(self._raw['port-forwarding-enabled'])
-        return setting
+        return self._get('port-forwarding', 'port-forwarding-enabled')
 
     async def get_port_forwarding(self):
         """Refresh cache and return `port_forwarding`"""
@@ -462,17 +556,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_port_forwarding(self, enabled):
         """See `port_forwarding`"""
-        self._cache['port-forwarding'].set(enabled)
-        await self._set({'port-forwarding-enabled': self._cache['port-forwarding'].value})
+        setting = self._cache['port-forwarding']
+        setting._set_local(enabled)
+        await self._set({'port-forwarding-enabled': setting.value})
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def utp(self):
         """Whether UTP is used to discover peers"""
-        setting = self._cache['utp']
-        if setting.value is None:
-            setting.set(self._raw['utp-enabled'])
-        return setting
+        return self._get('utp', 'utp-enabled')
 
     async def get_utp(self):
         """Refresh cache and return `utp`"""
@@ -481,17 +573,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_utp(self, enabled):
         """See `utp`"""
-        self._cache['utp'].set(enabled)
-        await self._set({'utp-enabled': self._cache['utp'].value})
+        setting = self._cache['utp']
+        setting._set_local(enabled)
+        await self._set({'utp-enabled': setting.value})
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def dht(self):
         """Whether DHT is used to discover peers"""
-        setting = self._cache['dht']
-        if setting.value is None:
-            setting.set(self._raw['dht-enabled'])
-        return setting
+        return self._get('dht', 'dht-enabled')
 
     async def get_dht(self):
         """Refresh cache and return `dht`"""
@@ -500,17 +590,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_dht(self, enabled):
         """See `dht`"""
-        self._cache['dht'].set(enabled)
-        await self._set({'dht-enabled': self._cache['dht'].value})
+        setting = self._cache['dht']
+        setting._set_local(enabled)
+        await self._set({'dht-enabled': setting.value})
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def pex(self):
-        """Whether Peer Exchange is used to discover peers"""
-        setting = self._cache['pex']
-        if setting.value is None:
-            setting.set(self._raw['pex-enabled'])
-        return setting
+        """Whether PEX is used to discover peers"""
+        return self._get('pex', 'pex-enabled')
 
     async def get_pex(self):
         """Refresh cache and return `pex`"""
@@ -519,17 +607,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_pex(self, enabled):
         """See `pex`"""
-        self._cache['pex'].set(enabled)
-        await self._set({'pex-enabled': self._cache['pex'].value})
+        setting = self._cache['pex']
+        setting._set_local(enabled)
+        await self._set({'pex-enabled': setting.value})
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def lpd(self):
         """Whether Local Peer Discovery is used to discover peers"""
-        setting = self._cache['lpd']
-        if setting.value is None:
-            setting.set(self._raw['lpd-enabled'])
-        return setting
+        return self._get('lpd', 'lpd-enabled')
 
     async def get_lpd(self):
         """Refresh cache and return `lpd`"""
@@ -538,17 +624,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_lpd(self, enabled):
         """See `lpd`"""
-        self._cache['lpd'].set(enabled)
-        await self._set({'lpd-enabled': self._cache['lpd'].value})
+        setting = self._cache['lpd']
+        setting._set_local(enabled)
+        await self._set({'lpd-enabled': setting.value})
 
 
-    @setting(IntegerValue, min=1, max=65535)
+    @setting(IntegerRemoteValue, min=1, max=65535)
     def peer_limit_global(self):
         """Maximum number connections for all torrents combined"""
-        setting = self._cache['peer-limit-global']
-        if setting.value is None:
-            setting.set(self._raw['peer-limit-global'])
-        return setting
+        return self._get('peer-limit-global', 'peer-limit-global')
 
     async def get_peer_limit_global(self):
         """Refresh cache and return `peer_limit_global`"""
@@ -557,17 +641,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_peer_limit_global(self, limit):
         """See `peer_limit_global`"""
-        self._cache['peer-limit-global'].set(limit)
-        await self._set({'peer-limit-global': self._cache['peer-limit-global'].value})
+        setting = self._cache['peer-limit-global']
+        setting._set_local(limit)
+        await self._set({'peer-limit-global': setting.value})
 
 
-    @setting(IntegerValue, min=1, max=65535)
+    @setting(IntegerRemoteValue, min=1, max=65535)
     def peer_limit_torrent(self):
         """Maximum number connections per torrent"""
-        setting = self._cache['peer-limit-torrent']
-        if setting.value is None:
-            setting.set(self._raw['peer-limit-per-torrent'])
-        return setting
+        return self._get('peer-limit-torrent', 'peer-limit-per-torrent')
 
     async def get_peer_limit_torrent(self):
         """Refresh cache and return `peer_limit_torrent`"""
@@ -576,23 +658,21 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_peer_limit_torrent(self, limit):
         """See `peer_limit_torrent`"""
-        self._cache['peer-limit-torrent'].set(limit)
-        await self._set({'peer-limit-per-torrent': self._cache['peer-limit-torrent'].value})
+        setting = self._cache['peer-limit-torrent']
+        setting._set_local(limit)
+        await self._set({'peer-limit-per-torrent': setting.value})
 
 
     # Other settings
 
-    @setting(OptionValue, options=('required', 'preferred', 'tolerated'))
+    @setting(OptionRemoteValue, options=('required', 'preferred', 'tolerated'))
     def encryption(self):
         """
         Whether protocol encryption is used to mask BitTorrent traffic
 
         One of the strings 'required', 'preferred' or 'tolerated'.
         """
-        setting = self._cache['encryption']
-        if setting.value is None:
-            setting.set(self._raw['encryption'])
-        return setting
+        return self._get('encryption', 'encryption')
 
     async def get_encryption(self):
         """Refresh cache and return `encryption`"""
@@ -601,17 +681,15 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_encryption(self, encryption):
         """See `encryption`"""
-        self._cache['encryption'].set(encryption)
-        await self._set({'encryption': self._cache['encryption'].value})
+        setting = self._cache['encryption']
+        setting._set_local(encryption)
+        await self._set({'encryption': setting.value})
 
 
-    @setting(BooleanValue)
+    @setting(BooleanRemoteValue)
     def autostart_torrents(self):
         """Whether added torrents should be started automatically"""
-        setting = self._cache['autostart-torrents']
-        if setting.value is None:
-            setting.set(self._raw['start-added-torrents'])
-        return setting
+        return self._get('autostart-torrents', 'start-added-torrents')
 
     async def get_autostart_torrents(self):
         """Refresh cache and return `autostart_torrents`"""
@@ -620,5 +698,6 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_autostart_torrents(self, enabled):
         """See `autostart_torrents`"""
-        self._cache['autostart-torrents'].set(enabled)
-        await self._set({'start-added-torrents': self._cache['autostart-torrents'].value})
+        setting = self._cache['autostart-torrents']
+        setting._set_local(enabled)
+        await self._set({'start-added-torrents': setting.value})
