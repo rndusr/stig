@@ -23,11 +23,15 @@ class Settings():
         self._values_dict = {}
         self._on_change = Signal()
         self.load(*values)
+        self._callback = (None, None)
 
     def add(self, value):
         """Add `value` to collection"""
         self._values.append(value)
         self._values_dict[value.name] = value
+        callback, autoremove = self._callback
+        if callback is not None:
+            setting._on_change.connect(callback, weak=autoremove)
 
     def load(self, *values):
         """Add multiple `values` to collection"""
@@ -53,7 +57,9 @@ class Settings():
         If `autoremove` is True, stop calling `callback` once it is garbage
         collected.
         """
-        self._on_change.connect(callback, weak=autoremove)
+        self._callback = (callback, autoremove)
+        for setting in self._values:
+            setting._on_change.connect(callback, weak=autoremove)
 
     def __getitem__(self, name):
         return self._values_dict[name]
