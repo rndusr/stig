@@ -51,10 +51,6 @@ class Size(_COLUMNS['size'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['size'].header),
                            style.attrs('header'))
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['size'].header['right']
-
 TUICOLUMNS['size'] = Size
 
 
@@ -66,10 +62,6 @@ class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
 
     def get_mode(self):
         return 'highlighted' if self.data['progress'] < 100 else None
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['downloaded'].header['right']
 
 TUICOLUMNS['downloaded'] = Downloaded
 

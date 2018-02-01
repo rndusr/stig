@@ -12,6 +12,8 @@
 import urwid
 import collections
 
+from ..table import ColumnHeaderWidget
+
 
 class Style():
     """Map standard attributes to those defined in a urwid palette
@@ -76,7 +78,7 @@ class CellWidgetBase(urwid.WidgetWrap):
     """Base class for cells in items in Torrent/File/Peer/... lists"""
 
     style = collections.defaultdict(lambda: 'default')
-    header = urwid.Padding(urwid.Text('NO HEADER SPECIFIED'))
+    header = urwid.AttrMap(ColumnHeaderWidget(left='', right=''), 'header')
     width = ('weight', 100)
     align = 'right'
 
@@ -100,6 +102,13 @@ class CellWidgetBase(urwid.WidgetWrap):
 
     def get_mode(self):
         return None
+
+    @classmethod
+    def set_header(cls, left=None, right=None):
+        if left is not None:
+            cls.header.original_widget.left = str(left)
+        if right is not None:
+            cls.header.original_widget.right = str(right)
 
 
 class ItemWidgetBase(urwid.WidgetWrap):

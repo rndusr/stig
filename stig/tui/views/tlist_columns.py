@@ -115,10 +115,6 @@ class Size(_COLUMNS['size'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['size'].header),
                            style.attrs('header'))
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['size'].header['right']
-
 TUICOLUMNS['size'] = Size
 
 
@@ -133,10 +129,6 @@ class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
         if t['%downloaded'] < 100 and 0 < t['size-downloaded'] < t['size-final']:
             return 'highlighted'
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['downloaded'].header['right']
-
 TUICOLUMNS['downloaded'] = Downloaded
 
 
@@ -149,10 +141,6 @@ class Uploaded(_COLUMNS['uploaded'], CellWidgetBase):
     def get_mode(self):
         if self.data['size-uploaded'] < self.data['size-downloaded']:
             return 'highlighted'
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['uploaded'].header['right']
 
 TUICOLUMNS['uploaded'] = Uploaded
 
@@ -167,10 +155,6 @@ class BytesAvailable(_COLUMNS['available'], CellWidgetBase):
         if self.value < self.data['size-final']:
             return 'highlighted'
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['available'].header['right']
-
 TUICOLUMNS['available'] = BytesAvailable
 
 
@@ -183,10 +167,6 @@ class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
     def get_mode(self):
         return 'highlighted' if self.value > 0 else ''
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-down'].header['right']
-
 TUICOLUMNS['rate-down'] = RateDown
 
 
@@ -198,10 +178,6 @@ class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
 
     def get_mode(self):
         return 'highlighted' if self.value > 0 else ''
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-up'].header['right']
 
 TUICOLUMNS['rate-up'] = RateUp
 
@@ -216,10 +192,6 @@ class RateLimitDown(_COLUMNS['rate-limit-down'], CellWidgetBase):
     def get_mode(self):
         return 'highlighted' if self.value < float('inf') else ''
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-limit-down'].header['right']
-
 TUICOLUMNS['rate-limit-down'] = RateLimitDown
 
 
@@ -231,10 +203,6 @@ class RateLimitUp(_COLUMNS['rate-limit-up'], CellWidgetBase):
 
     def get_mode(self):
         return 'highlighted' if self.value < float('inf') else ''
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-limit-up'].header['right']
 
 TUICOLUMNS['rate-limit-up'] = RateLimitUp
 

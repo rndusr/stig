@@ -89,10 +89,6 @@ class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
     def get_mode(self):
         return 'highlighted' if self.value > 0 else None
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-down'].header['right']
-
 TUICOLUMNS['rate-down'] = RateDown
 
 
@@ -104,10 +100,6 @@ class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
 
     def get_mode(self):
         return 'highlighted' if self.value > 0 else None
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-up'].header['right']
 
 TUICOLUMNS['rate-up'] = RateUp
 
@@ -132,9 +124,5 @@ class EstimatedPeerRate(_COLUMNS['rate-est'], CellWidgetBase):
 
     def get_mode(self):
         return 'highlighted' if self.value > 0 else None
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header.original_widget.right = _COLUMNS['rate-est'].header['right']
 
 TUICOLUMNS['rate-est'] = EstimatedPeerRate
