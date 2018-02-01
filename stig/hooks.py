@@ -45,6 +45,7 @@ def _set_bandwidth_unit(unit):
         column.set_unit(unit_short)
         column.clearcache()
     srvapi.torrent.clearcache()
+    srvapi.poll()
 cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
 _set_bandwidth_unit(cfg['unit.bandwidth'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
@@ -53,6 +54,7 @@ def _set_bandwidth_prefix(prefix):
     for column in _BANDWIDTH_COLUMNS:
         column.clearcache()
     srvapi.torrent.clearcache()
+    srvapi.poll()
 cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
 
 
@@ -66,6 +68,7 @@ def _set_size_unit(unit):
         column.set_unit(unit_short)
         column.clearcache()
     srvapi.torrent.clearcache()
+    srvapi.poll()
 cfg['unit.size'].on_change(_set_size_unit)
 _set_size_unit(cfg['unit.size'])  # Initially call TORRENT_COLUMNS[...].set_unit()
 
@@ -74,4 +77,5 @@ def _set_size_prefix(prefix):
     for column in _SIZE_COLUMNS:
         column.clearcache()
     srvapi.torrent.clearcache()
+    srvapi.poll()
 cfg['unitprefix.size'].on_change(_set_size_prefix)
