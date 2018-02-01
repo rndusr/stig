@@ -150,7 +150,7 @@ def RemoteValue(*value_clses):
         return value
     clsattrs['get'] = get
 
-    for attr in ('name', 'value', 'description'):
+    for attr in ('name', 'value', 'description', 'typename', 'string'):
         clsattrs[attr] = property(lambda self, attr=attr: getattr(self._value, attr))
 
     return type(clsname, (), clsattrs)
