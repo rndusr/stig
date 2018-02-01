@@ -9,11 +9,13 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from blinker import Signal
-
 from .defaults import init_defaults
 
-class Settings():
+from blinker import Signal
+from collections import abc
+
+
+class Settings(abc.Mapping):
     """Specialized mapping for *Value instances"""
 
     def __init__(self, *values):
@@ -66,3 +68,9 @@ class Settings():
 
     def __contains__(self, name):
         return name in self._values_dict
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def __len__(self):
+        return len(self._values)
