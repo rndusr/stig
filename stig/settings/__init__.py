@@ -64,15 +64,5 @@ class Settings():
     def __getitem__(self, name):
         return self._values_dict[name]
 
-    def __setitem__(self, name, value):
-        setting = self._values_dict[name]
-        setting.value = value
-        self._on_change.send(setting)
-
-        msg = '{} = {!s}'.format(setting.name, setting)
-        if setting.value == setting.default:
-            msg += ' (default)'
-        log.debug(msg)
-
     def __contains__(self, name):
         return name in self._values_dict
