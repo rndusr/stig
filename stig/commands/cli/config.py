@@ -12,6 +12,7 @@
 from ..base import config as base
 from . import _mixin as mixin
 
+
 class RcCmd(base.RcCmdbase):
     provides = {'cli'}
 

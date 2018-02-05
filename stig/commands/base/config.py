@@ -15,6 +15,7 @@ log = make_logger(__name__)
 from .. import (InitCommand, ExpectedResource, utils)
 from ._common import make_X_FILTER_spec
 
+import asyncio
 import subprocess
 
 
@@ -73,57 +74,21 @@ class ResetCmdbase(metaclass=InitCommand):
                       'server settings (srv.*) cannot be reset.'),),
     }
     cfg = ExpectedResource
+    srvapi = ExpectedResource
 
     def run(self, NAME):
-        from ...settings import is_srv_setting
         success = True
         for name in NAME:
-            if name not in self.cfg:
-                log.error('Unknown setting: {}'.format(name))
-                success = False
-            elif is_srv_setting(self.cfg[name]):
+            if name in self.cfg:
+                log.debug('is local setting: %r', name)
+                self.cfg[name].reset()
+            elif name.startswith('srv.') and name[4:] in self.srvapi.settings:
                 log.error('Server settings cannot be reset: {}'.format(name))
                 success = False
             else:
-                self.cfg[name].reset()
+                log.error('Unknown setting: {}'.format(name))
+                success = False
         return success
-
-
-def _parse_name_value(NAME, VALUE, cfg):
-    # This code is shared between SetCmdbase and SetRemoteCmdbase
-
-    def _eval_cmd(cmd):
-        proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout = proc.stdout.decode('utf-8').strip('\n')
-        stderr = proc.stderr.decode('utf-8').strip('\n')
-        if stderr:
-            raise ValueError(stderr)
-        else:
-            return stdout
-
-    if NAME.endswith(':eval'):
-        NAME = NAME[:-5]
-        if isinstance(VALUE, list):
-            VALUE = ' '.join(VALUE)
-        get_value = lambda: [_eval_cmd(VALUE)]
-    else:
-        get_value = lambda: VALUE
-
-    if NAME not in cfg:
-        raise ValueError('Unknown setting: %s' % NAME)
-
-    try:
-        VALUE = get_value()
-    except ValueError as e:
-        raise ValueError('%s: %s: %s' % (NAME, VALUE, e))
-
-    # Make sure strings are strings and lists are lists
-    if cfg[NAME].typename in ('list', 'set'):
-        VALUE = utils.listify_args(VALUE)
-    else:
-        VALUE = ' '.join(VALUE)
-
-    return NAME, VALUE
 
 
 class SetCmdbase(metaclass=InitCommand):
@@ -145,21 +110,71 @@ class SetCmdbase(metaclass=InitCommand):
                       'client and server settings.'),),
     }
     cfg = ExpectedResource
+    srvapi = ExpectedResource
 
     async def run(self, NAME, VALUE):
+        # Get setting by name from local or remote settings
         try:
-            name, value = _parse_name_value(NAME, VALUE, self.cfg)
+            setting = self._get_setting(NAME)
         except ValueError as e:
             log.error(e)
             return False
-        setting = self.cfg[name]
+
+        # Normalized value
         try:
-            setting.set(value)
+            value = self._get_value(VALUE, setting.typename,
+                                    is_cmd=NAME.endswith(':eval'))
+        except ValueError as e:
+            log.error(e)
+            return False
+
+        # Update setting's value
+        try:
+            if asyncio.iscoroutinefunction(setting.set):
+                log.debug('Setting remote setting %s to %r', setting.name, value)
+                await setting.set(value)
+            else:
+                log.debug('Setting local setting %s to %r', setting.name, value)
+                setting.set(value)
         except ValueError as e:
             log.error('%s = %s: %s', setting.name, setting.string(value), e)
             return False
         else:
             return True
+
+    def _get_setting(self, name):
+        if name.endswith(':eval'):
+            name = name[:-5]
+
+        if name in self.cfg:
+            return self.cfg[name]
+        elif name.startswith('srv.') and name[4:] in self.srvapi.settings:
+            return self.srvapi.settings[name[4:]]
+        else:
+            raise ValueError('Unknown setting: %s' % name)
+
+    def _get_value(self, value, typename, is_cmd=False):
+        if is_cmd:
+            value = [self._eval_cmd(value)]
+
+        # Make sure lists are lists and everything else is a string
+        if typename in ('list', 'set'):
+            return utils.listify_args(value)
+        else:
+            return ' '.join(value)
+
+    @staticmethod
+    def _eval_cmd(cmd):
+        if not isinstance(cmd, str):
+            cmd = ' '.join(cmd)
+        log.debug('Running shell command: %r', cmd)
+        proc = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout = proc.stdout.decode('utf-8').strip('\n')
+        stderr = proc.stderr.decode('utf-8').strip('\n')
+        if stderr:
+            raise ValueError('%s: %s' % (cmd, stderr))
+        else:
+            return stdout
 
 
 
