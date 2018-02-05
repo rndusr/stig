@@ -78,26 +78,26 @@ def init_defaults(cfg):
         SetValue('columns.torrents', default=DEFAULT_TORRENT_COLUMNS,
                  options=torrentlist.COLUMNS,
                  aliases=torrentlist.ALIASES,
-                 description='List of columns in new torrent lists'),
+                 description='Which columns to show in torrent lists'),
         SetValue('columns.peers', default=DEFAULT_PEER_COLUMNS,
                  options=peerlist.COLUMNS,
                  aliases=peerlist.ALIASES,
-                 description='List of columns in new peer lists'),
+                 description='Which columns to show in peer lists'),
         SetValue('columns.files', default=DEFAULT_FILE_COLUMNS,
                  options=filelist.COLUMNS,
                  aliases=filelist.ALIASES,
-                 description='List of columns in new torrent file lists'),
+                 description='Which columns to show in file lists'),
         SetValue('columns.trackers', default=DEFAULT_TRACKER_COLUMNS,
                  options=trackerlist.COLUMNS,
                  aliases=trackerlist.ALIASES,
-                 description='List of columns in new tracker lists'),
+                 description='Which columns to show in tracker lists'),
 
         SortOrderValue(TorrentSorter, 'sort.torrents', default=DEFAULT_TORRENT_SORT,
-                       description='List of torrent list sort orders'),
+                       description='List of sort orders in torrent lists'),
         SortOrderValue(TorrentPeerSorter, 'sort.peers', default=DEFAULT_PEER_SORT,
-                       description='List of peer list sort orders'),
+                       description='List of sort orders in peer lists'),
         SortOrderValue(TorrentTrackerSorter, 'sort.trackers', default=DEFAULT_TRACKER_SORT,
-                       description='List of tracker list sort orders'),
+                       description='List of sort orders in tracker lists'),
 
         PathValue('tui.theme', default=DEFAULT_THEME_FILE,
                   description='Path to theme file'),
@@ -119,20 +119,20 @@ def init_defaults(cfg):
                     description=("Unit prefix for bandwidth rates ('metric' or 'binary')")),
 
         OptionValue('unit.size', default='byte', options=('bit', 'byte'),
-                    description="Unit for sizes ('bit' or 'byte')"),
+                    description="Unit for file sizes ('bit' or 'byte')"),
         OptionValue('unitprefix.size', default='binary', options=('metric', 'binary'),
-                    description=("Unit prefix for sizes ('metric' or 'binary')")),
+                    description=("Unit prefix for file sizes ('metric' or 'binary')")),
 
         StringValue('tui.marked.on', default='✔', minlen=1, maxlen=1,
-                    description=('Character displayed in "marked" column for marked '
-                                 'list items (see "mark" command)')),
+                    description=("Character displayed in 'marked' column for marked "
+                                 "list items (see 'mark' command)")),
         StringValue('tui.marked.off', default=' ', minlen=1, maxlen=1,
-                    description=('Character displayed in "marked" column for unmarked '
-                                 'list items (see "mark" command)')),
+                    description=("Character displayed in 'marked' column for unmarked "
+                                 "list items (see 'mark' command)")),
 
         IntegerValue('remove.max-hits', default=10, min=0,
                      description=('Maximum number of torrents to remove without '
-                                  'getting extra user confirmation')),
+                                  'extra confirmation')),
     )
 
 
