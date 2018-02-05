@@ -186,10 +186,10 @@ class PathIncompleteRemoteValue(RemoteValue(BooleanValue, PathValue)):
 
 
 # Transform key (as in `settings[key]`) to property name and vice versa
-def _property_to_key(property_name):
-    return property_name.replace('_', '-').replace('.', '-')
-def _key_to_property(key):
-    return key.replace('.', '-').replace('-', '_')
+def _key2property(key):
+    return key.replace('.', '_')
+def _property2key(property_name):
+    return property_name.replace('_', '.')
 
 # Map names of settings to callables that return a new *RemoteValue instance
 _TYPES = {}
@@ -197,7 +197,7 @@ def setting(value_cls, **kwargs):
     """Decorator for SettingsAPI properties"""
     def wrap(method):
         property_name = method.__name__
-        setting_name = _property_to_key(property_name)
+        setting_name = _property2key(property_name)
         def mk_value_inst(api):
             if 'description' not in kwargs:
                 kwargs['description'] = getattr(SettingsAPI, property_name).__doc__
@@ -222,7 +222,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     `on_change` to set a callback for interval updates.
 
     Values are also available as mapping items with '-' instead of '_', e.g.
-    `settings['port-forwarding']`.  These values have the coroutines `set` and
+    `settings['port.forwarding']`.  These values have the coroutines `set` and
     `get` methods that are identical to the `set_*` and `get_*` methods
     described above, aswell as a `value` property for synchronous access.
 
@@ -232,7 +232,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     # Mapping methods
     def __getitem__(self, key):
         try:
-            item = getattr(self, _key_to_property(key))
+            item = getattr(self, _key2property(key))
         except AttributeError as e:
             raise KeyError(key)
         else:
@@ -326,7 +326,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         return (field_value, field_enabled)
 
     def _rate_limit_key(self, direction, alt):
-        return '%srate-limit-%s' % ('alt-' if alt else '', direction)
+        return '%srate.limit.%s' % ('alt.' if alt else '', direction)
 
     def _get_rate_limit(self, direction, alt=False):
         key = self._rate_limit_key(direction, alt)
@@ -448,7 +448,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @setting(PathCompleteRemoteValue)
     def path_complete(self):
         """Where to put downloaded files"""
-        return self._get('path-complete', 'download-dir')
+        return self._get('path.complete', 'download-dir')
 
     async def get_path_complete(self):
         """Refresh cache and return `path_complete`"""
@@ -462,7 +462,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         If path is relative (i.e. doesn't start with a path separator
         (e.g. '/')), it is relative to what `get_path_complete` returns.
         """
-        setting = self._cache['path-complete']
+        setting = self._cache['path.complete']
         setting._set_local(path)
         await self._set({'download-dir': setting.value})
 
@@ -478,7 +478,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
                 return self._raw['incomplete-dir']
             else:
                 return False
-        return self._get('path-incomplete', get_raw_value)
+        return self._get('path.incomplete', get_raw_value)
 
     async def get_path_incomplete(self):
         """Refresh cache and return `path_incomplete`"""
@@ -492,7 +492,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         If `path` is not a `str` instance, it is evaluated as a bool and this
         feature is enabled or disabled accordingly without changing the path.
         """
-        setting = self._cache['path-incomplete']
+        setting = self._cache['path.incomplete']
         setting._set_local(path)
         request = {'incomplete-dir-enabled': setting.value is not False}
         if setting.value:
@@ -503,7 +503,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @setting(BooleanRemoteValue)
     def part_files(self):
         """Whether '.part' is appended to incomplete file names"""
-        return self._get('part-files', 'rename-partial-files')
+        return self._get('part.files', 'rename-partial-files')
 
     async def get_part_files(self):
         """Refresh cache and return `part_files`"""
@@ -512,7 +512,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_part_files(self, enabled):
         """See `part_files`"""
-        setting = self._cache['part-files']
+        setting = self._cache['part.files']
         setting._set_local(enabled)
         await self._set({'rename-partial-files': setting.value})
 
@@ -547,7 +547,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @setting(BooleanRemoteValue)
     def port_forwarding(self):
         """Whether UPnP/NAT-PMP is enabled"""
-        return self._get('port-forwarding', 'port-forwarding-enabled')
+        return self._get('port.forwarding', 'port-forwarding-enabled')
 
     async def get_port_forwarding(self):
         """Refresh cache and return `port_forwarding`"""
@@ -556,7 +556,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_port_forwarding(self, enabled):
         """See `port_forwarding`"""
-        setting = self._cache['port-forwarding']
+        setting = self._cache['port.forwarding']
         setting._set_local(enabled)
         await self._set({'port-forwarding-enabled': setting.value})
 
@@ -632,7 +632,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @setting(IntegerRemoteValue, min=1, max=65535)
     def peer_limit_global(self):
         """Maximum number connections for all torrents combined"""
-        return self._get('peer-limit-global', 'peer-limit-global')
+        return self._get('peer.limit.global', 'peer-limit-global')
 
     async def get_peer_limit_global(self):
         """Refresh cache and return `peer_limit_global`"""
@@ -641,7 +641,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_peer_limit_global(self, limit):
         """See `peer_limit_global`"""
-        setting = self._cache['peer-limit-global']
+        setting = self._cache['peer.limit.global']
         setting._set_local(limit)
         await self._set({'peer-limit-global': setting.value})
 
@@ -649,7 +649,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @setting(IntegerRemoteValue, min=1, max=65535)
     def peer_limit_torrent(self):
         """Maximum number connections per torrent"""
-        return self._get('peer-limit-torrent', 'peer-limit-per-torrent')
+        return self._get('peer.limit.torrent', 'peer-limit-per-torrent')
 
     async def get_peer_limit_torrent(self):
         """Refresh cache and return `peer_limit_torrent`"""
@@ -658,7 +658,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_peer_limit_torrent(self, limit):
         """See `peer_limit_torrent`"""
-        setting = self._cache['peer-limit-torrent']
+        setting = self._cache['peer.limit.torrent']
         setting._set_local(limit)
         await self._set({'peer-limit-per-torrent': setting.value})
 
@@ -689,7 +689,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @setting(BooleanRemoteValue)
     def autostart_torrents(self):
         """Whether added torrents should be started automatically"""
-        return self._get('autostart-torrents', 'start-added-torrents')
+        return self._get('autostart.torrents', 'start-added-torrents')
 
     async def get_autostart_torrents(self):
         """Refresh cache and return `autostart_torrents`"""
@@ -698,6 +698,6 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_autostart_torrents(self, enabled):
         """See `autostart_torrents`"""
-        setting = self._cache['autostart-torrents']
+        setting = self._cache['autostart.torrents']
         setting._set_local(enabled)
         await self._set({'start-added-torrents': setting.value})

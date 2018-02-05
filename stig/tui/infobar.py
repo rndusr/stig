@@ -189,8 +189,8 @@ class BandwidthStatusWidget(urwid.Widget):
         self._invalidate()
 
     def _update_rate_limits(self, settings):
-        up = settings['rate-limit-up']
-        dn = settings['rate-limit-down']
+        up = settings['rate.limit.up']
+        dn = settings['rate.limit.down']
 
         # Empty display if DISCONNECTED or UNLIMITED
         as_str = lambda rate: '' if rate in (const.DISCONNECTED, const.UNLIMITED) \
