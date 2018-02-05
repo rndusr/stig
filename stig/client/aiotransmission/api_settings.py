@@ -260,15 +260,30 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
         super().__init__(self._srvapi.rpc.session_get, interval=interval, loop=srvapi.loop)
         self.on_response(self._handle_session_get)
-        self.on_error(lambda error: self.clearcache(), autoremove=False)
+        self.on_error(self._handle_error)
 
-    def clearcache(self):
-        """Clear cached settings"""
+    def _handle_session_get(self, response):
+        """Request update from server"""
+        log.debug('Handling settings update')
+        self.clearcache(update=False)
+        self._raw = response
+        self._on_update.send(self)
+
+    def _handle_error(self, error):
+        self.clearcache(update=True)
+
+    def clearcache(self, update=True):
+        """
+        Clear cached settings
+
+        update: Whether to run `on_update` callbacks
+        """
         log.debug('Clearing %s cache', type(self).__name__)
         self._raw = None
         for value in self._cache.values():
             value.reset()
-        self._on_update.send(self)
+        if update:
+            self._on_update.send(self)
 
     def on_update(self, callback, autoremove=True):
         """
@@ -281,13 +296,6 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """
         log.debug('Registering %r to receive settings updates', callback)
         self._on_update.connect(callback, weak=autoremove)
-
-    def _handle_session_get(self, response):
-        """Request update from server"""
-        log.debug('Handling settings update')
-        self.clearcache()
-        self._raw = response
-        self._on_update.send(self)
 
     async def update(self):
         """Request update from server"""
