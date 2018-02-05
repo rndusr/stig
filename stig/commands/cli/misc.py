@@ -26,9 +26,8 @@ class HelpCmd(base.HelpCmdbase):
     async def run(self, TOPIC):
         # If TOPIC is a setting and it is managed by the server, we must fetch
         # config values from the server so we can display its current value.
-        from ...settings import is_srv_setting
         for topic in TOPIC:
-            if is_srv_setting(topic, self.cfg):
+            if topic.startswith('srv.'):
                 try:
                     await self.srvapi.settings.update()
                 except self.srvapi.ClientError as e:
