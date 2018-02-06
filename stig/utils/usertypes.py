@@ -189,7 +189,7 @@ class ValueBase():
         if isinstance(other, type(self)):
             return self.value == other.value
         else:
-            return self.value == other
+            return NotImplemented
 
     def __ne__(self, other):
         return not self.__eq__(other)
