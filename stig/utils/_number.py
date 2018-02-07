@@ -138,6 +138,11 @@ class _NumberBase():
         return self.__str()
 
     @property
+    def real(self):
+        """Underlying `int` or `float` value"""
+        return self._numtype(self)
+
+    @property
     def str_includes_unit(self):
         """Whether the default string representation uses `with_unit` or `without_unit`"""
         return self._str_includes_unit
