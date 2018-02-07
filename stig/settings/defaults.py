@@ -62,7 +62,7 @@ def init_defaults(cfg):
     cfg.load(
         StringValue('connect.host', default='localhost',
                     description='Hostname or IP of Transmission RPC interface'),
-        IntegerValue('connect.port', default=9091, min=1, max=65535,
+        IntegerValue('connect.port', default=9091, min=1, max=65535, pretty=False,
                      description='Port of Transmission RPC interface'),
         StringValue('connect.path', default='/transmission/rpc',
                     description='Path of Transmission RPC interface'),

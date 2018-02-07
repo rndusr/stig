@@ -546,7 +546,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Network settings
 
-    @_setting(PortRemoteValue)
+    @_setting(PortRemoteValue, pretty=False)
     def port(self):
         """Port used to communicate with peers or 'random' to pick a random port"""
         def get_raw_value():
