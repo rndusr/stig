@@ -74,20 +74,18 @@ class ResetCmdbase(metaclass=InitCommand):
                       'server settings (srv.*) cannot be reset.'),),
     }
     cfg = ExpectedResource
-    srvapi = ExpectedResource
 
     def run(self, NAME):
         success = True
         for name in NAME:
-            if name in self.cfg:
-                log.debug('is local setting: %r', name)
-                self.cfg[name].reset()
-            elif name.startswith('srv.') and name[4:] in self.srvapi.settings:
+            if name not in self.cfg:
+                log.error('Unknown setting: {}'.format(name))
+                success = False
+            elif name.startswith('srv.'):
                 log.error('Server settings cannot be reset: {}'.format(name))
                 success = False
             else:
-                log.error('Unknown setting: {}'.format(name))
-                success = False
+                self.cfg[name].reset()
         return success
 
 
@@ -110,7 +108,6 @@ class SetCmdbase(metaclass=InitCommand):
                       'client and server settings.'),),
     }
     cfg = ExpectedResource
-    srvapi = ExpectedResource
 
     async def run(self, NAME, VALUE):
         # Get setting by name from local or remote settings
@@ -146,11 +143,9 @@ class SetCmdbase(metaclass=InitCommand):
         if name.endswith(':eval'):
             name = name[:-5]
 
-        if name in self.cfg:
+        try:
             return self.cfg[name]
-        elif name.startswith('srv.') and name[4:] in self.srvapi.settings:
-            return self.srvapi.settings[name[4:]]
-        else:
+        except KeyError:
             raise ValueError('Unknown setting: %s' % name)
 
     def _get_value(self, value, typename, is_cmd=False):
