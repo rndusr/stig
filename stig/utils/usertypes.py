@@ -361,6 +361,10 @@ class FloatValue(ValueBase):
     Floating point number
 
     Specify `min` and/or `max` to limit the range of valid numbers.
+
+    Set `pretty` to False if you don't want strings to have unit prefixes:
+        pretty=True  : 3.141592*1000 -> '3.14k'
+        pretty=False : 3.141592*1000 -> '3142.592'
     """
     type = NumberFloat
     _numbertype = 'rational'
@@ -377,10 +381,11 @@ class FloatValue(ValueBase):
             text += ' (<= {})'.format(self.max)
         return text
 
-    def __init__(self, *args, min=None, max=None, **kwargs):
+    def __init__(self, *args, min=None, max=None, pretty=True, **kwargs):
         self._check_min_max(min, max)
         self._min = min
         self._max = max
+        self._pretty = pretty
         ValueBase.__init__(self, *args, **kwargs)
 
     @staticmethod
@@ -454,7 +459,7 @@ class FloatValue(ValueBase):
             if value is not None and value > max:
                 self.set(max)
 
-    def string(self, value=None, default=False, with_unit=True):
+    def string(self, value=None, default=False, unit=True):
         if default:
             num = self.default
         elif value is not None:
@@ -468,7 +473,13 @@ class FloatValue(ValueBase):
         if num is None:
             return UNSPECIFIED
         else:
-            return num.with_unit if with_unit is True else num.without_unit
+            if self._pretty:
+                return num.with_unit if unit else num.without_unit
+            else:
+                text = str(num.real)
+                if unit and num.unit is not None:
+                    text += '%s' % num.unit
+                return text
 
     def __repr__(self):
         v = self.value

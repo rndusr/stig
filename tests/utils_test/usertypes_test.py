@@ -192,6 +192,21 @@ class TestFloatValue(unittest.TestCase):
         self.assertTrue(i <= 100)
         self.assertTrue(i <= 10)
 
+    def test_pretty_argument(self):
+        val = FloatValue(name='foo', default='17000km', pretty=True)
+        val.set('10.571111km')
+        self.assertEqual(val.string(default=True), '17Mm')
+        self.assertEqual(val.string(default=False), '10.6km')
+        self.assertEqual(val.string(default=True, unit=False), '17M')
+        self.assertEqual(val.string(default=False, unit=False), '10.6k')
+
+        val = FloatValue(name='foo', default='17000km', pretty=False)
+        val.set('10.571111km')
+        self.assertEqual(val.string(default=True), '17000000.0m')
+        self.assertEqual(val.string(default=False), '10571.111m')
+        self.assertEqual(val.string(default=True, unit=False), '17000000.0')
+        self.assertEqual(val.string(default=False, unit=False), '10571.111')
+
 
 class TestIntegerValue(unittest.TestCase):
     def test_valid_values(self):
