@@ -211,6 +211,14 @@ class TestSettingsAPI(asynctest.TestCase):
             method = 'get_' + attr.replace('.', '_')
             self.assertTrue(hasattr(self.api, method))
 
+    async def test_properties_with_setters(self):
+        for name in ('dht', 'path.complete', 'autostart.torrents'):
+            setting = self.api[name]
+            for prop in ('name', 'description'):
+                self.assertNotEqual(getattr(setting, prop), 'foo')
+                setattr(self.api[name], prop, 'foo')
+                self.assertEqual(getattr(setting, prop), 'foo')
+
     async def test_rpc_unreachable(self):
         class UnreachableRPC(FakeTransmissionRPC):
             async def session_get(self):
@@ -232,6 +240,24 @@ class TestSettingsAPI(asynctest.TestCase):
             await self.api.set_pex(True)
         with self.assertRaises(ValueError):
             await self.api['pex'].set(False)
+
+    async def test_value_property(self):
+        setting = self.api['dht']
+        self.api.clearcache()
+        self.assertIs(setting.value, const.DISCONNECTED)
+        await self.api.update()
+        self.assertIn(setting.value, (True, False))
+
+    async def test_string_method(self):
+        from logging import getLogger
+        log = getLogger(__name__)
+        setting = self.api['dht']
+        log.debug('setting: %r, %r', setting, type(setting))
+        log.debug('string method: %r', setting.string)
+        self.api.clearcache()
+        self.assertIs(setting.string(), str(const.DISCONNECTED))
+        await self.api.update()
+        self.assertIn(setting.string(), ('enabled', 'disabled'))
 
 
     async def test_get_rate_limit_up(self):
