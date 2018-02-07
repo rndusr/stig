@@ -65,7 +65,7 @@ urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
 # https://github.com/urwid/urwid/pull/86
 # https://github.com/urwid/urwid/issues/90
 from distutils.version import LooseVersion
-if LooseVersion(urwid.__version__) <= LooseVersion('2.0.0'):
+if LooseVersion(urwid.__version__) <= LooseVersion('3.0.0'):
     urwid.AsyncioEventLoop._idle_emulation_delay = 1/25
 
 
