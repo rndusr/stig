@@ -277,7 +277,7 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
-        await self.api['rate_limit_up'].set(const.UNLIMITED)
+        await self.api['rate.limit.up'].set(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
@@ -285,7 +285,7 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 125)
 
-        await self.api['rate_limit_up'].set(False)
+        await self.api['rate.limit.up'].set(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 125)
 
@@ -294,7 +294,7 @@ class TestSettingsAPI(asynctest.TestCase):
         self.rpc.fake_settings['speed-limit-down-enabled'] = True
         convert.bandwidth.unit = 'bit'
 
-        await self.api['rate_limit_down'].set('+=80k')
+        await self.api['rate.limit.down'].set('+=80k')
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
 
@@ -302,7 +302,7 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
 
-        await self.api['rate_limit_down'].set(True)
+        await self.api['rate.limit.down'].set(True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
 
@@ -311,7 +311,7 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
 
-        await self.api['rate_limit_down'].set(const.UNLIMITED)
+        await self.api['rate.limit.down'].set(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
 
