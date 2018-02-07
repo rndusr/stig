@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .defaults import init_defaults
+from .defaults import (init_defaults, load_remote_settings)
 
 from blinker import Signal
 from collections import abc

@@ -136,6 +136,11 @@ def init_defaults(cfg):
     )
 
 
+def load_remote_settings(cfg, remote_settings):
+    for setting in remote_settings.values():
+        cfg.add(setting)
+        cfg.rename(setting.name, 'srv.' + setting.name)
+
 
 # def init_server_defaults(cfg, settingsapi):
 #     from .types_srv import (BooleanSrvValue, IntegerSrvValue, OptionSrvValue,

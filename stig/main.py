@@ -56,6 +56,8 @@ srvapi = API(host=cfg['connect.host'].value,
              interval=cfg['tui.poll'].value,
              loop=aioloop)
 srvapi.rpc.enabled = False
+settings.load_remote_settings(cfg, srvapi.settings)
+
 
 
 from .commands import CommandManager
