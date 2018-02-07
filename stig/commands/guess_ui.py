@@ -70,7 +70,7 @@ def guess_ui(clicmds, cmdmgr, cfg):
                 debugmsg += 'TUI setting: %r - guessing TUI' % setting
                 guess = 'tui'
             elif setting.startswith('srv.'):
-                debugmsg += 'server setting: %r - guessing CLI' % setting
+                debugmsg += 'remote setting: %r - guessing CLI' % setting
                 guess = 'cli'
             else:
                 debugmsg += 'other setting: %r - guessing TUI' % setting

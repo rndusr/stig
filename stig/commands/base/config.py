@@ -70,8 +70,8 @@ class ResetCmdbase(metaclass=InitCommand):
          'description': 'Name of setting'},
     )
     more_sections = {
-        'SEE ALSO': (('Run `help settings` for a list of all available settings.  Note that '
-                      'server settings (srv.*) cannot be reset.'),),
+        'SEE ALSO': ('Run `help settings` for a list of all available settings.',
+                     'Note that remote settings (srv.*) cannot be reset.'),
     }
     cfg = ExpectedResource
 
@@ -82,7 +82,7 @@ class ResetCmdbase(metaclass=InitCommand):
                 log.error('Unknown setting: {}'.format(name))
                 success = False
             elif name.startswith('srv.'):
-                log.error('Server settings cannot be reset: {}'.format(name))
+                log.error('Remote settings cannot be reset: {}'.format(name))
                 success = False
             else:
                 self.cfg[name].reset()
@@ -96,6 +96,7 @@ class SetCmdbase(metaclass=InitCommand):
     description = 'Change {__appname__} settings'
     usage = ('set <NAME>[:eval] <VALUE>',)
     examples = ('set connect.host my.server.example.org',
+                'set connect.user jonny_sixpack',
                 'set connect.password:eval getpw --id transmission')
     argspecs = (
         {'names': ('NAME',),
@@ -105,7 +106,7 @@ class SetCmdbase(metaclass=InitCommand):
     )
     more_sections = {
         'SEE ALSO': (('Run `help settings` for a list of all available '
-                      'client and server settings.'),),
+                      'local and remote settings.'),),
     }
     cfg = ExpectedResource
 
