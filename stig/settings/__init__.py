@@ -40,6 +40,13 @@ class Settings(abc.Mapping):
         for v in values:
             self.add(v)
 
+    def rename(self, old, new):
+        """Change setting's name from `old` to `new`"""
+        setting = self[old]
+        setting.name = new
+        self._values_dict[new] = setting
+        del self._values_dict[old]
+
     @property
     def values(self):
         """Iterate over collected values"""
