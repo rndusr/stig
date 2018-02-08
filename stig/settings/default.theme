@@ -180,21 +180,21 @@ torrentlist.rate-up.focused                        $rate-up_fg           on $tli
 torrentlist.rate-up.highlighted.unfocused          $rate-up_hl           on $tlist_bg.uf
 torrentlist.rate-up.highlighted.focused            $rate-up_hl           on $tlist_bg.f
 
-$rate-limit-down_fg = dark cyan
-$rate-limit-down_hl = light cyan
-torrentlist.rate-limit-down.header                 $rate-limit-down_fg,underline on $tlist_bg.uf
-torrentlist.rate-limit-down.unfocused              $rate-limit-down_fg           on $tlist_bg.uf
-torrentlist.rate-limit-down.focused                $rate-limit-down_fg           on $tlist_bg.f
-torrentlist.rate-limit-down.highlighted.unfocused  $rate-limit-down_hl           on $tlist_bg.uf
-torrentlist.rate-limit-down.highlighted.focused    $rate-limit-down_hl           on $tlist_bg.f
+$limit-rate-down_fg = dark cyan
+$limit-rate-down_hl = light cyan
+torrentlist.limit-rate-down.header                 $limit-rate-down_fg,underline on $tlist_bg.uf
+torrentlist.limit-rate-down.unfocused              $limit-rate-down_fg           on $tlist_bg.uf
+torrentlist.limit-rate-down.focused                $limit-rate-down_fg           on $tlist_bg.f
+torrentlist.limit-rate-down.highlighted.unfocused  $limit-rate-down_hl           on $tlist_bg.uf
+torrentlist.limit-rate-down.highlighted.focused    $limit-rate-down_hl           on $tlist_bg.f
 
-$rate-limit-up_fg = dark green
-$rate-limit-up_hl = light green
-torrentlist.rate-limit-up.header                   $rate-limit-up_fg,underline on $tlist_bg.uf
-torrentlist.rate-limit-up.unfocused                $rate-limit-up_fg           on $tlist_bg.uf
-torrentlist.rate-limit-up.focused                  $rate-limit-up_fg           on $tlist_bg.f
-torrentlist.rate-limit-up.highlighted.unfocused    $rate-limit-up_hl           on $tlist_bg.uf
-torrentlist.rate-limit-up.highlighted.focused      $rate-limit-up_hl           on $tlist_bg.f
+$limit-rate-up_fg = dark green
+$limit-rate-up_hl = light green
+torrentlist.limit-rate-up.header                   $limit-rate-up_fg,underline on $tlist_bg.uf
+torrentlist.limit-rate-up.unfocused                $limit-rate-up_fg           on $tlist_bg.uf
+torrentlist.limit-rate-up.focused                  $limit-rate-up_fg           on $tlist_bg.f
+torrentlist.limit-rate-up.highlighted.unfocused    $limit-rate-up_hl           on $tlist_bg.uf
+torrentlist.limit-rate-up.highlighted.focused      $limit-rate-up_hl           on $tlist_bg.f
 
 $ratio_fg = dark blue
 $ratio_hl = light blue

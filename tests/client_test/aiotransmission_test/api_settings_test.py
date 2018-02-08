@@ -85,119 +85,119 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIn(setting.string(), ('enabled', 'disabled'))
 
 
-    async def test_get_rate_limit_up(self):
+    async def test_get_limit_rate_up(self):
         convert.bandwidth.unit = 'byte'
         self.rpc.fake_settings['speed-limit-up'] = 100
         self.rpc.fake_settings['speed-limit-up-enabled'] = False
-        self.assertEqual((await self.api.get_rate_limit_up()).value, const.UNLIMITED)
+        self.assertEqual((await self.api.get_limit_rate_up()).value, const.UNLIMITED)
 
         self.rpc.fake_settings['speed-limit-up-enabled'] = True
-        self.assertEqual(await self.api['rate.limit.up'].get(), 100e3)
+        self.assertEqual(await self.api['limit.rate.up'].get(), 100e3)
 
         convert.bandwidth.unit = 'bit'
-        self.assertEqual((await self.api.get_rate_limit_up()).value, 800e3)
+        self.assertEqual((await self.api.get_limit_rate_up()).value, 800e3)
 
-    async def test_get_rate_limit_down(self):
+    async def test_get_limit_rate_down(self):
         convert.bandwidth.unit = 'bit'
         self.rpc.fake_settings['speed-limit-down'] = 1e3
         self.rpc.fake_settings['speed-limit-down-enabled'] = True
-        self.assertEqual(await self.api['rate.limit.down'].get(), 8e6)
+        self.assertEqual(await self.api['limit.rate.down'].get(), 8e6)
 
         self.rpc.fake_settings['speed-limit-down-enabled'] = False
-        self.assertEqual((await self.api.get_rate_limit_down()).value, const.UNLIMITED)
+        self.assertEqual((await self.api.get_limit_rate_down()).value, const.UNLIMITED)
 
         self.rpc.fake_settings['speed-limit-down-enabled'] = True
         convert.bandwidth.unit = 'byte'
-        self.assertEqual((await self.api.get_rate_limit_down()).value, 1e6)
+        self.assertEqual((await self.api.get_limit_rate_down()).value, 1e6)
 
 
-    async def test_set_rate_limit_up(self):
+    async def test_set_limit_rate_up(self):
         self.rpc.fake_settings['speed-limit-up'] = 12345
         self.rpc.fake_settings['speed-limit-up-enabled'] = False
         convert.bandwidth.unit = 'byte'
 
-        await self.api.set_rate_limit_up('50k')
+        await self.api.set_limit_rate_up('50k')
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
 
-        await self.api.set_rate_limit_up(False)
+        await self.api.set_limit_rate_up(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
-        await self.api.set_rate_limit_up(True)
+        await self.api.set_limit_rate_up(True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
-        await self.api['rate.limit.up'].set(const.UNLIMITED)
+        await self.api['limit.rate.up'].set(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 50)
 
-        await self.api.set_rate_limit_up('+=1Mb')
+        await self.api.set_limit_rate_up('+=1Mb')
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 125)
 
-        await self.api['rate.limit.up'].set(False)
+        await self.api['limit.rate.up'].set(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-up'], 125)
 
-    async def test_set_rate_limit_down(self):
+    async def test_set_limit_rate_down(self):
         self.rpc.fake_settings['speed-limit-down'] = 100
         self.rpc.fake_settings['speed-limit-down-enabled'] = True
         convert.bandwidth.unit = 'bit'
 
-        await self.api['rate.limit.down'].set('+=80k')
+        await self.api['limit.rate.down'].set('+=80k')
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
 
-        await self.api.set_rate_limit_down(False)
+        await self.api.set_limit_rate_down(False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
 
-        await self.api['rate.limit.down'].set(True)
+        await self.api['limit.rate.down'].set(True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 110)
 
         convert.bandwidth.unit = 'byte'
-        await self.api.set_rate_limit_down('+=1M')
+        await self.api.set_limit_rate_down('+=1M')
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
 
-        await self.api['rate.limit.down'].set(const.UNLIMITED)
+        await self.api['limit.rate.down'].set(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
 
 
-    async def test_get_alt_rate_limits(self):
+    async def test_get_limits_rate_alt(self):
         convert.bandwidth.unit = 'byte'
         self.rpc.fake_settings['alt-speed-up'] = 200
         self.rpc.fake_settings['alt-speed-down'] = 20
         self.rpc.fake_settings['alt-speed-enabled'] = False
-        self.assertEqual((await self.api.get_alt_rate_limit_up()).value, const.UNLIMITED)
-        self.assertEqual(await self.api['alt.rate.limit.down'].get(), const.UNLIMITED)
+        self.assertEqual((await self.api.get_limit_rate_up_alt()).value, const.UNLIMITED)
+        self.assertEqual(await self.api['limit.rate.down.alt'].get(), const.UNLIMITED)
 
         self.rpc.fake_settings['alt-speed-enabled'] = True
-        self.assertEqual(await self.api['alt.rate.limit.up'].get(), 200e3)
-        self.assertEqual((await self.api.get_alt_rate_limit_down()).value, 20e3)
+        self.assertEqual(await self.api['limit.rate.up.alt'].get(), 200e3)
+        self.assertEqual((await self.api.get_limit_rate_down_alt()).value, 20e3)
 
-    async def test_set_alt_rate_limits(self):
+    async def test_set_limits_rate_alt(self):
         convert.bandwidth.unit = 'bit'
         self.rpc.fake_settings['alt-speed-up'] = 1000
         self.rpc.fake_settings['alt-speed-down'] = 1000
         self.rpc.fake_settings['alt-speed-enabled'] = True
 
-        await self.api.set_alt_rate_limit_up('+=1000k')
-        await self.api.set_alt_rate_limit_up('+=1000k')
-        await self.api['alt.rate.limit.down'].set('-=1000k')
+        await self.api.set_limit_rate_up_alt('+=1000k')
+        await self.api.set_limit_rate_up_alt('+=1000k')
+        await self.api['limit.rate.down.alt'].set('-=1000k')
         self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 1250)
         self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 875)
         self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], True)
 
-        await self.api.set_alt_rate_limit_down(const.UNLIMITED)
+        await self.api.set_limit_rate_down_alt(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 1250)
         self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 875)
         self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], False)
 
-        await self.api['alt.rate.limit.up'].set(True)
+        await self.api['limit.rate.up.alt'].set(True)
         self.assertEqual(self.rpc.fake_settings['alt-speed-up'], 1250)
         self.assertEqual(self.rpc.fake_settings['alt-speed-down'], 875)
         self.assertEqual(self.rpc.fake_settings['alt-speed-enabled'], True)

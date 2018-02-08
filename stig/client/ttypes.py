@@ -36,7 +36,7 @@ from . import constants as const
 from . import utils
 
 
-def _rate_limit(limit):
+def _limit_rate(limit):
     return const.UNLIMITED if limit is None else convert.bandwidth(limit, unit='byte')
 
 
@@ -681,8 +681,8 @@ TYPES = {
     'rate-down'                    : lambda rate: convert.bandwidth(rate, unit='byte'),
     'rate-up'                      : lambda rate: convert.bandwidth(rate, unit='byte'),
 
-    'rate-limit-down'              : _rate_limit,
-    'rate-limit-up'                : _rate_limit,
+    'limit-rate-down'              : _limit_rate,
+    'limit-rate-up'                : _limit_rate,
 
     'size-final'                   : lambda size: convert.size(size, unit='byte'),
     'size-total'                   : lambda size: convert.size(size, unit='byte'),

@@ -696,7 +696,7 @@ class TorrentAPI():
         return await self._limit_rate(torrents, direction, get_new_limit=add_to_current_limit)
 
     async def _limit_rate(self, torrents, direction, get_new_limit):
-        response = await self._map_tid_to_torrent_values(torrents, keys=('rate-limit-'+direction,))
+        response = await self._map_tid_to_torrent_values(torrents, keys=('limit-rate-'+direction,))
         if not response.success:
             return Response(success=False, torrent_set_args={}, errors=[], msgs=response.msgs)
         else:
@@ -761,7 +761,7 @@ class TorrentAPI():
 
         # Fetch torrents again and return Response with new rate limit messages
         all_tids = sum(torrent_set_args.values(), []) + list(errors)
-        response = await self.torrents(all_tids, keys=('name', 'id', 'rate-limit-'+direction))
+        response = await self.torrents(all_tids, keys=('name', 'id', 'limit-rate-'+direction))
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
         msgs = []
@@ -772,12 +772,12 @@ class TorrentAPI():
                                         (t['name'], direction, errors[t['id']])))
             else:
                 success = True
-                limit = t['rate-limit-'+direction]
+                limit = t['limit-rate-'+direction]
                 limit_str = str(limit) if const.is_constant(limit) else limit.with_unit
                 msgs.append('%s %sload rate: %s' % (t['name'], direction, limit_str))
         return Response(torrents=response.torrents, success=success, msgs=msgs)
 
-    async def set_rate_limit_up(self, torrents, limit):
+    async def set_limit_rate_up(self, torrents, limit):
         """
         Limit upload rate for individual torrent(s)
 
@@ -789,40 +789,40 @@ class TorrentAPI():
                  - `True` enables a previously disabled limit
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-up'
+            torrents: tuple of Torrents with the keys 'id', 'name' and 'limit-rate-up'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
         return await self._limit_rate_absolute(torrents, 'up', limit)
 
-    async def set_rate_limit_down(self, torrents, limit):
+    async def set_limit_rate_down(self, torrents, limit):
         """
         Limit download rate for individual torrent(s)
 
         torrents: See `torrents` method
-        limit: See `set_rate_limit_up` method
+        limit: See `set_limit_rate_up` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'rate-limit-down'
+            torrents: tuple of Torrents with the keys 'id', 'name' and 'limit-rate-down'
             success: True if any torrents were found, False otherwise
             msgs: list of strings/`ClientError`s caused by the request
         """
         return await self._limit_rate_absolute(torrents, 'down', limit)
 
-    async def adjust_rate_limit_up(self, torrents, adjustment):
+    async def adjust_limit_rate_up(self, torrents, adjustment):
         """
-        Same as `set_rate_limit_up` but set new limit relative to current limit
+        Same as `set_limit_rate_up` but set new limit relative to current limit
 
         adjustment: Negative or positive number to add to the current limit of
                     each matching torrent
         """
         return await self._limit_rate_relative(torrents, 'up', adjustment)
 
-    async def adjust_rate_limit_down(self, torrents, adjustment):
+    async def adjust_limit_rate_down(self, torrents, adjustment):
         """
-        Same as `set_rate_limit_down` but set new limit relative to current limit
+        Same as `set_limit_rate_down` but set new limit relative to current limit
 
-        adjustment: See `adjust_rate_limit_up` method
+        adjustment: See `adjust_limit_rate_up` method
         """
         return await self._limit_rate_relative(torrents, 'down', adjustment)
 

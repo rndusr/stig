@@ -220,7 +220,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
             print('Setting global %s rate limit: %r' % (d, LIMIT))
             log.debug('Setting global %s rate limit: %r', d, LIMIT)
             try:
-                await self.srvapi.settings['rate.limit.'+d].set(LIMIT)
+                await self.srvapi.settings['limit.rate.'+d].set(LIMIT)
             except ValueError as e:
                 log.error(e)
                 return False
@@ -241,10 +241,10 @@ class RateLimitCmdbase(metaclass=InitCommand):
         # Do we adjust current limits or set absolute limits?
         limit = LIMIT.strip()
         if limit[:2] == '+=' or limit[:2] == '-=':
-            method_start = 'adjust_rate_limit_'
+            method_start = 'adjust_limit_rate_'
             limit = limit[0] + limit[2:]  # Remove '=' so it can be parsed as a number
         else:
-            method_start = 'set_rate_limit_'
+            method_start = 'set_limit_rate_'
 
         try:
             new_limit = TorrentRateLimitValue('_new_limit', default=limit).get()

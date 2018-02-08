@@ -36,7 +36,7 @@ cfg['connect.timeout'].on_change(_make_connection_callback('timeout'), autoremov
 
 
 _BANDWIDTH_COLUMNS = (TORRENT_COLUMNS['rate-up'], TORRENT_COLUMNS['rate-down'],
-                      TORRENT_COLUMNS['rate-limit-up'], TORRENT_COLUMNS['rate-limit-down'],
+                      TORRENT_COLUMNS['limit-rate-up'], TORRENT_COLUMNS['limit-rate-down'],
                       PEER_COLUMNS['rate-up'], PEER_COLUMNS['rate-down'], PEER_COLUMNS['rate-est'])
 def _set_bandwidth_unit(unit):
     convert.bandwidth.unit = unit.value

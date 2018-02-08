@@ -393,8 +393,8 @@ DEPENDENCIES = {
 
     'rate-down'                    : ('rateDownload',),
     'rate-up'                      : ('rateUpload',),
-    'rate-limit-down'              : ('downloadLimited', 'downloadLimit'),
-    'rate-limit-up'                : ('uploadLimited', 'uploadLimit'),
+    'limit-rate-down'              : ('downloadLimited', 'downloadLimit'),
+    'limit-rate-up'                : ('uploadLimited', 'uploadLimit'),
 
     'size-final'                   : ('sizeWhenDone',),
     'size-total'                   : ('totalSize',),
@@ -425,8 +425,8 @@ _MODIFY = {
     'size-available'               : _bytes_available,
 
     # Transmission provides rate limits in kilobytes - we want bytes
-    'rate-limit-down'              : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,
-    'rate-limit-up'                : lambda raw: None if not raw['uploadLimited']   else raw['uploadLimit']   * 1000,
+    'limit-rate-down'              : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,
+    'limit-rate-up'                : lambda raw: None if not raw['uploadLimited']   else raw['uploadLimit']   * 1000,
 
     'timespan-eta'                 : _modify_eta,
     'time-created'                 : lambda raw: _modify_timestamp(raw, 'dateCreated',

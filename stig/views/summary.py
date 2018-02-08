@@ -27,12 +27,12 @@ def _size_mr(t):
     return '%d\t%d' % (t['size-total'], t['size-final'])
 
 
-def _rate_limit_hr(direction, t):
-    limit = t['rate-limit-' + direction]
+def _limit_rate_hr(direction, t):
+    limit = t['limit-rate-' + direction]
     return limit.with_unit if hasattr(limit, 'with_unit') else str(limit)
 
-def _rate_limit_mr(direction, t):
-    limit = t['rate-limit-' + direction]
+def _limit_rate_mr(direction, t):
+    limit = t['limit-rate-' + direction]
     return int(limit) if limit < float('inf') else str(limit)
 
 
@@ -187,8 +187,8 @@ SECTIONS = (
     )},
 
     {'title': 'Limits', 'width': 24, 'items': (
-        Item('Upload rate',   ('rate-limit-up',), partial(_rate_limit_hr, 'up'), partial(_rate_limit_mr, 'up')),
-        Item('Download rate',   ('rate-limit-down',), partial(_rate_limit_hr, 'down'), partial(_rate_limit_mr, 'down')),
+        Item('Upload rate',   ('limit-rate-up',),   partial(_limit_rate_hr, 'up'),   partial(_limit_rate_mr, 'up')),
+        Item('Download rate', ('limit-rate-down',), partial(_limit_rate_hr, 'down'), partial(_limit_rate_mr, 'down')),
     )},
 
     {'title': 'Peers', 'width': 18, 'items': (

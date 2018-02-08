@@ -239,7 +239,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
         )
-        response = await self.api.set_rate_limit_up(TorrentFilter('id=1|id=2'), True)
+        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), True)
         self.assert_request({'method': 'torrent-set',
                             'arguments': {'ids': [1, 2], 'uploadLimited': True}})
 
@@ -248,7 +248,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.set_rate_limit_up(TorrentFilter('id=1|id=2'), False)
+        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), False)
         self.assert_request({'method': 'torrent-set',
                             'arguments': {'ids': [1, 2], 'uploadLimited': False}})
 
@@ -257,7 +257,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.set_rate_limit_up(TorrentFilter('id=1|id=2'), 1e6)
+        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), 1e6)
         self.assert_request({'method': 'torrent-set',
                             'arguments': {'ids': [1, 2], 'uploadLimited': True,
                                           'uploadLimit': 1000}})
@@ -267,7 +267,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.adjust_rate_limit_up(TorrentFilter('id=1|id=2'), -50e3)
+        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
         self.assert_request({'method': 'torrent-set',
                             'arguments': {'ids': [1], 'uploadLimited': True,
                                           'uploadLimit': 50}})

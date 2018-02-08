@@ -28,8 +28,8 @@ ALIASES = { '%avail'   : '%available',
             'dir'      : 'path',
             'rdn'      : 'rate-down',
             'rup'      : 'rate-up',
-            'rldn'     : 'rate-limit-down',
-            'rlup'     : 'rate-limit-up',
+            'lrdn'     : 'limit-rate-down',
+            'lrup'     : 'limit-rate-up',
             'state'    : 'status',
             'trk'      : 'tracker',
             't-create' : 'time-created',
@@ -322,10 +322,10 @@ class RateLimitDown(ColumnBase):
     header = {'left': 'LmtDn', 'right': '?/s'}
     width = 9
     min_width = 9
-    needed_keys = ('rate-limit-down',)
+    needed_keys = ('limit-rate-down',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['rate-limit-down'])
+        return self._from_cache(_ensure_string_without_unit, self.data['limit-rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -334,17 +334,17 @@ class RateLimitDown(ColumnBase):
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
 
-COLUMNS['rate-limit-down'] = RateLimitDown
+COLUMNS['limit-rate-down'] = RateLimitDown
 
 
 class RateLimitUp(ColumnBase):
     header = {'left': 'LmtUp', 'right': '?/s'}
     width = 9
     min_width = 9
-    needed_keys = ('rate-limit-up',)
+    needed_keys = ('limit-rate-up',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['rate-limit-up'])
+        return self._from_cache(_ensure_string_without_unit, self.data['limit-rate-up'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -353,7 +353,7 @@ class RateLimitUp(ColumnBase):
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
 
-COLUMNS['rate-limit-up'] = RateLimitUp
+COLUMNS['limit-rate-up'] = RateLimitUp
 
 
 class EtaComplete(ColumnBase):

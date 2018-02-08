@@ -16,7 +16,7 @@ from .plist_columns import TUICOLUMNS as PCOLUMNS
 
 
 _BANDWIDTH_COLUMNS = (TCOLUMNS['rate-up'], TCOLUMNS['rate-down'],
-                      TCOLUMNS['rate-limit-up'], TCOLUMNS['rate-limit-down'],
+                      TCOLUMNS['limit-rate-up'], TCOLUMNS['limit-rate-down'],
                       PCOLUMNS['rate-up'], PCOLUMNS['rate-down'], PCOLUMNS['rate-est'])
 def _set_bandwidth_unit(unit):
     unit_short = {'bit': 'b', 'byte': 'B'}.get(unit.value, unit.value)
