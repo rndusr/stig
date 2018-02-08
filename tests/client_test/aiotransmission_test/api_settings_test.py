@@ -37,7 +37,7 @@ class TestSettingsAPI(asynctest.TestCase):
             self.assertTrue(hasattr(self.api, method))
 
     async def test_properties_with_setters(self):
-        for name in ('dht', 'path.complete', 'autostart.torrents'):
+        for name in ('dht', 'path.complete', 'autostart'):
             setting = self.api[name]
             for prop in ('name', 'description'):
                 self.assertNotEqual(getattr(setting, prop), 'foo')
@@ -165,13 +165,6 @@ class TestSettingsAPI(asynctest.TestCase):
         await self.api['rate.limit.down'].set(const.UNLIMITED)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], False)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 1110)
-
-
-    async def test_description_rate_limit_up(self):
-        self.assertEqual(type(self.api).rate_limit_up.__doc__, self.api['rate.limit.up'].description)
-
-    async def test_description_rate_limit_down(self):
-        self.assertEqual(type(self.api).rate_limit_down.__doc__, self.api['rate.limit.down'].description)
 
 
     async def test_get_alt_rate_limits(self):
@@ -369,9 +362,6 @@ class TestSettingsAPI(asynctest.TestCase):
         with self.assertRaises(ValueError):
             await self.api.set_pex('not a boolean')
 
-    async def test_description_pex(self):
-        self.assertEqual(type(self.api).pex.__doc__, self.api['pex'].description)
-
 
     async def test_get_lpd(self):
         self.rpc.fake_settings['lpd-enabled'] = True
@@ -444,16 +434,16 @@ class TestSettingsAPI(asynctest.TestCase):
             await self.api.set_encryption('AES256')
 
 
-    async def test_get_autostart_torrents(self):
+    async def test_get_autostart(self):
         self.rpc.fake_settings['start-added-torrents'] = True
-        self.assertEqual((await self.api.get_autostart_torrents()).value, True)
+        self.assertEqual((await self.api.get_autostart()).value, True)
         self.rpc.fake_settings['start-added-torrents'] = False
-        self.assertEqual(await self.api['autostart.torrents'].get(), False)
+        self.assertEqual(await self.api['autostart'].get(), False)
 
-    async def test_set_autostart_torrents(self):
-        await self.api.set_autostart_torrents(True)
+    async def test_set_autostart(self):
+        await self.api.set_autostart(True)
         self.assertEqual(self.rpc.fake_settings['start-added-torrents'], True)
-        await self.api.set_autostart_torrents(False)
+        await self.api.set_autostart(False)
         self.assertEqual(self.rpc.fake_settings['start-added-torrents'], False)
         with self.assertRaises(ValueError):
-            await self.api.set_autostart_torrents('hello?')
+            await self.api.set_autostart('hello?')

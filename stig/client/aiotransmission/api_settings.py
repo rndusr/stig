@@ -216,7 +216,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
                              field_value: raw_limit})
 
 
-    @_setting(RateLimitRemoteValue)
+    @_setting(RateLimitRemoteValue,
+              description='Global upload rate limit')
     def rate_limit_up(self):
         """
         Upload rate limit
@@ -246,7 +247,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'up', alt=False)
 
 
-    @_setting(RateLimitRemoteValue)
+    @_setting(RateLimitRemoteValue,
+              description='Global download rate limit')
     def rate_limit_down(self):
         """Download rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('down', alt=False)
@@ -261,7 +263,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'down', alt=False)
 
 
-    @_setting(RateLimitRemoteValue)
+    @_setting(RateLimitRemoteValue,
+              description='Alternative global upload rate limit')
     def alt_rate_limit_up(self):
         """Alternative upload rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('up', alt=True)
@@ -276,7 +279,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_rate_limit(limit, 'up', alt=True)
 
 
-    @_setting(RateLimitRemoteValue)
+    @_setting(RateLimitRemoteValue,
+              description='Alternative global download rate limit')
     def alt_rate_limit_down(self):
         """Alternative download rate limit (see `rate_limit_up`)"""
         return self._get_rate_limit('down', alt=True)
@@ -316,7 +320,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set({'download-dir': setting._get_local()})
 
 
-    @_setting(PathIncompleteRemoteValue)
+    @_setting(PathIncompleteRemoteValue,
+              description='Where to put partially downloaded files')
     def path_incomplete(self):
         """
         Path to directory where incomplete torrent files are put or `False` if they
@@ -351,7 +356,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(BooleanRemoteValue)
     def part_files(self):
-        """Whether '.part' is appended to incomplete file names"""
+        """Whether ".part" is appended to incomplete file names"""
         return self._get('part.files', 'rename-partial-files')
 
     async def get_part_files(self):
@@ -370,7 +375,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(PortRemoteValue, pretty=False)
     def port(self):
-        """Port used to communicate with peers or 'random' to pick a random port"""
+        """Port used to communicate with peers or "random" to pick a random port"""
         def get_raw_value():
             if self._raw['peer-port-random-on-start']:
                 return const.RANDOM
@@ -395,7 +400,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(BooleanRemoteValue)
     def port_forwarding(self):
-        """Whether UPnP/NAT-PMP is enabled"""
+        """Whether to autoconfigure port-forwarding via UPnP/NAT-PMP"""
         return self._get('port.forwarding', 'port-forwarding-enabled')
 
     async def get_port_forwarding(self):
@@ -412,7 +417,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(BooleanRemoteValue)
     def utp(self):
-        """Whether UTP is used to discover peers"""
+        """Whether to use µTP to mitigate latency issues"""
         return self._get('utp', 'utp-enabled')
 
     async def get_utp(self):
@@ -429,7 +434,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(BooleanRemoteValue)
     def dht(self):
-        """Whether DHT is used to discover peers"""
+        """Whether to use DHT to discover peers for public torrents"""
         return self._get('dht', 'dht-enabled')
 
     async def get_dht(self):
@@ -446,7 +451,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(BooleanRemoteValue)
     def pex(self):
-        """Whether PEX is used to discover peers"""
+        """Whether to use PEX to discover peers for public torrents"""
         return self._get('pex', 'pex-enabled')
 
     async def get_pex(self):
@@ -463,7 +468,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(BooleanRemoteValue)
     def lpd(self):
-        """Whether Local Peer Discovery is used to discover peers"""
+        """Whether to use LPD to discover peers for public torrents"""
         return self._get('lpd', 'lpd-enabled')
 
     async def get_lpd(self):
@@ -480,7 +485,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(IntegerRemoteValue, min=1, max=65535)
     def peer_limit_global(self):
-        """Maximum number connections for all torrents combined"""
+        """Maximum number of connections for all torrents combined"""
         return self._get('peer.limit.global', 'peer-limit-global')
 
     async def get_peer_limit_global(self):
@@ -497,7 +502,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @_setting(IntegerRemoteValue, min=1, max=65535)
     def peer_limit_torrent(self):
-        """Maximum number connections per torrent"""
+        """Maximum number of connections per torrent"""
         return self._get('peer.limit.torrent', 'peer-limit-per-torrent')
 
     async def get_peer_limit_torrent(self):
@@ -514,7 +519,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Other settings
 
-    @_setting(OptionRemoteValue, options=('required', 'preferred', 'tolerated'))
+    @_setting(OptionRemoteValue, options=('required', 'preferred', 'tolerated'),
+              description='Protocol encryption policy; "required", "preferred" or "tolerated"')
     def encryption(self):
         """
         Whether protocol encryption is used to mask BitTorrent traffic
@@ -536,17 +542,17 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
 
     @_setting(BooleanRemoteValue)
-    def autostart_torrents(self):
-        """Whether added torrents should be started automatically"""
-        return self._get('autostart.torrents', 'start-added-torrents')
+    def autostart(self):
+        """Whether added torrents are started automatically"""
+        return self._get('autostart', 'start-added-torrents')
 
-    async def get_autostart_torrents(self):
-        """Refresh cache and return `autostart_torrents`"""
+    async def get_autostart(self):
+        """Refresh cache and return `autostart`"""
         await self.update()
-        return self.autostart_torrents
+        return self.autostart
 
-    async def set_autostart_torrents(self, enabled):
-        """See `autostart_torrents`"""
-        setting = self._cache['autostart.torrents']
+    async def set_autostart(self, enabled):
+        """See `autostart`"""
+        setting = self._cache['autostart']
         setting._set_local(enabled)
         await self._set({'start-added-torrents': setting._get_local()})
