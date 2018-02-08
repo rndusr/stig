@@ -56,6 +56,7 @@ class BandwidthValue(FloatValue):
         if isinstance(value, str):
             # It's important that both numbers have the same unit when adjusting
             # the current value
+            value = value.strip()
             if len(value) >= 3 and value[:2] in ('+=', '-='):
                 operator = value[:2]
                 value = convert.bandwidth.from_string(value[2:])
