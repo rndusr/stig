@@ -684,7 +684,9 @@ class TorrentAPI():
 
         def add_to_current_limit(current_limit):
             log.debug('Adjusting %sload limit %r by %r', direction, current_limit, adjustment)
-            if isinstance(current_limit, (float, int)):
+            if current_limit >= float('inf') or current_limit is const.UNLIMITED:
+                new_limit = adjustment
+            elif isinstance(current_limit, (float, int)):
                 new_limit = current_limit + adjustment
                 new_limit = max(0, new_limit)
             else:
