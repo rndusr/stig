@@ -409,7 +409,6 @@ class FloatValue(ValueBase):
         # Allow adjusting value relative to current value
         elif isinstance(value, str) and len(value) >= 3:
             current_value = 0 if self.value is None else self.value
-            value_str = value
             if value[0:2] == '+=':
                 value = current_value + self.type(value[2:].strip())
             elif value[0:2] == '-=':
