@@ -1,8 +1,10 @@
 2017-??-?? ?.?.?a
   Breaking changes:
+    * Settings/columns/etc named 'rate[.-]limit' are now called 'limit[.-]rate'
     * The setting 'srv.url' was replaced by the new settings 'connect.host',
       'connect.port', 'connect.path', 'connect.user', 'connect.password' and
       'connect.tls' (Thanks to David Blajda for adding 'connect.path')
+    * The setting 'srv.autostart-torrents' was renamed to 'srv.autostart'
 
   Other changes:
     * Get the value of a setting from shell command
