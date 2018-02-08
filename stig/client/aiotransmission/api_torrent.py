@@ -111,6 +111,9 @@ class TorrentAPI():
         If `keys` lists two or more keys, the returned map maps torrent IDs to a
         dict with the keys `keys` and their corresponding values for each torrent.
 
+        The result is returned attached to a Response instance via the attribute
+        'torrent_values'.
+
         If request failed, return Response instance from `torrents` object.
         """
         response = await self.torrents(torrents, keys=('id',) + tuple(keys))
@@ -778,8 +781,7 @@ class TorrentAPI():
 
         torrents: See `torrents` method
         limit: Allowed values:
-                 - Any positive number (bytes per second) sets the new limit to
-                   that
+                 - Any positive number is interpreted as bytes per second
                  - A negative number, `None`, `False` and the constant UNLIMITED
                    disable the current limit
                  - `True` enables a previously disabled limit
