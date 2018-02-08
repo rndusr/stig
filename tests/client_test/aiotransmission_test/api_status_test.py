@@ -1,5 +1,6 @@
 from stig.client.aiotransmission.api_status import StatusAPI
 from stig.client import constants as const
+from stig.client import convert
 from stig.client.ttypes import Status
 
 import resources_aiotransmission as rsrc
@@ -41,8 +42,6 @@ class FakeRequestPoller():
 
 from stig.client.aiotransmission import api_status
 api_status.RequestPoller = FakeRequestPoller
-api_status.convert.bandwidth.unit = 'byte'
-api_status.convert.bandwidth.prefix = 'metric'
 
 class FakeTorrentAPI():
     fake_tlist = ()
@@ -74,6 +73,9 @@ class TestStatusAPI(asynctest.TestCase):
         )
 
     async def test_attributes(self):
+        convert.bandwidth.unit = 'byte'
+        convert.bandwidth.prefix = 'metric'
+
         await self.api._poller_stats.fake_response()
         await self.api._poller_tcount.fake_response()
 
@@ -101,6 +103,9 @@ class TestStatusAPI(asynctest.TestCase):
         self.assertEqual(self.api.count.isolated, const.DISCONNECTED)
 
     async def test_on_update_callback(self):
+        convert.bandwidth.unit = 'byte'
+        convert.bandwidth.prefix = 'metric'
+
         cb = rsrc.FakeCallback('handle_info')
         self.api.on_update(cb)
         self.assertEqual(cb.calls, 0)
