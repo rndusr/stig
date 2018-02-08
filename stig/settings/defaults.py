@@ -142,58 +142,6 @@ def load_remote_settings(cfg, remote_settings):
         cfg.rename(setting.name, 'srv.' + setting.name)
 
 
-# def init_server_defaults(cfg, settingsapi):
-#     from .types_srv import (BooleanSrvValue, IntegerSrvValue, OptionSrvValue,
-#                             PathSrvValue, PathIncompleteSrvValue,
-#                             RateLimitSrvValue, PortSrvValue)
-
-#     def mk(cls, name, setting, description, **kwargs):
-#         getter = lambda: settingsapi[setting]
-#         setter = getattr(settingsapi, 'set_'+setting)
-#         return cls(name, getter=getter, setter=setter, description=description, **kwargs)
-
-#     cfg.load(
-#         mk(BooleanSrvValue, 'srv.utp', 'utp',
-#            'Whether to use Micro Transport Protocol to mitigate latency issues'),
-#         mk(BooleanSrvValue, 'srv.dht', 'dht',
-#            'Whether to use Distributed Hash Tables to discover peers for public torrents'),
-#         mk(BooleanSrvValue, 'srv.lpd', 'lpd',
-#            'Whether to use Local Peer Discovery to discover peers for public torrents'),
-#         mk(BooleanSrvValue, 'srv.pex', 'pex',
-#            'Whether to use Peer Exchange to discover peers for public torrents'),
-
-#         mk(PortSrvValue, 'srv.port', 'port',
-#            'Port used to communicate with peers or "random" to use a random port',
-#            min=1, max=65535),
-#         mk(BooleanSrvValue, 'srv.port-forwarding', 'port_forwarding',
-#            'Whether to instruct your router to forward the peer port via UPnP or NAT-PMP'),
-
-#         mk(OptionSrvValue, 'srv.encryption', 'encryption',
-#            'Protocol encryption policy; "required", "preferred" or "tolerated"',
-#            options=('required', 'preferred', 'tolerated')),
-
-#         mk(IntegerSrvValue, 'srv.limit.peers.global', 'peer_limit_global',
-#            'Maximum number of connections for all torrents combined'),
-#         mk(IntegerSrvValue, 'srv.limit.peers.torrent', 'peer_limit_torrent',
-#            'Maximum number of connections for a single torrent'),
-
-#         mk(RateLimitSrvValue, 'srv.limit.rate.up', 'rate_limit_up',
-#            'Combined upload rate limit'),
-#         mk(RateLimitSrvValue, 'srv.limit.rate.down', 'rate_limit_down',
-#            'Combined download rate limit'),
-
-#         mk(BooleanSrvValue, 'srv.part-files', 'part_files',
-#            'Whether to append ".part" to incomplete file names'),
-#         mk(PathSrvValue, 'srv.path.complete', 'path_complete',
-#            'Where to put torrent files'),
-#         mk(PathIncompleteSrvValue, 'srv.path.incomplete', 'path_incomplete',
-#            'Where to put incomplete torrent files'),
-
-#         mk(BooleanSrvValue, 'srv.autostart-torrents', 'autostart_torrents',
-#            'Automatically start torrents when they are added'),
-#     )
-
-
 DEFAULT_KEYMAP = (
     # Use some vi and emacs keybindings
     {'key': 'h',      'action': '<left>'},
