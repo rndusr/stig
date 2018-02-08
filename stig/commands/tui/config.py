@@ -22,12 +22,12 @@ class ResetCmd(base.ResetCmdbase):
 class SetCmd(base.SetCmdbase):
     provides = {'tui'}
 
-# class RateLimitCmd(base.RateLimitCmdbase,
-#                    mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
-#     provides = {'tui'}
+class RateLimitCmd(base.RateLimitCmdbase,
+                   mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
+    provides = {'tui'}
 
-#     async def _set_limits(self, TORRENT_FILTER, directions, LIMIT):
-#         if TORRENT_FILTER == ['global']:
-#             return await self._set_global_limit(directions, LIMIT)
-#         else:
-#             return await self._set_individual_limit(TORRENT_FILTER, directions, LIMIT)
+    async def _set_limits(self, TORRENT_FILTER, directions, LIMIT):
+        if TORRENT_FILTER == ['global']:
+            return await self._set_global_limit(directions, LIMIT)
+        else:
+            return await self._set_individual_limit(TORRENT_FILTER, directions, LIMIT)

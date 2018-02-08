@@ -173,88 +173,91 @@ class SetCmdbase(metaclass=InitCommand):
             return stdout
 
 
+# Abuse some *Value classes from the settings to allow the same user-input for
+# individual torrents as we do for the global settings srv.limit.rate.*.
+from ...client.usertypes import (MultiValue, BooleanValue, UnlimitedValue, BandwidthValue)
+class TorrentRateLimitValue(MultiValue(UnlimitedValue, BandwidthValue, BooleanValue)):
+    pass
 
+class RateLimitCmdbase(metaclass=InitCommand):
+    name = 'ratelimit'
+    aliases = ('rate',)
+    provides = set()
+    category = 'configuration'
+    description = "Limit up-/download rate per torrent or globally"
+    usage = ('ratelimit <DIRECTION> <LIMIT>',
+             'ratelimit <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
+    examples = ('ratelimit up 5Mb',
+                'ratelimit down,up 1M global',
+                'ratelimit up,dn off "This torrent" size<100MB')
+    argspecs = (
+        {'names': ('DIRECTION',),
+         'description': 'Any combination of "up", "down" or "dn" separated by a comma'},
+        {'names': ('LIMIT',),
+         'description': ('Maximum allowed transfer rate; see `help srv.limit.rate.up` for the syntax')},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*',
+                           more_text=('"global" to set global limit (same as setting '
+                                      "srv.limit.rate.<DIRECTION>); may be omitted in CLI mode "
+                                      'for the same effect as specifying "global"')),
+    )
+    srvapi = ExpectedResource
 
-# # Abuse some *Value classes from the settings to allow the same user-input for
-# # individual torrents as we do for the global settings srv.limit.rate.*.
-# from ...settings.types_srv import (MultiValue, BooleanValue, UnlimitedValue, BandwidthValue)
-# class TorrentRateLimitValue(MultiValue(UnlimitedValue, BandwidthValue, BooleanValue)):
-#     pass
+    async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
+        directions = set('down' if d == 'dn' else d
+                         for d in map(str.lower, DIRECTION.split(',')))
+        for d in directions:
+            if d not in ('up', 'down'):
+                log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
+                return False
 
-# class RateLimitCmdbase(metaclass=InitCommand):
-#     name = 'ratelimit'
-#     aliases = ('rate',)
-#     provides = set()
-#     category = 'configuration'
-#     description = "Limit up-/download rate per torrent or globally"
-#     usage = ('rate <DIRECTION> <LIMIT>',
-#              'rate <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
-#     examples = ('rate up 5Mb',
-#                 'rate down,up 1MB global',
-#                 'rate up,dn off "This torrent" size<100MB')
-#     argspecs = (
-#         {'names': ('DIRECTION',),
-#          'description': 'Any combination of "up", "down" or "dn" separated by a comma'},
-#         {'names': ('LIMIT',),
-#          'description': ('Maximum allowed transfer rate; see `help srv.limit.rate.up` for the syntax')},
-#         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*',
-#                            more_text=('"global" to set global limit (same as setting '
-#                                       "srv.limit.rate.<DIRECTION>'); may be omitted in CLI mode "
-#                                       'for the same effect as specifying "global"')),
-#     )
-#     srvapi = ExpectedResource
-#     cmdmgr = ExpectedResource
+        # _set_limits() is defined in cli.config and tui.config and behaves
+        # slightly differently.
+        return await self._set_limits(TORRENT_FILTER, directions, LIMIT)
 
-#     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
-#         directions = tuple('down' if d == 'dn' else d
-#                            for d in map(str.lower, DIRECTION.split(',')))
-#         for d in directions:
-#             if d not in ('up', 'down'):
-#                 log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
-#                 return False
+    async def _set_global_limit(self, directions, LIMIT):
+        # Change the srv.limit.rate.* setting for each direction
+        for d in directions:
+            print('Setting global %s rate limit: %r' % (d, LIMIT))
+            log.debug('Setting global %s rate limit: %r', d, LIMIT)
+            try:
+                await self.srvapi.settings['rate.limit.'+d].set(LIMIT)
+            except ValueError as e:
+                log.error(e)
+                return False
+        return True
 
-#         return await self._set_limits(TORRENT_FILTER, directions, LIMIT)
+    async def _set_individual_limit(self, TORRENT_FILTER, directions, LIMIT):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            log.error(e)
+            return False
 
-#     async def _set_global_limit(self, directions, LIMIT):
-#         # Change the srv.limit.rate.* setting for each direction
-#         log.debug('Setting global %s rate limit: %r', '/'.join(directions), LIMIT)
-#         for d in directions:
-#             success = await self.cmdmgr.run_async('set srv.limit.rate.%s %s' % (d, LIMIT),
-#                                                   block=True)
-#             if not success:
-#                 return False
-#         return True
+        log.debug('Setting %sload rate limit for %s torrents: %r',
+                  '+'.join(directions), tfilter, LIMIT)
 
-#     async def _set_individual_limit(self, TORRENT_FILTER, directions, LIMIT):
-#         try:
-#             tfilter = self.select_torrents(TORRENT_FILTER,
-#                                            allow_no_filter=False,
-#                                            discover_torrent=True)
-#         except ValueError as e:
-#             log.error(e)
-#             return False
+        # Do we adjust current limits or set absolute limits?
+        limit = LIMIT.strip()
+        if limit[:2] == '+=' or limit[:2] == '-=':
+            method_start = 'adjust_rate_limit_'
+            limit = limit[0] + limit[2:]  # Remove '=' so it can be parsed as a number
+        else:
+            method_start = 'set_rate_limit_'
 
-#         # Do we adjust current limits or set absolute limits?
-#         if LIMIT[:2] == '+=' or LIMIT[:2] == '-=':
-#             method_start = 'adjust_rate_limit_'
-#             limit = LIMIT[0] + LIMIT[2:]  # Remove '=' so it can be parsed as a number
-#         else:
-#             method_start = 'set_rate_limit_'
-#             limit = LIMIT
+        try:
+            new_limit = TorrentRateLimitValue('_new_limit', default=limit).get()
+        except ValueError as e:
+            log.error('%s: %r', e, limit)
+            return False
 
-#         try:
-#             new_limit = TorrentRateLimitValue('_new_limit', default=limit).get()
-#         except ValueError as e:
-#             log.error('%s: %r', e, limit)
-#             return False
+        log.debug('Setting %sload rate limit for %s torrents: %r',
+                  '+'.join(directions), tfilter, new_limit)
 
-#         log.debug('Setting %s rate limit for %s torrents: %r',
-#                   '+'.join(directions), tfilter, new_limit)
-
-#         for d in directions:
-#             method = getattr(self.srvapi.torrent, method_start + d)
-#             response = await self.make_request(method(tfilter, new_limit),
-#                                                polling_frenzy=True)
-#             if not response.success:
-#                 return False
-#         return True
+        for d in directions:
+            method = getattr(self.srvapi.torrent, method_start + d)
+            response = await self.make_request(method(tfilter, new_limit),
+                                               polling_frenzy=True)
+            if not response.success:
+                return False
