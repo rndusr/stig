@@ -13,6 +13,8 @@
   Fixed bugs:
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
     * Catch SIGINT (<ctrl-c>) in CLI mode
+    * The settings 'connect.port' and 'srv.port' are now properly displayed in
+      'help' output
 
 
 2017-11-27 0.8.1a
