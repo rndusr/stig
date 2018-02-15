@@ -9,6 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ..logging import make_logger
+log = make_logger(__name__)
+
 from .defaults import (init_defaults, load_remote_settings)
 
 from blinker import Signal
@@ -18,66 +21,89 @@ from collections import abc
 class Settings(abc.Mapping):
     """Specialized mapping for *Value instances"""
 
-    def __init__(self, *values):
-        # _values and _values_dict hold the same instances; the list is to
-        # preserve order and the dict is for fast access via __getitem__
-        self._values = []
-        self._values_dict = {}
-        self._on_change = Signal()
-        self.load(*values)
-        self._callback = (None, None)
+    def __init__(self):
+        self._defaults = {}
+        self._values = {}
+        self._constructors = {}
+        self._descriptions = {}
+        self._signals = {}
+        self._global_signal = Signal()
 
-    def add(self, value):
-        """Add `value` to collection"""
-        self._values.append(value)
-        self._values_dict[value.name] = value
-        callback, autoremove = self._callback
-        if callback is not None:
-            setting._on_change.connect(callback, weak=autoremove)
+    def add(self, name, constructor, default, description=None):
+        """
+        Add new setting
 
-    def load(self, *values):
-        """Add multiple `values` to collection"""
-        for v in values:
-            self.add(v)
-
-    def rename(self, old, new):
-        """Change setting's name from `old` to `new`"""
-        setting = self[old]
-        setting.name = new
-        self._values_dict[new] = setting
-        del self._values_dict[old]
+        name:        Identifier for this setting
+        constructor: Callable that takes one argument and returns a new value
+                     for this setting
+        default:     Initial and default value
+        description: What the setting does
+        """
+        self._constructors[name] = constructor
+        self._signals[name] = Signal()
+        self._descriptions[name] = description
+        self[name] = default
+        self._defaults[name] = self[name]
+        self._global_signal.send(self, name=name, value=self[name])
 
     @property
     def values(self):
-        """Iterate over collected values"""
-        yield from self._values
+        """Iterate over values"""
+        yield from self._values.values()
 
     @property
     def names(self):
-        """Iterate over values' `name` properties"""
-        yield from self._values_dict.keys()
+        """Iterate over settings' names"""
+        yield from self._values
 
-    def on_change(self, callback, autoremove=True):
+    def reset(self, name):
+        """Reset setting `name` to default/initial value"""
+        self[name] = self._defaults[name]
+
+    def default(self, name):
+        """Return settings default/initial value"""
+        return self._defaults[name]
+
+    def validate(self, name, value):
+        """Pass `value` to `name`'s constructor and return the result"""
+        return self._constructors[name](value)
+
+    def rename(self, old, new):
+        """Change setting's name from `old` to `new`"""
+        for dct in (self._values, self._constructors, self._signals):
+            dct[new] = dct[old]
+            del dct[old]
+
+    def on_change(self, callback, name=None, autoremove=True):
         """
         Run `callback` every time a value changes
 
-        `callback` gets the value instances as the only argument.
+        If `name` is None, run `callback` if any signal changes.
+
+        The signature of `callback` must be: (settings, name, value)
 
         If `autoremove` is True, stop calling `callback` once it is garbage
         collected.
         """
-        self._callback = (callback, autoremove)
-        for setting in self._values:
-            setting._on_change.connect(callback, weak=autoremove)
+        if name is None:
+            self._global_signal.connect(callback, weak=autoremove)
+        else:
+            self._signals[name].connect(callback, weak=autoremove)
 
     def __getitem__(self, name):
-        return self._values_dict[name]
+        return self._values[name]
+
+    def __setitem__(self, name, value):
+        value_ = self.validate(name, value)
+        self._values[name] = value_
+        self._global_signal.send(self, name=name, value=value_)
+        self._signals[name].send(self, name=name, value=value_)
 
     def __contains__(self, name):
-        return name in self._values_dict
+        return name in self._constructors
 
     def __iter__(self):
-        return iter(self._values)
+        return iter(self._constructors)
 
     def __len__(self):
-        return len(self._values)
+        return len(self._constructors)
