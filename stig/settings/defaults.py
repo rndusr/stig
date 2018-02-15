@@ -22,9 +22,9 @@ from ..client.sorters.tsorter import TorrentSorter
 from ..client.sorters.psorter import TorrentPeerSorter
 from ..client.sorters.trksorter import TorrentTrackerSorter
 
-DEFAULT_RCFILE        = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
-DEFAULT_HISTORY_FILE  = os.path.join(XDG_CACHE_HOME, __appname__, 'history')
-DEFAULT_THEME_FILE    = os.path.join(os.path.dirname(__file__), 'default.theme')
+DEFAULT_RCFILE       = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
+DEFAULT_HISTORY_FILE = os.path.join(XDG_CACHE_HOME, __appname__, 'history')
+DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TORRENT_SORT = ('name',)
 DEFAULT_PEER_SORT    = ('torrent',)
