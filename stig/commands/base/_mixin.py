@@ -20,14 +20,10 @@ from .. import utils
 
 def _get_columns(columns, setting, interface, COLSPECS, cfg):
     # Resolve aliases and complain about invalid values
-    columns = cfg[setting].convert(columns)
-    cfg[setting].validate(columns)
-
-    # Make sure `columns` is a list
-    columns = utils.listify_args(columns)
+    columns = cfg.validate(setting, columns)
 
     # Remove columns that aren't supported by the active interface
-    for col in tuple(columns):
+    for col in columns:
         if interface is not None and interface not in COLUMNS[col].interfaces:
             log.debug('Removing column %r because it does not support %r', col, interface)
             columns.remove(col)

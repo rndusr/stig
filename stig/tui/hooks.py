@@ -25,83 +25,83 @@ from .views.tlist_columns import TUICOLUMNS as TORRENT_COLUMNS
 from .views.flist_columns import TUICOLUMNS as FILE_COLUMNS
 
 
-def _reconnect(setting):
+def _reconnect(settings, name, value):
     # See also ..hooks
     async def coro():
-        log.debug('Reconnecting because %s changed to %r', setting.name, setting.value)
+        log.debug('Reconnecting because %s changed to %r', name, value)
         try:
             await srvapi.rpc.connect()
         except srvapi.ClientError as e:
             log.error(str(e))
     aioloop.create_task(coro())
-cfg['connect.host'].on_change(_reconnect)
-cfg['connect.port'].on_change(_reconnect)
-cfg['connect.path'].on_change(_reconnect)
-cfg['connect.user'].on_change(_reconnect)
-cfg['connect.password'].on_change(_reconnect)
-cfg['connect.tls'].on_change(_reconnect)
+cfg.on_change(_reconnect, name='connect.host')
+cfg.on_change(_reconnect, name='connect.port')
+cfg.on_change(_reconnect, name='connect.path')
+cfg.on_change(_reconnect, name='connect.user')
+cfg.on_change(_reconnect, name='connect.password')
+cfg.on_change(_reconnect, name='connect.tls')
 
 
-def _update_pollers(url):
+def _update_pollers(rpc):
     tui.srvapi.poll()
 srvapi.rpc.on('connected', _update_pollers)
 srvapi.rpc.on('disconnected', _update_pollers)
 
 
-def _refresh_lists(value):
+def _refresh_lists(settings, name, value):
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
             widget.refresh()
-cfg['unit.bandwidth'].on_change(_refresh_lists)
-cfg['unit.size'].on_change(_refresh_lists)
-cfg['unitprefix.bandwidth'].on_change(_refresh_lists)
-cfg['unitprefix.size'].on_change(_refresh_lists)
+cfg.on_change(_refresh_lists, name='unit.bandwidth')
+cfg.on_change(_refresh_lists, name='unit.size')
+cfg.on_change(_refresh_lists, name='unitprefix.bandwidth')
+cfg.on_change(_refresh_lists, name='unitprefix.size')
 
 
-def _set_poll_interval(seconds):
-    tui.srvapi.interval = seconds.value
-cfg['tui.poll'].on_change(_set_poll_interval)
+def _set_poll_interval(settings, name, value):
+    tui.srvapi.interval = int(value)
+cfg.on_change(_set_poll_interval, name='tui.poll')
 
 
-def _set_cli_history_file(histfile):
-    tui.cli.original_widget.history_file = histfile.value
-cfg['tui.cli.history-file'].on_change(_set_cli_history_file)
+def _set_cli_history_file(settings, name, value):
+    tui.cli.original_widget.history_file = value
+cfg.on_change(_set_cli_history_file, name='tui.cli.history-file')
 
 
-def _set_cli_history_size(histsize):
-    tui.cli.original_widget.history_size = histsize.value
-cfg['tui.cli.history-size'].on_change(_set_cli_history_size)
+def _set_cli_history_size(settings, name, value):
+    tui.cli.original_widget.history_size = value
+cfg.on_change(_set_cli_history_size, name='tui.cli.history-size')
 
 
-def _set_autohide_delay(seconds):
-    tui.logwidget.autohide_delay = seconds.value
-cfg['tui.log.autohide'].on_change(_set_autohide_delay)
+def _set_autohide_delay(settings, name, value):
+    tui.logwidget.autohide_delay = value
+cfg.on_change(_set_autohide_delay, name='tui.log.autohide')
 
 
-def _set_log_height(rows):
-    tui.logwidget.height = rows.value
-cfg['tui.log.height'].on_change(_set_log_height)
+def _set_log_height(settings, name, value):
+    tui.logwidget.height = value
+cfg.on_change(_set_log_height, name='tui.log.height')
 
 
-def _set_theme(themefile):
+def _set_theme(settings, name, value):
     try:
-        tui.load_theme(themefile.value)
+        tui.load_theme(value)
     except tui.theme.ThemeError as e:
         raise ValueError(e)
-cfg['tui.theme'].on_change(_set_theme)
+cfg.on_change(_set_theme, name='tui.theme')
 
 
-def _set_tui_marked_char(methodname, setting):
-    getattr(TORRENT_COLUMNS['marked'], methodname)(setting.value)
-    getattr(FILE_COLUMNS['marked'], methodname)(setting.value)
+def _set_tui_marked_char(methodname, settings, name, value):
+    getattr(TORRENT_COLUMNS['marked'], methodname)(value)
+    getattr(FILE_COLUMNS['marked'], methodname)(value)
     for widget in tui.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget)):
             widget.refresh_marks()
-cfg['tui.marked.on'].on_change(partial(_set_tui_marked_char, 'set_marked_char'), autoremove=False)
-cfg['tui.marked.off'].on_change(partial(_set_tui_marked_char, 'set_unmarked_char'), autoremove=False)
-_set_tui_marked_char('set_marked_char', cfg['tui.marked.on'])
-_set_tui_marked_char('set_unmarked_char', cfg['tui.marked.off'])
+cfg.on_change(partial(_set_tui_marked_char, 'set_marked_char'), name='tui.marked.on', autoremove=False)
+cfg.on_change(partial(_set_tui_marked_char, 'set_unmarked_char'), name='tui.marked.off', autoremove=False)
+_set_tui_marked_char('set_marked_char', cfg, name='tui.marked.on', value=cfg['tui.marked.on'])
+_set_tui_marked_char('set_unmarked_char', cfg, name='tui.marked.off', value=cfg['tui.marked.off'])
 
 
 def _update_quickhelp(keymap):

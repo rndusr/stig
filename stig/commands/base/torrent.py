@@ -59,8 +59,8 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, sort, columns):
-        sort = self.cfg['sort.torrents'].value if sort is None else sort
-        columns = self.cfg['columns.torrents'].value if columns is None else columns
+        sort = self.cfg['sort.torrents'] if sort is None else sort
+        columns = self.cfg['columns.torrents'] if columns is None else columns
         try:
             columns = self.get_torrent_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
@@ -212,7 +212,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
 
             response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
-            if hits > self.cfg['remove.max-hits'].value:
+            if hits > self.cfg['remove.max-hits']:
                 await self.show_list_of_hits(tfilter)
                 question = 'Are you sure you want to remove %d torrent%s' % (
                     hits, '' if hits == 1 else 's')

@@ -126,63 +126,20 @@ class MockHelpManager():
             return ['Mock help for {}'.format(topic)]
 
 
+class MockSettings(dict):
+    def __init__(self, *args, **kwargs):
+        self['some.number']  = 3.7
+        self['some.string']  = 'foo'
+        self['some.boolean'] = True
+        self['some.list']    = ('bob', 'alice')
+        self['some.integer'] = 10
+        self['some.option']  = 'blue'
+
+    def reset(self, name):
+        self[name] = None
+
+
 from types import SimpleNamespace
-def MockSettings():
-    def mk_setting(**kwargs):
-        setting = SimpleNamespace(**kwargs)
-        def reset():
-            setting.value = None
-        setting.reset = reset
-        return setting
-
-    cfg = {'sort.torrents'    : mk_setting(name='sort.torrents',
-                                           value=['name'],
-                                           typename='list',
-                                           string=lambda value=None, default=False: str(value)),
-           'columns.torrents' : mk_setting(name='columns.torrents',
-                                           value=['name', 'rate-down', 'rate-up'],
-                                           typename='list',
-                                           string=lambda value=None, default=False: str(value)),
-           'some.string'      : mk_setting(name='some.string',
-                                           value='foo',
-                                           typename='string',
-                                           string=lambda value=None, default=False: str(value)),
-           'some.integer'     : mk_setting(name='some.integer',
-                                           value=10,
-                                           typename='integer',
-                                           string=lambda value=None, default=False: str(value)),
-           'some.number'      : mk_setting(name='some.number',
-                                           value=3.7,
-                                           typename='number',
-                                           string=lambda value=None, default=False: str(value)),
-           'some.list'        : mk_setting(name='some.list',
-                                           value=('bob', 'alice'),
-                                           typename='list',
-                                           string=lambda value=None, default=False: str(value)),
-           'some.boolean'     : mk_setting(name='some.boolean',
-                                           value=True,
-                                           typename='boolean',
-                                           string=lambda value=None, default=False: str(value)),
-           'some.option'      : mk_setting(name='some.option',
-                                           value='blue', options=('red', 'green', 'blue'),
-                                           typename='option: red, green, blue',
-                                           string=lambda value=None, default=False: str(value)),
-           'remove.max-hits'  : mk_setting(name='remove.max-hits',
-                                           value=10,
-                                           typename='integer',
-                                           string=lambda value=None, default=False: str(value)),
-    }
-
-    for ns in cfg.values():
-        def setfunc(value, ns=ns):
-            print('Fakesetting {}.value = {!r}'.format(ns, value))
-            ns.value = value
-        ns.set = setfunc
-    return cfg
-
-
-
-import re
 class CommandTestCase(asynctest.TestCase):
     def setUp(self):
         self.api = SimpleNamespace(torrent=MockAPI(),

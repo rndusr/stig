@@ -62,14 +62,14 @@ class TestResetCmd(CommandTestCase):
     async def test_space_separated_arguments(self):
         process = ResetCmd(['some.string', 'some.number'])
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.string'].value, None)
-        self.assertEqual(self.cfg['some.number'].value, None)
+        self.assertEqual(self.cfg['some.string'], None)
+        self.assertEqual(self.cfg['some.number'], None)
 
     async def test_unknown_setting(self):
         with self.assertLogs(level='ERROR') as logged:
             process = ResetCmd(['some.string', 'foo.bar'])
         self.assertEqual(process.success, False)
-        self.assertEqual(self.cfg['some.string'].value, None)
+        self.assertEqual(self.cfg['some.string'], None)
         self.assert_logged(logged, ('ERROR', '^Unknown setting: foo.bar'))
 
 
@@ -90,61 +90,66 @@ class TestSetCmd(CommandTestCase):
         process = SetCmd(['some.string', 'bar', 'foo'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.string'].value, 'bar foo')
+        self.assertEqual(self.cfg['some.string'], 'bar foo')
 
     async def test_setting_integer(self):
         process = SetCmd(['some.integer', '39'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.integer'].value, '39')
+        self.assertEqual(self.cfg['some.integer'], '39')
 
     async def test_setting_number(self):
         process = SetCmd(['some.number', '39.2'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.number'].value, '39.2')
+        self.assertEqual(self.cfg['some.number'], '39.2')
 
     async def test_setting_bool(self):
         process = SetCmd(['some.boolean', 'yes'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.boolean'].value, 'yes')
+        self.assertEqual(self.cfg['some.boolean'], 'yes')
 
     async def test_setting_option(self):
         process = SetCmd(['some.option', 'red', 'with', 'a', 'hint', 'of', 'yellow'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.option'].value, 'red with a hint of yellow')
+        self.assertEqual(self.cfg['some.option'], 'red with a hint of yellow')
 
     async def test_setting_comma_separated_list(self):
         process = SetCmd(['some.list', 'alice,bob,bert'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.list'].value, ['alice', 'bob', 'bert'])
+        self.assertEqual(self.cfg['some.list'], ['alice', 'bob', 'bert'])
 
     async def test_setting_space_separated_list(self):
         process = SetCmd(['some.list', 'alice', 'bert'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.list'].value, ['alice', 'bert'])
+        self.assertEqual(self.cfg['some.list'], ['alice', 'bert'])
 
     async def test_setting_with_eval(self):
         process = SetCmd(['some.boolean:eval', 'echo', 'true'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.boolean'].value, 'true')
+        self.assertEqual(self.cfg['some.boolean'], 'true')
 
         process = SetCmd(['some.boolean:eval', 'echo false'], loop=self.loop)
         await self.finish(process)
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.boolean'].value, 'false')
+        self.assertEqual(self.cfg['some.boolean'], 'false')
 
     async def test_setting_raises_error(self):
-        def sabotaged_set_func(value):
-            raise ValueError('value no good: {}'.format(value))
-        SetCmd.cfg['some.string'].set = sabotaged_set_func
+        class AngryDict(dict):
+            def __contains__(self, name):
+                return True
+            def __getitem__(self, name):
+                return 'Some bullshit value'
+            def __setitem__(self, name, value):
+                raise ValueError('I hate your values!')
+        SetCmd.cfg = AngryDict()
 
         process = SetCmd(['some.string', 'bar'], loop=self.loop)
         with self.assertLogs(level='ERROR') as logged:
             await self.finish(process)
-        self.assert_logged(logged, ('ERROR', r"^some.string = bar: value no good: bar$"))
+        self.assert_logged(logged, ('ERROR', r"^some.string = bar: I hate your values!$"))

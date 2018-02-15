@@ -18,19 +18,19 @@ from .plist_columns import TUICOLUMNS as PCOLUMNS
 _BANDWIDTH_COLUMNS = (TCOLUMNS['rate-up'], TCOLUMNS['rate-down'],
                       TCOLUMNS['limit-rate-up'], TCOLUMNS['limit-rate-down'],
                       PCOLUMNS['rate-up'], PCOLUMNS['rate-down'], PCOLUMNS['rate-est'])
-def _set_bandwidth_unit(unit):
-    unit_short = {'bit': 'b', 'byte': 'B'}.get(unit.value, unit.value)
+def _set_bandwidth_unit(settings, name, value):
+    unit_short = {'bit': 'b', 'byte': 'B'}.get(value, value)
     unit_short += '/s'
     for column in _BANDWIDTH_COLUMNS:
         column.set_header(right=unit_short)
-cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
+cfg.on_change(_set_bandwidth_unit, name='unit.bandwidth')
 
 
 _SIZE_COLUMNS = (TCOLUMNS['size'], TCOLUMNS['downloaded'],
                  TCOLUMNS['uploaded'], TCOLUMNS['available'],
                  FCOLUMNS['size'], FCOLUMNS['downloaded'])
-def _set_size_unit(unit):
-    unit_short = {'bit': 'b', 'byte': 'B'}.get(unit.value, unit.value)
+def _set_size_unit(settings, name, value):
+    unit_short = {'bit': 'b', 'byte': 'B'}.get(value, value)
     for column in _SIZE_COLUMNS:
         column.set_header(right=unit_short)
-cfg['unit.size'].on_change(_set_size_unit)
+cfg.on_change(_set_size_unit, name='unit.size')

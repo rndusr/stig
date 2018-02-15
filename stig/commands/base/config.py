@@ -85,7 +85,7 @@ class ResetCmdbase(metaclass=InitCommand):
                 log.error('Remote settings cannot be reset: {}'.format(name))
                 success = False
             else:
-                self.cfg[name].reset()
+                self.cfg.reset(name)
         return success
 
 
@@ -111,16 +111,17 @@ class SetCmdbase(metaclass=InitCommand):
     cfg = ExpectedResource
 
     async def run(self, NAME, VALUE):
-        # Get setting by name from local or remote settings
+        # NAME might have ':eval' attached if VALUE is shell command
         try:
-            setting = self._get_setting(NAME)
+            name = self._get_name(NAME)
         except ValueError as e:
             log.error(e)
             return False
 
-        # Normalized value
+        # Normalize value
         try:
-            value = self._get_value(VALUE, setting.typename,
+            value = self._get_value(VALUE,
+                                    listify=isinstance(self.cfg[name], tuple),
                                     is_cmd=NAME.endswith(':eval'))
         except ValueError as e:
             log.error(e)
@@ -128,33 +129,25 @@ class SetCmdbase(metaclass=InitCommand):
 
         # Update setting's value
         try:
-            if asyncio.iscoroutinefunction(setting.set):
-                log.debug('Setting remote setting %s to %r', setting.name, value)
-                await setting.set(value)
-            else:
-                log.debug('Setting local setting %s to %r', setting.name, value)
-                setting.set(value)
+            self.cfg[name] = value
         except ValueError as e:
-            log.error('%s = %s: %s', setting.name, setting.string(value), e)
+            log.error('%s = %s: %s', name, value, e)
             return False
         else:
             return True
 
-    def _get_setting(self, name):
+    def _get_name(self, name):
         if name.endswith(':eval'):
             name = name[:-5]
-
-        try:
-            return self.cfg[name]
-        except KeyError:
+        if not name in self.cfg:
             raise ValueError('Unknown setting: %s' % name)
+        else:
+            return name
 
-    def _get_value(self, value, typename, is_cmd=False):
+    def _get_value(self, value, listify=False, is_cmd=False):
         if is_cmd:
             value = [self._eval_cmd(value)]
-
-        # Make sure lists are lists and everything else is a string
-        if typename in ('list', 'set'):
+        if listify:
             return utils.listify_args(value)
         else:
             return ' '.join(value)

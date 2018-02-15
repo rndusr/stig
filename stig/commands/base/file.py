@@ -49,7 +49,7 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, FILE_FILTER, columns):
-        columns = self.cfg['columns.files'].value if columns is None else columns
+        columns = self.cfg['columns.files'] if columns is None else columns
         try:
             columns = self.get_file_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,

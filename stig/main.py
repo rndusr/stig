@@ -47,13 +47,13 @@ helpmgr.settings = cfg
 
 
 from .client import API
-srvapi = API(host=cfg['connect.host'].value,
-             port=cfg['connect.port'].value,
-             path=cfg['connect.path'].value,
-             user=cfg['connect.user'].value,
-             password=cfg['connect.password'].value,
-             tls=cfg['connect.tls'].value,
-             interval=cfg['tui.poll'].value,
+srvapi = API(host=cfg['connect.host'],
+             port=cfg['connect.port'],
+             path=cfg['connect.path'],
+             user=cfg['connect.user'],
+             password=cfg['connect.password'],
+             tls=cfg['connect.tls'],
+             interval=cfg['tui.poll'],
              loop=aioloop)
 srvapi.rpc.enabled = False
 settings.load_remote_settings(cfg, srvapi.settings)

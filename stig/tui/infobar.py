@@ -205,7 +205,7 @@ class BandwidthStatusWidget(urwid.Widget):
         self._invalidate()
 
     def _mk_tail_canv(self, direction, icon):
-        unit = {'bit': 'b', 'byte': 'B'}[cfg['unit.bandwidth'].value]
+        unit = {'bit': 'b', 'byte': 'B'}[cfg['unit.bandwidth']]
         text = urwid.Text('%s/s%s' % (unit, icon))
         attr_text = urwid.AttrMap(text, 'bottombar.bandwidth.%s' % direction)
         return attr_text.render((self._TAIL_WIDTH,))

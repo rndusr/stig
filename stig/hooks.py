@@ -21,61 +21,61 @@ from .views.filelist import COLUMNS as FILE_COLUMNS
 from .views.peerlist import COLUMNS as PEER_COLUMNS
 
 
-def _make_connection_callback(name):
-    def on_set(setting):
-        log.debug('Setting rpc.%s=%r', name, setting.value)
-        setattr(srvapi.rpc, name, setting.value)
+def _make_connection_callback(attr):
+    def on_set(settings, name, value):
+        log.debug('Setting rpc.%s=%r', attr, value)
+        setattr(srvapi.rpc, attr, value)
     return on_set
-cfg['connect.host'].on_change(_make_connection_callback('host'), autoremove=False)
-cfg['connect.port'].on_change(_make_connection_callback('port'), autoremove=False)
-cfg['connect.path'].on_change(_make_connection_callback('path'), autoremove=False)
-cfg['connect.user'].on_change(_make_connection_callback('user'), autoremove=False)
-cfg['connect.password'].on_change(_make_connection_callback('password'), autoremove=False)
-cfg['connect.tls'].on_change(_make_connection_callback('tls'), autoremove=False)
-cfg['connect.timeout'].on_change(_make_connection_callback('timeout'), autoremove=False)
+cfg.on_change(_make_connection_callback('host'),     name='connect.host',     autoremove=False)
+cfg.on_change(_make_connection_callback('port'),     name='connect.port',     autoremove=False)
+cfg.on_change(_make_connection_callback('path'),     name='connect.path',     autoremove=False)
+cfg.on_change(_make_connection_callback('user'),     name='connect.user',     autoremove=False)
+cfg.on_change(_make_connection_callback('password'), name='connect.password', autoremove=False)
+cfg.on_change(_make_connection_callback('tls'),      name='connect.tls',      autoremove=False)
+cfg.on_change(_make_connection_callback('timeout'),  name='connect.timeout',  autoremove=False)
 
 
 _BANDWIDTH_COLUMNS = (TORRENT_COLUMNS['rate-up'], TORRENT_COLUMNS['rate-down'],
                       TORRENT_COLUMNS['limit-rate-up'], TORRENT_COLUMNS['limit-rate-down'],
                       PEER_COLUMNS['rate-up'], PEER_COLUMNS['rate-down'], PEER_COLUMNS['rate-est'])
-def _set_bandwidth_unit(unit):
-    convert.bandwidth.unit = unit.value
+def _set_bandwidth_unit(settings, name, value):
+    convert.bandwidth.unit = value
     unit_short = convert.bandwidth.unit
     for column in _BANDWIDTH_COLUMNS:
         column.set_unit(unit_short)
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg['unit.bandwidth'].on_change(_set_bandwidth_unit)
-_set_bandwidth_unit(cfg['unit.bandwidth'])  # Init columns' units
+cfg.on_change(_set_bandwidth_unit, name='unit.bandwidth')
+_set_bandwidth_unit(cfg, name='unit.bandwidth', value=cfg['unit.bandwidth'])  # Init columns' units
 
-def _set_bandwidth_prefix(prefix):
-    convert.bandwidth.prefix = prefix.value
+def _set_bandwidth_prefix(settings, name, value):
+    convert.bandwidth.prefix = value
     for column in _BANDWIDTH_COLUMNS:
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg['unitprefix.bandwidth'].on_change(_set_bandwidth_prefix)
+cfg.on_change(_set_bandwidth_prefix, name='unitprefix.bandwidth')
 
 
 _SIZE_COLUMNS = (TORRENT_COLUMNS['size'], TORRENT_COLUMNS['downloaded'],
                  TORRENT_COLUMNS['uploaded'], TORRENT_COLUMNS['available'],
                  FILE_COLUMNS['size'], FILE_COLUMNS['downloaded'])
-def _set_size_unit(unit):
-    convert.size.unit = unit.value
+def _set_size_unit(settings, name, value):
+    convert.size.unit = value
     unit_short = convert.size.unit
     for column in _SIZE_COLUMNS:
         column.set_unit(unit_short)
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg['unit.size'].on_change(_set_size_unit)
-_set_size_unit(cfg['unit.size'])  # Init columns' units
+cfg.on_change(_set_size_unit, name='unit.size')
+_set_size_unit(cfg, name='unit.size', value=cfg['unit.size'])  # Init columns' units
 
-def _set_size_prefix(prefix):
-    convert.size.prefix = prefix.value
+def _set_size_prefix(settings, name, value):
+    convert.size.prefix = value
     for column in _SIZE_COLUMNS:
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg['unitprefix.size'].on_change(_set_size_prefix)
+cfg.on_change(_set_size_prefix, name='unitprefix.size')

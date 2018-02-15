@@ -60,8 +60,8 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
     }
 
     async def run(self, TORRENT_FILTER, TRACKER_FILTER, sort, columns):
-        columns = self.cfg['columns.trackers'].value if columns is None else columns
-        sort = self.cfg['sort.trackers'].value if sort is None else sort
+        columns = self.cfg['columns.trackers'] if columns is None else columns
+        sort = self.cfg['sort.trackers'] if sort is None else sort
         try:
             torfilter = self.select_torrents(TORRENT_FILTER,
                                              allow_no_filter=True,
@@ -77,7 +77,7 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
         # ID, automatically add the 'torrent' column.
         if 'torrent' not in columns and \
            (not isinstance(torfilter, abc.Sequence) or len(torfilter) != 1):
-            columns.append('torrent')
+            columns += ('torrent',)
 
         log.debug('Listing %s trackers of %s torrents', trkfilter, torfilter)
 

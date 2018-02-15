@@ -63,8 +63,8 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
     cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, PEER_FILTER, sort, columns):
-        columns = self.cfg['columns.peers'].value if columns is None else columns
-        sort = self.cfg['sort.peers'].value if sort is None else sort
+        columns = self.cfg['columns.peers'] if columns is None else columns
+        sort = self.cfg['sort.peers'] if sort is None else sort
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,
@@ -80,7 +80,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
         # ID, automatically add the 'torrent' column.
         if 'torrent' not in columns and \
            (not isinstance(tfilter, abc.Sequence) or len(tfilter) != 1):
-            columns.append('torrent')
+            columns += ('torrent',)
 
         log.debug('Listing %s peers of %s torrents', pfilter, tfilter)
 
