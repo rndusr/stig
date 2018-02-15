@@ -186,7 +186,7 @@ class LogWidget(urwid.WidgetWrap):
 
     @height.setter
     def height(self, rows):
-        self._height = rows
+        self._height = int(rows)
         self._invalidate_rows()
         self._invalidate()
 
