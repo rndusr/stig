@@ -48,92 +48,154 @@ else:
 
 
 def init_defaults(cfg):
-    from ..utils.usertypes import (StringValue, IntegerValue, FloatValue, BooleanValue,
-                                   PathValue, ListValue, SetValue, OptionValue)
+    from ..utils.stringables import (String, Int, Float, Bool, Path, Tuple, Option)
 
-    class SortOrderValue(SetValue):
-        """SetValue that correctly validates inverted sort orders (e.g. '!name')"""
-        def __init__(self, sortercls, *args, **kwargs):
-            super().__init__(*args, options=tuple(sortercls.SORTSPECS), **kwargs)
+    def partial_expand(cls, **kwargs):
+        # Special constructor that passes value on as all positional args. This
+        # is needed because Tuple (and tuple) expects `*args`, not `args`.
+        def constructor(value):
+            if isinstance(value, str):
+                return cls(value, **kwargs)
+            else:
+                return cls(*value, **kwargs)
+        return constructor
 
-        def validate(self, names):
-            super().validate(name.strip('!.') for name in names)
+    class SortOrder(str):
+        """String that is equal to the same string with '!' or '.' prepended"""
+        def __eq__(self, other):
+            return self.lstrip('!.') == other.lstrip('!.')
 
-    cfg.load(
-        StringValue('connect.host', default='localhost',
-                    description='Hostname or IP of Transmission RPC interface'),
-        IntegerValue('connect.port', default=9091, min=1, max=65535, pretty=False,
-                     description='Port of Transmission RPC interface'),
-        StringValue('connect.path', default='/transmission/rpc',
-                    description='Path of Transmission RPC interface'),
-        StringValue('connect.user', default='',
-                    description='Username to use for authentication with Transmission RPC interface'),
-        StringValue('connect.password', default='',
-                    description='Password to use for authentication with Transmission RPC interface'),
-        FloatValue('connect.timeout', default=10, min=0,
-                   description='Number of seconds before connecting to Transmission RPC interface fails'),
-        BooleanValue('connect.tls', default=False,
-                    description='Whether to connect via HTTPS to the Transmission RPC interface'),
+    def partial_sort_order(sortercls):
+        options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)
+        return partial_expand(Tuple, options=options, dedup=True)
 
-        SetValue('columns.torrents', default=DEFAULT_TORRENT_COLUMNS,
-                 options=torrentlist.COLUMNS,
-                 aliases=torrentlist.ALIASES,
-                 description='Which columns to show in torrent lists'),
-        SetValue('columns.peers', default=DEFAULT_PEER_COLUMNS,
-                 options=peerlist.COLUMNS,
-                 aliases=peerlist.ALIASES,
-                 description='Which columns to show in peer lists'),
-        SetValue('columns.files', default=DEFAULT_FILE_COLUMNS,
-                 options=filelist.COLUMNS,
-                 aliases=filelist.ALIASES,
-                 description='Which columns to show in file lists'),
-        SetValue('columns.trackers', default=DEFAULT_TRACKER_COLUMNS,
-                 options=trackerlist.COLUMNS,
-                 aliases=trackerlist.ALIASES,
-                 description='Which columns to show in tracker lists'),
+    cfg.add('connect.host',
+            constructor=String,
+            default='localhost',
+            description='Hostname or IP of Transmission RPC interface')
+    cfg.add('connect.port',
+            Int.partial(min=1, max=65535, precise=True),
+            default=9091,
+            description='Port of Transmission RPC interface')
+    cfg.add('connect.path',
+            String,
+            default='/transmission/rpc',
+            description='Path of Transmission RPC interface')
+    cfg.add('connect.user',
+            String,
+            default='',
+            description='Username to use for authentication with Transmission RPC interface')
+    cfg.add('connect.password',
+            String,
+            default='',
+            description='Password to use for authentication with Transmission RPC interface')
+    cfg.add('connect.timeout',
+            Float.partial(min=0),
+            default=10,
+            description='Number of seconds before connecting to Transmission RPC interface fails')
+    cfg.add('connect.tls',
+            Bool,
+            default=False,
+            description='Whether to connect via HTTPS to the Transmission RPC interface')
 
-        SortOrderValue(TorrentSorter, 'sort.torrents', default=DEFAULT_TORRENT_SORT,
-                       description='List of sort orders in torrent lists'),
-        SortOrderValue(TorrentPeerSorter, 'sort.peers', default=DEFAULT_PEER_SORT,
-                       description='List of sort orders in peer lists'),
-        SortOrderValue(TorrentTrackerSorter, 'sort.trackers', default=DEFAULT_TRACKER_SORT,
-                       description='List of sort orders in tracker lists'),
+    cfg.add('columns.torrents',
+            partial_expand(Tuple,
+                           options=torrentlist.COLUMNS,
+                           aliases=torrentlist.ALIASES),
+            default=DEFAULT_TORRENT_COLUMNS,
+            description='Which columns to show in torrent lists')
+    cfg.add('columns.peers',
+            partial_expand(Tuple,
+                           options=peerlist.COLUMNS,
+                           aliases=peerlist.ALIASES),
+            default=DEFAULT_PEER_COLUMNS,
+            description='Which columns to show in peer lists')
+    cfg.add('columns.files',
+            partial_expand(Tuple,
+                           options=filelist.COLUMNS,
+                           aliases=filelist.ALIASES),
+            default=DEFAULT_FILE_COLUMNS,
+            description='Which columns to show in file lists')
+    cfg.add('columns.trackers',
+            partial_expand(Tuple,
+                           options=trackerlist.COLUMNS,
+                           aliases=trackerlist.ALIASES),
+            default=DEFAULT_TRACKER_COLUMNS,
+            description='Which columns to show in tracker lists')
 
-        PathValue('tui.theme', default=DEFAULT_THEME_FILE,
-                  description='Path to theme file'),
-        IntegerValue('tui.log.height', default=10, min=1,
-                     description='Maximum height of the log section'),
-        FloatValue('tui.log.autohide', default=10, min=0,
-                   description=('If the log is hidden, show it for this many seconds '
-                                'for new log entries before hiding it again')),
-        PathValue('tui.cli.history-file', default=DEFAULT_HISTORY_FILE,
-                  description='Path to TUI command line history file'),
-        PathValue('tui.cli.history-size', default=10000,
-                  description='Maximum number of lines in history file'),
-        FloatValue('tui.poll', default=5, min=0.1,
-                   description='Interval in seconds between TUI updates'),
+    cfg.add('sort.torrents',
+            partial_sort_order(TorrentSorter),
+            default=DEFAULT_TORRENT_SORT,
+            description='List of sort orders in torrent lists')
+    cfg.add('sort.peers',
+            partial_sort_order(TorrentPeerSorter),
+            default=DEFAULT_PEER_SORT,
+            description='List of sort orders in peer lists')
+    cfg.add('sort.trackers',
+            partial_sort_order(TorrentTrackerSorter),
+            default=DEFAULT_TRACKER_SORT,
+            description='List of sort orders in tracker lists')
 
-        OptionValue('unit.bandwidth', default='byte', options=('bit', 'byte'),
-                    description="Unit for bandwidth rates ('bit' or 'byte')"),
-        OptionValue('unitprefix.bandwidth', default='metric', options=('metric', 'binary'),
-                    description=("Unit prefix for bandwidth rates ('metric' or 'binary')")),
+    cfg.add('tui.theme',
+            Path,
+            default=DEFAULT_THEME_FILE,
+            description='Path to theme file'),
+    cfg.add('tui.log.height',
+            Int.partial(min=1),
+            default=10,
+            description='Maximum height of the log section')
+    cfg.add('tui.log.autohide',
+            Float.partial(min=0),
+            default=10,
+            description=('If the log is hidden, show it for this many seconds '
+                         'for new log entries before hiding it again'))
+    cfg.add('tui.cli.history-file',
+            Path,
+            default=DEFAULT_HISTORY_FILE,
+            description='Path to TUI command line history file')
+    cfg.add('tui.cli.history-size',
+            Int.partial(min=0),
+            default=10000,
+            description='Maximum number of lines in history file')
+    cfg.add('tui.poll',
+            Float.partial(min=0.1),
+            default=5,
+            description='Interval in seconds between TUI updates')
 
-        OptionValue('unit.size', default='byte', options=('bit', 'byte'),
-                    description="Unit for file sizes ('bit' or 'byte')"),
-        OptionValue('unitprefix.size', default='binary', options=('metric', 'binary'),
-                    description=("Unit prefix for file sizes ('metric' or 'binary')")),
+    cfg.add('unit.bandwidth',
+            Option.partial(options=('bit', 'byte')),
+            default='byte',
+            description="Unit for bandwidth rates ('bit' or 'byte')")
+    cfg.add('unitprefix.bandwidth',
+            Option.partial(options=('metric', 'binary')),
+            default='metric',
+            description=("Unit prefix for bandwidth rates ('metric' or 'binary')"))
 
-        StringValue('tui.marked.on', default='✔', minlen=1, maxlen=1,
-                    description=("Character displayed in 'marked' column for marked "
-                                 "list items (see 'mark' command)")),
-        StringValue('tui.marked.off', default=' ', minlen=1, maxlen=1,
-                    description=("Character displayed in 'marked' column for unmarked "
-                                 "list items (see 'mark' command)")),
+    cfg.add('unit.size',
+            Option.partial(options=('bit', 'byte')),
+            default='byte',
+            description="Unit for file sizes ('bit' or 'byte')")
+    cfg.add('unitprefix.size',
+            Option.partial(options=('metric', 'binary')),
+            default='binary',
+            description=("Unit prefix for file sizes ('metric' or 'binary')"))
 
-        IntegerValue('remove.max-hits', default=10, min=0,
-                     description=('Maximum number of torrents to remove without '
-                                  'extra confirmation')),
-    )
+    cfg.add('tui.marked.on',
+            String.partial(minlen=1, maxlen=1),
+            default='✔',
+            description=("Character displayed in 'marked' column for marked "
+                         "list items (see 'mark' command)")),
+    cfg.add('tui.marked.off',
+            String.partial(minlen=1, maxlen=1),
+            default=' ',
+            description=("Character displayed in 'marked' column for unmarked "
+                         "list items (see 'mark' command)")),
+
+    cfg.add('remove.max-hits',
+            Int.partial(min=0),
+            default=10,
+            description=('Maximum number of torrents to remove without '
+                         'extra confirmation')),
 
 
 def load_remote_settings(cfg, remote_settings):
