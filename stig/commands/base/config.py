@@ -210,7 +210,6 @@ class RateLimitCmdbase(metaclass=InitCommand):
     async def _set_global_limit(self, directions, LIMIT):
         # Change the srv.limit.rate.* setting for each direction
         for d in directions:
-            print('Setting global %s rate limit: %r' % (d, LIMIT))
             log.debug('Setting global %s rate limit: %r', d, LIMIT)
             try:
                 await self.srvapi.settings['limit.rate.'+d].set(LIMIT)
