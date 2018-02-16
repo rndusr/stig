@@ -1,5 +1,6 @@
 import unittest
-from stig.utils.stringables import (String, Bool, Path, Tuple, Option, Float, Int)
+from stig.utils.stringables import (String, Bool, Path, Tuple, Option, Float,
+                                    Int, StringableMixin)
 
 
 from contextlib import contextmanager
@@ -11,84 +12,25 @@ class _TestBase(unittest.TestCase):
         self.assertEqual(str(cm.exception), msg)
 
 
-# class TestStringableMeta(_TestBase):
-#     def test_type_conversion(self):
-#         class X(str, metaclass=StringableMeta):
-#             pass
+class TestStringableMixin(_TestBase):
+    def test_partial(self):
+        class X(int, StringableMixin):
+            def __new__(cls, i, min=0, max=10):
+                self = super().__new__(cls, i)
+                self.min = min
+                self.max = max
+                return self
 
-#         for value in ('123', True, 123, (1, 2, 3)):
-#             x = X(value)
-#             self.assertIsInstance(x, X)
-#             self.assertEqual(x, str(value))
-
-#     def test_invalid_arguments(self):
-#         class X(str, metaclass=StringableMeta):
-#             pass
-
-#         with self.assert_raises(TypeError, "convert() got an unexpected keyword argument 'foo'"):
-#             X('this', foo='bar')
-
-#     def test_property_defaults(self):
-#         class X(int, metaclass=StringableMeta):
-#             min = StringableMeta.Option(1)
-#             max = StringableMeta.Option(1000)
-#             @classmethod
-#             def convert(cls, value, min, max):
-#                 return int(value)
-
-#         for opts,exp in (({}, {'min': 1, 'max': 1000}),
-#                          ({'min': 10}, {'min': 10, 'max': 1000}),
-#                          ({'max': 10}, {'min': 1, 'max': 10}),
-#                          ({'min': 5, 'max': 10}, {'min': 5, 'max': 10})):
-#             x = X(1, **opts)
-#             self.assertEqual(x.min, exp['min'])
-#             self.assertEqual(x.max, exp['max'])
-
-#     def test_property_values_are_not_shared(self):
-#         class X(int, metaclass=StringableMeta):
-#             min = StringableMeta.Option(10)
-#             max = StringableMeta.Option(25)
-#             @classmethod
-#             def convert(cls, value, min, max):
-#                 return int(value)
-
-#         a = X(23, min=20, max=50)
-#         b = X(500, min=-10, max=1000)
-#         self.assertNotEqual(a.min, b.min)
-#         self.assertNotEqual(a.max, b.max)
-
-#     def test_properties_are_immutable(self):
-#         class X(int, metaclass=StringableMeta):
-#             a = StringableMeta.Option('foo')
-#             @classmethod
-#             def convert(cls, value, a):
-#                 return int(value)
-
-#         x = X(1)
-#         with self.assert_raises(AttributeError, "can't set attribute"):
-#             x.a = 'bar'
-
-#     def test_partial(self):
-#         class X(int, metaclass=StringableMeta):
-#             foo = StringableMeta.Option('f')
-#             bar = StringableMeta.Option('b')
-#             @classmethod
-#             def convert(cls, value, foo, bar):
-#                 return int(value)
-
-#         with self.assert_raises(TypeError, "Invalid keyword argument for X: 'baz'"):
-#             X.partial(baz='nope')
-
-#         for opts,exp in (({}, {'foo': 'f', 'bar': 'b'}),
-#                          ({'foo': 'F'}, {'foo': 'F', 'bar': 'b'}),
-#                          ({'bar': 'B'}, {'foo': 'f', 'bar': 'B'}),
-#                          ({'foo': 'F', 'bar': 'B'}, {'foo': 'F', 'bar': 'B'})):
-#             p = X.partial(**opts)
-#             x = p(123)
-#             self.assertIsInstance(x, X)
-#             self.assertEqual(x, 123)
-#             self.assertEqual(x.foo, exp['foo'])
-#             self.assertEqual(x.bar, exp['bar'])
+        for opts,exp in (({}, {'min': 0, 'max': 10}),
+                         ({'min': 5}, {'min': 5, 'max': 10}),
+                         ({'max': 5}, {'min': 0, 'max': 5}),
+                         ({'min': -10, 'max': 0}, {'min': -10, 'max': 0})):
+            p = X.partial(**opts)
+            x = p(0)
+            self.assertIsInstance(x, X)
+            self.assertEqual(x, 0)
+            self.assertEqual(x.min, exp['min'])
+            self.assertEqual(x.max, exp['max'])
 
 
 class TestString(_TestBase):
