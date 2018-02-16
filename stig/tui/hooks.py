@@ -80,7 +80,7 @@ cfg.on_change(_set_autohide_delay, name='tui.log.autohide')
 
 
 def _set_log_height(settings, name, value):
-    tui.logwidget.height = value
+    tui.logwidget.height = int(value)
 cfg.on_change(_set_log_height, name='tui.log.height')
 
 

@@ -106,7 +106,7 @@ bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
 
 cli = urwid.AttrMap(_create_cli_widget(), 'cli')
 
-logwidget = LogWidget(height=cfg['tui.log.height'],
+logwidget = LogWidget(height=int(cfg['tui.log.height']),
                       autohide_delay=cfg['tui.log.autohide'])
 
 keychains = KeyChainsWidget()
