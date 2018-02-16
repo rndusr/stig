@@ -15,6 +15,8 @@ from .logging import make_logger
 log = make_logger(__name__)
 
 from collections import abc
+import re
+
 from . import (__appname__, __version__)
 from .utils import (striplines, expandtabs)
 
@@ -99,7 +101,7 @@ class HelpManager():
         else:
             lines.append('\tAVAILABLE SETTINGS')
             for name in sorted(cfg.names):
-                lines.append('\t\t' + name + '  \t' + cfg[name].description)
+                lines.append('\t\t' + name + '  \t' + cfg.description(name))
         return finalize_lines(lines)
 
     @settings.setter
@@ -108,22 +110,31 @@ class HelpManager():
 
     def setting(self, name):
         """Return help text for setting"""
-        v = self._settings[name]
-        lines = ['%s - \t%s' % (v.name, v.description),
-                 '\tValue: \t' + v.string(default=False),
-                 '\tType: \t' + v.typename,
-                 '\tDefault: \t' + v.string(default=True)]
-        if hasattr(v, 'options'):
+        cfg = self._settings
+        value = cfg[name]
+
+        def maybe_quote(value):
+            if isinstance(value, str) and re.match(r'^\s+$', value):
+                return repr(value)
+            else:
+                return str(value)
+
+        lines = ['%s - \t%s' % (name, cfg.description(name)),
+                 '\tValue: \t' + maybe_quote(cfg[name]),
+                 '\tDefault: \t' + maybe_quote(cfg.default(name))]
+
+        if hasattr(value, 'options'):
             opt_strs = []
-            for opt in sorted(v.options):
+            for opt in sorted(value.options):
                 opt_strs.append(str(opt))
-                aliases = [alias for alias,option in v.aliases.items()
+                aliases = [alias for alias,option in value.aliases.items()
                            if option == opt]
                 if aliases:
                     opt_strs[-1] += ' (%s)' % (', '.join(aliases))
             lines.append('\tOptions: \t' + ', '.join(opt_strs))
-        if hasattr(v, 'valuesyntax'):
-            lines.append('\tSyntax: \t{}'.format(v.valuesyntax))
+
+        lines.append('\tSyntax: \t' + value.syntax)
+
         return finalize_lines(lines)
 
     @property
@@ -343,7 +354,7 @@ class HelpManager():
             '',
             '\tThe syntax of comparative filters is: [[<FILTER NAME>] <OPERATOR>] <VALUE>',
             '',
-            ("\tBesides the standard operators (=, !=, >, <, >=, <=), '~' matches "
+            ("\tBesides the usual operators (=, !=, >, <, >=, <=), '~' matches "
              "if the torrent's value contains VALUE."),
             "\tExample: 'name~foo' matches all torrents with 'foo' in their name.",
             '',
