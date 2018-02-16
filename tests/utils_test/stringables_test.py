@@ -96,6 +96,15 @@ class _TestBase(unittest.TestCase):
 
 
 class TestStr(_TestBase):
+    def test_syntax(self):
+        self.assertEqual(String('foo').syntax, 'string')
+        self.assertEqual(String('foo', minlen=1).syntax, 'string (at least 1 character)')
+        self.assertEqual(String('foo', minlen=2).syntax, 'string (at least 2 characters)')
+        self.assertEqual(String('f',   maxlen=1).syntax, 'string (at most 1 character)')
+        self.assertEqual(String('f',   maxlen=2).syntax, 'string (at most 2 characters)')
+        self.assertEqual(String('f',   minlen=1, maxlen=2).syntax, 'string (1-2 characters)')
+        self.assertEqual(String('fo',  minlen=2, maxlen=2).syntax, 'string (2 characters)')
+
     def test_minlen(self):
         for value in ('foo', True, 123):
             with self.assert_raises(ValueError, 'Too short (minimum length is 5)'):
@@ -114,6 +123,10 @@ class TestStr(_TestBase):
 
 
 class TestBool(_TestBase):
+    def test_syntax(self):
+        self.assertEqual(Bool('1', true=('1',1,'on'), false=('0',0,'off')).syntax,
+                         '1/0|on/off')
+
     def test_valid_values(self):
         self.assertTrue(Bool('x', true=('x',), false=('o',)))
         self.assertFalse(Bool('o', true=('x',), false=('o',)))
@@ -130,6 +143,9 @@ class TestBool(_TestBase):
 
 
 class TestPath(_TestBase):
+    def test_syntax(self):
+        self.assertEqual(Path('/foo/bar/baz').syntax, 'file system path')
+
     def test_parsing_tilde(self):
         import os
         homedir = os.environ['HOME']
@@ -152,6 +168,10 @@ class TestPath(_TestBase):
 
 
 class TestTuple(_TestBase):
+    def test_syntax(self):
+        self.assertEqual(Tuple('foo,bar,baz').syntax, "','-separated list")
+        self.assertEqual(Tuple('foo|bar|baz', sep='|').syntax, "'|'-separated list")
+
     def test_separator(self):
         for sep,string,string_exp in ((', ', '1, 2 ,3 , 4', ('1, 2, 3, 4')),
                                       ('/', '1/2 / 3 /4', '1/2/3/4'),
@@ -189,6 +209,9 @@ class TestTuple(_TestBase):
 
 
 class TestOption(_TestBase):
+    def test_syntax(self):
+        self.assertEqual(Option('1', options=('1', '2', '3')).syntax, '1|2|3')
+
     def test_aliases(self):
         options = ('foo', 'bar')
         aliases = {'f': 'foo'}
@@ -200,6 +223,10 @@ class TestOption(_TestBase):
 
 
 class TestFloat(_TestBase):
+    def test_syntax(self):
+        self.assertEqual(Float('1').syntax,
+                         '[+|-]<NUMBER>[Ti|Gi|Mi|Ki|T|G|M|k]')
+
     def test_not_a_number(self):
         for value in ('foo', '25xx02', [1, 2, 3], print):
             with self.assert_raises(ValueError, 'Not a number: %r' % value):

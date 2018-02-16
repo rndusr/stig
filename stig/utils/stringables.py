@@ -87,7 +87,31 @@ class String(str, StringableMixin):
             raise ValueError('Too long (maximum length is %s)' % maxlen)
         if minlen is not None and self_len < minlen:
             raise ValueError('Too short (minimum length is %s)' % minlen)
+
+        self._minlen = minlen
+        self._maxlen = maxlen
         return self
+
+    @property
+    def syntax(self):
+        minlen = self._minlen
+        maxlen = self._maxlen
+        text = 'string'
+        if ((minlen == 1 or minlen <= 0) and
+            (maxlen == 1 or maxlen >= _INFINITY)):
+            chrstr = 'character'
+        else:
+            chrstr = 'characters'
+        if minlen > 0 and maxlen < _INFINITY:
+            if minlen == maxlen:
+                text += ' (%s %s)' % (minlen, chrstr)
+            else:
+                text += ' (%s-%s %s)' % (minlen, maxlen, chrstr)
+        elif minlen > 0:
+            text += ' (at least %s %s)' % (minlen, chrstr)
+        elif maxlen < _INFINITY:
+            text += ' (at most %s %s)' % (maxlen, chrstr)
+        return text
 
 
 class Bool(str, StringableMixin):
@@ -112,7 +136,18 @@ class Bool(str, StringableMixin):
 
         self = super().__new__(cls, value)
         self._is_true = is_true
+        self._true = true
+        self._false = false
         return self
+
+    @property
+    def syntax(self):
+        pairs = []
+        for pair in zip(self._true, self._false):
+            pair = tuple(str(val) for val in pair)
+            if pair not in pairs:
+                pairs.append(pair)
+        return '%s' % '|'.join('/'.join((t,f)) for t,f in pairs)
 
     def __bool__(self):
         return self._is_true
@@ -135,6 +170,10 @@ class Path(str, StringableMixin):
             raise ValueError('No such file or directory')
 
         return self
+
+    @property
+    def syntax(self):
+        return 'file system path'
 
     def __str__(self):
         home = os.environ['HOME']
@@ -182,7 +221,14 @@ class Tuple(tuple, StringableMixin):
                     sep.join(invalid_items)))
 
         self._sep = sep
+        self._options = options
+        self._aliases = aliases
         return self
+
+    @property
+    def syntax(self):
+        sep = self._sep.strip()
+        return '<OPTION>%s<OPTION>%s...' % (sep, sep)
 
     def __str__(self):
         return self._sep.join(str(item) for item in self)
@@ -202,7 +248,13 @@ class Option(str, StringableMixin):
         value = _resolve_alias(value, aliases)
         if value not in options:
             raise ValueError('Not one of: %s' % ', '.join((str(o) for o in options)))
-        return super().__new__(cls, value)
+        self = super().__new__(cls, value)
+        self._options = options
+        return self
+
+    @property
+    def syntax(self):
+        return '|'.join(str(opt) for opt in self._options)
 
 
 class _NumberMixin(StringableMixin):
@@ -309,6 +361,11 @@ class _NumberMixin(StringableMixin):
         self._args = {'unit': unit, 'prefix': prefix, 'hide_unit': hide_unit,
                        'min': min, 'max': max, 'precise': precise}
         return self
+
+    @property
+    def syntax(self):
+        prefixes = (p[0] for p in chain(self._prefixes_binary, self._prefixes_metric))
+        return '[+|-]<NUMBER>[%s]' % '|'.join(prefixes)
 
     def __str__(self):
         return self._str()
