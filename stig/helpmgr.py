@@ -18,7 +18,7 @@ from collections import abc
 from . import (__appname__, __version__)
 from .utils import (striplines, expandtabs)
 
-from .cliopts import DESCRIPTIONS
+from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
 
 MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filter', 'rcfile')
 
@@ -70,7 +70,7 @@ class HelpManager():
             '',
         ]
 
-        for section,opts in DESCRIPTIONS.items():
+        for section,opts in CLI_DESCRIPTIONS.items():
             lines.append('%s' % section.upper())
             for opts,desc in opts.items():
                 lines.append('\t%s  \t%s' % (opts, desc))
