@@ -91,7 +91,7 @@ class _TestBase(unittest.TestCase):
 #             self.assertEqual(x.bar, exp['bar'])
 
 
-class TestStr(_TestBase):
+class TestString(_TestBase):
     def test_syntax(self):
         self.assertEqual(String('foo').syntax, 'string')
         self.assertEqual(String('foo', minlen=1).syntax, 'string (at least 1 character)')
