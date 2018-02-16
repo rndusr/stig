@@ -107,8 +107,8 @@ class TestPath(_TestBase):
 
 class TestTuple(_TestBase):
     def test_syntax(self):
-        self.assertEqual(Tuple('foo,bar,baz').syntax, "','-separated list")
-        self.assertEqual(Tuple('foo|bar|baz', sep='|').syntax, "'|'-separated list")
+        self.assertEqual(Tuple('foo,bar,baz').syntax, '<OPTION>,<OPTION>,...')
+        self.assertEqual(Tuple('foo|bar|baz', sep='|').syntax, '<OPTION>|<OPTION>|...')
 
     def test_separator(self):
         for sep,string,string_exp in ((', ', '1, 2 ,3 , 4', ('1, 2, 3, 4')),
