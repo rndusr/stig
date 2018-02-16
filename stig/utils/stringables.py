@@ -230,6 +230,14 @@ class Tuple(tuple, StringableMixin):
         sep = self._sep.strip()
         return '<OPTION>%s<OPTION>%s...' % (sep, sep)
 
+    @property
+    def options(self):
+        return self._options
+
+    @property
+    def aliases(self):
+        return self._aliases
+
     def __str__(self):
         return self._sep.join(str(item) for item in self)
 
