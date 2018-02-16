@@ -135,6 +135,11 @@ class MockSettings(dict):
         self['some.integer'] = 10
         self['some.option']  = 'blue'
 
+        # These are needed by torrent_cmds_test.py
+        self['sort.torrents']    = ('name',)
+        self['columns.torrents'] = ('name',)
+        self['remove.max-hits']  = 10
+
     def reset(self, name):
         self[name] = None
 
