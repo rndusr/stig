@@ -95,7 +95,7 @@ def init_defaults(cfg):
             description='Number of seconds before connecting to Transmission RPC interface fails')
     cfg.add('connect.tls',
             Bool,
-            default=False,
+            default='off',
             description='Whether to connect via HTTPS to the Transmission RPC interface')
 
     cfg.add('columns.torrents',

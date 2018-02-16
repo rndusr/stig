@@ -122,8 +122,8 @@ class Bool(str, StringableMixin):
     TODO: ...
     """
     def __new__(cls, value,
-                true=('enabled', 'yes', 'on', 'true', '1', 1, True),
-                false=('disabled', 'no', 'off', 'false', '0', 0, False)):
+                true=('enabled', 'yes', 'on', 'true', '1'),
+                false=('disabled', 'no', 'off', 'false', '0')):
         # Validate
         if value in true:
             value = true[0]
