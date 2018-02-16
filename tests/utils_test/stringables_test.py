@@ -2,10 +2,6 @@ import unittest
 from stig.utils.stringables import (String, Bool, Path, Tuple, Option, Float, Int)
 
 
-import logging
-log = logging.getLogger(__name__)
-
-
 from contextlib import contextmanager
 class _TestBase(unittest.TestCase):
     @contextmanager
@@ -324,14 +320,12 @@ class TestFloat(_TestBase):
         for orig_prefix in ('binary', 'metric'):
             for orig_unit in ('A', 'B'):
                 for orig_hide_unit in (True, False):
-                    log.debug('ORIG: unit=%r, prefix=%r, hide_unit=%r', orig_unit, orig_prefix, orig_hide_unit)
                     orig = Float(1e3, unit=orig_unit, prefix=orig_prefix, hide_unit=orig_hide_unit)
                     copy = Float(orig)
                     self.assertEqual(str(orig), str(copy))
 
                     # Override prefix
                     for new_prefix in ('metric', 'binary'):
-                        log.debug('new prefix: %r', new_prefix)
                         copy = Float(orig, prefix=new_prefix)
                         self.assertEqual(copy, 1e3)
                         exp_string = '1k' if new_prefix == 'metric' else '1000'
@@ -351,7 +345,6 @@ class TestFloat(_TestBase):
                         self.assertEqual(copy, 1e3)
                         exp_string = '1k' if orig_prefix == 'metric' else '1000'
                         exp_string += orig_unit if not new_hide_unit else ''
-                        log.debug('exp_string = %r because new_hide_unit = %r', exp_string, new_hide_unit)
                         self.assertEqual(str(copy), exp_string)
 
     def test_string_has_reasonable_number_of_decimal_points(self):
