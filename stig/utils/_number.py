@@ -157,8 +157,10 @@ class _NumberBase():
             self._prefixes = self._PREFIXES_BINARY
         elif prefix == 'metric':
             self._prefixes = self._PREFIXES_METRIC
+        elif prefix == 'none':
+            self._prefixes = tuple()
         else:
-            raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
+            raise ValueError("prefix must be 'binary', 'metric', or 'none', not {!r}".format(prefix))
         self._prefix = prefix
 
     def _do_math(self, method, *args, **kwargs):
