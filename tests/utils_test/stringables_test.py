@@ -294,8 +294,10 @@ class TestFloat(_TestBase):
         self.assertEqual(Float(0.009).string(unit=False), '0.01')
         self.assertEqual(Float(0.09123).string(unit=False), '0.09')
         self.assertEqual(Float(5.001).string(unit=False), '5')
+        self.assertEqual(Float(8.999).string(unit=False), '9')
         self.assertEqual(Float(9.09123).string(unit=False), '9.09')
         self.assertEqual(Float(10.09123).string(unit=False), '10.1')
+        self.assertEqual(Float(79.999).string(unit=False), '80')
         self.assertEqual(Float(99.09123).string(unit=False), '99.1')
         self.assertEqual(Float(99.95).string(unit=False), '100')
 

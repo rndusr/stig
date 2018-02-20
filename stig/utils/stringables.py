@@ -18,8 +18,8 @@ import re
 from collections.abc import Iterable
 import os
 
-
 _INFINITY = float('inf')
+
 
 def _resolve_alias(value, aliases):
     # Only hashable values can be aliases
@@ -42,9 +42,9 @@ def _pretty_float(n):
     if n_abs_r2 == int(n_abs):
         return '%.0f' % n
     elif n_abs_r2 < 10:
-        return ('%.2f' % n).rstrip('0')
+        return ('%.2f' % n).rstrip('0').rstrip('.')
     elif round(n_abs, 1) < 100:
-        return ('%.1f' % n).rstrip('0')
+        return ('%.1f' % n).rstrip('0').rstrip('.')
     else:
         return '%.0f' % n
 
