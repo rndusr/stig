@@ -50,14 +50,20 @@ def _pretty_float(n):
 
 
 class _PartialConstructor(partial):
-    def __init__(self, cls, *posargs, **kwargs):
+    def __init__(self, cls, **kwargs):
         repr = cls.__name__ + '('
-        if posargs:
-            repr += ', '.join('%r' % arg for arg in posargs)
         if kwargs:
             repr += ', '.join('%s=%r' % (k,v) for k,v in kwargs.items())
         self.__repr = repr + ')'
         self.__name__ = cls.__name__
+
+    @property
+    def syntax(self):
+        return self.func._get_syntax(**self.keywords)
+
+    @property
+    def typename(self):
+        return self.func.typename
 
     def __repr__(self):
         return self.__repr
@@ -68,6 +74,76 @@ class StringableMixin():
     def partial(cls, **kwargs):
         return _PartialConstructor(cls, **kwargs)
 
+    def __init__(self, *value, **kwargs):
+        self._kwargs = kwargs
+
+    @property
+    def syntax(self):
+        return self._get_syntax(**self._kwargs)
+
+
+# https://stackoverflow.com/a/5192374
+class classproperty():
+    def __init__(self, f):
+        self.f = f
+
+    def __get__(self, obj, owner):
+        return self.f(owner)
+
+
+class MultitypeMeta(type):
+    def __new__(mcls, name, bases, clsattrs):
+        cls = type.__new__(mcls, name, bases, clsattrs)
+        cls.__name__ = 'Or'.join(subcls.__name__ for subcls in cls._subclses)
+        mcls._subclses = (cls,) + cls._subclses
+        return cls
+
+    @classmethod
+    def __instancecheck__(mcls, inst):
+        for subtype in mcls._subclses:
+            if type(inst) is subtype:
+                return True
+        return False
+
+    @classmethod
+    def __subclasscheck__(mcls, cls):
+        return cls in mcls._subclses[1:]
+
+
+def multitype(*constructors):
+    # Distinguish between constructors (Int.partial(...)) and classes (Int)
+    constructors = tuple(c if isinstance(c, _PartialConstructor) else c.partial()
+                         for c in constructors)
+    subclses = tuple(c.func for c in constructors)
+
+    class Multitype(StringableMixin, metaclass=MultitypeMeta):
+        _constructors = constructors
+        _subclses = subclses
+
+        def __new__(cls, *value, **kwargs):
+            self = cls._get_instance(*value, **kwargs)
+            # Overload syntax string
+            self._get_syntax = lambda cls=cls: cls.syntax
+            return self
+
+        @classmethod
+        def _get_instance(cls, *value, **kwargs):
+            errors = []
+            for const in cls._constructors:
+                try:
+                    return const(*value)
+                except ValueError as e:
+                    errors.append(str(e))
+                except TypeError as e:
+                    errors.append('Not a %s' % const.typename)
+            raise ValueError('; '.join(errors))
+
+        @classproperty
+        def syntax(cls):
+            return ' or '.join((c.syntax for c in cls._constructors))
+
+    return Multitype
+
 
 class String(str, StringableMixin):
     """
@@ -77,7 +153,11 @@ class String(str, StringableMixin):
       minlen: Minimum length of the string
       maxlen: Maximum length of the string
     """
-    def __new__(cls, value, minlen=0, maxlen=_INFINITY):
+    typename = 'string'
+    minlen=0
+    maxlen=_INFINITY
+
+    def __new__(cls, value, *, minlen=minlen, maxlen=maxlen):
         # Convert
         self = super().__new__(cls, value)
 
@@ -87,15 +167,10 @@ class String(str, StringableMixin):
             raise ValueError('Too long (maximum length is %s)' % maxlen)
         if minlen is not None and self_len < minlen:
             raise ValueError('Too short (minimum length is %s)' % minlen)
-
-        self._minlen = minlen
-        self._maxlen = maxlen
         return self
 
-    @property
-    def syntax(self):
-        minlen = self._minlen
-        maxlen = self._maxlen
+    @staticmethod
+    def _get_syntax(minlen=minlen, maxlen=maxlen):
         text = 'string'
         if ((minlen == 1 or minlen <= 0) and
             (maxlen == 1 or maxlen >= _INFINITY)):
@@ -121,29 +196,32 @@ class Bool(str, StringableMixin):
     Options:
     TODO: ...
     """
-    def __new__(cls, value,
-                true=('enabled', 'yes', 'on', 'true', '1'),
-                false=('disabled', 'no', 'off', 'false', '0')):
+    typename = 'boolean'
+    true  = ('true', 'on', 'yes', '1')
+    false = ('false', 'off', 'no', '0')
+
+    def __new__(cls, value, *, true=true, false=false):
+        if isinstance(value, str):
+            _value = value.casefold()
+        else:
+            _value = value
+
         # Validate
-        if value in true:
-            value = true[0]
+        if _value in true:
             is_true = True
-        elif value in false:
-            value = false[0]
+        elif _value in false:
             is_true = False
         else:
-            raise ValueError('Not a boolean value: %r' % value)
+            raise ValueError('Not a %s' % cls.typename)
 
         self = super().__new__(cls, value)
         self._is_true = is_true
-        self._true = true
-        self._false = false
         return self
 
-    @property
-    def syntax(self):
+    @staticmethod
+    def _get_syntax(true=true, false=false):
         pairs = []
-        for pair in zip(self._true, self._false):
+        for pair in zip(true, false):
             pair = tuple(str(val) for val in pair)
             if pair not in pairs:
                 pairs.append(pair)
@@ -160,7 +238,10 @@ class Path(str, StringableMixin):
     Options:
       mustexist: Whether the path must exist on the local file system
     """
-    def __new__(cls, value, mustexist=False):
+    typename = 'path'
+    mustexist = False
+
+    def __new__(cls, value, *, mustexist=mustexist):
         # Convert
         value = os.path.expanduser(os.path.normpath(value))
         self = super().__new__(cls, value)
@@ -171,8 +252,8 @@ class Path(str, StringableMixin):
 
         return self
 
-    @property
-    def syntax(self):
+    @staticmethod
+    def _get_syntax(mustexist=mustexist):
         return 'file system path'
 
     def __str__(self):
@@ -194,22 +275,27 @@ class Tuple(tuple, StringableMixin):
                with <value>
       dedup:   Whether to remove duplicate items
     """
-    def __new__(cls, *value, sep=', ', options=None, aliases={}, dedup=False):
-        # Convert
+    typename = 'list'
+    sep     = ', '
+    options = None
+    aliases = {}
+    dedup   = False
+
+    def __new__(cls, *value, sep=sep, options=options, aliases=options, dedup=dedup):
         def normalize(val):
             if isinstance(val, str):
                 for item in val.split(sep.strip()):
                     yield item.strip()
             else:
                 yield val
-        value = (chain.from_iterable((normalize(item) for item in value)))
 
+        # Convert
+        value = (chain.from_iterable((normalize(item) for item in value)))
         if aliases:
             value = (_resolve_alias(item, aliases) for item in value)
         if dedup:
             _seen = set()
             value = (item for item in value if not (item in _seen or _seen.add(item)))
-
         self = super().__new__(cls, value)
 
         # Validate
@@ -220,26 +306,23 @@ class Tuple(tuple, StringableMixin):
                     's' if len(invalid_items) != 1 else '',
                     sep.join(invalid_items)))
 
-        self._sep = sep
-        self._options = options
-        self._aliases = aliases
         return self
 
-    @property
-    def syntax(self):
-        sep = self._sep.strip()
+    @staticmethod
+    def _get_syntax(sep=sep):
+        sep = sep.strip()
         return '<OPTION>%s<OPTION>%s...' % (sep, sep)
 
     @property
     def options(self):
-        return self._options
+        return self._kwargs['options']
 
     @property
     def aliases(self):
-        return self._aliases
+        return self._kwargs['aliases']
 
     def __str__(self):
-        return self._sep.join(str(item) for item in self)
+        return self._kwargs['sep'].join(str(item) for item in self)
 
 
 class Option(str, StringableMixin):
@@ -251,21 +334,26 @@ class Option(str, StringableMixin):
       aliases: <alias> -> <value> mapping; any occurence of <alias> is replaced
                with <value>
     """
-    def __new__(cls, value, options=(), aliases={}):
+    typename = 'option'
+    options = ()
+    aliases = {}
+
+    def __new__(cls, value, *, options=options, aliases=aliases):
         value = str(value)
         value = _resolve_alias(value, aliases)
         if value not in options:
             raise ValueError('Not one of: %s' % ', '.join((str(o) for o in options)))
         self = super().__new__(cls, value)
-        self._options = options
         return self
 
-    @property
-    def syntax(self):
-        return '|'.join(str(opt) for opt in self._options)
+    @staticmethod
+    def _get_syntax(options=options):
+        return '|'.join(str(opt) for opt in options)
 
 
 class _NumberMixin(StringableMixin):
+    typename = 'number'
+
     converters = {
         'B': {'b': lambda value: value * 8},  # bytes to bits
         'b': {'B': lambda value: value / 8},  # bits to bytes
@@ -282,11 +370,16 @@ class _NumberMixin(StringableMixin):
                         '|)([^\s0-9]*?)$',
                         flags=re.IGNORECASE)
 
-    def __new__(cls, value, unit=None, convert_to=None, prefix=None,
-                hide_unit=None, min=None, max=None, precise=False):
-        log.debug('Making float: value:%r, unit:%r, convert_to:%r, prefix:%r, hide_unit:%r',
-                  value, unit, convert_to, prefix, hide_unit)
+    unit = None
+    convert_to = None
+    prefix = None
+    hide_unit = None
+    min = None
+    max = None
+    precise = False
 
+    def __new__(cls, value, *, unit=unit, convert_to=convert_to, prefix=prefix,
+                hide_unit=hide_unit, min=min, max=max, precise=precise):
         if isinstance(value, cls):
             # Use value's arguments as defaults
             defaults = value._args
@@ -301,11 +394,10 @@ class _NumberMixin(StringableMixin):
 
         # Parse strings
         if isinstance(value, str):
-            # log.debug('Parsing string: %r', value)
             string = str(value)
             match = cls._regex.match(string)
             if match is None:
-                raise ValueError('Not a number: %r' % string)
+                raise ValueError('Not a %s' % cls.typename)
             else:
                 value = float(match.group(1))
                 prfx = match.group(2)
@@ -319,20 +411,15 @@ class _NumberMixin(StringableMixin):
                 elif prfx_len == 1:
                     prefix = 'metric'
 
-                log.debug('Parsed string to %r, unit=%r, prefix=%r', value, unit, prefix)
-
         # Scale number to different unit
         if convert_to is not None and unit != convert_to:
-            log.debug('converting %r from %r to %r', value, unit, convert_to)
             if unit is None:
                 # num has no unit - assume num is already in target unit
                 unit = convert_to
-                log.debug('  assuming %r is already in %r', value, convert_to)
             else:
                 converters = cls.converters
                 if unit in converters and convert_to in converters[unit]:
                     converter = converters[unit][convert_to]
-                    log.debug('  running %r(%r)', converter, value)
                     value = converter(value)
                     unit = convert_to
                 else:
@@ -352,7 +439,7 @@ class _NumberMixin(StringableMixin):
         try:
             self = super().__new__(cls, value)
         except TypeError:
-            raise ValueError('Not a number: %r' % value)
+            raise ValueError('Not a %s' % cls.typename)
 
         self._parent_type = parent_type
         self._str = partial(self.string, unit=not hide_unit, precise=precise)
@@ -362,7 +449,7 @@ class _NumberMixin(StringableMixin):
         elif prefix == 'metric':
             self._prefixes = self._prefixes_metric
         else:
-            raise ValueError("prefix must be 'binary' or 'metric', not {!r}".format(prefix))
+            raise ValueError("prefix must be 'binary' or 'metric'")
 
 
         # Remember arguments so we can copy them if this instance is passed to the same class
@@ -370,9 +457,9 @@ class _NumberMixin(StringableMixin):
                        'min': min, 'max': max, 'precise': precise}
         return self
 
-    @property
-    def syntax(self):
-        prefixes = (p[0] for p in chain(self._prefixes_binary, self._prefixes_metric))
+    @classmethod
+    def _get_syntax(cls, **_):
+        prefixes = (p[0] for p in chain(cls._prefixes_binary, cls._prefixes_metric))
         return '[+|-]<NUMBER>[%s]' % '|'.join(prefixes)
 
     def __str__(self):
@@ -412,9 +499,8 @@ class _NumberMixin(StringableMixin):
             # value implemented.
             result = _INFINITY
         else:
-            parent_func = getattr(self._parent_type, funcname)
-            log.debug('Calling %r(%r, %r, %r)', parent_func, self, args, kwargs)
-            result = parent_func(self, *args, **kwargs)
+            parent_meth = getattr(self._parent_type, funcname)
+            result = parent_meth(self, *args, **kwargs)
 
         if result is NotImplemented and len(args) > 0:
             # This may have happened because `self` is `int` and it got a
@@ -433,11 +519,10 @@ class _NumberMixin(StringableMixin):
         # Determine the appropriate class (1.0 should return a Int)
         if isinstance(result, int) or (result < _INFINITY and
                                        isinstance(result, float) and
-                                       int(result) == result):
+                                       result.is_integer()):
             result_cls = Int
         else:
             result_cls = Float
-        log.debug('result_cls: %r', result_cls)
 
         # Create new instance with copied properties
         return result_cls(result, **self._args)

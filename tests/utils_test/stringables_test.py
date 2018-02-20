@@ -1,15 +1,16 @@
 import unittest
 from stig.utils.stringables import (String, Bool, Path, Tuple, Option, Float,
-                                    Int, StringableMixin)
+                                    Int, StringableMixin, multitype)
 
 
 from contextlib import contextmanager
 class _TestBase(unittest.TestCase):
     @contextmanager
-    def assert_raises(self, exccls, msg):
+    def assert_raises(self, exccls, msg=None):
         with self.assertRaises(exccls) as cm:
             yield
-        self.assertEqual(str(cm.exception), msg)
+        if msg is not None:
+            self.assertEqual(str(cm.exception), msg)
 
 
 class TestStringableMixin(_TestBase):
@@ -31,6 +32,95 @@ class TestStringableMixin(_TestBase):
             self.assertEqual(x, 0)
             self.assertEqual(x.min, exp['min'])
             self.assertEqual(x.max, exp['max'])
+
+    def test_partial_syntax(self):
+        class X(int, StringableMixin):
+            def __new__(cls, i, min=0, max=10):
+                return super().__new__(cls, i)
+
+            @staticmethod
+            def _get_syntax(min=0, max=10):
+                return 'min=%r, max=%r' % (min, max)
+
+        for kwargs in ({}, {'min': 4}, {'max': 6}, {'min': 4, 'max': 6}):
+            self.assertEqual(X(5, **kwargs).syntax,
+                             X.partial(**kwargs).syntax)
+
+
+class Test_multitype(_TestBase):
+    def test_classname(self):
+        mt = multitype(Bool, Float, String)
+        self.assertEqual(mt.__name__, 'BoolOrFloatOrString')
+
+    def test_valid_value_behaves_like_subclass_instance(self):
+        mt = multitype(Float.partial(min=10), String)
+        x = mt(15)
+        self.assertEqual(x, 15.0)
+        self.assertEqual(x+5, 20.0)
+        with self.assert_raises(TypeError):
+            x+'!'
+
+        x = mt('hello')
+        self.assertEqual(x, 'hello')
+        self.assertEqual(x+'!', 'hello!')
+        with self.assert_raises(TypeError):
+            x+5
+
+    def test_test_invalid_value(self):
+        mt = multitype(Bool.partial(true=('yes',), false=('no',)),
+                       Float,
+                       Tuple.partial(options=('a', 'b', 'c')))
+        with self.assert_raises(ValueError, 'Not a boolean; Not a number; Invalid option: hi'):
+            mt('hi')
+        with self.assert_raises(ValueError, 'Not a boolean; Not a number; Invalid option: d'):
+            mt('a', 'b', 'd')
+
+    def test_isinstance(self):
+        mt = multitype(Int,
+                       Tuple.partial(options=('foo', 'bar', 'baz')),
+                       String.partial(minlen=1))
+
+        x = mt(49)
+        self.assertTrue(isinstance(x, mt))
+        self.assertTrue(isinstance(x, Int))
+        self.assertFalse(isinstance(x, String))
+        self.assertFalse(isinstance(x, Tuple))
+
+        x = mt('asdf')
+        self.assertTrue(isinstance(x, mt))
+        self.assertFalse(isinstance(x, Int))
+        self.assertTrue(isinstance(x, String))
+        self.assertFalse(isinstance(x, Tuple))
+
+        for value in (('foo',), ('bar', 'baz')):
+            x = mt(*value)
+            self.assertTrue(isinstance(x, mt))
+            self.assertFalse(isinstance(x, Int))
+            self.assertFalse(isinstance(x, String))
+            self.assertTrue(isinstance(x, Tuple))
+
+    def test_issubclass(self):
+        mt = multitype(Float,
+                       Option.partial(options=('foo', 'bar', 'baz')),
+                       Tuple.partial(sep=' / ', dedup=True))
+
+        for subcls in (Float, Option, Tuple):
+            self.assertTrue(issubclass(subcls, mt))
+
+        for subcls in (String, Int, Path):
+            self.assertFalse(issubclass(subcls, mt))
+
+    def test_syntax_property(self):
+        constructors = (Int.partial(min=-1, max=100),
+                        Option.partial(options=('foo', 'bar')),
+                        String)
+        exp_syntax = ' or '.join((Int.partial(min=-1, max=100).syntax,
+                                  Option.partial(options=('foo', 'bar')).syntax,
+                                  String.partial().syntax))
+        mt = multitype(*constructors)
+        self.assertEqual(mt.syntax, exp_syntax)
+        inst = mt('hello')
+        self.assertEqual(inst.syntax, exp_syntax)
 
 
 class TestString(_TestBase):
@@ -67,17 +157,17 @@ class TestBool(_TestBase):
 
     def test_valid_values(self):
         self.assertTrue(Bool('x', true=('x',), false=('o',)))
-        self.assertFalse(Bool('o', true=('x',), false=('o',)))
+        self.assertFalse(Bool('O', true=('x',), false=('o',)))
         with self.assert_raises(ValueError, "Not a boolean value: '0'"):
             Bool('0', true=('x',), false=('o',))
 
     def test_string(self):
-        for value in ('x', 'y', 'z'):
+        for value in ('x', 'Y', 'z'):
             b = Bool(value, true=('x','y','z'), false=(1, 2, 3))
-            self.assertEqual(str(b), 'x')
+            self.assertEqual(str(b), str(value))
         for value in (1, 2, 3):
             b = Bool(value, true=('x','y','z'), false=(1, 2, 3))
-            self.assertEqual(str(b), '1')
+            self.assertEqual(str(b), str(value))
 
 
 class TestPath(_TestBase):
@@ -167,7 +257,7 @@ class TestFloat(_TestBase):
 
     def test_not_a_number(self):
         for value in ('foo', '25xx02', [1, 2, 3], print):
-            with self.assert_raises(ValueError, 'Not a number: %r' % value):
+            with self.assert_raises(ValueError, 'Not a number'):
                 Float(value)
 
     def test_argument_unit(self):
