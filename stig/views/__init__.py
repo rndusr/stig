@@ -92,11 +92,5 @@ class ColumnBase():
         else:
             return '<{} <UNINITIALIZED>>'.format(type(self).__name__)
 
-
-def _ensure_string_without_unit(value):
-    # We don't want to display the unit (e.g. 'B' or 'b' for file size or
-    # transfer rate) in each cell; it's already displayed in the column header.
-    if hasattr(value, 'str_includes_unit'):
-        return type(value)(value, str_includes_unit=False)
-    else:
-        return value
+def _ensure_hide_unit(value):
+    return type(value)(value, hide_unit=True)

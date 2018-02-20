@@ -17,11 +17,8 @@
 #
 # A type is any callable that converts a single value to the appropriate object.
 #
-# Types are used to convert values from the server by instantiating them
-# normally (e.g. `NumberFloat(1234567)`) and from the user by using the class
-# method `from_string` (e.g. `NumberFloat.from_string('1.3GB')`). Not all types
-# must provide a `from_string` class method (e.g. 'files').
-
+# Types are used to convert values from the server (e.g. `Float(1234567)`) and
+# for some types from the user as strings (e.g. `Float('1.3GB')`).
 
 from ..logging import make_logger
 log = make_logger(__name__)
@@ -31,7 +28,7 @@ import os
 import re
 import time
 
-from . import (NumberFloat, NumberInt, convert)
+from . import (Float, Int, convert)
 from . import constants as const
 from . import utils
 
@@ -47,13 +44,10 @@ def _calc_percent(a, b):
         return 0
 
 
-class Percent(NumberFloat):
-    def __new__(cls, *args, **kwargs):
-        kwargs['unit'] = '%'
-        return super().__new__(cls, *args, **kwargs)
+Percent = Float.partial(unit='%')
 
 
-class Ratio(NumberFloat):
+class Ratio(Float):
     """A Torrent's upload/download ratio as a float"""
     INFINITE = float('inf')
     NOT_APPLICABLE = -1
@@ -66,10 +60,10 @@ class Ratio(NumberFloat):
             return super().without_unit
 
 
-class Count(NumberInt):
+class Count(Int):
     UNKNOWN = -1
     def __str__(self):
-        return '?' if self < 0 else super().__str__()
+        return '?' if self < 0 else super().without_unit
 
 
 class Status(tuple):
@@ -655,7 +649,7 @@ TYPES = {
     'comment'                      : SmartCmpStr,
     'creator'                      : SmartCmpStr,
     'magnetlink'                   : str,
-    'count-pieces'                 : NumberInt,
+    'count-pieces'                 : Int,
 
     '%downloaded'                  : Percent,
     '%uploaded'                    : Percent,
@@ -663,9 +657,9 @@ TYPES = {
     '%verified'                    : Percent,
     '%available'                   : Percent,
 
-    'peers-connected'              : NumberInt,
-    'peers-uploading'              : NumberInt,
-    'peers-downloading'            : NumberInt,
+    'peers-connected'              : Int,
+    'peers-uploading'              : Int,
+    'peers-downloading'            : Int,
     'peers-seeding'                : Count,
 
     'timespan-eta'                 : Timedelta,

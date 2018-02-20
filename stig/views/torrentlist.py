@@ -14,7 +14,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import (ColumnBase, _ensure_string_without_unit)
+from . import (ColumnBase, _ensure_hide_unit)
 
 COLUMNS = {}
 ALIASES = { '%avail'   : '%available',
@@ -145,7 +145,7 @@ class Progress(ColumnBase):
             value = metadata
         else:
             value = downloaded
-        return _ensure_string_without_unit(value)
+        return _ensure_hide_unit(value)
 
     def get_value(self):
         t = self.data
@@ -166,10 +166,9 @@ class PercentAvailable(ColumnBase):
     @staticmethod
     def _get_value(perc_available, peers_seeding):
         if peers_seeding > 0:
-            NumberFloat = type(perc_available)
-            return NumberFloat(100, str_includes_unit=False)
+            return type(perc_available)(100, unit='%', hide_unit=True)
         else:
-            return _ensure_string_without_unit(perc_available)
+            return _ensure_hide_unit(perc_available)
 
     def get_value(self):
         t = self.data
@@ -203,7 +202,7 @@ class Size(ColumnBase):
     needed_keys = ('size-final',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['size-final'])
+        return self._from_cache(_ensure_hide_unit, self.data['size-final'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -222,7 +221,7 @@ class Downloaded(ColumnBase):
     needed_keys = ('size-downloaded', 'size-final')
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['size-downloaded'])
+        return self._from_cache(_ensure_hide_unit, self.data['size-downloaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -241,7 +240,7 @@ class Uploaded(ColumnBase):
     needed_keys = ('size-uploaded', 'size-downloaded')
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['size-uploaded'])
+        return self._from_cache(_ensure_hide_unit, self.data['size-uploaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -262,9 +261,9 @@ class BytesAvailable(ColumnBase):
     @staticmethod
     def _get_value(size_final, size_available, peers_seeding):
         if peers_seeding > 0:
-            return _ensure_string_without_unit(size_final)
+            return _ensure_hide_unit(size_final)
         else:
-            return _ensure_string_without_unit(size_available)
+            return _ensure_hide_unit(size_available)
 
     def get_value(self):
         t = self.data
@@ -287,7 +286,7 @@ class RateDown(ColumnBase):
     needed_keys = ('rate-down',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['rate-down'])
+        return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -306,7 +305,7 @@ class RateUp(ColumnBase):
     needed_keys = ('rate-up',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['rate-up'])
+        return self._from_cache(_ensure_hide_unit, self.data['rate-up'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -325,7 +324,7 @@ class RateLimitDown(ColumnBase):
     needed_keys = ('limit-rate-down',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['limit-rate-down'])
+        return self._from_cache(_ensure_hide_unit, self.data['limit-rate-down'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -344,7 +343,7 @@ class RateLimitUp(ColumnBase):
     needed_keys = ('limit-rate-up',)
 
     def get_value(self):
-        return self._from_cache(_ensure_string_without_unit, self.data['limit-rate-up'])
+        return self._from_cache(_ensure_hide_unit, self.data['limit-rate-up'])
 
     def get_raw(self):
         return int(self.get_value())

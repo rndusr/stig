@@ -9,8 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ._number import (NumberFloat, NumberInt, pretty_float, DataCountConverter)
+from ._number import (NumberFloat, NumberInt)
+
 from ._string import (striplines, strwidth, strcrop, stralign, crop_and_align)
+from ._converter import DataCountConverter
 
 from types import SimpleNamespace
 convert = SimpleNamespace(bandwidth=DataCountConverter(),

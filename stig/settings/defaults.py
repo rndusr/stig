@@ -74,7 +74,7 @@ def init_defaults(cfg):
             default='localhost',
             description='Hostname or IP of Transmission RPC interface')
     cfg.add('connect.port',
-            Int.partial(min=1, max=65535, precise=True),
+            Int.partial(min=1, max=65535, prefix='none'),
             default=9091,
             description='Port of Transmission RPC interface')
     cfg.add('connect.path',

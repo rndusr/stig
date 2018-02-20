@@ -14,7 +14,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from . import (ColumnBase, _ensure_string_without_unit)
+from . import (ColumnBase, _ensure_hide_unit)
 
 
 COLUMNS = {}
@@ -44,7 +44,7 @@ class Size(ColumnBase):
     min_width = 6
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['size-total'])
+        return _ensure_hide_unit(self.data['size-total'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -62,7 +62,7 @@ class Downloaded(ColumnBase):
     min_width = 6
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['size-downloaded'])
+        return _ensure_hide_unit(self.data['size-downloaded'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -80,7 +80,7 @@ class Progress(ColumnBase):
     min_width = 4
 
     def get_value(self):
-        return _ensure_string_without_unit(self.data['progress'])
+        return _ensure_hide_unit(self.data['progress'])
 
     def get_raw(self):
         return int(self.get_value())
@@ -129,7 +129,7 @@ def create_directory_data(name, tree, filtered_count=0):
 
     def sum_size(tfiles, key):
         sizes = tuple(tfile[key] for tfile in tfiles)
-        # Preserve the original type (NumberFloat)
+        # Preserve the original type (Float)
         first_size = sizes[0]
         start_value = type(first_size)(0, unit=first_size.unit, prefix=first_size.prefix)
         return sum(sizes, start_value)
