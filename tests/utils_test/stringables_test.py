@@ -158,7 +158,7 @@ class TestBool(_TestBase):
     def test_valid_values(self):
         self.assertTrue(Bool('x', true=('x',), false=('o',)))
         self.assertFalse(Bool('O', true=('x',), false=('o',)))
-        with self.assert_raises(ValueError, "Not a boolean value: '0'"):
+        with self.assert_raises(ValueError, 'Not a boolean'):
             Bool('0', true=('x',), false=('o',))
 
     def test_string(self):
@@ -262,28 +262,30 @@ class TestFloat(_TestBase):
 
     def test_argument_unit(self):
         n = Float(100, unit='A')
-        self.assertEqual(n.string(unit=True), '100A')
-        self.assertEqual(n.string(unit=False), '100')
+        self.assertEqual(n.with_unit, '100A')
+        self.assertEqual(n.without_unit, '100')
         n = Float(100)
-        self.assertEqual(n.string(unit=True), '100')
-        self.assertEqual(n.string(unit=False), '100')
+        self.assertEqual(n.with_unit, '100')
+        self.assertEqual(n.without_unit, '100')
 
     def test_argument_prefix(self):
         n = Float(1e6, prefix='metric')
         self.assertEqual(str(n), '1M')
         n = Float(2**20, prefix='binary')
         self.assertEqual(str(n), '1Mi')
+        n = Float(1e6, prefix='none')
+        self.assertEqual(str(n), '1000000')
 
     def test_argument_hide_unit(self):
         n = Float(1e6, unit='f', hide_unit=True)
         self.assertEqual(str(n), '1M')
-        self.assertEqual(n.string(unit=False), '1M')
-        self.assertEqual(n.string(unit=True), '1Mf')
+        self.assertEqual(n.without_unit, '1M')
+        self.assertEqual(n.with_unit, '1Mf')
 
         n = Float(1e6, unit='f', hide_unit=False)
         self.assertEqual(str(n), '1Mf')
-        self.assertEqual(n.string(unit=False), '1M')
-        self.assertEqual(n.string(unit=True), '1Mf')
+        self.assertEqual(n.without_unit, '1M')
+        self.assertEqual(n.with_unit, '1Mf')
 
     def test_argument_convert_to(self):
         n = Float(1000, unit='B', convert_to='b')
@@ -305,13 +307,6 @@ class TestFloat(_TestBase):
         Float(100, max=100)
         with self.assert_raises(ValueError, 'Too big (maximum is 100)'):
             Float(100.1, max=100)
-
-    def test_argument_precise(self):
-        self.assertEqual(str(Float(100.123, precise=True)), '100.123')
-        self.assertEqual(str(Float(100.123, precise=False)), '100')
-        self.assertEqual(str(Float(1000003, precise=True)), '1000003')
-        self.assertEqual(str(Float(1000003, precise=False)), '1M')
-        self.assertEqual(str(Int('1.23456789k', precise=True)), '1235')
 
     def test_parsing_strings(self):
         for string,exp_num in (
@@ -380,20 +375,20 @@ class TestFloat(_TestBase):
                         self.assertEqual(str(copy), exp_string)
 
     def test_string_has_reasonable_number_of_decimal_points(self):
-        self.assertEqual(Float(0).string(unit=False), '0')
-        self.assertEqual(Float(0.009).string(unit=False), '0.01')
-        self.assertEqual(Float(0.09123).string(unit=False), '0.09')
-        self.assertEqual(Float(5.001).string(unit=False), '5')
-        self.assertEqual(Float(8.999).string(unit=False), '9')
-        self.assertEqual(Float(9.09123).string(unit=False), '9.09')
-        self.assertEqual(Float(10.09123).string(unit=False), '10.1')
-        self.assertEqual(Float(79.999).string(unit=False), '80')
-        self.assertEqual(Float(99.09123).string(unit=False), '99.1')
-        self.assertEqual(Float(99.95).string(unit=False), '100')
+        self.assertEqual(str(Float(0)), '0')
+        self.assertEqual(str(Float(0.009)), '0.01')
+        self.assertEqual(str(Float(0.09123)), '0.09')
+        self.assertEqual(str(Float(5.001)), '5')
+        self.assertEqual(str(Float(8.999)), '9')
+        self.assertEqual(str(Float(9.09123)), '9.09')
+        self.assertEqual(str(Float(10.09123)), '10.1')
+        self.assertEqual(str(Float(79.999)), '80')
+        self.assertEqual(str(Float(99.09123)), '99.1')
+        self.assertEqual(str(Float(99.95)), '100')
 
     def test_infinity_has_correct_sign(self):
-        self.assertEqual(Float(float('inf')).string(unit=False), '∞')
-        self.assertEqual(Float(-float('inf')).string(unit=False), '-∞')
+        self.assertEqual(str(Float(float('inf'))), '∞')
+        self.assertEqual(str(Float(-float('inf'))), '-∞')
 
     def test_arithmetic_operation_returns_correct_type(self):
         self.assertIsInstance(Float(2.5) + 1.5, Int)

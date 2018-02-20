@@ -376,10 +376,9 @@ class _NumberMixin(StringableMixin):
     hide_unit = None
     min = None
     max = None
-    precise = False
 
     def __new__(cls, value, *, unit=unit, convert_to=convert_to, prefix=prefix,
-                hide_unit=hide_unit, min=min, max=max, precise=precise):
+                hide_unit=hide_unit, min=min, max=max):
         if isinstance(value, cls):
             # Use value's arguments as defaults
             defaults = value._args
@@ -442,19 +441,24 @@ class _NumberMixin(StringableMixin):
             raise ValueError('Not a %s' % cls.typename)
 
         self._parent_type = parent_type
-        self._str = partial(self.string, unit=not hide_unit, precise=precise)
+
+        if hide_unit:
+            self._str = lambda: self.without_unit
+        else:
+            self._str = lambda: self.with_unit
 
         if prefix == 'binary':
             self._prefixes = self._prefixes_binary
         elif prefix == 'metric':
             self._prefixes = self._prefixes_metric
+        elif prefix == 'none':
+            self._prefixes = ()
         else:
             raise ValueError("prefix must be 'binary' or 'metric'")
 
-
         # Remember arguments so we can copy them if this instance is passed to the same class
         self._args = {'unit': unit, 'prefix': prefix, 'hide_unit': hide_unit,
-                       'min': min, 'max': max, 'precise': precise}
+                       'min': min, 'max': max}
         return self
 
     @classmethod
@@ -465,32 +469,31 @@ class _NumberMixin(StringableMixin):
     def __str__(self):
         return self._str()
 
-    def string(self, unit=True, precise=False):
-        """String representation"""
-        def get_unit():
-            if unit:
-                unit_str = self._args['unit']
-                if unit_str is not None:
-                    return unit_str
-            return ''
+    @property
+    def with_unit(self):
+        """String representation including unit"""
+        s = self.without_unit
+        unit = self._args['unit']
+        if unit is not None:
+            s += unit
+        return s
 
+    @property
+    def without_unit(self):
+        """String representation excluding unit"""
         absolute = abs(self)
         if self == 0:
             # This should increase efficiency since 0 is a common value
             return '0'
         elif absolute >= _INFINITY:
             return _pretty_float(self)
-        elif precise:
-            return str(self._parent_type(self)).rstrip('0').rstrip('.') + get_unit()
         else:
-            def stringify():
-                for prefix,size in self._prefixes:
-                    if absolute >= size:
-                        # Converting to float/int before doing the math is faster
-                        # because we overload math operators.
-                        return _pretty_float(float(self) / size) + prefix
-                return _pretty_float(self)
-            return stringify() + get_unit()
+            for prefix,size in self._prefixes:
+                if absolute >= size:
+                    # Converting to float/int before doing the math is faster
+                    # because we overload math operators.
+                    return _pretty_float(float(self) / size) + prefix
+            return _pretty_float(self)
 
     def _do_math(self, funcname, *args, **kwargs):
         # Get the new value as int or float
