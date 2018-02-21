@@ -254,6 +254,8 @@ class TestFloat(_TestBase):
     def test_syntax(self):
         self.assertEqual(Float('1').syntax,
                          '[+|-]<NUMBER>[Ti|Gi|Mi|Ki|T|G|M|k]')
+        self.assertEqual(Float('1', min=0).syntax,
+                         '<NUMBER>[Ti|Gi|Mi|Ki|T|G|M|k]')
 
     def test_not_a_number(self):
         for value in ('foo', '25xx02', [1, 2, 3], print):

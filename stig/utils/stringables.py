@@ -462,9 +462,12 @@ class _NumberMixin(StringableMixin):
         return self
 
     @classmethod
-    def _get_syntax(cls, **_):
+    def _get_syntax(cls, **kwargs):
         prefixes = (p[0] for p in chain(cls._prefixes_binary, cls._prefixes_metric))
-        return '[+|-]<NUMBER>[%s]' % '|'.join(prefixes)
+        syntax = '<NUMBER>[%s]' % '|'.join(prefixes)
+        if kwargs.get('min', -_INFINITY) < 0:
+            syntax = '[+|-]' + syntax
+        return syntax
 
     def __str__(self):
         return self._str()
