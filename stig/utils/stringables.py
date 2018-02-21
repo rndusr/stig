@@ -124,6 +124,7 @@ def multitype(*constructors):
             self = cls._get_instance(*value, **kwargs)
             # Overload syntax string
             self._get_syntax = lambda cls=cls: cls.syntax
+            self.typename = cls.typename
             return self
 
         @classmethod
@@ -137,6 +138,10 @@ def multitype(*constructors):
                 except TypeError as e:
                     errors.append('Not a %s' % const.typename)
             raise ValueError('; '.join(errors))
+
+        @classproperty
+        def typename(cls):
+            return ' or '.join((s.typename for s in cls._subclses))
 
         @classproperty
         def syntax(cls):

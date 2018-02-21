@@ -110,7 +110,7 @@ class Test_multitype(_TestBase):
         for subcls in (String, Int, Path):
             self.assertFalse(issubclass(subcls, mt))
 
-    def test_syntax_property(self):
+    def test_syntax(self):
         constructors = (Int.partial(min=-1, max=100),
                         Option.partial(options=('foo', 'bar')),
                         String)
@@ -121,6 +121,18 @@ class Test_multitype(_TestBase):
         self.assertEqual(mt.syntax, exp_syntax)
         inst = mt('hello')
         self.assertEqual(inst.syntax, exp_syntax)
+
+    def test_typename(self):
+        constructors = (Int.partial(min=-1, max=100),
+                        Option.partial(options=('foo', 'bar')),
+                        String)
+        exp_typename = ' or '.join((Int.partial(min=-1, max=100).typename,
+                                    Option.partial(options=('foo', 'bar')).typename,
+                                    String.partial().typename))
+        mt = multitype(*constructors)
+        self.assertEqual(mt.typename, exp_typename)
+        inst = mt('hello')
+        self.assertEqual(inst.typename, exp_typename)
 
 
 class TestString(_TestBase):
