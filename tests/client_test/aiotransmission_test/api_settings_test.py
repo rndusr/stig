@@ -74,11 +74,6 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIn(setting.value, (True, False))
 
     async def test_string_method(self):
-        from logging import getLogger
-        log = getLogger(__name__)
-        setting = self.api['dht']
-        log.debug('setting: %r, %r', setting, type(setting))
-        log.debug('string method: %r', setting.string)
         self.api.clearcache()
         self.assertIs(setting.string(), str(const.DISCONNECTED))
         await self.api.update()
