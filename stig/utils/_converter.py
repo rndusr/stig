@@ -20,6 +20,7 @@ class DataCountConverter():
     Convert bits to bytes or vice versa, ensuring a Float instance with a common
     unit prefix
     """
+    __slots__ = ('_unit', '_prefix')
 
     _short = {'bit': 'b', 'byte': 'B'}
 
