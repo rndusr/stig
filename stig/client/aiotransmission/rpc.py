@@ -257,7 +257,7 @@ class TransmissionRPC():
 
     async def __reset(self):
         if self.__session is not None:
-            self.__session.close()
+            await self.__session.close()
         self.__session = None
         self.__version = None
         self.__rpcversion = None
