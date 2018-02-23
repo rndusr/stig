@@ -30,9 +30,6 @@ class PerfectInterval():
             return interval
 
 
-# Borrow Timeout class from aiohttp until asyncio this is solved:
-# https://github.com/python/asyncio/issues/392
-from aiohttp import Timeout as AsyncIOTimeout
 import asyncio
 class SleepUneasy():
     """Asynchronous sleep() that can be aborted"""
@@ -48,8 +45,7 @@ class SleepUneasy():
         # Remove processing time from seconds
         seconds = self._perfint(seconds)
         try:
-            with AsyncIOTimeout(seconds, loop=self.loop):
-                await self._interrupt.wait()
+            await asyncio.wait_for(self._interrupt.wait(), timeout=60)
         except asyncio.TimeoutError:
             pass  # Interval passed without interrupt
         finally:

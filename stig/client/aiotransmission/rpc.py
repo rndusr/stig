@@ -265,7 +265,7 @@ class TransmissionRPC():
         self.__connection_tested = False
 
     async def __post(self, data):
-        with aiohttp.Timeout(self.timeout, loop=self.loop):
+        async def request():
             try:
                 response = await self.__session.post(str(self.__url), data=data, headers=self.__headers)
             except aiohttp.ClientError as e:
@@ -294,6 +294,7 @@ class TransmissionRPC():
                         raise RPCError('Server sent malformed JSON: {}'.format(text))
                     else:
                         return answer
+        return await asyncio.wait_for(request(), timeout=self.timeout)
 
     async def __send_request(self, post_data):
         """Send RPC POST request to daemon
