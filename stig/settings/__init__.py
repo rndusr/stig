@@ -68,6 +68,10 @@ class Settings(abc.Mapping):
         """Return setting's description"""
         return self._descriptions[name]
 
+    def syntax(self, name):
+        """Return setting's description"""
+        return self._constructors[name].syntax
+
     def validate(self, name, value):
         """Pass `value` to `name`'s constructor and return the result"""
         return self._constructors[name](value)

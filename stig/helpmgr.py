@@ -133,7 +133,7 @@ class HelpManager():
                     opt_strs[-1] += ' (%s)' % (', '.join(aliases))
             lines.append('\tOptions: \t' + ', '.join(opt_strs))
 
-        lines.append('\tSyntax: \t' + value.syntax)
+        lines.append('\tSyntax: \t' + cfg.syntax(name))
 
         return finalize_lines(lines)
 
