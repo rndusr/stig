@@ -309,9 +309,10 @@ class TransmissionRPC():
             log.debug('Calling "disconnected" callbacks for %s', self.url)
             self._on_disconnected.send(self)
 
-    def _reset(self):
+
+    async def _reset(self):
         if self._session is not None:
-            self._session.close()
+            await self._session.close()
         self._session = None
         self._version = None
         self._rpcversion = None
@@ -319,8 +320,7 @@ class TransmissionRPC():
         self._connection_tested = False
 
     async def _post(self, data):
-        import aiohttp
-        with aiohttp.Timeout(self.timeout, loop=self.loop):
+        async def request():
             try:
                 response = await self._session.post(self.url,
                                                     data=data,
@@ -352,6 +352,7 @@ class TransmissionRPC():
                         raise RPCError('Server sent malformed JSON: %s' % text)
                     else:
                         return answer
+        return await asyncio.wait_for(request(), timeout=self.timeout)
 
     async def _send_request(self, post_data):
         """

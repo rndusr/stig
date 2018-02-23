@@ -41,13 +41,11 @@ class SleepUneasy():
 
     async def sleep(self, seconds):
         """Sleep for `seconds` or until `interrupt` is called"""
-        from aiohttp import Timeout as AsyncIOTimeout
         self._interrupt.clear()
         # Remove processing time from seconds
         seconds = self._perfint(seconds)
         try:
-            with AsyncIOTimeout(seconds, loop=self.loop):
-                await self._interrupt.wait()
+            await asyncio.wait_for(self._interrupt.wait(), timeout=60)
         except asyncio.TimeoutError:
             pass  # Interval passed without interrupt
         finally:

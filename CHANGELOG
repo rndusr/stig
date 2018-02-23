@@ -15,6 +15,11 @@
     * Catch SIGINT (<ctrl-c>) in CLI mode
 
 
+2018-02-23 0.8.2a
+  Fixed bugs:
+    * Compatibility with aiohttp 3.0
+
+
 2017-11-27 0.8.1a
   Fixed bugs:
     * stig crashed with "'TransmissionURL' object has no attribute 'username'"
