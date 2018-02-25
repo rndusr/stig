@@ -22,6 +22,7 @@ from blinker import Signal
 from urllib.parse import urlsplit
 import re
 import warnings
+import async_timeout
 
 from ..errors import (URLParserError, ConnectionError, RPCError, AuthError, ClientError)
 from ..utils import URL
@@ -265,9 +266,12 @@ class TransmissionRPC():
         self.__connection_tested = False
 
     async def __post(self, data):
-        async def request():
+        with async_timeout.timeout(self.timeout):
             try:
                 response = await self.__session.post(str(self.__url), data=data, headers=self.__headers)
+            except asyncio.CancelledError as e:
+                log.debug('Caught TimeoutError: %r', e)
+                raise ConnectionError('Timeout after {}s: {}'.format(self.timeout, self.url))
             except aiohttp.ClientError as e:
                 log.debug('Caught during POST request: %r', e)
                 raise ConnectionError(str(self.url))
@@ -294,7 +298,6 @@ class TransmissionRPC():
                         raise RPCError('Server sent malformed JSON: {}'.format(text))
                     else:
                         return answer
-        return await asyncio.wait_for(request(), timeout=self.timeout)
 
     async def __send_request(self, post_data):
         """Send RPC POST request to daemon
@@ -311,9 +314,6 @@ class TransmissionRPC():
         except OSError as e:
             log.debug('Caught OSError: %r', e)
             raise ConnectionError(str(self.url))
-        except asyncio.TimeoutError as e:
-            log.debug('Caught TimeoutError: %r', e)
-            raise ConnectionError('Timeout after {}s: {}'.format(self.timeout, self.url))
         else:
             if answer['result'] != 'success':
                 raise RPCError(answer['result'].capitalize())
