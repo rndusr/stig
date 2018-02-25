@@ -168,15 +168,16 @@ def run():
 
         return True
 
+    exit_code = 0
+
     # Run commands either in CLI or TUI mode
     if cmdmgr.active_interface == 'cli':
         # Exit when pipe is closed (e.g. `stig help | head -1`)
         import signal
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
         try:
             if not run_commands():
-                sys.exit(1)
+                exit_code = 1
         except KeyboardInterrupt:
             log.debug('Caught SIGINT')
 
@@ -184,14 +185,28 @@ def run():
         from .tui import main as tui
         cmdmgr.resources.update(tui=tui)
         if not tui.run(run_commands):
-            sys.exit(1)
+            exit_code = 1
 
-    _cancel_unfinished_tasks()
+    # Terminate any remaining tasks
+    tasks = tuple(task for task in asyncio.Task.all_tasks() if not task.done())
+    if tasks:
+        log.debug('Not all tasks have been properly canceled.')
+        for task in tasks:
+            log.debug('Terminating leftover task: %r', task)
+            task.cancel()
+            try:
+                aioloop.run_until_complete(asyncio.wait_for(task, timeout=None))
+                task.result()
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                pass
 
+    aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
     # # Closing the event loop raises "RuntimeError: Event loop is closed" (not
     # # always) when a `run_in_executor` command (i.e. a thread) is cancelled.
     # # https://github.com/python/asyncio/issues/258
     # aioloop.close()
+    sys.exit(exit_code)
+
 
 def _cancel_unfinished_tasks():
     pending = (task for task in asyncio.Task.all_tasks() if not task.done())

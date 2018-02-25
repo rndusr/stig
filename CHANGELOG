@@ -15,6 +15,12 @@
     * Catch SIGINT (<ctrl-c>) in CLI mode
 
 
+2018-02-25 0.8.3a
+  Fixed bugs:
+    * Remove hardcoded 60 second interval so updates heed the 'tui.poll' setting
+    * Fix ugly error message on exit if command fails
+
+
 2018-02-23 0.8.2a
   Fixed bugs:
     * Compatibility with aiohttp 3.0

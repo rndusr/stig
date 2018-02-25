@@ -45,7 +45,7 @@ class SleepUneasy():
         # Remove processing time from seconds
         seconds = self._perfint(seconds)
         try:
-            await asyncio.wait_for(self._interrupt.wait(), timeout=60)
+            await asyncio.wait_for(self._interrupt.wait(), timeout=seconds)
         except asyncio.TimeoutError:
             pass  # Interval passed without interrupt
         finally:

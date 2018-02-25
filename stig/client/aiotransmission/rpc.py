@@ -19,6 +19,7 @@ import json
 import textwrap
 from blinker import Signal
 import warnings
+import async_timeout
 
 from ..errors import (ConnectionError, RPCError, AuthError, ClientError)
 
@@ -68,7 +69,7 @@ class TransmissionRPC():
     def __del__(self, _warnings=warnings):
         if self._session is not None and not self._session.closed:
             _warnings.warn('disconnect() wasn\'t called', ResourceWarning)
-            self._session.close()
+            asyncio.ensure_future(self._session.close())
 
     def on(self, signal, callback, autoremove=True):
         """
@@ -309,7 +310,6 @@ class TransmissionRPC():
             log.debug('Calling "disconnected" callbacks for %s', self.url)
             self._on_disconnected.send(self)
 
-
     async def _reset(self):
         if self._session is not None:
             await self._session.close()
@@ -319,12 +319,13 @@ class TransmissionRPC():
         self._rpcversionmin = None
         self._connection_tested = False
 
-    async def _post(self, data):
-        async def request():
+    async def __post(self, data):
+        with async_timeout.timeout(self.timeout):
             try:
-                response = await self._session.post(self.url,
-                                                    data=data,
-                                                    headers=self._headers)
+                response = await self._session.post(str(self._url), data=data, headers=self._headers)
+            except asyncio.CancelledError as e:
+                log.debug('Caught TimeoutError: %r', e)
+                raise ConnectionError('Timeout after {}s: {}'.format(self.timeout, self.url))
             except aiohttp.ClientError as e:
                 log.debug('Caught during POST request: %r', e)
                 raise ConnectionError(self.url)
@@ -352,7 +353,6 @@ class TransmissionRPC():
                         raise RPCError('Server sent malformed JSON: %s' % text)
                     else:
                         return answer
-        return await asyncio.wait_for(request(), timeout=self.timeout)
 
     async def _send_request(self, post_data):
         """
@@ -369,10 +369,7 @@ class TransmissionRPC():
             answer = await self._post(post_data)
         except OSError as e:
             log.debug('Caught OSError: %r', e)
-            raise ConnectionError(self.url)
-        except asyncio.TimeoutError as e:
-            log.debug('Caught TimeoutError: %r', e)
-            raise ConnectionError('Timeout after %ds: %s' % (self.timeout, self.url))
+            raise ConnectionError(str(self.url))
         else:
             if answer['result'] != 'success':
                 raise RPCError(answer['result'].capitalize())
