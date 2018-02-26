@@ -152,7 +152,8 @@ def multitype(*constructors):
 
         @classproperty
         def typename(cls):
-            return ' or '.join((s.typename for s in cls._subclses))
+            return ' or '.join((s.typename for s in cls._subclses
+                                if s.typename))
 
         @classproperty
         def syntax(cls):
