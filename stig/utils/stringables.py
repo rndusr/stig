@@ -77,6 +77,14 @@ class StringableMixin():
     def __init__(self, *value, **kwargs):
         self._kwargs = kwargs
 
+    def copy(self, *value, **kwargs):
+        new_kwargs = {**self._kwargs, **kwargs}
+        new_posargs = value if len(value) > 0 else self
+        if not isinstance(new_posargs, Iterable):
+            new_posargs = (new_posargs,)
+        cls = type(self)
+        return type(self)(*new_posargs, **new_kwargs)
+
     @property
     def syntax(self):
         return self._get_syntax(**self._kwargs)

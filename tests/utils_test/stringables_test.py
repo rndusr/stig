@@ -46,6 +46,28 @@ class TestStringableMixin(_TestBase):
             self.assertEqual(X(5, **kwargs).syntax,
                              X.partial(**kwargs).syntax)
 
+    def test_copy(self):
+        class X(int, StringableMixin):
+            def __new__(cls, i, a=1, b=2, c=3):
+                print('making %r with a=%r, b=%r, c=%r' % (cls, a, b, c))
+                inst = super().__new__(cls, i)
+                inst.a = a
+                inst.b = b
+                inst.c = c
+                return inst
+
+        x = X(5, a=10, b=20)
+        self.assertEqual(x, 5)
+        self.assertEqual((x.a, x.b, x.c), (10, 20, 3))
+
+        y = x.copy(a=100)
+        self.assertEqual(y, 5)
+        self.assertEqual((y.a, y.b, y.c), (100, 20, 3))
+
+        z = y.copy(5000, b=2000, c=3000)
+        self.assertEqual(z, 5000)
+        self.assertEqual((z.a, z.b, z.c), (100, 2000, 3000))
+
 
 class Test_multitype(_TestBase):
     def test_classname(self):
