@@ -519,6 +519,18 @@ class _NumberMixin(StringableMixin):
                     return _pretty_float(float(self) / size) + prefix
             return _pretty_float(self)
 
+    @property
+    def unit(self):
+        return self._args['unit']
+
+    @property
+    def hide_unit(self):
+        return self._args['hide_unit']
+
+    @property
+    def prefix(self):
+        return self._args['prefix']
+
     def _do_math(self, funcname, *args, **kwargs):
         # Get the new value as int or float
         if self >= _INFINITY:
