@@ -76,12 +76,6 @@ class Settings(abc.Mapping):
         """Pass `value` to `name`'s constructor and return the result"""
         return self._constructors[name](value)
 
-    def rename(self, old, new):
-        """Change setting's name from `old` to `new`"""
-        for dct in (self._values, self._constructors, self._signals):
-            dct[new] = dct[old]
-            del dct[old]
-
     def on_change(self, callback, name=None, autoremove=True):
         """
         Run `callback` every time a value changes
