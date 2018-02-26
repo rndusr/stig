@@ -210,8 +210,9 @@ class Bool(str, StringableMixin):
     TODO: ...
     """
     typename = 'boolean'
-    true  = ('true', 'on', 'yes', '1')
-    false = ('false', 'off', 'no', '0')
+
+    true  = ('enabled', 'yes', 'on', 'true', '1')
+    false = ('disabled', 'no', 'off', 'false', '0')
 
     def __new__(cls, value, *, true=true, false=false):
         if isinstance(value, str):
@@ -224,6 +225,9 @@ class Bool(str, StringableMixin):
             is_true = True
         elif _value in false:
             is_true = False
+        elif isinstance(_value, bool):
+            is_true = bool(_value)
+            value = str(_value).lower()
         else:
             raise ValueError('Not a %s' % cls.typename)
 
