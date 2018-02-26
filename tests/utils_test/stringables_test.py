@@ -203,6 +203,16 @@ class TestBool(_TestBase):
             b = Bool(value, true=('x','y','z'), false=(1, 2, 3))
             self.assertEqual(str(b), str(value))
 
+    def test_equality(self):
+        B = Bool.partial(true=('x','y','z'), false=(1, 2, 3))
+        self.assertEqual(B('x'), B('y'))
+        self.assertEqual(B('y'), B('z'))
+        self.assertEqual(B('z'), True)
+
+        self.assertEqual(B(1), B(2))
+        self.assertEqual(B(2), B(3))
+        self.assertEqual(B(3), False)
+
 
 class TestPath(_TestBase):
     def test_syntax(self):

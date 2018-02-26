@@ -243,6 +243,17 @@ class Bool(str, StringableMixin):
     def __bool__(self):
         return self._is_true
 
+    def __eq__(self, other):
+        if isinstance(other, bool):
+            return other == self._is_true
+        elif isinstance(other, type(self)):
+            return other._is_true == self._is_true
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Path(str, StringableMixin):
     """
