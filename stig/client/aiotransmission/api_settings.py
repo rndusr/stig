@@ -15,14 +15,15 @@ log = make_logger(__name__)
 import blinker
 from collections import abc
 from types import MethodType
+from types import SimpleNamespace
+import os
 
 from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
-from ..usertypes import (RateLimitRemoteValue, BooleanRemoteValue,
-                         IntegerRemoteValue, OptionRemoteValue,
-                         RateLimitRemoteValue, PortRemoteValue,
-                         PathCompleteRemoteValue, PathIncompleteRemoteValue)
+
+from ..utils import (Bool, Option, Int, Path, BoolOrPath, BoolOrBandwidth)
+
 
 
 # Transform key (as in `settings[key]`) to property name and vice versa
@@ -31,24 +32,25 @@ def _key2property(key):
 def _property2key(property_name):
     return property_name.replace('_', '.')
 
-# _TYPES maps names of settings to callables that return a new *RemoteValue instance
-_TYPES = {}
+
+_SETTINGS = {}
 def _setting(value_cls, **kwargs):
     """Decorator for SettingsAPI properties"""
     def wrap(method):
         property_name = method.__name__
         setting_name = _property2key(property_name)
-        def mk_value_inst(api):
-            if 'description' not in kwargs:
-                kwargs['description'] = getattr(SettingsAPI, property_name).__doc__
-            return value_cls(setting_name,
-                             upgrade=MethodType(method, api),
-                             remote_getter=getattr(api, 'get_' + property_name),
-                             setter=getattr(api, 'set_' + property_name),
-                             **kwargs)
-        _TYPES[setting_name] = mk_value_inst
+        description = kwargs.pop('description') if 'description' in kwargs else None
+        converter = value_cls.partial(**kwargs)
+
+        def get_typespec(api):
+            return SimpleNamespace(
+                converter=converter,
+                description=description or getattr(type(api), property_name).__doc__)
+        _SETTINGS[setting_name] = get_typespec
+
         return property(method)
     return wrap
+
 
 class SettingsAPI(abc.Mapping, RequestPoller):
     """
@@ -59,14 +61,14 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     `get_*` methods are coroutine functions that fetch values from the server.
 
-    Cached values that are updated every `interval` seconds are available as
-    properties with 'get_' removed from the equivalent method name.  Use
-    `on_change` to set a callback for interval updates.
+    Cached values, which are updated every `interval` seconds, are available as
+    properties with 'get_' removed from the equivalent method name
+    (e.g. api.get_port() -> api.port).
 
-    Values are also available as mapping items with '-' instead of '_', e.g.
-    `settings['port.forwarding']`.  These values have the coroutines `set` and
-    `get` methods that are identical to the `set_*` and `get_*` methods
-    described above, aswell as a `value` property for synchronous access.
+    Use `on_change` to set a callback for interval updates.
+
+    Cached values are also available as mapping items with '.' instead of '_',
+    e.g.  `settings['path.incomplete']`.
 
     To update cached values, use `update` (async) or `poll` (sync).
     """
@@ -91,12 +93,19 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
 
     def __init__(self, srvapi, interval=1):
-        # Generate a *RemoteValue instance for each setting.  The instance
-        # creator functions are registered by the @_setting decorator.
-        self._cache = {
-            setting_name:mk_value_inst(self)
-            for setting_name,mk_value_inst in _TYPES.items()
-        }
+        self._cache = {}
+        self._descriptions = {}
+        self._converters = {}
+        for setting,get_typespec in _SETTINGS.items():
+            typespec = get_typespec(self)
+            self._cache[setting] = None
+            self._converters[setting] = typespec.converter
+            self._descriptions[setting] = typespec.description
+
+        log.debug('cache: %r', self._cache)
+        log.debug('converters: %r', self._converters)
+        log.debug('descriptions: %r', self._descriptions)
+
         self._raw = None    # Raw dict from 'session-get' or None if not connected
         self._srvapi = srvapi
         self._on_update = blinker.Signal()
@@ -105,17 +114,30 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         self.on_response(self._handle_session_get)
         self.on_error(self._handle_error)
 
+    def description(self, name):
+        """Return setting's description"""
+        return self._descriptions[name]
+
+    def syntax(self, name):
+        """Return setting's value syntax"""
+        return self._converters[name].syntax
+
+    async def update(self):
+        """Request update from server"""
+        log.debug('Requesting immediate settings update')
+        self._handle_session_get(await self.request())
+
     def _handle_session_get(self, response):
         """Request update from server"""
         log.debug('Handling settings update')
-        self.clearcache(update=False)
+        self.clearcache(run_callbacks=False)
         self._raw = response
         self._on_update.send(self)
 
     def _handle_error(self, error):
-        self.clearcache(update=True)
+        self.clearcache(run_callbacks=True)
 
-    def clearcache(self, update=True):
+    def clearcache(self, run_callbacks=True):
         """
         Clear cached settings
 
@@ -123,9 +145,9 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """
         log.debug('Clearing %s cache', type(self).__name__)
         self._raw = None
-        for setting in self._cache.values():
-            setting._set_local(None)
-        if update:
+        for setting in self._cache:
+            self._cache[setting] = None
+        if run_callbacks:
             self._on_update.send(self)
 
     def on_update(self, callback, autoremove=True):
@@ -140,10 +162,23 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         log.debug('Registering %r to receive settings updates', callback)
         self._on_update.connect(callback, weak=autoremove)
 
-    async def update(self):
-        """Request update from server"""
-        log.debug('Requesting immediate settings update')
-        self._handle_session_get(await self.request())
+    def _get(self, key, field_or_callable):
+        """Get setting from cache if possible"""
+        if self._cache[key] is None:
+            if self._raw is None:
+                log.debug('%s = %r', key, const.DISCONNECTED)
+                self._cache[key] = const.DISCONNECTED
+            elif callable(field_or_callable):
+                log.debug('%s = %r(%r() -> %r)', key, self._converters[key], field_or_callable, field_or_callable())
+                value = field_or_callable()
+                log.debug('converting %r, %r', value, type(value))
+                self._cache[key] = self._converters[key](
+                    field_or_callable())
+            else:
+                log.debug('%s = %r(%r)', key, self._converters[key], self._raw[field_or_callable])
+                self._cache[key] = self._converters[key](
+                    self._raw[field_or_callable])
+        return self._cache[key]
 
     async def _set(self, request):
         """Send 'session-set' request with dictionary `request` and call `update`"""
@@ -151,240 +186,29 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._srvapi.rpc.session_set(request)
         await self.update()
 
-    def _get(self, key, field_or_callable):
-        """Get setting from cache if possible"""
-        setting = self._cache[key]
-        if setting._get_local() is None:
-            if self._raw is None:
-                raw_value = const.DISCONNECTED
-            elif callable(field_or_callable):
-                raw_value = field_or_callable()
-            else:
-                raw_value = self._raw[field_or_callable]
-            setting._set_local(raw_value)
-        return setting
 
+    @_setting(Bool)
+    def autostart(self):
+        """Whether added torrents are started automatically"""
+        return self._get('autostart', 'start-added-torrents')
 
-    # Rate limits
-
-    def _limit_rate_fields(self, direction, alt):
-        if alt:
-            field_value = 'alt-speed-'+direction
-            field_enabled = 'alt-speed-enabled'
-        else:
-            field_value = 'speed-limit-'+direction
-            field_enabled = 'speed-limit-'+direction+'-enabled'
-        return (field_value, field_enabled)
-
-    def _limit_rate_key(self, direction, alt):
-        key = 'limit.rate.%s' % direction
-        if alt:
-            key += '.alt'
-        return key
-
-    def _get_limit_rate(self, direction, alt=False):
-        key = self._limit_rate_key(direction, alt)
-        setting = self._cache[key]
-        if setting._get_local() is None:
-            field_value, field_enabled = self._limit_rate_fields(direction, alt)
-            if self._raw is None:
-                setting._set_local(const.DISCONNECTED)
-            elif self._raw[field_enabled]:
-                # Transmission reports kilobytes
-                value = convert.bandwidth(self._raw[field_value]*1000, unit='byte')
-                setting._set_local(value)
-            else:
-                setting._set_local(False)
-        return setting
-
-    async def _set_limit_rate(self, limit, direction, alt=False):
-        # Make sure we have an initial value in case `limit` is an adjustment (e.g. '+=100kB')
-        if self._raw is None:
-            await self.update()
-        self._get_limit_rate(direction, alt=alt)
-
-        key = self._limit_rate_key(direction, alt)
-        setting = self._cache[key]
-        setting._set_local(limit)
-        limit = setting._get_local()
-
-        field_value, field_enabled = self._limit_rate_fields(direction, alt)
-        if limit is True:
-            await self._set({field_enabled: True})
-        elif limit in (const.UNLIMITED, False) or limit < 0:
-            await self._set({field_enabled: False})
-        else:
-            raw_limit = int(int(limit.convert_to('B')) / 1000)  # Transmission expects kilobytes
-            await self._set({field_enabled: True,
-                             field_value: raw_limit})
-
-
-    @_setting(RateLimitRemoteValue,
-              description='Global upload rate limit')
-    def limit_rate_up(self):
-        """
-        Upload rate limit
-
-        Returns a NumberFloat object created by the `bandwidth` converter in the
-        `convert` module or one of the constants: UNLIMITED, DISCONNECTED
-        """
-        return self._get_limit_rate('up', alt=False)
-
-    async def get_limit_rate_up(self):
-        """Refresh cache and return `limit_rate_up`"""
+    async def get_autostart(self):
+        """Refresh cache and return `autostart`"""
         await self.update()
-        return self.limit_rate_up
+        return self.autostart
 
-    async def set_limit_rate_up(self, limit):
-        """
-        Set upload rate limit to `limit`
-
-        The `bandwidth` converter in the `convert` module is used to determine
-        the unit (bits or bytes) of `limit`.
-
-        An existing limit is disabled if `limit` is False, the constant
-        UNLIMITED, or a number < 0.
-
-        A previously set and then disabled limit is enabled if `limit` is True.
-        """
-        await self._set_limit_rate(limit, 'up', alt=False)
-
-
-    @_setting(RateLimitRemoteValue,
-              description='Global download rate limit')
-    def limit_rate_down(self):
-        """Download rate limit (see `limit_rate_up`)"""
-        return self._get_limit_rate('down', alt=False)
-
-    async def get_limit_rate_down(self):
-        """Refresh cache and return `limit_rate_down`"""
-        await self.update()
-        return self.limit_rate_down
-
-    async def set_limit_rate_down(self, limit):
-        """Set download rate limit to `limit` (see `set_limit_rate_up`)"""
-        await self._set_limit_rate(limit, 'down', alt=False)
-
-
-    @_setting(RateLimitRemoteValue,
-              description='Alternative global upload rate limit')
-    def limit_rate_up_alt(self):
-        """Alternative upload rate limit (see `limit_rate_up`)"""
-        return self._get_limit_rate('up', alt=True)
-
-    async def get_limit_rate_up_alt(self):
-        """Refresh cache and return `limit_rate_up_alt`"""
-        await self.update()
-        return self.limit_rate_up_alt
-
-    async def set_limit_rate_up_alt(self, limit):
-        """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
-        await self._set_limit_rate(limit, 'up', alt=True)
-
-
-    @_setting(RateLimitRemoteValue,
-              description='Alternative global download rate limit')
-    def limit_rate_down_alt(self):
-        """Alternative download rate limit (see `limit_rate_up`)"""
-        return self._get_limit_rate('down', alt=True)
-
-    async def get_limit_rate_down_alt(self):
-        """Refresh cache and return `limit_rate_down_alt`"""
-        await self.update()
-        return self.limit_rate_down_alt
-
-    async def set_limit_rate_down_alt(self, limit):
-        """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
-        await self._set_limit_rate(limit, 'down', alt=True)
-
-
-
-    # Paths
-
-    @_setting(PathCompleteRemoteValue)
-    def path_complete(self):
-        """Where to put downloaded files"""
-        return self._get('path.complete', 'download-dir')
-
-    async def get_path_complete(self):
-        """Refresh cache and return `path_complete`"""
-        await self.update()
-        return self.path_complete
-
-    async def set_path_complete(self, path):
-        """
-        Set path to directory where downloaded files are put
-
-        If path is relative (i.e. doesn't start with a path separator
-        (e.g. '/')), it is relative to what `get_path_complete` returns.
-        """
-        setting = self._cache['path.complete']
-        setting._set_local(path)
-        await self._set({'download-dir': setting._get_local()})
-
-
-    @_setting(PathIncompleteRemoteValue,
-              description='Where to put partially downloaded files')
-    def path_incomplete(self):
-        """
-        Path to directory where incomplete torrent files are put or `False` if they
-        are put in `path_complete`
-        """
-        def get_raw_value():
-            if self._raw['incomplete-dir-enabled']:
-                return self._raw['incomplete-dir']
-            else:
-                return False
-        return self._get('path.incomplete', get_raw_value)
-
-    async def get_path_incomplete(self):
-        """Refresh cache and return `path_incomplete`"""
-        await self.update()
-        return self.path_incomplete
-
-    async def set_path_incomplete(self, path):
-        """
-        Set path to directory where incomplete torrent files are put
-
-        If `path` is not a `str` instance, it is evaluated as a bool and this
-        feature is enabled or disabled accordingly without changing the path.
-        """
-        setting = self._cache['path.incomplete']
-        setting._set_local(path)
-        request = {'incomplete-dir-enabled': setting._get_local() is not False}
-        if setting._get_local():
-            request['incomplete-dir'] = setting._get_local()
-        await self._set(request)
-
-
-    @_setting(BooleanRemoteValue)
-    def part_files(self):
-        """Whether ".part" is appended to incomplete file names"""
-        return self._get('part.files', 'rename-partial-files')
-
-    async def get_part_files(self):
-        """Refresh cache and return `part_files`"""
-        await self.update()
-        return self.part_files
-
-    async def set_part_files(self, enabled):
-        """See `part_files`"""
-        setting = self._cache['part.files']
-        setting._set_local(enabled)
-        await self._set({'rename-partial-files': setting._get_local()})
+    async def set_autostart(self, enabled):
+        """See `autostart`"""
+        value = self._converters['autostart'](enabled)
+        await self._set({'start-added-torrents': bool(value)})
 
 
     # Network settings
 
-    @_setting(PortRemoteValue, pretty=False)
+    @_setting(Int, prefix='none')
     def port(self):
-        """Port used to communicate with peers or "random" to pick a random port"""
-        def get_raw_value():
-            if self._raw['peer-port-random-on-start']:
-                return const.RANDOM
-            else:
-                return self._raw['peer-port']
-        return self._get('port', get_raw_value)
+        """Port used to communicate with peers"""
+        return self._get('port', 'peer-port')
 
     async def get_port(self):
         """Refresh cache and return `port`"""
@@ -393,15 +217,28 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_port(self, port):
         """See `port`"""
-        setting = self._cache['port']
-        setting._set_local(port)
-        request = {'peer-port-random-on-start': setting._get_local() is const.RANDOM}
-        if setting._get_local() is not const.RANDOM:
-            request['peer-port'] = setting._get_local()
-        await self._set(request)
+        value = self._converters['port'](port)
+        await self._set({'peer-port': value,
+                         'peer-port-random-on-start': False})
 
 
-    @_setting(BooleanRemoteValue)
+    @_setting(Bool)
+    def port_random(self):
+        """Whether to pick a random port when the daemon starts"""
+        return self._get('port.random', 'peer-port-random-on-start')
+
+    async def get_port_random(self):
+        """Refresh cache and return `port_random`"""
+        await self.update()
+        return self.port_random
+
+    async def set_port_random(self, port_random):
+        """See `port_random`"""
+        value = self._converters['port.random'](port_random)
+        await self._set({'peer-port-random-on-start': bool(value)})
+
+
+    @_setting(Bool)
     def port_forwarding(self):
         """Whether to autoconfigure port-forwarding via UPnP/NAT-PMP"""
         return self._get('port.forwarding', 'port-forwarding-enabled')
@@ -413,116 +250,43 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_port_forwarding(self, enabled):
         """See `port_forwarding`"""
-        setting = self._cache['port.forwarding']
-        setting._set_local(enabled)
-        await self._set({'port-forwarding-enabled': setting._get_local()})
+        value = self._converters['port.forwarding'](enabled)
+        await self._set({'port-forwarding-enabled': bool(value)})
 
 
-    @_setting(BooleanRemoteValue)
-    def utp(self):
-        """Whether to use µTP to mitigate latency issues"""
-        return self._get('utp', 'utp-enabled')
-
-    async def get_utp(self):
-        """Refresh cache and return `utp`"""
-        await self.update()
-        return self.utp
-
-    async def set_utp(self, enabled):
-        """See `utp`"""
-        setting = self._cache['utp']
-        setting._set_local(enabled)
-        await self._set({'utp-enabled': setting._get_local()})
-
-
-    @_setting(BooleanRemoteValue)
-    def dht(self):
-        """Whether to use DHT to discover peers for public torrents"""
-        return self._get('dht', 'dht-enabled')
-
-    async def get_dht(self):
-        """Refresh cache and return `dht`"""
-        await self.update()
-        return self.dht
-
-    async def set_dht(self, enabled):
-        """See `dht`"""
-        setting = self._cache['dht']
-        setting._set_local(enabled)
-        await self._set({'dht-enabled': setting._get_local()})
-
-
-    @_setting(BooleanRemoteValue)
-    def pex(self):
-        """Whether to use PEX to discover peers for public torrents"""
-        return self._get('pex', 'pex-enabled')
-
-    async def get_pex(self):
-        """Refresh cache and return `pex`"""
-        await self.update()
-        return self.pex
-
-    async def set_pex(self, enabled):
-        """See `pex`"""
-        setting = self._cache['pex']
-        setting._set_local(enabled)
-        await self._set({'pex-enabled': setting._get_local()})
-
-
-    @_setting(BooleanRemoteValue)
-    def lpd(self):
-        """Whether to use LPD to discover peers for public torrents"""
-        return self._get('lpd', 'lpd-enabled')
-
-    async def get_lpd(self):
-        """Refresh cache and return `lpd`"""
-        await self.update()
-        return self.lpd
-
-    async def set_lpd(self, enabled):
-        """See `lpd`"""
-        setting = self._cache['lpd']
-        setting._set_local(enabled)
-        await self._set({'lpd-enabled': setting._get_local()})
-
-
-    @_setting(IntegerRemoteValue, min=1, max=65535)
-    def peer_limit_global(self):
+    @_setting(Int, min=1, max=65535)
+    def limit_peers_global(self):
         """Maximum number of connections for all torrents combined"""
-        return self._get('peer.limit.global', 'peer-limit-global')
+        return self._get('limit.peers.global', 'peer-limit-global')
 
-    async def get_peer_limit_global(self):
-        """Refresh cache and return `peer_limit_global`"""
+    async def get_limit_peers_global(self):
+        """Refresh cache and return `limit_peers_global`"""
         await self.update()
-        return self.peer_limit_global
+        return self.limit_peers_global
 
-    async def set_peer_limit_global(self, limit):
-        """See `peer_limit_global`"""
-        setting = self._cache['peer.limit.global']
-        setting._set_local(limit)
-        await self._set({'peer-limit-global': setting._get_local()})
+    async def set_limit_peers_global(self, limit):
+        """See `limit_peers_global`"""
+        value = self._converters['limit.peers.global'](limit)
+        await self._set({'peer-limit-global': value})
 
 
-    @_setting(IntegerRemoteValue, min=1, max=65535)
-    def peer_limit_torrent(self):
+    @_setting(Int, min=1, max=65535)
+    def limit_peers_torrent(self):
         """Maximum number of connections per torrent"""
-        return self._get('peer.limit.torrent', 'peer-limit-per-torrent')
+        return self._get('limit.peers.torrent', 'peer-limit-per-torrent')
 
-    async def get_peer_limit_torrent(self):
-        """Refresh cache and return `peer_limit_torrent`"""
+    async def get_limit_peers_torrent(self):
+        """Refresh cache and return `limit_peers_torrent`"""
         await self.update()
-        return self.peer_limit_torrent
+        return self.limit_peers_torrent
 
-    async def set_peer_limit_torrent(self, limit):
-        """See `peer_limit_torrent`"""
-        setting = self._cache['peer.limit.torrent']
-        setting._set_local(limit)
-        await self._set({'peer-limit-per-torrent': setting._get_local()})
+    async def set_limit_peers_torrent(self, limit):
+        """See `limit_peers_torrent`"""
+        value = self._converters['limit.peers.torrent'](limit)
+        await self._set({'peer-limit-per-torrent': value})
 
 
-    # Other settings
-
-    @_setting(OptionRemoteValue, options=('required', 'preferred', 'tolerated'),
+    @_setting(Option, options=('required', 'preferred', 'tolerated'),
               description='Protocol encryption policy; "required", "preferred" or "tolerated"')
     def encryption(self):
         """
@@ -539,23 +303,315 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     async def set_encryption(self, encryption):
         """See `encryption`"""
-        setting = self._cache['encryption']
-        setting._set_local(encryption)
-        await self._set({'encryption': setting._get_local()})
+        value = self._converters['encryption'](encryption)
+        await self._set({'encryption': value})
 
 
-    @_setting(BooleanRemoteValue)
-    def autostart(self):
-        """Whether added torrents are started automatically"""
-        return self._get('autostart', 'start-added-torrents')
+    @_setting(Bool)
+    def utp(self):
+        """Whether to use µTP to mitigate latency issues"""
+        return self._get('utp', 'utp-enabled')
 
-    async def get_autostart(self):
-        """Refresh cache and return `autostart`"""
+    async def get_utp(self):
+        """Refresh cache and return `utp`"""
         await self.update()
-        return self.autostart
+        return self.utp
 
-    async def set_autostart(self, enabled):
-        """See `autostart`"""
-        setting = self._cache['autostart']
-        setting._set_local(enabled)
-        await self._set({'start-added-torrents': setting._get_local()})
+    async def set_utp(self, enabled):
+        """See `utp`"""
+        value = self._converters['utp'](enabled)
+        await self._set({'utp-enabled': bool(value)})
+
+
+    @_setting(Bool)
+    def dht(self):
+        """Whether to use DHT to discover peers for public torrents"""
+        return self._get('dht', 'dht-enabled')
+
+    async def get_dht(self):
+        """Refresh cache and return `dht`"""
+        await self.update()
+        return self.dht
+
+    async def set_dht(self, enabled):
+        """See `dht`"""
+        value = self._converters['dht'](enabled)
+        await self._set({'dht-enabled': bool(value)})
+
+
+    @_setting(Bool)
+    def pex(self):
+        """Whether to use PEX to discover peers for public torrents"""
+        return self._get('pex', 'pex-enabled')
+
+    async def get_pex(self):
+        """Refresh cache and return `pex`"""
+        await self.update()
+        return self.pex
+
+    async def set_pex(self, enabled):
+        """See `pex`"""
+        value = self._converters['pex'](enabled)
+        await self._set({'pex-enabled': bool(value)})
+
+
+    @_setting(Bool)
+    def lpd(self):
+        """Whether to use LPD to discover peers for public torrents"""
+        return self._get('lpd', 'lpd-enabled')
+
+    async def get_lpd(self):
+        """Refresh cache and return `lpd`"""
+        await self.update()
+        return self.lpd
+
+    async def set_lpd(self, enabled):
+        """See `lpd`"""
+        value = self._converters['lpd'](enabled)
+        await self._set({'lpd-enabled': bool(value)})
+
+
+    # Local Filesystem settings
+
+    @_setting(Path)
+    def path_complete(self):
+        """Where to put downloaded files"""
+        return self._get('path.complete', 'download-dir')
+
+    async def get_path_complete(self):
+        """Refresh cache and return `path_complete`"""
+        await self.update()
+        return self.path_complete
+
+    async def set_path_complete(self, path):
+        """
+        Set download directory files
+
+        If path is relative (i.e. doesn't start with a path separator
+        (e.g. '/')), it is relative to what `get_path_complete` returns.
+        """
+        value = self._converters['path.complete'](path)
+        if not value.startswith(os.sep):
+            current_path = await self.get_path_complete()
+            value = os.path.join(current_path, value)
+        await self._set({'download-dir': value})
+
+
+    @_setting(BoolOrPath,
+              description='Where to put partially downloaded files')
+    def path_incomplete(self):
+        """
+        Path to incomplete files or Bool(<False>) to put them in `path_complete`
+        """
+        def get_raw_value():
+            if self._raw['incomplete-dir-enabled']:
+                return self._raw['incomplete-dir']
+            else:
+                return False
+        return self._get('path.incomplete', get_raw_value)
+
+    async def get_path_incomplete(self):
+        """Refresh cache and return `path_incomplete`"""
+        await self.update()
+        return self.path_incomplete
+
+    async def set_path_incomplete(self, path):
+        """
+        Set path to incomplete files or Bool(<False>)
+
+        If `path` is not a `str` instance, it is evaluated as a bool and this
+        feature is enabled or disabled accordingly without changing the path.
+
+        If path is relative (i.e. doesn't start with a path separator
+        (e.g. '/')), it is relative to what `get_path_incomplete` returns.
+        """
+        value = self._converters['path.incomplete'](path)
+        request = {'incomplete-dir-enabled': bool(value)}
+        if isinstance(value, Path):
+            if not value.startswith(os.sep):
+                current_path = await self.get_path_incomplete()
+                value = os.path.join(current_path, value)
+            request['incomplete-dir'] = str(value)
+        await self._set(request)
+
+
+    @_setting(Bool)
+    def files_part(self):
+        """Whether ".part" is appended to incomplete files"""
+        return self._get('files.part', 'rename-partial-files')
+
+    async def get_files_part(self):
+        """Refresh cache and return `files_part`"""
+        await self.update()
+        return self.files_part
+
+    async def set_files_part(self, enabled):
+        """See `files_part`"""
+        value = self._converters['files.part'](enabled)
+        await self._set({'rename-partial-files': bool(value)})
+
+
+    # Rate limits
+
+    @staticmethod
+    def _limit_rate_fields(direction, alt):
+        if alt:
+            field_value = 'alt-speed-'+direction
+            field_enabled = 'alt-speed-enabled'
+        else:
+            field_value = 'speed-limit-'+direction
+            field_enabled = 'speed-limit-'+direction+'-enabled'
+        return (field_value, field_enabled)
+
+    @staticmethod
+    def _limit_rate_key(direction, alt):
+        key = 'limit.rate.%s' % direction
+        if alt:
+            key += '.alt'
+        return key
+
+        # if self._cache[key] is None:
+        #     if self._raw is None:
+        #         log.debug('%s = %r', key, const.DISCONNECTED)
+        #         self._cache[key] = const.DISCONNECTED
+        #     elif callable(field_or_callable):
+        #         log.debug('%s = %r(%r() -> %r)', key, self._converters[key], field_or_callable, field_or_callable())
+        #         value = field_or_callable()
+        #         log.debug('converting %r, %r', value, type(value))
+        #         self._cache[key] = self._converters[key](
+        #             field_or_callable())
+        #     else:
+        #         log.debug('%s = %r(%r)', key, self._converters[key], self._raw[field_or_callable])
+        #         self._cache[key] = self._converters[key](
+        #             self._raw[field_or_callable])
+        # return self._cache[key]
+
+    def _get_limit_rate(self, direction, alt=False):
+        key = self._limit_rate_key(direction, alt)
+        if self._cache[key] is None:
+            if self._raw is None:
+                log.debug('%s = %r', key, const.DISCONNECTED)
+                self._cache[key] = const.DISCONNECTED
+
+            field_value, field_enabled = self._limit_rate_fields(direction, alt)
+            if self._raw[field_enabled]:
+                log.debug('%s = %r kB', key, self._raw[field_value])
+                # Transmission reports kilobytes
+                self._cache[key] = self._converters[key](
+                    convert.bandwidth(self._raw[field_value]*1000, unit='byte'))
+            else:
+                log.debug('%s = %r', key, const.UNLIMITED)
+                self._cache[key] = const.UNLIMITED
+        log.debug('converted: %r = %r', key, self._cache[key])
+        return self._cache[key]
+
+    # async def _set_limit_rate(self, limit, direction, alt=False):
+    #     # Make sure we have an initial value in case `limit` is an adjustment (e.g. '+=100kB')
+    #     if self._raw is None:
+    #         await self.update()
+    #     self._get_limit_rate(direction, alt=alt)
+
+    #     key = self._limit_rate_key(direction, alt)
+    #     setting = self._cache[key]
+    #     setting._set_local(limit)
+    #     limit = setting._get_local()
+
+    #     field_value, field_enabled = self._limit_rate_fields(direction, alt)
+    #     if limit is True:
+    #         await self._set({field_enabled: True})
+    #     elif limit in (const.UNLIMITED, False) or limit < 0:
+    #         await self._set({field_enabled: False})
+    #     else:
+    #         raw_limit = int(int(limit.convert_to('B')) / 1000)  # Transmission expects kilobytes
+    #         await self._set({field_enabled: True,
+    #                          field_value: raw_limit})
+
+    async def _set_limit_rate(self, limit, direction, alt=False):
+        key = self._limit_rate_key(direction, alt)
+        field_value, field_enabled = self._limit_rate_fields(direction, alt)
+        value = self._converters[key](limit)
+        if isinstance(value, Bool):
+            await self._set({field_enabled: bool(value)})
+        elif 0 <= value < float('inf'):
+            # raw_limit = round(int(limit.convert_to('B')) / 1000)  # Transmission expects kilobytes
+            raw_limit = int(Int(limit, convert_to='B')) / 1000
+            await self._set({field_enabled: True,
+                             field_value: raw_limit})
+        else:
+            await self._set({field_enabled: False})
+
+
+    @_setting(BoolOrBandwidth,
+              description='Global upload rate limit')
+    def limit_rate_up(self):
+        """
+        Upload rate limit
+
+        This uses the application-wide `stig.utils.convert` module to get
+        consistent units and unit prefixes.
+        """
+        return self._get_limit_rate('up', alt=False)
+
+    async def get_limit_rate_up(self):
+        """Refresh cache and return `limit_rate_up`"""
+        await self.update()
+        return self.limit_rate_up
+
+    async def set_limit_rate_up(self, limit):
+        """
+        Set upload rate limit to `limit` (see also `limit_rate_up`)
+
+        An existing limit is disabled if `limit` is False, the constant
+        UNLIMITED, or a number < 0.
+
+        A previously set and then disabled limit is enabled if `limit` is True.
+        """
+        await self._set_limit_rate(limit, 'up', alt=False)
+
+
+    # @_setting(RateLimitRemoteValue,
+    #           description='Global download rate limit')
+    # def limit_rate_down(self):
+    #     """Download rate limit (see `limit_rate_up`)"""
+    #     return self._get_limit_rate('down', alt=False)
+
+    # async def get_limit_rate_down(self):
+    #     """Refresh cache and return `limit_rate_down`"""
+    #     await self.update()
+    #     return self.limit_rate_down
+
+    # async def set_limit_rate_down(self, limit):
+    #     """Set download rate limit to `limit` (see `set_limit_rate_up`)"""
+    #     await self._set_limit_rate(limit, 'down', alt=False)
+
+
+    # @_setting(RateLimitRemoteValue,
+    #           description='Alternative global upload rate limit')
+    # def limit_rate_up_alt(self):
+    #     """Alternative upload rate limit (see `limit_rate_up`)"""
+    #     return self._get_limit_rate('up', alt=True)
+
+    # async def get_limit_rate_up_alt(self):
+    #     """Refresh cache and return `limit_rate_up_alt`"""
+    #     await self.update()
+    #     return self.limit_rate_up_alt
+
+    # async def set_limit_rate_up_alt(self, limit):
+    #     """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
+    #     await self._set_limit_rate(limit, 'up', alt=True)
+
+
+    # @_setting(RateLimitRemoteValue,
+    #           description='Alternative global download rate limit')
+    # def limit_rate_down_alt(self):
+    #     """Alternative download rate limit (see `limit_rate_up`)"""
+    #     return self._get_limit_rate('down', alt=True)
+
+    # async def get_limit_rate_down_alt(self):
+    #     """Refresh cache and return `limit_rate_down_alt`"""
+    #     await self.update()
+    #     return self.limit_rate_down_alt
+
+    # async def set_limit_rate_down_alt(self, limit):
+    #     """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
+    #     await self._set_limit_rate(limit, 'down', alt=True)
