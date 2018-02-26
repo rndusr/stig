@@ -9,6 +9,26 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ..utils.stringables import (Bool, Int, Float, Option, Path,
+                                 multitype, StringableMixin)
+from . import constants as const
+from . import convert
+
+
+class Bandwidth(Float):
+    typename = 'bandwidth'
+    def __new__(cls, value):
+        value = convert.bandwidth(value)
+        value.__class__ = cls  # Faster than super
+        return value
+
+    @classmethod
+    def _get_syntax(cls, **kwargs):
+        return '%s[b|B]' % super()._get_syntax(**kwargs)
+
+BoolOrBandwidth = multitype(Bool, Bandwidth)
+BoolOrPath = multitype(Bool, Path)
+
 
 class PerfectInterval():
     """Remove processing time from intervals"""
