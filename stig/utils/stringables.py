@@ -381,8 +381,15 @@ class Option(str, StringableMixin):
     def __new__(cls, value, *, options=options, aliases=aliases):
         value = str(value)
         value = _resolve_alias(value, aliases)
-        if value not in options:
-            raise ValueError('Not one of: %s' % ', '.join((str(o) for o in options)))
+
+        if not any(value == option for option in options):
+            if len(options) == 0:
+                raise RuntimeError('No options provided')
+            elif len(options) == 1:
+                raise ValueError('Not %s' % options[0])
+            else:
+                raise ValueError('Not one of: %s' % ', '.join((str(o) for o in options)))
+
         self = super().__new__(cls, value)
         return self
 

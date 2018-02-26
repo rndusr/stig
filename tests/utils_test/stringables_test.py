@@ -293,6 +293,14 @@ class TestOption(_TestBase):
         with self.assert_raises(ValueError, 'Not one of: foo, bar'):
             Option('fo', options=options, aliases=aliases)
 
+    def test_errors(self):
+        with self.assert_raises(RuntimeError, 'No options provided'):
+            Option('fooo', options=())
+        with self.assert_raises(ValueError, 'Not foo'):
+            Option('fooo', options=('foo',))
+        with self.assert_raises(ValueError, 'Not one of: foo, bar'):
+            Option('fooo', options=('foo', 'bar'))
+
 
 class TestFloat(_TestBase):
     def test_syntax(self):
