@@ -6,4 +6,4 @@ clean:
 	rm -rf .cache  # py.test junk
 
 test:
-	python3 -m pytest --exitfirst
+	python3 -m pytest

@@ -19,6 +19,8 @@ import json
 import textwrap
 from blinker import Signal
 import warnings
+import aiohttp
+import async_timeout
 
 from ..errors import (ConnectionError, RPCError, AuthError, ClientError)
 
@@ -68,7 +70,7 @@ class TransmissionRPC():
     def __del__(self, _warnings=warnings):
         if self._session is not None and not self._session.closed:
             _warnings.warn('disconnect() wasn\'t called', ResourceWarning)
-            self._session.close()
+            asyncio.ensure_future(self._session.close())
 
     def on(self, signal, callback, autoremove=True):
         """
@@ -119,7 +121,7 @@ class TransmissionRPC():
     @host.setter
     def host(self, host):
         self._host = str(host)
-        self.disconnect('Changing host: %r' % self._host)
+        asyncio.ensure_future(self.disconnect('Changing host: %r' % self._host))
 
     @property
     def path(self):
@@ -134,7 +136,7 @@ class TransmissionRPC():
        if not path or path[0] != '/':
            path = '/' + path
        self._path = path
-       self.disconnect('Changing path: %r' % self._path)
+       asyncio.ensure_future(self.disconnect('Changing path: %r' % self._path))
 
     @property
     def port(self):
@@ -147,7 +149,7 @@ class TransmissionRPC():
     @port.setter
     def port(self, port):
         self._port = int(port)
-        self.disconnect('Changing port: %r' % self._port)
+        asyncio.ensure_future(self.disconnect('Changing port: %r' % self._port))
 
     @property
     def user(self):
@@ -160,7 +162,7 @@ class TransmissionRPC():
     @user.setter
     def user(self, user):
         self._user = str(user)
-        self.disconnect('Changing user: %r' % self._user)
+        asyncio.ensure_future(self.disconnect('Changing user: %r' % self._user))
 
     @property
     def password(self):
@@ -173,7 +175,7 @@ class TransmissionRPC():
     @password.setter
     def password(self, password):
         self._password = str(password)
-        self.disconnect('Changing password: %r' % self._password)
+        asyncio.ensure_future(self.disconnect('Changing password: %r' % self._password))
 
     @property
     def tls(self):
@@ -186,7 +188,7 @@ class TransmissionRPC():
     @tls.setter
     def tls(self, tls):
         self._tls = bool(tls)
-        self.disconnect('Changing tls: %r' % self._tls)
+        asyncio.ensure_future(self.disconnect('Changing tls: %r' % self._tls))
 
     @property
     def url(self):
@@ -222,7 +224,7 @@ class TransmissionRPC():
             log.debug('Disabling %r', self)
             self._enabled_event.clear()
             if self.connected:
-                self.disconnect()
+                asyncio.ensure_future(self.disconnect())
 
     @property
     def connected(self):
@@ -260,7 +262,7 @@ class TransmissionRPC():
             log.debug('Acquired connect() lock')
 
             if self.connected:
-                self.disconnect('Reconnecting')
+                await self.disconnect('Reconnecting')
 
             # Block until we're enabled
             await self._enabled_event.wait()
@@ -282,7 +284,7 @@ class TransmissionRPC():
             except ClientError as e:
                 self._connection_exception = e
                 log.debug('Caught during connection test: %r', e)
-                self._reset()
+                await self._reset()
                 self._on_error.send(self, error=e)
                 raise
             else:
@@ -296,22 +298,21 @@ class TransmissionRPC():
 
             log.debug('Releasing connect() lock')
 
-    def disconnect(self, reason=None):
+    async def disconnect(self, reason=None):
         """
         Disconnect if connected
 
         reason: Why are we disconnecting? Only used in a debugging message.
         """
         if self.connected:
-            self._reset()
+            await self._reset()
             log.debug('Disconnecting from %s (%s)', self.url,
                       reason if reason is not None else 'for no reason')
-            log.debug('Calling "disconnected" callbacks for %s', self.url)
             self._on_disconnected.send(self)
 
-    def _reset(self):
+    async def _reset(self):
         if self._session is not None:
-            self._session.close()
+            await self._session.close()
         self._session = None
         self._version = None
         self._rpcversion = None
@@ -319,39 +320,32 @@ class TransmissionRPC():
         self._connection_tested = False
 
     async def _post(self, data):
-        import aiohttp
-        with aiohttp.Timeout(self.timeout, loop=self.loop):
-            try:
-                response = await self._session.post(self.url,
-                                                    data=data,
-                                                    headers=self._headers)
-            except aiohttp.ClientError as e:
-                log.debug('Caught during POST request: %r', e)
-                raise ConnectionError(self.url)
+        async with async_timeout.timeout(self.timeout):
+            response = await self._session.post(self.url, data=data, headers=self._headers)
+
+            if response.status == CSRF_ERROR_CODE:
+                # Send request again with CSRF header
+                self._headers[CSRF_HEADER] = response.headers[CSRF_HEADER]
+                log.debug('Setting CSRF header: %s = %s',
+                          CSRF_HEADER, response.headers[CSRF_HEADER])
+                await response.release()
+                return await self._post(data)
+
+            elif response.status == AUTH_ERROR_CODE:
+                await response.release()
+                log.debug('Authentication failed: %s: user=%r, password=%r' % (
+                    self.url, self.user, self.password))
+                raise AuthError(self.url)
+
             else:
-                if response.status == CSRF_ERROR_CODE:
-                    # Send request again with CSRF header
-                    self._headers[CSRF_HEADER] = response.headers[CSRF_HEADER]
-                    log.debug('Setting CSRF header: %s = %s',
-                              CSRF_HEADER, response.headers[CSRF_HEADER])
-                    await response.release()
-                    return await self._post(data)
-
-                elif response.status == AUTH_ERROR_CODE:
-                    await response.release()
-                    log.debug('Authentication failed: %s: user=%r, password=%r' % (
-                        self.url, self.user, self.password))
-                    raise AuthError(self.url)
-
+                try:
+                    answer = await response.json()
+                except aiohttp.ClientResponseError as e:
+                    text = textwrap.shorten(await response.text(),
+                                            50, placeholder='...')
+                    raise RPCError('Server sent malformed JSON: %s' % text)
                 else:
-                    try:
-                        answer = await response.json()
-                    except aiohttp.ClientResponseError as e:
-                        text = textwrap.shorten(await response.text(),
-                                                50, placeholder='...')
-                        raise RPCError('Server sent malformed JSON: %s' % text)
-                    else:
-                        return answer
+                    return answer
 
     async def _send_request(self, post_data):
         """
@@ -366,12 +360,18 @@ class TransmissionRPC():
         """
         try:
             answer = await self._post(post_data)
-        except OSError as e:
-            log.debug('Caught OSError: %r', e)
+
+        # CancelledError is raised when we're writing on a "closing
+        # transport". Not sure if this happens in the real world, but it happens
+        # in the tests for some reason.
+        except (aiohttp.ClientError, asyncio.CancelledError) as e:
+            log.debug('Caught during POST request: %r', e)
             raise ConnectionError(self.url)
+
         except asyncio.TimeoutError as e:
             log.debug('Caught TimeoutError: %r', e)
-            raise ConnectionError('Timeout after %ds: %s' % (self.timeout, self.url))
+            raise ConnectionError('Timeout after %ss: %s' % (self.timeout, self.url))
+
         else:
             if answer['result'] != 'success':
                 raise RPCError(answer['result'].capitalize())
@@ -414,7 +414,7 @@ class TransmissionRPC():
                     # RPCError does not mean host is unreachable, there was just a
                     # misunderstanding, so we're still connected.
                     if not isinstance(e, RPCError) and self.connected:
-                        self.disconnect(str(e))
+                        await self.disconnect(str(e))
 
                     self._on_error.send(self, error=e)
                     raise
