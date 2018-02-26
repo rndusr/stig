@@ -167,6 +167,7 @@ class String(str, StringableMixin):
       maxlen: Maximum length of the string
     """
     typename = 'string'
+
     minlen=0
     maxlen=_INFINITY
 
@@ -267,6 +268,7 @@ class Path(str, StringableMixin):
       mustexist: Whether the path must exist on the local file system
     """
     typename = 'path'
+
     mustexist = False
 
     def __new__(cls, value, *, mustexist=mustexist):
@@ -304,6 +306,7 @@ class Tuple(tuple, StringableMixin):
       dedup:   Whether to remove duplicate items
     """
     typename = 'list'
+
     sep     = ', '
     options = None
     aliases = {}
@@ -363,6 +366,7 @@ class Option(str, StringableMixin):
                with <value>
     """
     typename = 'option'
+
     options = ()
     aliases = {}
 
