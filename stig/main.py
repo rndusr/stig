@@ -56,7 +56,7 @@ srvapi = API(host=cfg['connect.host'],
              interval=cfg['tui.poll'],
              loop=aioloop)
 srvapi.rpc.enabled = False
-settings.load_remote_settings(cfg, srvapi.settings)
+# settings.load_remote_settings(cfg, srvapi.settings)
 
 
 

@@ -198,11 +198,6 @@ def init_defaults(cfg):
                          'extra confirmation')),
 
 
-def load_remote_settings(cfg, remote_settings):
-    for setting in remote_settings.values():
-        cfg.add(setting)
-        cfg.rename(setting.name, 'srv.' + setting.name)
-
 
 DEFAULT_KEYMAP = (
     # Use some vi and emacs keybindings

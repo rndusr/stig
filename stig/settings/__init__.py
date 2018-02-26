@@ -12,7 +12,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from .defaults import (init_defaults, load_remote_settings)
+from .defaults import init_defaults
 
 from blinker import Signal
 from collections import abc
