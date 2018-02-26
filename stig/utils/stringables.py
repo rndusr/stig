@@ -159,6 +159,10 @@ def multitype(*constructors):
         def syntax(cls):
             return ' or '.join((c.syntax for c in cls._constructors))
 
+        @classmethod
+        def _get_syntax(cls, **_):
+            return cls.syntax
+
     return Multitype
 
 
