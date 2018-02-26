@@ -52,7 +52,6 @@ class PerfectInterval():
 
 import asyncio
 from async_timeout import timeout as async_timeout
-
 class SleepUneasy():
     """Asynchronous sleep() that can be aborted"""
 
