@@ -24,7 +24,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.client.on('error', self.cb_error)
 
     async def tearDown(self):
-        self.client.disconnect()
+        await self.client.disconnect()
         await self.daemon.stop()
 
     def assert_not_connected_to(self, host, port):
@@ -88,7 +88,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=0)
 
-        self.client.disconnect()
+        await self.client.disconnect()
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
         self.assert_cb_connected_called(calls=1, args=[(self.client,)])
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
@@ -109,7 +109,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=0)
 
-        self.client.disconnect()
+        await self.client.disconnect()
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
         self.assert_cb_connected_called(calls=1, args=[(self.client,)])
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
@@ -274,7 +274,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         await asyncio.gather(self.advance(delay),
                              self.client.connect(),
                              loop=self.loop)
-        self.client.disconnect()
+        await self.client.disconnect()
         self.assert_cb_connected_called(calls=1, args=[(self.client,)])
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
         self.assert_cb_error_called(calls=0)

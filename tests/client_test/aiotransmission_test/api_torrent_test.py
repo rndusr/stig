@@ -22,7 +22,7 @@ class TorrentAPITestCase(asynctest.TestCase):
         assert self.rpc.connected == True
 
     async def tearDown(self):
-        self.rpc.disconnect()
+        await self.rpc.disconnect()
         await self.daemon.stop()
 
     def assert_torrentkeys_equal(self, key, tlist, *exp):
