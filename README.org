@@ -31,6 +31,7 @@
    - Full *API abstraction layer* makes it possible to add support for other
      BitTorrent clients with RPC interfaces (contributors are welcome)
 
+# TODO: Make sure to remove 'srv.url' here before the next release.
 ** Examples
    Add two torrents, one by file and one by hash, and exit
    #+BEGIN_SRC sh
