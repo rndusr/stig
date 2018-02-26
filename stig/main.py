@@ -200,6 +200,7 @@ def run():
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 pass
 
+    _cancel_unfinished_tasks()
     aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
     # # Closing the event loop raises "RuntimeError: Event loop is closed" (not
     # # always) when a `run_in_executor` command (i.e. a thread) is cancelled.
