@@ -51,6 +51,8 @@ class PerfectInterval():
 
 
 import asyncio
+from async_timeout import timeout as async_timeout
+
 class SleepUneasy():
     """Asynchronous sleep() that can be aborted"""
 
@@ -61,12 +63,11 @@ class SleepUneasy():
 
     async def sleep(self, seconds):
         """Sleep for `seconds` or until `interrupt` is called"""
-        from aiohttp import Timeout as AsyncIOTimeout
         self._interrupt.clear()
         # Remove processing time from seconds
         seconds = self._perfint(seconds)
         try:
-            with AsyncIOTimeout(seconds, loop=self.loop):
+            async with async_timeout(seconds, loop=self.loop):
                 await self._interrupt.wait()
         except asyncio.TimeoutError:
             pass  # Interval passed without interrupt
