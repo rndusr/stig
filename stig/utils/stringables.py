@@ -99,30 +99,33 @@ class classproperty():
         return self.f(owner)
 
 
-class MultitypeMeta(type):
-    def __new__(mcls, name, bases, clsattrs):
-        cls = type.__new__(mcls, name, bases, clsattrs)
-        cls.__name__ = 'Or'.join(subcls.__name__ for subcls in cls._subclses)
-        mcls._subclses = (cls,) + cls._subclses
-        return cls
-
-    @classmethod
-    def __instancecheck__(mcls, inst):
-        for subtype in mcls._subclses:
-            if type(inst) is subtype:
-                return True
-        return False
-
-    @classmethod
-    def __subclasscheck__(mcls, cls):
-        return cls in mcls._subclses[1:]
-
-
 def multitype(*constructors):
-    # Distinguish between constructors (Int.partial(...)) and classes (Int)
+    # Get constructors (Int.partial(...)) for making new values and and classes
+    # (Int) for isinstance() checking.
     constructors = tuple(c if isinstance(c, _PartialConstructor) else c.partial()
                          for c in constructors)
     subclses = tuple(c.func for c in constructors)
+
+
+    class MultitypeMeta(type):
+        def __new__(mcls, name, bases, clsattrs):
+            cls = type.__new__(mcls, name, bases, clsattrs)
+            cls.__name__ = 'Or'.join(subcls.__name__ for subcls in cls._subclses)
+            mcls._subclses = (cls,) + cls._subclses
+            return cls
+
+        @classmethod
+        def __instancecheck__(mcls, inst):
+            for subtype in mcls._subclses:
+                log.debug('Checking whether %r,%r is a %r', inst, type(inst), subtype)
+                if type(inst) is subtype:
+                    return True
+            return False
+
+        @classmethod
+        def __subclasscheck__(mcls, cls):
+            return cls in mcls._subclses[1:]
+
 
     class Multitype(StringableMixin, metaclass=MultitypeMeta):
         _constructors = constructors
