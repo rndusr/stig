@@ -77,7 +77,7 @@ class TestRatio(unittest.TestCase):
         self.assertEqual(str(ttypes.Ratio(float('inf'))), '∞')
         self.assertEqual(str(ttypes.Ratio(0.0003)), '0')
         self.assertEqual(str(ttypes.Ratio(5.389)), '5.39')
-        self.assertEqual(str(ttypes.Ratio(10.0234)), '10.0')
+        self.assertEqual(str(ttypes.Ratio(10.0234)), '10')
         self.assertEqual(str(ttypes.Ratio(47.86123)), '47.9')
         self.assertEqual(str(ttypes.Ratio(100.5)), '100')
 
