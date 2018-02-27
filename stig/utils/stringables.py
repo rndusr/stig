@@ -560,7 +560,12 @@ class _NumberMixin(StringableMixin):
     def prefix(self):
         return self._args['prefix']
 
-    def _do_math(self, funcname, *args, **kwargs):
+    def _do_math(self, funcname, other=None, **kwargs):
+        # If self and other have a unit specified, convert other if possible, or
+        # raise an exception.
+        if other is not None and isinstance(other, _NumberMixin) and self.unit != other.unit:
+            other = other.copy(other, convert_to=self.unit)
+
         # Get the new value as int or float
         if self >= _INFINITY:
             # No need to do anything with infinity because `int` has no infinity
@@ -568,9 +573,9 @@ class _NumberMixin(StringableMixin):
             result = _INFINITY
         else:
             parent_meth = getattr(self._parent_type, funcname)
-            result = parent_meth(self, *args, **kwargs)
+            result = parent_meth(self, other, **kwargs)
 
-        if result is NotImplemented and len(args) > 0:
+        if result is NotImplemented and other is not None:
             # This may have happened because `self` is `int` and it got a
             # `float` to handle.  To make this work, we must flip `self` and
             # `other`, getting the method from `other` and passing it `self`:
@@ -579,7 +584,7 @@ class _NumberMixin(StringableMixin):
             #
             # If we get the parent method from the instance instead of its type,
             # we don't have to pass two values and it's a little bit faster.
-            other_func = getattr(args[0], funcname)
+            other_func = getattr(other, funcname)
             result = other_func(self, **kwargs)
             if result is NotImplemented:
                 return NotImplemented
@@ -595,18 +600,18 @@ class _NumberMixin(StringableMixin):
         # Create new instance with copied properties
         return result_cls(result, **self._args)
 
-    def __add__(self, other):             return self._do_math('__add__', other)
-    def __sub__(self, other):             return self._do_math('__sub__', other)
-    def __mul__(self, other):             return self._do_math('__mul__', other)
-    def __div__(self, other):             return self._do_math('__div__', other)
-    def __truediv__(self, other):         return self._do_math('__truediv__', other)
-    def __floordiv__(self, other):        return self._do_math('__floordiv__', other)
-    def __mod__(self, other):             return self._do_math('__mod__', other)
-    def __divmod__(self, other):          return self._do_math('__divmod__', other)
-    def __pow__(self, other):             return self._do_math('__pow__', other)
-    def __floor__(self):                  return self._do_math('__floor__')
-    def __ceil__(self):                   return self._do_math('__ceil__')
-    def __round__(self, *args, **kwargs): return self._do_math('__round__', *args, **kwargs)
+    def __add__(self, other):          return self._do_math('__add__', other)
+    def __sub__(self, other):          return self._do_math('__sub__', other)
+    def __mul__(self, other):          return self._do_math('__mul__', other)
+    def __div__(self, other):          return self._do_math('__div__', other)
+    def __truediv__(self, other):      return self._do_math('__truediv__', other)
+    def __floordiv__(self, other):     return self._do_math('__floordiv__', other)
+    def __mod__(self, other):          return self._do_math('__mod__', other)
+    def __divmod__(self, other):       return self._do_math('__divmod__', other)
+    def __pow__(self, other):          return self._do_math('__pow__', other)
+    def __floor__(self):               return self._do_math('__floor__')
+    def __ceil__(self):                return self._do_math('__ceil__')
+    def __round__(self, ndigits=None): return self._do_math('__round__', ndigits)
 
 class Float(_NumberMixin, float):
     """
