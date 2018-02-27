@@ -106,7 +106,8 @@ class TestDataCountConverter(unittest.TestCase):
         self.conv.unit = 'B'
         with self.assertRaises(ValueError) as cm:
             self.conv('10km')
-        self.assertEqual('Cannot convert m to B', str(cm.exception))
+        self.assertEqual("Unit must be 'b' (bit) or 'B' (byte), not 'm'", str(cm.exception))
+
 
     def test_prefix_property(self):
         self.conv.unit = 'B'

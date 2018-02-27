@@ -12,7 +12,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from .stringables import Float
+from .stringables import (Float, Int)
 
 
 class DataCountConverter():
@@ -39,17 +39,16 @@ class DataCountConverter():
         property or by passing the `unit` argument, it is assumed to be what the
         `unit` property of this object is set to.
         """
-        unit = self._short.get(unit, unit)
-        if not isinstance(num, Float):
-            num = Float(num, prefix=self._prefix, unit=unit or self._unit)
-        return self._ensure_unit_and_prefix(num)
+        if not isinstance(num, (Float, Int)):
+            # Parse unit; fall back to given or our own unit
+            num = Float(num, unit=unit or self._unit, prefix=self._prefix)
 
-    def _ensure_unit_and_prefix(self, num):
-        unit_given = num.unit or self._unit
-        if unit_given not in ('bit', 'byte', 'b', 'B'):
+        unit_given = self._short.get(num.unit, num.unit) or self._unit
+        if unit_given not in ('b', 'B'):
             raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not %r" % unit_given)
         else:
-            return Float(num, unit=unit_given, convert_to=self._unit, prefix=self._prefix, min=0)
+            return Float(num, unit=unit_given, convert_to=self._unit,
+                         prefix=self._prefix, min=0, autolimit=True)
 
     @property
     def unit(self):
