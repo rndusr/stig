@@ -241,7 +241,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         )
         response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), True)
         self.assert_request({'method': 'torrent-set',
-                            'arguments': {'ids': [1, 2], 'uploadLimited': True}})
+                             'arguments': {'ids': [1, 2], 'uploadLimited': True}})
 
     async def test_disable_rate_limit(self):
         self.daemon.response = rsrc.response_torrents(
@@ -250,7 +250,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         )
         response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), False)
         self.assert_request({'method': 'torrent-set',
-                            'arguments': {'ids': [1, 2], 'uploadLimited': False}})
+                             'arguments': {'ids': [1, 2], 'uploadLimited': False}})
 
     async def test_set_absolute_rate_limit(self):
         self.daemon.response = rsrc.response_torrents(
@@ -259,8 +259,8 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         )
         response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), 1e6)
         self.assert_request({'method': 'torrent-set',
-                            'arguments': {'ids': [1, 2], 'uploadLimited': True,
-                                          'uploadLimit': 1000}})
+                             'arguments': {'ids': [1, 2], 'uploadLimited': True,
+                                           'uploadLimit': 1000}})
 
     async def test_set_relative_rate_limit_when_enabled(self):
         self.daemon.response = rsrc.response_torrents(
@@ -269,8 +269,8 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         )
         response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
         self.assert_request({'method': 'torrent-set',
-                            'arguments': {'ids': [1], 'uploadLimited': True,
-                                          'uploadLimit': 50}})
+                             'arguments': {'ids': [1], 'uploadLimited': True,
+                                           'uploadLimit': 50}})
         self.assert_request({'method': 'torrent-set',
-                            'arguments': {'ids': [2], 'uploadLimited': True,
-                                          'uploadLimit': 150}})
+                             'arguments': {'ids': [2], 'uploadLimited': True,
+                                           'uploadLimit': 150}})
