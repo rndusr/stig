@@ -613,6 +613,31 @@ class _NumberMixin(StringableMixin):
     def __ceil__(self):                return self._do_math('__ceil__')
     def __round__(self, ndigits=None): return self._do_math('__round__', ndigits)
 
+    @classmethod
+    def parse_arithmetic_operator(cls, current, new):
+        """
+        Adjust `new` value based on `current` value
+
+        `new` may be a string with an operator prefixed ('+=' or '-='). The part
+        after the operator is parsed as a `Float` and the result is
+        added/subtracted to current.
+        """
+        if abs(current) >= _INFINITY:
+            # If current value is infinite, adjusting it makes no sense. The
+            # more intuitive thing is to treat it like zero.
+            current = cls(0)
+
+        if (isinstance(current, (int, float)) and
+            isinstance(new, str) and len(new) >= 3):
+            new = new.strip()
+            if new[0:2] == '+=':
+                new = current + Float(new[2:])
+            elif new[0:2] == '-=':
+                new = current - Float(new[2:])
+                if new <= 0:
+                    new = _INFINITY
+        return new
+
 class Float(_NumberMixin, float):
     """
     Floating point number
