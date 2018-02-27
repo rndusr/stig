@@ -360,6 +360,15 @@ class TestFloat(_TestBase):
         with self.assert_raises(ValueError, 'Too big (maximum is 100)'):
             Float(100.1, max=100)
 
+    def test_argument_autolimit(self):
+        with self.assert_raises(ValueError, 'Too big (maximum is 10)'):
+            Float(11, max=10, autolimit=False)
+        self.assertEqual(Float(11, max=10, autolimit=True), 10)
+
+        with self.assert_raises(ValueError, 'Too small (minimum is 10)'):
+            Float(9, min=10, autolimit=False)
+        self.assertEqual(Float(9, min=10, autolimit=True), 10)
+
     def test_parsing_strings(self):
         for string,exp_num in (
                 ('1 Apple', 1),
@@ -471,12 +480,21 @@ class TestFloat(_TestBase):
             self.assertEqual(str(n), exp_string)
 
     def test_arithmetic_operation_copies_from_first_value(self):
-        for prfx,exp_string in (('metric', '1.25Mx'),
-                                ('binary', '1.19Mix')):
-            n = Float(1e6, unit='x', prefix=prfx, hide_unit=False) \
-              + Float(250e3, unit='z', prefix='metric', hide_unit=True)
+        for prfx,exp_string in (('metric', '1.25M'),
+                                ('binary', '1.19Mi')):
+            n = Float(1e6, prefix=prfx, hide_unit=False) \
+              + Float(250e3, prefix='metric', hide_unit=True)
             self.assertEqual(n, 1.25e6)
             self.assertEqual(str(n), exp_string)
+
+    def test_arithmethic_operation_ensures_common_unit(self):
+        a = Float(10e3, unit='B', prefix='metric')
+        b = Float(1024*10, unit='b', prefix='binary')
+        c = a + b
+        self.assertEqual(c, 10e3 + (10240/8))
+        self.assertEqual(c.unit, 'B')
+        self.assertEqual(c.prefix, 'metric')
+        self.assertEqual(str(c), '11.3kB')
 
 
 class TestInt(_TestBase):
