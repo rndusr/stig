@@ -21,12 +21,6 @@ class TestSettings(unittest.TestCase):
         constructor.assert_called_once_with('biz')
         self.assertEqual(self.s['four'], 'biz')
 
-    def test_renaming_settings(self):
-        self.s.rename('two', 'twooo')
-        self.assertNotIn('two', self.s)
-        self.assertIn('twooo', self.s)
-        self.assertEqual(self.s['twooo'], 'bar')
-
     def test_values_property(self):
         self.assertEqual(tuple(self.s.values), ('FOO', 'bar', '(baz)'))
 
