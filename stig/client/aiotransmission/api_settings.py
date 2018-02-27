@@ -22,7 +22,7 @@ from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
 
-from ..utils import (Bool, Option, Int, Path, BoolOrPath, BoolOrBandwidth)
+from ..utils import (Bool, Option, Float, Int, Path, BoolOrPath, BoolOrBandwidth)
 
 
 
@@ -102,10 +102,6 @@ class SettingsAPI(abc.Mapping, RequestPoller):
             self._converters[setting] = typespec.converter
             self._descriptions[setting] = typespec.description
 
-        log.debug('cache: %r', self._cache)
-        log.debug('converters: %r', self._converters)
-        log.debug('descriptions: %r', self._descriptions)
-
         self._raw = None    # Raw dict from 'session-get' or None if not connected
         self._srvapi = srvapi
         self._on_update = blinker.Signal()
@@ -166,18 +162,11 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """Get setting from cache if possible"""
         if self._cache[key] is None:
             if self._raw is None:
-                log.debug('%s = %r', key, const.DISCONNECTED)
                 self._cache[key] = const.DISCONNECTED
             elif callable(field_or_callable):
-                log.debug('%s = %r(%r() -> %r)', key, self._converters[key], field_or_callable, field_or_callable())
-                value = field_or_callable()
-                log.debug('converting %r, %r', value, type(value))
-                self._cache[key] = self._converters[key](
-                    field_or_callable())
+                self._cache[key] = self._converters[key](field_or_callable())
             else:
-                log.debug('%s = %r(%r)', key, self._converters[key], self._raw[field_or_callable])
-                self._cache[key] = self._converters[key](
-                    self._raw[field_or_callable])
+                self._cache[key] = self._converters[key](self._raw[field_or_callable])
         return self._cache[key]
 
     async def _set(self, request):
@@ -465,76 +454,38 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @staticmethod
     def _limit_rate_key(direction, alt):
-        key = 'limit.rate.%s' % direction
         if alt:
-            key += '.alt'
-        return key
-
-        # if self._cache[key] is None:
-        #     if self._raw is None:
-        #         log.debug('%s = %r', key, const.DISCONNECTED)
-        #         self._cache[key] = const.DISCONNECTED
-        #     elif callable(field_or_callable):
-        #         log.debug('%s = %r(%r() -> %r)', key, self._converters[key], field_or_callable, field_or_callable())
-        #         value = field_or_callable()
-        #         log.debug('converting %r, %r', value, type(value))
-        #         self._cache[key] = self._converters[key](
-        #             field_or_callable())
-        #     else:
-        #         log.debug('%s = %r(%r)', key, self._converters[key], self._raw[field_or_callable])
-        #         self._cache[key] = self._converters[key](
-        #             self._raw[field_or_callable])
-        # return self._cache[key]
+            return 'limit.rate.alt.%s' % direction
+        else:
+            return 'limit.rate.%s' % direction
 
     def _get_limit_rate(self, direction, alt=False):
         key = self._limit_rate_key(direction, alt)
         if self._cache[key] is None:
-            if self._raw is None:
-                log.debug('%s = %r', key, const.DISCONNECTED)
-                self._cache[key] = const.DISCONNECTED
-
             field_value, field_enabled = self._limit_rate_fields(direction, alt)
-            if self._raw[field_enabled]:
-                log.debug('%s = %r kB', key, self._raw[field_value])
+            if self._raw is None:
+                self._cache[key] = const.DISCONNECTED
+            elif self._raw[field_enabled]:
                 # Transmission reports kilobytes
                 self._cache[key] = self._converters[key](
-                    convert.bandwidth(self._raw[field_value]*1000, unit='byte'))
+                    convert.bandwidth(self._raw[field_value]*1000, unit='B'))
             else:
-                log.debug('%s = %r', key, const.UNLIMITED)
                 self._cache[key] = const.UNLIMITED
-        log.debug('converted: %r = %r', key, self._cache[key])
         return self._cache[key]
-
-    # async def _set_limit_rate(self, limit, direction, alt=False):
-    #     # Make sure we have an initial value in case `limit` is an adjustment (e.g. '+=100kB')
-    #     if self._raw is None:
-    #         await self.update()
-    #     self._get_limit_rate(direction, alt=alt)
-
-    #     key = self._limit_rate_key(direction, alt)
-    #     setting = self._cache[key]
-    #     setting._set_local(limit)
-    #     limit = setting._get_local()
-
-    #     field_value, field_enabled = self._limit_rate_fields(direction, alt)
-    #     if limit is True:
-    #         await self._set({field_enabled: True})
-    #     elif limit in (const.UNLIMITED, False) or limit < 0:
-    #         await self._set({field_enabled: False})
-    #     else:
-    #         raw_limit = int(int(limit.convert_to('B')) / 1000)  # Transmission expects kilobytes
-    #         await self._set({field_enabled: True,
-    #                          field_value: raw_limit})
 
     async def _set_limit_rate(self, limit, direction, alt=False):
         key = self._limit_rate_key(direction, alt)
         field_value, field_enabled = self._limit_rate_fields(direction, alt)
-        value = self._converters[key](limit)
-        if isinstance(value, Bool):
-            await self._set({field_enabled: bool(value)})
-        elif 0 <= value < float('inf'):
-            # raw_limit = round(int(limit.convert_to('B')) / 1000)  # Transmission expects kilobytes
-            raw_limit = int(Int(limit, convert_to='B')) / 1000
+        prop_name = _key2property(key)
+        current = getattr(self, prop_name)
+        if current is const.DISCONNECTED:
+            current = await getattr(self, 'get_' + prop_name)()
+        limit = Int.parse_arithmetic_operator(current, limit)
+        limit = self._converters[key](limit)
+        if isinstance(limit, Bool):
+            await self._set({field_enabled: bool(limit)})
+        elif 0 <= limit < float('inf'):
+            raw_limit = round(limit.copy(convert_to='B')) / 1000
             await self._set({field_enabled: True,
                              field_value: raw_limit})
         else:
@@ -569,49 +520,49 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         await self._set_limit_rate(limit, 'up', alt=False)
 
 
-    # @_setting(RateLimitRemoteValue,
-    #           description='Global download rate limit')
-    # def limit_rate_down(self):
-    #     """Download rate limit (see `limit_rate_up`)"""
-    #     return self._get_limit_rate('down', alt=False)
+    @_setting(BoolOrBandwidth,
+              description='Global download rate limit')
+    def limit_rate_down(self):
+        """Download rate limit (see `limit_rate_up`)"""
+        return self._get_limit_rate('down', alt=False)
 
-    # async def get_limit_rate_down(self):
-    #     """Refresh cache and return `limit_rate_down`"""
-    #     await self.update()
-    #     return self.limit_rate_down
+    async def get_limit_rate_down(self):
+        """Refresh cache and return `limit_rate_down`"""
+        await self.update()
+        return self.limit_rate_down
 
-    # async def set_limit_rate_down(self, limit):
-    #     """Set download rate limit to `limit` (see `set_limit_rate_up`)"""
-    #     await self._set_limit_rate(limit, 'down', alt=False)
-
-
-    # @_setting(RateLimitRemoteValue,
-    #           description='Alternative global upload rate limit')
-    # def limit_rate_up_alt(self):
-    #     """Alternative upload rate limit (see `limit_rate_up`)"""
-    #     return self._get_limit_rate('up', alt=True)
-
-    # async def get_limit_rate_up_alt(self):
-    #     """Refresh cache and return `limit_rate_up_alt`"""
-    #     await self.update()
-    #     return self.limit_rate_up_alt
-
-    # async def set_limit_rate_up_alt(self, limit):
-    #     """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
-    #     await self._set_limit_rate(limit, 'up', alt=True)
+    async def set_limit_rate_down(self, limit):
+        """Set download rate limit to `limit` (see `set_limit_rate_up`)"""
+        await self._set_limit_rate(limit, 'down', alt=False)
 
 
-    # @_setting(RateLimitRemoteValue,
-    #           description='Alternative global download rate limit')
-    # def limit_rate_down_alt(self):
-    #     """Alternative download rate limit (see `limit_rate_up`)"""
-    #     return self._get_limit_rate('down', alt=True)
+    @_setting(BoolOrBandwidth,
+              description='Alternative global upload rate limit')
+    def limit_rate_alt_up(self):
+        """Alternative upload rate limit (see `limit_rate_up`)"""
+        return self._get_limit_rate('up', alt=True)
 
-    # async def get_limit_rate_down_alt(self):
-    #     """Refresh cache and return `limit_rate_down_alt`"""
-    #     await self.update()
-    #     return self.limit_rate_down_alt
+    async def get_limit_rate_alt_up(self):
+        """Refresh cache and return `limit_rate_alt_up`"""
+        await self.update()
+        return self.limit_rate_alt_up
 
-    # async def set_limit_rate_down_alt(self, limit):
-    #     """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
-    #     await self._set_limit_rate(limit, 'down', alt=True)
+    async def set_limit_rate_alt_up(self, limit):
+        """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
+        await self._set_limit_rate(limit, 'up', alt=True)
+
+
+    @_setting(BoolOrBandwidth,
+              description='Alternative global download rate limit')
+    def limit_rate_alt_down(self):
+        """Alternative download rate limit (see `limit_rate_up`)"""
+        return self._get_limit_rate('down', alt=True)
+
+    async def get_limit_rate_alt_down(self):
+        """Refresh cache and return `limit_rate_alt_down`"""
+        await self.update()
+        return self.limit_rate_alt_down
+
+    async def set_limit_rate_alt_down(self, limit):
+        """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
+        await self._set_limit_rate(limit, 'down', alt=True)
