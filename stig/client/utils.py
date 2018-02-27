@@ -17,10 +17,11 @@ from . import convert
 
 class Bandwidth(Float):
     typename = 'bandwidth'
-    def __new__(cls, value):
+    def __new__(cls, value, **kwargs):
         value = convert.bandwidth(value)
-        value.__class__ = cls  # Faster than super
-        return value
+        kwargs.update(unit=convert.bandwidth.unit,
+                      prefix=convert.bandwidth.prefix)
+        return super().__new__(cls, value, **kwargs)
 
     @classmethod
     def _get_syntax(cls, **kwargs):
