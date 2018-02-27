@@ -425,7 +425,7 @@ class _NumberMixin(StringableMixin):
     max = None
 
     def __new__(cls, value, *, unit=unit, convert_to=convert_to, prefix=prefix,
-                hide_unit=hide_unit, min=min, max=max):
+                hide_unit=hide_unit, min=min, max=max, autolimit=False):
         if isinstance(value, cls):
             # Use value's arguments as defaults
             defaults = value._args
@@ -478,9 +478,15 @@ class _NumberMixin(StringableMixin):
             parent_type = float
 
         if min is not None and value < min:
-            raise ValueError('Too small (minimum is %s)' % min)
+            if autolimit:
+                value = min
+            else:
+                raise ValueError('Too small (minimum is %s)' % min)
         elif max is not None and value > max:
-            raise ValueError('Too big (maximum is %s)' % max)
+            if autolimit:
+                value = max
+            else:
+                raise ValueError('Too big (maximum is %s)' % max)
 
         try:
             self = super().__new__(cls, value)
@@ -505,7 +511,7 @@ class _NumberMixin(StringableMixin):
 
         # Remember arguments so we can copy them if this instance is passed to the same class
         self._args = {'unit': unit, 'prefix': prefix, 'hide_unit': hide_unit,
-                       'min': min, 'max': max}
+                       'min': min, 'max': max, 'autolimit': autolimit}
         return self
 
     @classmethod
