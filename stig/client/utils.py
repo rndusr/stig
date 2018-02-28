@@ -9,8 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..utils.stringables import (Bool, Int, Float, Option, Path,
-                                 multitype, StringableMixin)
+from ..utils.stringables import (Bool, Int, Float, Option, Path, multitype, maybe_adjust)
 from . import constants as const
 from . import convert
 
