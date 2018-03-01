@@ -99,7 +99,7 @@ class TorrentAPI():
             return number
         elif not hasattr(number, 'unit'):
             number = convert.bandwidth(number)
-        return number.convert_to('B')
+        return number.copy(convert_to='B')
 
     async def _map_tid_to_torrent_values(self, torrents, keys):
         """
