@@ -158,6 +158,22 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         log.debug('Registering %r to receive settings updates', callback)
         self._on_update.connect(callback, weak=autoremove)
 
+    async def get(self, key):
+        """Same as __getitem__ but refresh cache first"""
+        if key not in self:
+            raise ValueError(key)
+        else:
+            method = getattr(self, 'get_' + _key2property(key))
+            return await method()
+
+    async def set(self, key, value):
+        """Asynchronous replacement for __setitem__"""
+        if key not in self:
+            raise ValueError(key)
+        else:
+            method = getattr(self, 'set_' + _key2property(key))
+            await method(value)
+
     def _get(self, key, field_or_callable):
         """Get setting from cache if possible"""
         if self._cache[key] is None:

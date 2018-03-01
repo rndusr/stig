@@ -68,6 +68,20 @@ class TestSettingsAPI(asynctest.TestCase):
         with self.assertRaises(ClientError):
             await self.api.set_pex(True)
 
+    async def test_get_method(self):
+        self.rpc.fake_settings['alt-speed-up'] = 500
+        self.rpc.fake_settings['alt-speed-enabled'] = True
+        self.assertEqual(await self.api.get('limit.rate.alt.up'), 500e3)
+        with self.assertRaises(ValueError) as cm:
+            await self.api.get('foo')
+
+    async def test_set_method(self):
+        await self.api.set('limit.rate.down', 555e3)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 555)
+        self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+        with self.assertRaises(ValueError) as cm:
+            await self.api.set('foo', 'bar')
+
 
     async def test_get_autostart(self):
         self.assertIs(self.api['autostart'], const.DISCONNECTED)
