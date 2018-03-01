@@ -22,8 +22,7 @@ from ..poll import RequestPoller
 from .. import convert
 from .. import constants as const
 
-from ..utils import (Bool, Option, Float, Int, Path, BoolOrPath, BoolOrBandwidth)
-
+from ..utils import (Bool, Option, Int, Path, BoolOrPath, BoolOrBandwidth)
 
 
 # Transform key (as in `settings[key]`) to property name and vice versa
@@ -493,10 +492,6 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         key = self._limit_rate_key(direction, alt)
         field_value, field_enabled = self._limit_rate_fields(direction, alt)
         prop_name = _key2property(key)
-        current = getattr(self, prop_name)
-        if current is const.DISCONNECTED:
-            current = await getattr(self, 'get_' + prop_name)()
-        limit = Int.parse_arithmetic_operator(current, limit)
         limit = self._converters[key](limit)
         if isinstance(limit, Bool):
             await self._set({field_enabled: bool(limit)})
@@ -507,6 +502,25 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         else:
             await self._set({field_enabled: False})
 
+    async def _adjust_limit_rate(self, adjustment, direction, alt=False):
+        key = self._limit_rate_key(direction, alt)
+        field_value, field_enabled = self._limit_rate_fields(direction, alt)
+        prop_name = _key2property(key)
+
+        current_limit = getattr(self, prop_name)
+        if current_limit is const.DISCONNECTED:
+            current_limit = await getattr(self, 'get_' + prop_name)()
+        adjustment = self._converters[key](adjustment)
+
+        if current_limit >= float('inf'):
+            # If current limit is disabled, adjust from 0
+            new_limit = adjustment
+        elif isinstance(current_limit, (float, int)):
+            new_limit = max(0, current_limit + adjustment)
+        else:
+            new_limit = current_limit
+
+        await self._set_limit_rate(new_limit, direction, alt=alt)
 
     @_setting(BoolOrBandwidth,
               description='Global upload rate limit')
@@ -535,6 +549,10 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """
         await self._set_limit_rate(limit, 'up', alt=False)
 
+    async def adjust_limit_rate_up(self, limit):
+        """Adjust current upload rate limit by `limit` (positive or negative number)"""
+        await self._adjust_limit_rate(limit, 'up', alt=False)
+
 
     @_setting(BoolOrBandwidth,
               description='Global download rate limit')
@@ -550,6 +568,10 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_limit_rate_down(self, limit):
         """Set download rate limit to `limit` (see `set_limit_rate_up`)"""
         await self._set_limit_rate(limit, 'down', alt=False)
+
+    async def adjust_limit_rate_down(self, limit):
+        """Adjust current download rate limit by `limit` (positive or negative number)"""
+        await self._adjust_limit_rate(limit, 'down', alt=False)
 
 
     @_setting(BoolOrBandwidth,
@@ -567,6 +589,10 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
         await self._set_limit_rate(limit, 'up', alt=True)
 
+    async def adjust_limit_rate_alt_up(self, limit):
+        """Adjust current alternative upload rate limit by `limit`"""
+        await self._adjust_limit_rate(limit, 'up', alt=True)
+
 
     @_setting(BoolOrBandwidth,
               description='Alternative global download rate limit')
@@ -582,3 +608,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_limit_rate_alt_down(self, limit):
         """Set alternative upload rate limit to `limit` (see `set_limit_rate_up`)"""
         await self._set_limit_rate(limit, 'down', alt=True)
+
+    async def adjust_limit_rate_alt_down(self, limit):
+        """Adjust current alternative download rate limit by `limit`"""
+        await self._adjust_limit_rate(limit, 'down', alt=True)

@@ -120,11 +120,9 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_set_port(self):
         self.rpc.fake_settings['peer-port'] = 123
-        self.rpc.fake_settings['peer-port-random-on-start'] = True
 
         await self.api.set_port(456)
         self.assertEqual(self.rpc.fake_settings['peer-port'], 456)
-        self.assertEqual(self.rpc.fake_settings['peer-port-random-on-start'], False)
 
         with self.assertRaises(ValueError):
             await self.api.set_port('Pick one!')
@@ -479,11 +477,25 @@ class TestSettingsAPI(asynctest.TestCase):
             value_field = 'speed-limit-' + direction
             enabled_field = 'speed-limit-' + direction + '-enabled'
 
-            await method('80k')
+            await method(80e3)
             self.assertEqual(self.rpc.fake_settings[value_field], 80)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
-            await method('+=20k')
+            await method(0)
+            self.assertEqual(self.rpc.fake_settings[value_field], 0)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+            await method(-1)
+            self.assertEqual(self.rpc.fake_settings[value_field], 0)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], False)
+
+            convert.bandwidth.unit = 'bit'
+            await method(80e3)
+            self.assertEqual(self.rpc.fake_settings[value_field], 10)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+            convert.bandwidth.unit = 'byte'
+            await method('100k')
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
@@ -495,35 +507,56 @@ class TestSettingsAPI(asynctest.TestCase):
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
+            await method('off')
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], False)
+
+            await method('on')
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
             await method(const.UNLIMITED)
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
-            await method('+=80kb')
-            self.assertEqual(self.rpc.fake_settings[value_field], 10)
+    async def test_adjust_limit_rate(self):
+        for direction in ('up', 'down'):
+            convert.bandwidth.unit = 'byte'
+
+            method = getattr(self.api, 'adjust_limit_rate_' + direction)
+            value_field = 'speed-limit-' + direction
+            enabled_field = 'speed-limit-' + direction + '-enabled'
+
+            self.rpc.fake_settings[value_field] = 80
+            self.rpc.fake_settings[enabled_field] = True
+
+            await method(-30e3)
+            self.assertEqual(self.rpc.fake_settings[value_field], 50)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
-            await method('-=40kb')
-            self.assertEqual(self.rpc.fake_settings[value_field], 5)
+            await method(50e3)
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
-            await method('+=20kB')
-            self.assertEqual(self.rpc.fake_settings[value_field], 25)
+            await method(-101e3)
+            self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
-            await method('off')
-            self.assertEqual(self.rpc.fake_settings[value_field], 25)
-            self.assertEqual(self.rpc.fake_settings[enabled_field], False)
-
-            await method('+=200kB')
-            self.assertEqual(self.rpc.fake_settings[value_field], 200)
+            convert.bandwidth.unit = 'bit'
+            await method(800e3)
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
-            await method('-=300kB')
-            self.assertEqual(self.rpc.fake_settings[value_field], 200)
-            self.assertEqual(self.rpc.fake_settings[enabled_field], False)
+            convert.bandwidth.unit = 'byte'
+            await method('400k')
+            self.assertEqual(self.rpc.fake_settings[value_field], 500)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
-    async def test_get_limits_rate_alt(self):
+            await method('-800kb')
+            self.assertEqual(self.rpc.fake_settings[value_field], 400)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+    async def test_get_limit_rate_alt(self):
         for direction in ('up', 'down'):
             convert.bandwidth.unit = 'byte'
             self.api.clearcache()
@@ -541,11 +574,10 @@ class TestSettingsAPI(asynctest.TestCase):
             self.assertEqual(self.api[key], const.UNLIMITED)
 
             self.rpc.fake_settings[enabled_field] = True
-            print(self.rpc.fake_settings)
             self.assertEqual(await method(), 20e3)
             self.assertEqual(self.api[key], 20e3)
 
-    async def test_set_limits_rate_alt(self):
+    async def test_set_limit_rate_alt(self):
         for direction in ('up', 'down'):
             convert.bandwidth.unit = 'byte'
             self.api.clearcache()
@@ -559,18 +591,42 @@ class TestSettingsAPI(asynctest.TestCase):
 
             self.rpc.fake_settings[value_field] = 1000
             self.rpc.fake_settings[enabled_field] = True
-            await method('+=1000k')
-            self.assertEqual(self.rpc.fake_settings[value_field], 2000)
+            await method('100k')
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method('off')
-            self.assertEqual(self.rpc.fake_settings[value_field], 2000)
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
             await method('on')
-            self.assertEqual(self.rpc.fake_settings[value_field], 2000)
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(const.UNLIMITED)
-            self.assertEqual(self.rpc.fake_settings[value_field], 2000)
+            self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
+
+    async def test_adjust_limit_rate_alt(self):
+        for direction in ('up', 'down'):
+            convert.bandwidth.unit = 'byte'
+            self.api.clearcache()
+
+            method = getattr(self.api, 'adjust_limit_rate_alt_' + direction)
+            value_field = 'alt-speed-' + direction
+            enabled_field = 'alt-speed-enabled'
+            key = 'limit.rate.alt.' + direction
+
+            self.rpc.fake_settings[value_field] = 1000
+            self.rpc.fake_settings[enabled_field] = True
+            await method('1000k')
+            self.assertEqual(self.rpc.fake_settings[value_field], 2000)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+            await method('-500k')
+            self.assertEqual(self.rpc.fake_settings[value_field], 1500)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+            await method('-5000k')
+            self.assertEqual(self.rpc.fake_settings[value_field], 0)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], True)
