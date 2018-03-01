@@ -143,7 +143,7 @@ class StatusAPI():
         if stats is None:
             return const.DISCONNECTED
         else:
-            return convert.bandwidth(self._session_stats[direction + 'loadSpeed'], unit='byte')
+            return convert.bandwidth(self._session_stats[direction + 'loadSpeed'], unit='B')
 
     @property
     def rate_down(self):
