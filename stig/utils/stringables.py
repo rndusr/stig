@@ -572,27 +572,11 @@ class _NumberMixin(StringableMixin):
             # value implemented.
             result = _INFINITY
         else:
-            parent_meth = getattr(self._parent_type, funcname)
-            result = parent_meth(self, other, **kwargs)
+            result = getattr(float(self), funcname)(other, **kwargs)
 
-        if result is NotImplemented and other is not None:
-            # This may have happened because `self` is `int` and it got a
-            # `float` to handle.  To make this work, we must flip `self` and
-            # `other`, getting the method from `other` and passing it `self`:
-            #
-            #     int.__add__(<int>, <float>)  ->  float.__add__(<float>, <int>)
-            #
-            # If we get the parent method from the instance instead of its type,
-            # we don't have to pass two values and it's a little bit faster.
-            other_func = getattr(other, funcname)
-            result = other_func(self, **kwargs)
-            if result is NotImplemented:
-                return NotImplemented
-
-        # Determine the appropriate class (1.0 should return a Int)
-        if isinstance(result, int) or (result < _INFINITY and
-                                       isinstance(result, float) and
-                                       result.is_integer()):
+        if result is NotImplemented:
+            return NotImplemented
+        elif not hasattr(result, 'is_integer') or result.is_integer():
             result_cls = Int
         else:
             result_cls = Float
