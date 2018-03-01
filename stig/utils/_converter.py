@@ -47,8 +47,7 @@ class DataCountConverter():
         if unit_given not in ('b', 'B'):
             raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not %r" % unit_given)
         else:
-            return Float(num, unit=unit_given, convert_to=self._unit,
-                         prefix=self._prefix, min=0, autolimit=True)
+            return Float(num, unit=unit_given, convert_to=self._unit, prefix=self._prefix)
 
     @property
     def unit(self):
