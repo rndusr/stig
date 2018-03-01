@@ -485,7 +485,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         if isinstance(limit, Bool):
             await self._set({field_enabled: bool(limit)})
         elif 0 <= limit < float('inf'):
-            raw_limit = round(limit.copy(convert_to='B')) / 1000
+            raw_limit = round(round(limit.copy(convert_to='B')) / 1000)
             await self._set({field_enabled: True,
                              field_value: raw_limit})
         else:
