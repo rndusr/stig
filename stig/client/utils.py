@@ -26,7 +26,15 @@ class Bandwidth(Float):
     def _get_syntax(cls, **kwargs):
         return '%s[b|B]' % super()._get_syntax(**kwargs)
 
-BoolOrBandwidth = multitype(Bool, Bandwidth)
+class BoolOrBandwidth(multitype(Bool.partial(true=('limited', 'enabled', 'yes', 'on', 'true'),
+                                             false=('unlimited', 'disabled', 'no', 'off', 'false')),
+                                Bandwidth)):
+    def __new__(cls, value, **kwargs):
+        if isinstance(value, (float, int)) and value >= float('inf'):
+            return super().__new__(cls, 'unlimited')
+        else:
+            return super().__new__(cls, value, **kwargs)
+
 BoolOrPath = multitype(Bool, Path)
 
 
