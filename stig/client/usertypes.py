@@ -20,8 +20,7 @@ from ..utils.usertypes import (BooleanValue, IntegerValue, FloatValue,
 
 from ..utils.stringables import (Float, Int, Bool, Option, Path,
                                  StringableMixin, multitype)
-from . import convert
-from . import constants as const
+from .utils import (convert, const)
 from . import errors
 
 

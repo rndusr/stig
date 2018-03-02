@@ -1,7 +1,6 @@
 from stig.client.usertypes import (BandwidthValue, RateLimitValue)
 
-from stig.client import convert
-from stig.client import constants as const
+from stig.client.utils import (convert, const)
 
 import unittest
 

@@ -9,11 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-# External dependencies
-from ..utils import convert
-from ..utils.stringables import (Float, Int)
-
-
 from .errors import *
 from .constants import *
 

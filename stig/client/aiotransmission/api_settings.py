@@ -19,10 +19,7 @@ from types import SimpleNamespace
 import os
 
 from ..poll import RequestPoller
-from .. import convert
-from .. import constants as const
-
-from ..utils import (Bool, Option, Int, Path, BoolOrPath, BoolOrBandwidth)
+from ..utils import (convert, const, Bool, Option, Int, Path, BoolOrPath, BoolOrBandwidth)
 
 
 # Transform key (as in `settings[key]`) to property name and vice versa

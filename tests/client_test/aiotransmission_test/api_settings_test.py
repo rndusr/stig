@@ -1,9 +1,7 @@
 from stig.client.aiotransmission.api_settings import SettingsAPI
 
-from stig.client import convert
-from stig.client import constants as const
+from stig.client.utils import (convert, const, Bool, Int, Float, Path, Bandwidth)
 from stig.client import ClientError
-from stig.client.utils import (Bool, Int, Float, Path, Bandwidth)
 
 import resources_aiotransmission as rsrc
 

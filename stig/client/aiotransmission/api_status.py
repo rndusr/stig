@@ -16,8 +16,7 @@ import blinker
 from collections import namedtuple
 
 from ..poll import RequestPoller
-from .. import convert
-from .. import constants as const
+from ..utils import (convert, const)
 
 
 TorrentCount = namedtuple('TorrentCount', ('active', 'downloading', 'isolated',

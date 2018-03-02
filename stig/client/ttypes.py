@@ -28,9 +28,7 @@ import os
 import re
 import time
 
-from . import (Float, Int, convert)
-from . import constants as const
-from . import utils
+from .utils import (URL, Float, Int, convert, const)
 
 
 def _limit_rate(limit):
@@ -581,8 +579,8 @@ class TorrentTracker(abc.Mapping):
         'id'                 : lambda val: val,
         'tier'               : int,
 
-        'url-announce'       : utils.URL,
-        'url-scrape'         : utils.URL,
+        'url-announce'       : URL,
+        'url-scrape'         : URL,
         'domain'             : SmartCmpStr,
 
         'state-announce'     : _validate_tracker_state,

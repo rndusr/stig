@@ -10,8 +10,8 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from ..utils.stringables import (Bool, Int, Float, Option, Path, multitype)
+from ..utils import convert
 from . import constants as const
-from . import convert
 
 
 class Bandwidth(Float):
