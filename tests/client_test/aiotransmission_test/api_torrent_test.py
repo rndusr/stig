@@ -262,7 +262,20 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
                              'arguments': {'ids': [1, 2], 'uploadLimited': True,
                                            'uploadLimit': 1000}})
 
-    async def test_set_relative_rate_limit_when_enabled(self):
+    async def test_add_to_current_limit_when_enabled(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
+        )
+        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), 50e3)
+        self.assert_request({'method': 'torrent-set',
+                             'arguments': {'ids': [1], 'uploadLimited': True,
+                                           'uploadLimit': 150}})
+        self.assert_request({'method': 'torrent-set',
+                             'arguments': {'ids': [2], 'uploadLimited': True,
+                                           'uploadLimit': 250}})
+
+    async def test_subtract_from_current_limit_when_enabled(self):
         self.daemon.response = rsrc.response_torrents(
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
@@ -275,7 +288,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
                              'arguments': {'ids': [2], 'uploadLimited': True,
                                            'uploadLimit': 150}})
 
-    async def test_set_relative_rate_limit_when_disabled(self):
+    async def test_add_to_current_limit_when_disabled(self):
         self.daemon.response = rsrc.response_torrents(
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
@@ -284,3 +297,11 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1,2], 'uploadLimited': True,
                                            'uploadLimit': 50}})
+
+    async def test_subtract_from_current_limit_when_disabled(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
+        )
+        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
+        self.daemon.requests == ()  # Assert no requests were sent
