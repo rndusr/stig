@@ -41,8 +41,8 @@ class TransmissionRPC():
     are done in the *API classes.
     """
 
-    def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
-                 password=None, path='/transmission/rpc', enabled=True, loop=None):
+    def __init__(self, host='localhost', port=9091, *, tls=False, user='',
+                 password='', path='/transmission/rpc', enabled=True, loop=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._host = host
         self._port = port
@@ -154,7 +154,7 @@ class TransmissionRPC():
     @property
     def user(self):
         """
-        Username for authenticating to the Transmission RPC interface or None
+        Username for authenticating to the Transmission RPC interface or empty string
 
         Setting this property calls disconnect().
         """
@@ -167,7 +167,7 @@ class TransmissionRPC():
     @property
     def password(self):
         """
-        Password for authenticating to the Transmission RPC interface or None
+        Password for authenticating to the Transmission RPC interface or empty string
 
         Setting this property calls disconnect().
         """
