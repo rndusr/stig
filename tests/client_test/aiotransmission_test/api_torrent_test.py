@@ -274,3 +274,13 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [2], 'uploadLimited': True,
                                            'uploadLimit': 150}})
+
+    async def test_set_relative_rate_limit_when_disabled(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
+        )
+        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), 50e3)
+        self.assert_request({'method': 'torrent-set',
+                             'arguments': {'ids': [1,2], 'uploadLimited': True,
+                                           'uploadLimit': 50}})

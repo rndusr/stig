@@ -104,6 +104,18 @@ class TestSetCmd(CommandTestCase):
         self.assertEqual(process.success, True)
         self.assertEqual(self.cfg['some.number'], '39.2')
 
+    async def test_adjusting_number(self):
+        self.cfg['some.number'] = 20
+        process = SetCmd(['some.number', '+=15'], loop=self.loop)
+        await self.finish(process)
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], 35)
+
+        process = SetCmd(['some.number', '-=45'], loop=self.loop)
+        await self.finish(process)
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], -10)
+
     async def test_setting_bool(self):
         process = SetCmd(['some.boolean', 'yes'], loop=self.loop)
         await self.finish(process)

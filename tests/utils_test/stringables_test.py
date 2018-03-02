@@ -487,7 +487,17 @@ class TestFloat(_TestBase):
             self.assertEqual(n, 1.25e6)
             self.assertEqual(str(n), exp_string)
 
-    def test_arithmethic_operation_ensures_common_unit(self):
+    def test_arithmetic_operation_with_base_types(self):
+        x = Float('10k', unit='B', prefix='metric') + 2000
+        self.assertEqual(str(x), '12kB')
+        x = Float('10k', unit='B', prefix='metric') - 2000
+        self.assertEqual(str(x), '8kB')
+        x = Float('10k', unit='B', prefix='metric') / 2
+        self.assertEqual(str(x), '5kB')
+        x = Float('10k', unit='B', prefix='metric') * 2
+        self.assertEqual(str(x), '20kB')
+
+    def test_arithmetic_operation_ensures_common_unit(self):
         a = Float(10e3, unit='B', prefix='metric')
         b = Float(1024*10, unit='b', prefix='binary')
         c = a + b
@@ -495,7 +505,6 @@ class TestFloat(_TestBase):
         self.assertEqual(c.unit, 'B')
         self.assertEqual(c.prefix, 'metric')
         self.assertEqual(str(c), '11.3kB')
-
 
 class TestInt(_TestBase):
     def test_rounding(self):
