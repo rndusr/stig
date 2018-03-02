@@ -540,6 +540,10 @@ class TestSettingsAPI(asynctest.TestCase):
             self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
+            await method(-1)
+            self.assertEqual(self.rpc.fake_settings[value_field], 0)
+            self.assertEqual(self.rpc.fake_settings[enabled_field], False)
+
             convert.bandwidth.unit = 'bit'
             await method(800e3)
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
