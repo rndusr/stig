@@ -9,6 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from .utils import Float
 
 class ConstantBase():
     pass
@@ -42,5 +43,5 @@ def get_constant(name, repr=None, bases=(), init_value=None, attrs={}):
     return _constants_cache[name]
 
 DISCONNECTED = get_constant('disconnected', repr='<disconnected>')
-UNLIMITED = get_constant('unlimited', bases=(float,), init_value='inf')
+UNLIMITED = get_constant('unlimited', bases=(Float,), init_value='inf')
 RANDOM = get_constant('random', repr="'random'")
