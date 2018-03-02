@@ -23,8 +23,7 @@ from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
 from ..filters.tfilter import TorrentFilter
 from ..filters.ffilter import TorrentFileFilter
-from .. import convert
-from .. import constants as const
+from ..utils import (Bool, Bandwidth, BoolOrBandwidth, adjust_rate_limit)
 
 
 class _TorrentCache():
@@ -92,14 +91,6 @@ class TorrentAPI():
             return Response(result=None, msgs=(e,), success=False)
         else:
             return Response(result=result, msgs=(), success=True)
-
-    @staticmethod
-    def _ensure_bytes(number):
-        if number is const.UNLIMITED:
-            return number
-        elif not hasattr(number, 'unit'):
-            number = convert.bandwidth(number)
-        return number.copy(convert_to='B')
 
     async def _map_tid_to_torrent_values(self, torrents, keys):
         """
@@ -670,28 +661,29 @@ class TorrentAPI():
 
 
     async def _limit_rate_absolute(self, torrents, direction, limit):
-        # Disable limits for negative values
+        if isinstance(limit, str):
+            try:
+                limit = BoolOrBandwidth(limit)
+            except ValueError as e:
+                return Response(torrents=(), success=False,
+                                msgs=[ClientError('%s: %r' % (e, limit))])
         if isinstance(limit, (float, int)):
-            limit = False if limit < 0 or limit >= float('inf') else limit
+            limit = BoolOrBandwidth(False) if limit < 0 or limit >= float('inf') else limit
 
         log.debug('Setting new %sload limit for torrents %s: %r', direction, torrents, limit)
         return await self._limit_rate(torrents, direction, get_new_limit=lambda _: limit)
 
     async def _limit_rate_relative(self, torrents, direction, adjustment):
-        # Only numbers are allowed
-        if not isinstance(adjustment, (float, int)):
-            raise ValueError('Invalid rate limit adjustment: %r', adjustment)
+        if isinstance(adjustment, str):
+            try:
+                adjustment = Bandwidth(adjustment)
+            except ValueError as e:
+                return Response(torrents=(), success=False,
+                                msgs=[ClientError('%s: %r' % (e, adjustment))])
 
         def add_to_current_limit(current_limit):
             log.debug('Adjusting %sload limit %r by %r', direction, current_limit, adjustment)
-            if current_limit >= float('inf'):
-                new_limit = adjustment
-            elif isinstance(current_limit, (float, int)):
-                new_limit = current_limit + adjustment
-                new_limit = max(0, new_limit)
-            else:
-                new_limit = current_limit
-            return new_limit
+            return adjust_rate_limit(current_limit, adjustment)
 
         return await self._limit_rate(torrents, direction, get_new_limit=add_to_current_limit)
 
@@ -703,49 +695,34 @@ class TorrentAPI():
             current_limits = response.torrent_values
             log.debug('Current %sload rate limits: %r', direction, current_limits)
 
-        def normalize_rate_limit(limit):
-            if limit >= float('inf') or \
-               any(limit is x for x in (None, False, const.UNLIMITED)):
-                return None
-            elif limit is True:
-                return True
-            else:
-                return self._ensure_bytes(limit)
-
         # Generate 'torrent-set' arguments for each torrent ID.  To de-duplicate
         # requests (same args for multiple torrents), we map the args to a list
         # of torrent IDs, so we just append another ID for existing args.
         torrent_set_args = {}
         errors = {}
         for tid,cur_limit in current_limits.items():
-            new_limit = get_new_limit(cur_limit)
+            new_limit = BoolOrBandwidth(get_new_limit(cur_limit))
+            cur_limit = BoolOrBandwidth(cur_limit)
 
-            # Ensure that both values are in bytes
-            new_limit_norm = normalize_rate_limit(new_limit)
-            cur_limit_norm = normalize_rate_limit(cur_limit)
-
-            if new_limit_norm == cur_limit_norm:
+            if new_limit == cur_limit:
                 log.debug('Nothing to set: new:%r == cur:%r', new_limit, cur_limit)
-                errors[tid] = ('Already %s' % cur_limit)
+                errors[tid] = 'Already %s' % cur_limit
                 continue
-            elif new_limit_norm is None:
-                log.debug('Disabling limit')
-                args = (('%sloadLimited' % direction, False),)
-            elif new_limit_norm is True:
-                if cur_limit_norm not in (False, None):
-                    errors[tid] = ('Already enabled (%s)' % cur_limit)
+            elif isinstance(new_limit, Bool):
+                if new_limit and isinstance(cur_limit, (float, int)) and cur_limit < float('inf'):
+                    errors[tid] = 'Already limited'
                     continue
                 else:
-                    log.debug('Enabling limit')
-                    args = (('%sloadLimited' % direction, True),)
+                    log.debug('%sabling limit', 'En' if new_limit else 'Dis')
+                    args = (('%sloadLimited' % direction, bool(new_limit)),)
             else:
-                log.debug('Setting new limit: %r -> %r', new_limit, new_limit_norm)
-                if new_limit_norm >= float('inf'):
+                log.debug('Setting new limit: %r', new_limit)
+                if new_limit >= float('inf'):
                     args = (('%sloadLimited' % direction, False),)
                 else:
-                    rpc_limit = int(round(int(new_limit_norm)/1000))  # Transmission expects kilobytes
+                    raw_limit = int(round(int(new_limit)/1000))  # Transmission expects kilobytes
                     args = (('%sloadLimited' % direction, True),
-                            ('%sloadLimit' % direction, rpc_limit))
+                            ('%sloadLimit' % direction, raw_limit))
 
             if args in torrent_set_args:
                 torrent_set_args[args].append(tid)
@@ -772,9 +749,7 @@ class TorrentAPI():
                                         (t['name'], direction, errors[t['id']])))
             else:
                 success = True
-                limit = t['limit-rate-'+direction]
-                limit_str = str(limit) if const.is_constant(limit) else limit.with_unit
-                msgs.append('%s %sload rate: %s' % (t['name'], direction, limit_str))
+                msgs.append('%s %sload rate: %s' % (t['name'], direction, t['limit-rate-'+direction]))
         return Response(torrents=response.torrents, success=success, msgs=msgs)
 
     async def set_limit_rate_up(self, torrents, limit):
@@ -782,11 +757,7 @@ class TorrentAPI():
         Limit upload rate for individual torrent(s)
 
         torrents: See `torrents` method
-        limit: Allowed values:
-                 - Any positive number is interpreted as bytes per second
-                 - A negative number, `None`, `False` and the constant UNLIMITED
-                   disable the current limit
-                 - `True` enables a previously disabled limit
+        limit: Passed to `utils.BoolOrBandwidth`
 
         Return Response with the following properties:
             torrents: tuple of Torrents with the keys 'id', 'name' and 'limit-rate-up'
@@ -814,7 +785,7 @@ class TorrentAPI():
         Same as `set_limit_rate_up` but set new limit relative to current limit
 
         adjustment: Negative or positive number to add to the current limit of
-                    each matching torrent
+                    each matching torrent; passed to `utils.Bandwidth`
         """
         return await self._limit_rate_relative(torrents, 'up', adjustment)
 
