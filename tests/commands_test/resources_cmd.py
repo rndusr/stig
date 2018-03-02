@@ -2,7 +2,7 @@ import asynctest
 
 from stig.client.utils import Response
 from stig.client.base import TorrentBase
-from stig.commands import (InitCommand, _CommandBase)
+from stig.commands import (InitCommand, _CommandBase, CmdError)
 
 
 def make_cmdcls(defaults=True, **clsattrs):
@@ -165,3 +165,5 @@ class CommandTestCase(asynctest.TestCase):
         self.assertEqual(process.finished, True)
         if process.exception is not None:
             print('process failed: %r: %r' % (process, process.exception))
+            if not isinstance(process.exception, CmdError):
+                raise process.exception
