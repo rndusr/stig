@@ -41,10 +41,14 @@ BoolOrPath = multitype(Bool, Path)
 def adjust_rate_limit(current_limit, adjustment):
     if current_limit >= float('inf'):
         # If current limit is disabled, adjust from 0
-        current_limit = convert.bandwidth(0)
+        current_limit = 0
     new_limit = current_limit + adjustment
     if new_limit < 0:
-        new_limit = const.UNLIMITED
+        # Drop to 0 if current_limit is greater than zero, otherwise drop to "no limit"
+        if current_limit > 0:
+            new_limit = 0
+        else:
+            new_limit = const.UNLIMITED
     return new_limit
 
 
