@@ -153,7 +153,8 @@ from types import SimpleNamespace
 class CommandTestCase(asynctest.TestCase):
     def setUp(self):
         self.api = SimpleNamespace(torrent=MockAPI(),
-                                   rpc=MockAPI())
+                                   rpc=MockAPI(),
+                                   settings=MockAPI())
         self.cfg = MockSettings()
         self.helpmgr = MockHelpManager()
 
