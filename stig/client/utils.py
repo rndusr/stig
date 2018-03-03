@@ -16,6 +16,23 @@ from . import constants as const
 
 class Bandwidth(Float):
     typename = 'bandwidth'
+
+    @staticmethod
+    def adjust(current, adjustment):
+        """Adjust `current` by `adjustment`"""
+        if current >= float('inf'):
+            # If current number is infinity, adjust from 0
+            current = 0
+        new = current + adjustment
+        if new < 0:
+            # Drop to 0 if current is greater than zero.
+            # If current already is zero, drop to infinity.
+            if current > 0:
+                new = 0
+            else:
+                new = const.UNLIMITED
+        return new
+
     def __new__(cls, value, **kwargs):
         value = convert.bandwidth(value)
         kwargs.update(unit=convert.bandwidth.unit,
@@ -36,20 +53,6 @@ class BoolOrBandwidth(multitype(Bool.partial(true=('limited', 'enabled', 'yes', 
             return super().__new__(cls, value, **kwargs)
 
 BoolOrPath = multitype(Bool, Path)
-
-
-def adjust_rate_limit(current_limit, adjustment):
-    if current_limit >= float('inf'):
-        # If current limit is disabled, adjust from 0
-        current_limit = 0
-    new_limit = current_limit + adjustment
-    if new_limit < 0:
-        # Drop to 0 if current_limit is greater than zero, otherwise drop to "no limit"
-        if current_limit > 0:
-            new_limit = 0
-        else:
-            new_limit = const.UNLIMITED
-    return new_limit
 
 
 class PerfectInterval():

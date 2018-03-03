@@ -23,7 +23,7 @@ from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
 from ..filters.tfilter import TorrentFilter
 from ..filters.ffilter import TorrentFileFilter
-from ..utils import (Bool, Bandwidth, BoolOrBandwidth, adjust_rate_limit)
+from ..utils import (Bool, Bandwidth, BoolOrBandwidth)
 
 
 class _TorrentCache():
@@ -683,7 +683,7 @@ class TorrentAPI():
 
         def add_to_current_limit(current_limit):
             log.debug('Adjusting %sload limit %r by %r', direction, current_limit, adjustment)
-            return adjust_rate_limit(current_limit, adjustment)
+            return Bandwidth.adjust(current_limit, adjustment)
 
         return await self._limit_rate(torrents, direction, get_new_limit=add_to_current_limit)
 
