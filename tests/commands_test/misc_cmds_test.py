@@ -165,3 +165,41 @@ class TestSetCmd(CommandTestCase):
         with self.assertLogs(level='ERROR') as logged:
             await self.finish(process)
         self.assert_logged(logged, ('ERROR', r"^some.string = bar: I hate your values!$"))
+
+
+from stig.commands.cli import RateLimitCmd
+class TestRateLimitCmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        RateLimitCmd.srvapi = self.api
+
+    async def test_setting_global_limits(self):
+        for direction in ('up', 'dn', 'down'):
+            set_name = 'set_limit_rate_' + {'dn':'down'}.get(direction, direction)
+            adjust_name = 'adjust_limit_rate_' + {'dn':'down'}.get(direction, direction)
+
+            self.api.settings.forget_calls()
+            process = RateLimitCmd([direction, '1Mb', 'global'], loop=self.loop)
+            await self.finish(process)
+            self.assertEqual(process.success, True)
+            self.api.settings.assert_called(1, set_name, ('1Mb',), {})
+
+            self.api.settings.forget_calls()
+            process = RateLimitCmd([direction, '+=2MB', 'global'], loop=self.loop)
+            await self.finish(process)
+            self.assertEqual(process.success, True)
+            self.api.settings.assert_called(1, adjust_name, ('+2MB',), {})
+
+            self.api.settings.forget_calls()
+            process = RateLimitCmd([direction, '--', '-=10Mb', 'global'], loop=self.loop)
+            await self.finish(process)
+            self.assertEqual(process.success, True)
+            self.api.settings.assert_called(1, adjust_name, ('-10Mb',), {})
+
+            self.api.settings.forget_calls()
+            self.api.settings.raises = ValueError('bad value')
+            process = RateLimitCmd([direction, 'fooo', 'global'], loop=self.loop)
+            with self.assertLogs(level='ERROR') as logged:
+                await self.finish(process)
+            self.assertEqual(process.success, False)
+            self.assert_logged(logged, ('ERROR', "^bad value: 'fooo'$"))
