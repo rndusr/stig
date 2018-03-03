@@ -65,7 +65,9 @@ class MockAPI():
             self._methods[methodname]['kwargs'].append(kwargs)
             self._methods[methodname]['calls'] += 1
             if self.raises is not None:
-                raise self.raises
+                exc = self.raises
+                self.raises = None
+                raise exc
             elif isinstance(self.response, Response):
                 return self.response
             elif isinstance(self.response, list):
