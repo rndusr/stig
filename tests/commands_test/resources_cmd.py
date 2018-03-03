@@ -85,6 +85,9 @@ class MockAPI():
         assert posargs == posargs_exp, '\n{} !=\n{}'.format(posargs, posargs_exp)
         assert kwargs == kwargs_exp, '\n{} !=\n{}'.format(kwargs, kwargs_exp)
 
+    def forget_calls(self):
+        self._methods.clear()
+
 
 class MockTorrent(TorrentBase):
     def __init__(self, **kwargs):
