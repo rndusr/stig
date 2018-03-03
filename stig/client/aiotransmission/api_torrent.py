@@ -720,7 +720,7 @@ class TorrentAPI():
                 if new_limit >= float('inf'):
                     args = (('%sloadLimited' % direction, False),)
                 else:
-                    raw_limit = int(round(int(new_limit)/1000))  # Transmission expects kilobytes
+                    raw_limit = round(int(new_limit.copy(convert_to='B'))/1000)  # Transmission expects kilobytes
                     args = (('%sloadLimited' % direction, True),
                             ('%sloadLimit' % direction, raw_limit))
 
