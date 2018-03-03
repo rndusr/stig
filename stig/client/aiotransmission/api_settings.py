@@ -19,8 +19,7 @@ from types import SimpleNamespace
 import os
 
 from ..poll import RequestPoller
-from ..utils import (convert, const, Bool, Option, Int, Path, Bandwidth,
-                     BoolOrPath, BoolOrBandwidth)
+from ..utils import (convert, const, Bool, Option, Int, Path, BoolOrPath, BoolOrBandwidth)
 
 
 # Transform key (as in `settings[key]`) to property name and vice versa
@@ -509,7 +508,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         if current_limit is const.DISCONNECTED:
             current_limit = await getattr(self, 'get_' + prop_name)()
         adjustment = self._converters[key](adjustment)
-        new_limit = Bandwidth.adjust(current_limit, adjustment)
+        new_limit = BoolOrBandwidth.adjust(current_limit, adjustment)
         await self._set_limit_rate(new_limit, direction, alt=alt)
 
     @_setting(BoolOrBandwidth,

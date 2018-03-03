@@ -17,10 +17,24 @@ from . import constants as const
 class Bandwidth(Float):
     typename = 'bandwidth'
 
+    def __new__(cls, value, **kwargs):
+        value = convert.bandwidth(value)
+        kwargs.update(unit=convert.bandwidth.unit,
+                      prefix=convert.bandwidth.prefix)
+        return super().__new__(cls, value, **kwargs)
+
+    @classmethod
+    def _get_syntax(cls, **kwargs):
+        return '%s[b|B]' % super()._get_syntax(**kwargs)
+
+
+class BoolOrBandwidth(multitype(Bool.partial(true=('limited', 'enabled', 'yes', 'on', 'true'),
+                                             false=('unlimited', 'disabled', 'no', 'off', 'false')),
+                                Bandwidth)):
     @staticmethod
     def adjust(current, adjustment):
         """Adjust `current` by `adjustment`"""
-        if current >= float('inf'):
+        if isinstance(current, Bool) or current >= float('inf'):
             # If current number is infinity, adjust from 0
             current = 0
         new = current + adjustment
@@ -34,23 +48,11 @@ class Bandwidth(Float):
         return new
 
     def __new__(cls, value, **kwargs):
-        value = convert.bandwidth(value)
-        kwargs.update(unit=convert.bandwidth.unit,
-                      prefix=convert.bandwidth.prefix)
-        return super().__new__(cls, value, **kwargs)
-
-    @classmethod
-    def _get_syntax(cls, **kwargs):
-        return '%s[b|B]' % super()._get_syntax(**kwargs)
-
-class BoolOrBandwidth(multitype(Bool.partial(true=('limited', 'enabled', 'yes', 'on', 'true'),
-                                             false=('unlimited', 'disabled', 'no', 'off', 'false')),
-                                Bandwidth)):
-    def __new__(cls, value, **kwargs):
         if isinstance(value, (float, int)) and value >= float('inf'):
             return super().__new__(cls, 'unlimited')
         else:
             return super().__new__(cls, value, **kwargs)
+
 
 BoolOrPath = multitype(Bool, Path)
 

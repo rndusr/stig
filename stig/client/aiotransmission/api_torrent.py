@@ -670,7 +670,7 @@ class TorrentAPI():
         if isinstance(limit, (float, int)):
             limit = BoolOrBandwidth(False) if limit < 0 or limit >= float('inf') else limit
 
-        log.debug('Setting new %sload limit for torrents %s: %r', direction, torrents, limit)
+        log.debug('Setting new %sload limit for torrents %s: %s', direction, torrents, limit)
         return await self._limit_rate(torrents, direction, get_new_limit=lambda _: limit)
 
     async def _limit_rate_relative(self, torrents, direction, adjustment):
@@ -683,7 +683,7 @@ class TorrentAPI():
 
         def add_to_current_limit(current_limit):
             log.debug('Adjusting %sload limit %r by %r', direction, current_limit, adjustment)
-            return Bandwidth.adjust(current_limit, adjustment)
+            return BoolOrBandwidth.adjust(current_limit, adjustment)
 
         return await self._limit_rate(torrents, direction, get_new_limit=add_to_current_limit)
 
@@ -701,8 +701,8 @@ class TorrentAPI():
         torrent_set_args = {}
         errors = {}
         for tid,cur_limit in current_limits.items():
-            new_limit = BoolOrBandwidth(get_new_limit(cur_limit))
             cur_limit = BoolOrBandwidth(cur_limit)
+            new_limit = BoolOrBandwidth(get_new_limit(cur_limit))
 
             if new_limit == cur_limit:
                 log.debug('Nothing to set: new:%r == cur:%r', new_limit, cur_limit)
