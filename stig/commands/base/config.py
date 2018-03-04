@@ -14,9 +14,11 @@ log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource, utils)
 from ._common import make_X_FILTER_spec
+from ...utils.stringables import Float
 
 import asyncio
 import subprocess
+import operator
 
 
 class RcCmdbase(metaclass=InitCommand):
@@ -89,6 +91,7 @@ class ResetCmdbase(metaclass=InitCommand):
         return success
 
 
+from ...client import ClientError
 class SetCmdbase(metaclass=InitCommand):
     name = 'set'
     category = 'configuration'
@@ -97,54 +100,95 @@ class SetCmdbase(metaclass=InitCommand):
     usage = ('set <NAME>[:eval] <VALUE>',)
     examples = ('set connect.host my.server.example.org',
                 'set connect.user jonny_sixpack',
-                'set connect.password:eval getpw --id transmission')
+                'set connect.password:eval getpw --id transmission',
+                'set tui.log.height +=10')
     argspecs = (
         {'names': ('NAME',),
          'description': "Name of setting; append ':eval' to turn VALUE into a shell command"},
         {'names': ('VALUE',), 'nargs': 'REMAINDER',
-         'description': 'New value or shell command that prints the new value to stdout'},
+         'description': ('New value or shell command that prints the new value to stdout; '
+                         "numerical values can be adjusted by prepending '+=' or '-='")},
     )
     more_sections = {
         'SEE ALSO': (('Run `help settings` for a list of all available '
                       'local and remote settings.'),),
     }
     cfg = ExpectedResource
+    srvcfg = ExpectedResource
 
     async def run(self, NAME, VALUE):
         # NAME might have ':eval' attached if VALUE is shell command
         try:
-            name = self._get_name(NAME)
+            name, key, is_local_setting = self._parse_name(NAME)
         except ValueError as e:
             log.error(e)
             return False
 
-        # Normalize value
+        cfg = self.cfg if is_local_setting else self.srvcfg
+
+        # Get current value in case we want to adjust it
+        if not is_local_setting:
+            try:
+                await cfg.update()
+            except ClientError as e:
+                log.error('%s', e)
+                return False
+
+        # VALUE might be shell command or have '+='/'-=' prepended
         try:
-            value = self._get_value(VALUE,
-                                    listify=isinstance(self.cfg[name], tuple),
-                                    is_cmd=NAME.endswith(':eval'))
+            value = self._parse_value(VALUE,
+                                      listify=isinstance(cfg[key], tuple),
+                                      is_cmd=NAME.endswith(':eval'))
         except ValueError as e:
-            log.error(e)
+            log.error('%s: %s' % (name, e))
             return False
+
+        # Separate '+=' or '-=' from value
+        try:
+            op, value = self._get_operator(value)
+        except ValueError as e:
+            log.error('%s = %s: %s' % (name, value, e))
+            return False
+
+        # Value may have an operator (e.g. '+=' or '-=') to adjust the current value
+        if op is not None:
+            try:
+                value = self._adjust_value(cfg[key], op, value)
+            except ValueError as e:
+                opfunc = getattr(operator, op)
+                unbound = cfg[key].copy(min=-float('inf'), max=float('inf'))
+                invalid = opfunc(unbound, value)
+                log.error('%s = %s: %s' % (name, invalid, e))
+                return False
 
         # Update setting's value
         try:
-            self.cfg[name] = value
+            if is_local_setting:
+                log.debug('Local setting: %r = %r', name, value)
+                cfg[key] = value
+            else:
+                log.debug('Remote setting: %r = %r', name, value)
+                await cfg.set(key, value)
         except ValueError as e:
             log.error('%s = %s: %s', name, value, e)
+            return False
+        except ClientError as e:
+            log.error('%s', e)
             return False
         else:
             return True
 
-    def _get_name(self, name):
+    def _parse_name(self, name):
         if name.endswith(':eval'):
             name = name[:-5]
-        if not name in self.cfg:
-            raise ValueError('Unknown setting: %s' % name)
+        if name in self.cfg:
+            return name, name, True
+        elif name.startswith('srv.') and name[4:] in self.srvcfg:
+            return name, name[4:], False
         else:
-            return name
+            raise ValueError('Unknown setting: %s' % name)
 
-    def _get_value(self, value, listify=False, is_cmd=False):
+    def _parse_value(self, value, listify=False, is_cmd=False):
         if is_cmd:
             value = [self._eval_cmd(value)]
         if listify:
@@ -161,16 +205,35 @@ class SetCmdbase(metaclass=InitCommand):
         stdout = proc.stdout.decode('utf-8').strip('\n')
         stderr = proc.stderr.decode('utf-8').strip('\n')
         if stderr:
-            raise ValueError('%s: %s' % (cmd, stderr))
+            raise ValueError(stderr)
         else:
             return stdout
 
+    @staticmethod
+    def _get_operator(value):
+        if isinstance(value, str):
+            value = value.strip()
+            if len(value) >= 3:
+                def to_num(string):
+                    try:
+                        return Float(string)
+                    except ValueError as e:
+                        raise ValueError('%s: %r' % (e, string))
+                if value[:2] == '+=':
+                    return '__add__', to_num(value[2:])
+                elif value[:2] == '-=':
+                    return '__sub__', to_num(value[2:])
+        return None, value
 
-# Abuse some *Value classes from the settings to allow the same user-input for
-# individual torrents as we do for the global settings srv.limit.rate.*.
-from ...client.usertypes import (MultiValue, BooleanValue, UnlimitedValue, BandwidthValue)
-class TorrentRateLimitValue(MultiValue(UnlimitedValue, BandwidthValue, BooleanValue)):
-    pass
+    @staticmethod
+    def _adjust_value(current, op, value):
+        if isinstance(current, (float, int)):
+            if current >= float('inf'):
+                current = Float(0)
+            func = getattr(operator, op)
+            value = func(current, value)
+        return value
+
 
 class RateLimitCmdbase(metaclass=InitCommand):
     name = 'ratelimit'
@@ -200,35 +263,8 @@ class RateLimitCmdbase(metaclass=InitCommand):
                          for d in map(str.lower, DIRECTION.split(',')))
         for d in directions:
             if d not in ('up', 'down'):
-                log.error('%s: Invalid item in argument DIRECTION: %r', self.name, d)
+                log.error('%s: Invalid direction: %r', self.name, d)
                 return False
-
-        # _set_limits() is defined in cli.config and tui.config and behaves
-        # slightly differently.
-        return await self._set_limits(TORRENT_FILTER, directions, LIMIT)
-
-    async def _set_global_limit(self, directions, LIMIT):
-        # Change the srv.limit.rate.* setting for each direction
-        for d in directions:
-            log.debug('Setting global %s rate limit: %r', d, LIMIT)
-            try:
-                await self.srvapi.settings['limit.rate.'+d].set(LIMIT)
-            except ValueError as e:
-                log.error(e)
-                return False
-        return True
-
-    async def _set_individual_limit(self, TORRENT_FILTER, directions, LIMIT):
-        try:
-            tfilter = self.select_torrents(TORRENT_FILTER,
-                                           allow_no_filter=False,
-                                           discover_torrent=True)
-        except ValueError as e:
-            log.error(e)
-            return False
-
-        log.debug('Setting %sload rate limit for %s torrents: %r',
-                  '+'.join(directions), tfilter, LIMIT)
 
         # Do we adjust current limits or set absolute limits?
         limit = LIMIT.strip()
@@ -238,18 +274,38 @@ class RateLimitCmdbase(metaclass=InitCommand):
         else:
             method_start = 'set_limit_rate_'
 
+        # _set_limits() is defined in cli.config and tui.config and behaves slightly differently
+        return await self._set_limits(TORRENT_FILTER, directions, limit, method_start)
+
+    async def _set_global_limit(self, directions, limit, method_start):
+        for d in directions:
+            log.debug('Setting global %s rate limit: %r', d, limit)
+            method = getattr(self.srvapi.settings, method_start + d)
+            try:
+                await method(limit)
+            except ValueError as e:
+                log.error('%s: %r', e, limit)
+                return False
+            except ClientError as e:
+                log.error('%s', e)
+                return False
+        return True
+
+    async def _set_individual_limit(self, TORRENT_FILTER, directions, limit, method_start):
         try:
-            new_limit = TorrentRateLimitValue('_new_limit', default=limit).get()
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
         except ValueError as e:
-            log.error('%s: %r', e, limit)
+            log.error(e)
             return False
 
         log.debug('Setting %sload rate limit for %s torrents: %r',
-                  '+'.join(directions), tfilter, new_limit)
+                  '+'.join(directions), tfilter, limit)
 
         for d in directions:
             method = getattr(self.srvapi.torrent, method_start + d)
-            response = await self.make_request(method(tfilter, new_limit),
+            response = await self.make_request(method(tfilter, limit),
                                                polling_frenzy=True)
             if not response.success:
                 return False

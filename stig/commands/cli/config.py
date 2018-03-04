@@ -26,8 +26,8 @@ class RateLimitCmd(base.RateLimitCmdbase,
                    mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
-    async def _set_limits(self, TORRENT_FILTER, directions, LIMIT):
+    async def _set_limits(self, TORRENT_FILTER, directions, limit, method_start):
         if len(TORRENT_FILTER) == 0 or TORRENT_FILTER == ['global']:
-            return await self._set_global_limit(directions, LIMIT)
+            return await self._set_global_limit(directions, limit, method_start)
         else:
-            return await self._set_individual_limit(TORRENT_FILTER, directions, LIMIT)
+            return await self._set_individual_limit(TORRENT_FILTER, directions, limit, method_start)
