@@ -239,10 +239,10 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'alt-end',  'action': 'log scroll bottom'},
 
     # Bandwidth limits
-    {'context': 'main', 'key': 'shift-up',    'action': 'set srv.limit.rate.down +=100kB'},
-    {'context': 'main', 'key': 'shift-down',  'action': 'set srv.limit.rate.down -=100kB'},
-    {'context': 'main', 'key': 'shift-right', 'action': 'set srv.limit.rate.up +=100kB'},
-    {'context': 'main', 'key': 'shift-left',  'action': 'set srv.limit.rate.up -=100kB'},
+    {'context': 'main', 'key': 'shift-up',    'action': 'rate dn -- +=100kB global'},
+    {'context': 'main', 'key': 'shift-down',  'action': 'rate dn -- -=100kB global'},
+    {'context': 'main', 'key': 'shift-right', 'action': 'rate up -- +=100kB global'},
+    {'context': 'main', 'key': 'shift-left',  'action': 'rate up -- -=100kB global'},
 
     # Tab management
     {'context': 'tabs', 'key': 'n',      'action': 'tab'},
