@@ -52,8 +52,9 @@ def init_defaults(cfg):
 
     class SortOrder(str):
         """String that is equal to the same string with '!' or '.' prepended"""
+        _invert_chars = ''.join(TorrentSorter.INVERT_CHARS)
         def __eq__(self, other):
-            return self.lstrip('!.') == other.lstrip('!.')
+            return self.lstrip(self._invert_chars) == other.lstrip(self._invert_chars)
 
     def partial_sort_order(sortercls):
         options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)

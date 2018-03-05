@@ -38,6 +38,7 @@ class SortSpecBase():
 
 
 class SorterBase():
+    INVERT_CHARS = ('!', '.')
     SORTSPECS = NotImplemented
     DEFAULT_SORT = None
 
@@ -58,7 +59,7 @@ class SorterBase():
         # Go through items in reverse because to want to deduplicate sort orders
         # while keeping the most recent one.
         for sortstring in reversed(sortstrings):
-            if sortstring[0] in ('!', '.'):
+            if sortstring[0] in self.INVERT_CHARS:
                 sortspecname, reverse = sortstring[1:], True
             else:
                 sortspecname, reverse = sortstring, False
@@ -75,7 +76,7 @@ class SorterBase():
                     sortfunc = partial(sortspec, reverse=reverse)
                     sortspecs.insert(0, sortspec)
                     sortfuncs.insert(0, sortfunc)
-                    strings.insert(0, ('!' if reverse else '') + sortspecname)
+                    strings.insert(0, (self.INVERT_CHARS[0] if reverse else '') + sortspecname)
         self._strings = tuple(strings)
 
         # Unless we already sort by DEFAULT_SORT, insert it as the first one.
