@@ -18,16 +18,9 @@ log = make_logger(__name__)
 from .. import utils
 
 
-def _get_columns(columns, setting, interface, COLSPECS, cfg):
+def _get_columns(columns, setting, cfg):
     # Resolve aliases and complain about invalid values
-    columns = cfg.validate(setting, columns)
-
-    # Remove columns that aren't supported by the active interface
-    for col in columns:
-        if interface is not None and interface not in COLUMNS[col].interfaces:
-            log.debug('Removing column %r because it does not support %r', col, interface)
-            columns.remove(col)
-    return columns
+    return cfg.validate(setting, columns)
 
 
 class get_torrent():
@@ -62,29 +55,24 @@ class get_torrent_sorter():
             return TorrentSorter(utils.listify_args(args))
 
 class get_torrent_columns():
-    def get_torrent_columns(self, columns, interface=None):
+    def get_torrent_columns(self, columns):
         """
         Check if each item in iterable `columns` is a valid torrent list column name
 
-        If `interface` is not None, also remove all columns that don't have
-        `interface` in their `interfaces` attribute.
-
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.torrentlist import COLUMNS
-        return _get_columns(columns, 'columns.torrents', interface, COLUMNS, self.cfg)
+        return _get_columns(columns, 'columns.torrents', self.cfg)
 
 
 
 class get_file_columns():
-    def get_file_columns(self, columns, interface=None):
+    def get_file_columns(self, columns):
         """
         Check if each item in iterable `columns` is a valid file list column name
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.filelist import COLUMNS
-        return _get_columns(columns, 'columns.files', interface, COLUMNS, self.cfg)
+        return _get_columns(columns, 'columns.files', self.cfg)
 
 
 
@@ -117,14 +105,13 @@ class get_peer_filter():
             return TorrentPeerFilter(FILTER)
 
 class get_peer_columns():
-    def get_peer_columns(self, columns, interface=None):
+    def get_peer_columns(self, columns):
         """
         Check if each item in iterable `columns` is a valid peer list column name
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.peerlist import COLUMNS
-        return _get_columns(columns, 'columns.peers', interface, COLUMNS, self.cfg)
+        return _get_columns(columns, 'columns.peers', self.cfg)
 
 
 
@@ -157,11 +144,10 @@ class get_tracker_filter():
             return TorrentTrackerFilter(FILTER)
 
 class get_tracker_columns():
-    def get_tracker_columns(self, columns, interface=None):
+    def get_tracker_columns(self, columns):
         """
         Check if each item in iterable `columns` is a valid tracker list column name
 
         Raise ValueError or return a new list of `columns`.
         """
-        from ...views.trackerlist import COLUMNS
-        return _get_columns(columns, 'columns.trackers', interface, COLUMNS, self.cfg)
+        return _get_columns(columns, 'columns.trackers', self.cfg)
