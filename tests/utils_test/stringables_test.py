@@ -16,7 +16,8 @@ class _TestBase(unittest.TestCase):
 class TestStringableMixin(_TestBase):
     def test_partial(self):
         class X(int, StringableMixin):
-            def __new__(cls, i, min=0, max=10):
+            defaults = {'min': 0, 'max': 10}
+            def __new__(cls, i, min=defaults['min'], max=defaults['max']):
                 self = super().__new__(cls, i)
                 self.min = min
                 self.max = max
@@ -35,11 +36,12 @@ class TestStringableMixin(_TestBase):
 
     def test_partial_syntax(self):
         class X(int, StringableMixin):
-            def __new__(cls, i, min=0, max=10):
+            defaults = {'min': 0, 'max': 10}
+            def __new__(cls, i, min=defaults['min'], max=defaults['max']):
                 return super().__new__(cls, i)
 
             @staticmethod
-            def _get_syntax(min=0, max=10):
+            def _get_syntax(min=defaults['min'], max=defaults['max']):
                 return 'min=%r, max=%r' % (min, max)
 
         for kwargs in ({}, {'min': 4}, {'max': 6}, {'min': 4, 'max': 6}):
@@ -48,7 +50,8 @@ class TestStringableMixin(_TestBase):
 
     def test_copy(self):
         class X(int, StringableMixin):
-            def __new__(cls, i, a=1, b=2, c=3):
+            defaults = {'a': 1, 'b': 2, 'c': 3}
+            def __new__(cls, i, a=defaults['a'], b=defaults['b'], c=defaults['c']):
                 print('making %r with a=%r, b=%r, c=%r' % (cls, a, b, c))
                 inst = super().__new__(cls, i)
                 inst.a = a
@@ -264,6 +267,10 @@ class TestTuple(_TestBase):
         self.assertEqual(Tuple('foo'), ('foo',))
         self.assertEqual(Tuple('bar'), ('bar',))
 
+    def test_options_property(self):
+        t = Tuple(3, 2, options=(1, 2, 3))
+        self.assertEqual(t.options, (1, 2, 3))
+
     def test_aliases(self):
         aliases = {1: 'one', 2: 'two'}
         t = Tuple(1, 2, 'three', aliases=aliases)
@@ -292,6 +299,16 @@ class TestOption(_TestBase):
         self.assertEqual(Option('bar', options=options, aliases=aliases), 'bar')
         with self.assert_raises(ValueError, 'Not one of: foo, bar'):
             Option('fo', options=options, aliases=aliases)
+
+    def test_options_property(self):
+        o = Option('1', options=('1', '2', '3'))
+        self.assertEqual(o.options, ('1', '2', '3'))
+
+    def test_aliases_property(self):
+        o = Option('1', options=('1', '2', '3'), aliases={'one': '1'})
+        self.assertEqual(o.aliases, {'one': '1'})
+        o = Option('1', options=('1', '2', '3'))
+        self.assertEqual(o.aliases, {})
 
     def test_errors(self):
         with self.assert_raises(RuntimeError, 'No options provided'):

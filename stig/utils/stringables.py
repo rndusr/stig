@@ -75,10 +75,10 @@ class StringableMixin():
         return _PartialConstructor(cls, **kwargs)
 
     def __init__(self, *value, **kwargs):
-        self._kwargs = kwargs
+        self._config = {**self.defaults, **kwargs}
 
     def copy(self, *value, **kwargs):
-        new_kwargs = {**self._kwargs, **kwargs}
+        new_kwargs = {**self._config, **kwargs}
         new_posargs = value if len(value) > 0 else self
         if not isinstance(new_posargs, Iterable):
             new_posargs = (new_posargs,)
@@ -87,7 +87,7 @@ class StringableMixin():
 
     @property
     def syntax(self):
-        return self._get_syntax(**self._kwargs)
+        return self._get_syntax(**self._config)
 
 
 # https://stackoverflow.com/a/5192374
@@ -134,7 +134,7 @@ def multitype(*constructors):
         def __new__(cls, *value, **kwargs):
             self = cls._get_instance(*value, **kwargs)
             # Overload syntax string
-            self._get_syntax = lambda cls=cls: cls.syntax
+            self._get_syntax = lambda cls=cls, **_: cls.syntax
             self.typename = cls.typename
             return self
 
@@ -175,11 +175,10 @@ class String(str, StringableMixin):
       maxlen: Maximum length of the string
     """
     typename = 'string'
+    defaults = {'minlen': 0,
+                'maxlen': _INFINITY}
 
-    minlen=0
-    maxlen=_INFINITY
-
-    def __new__(cls, value, *, minlen=minlen, maxlen=maxlen):
+    def __new__(cls, value, *, minlen=defaults['minlen'], maxlen=defaults['maxlen']):
         # Convert
         self = super().__new__(cls, value)
 
@@ -192,7 +191,7 @@ class String(str, StringableMixin):
         return self
 
     @staticmethod
-    def _get_syntax(minlen=minlen, maxlen=maxlen):
+    def _get_syntax(minlen=defaults['minlen'], maxlen=defaults['maxlen']):
         text = 'string'
         if ((minlen == 1 or minlen <= 0) and
             (maxlen == 1 or maxlen >= _INFINITY)):
@@ -219,11 +218,10 @@ class Bool(str, StringableMixin):
     TODO: ...
     """
     typename = 'boolean'
+    defaults = {'true'  : ('enabled', 'yes', 'on', 'true', '1'),
+                'false' : ('disabled', 'no', 'off', 'false', '0')}
 
-    true  = ('enabled', 'yes', 'on', 'true', '1')
-    false = ('disabled', 'no', 'off', 'false', '0')
-
-    def __new__(cls, value, *, true=true, false=false):
+    def __new__(cls, value, *, true=defaults['true'], false=defaults['false']):
         if isinstance(value, str):
             _value = value.casefold()
         else:
@@ -245,7 +243,7 @@ class Bool(str, StringableMixin):
         return self
 
     @staticmethod
-    def _get_syntax(true=true, false=false):
+    def _get_syntax(true=defaults['true'], false=defaults['false']):
         pairs = []
         for pair in zip(true, false):
             pair = tuple(str(val) for val in pair)
@@ -276,10 +274,9 @@ class Path(str, StringableMixin):
       mustexist: Whether the path must exist on the local file system
     """
     typename = 'path'
+    defaults = {'mustexist': False}
 
-    mustexist = False
-
-    def __new__(cls, value, *, mustexist=mustexist):
+    def __new__(cls, value, *, mustexist=defaults['mustexist']):
         # Convert
         value = os.path.expanduser(os.path.normpath(value))
         self = super().__new__(cls, value)
@@ -291,7 +288,7 @@ class Path(str, StringableMixin):
         return self
 
     @staticmethod
-    def _get_syntax(mustexist=mustexist):
+    def _get_syntax(mustexist=defaults['mustexist']):
         return 'file system path'
 
     def __str__(self):
@@ -314,13 +311,13 @@ class Tuple(tuple, StringableMixin):
       dedup:   Whether to remove duplicate items
     """
     typename = 'list'
+    defaults = {'sep'     : ', ',
+                'options' : None,
+                'aliases' : {},
+                'dedup'   : False}
 
-    sep     = ', '
-    options = None
-    aliases = {}
-    dedup   = False
-
-    def __new__(cls, *value, sep=sep, options=options, aliases=options, dedup=dedup):
+    def __new__(cls, *value, sep=defaults['sep'], options=defaults['options'],
+                aliases=defaults['options'], dedup=defaults['dedup']):
         def normalize(val):
             if isinstance(val, str):
                 for item in val.split(sep.strip()):
@@ -348,20 +345,24 @@ class Tuple(tuple, StringableMixin):
         return self
 
     @staticmethod
-    def _get_syntax(sep=sep):
+    def _get_syntax(sep=defaults['sep'], **_):
         sep = sep.strip()
         return '<OPTION>%s<OPTION>%s...' % (sep, sep)
 
+    def __str__(self):
+        return self._config['sep'].join(str(item) for item in self)
+
+    @property
+    def sep(self):
+        return self._config['sep']
+
     @property
     def options(self):
-        return self._kwargs['options']
+        return self._config['options']
 
     @property
     def aliases(self):
-        return self._kwargs['aliases']
-
-    def __str__(self):
-        return self._kwargs['sep'].join(str(item) for item in self)
+        return self._config['aliases']
 
 
 class Option(str, StringableMixin):
@@ -374,11 +375,10 @@ class Option(str, StringableMixin):
                with <value>
     """
     typename = 'option'
+    defaults = {'options': (),
+                'aliases': {}}
 
-    options = ()
-    aliases = {}
-
-    def __new__(cls, value, *, options=options, aliases=aliases):
+    def __new__(cls, value, *, options=defaults['options'], aliases=defaults['aliases']):
         value = str(value)
         value = _resolve_alias(value, aliases)
 
@@ -394,18 +394,19 @@ class Option(str, StringableMixin):
         return self
 
     @staticmethod
-    def _get_syntax(options=options):
+    def _get_syntax(options=defaults['options'], aliases=defaults['aliases']):
         return '|'.join(str(opt) for opt in options)
+
+    @property
+    def options(self):
+        return self._config['options']
+
+    @property
+    def aliases(self):
+        return self._config['aliases']
 
 
 class _NumberMixin(StringableMixin):
-    typename = 'number'
-
-    converters = {
-        'B': {'b': lambda value: value * 8},  # bytes to bits
-        'b': {'B': lambda value: value / 8},  # bits to bytes
-    }
-
     _prefixes_binary = (('Ti', 1024**4), ('Gi', 1024**3), ('Mi', 1024**2), ('Ki', 1024))
     _prefixes_metric = (('T', 1000**4), ('G', 1000**3), ('M', 1000**2), ('k', 1000))
     _prefixes_dct = {prefix.lower():size
@@ -417,15 +418,23 @@ class _NumberMixin(StringableMixin):
                         '|)([^\s0-9]*?)\s*$',
                         flags=re.IGNORECASE)
 
-    unit = None
-    convert_to = None
-    prefix = None
-    hide_unit = None
-    min = None
-    max = None
+    converters = {
+        'B': {'b': lambda value: value * 8},  # bytes to bits
+        'b': {'B': lambda value: value / 8},  # bits to bytes
+    }
+    typename = 'number'
+    defaults = {'unit'       : None,
+                'convert_to' : None,
+                'prefix'     : None,
+                'hide_unit'  : None,
+                'min'        : None,
+                'max'        : None,
+                'autolimit'  : None}
 
-    def __new__(cls, value, *, unit=unit, convert_to=convert_to, prefix=prefix,
-                hide_unit=hide_unit, min=min, max=max, autolimit=False):
+    def __new__(cls, value, *, unit=defaults['unit'],
+                convert_to=defaults['convert_to'], prefix=defaults['prefix'],
+                hide_unit=defaults['hide_unit'], min=defaults['min'],
+                max=defaults['max'], autolimit=defaults['autolimit']):
         if isinstance(value, cls):
             # Use value's arguments as defaults
             defaults = value._args
