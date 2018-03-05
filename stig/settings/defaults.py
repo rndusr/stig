@@ -61,7 +61,7 @@ def init_defaults(cfg):
         return Tuple.partial(options=options, dedup=True)
 
     cfg.add('connect.host',
-            constructor=String,
+            constructor=String.partial(),
             default='localhost',
             description='Hostname or IP of Transmission RPC interface')
     cfg.add('connect.port',
@@ -69,15 +69,15 @@ def init_defaults(cfg):
             default=9091,
             description='Port of Transmission RPC interface')
     cfg.add('connect.path',
-            String,
+            String.partial(),
             default='/transmission/rpc',
             description='Path of Transmission RPC interface')
     cfg.add('connect.user',
-            String,
+            String.partial(),
             default='',
             description='Username to use for authentication with Transmission RPC interface')
     cfg.add('connect.password',
-            String,
+            String.partial(),
             default='',
             description='Password to use for authentication with Transmission RPC interface')
     cfg.add('connect.timeout',
@@ -85,7 +85,7 @@ def init_defaults(cfg):
             default=10,
             description='Number of seconds before connecting to Transmission RPC interface fails')
     cfg.add('connect.tls',
-            Bool,
+            Bool.partial(),
             default='off',
             description='Whether to connect via HTTPS to the Transmission RPC interface')
 
@@ -120,7 +120,7 @@ def init_defaults(cfg):
             description='List of sort orders in tracker lists')
 
     cfg.add('tui.theme',
-            Path,
+            Path.partial(),
             default=DEFAULT_THEME_FILE,
             description='Path to theme file'),
     cfg.add('tui.log.height',
@@ -133,7 +133,7 @@ def init_defaults(cfg):
             description=('If the log is hidden, show it for this many seconds '
                          'for new log entries before hiding it again'))
     cfg.add('tui.cli.history-file',
-            Path,
+            Path.partial(),
             default=DEFAULT_HISTORY_FILE,
             description='Path to TUI command line history file')
     cfg.add('tui.cli.history-size',
