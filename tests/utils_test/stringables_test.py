@@ -52,7 +52,6 @@ class TestStringableMixin(_TestBase):
         class X(int, StringableMixin):
             defaults = {'a': 1, 'b': 2, 'c': 3}
             def __new__(cls, i, a=defaults['a'], b=defaults['b'], c=defaults['c']):
-                print('making %r with a=%r, b=%r, c=%r' % (cls, a, b, c))
                 inst = super().__new__(cls, i)
                 inst.a = a
                 inst.b = b
