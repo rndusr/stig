@@ -74,7 +74,10 @@ class Settings(abc.Mapping):
 
     def validate(self, name, value):
         """Pass `value` to `name`'s constructor and return the result"""
-        return self._constructors[name](value)
+        if not isinstance(value, str) and isinstance(value, abc.Iterable):
+            return self._constructors[name](*value)
+        else:
+            return self._constructors[name](value)
 
     def on_change(self, callback, name=None, autoremove=True):
         """

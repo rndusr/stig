@@ -50,16 +50,6 @@ else:
 def init_defaults(cfg):
     from ..utils.stringables import (String, Int, Float, Bool, Path, Tuple, Option)
 
-    def partial_expand(cls, **kwargs):
-        # Special constructor that passes value on as all positional args. This
-        # is needed because Tuple (and tuple) expects `*args`, not `args`.
-        def constructor(value):
-            if isinstance(value, str):
-                return cls(value, **kwargs)
-            else:
-                return cls(*value, **kwargs)
-        return constructor
-
     class SortOrder(str):
         """String that is equal to the same string with '!' or '.' prepended"""
         def __eq__(self, other):
@@ -67,7 +57,7 @@ def init_defaults(cfg):
 
     def partial_sort_order(sortercls):
         options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)
-        return partial_expand(Tuple, options=options, dedup=True)
+        return Tuple.partial(options=options, dedup=True)
 
     cfg.add('connect.host',
             constructor=String,
@@ -99,27 +89,19 @@ def init_defaults(cfg):
             description='Whether to connect via HTTPS to the Transmission RPC interface')
 
     cfg.add('columns.torrents',
-            partial_expand(Tuple,
-                           options=torrentlist.COLUMNS,
-                           aliases=torrentlist.ALIASES),
+            Tuple.partial(options=torrentlist.COLUMNS, aliases=torrentlist.ALIASES),
             default=DEFAULT_TORRENT_COLUMNS,
             description='Which columns to show in torrent lists')
     cfg.add('columns.peers',
-            partial_expand(Tuple,
-                           options=peerlist.COLUMNS,
-                           aliases=peerlist.ALIASES),
+            Tuple.partial(options=peerlist.COLUMNS, aliases=peerlist.ALIASES),
             default=DEFAULT_PEER_COLUMNS,
             description='Which columns to show in peer lists')
     cfg.add('columns.files',
-            partial_expand(Tuple,
-                           options=filelist.COLUMNS,
-                           aliases=filelist.ALIASES),
+            Tuple.partial(options=filelist.COLUMNS, aliases=filelist.ALIASES),
             default=DEFAULT_FILE_COLUMNS,
             description='Which columns to show in file lists')
     cfg.add('columns.trackers',
-            partial_expand(Tuple,
-                           options=trackerlist.COLUMNS,
-                           aliases=trackerlist.ALIASES),
+            Tuple.partial(options=trackerlist.COLUMNS, aliases=trackerlist.ALIASES),
             default=DEFAULT_TRACKER_COLUMNS,
             description='Which columns to show in tracker lists')
 
