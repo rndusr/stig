@@ -1,6 +1,8 @@
 2017-??-?? ?.?.?a
   Breaking changes:
-    * Settings/columns/etc named 'rate[.-]limit' are now called 'limit[.-]rate'
+    * 'rate[.-]limit' in the names of settings/columns/etc is now reversed to
+      'limit[.-]rate' for consistency (e.g. the column 'rate-limit-up' is now
+      called 'limit-rate-up' in line with the setting 'srv.limit.rate.up')
     * The setting 'srv.url' was replaced by the new settings 'connect.host',
       'connect.port', 'connect.path', 'connect.user', 'connect.password' and
       'connect.tls' (Thanks to David Blajda for adding 'connect.path')
