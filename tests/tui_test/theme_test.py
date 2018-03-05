@@ -8,9 +8,9 @@ log = logging.getLogger(__name__)
 
 class Test_read(unittest.TestCase):
     def test_read_from_iterable(self):
-        l = ('statusbar white on black',
-             'loginform black on white')
-        self.assertEqual(theme.read(l), list(l))
+        lines = ('statusbar white on black',
+                 'loginform black on white')
+        self.assertEqual(theme.read(lines), list(lines))
 
     def test_read_from_filehandle(self):
         fh = io.StringIO('statusbar white on black\n'

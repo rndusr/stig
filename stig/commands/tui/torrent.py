@@ -11,7 +11,7 @@
 
 from ..base import torrent as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, InitCommand)
+from .. import ExpectedResource
 from ._common import make_tab_title_widget
 
 from functools import partial

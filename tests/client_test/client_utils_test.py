@@ -66,12 +66,6 @@ class TestURL(unittest.TestCase):
         self.assertEqual(url.host, 'foohost')
         self.assertEqual(url.port, 70123)
 
-    def test_no_scheme(self):
-        url = URL('foohost')
-        self.assertEqual(url.scheme, 'http')
-        self.assertEqual(url.host, 'foohost')
-        self.assertEqual(url.port, None)
-
     def test_no_scheme_with_port(self):
         url = URL('foohost:9999')
         self.assertEqual(url.scheme, 'http')

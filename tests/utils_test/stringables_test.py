@@ -235,9 +235,8 @@ class TestPath(_TestBase):
         with self.assert_raises(ValueError, 'No such file or directory'):
             Path('/foo/bar/baz', mustexist=True)
 
-        import os
         existing_path = __file__
-        p = Path(__file__, mustexist=True)
+        p = Path(existing_path, mustexist=True)
         self.assertEqual(repr(p), repr(__file__))
 
 

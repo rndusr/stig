@@ -12,7 +12,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-import weakref
+import asyncio
 
 from .utils import SleepUneasy
 
@@ -23,8 +23,8 @@ from .aiotransmission.api_torrent import TorrentAPI
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
-from .errors import *
 from .utils import lazy_property
+from . import errors
 
 
 class API():
@@ -38,10 +38,10 @@ class API():
     """
 
     # Make errors available without having to import them everywhere
-    ClientError     = ClientError
-    ConnectionError = ConnectionError
-    RPCError        = RPCError
-    AuthError       = AuthError
+    ClientError     = errors.ClientError
+    ConnectionError = errors.ConnectionError
+    RPCError        = errors.RPCError
+    AuthError       = errors.AuthError
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
                  password=None, path='/transmission/rpc', loop=None, interval=1):

@@ -15,10 +15,8 @@ log = make_logger(__name__)
 import blinker
 import operator
 from functools import reduce
-from collections import abc
 
 from .poll import RequestPoller
-from .filters.tfilter import TorrentFilter
 
 
 class TorrentRequestPool(RequestPoller):

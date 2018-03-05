@@ -126,7 +126,7 @@ class TestTimedelta(unittest.TestCase):
             self.assertEqual(str(t), s_exp)
 
         for string in ('', 'x', '?m', '1.2.3', '5g10s', '1y2x10d'):
-            with self.assertRaises(ValueError) as cm:
+            with self.assertRaises(ValueError):
                 ttypes.Timedelta.from_string(string)
 
     def test_special_values(self):

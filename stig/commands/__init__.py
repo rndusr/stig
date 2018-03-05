@@ -375,7 +375,6 @@ class CommandManager():
         self._cmds = {}
         self._active_interface = None
         self._resources = CallbackDict(callback=self._update_resources)
-        from . import utils
         self._resources.update(cmdmgr=self)
 
     def load_cmds_from_module(self, *modules):
@@ -601,7 +600,6 @@ class CommandManager():
 
     def _yield_from_cmdchain(self, cmdchain, **kwargs):
         prev_process_success = True
-        prev_process_exc = None
         for i,cmdline in enumerate(cmdchain):
             if cmdline in OPS_AND and not prev_process_success:
                 log.debug('Previous command failed (%r) - aborting', prev_process_success)

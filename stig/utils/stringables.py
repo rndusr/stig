@@ -82,7 +82,6 @@ class StringableMixin():
         new_posargs = value if len(value) > 0 else self
         if not isinstance(new_posargs, Iterable):
             new_posargs = (new_posargs,)
-        cls = type(self)
         return type(self)(*new_posargs, **new_kwargs)
 
     @property
@@ -412,9 +411,9 @@ class _NumberMixin(StringableMixin):
     _prefixes_dct = {prefix.lower():size
                      for prefix,size in chain.from_iterable(zip(_prefixes_binary,
                                                                 _prefixes_metric))}
-    _regex = re.compile('^\s*([-+]?(?:\d+\.\d+|\d+|\.\d+|inf)) ?(' +\
+    _regex = re.compile('^\s*([-+]?(?:\d+\.\d+|\d+|\.\d+|inf)) ?(' +
                         '|'.join(p[0] for p in chain.from_iterable(zip(_prefixes_binary,
-                                                                       _prefixes_metric))) + \
+                                                                       _prefixes_metric))) +
                         '|)([^\s0-9]*?)\s*$',
                         flags=re.IGNORECASE)
 
@@ -520,7 +519,7 @@ class _NumberMixin(StringableMixin):
 
         # Remember arguments so we can copy them if this instance is passed to the same class
         self._args = {'unit': unit, 'prefix': prefix, 'hide_unit': hide_unit,
-                       'min': min, 'max': max, 'autolimit': autolimit}
+                      'min': min, 'max': max, 'autolimit': autolimit}
         return self
 
     @classmethod

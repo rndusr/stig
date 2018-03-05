@@ -11,7 +11,6 @@
 
 from ..base import file as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, InitCommand)
 
 
 class ListFilesCmd(base.ListFilesCmdbase,

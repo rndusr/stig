@@ -44,4 +44,3 @@ def get_constant(name, repr=None, bases=(), init_value=None, attrs={}):
 
 DISCONNECTED = get_constant('disconnected', repr='<disconnected>')
 UNLIMITED = get_constant('unlimited', bases=(Float,), init_value='inf')
-RANDOM = get_constant('random', repr="'random'")

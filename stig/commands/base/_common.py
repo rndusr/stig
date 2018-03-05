@@ -61,5 +61,4 @@ def make_COLUMNS_doc(columnspecs, option, setting, append=()):
             '',
             '\t%s' % ', '.join(sorted(columnspecs)),
             '',
-            'Columns are separated with "," without spaces.') \
-            + append
+            'Columns are separated with "," without spaces.') + append

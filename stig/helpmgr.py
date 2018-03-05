@@ -152,14 +152,14 @@ class HelpManager():
             '\tCHAINING COMMANDS',
             ("\t\tCombining commands with operators makes it possible to run "
              "a command based on the previous command's success."),
-             "",
-             "\t\tAvailable command operators are: ",
-             "\t\t\t&/and \t- \tRun the next command if the previous command succeeded.",
-             "\t\t\t|/or \t- \tRun the next command if the previous command failed.",
-             "\t\t\t;/also \t- \tRun the next command in any case.",
-             "",
-             "\t\tCommand operators must be enclosed by spaces.",
-             "",
+            "",
+            "\t\tAvailable command operators are: ",
+            "\t\t\t&/and \t- \tRun the next command if the previous command succeeded.",
+            "\t\t\t|/or \t- \tRun the next command if the previous command failed.",
+            "\t\t\t;/also \t- \tRun the next command in any case.",
+            "",
+            "\t\tCommand operators must be enclosed by spaces.",
+            "",
             ("\t\tFor example, 'ls foo & ls bar' would list all 'foo' torrents and, "
              "if any where found, continue to list all 'bar' torrents.  "
              "However, 'ls foo | ls bar' would list 'bar' torrents only if there "
@@ -174,15 +174,15 @@ class HelpManager():
              "get your shell prompt back.  But if you run "
              "'{__appname__} set connect.host foo.bar', "
              "you probably expect the TUI to pop up."),
-             '',
-             "\t\tThis is how this works basically:",
-             ("\t\t\t- \tWithout CLI commands, the TUI is loaded."),
-             ("\t\t\t- \tCommands in the TORRENT category (see below) prevent the TUI."),
-             ("\t\t\t- \tChanging TUI settings ('(re)set tui.*') enforces the TUI."),
-             ("\t\t\t- \tChanging remote settings ('(re)set srv.*') prevents the TUI."),
-             ("\t\t\t- \tCommands that are exclusive to TUI or CLI "
-              "(e.g. 'tab') enforce their interface.  Providing both TUI- "
-              "and CLI-only commands produces an error."),
+            '',
+            "\t\tThis is how this works basically:",
+            ("\t\t\t- \tWithout CLI commands, the TUI is loaded."),
+            ("\t\t\t- \tCommands in the TORRENT category (see below) prevent the TUI."),
+            ("\t\t\t- \tChanging TUI settings ('(re)set tui.*') enforces the TUI."),
+            ("\t\t\t- \tChanging remote settings ('(re)set srv.*') prevents the TUI."),
+            ("\t\t\t- \tCommands that are exclusive to TUI or CLI "
+             "(e.g. 'tab') enforce their interface.  Providing both TUI- "
+             "and CLI-only commands produces an error."),
             '',
         ]
 
@@ -308,7 +308,7 @@ class HelpManager():
     def keymap(self):
         """Must be set to a KeyMap object; provides a help text"""
 
-        # Make sure the TUI (and ergo the keymap) is loaded
+        # Make sure the TUI (i.e. the keymap) is loaded
         from .tui import main
 
         km = self._keymap

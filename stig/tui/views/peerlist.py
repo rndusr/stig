@@ -9,9 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-import urwid
-
-from ..scroll import ScrollBar
 from .plist_columns import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 

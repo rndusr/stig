@@ -9,10 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-import urwid
-
-from ..table import ColumnHeaderWidget
-from . import (Style, CellWidgetBase)
+from . import CellWidgetBase
 from ...views.torrentlist import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}

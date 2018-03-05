@@ -16,7 +16,6 @@ from .. import (InitCommand, ExpectedResource, utils)
 from ._common import make_X_FILTER_spec
 from ...utils.stringables import Float
 
-import asyncio
 import subprocess
 import operator
 

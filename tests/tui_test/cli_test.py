@@ -82,8 +82,6 @@ class TestCLIEditWidget(unittest.TestCase):
         self.w.history_size = 30
 
         lines = [str(i) for i in range(1, 101)]
-        hist_disk_start = 0
-        hist_disk_stop  = 0
         hist_disk_must_be_smaller_than_hist_mem = False
         for i,line in enumerate(lines, start=1):
             self.enter_line(line)

@@ -41,7 +41,7 @@ class TestCommand(asynctest.TestCase):
             this_attrs = attrs.copy()
             del this_attrs[missing_attr]
             with self.assertRaises(RuntimeError) as cm:
-                cmdcls = make_cmdcls(**this_attrs, defaults=False)
+                make_cmdcls(**this_attrs, defaults=False)
             self.assertIn(missing_attr, str(cm.exception))
             self.assertIn('attribute', str(cm.exception).lower())
         # assertRaisesNot

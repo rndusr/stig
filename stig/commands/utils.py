@@ -36,7 +36,7 @@ class CallbackDict(dict):
     pop = _wrap(dict.pop)
     popitem = _wrap(dict.popitem)
     setdefault = _wrap(dict.setdefault)
-    update =  _wrap(dict.update)
+    update = _wrap(dict.update)
 
 
 from collections import abc

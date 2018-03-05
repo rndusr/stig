@@ -1,6 +1,6 @@
 from stig.client.aiotransmission.api_settings import SettingsAPI
 
-from stig.client.utils import (convert, const, Bool, Int, Float, Path, Bandwidth)
+from stig.client.utils import (convert, const, Bool, Int, Path, Bandwidth)
 from stig.client import ClientError
 
 import resources_aiotransmission as rsrc
@@ -70,14 +70,14 @@ class TestSettingsAPI(asynctest.TestCase):
         self.rpc.fake_settings['alt-speed-up'] = 500
         self.rpc.fake_settings['alt-speed-enabled'] = True
         self.assertEqual(await self.api.get('limit.rate.alt.up'), 500e3)
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             await self.api.get('foo')
 
     async def test_set_method(self):
         await self.api.set('limit.rate.down', 555e3)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 555)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(ValueError):
             await self.api.set('foo', 'bar')
 
 
@@ -617,7 +617,6 @@ class TestSettingsAPI(asynctest.TestCase):
             method = getattr(self.api, 'adjust_limit_rate_alt_' + direction)
             value_field = 'alt-speed-' + direction
             enabled_field = 'alt-speed-enabled'
-            key = 'limit.rate.alt.' + direction
 
             self.rpc.fake_settings[value_field] = 1000
             self.rpc.fake_settings[enabled_field] = True

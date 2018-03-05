@@ -11,7 +11,7 @@
 
 """Filtering TorrentFiles by various values"""
 
-from ..ttypes import (TorrentFile, TorrentFilePriority)
+from ..ttypes import TorrentFile
 from . import (BoolFilterSpec, make_cmp_filter, Filter, FilterChain)
 
 

@@ -79,7 +79,7 @@ def redirect_level(level, stream=sys.stderr):
 
 
 def start_profiling(func, filepath, statistical=True):
-    import pprofile, signal
+    import pprofile
     if statistical:
         prof = pprofile.StatisticalProfile()
     else:

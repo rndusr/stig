@@ -32,4 +32,3 @@ class RPCError(ClientError):
 
 class AuthError(ClientError):
     prefix = 'Authentication failed: '
-

@@ -16,7 +16,6 @@ from string import hexdigits as HEXDIGITS
 from collections import abc
 import os
 import base64
-import unicodedata
 
 from ..utils import (Response, URL)
 from .torrent import (TorrentFields, Torrent)
@@ -285,7 +284,7 @@ class TorrentAPI():
         keys: See _get_torrents_by_ids
         tfilter: A TorrentFilter instance or None
         """
-        if tfilter == None:
+        if tfilter is None:
             log.debug('Looking for all torrents with keys: %s', keys)
             # No filter specified - just return all torrents with the specified keys
             return await self._get_torrents_by_ids(keys=keys)
@@ -370,7 +369,6 @@ class TorrentAPI():
         """
         tlist = []
         msgs = []
-        success = False
 
         # Always provide some basic keys
         keys_check = set(tuple(keys_check) + ('id', 'name'))
@@ -819,7 +817,7 @@ class TorrentAPI():
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
         else:
-            tordict = {tor['id']:tor for tor in  response.torrents}
+            tordict = {tor['id']:tor for tor in response.torrents}
 
         # Map torrent IDs to currently used URLs by that torrent
         old_url_dict = {torid:tuple(trk['url-announce'] for trk in torrent['trackers'])

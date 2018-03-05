@@ -14,7 +14,6 @@ log = make_logger(__name__)
 
 from ..base import torrent as base
 from . import _mixin as mixin
-from ._common import clear_line
 from .. import ExpectedResource
 from ._table import (print_table, TERMSIZE)
 

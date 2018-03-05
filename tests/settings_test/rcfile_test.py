@@ -33,7 +33,7 @@ class TestRcfile(unittest.TestCase):
         with patch('builtins.open', mock_open(read_data=_MOCK_CFG)) as m:
             m.side_effect = FileNotFoundError
             with self.assertRaises(rcfile.RcFileError) as cm:
-                cmds = rcfile.read('/path/to/nondefault/rc')
+                rcfile.read('/path/to/nondefault/rc')
             self.assertIn('/path/to/nondefault/rc', str(cm.exception).lower())
             self.assertIn('not found', str(cm.exception).lower())
 
@@ -41,7 +41,7 @@ class TestRcfile(unittest.TestCase):
         with patch('builtins.open', mock_open(read_data=_MOCK_CFG)) as m:
             m.side_effect = PermissionError
             with self.assertRaises(rcfile.RcFileError) as cm:
-                cmds = rcfile.read()
+                rcfile.read()
             self.assertIn('read', str(cm.exception).lower())
             self.assertIn('permission', str(cm.exception).lower())
 
@@ -49,6 +49,6 @@ class TestRcfile(unittest.TestCase):
         with patch('builtins.open', mock_open(read_data=_MOCK_CFG)) as m:
             m.side_effect = PermissionError
             with self.assertRaises(rcfile.RcFileError) as cm:
-                cmds = rcfile.read('/path/to/nondefault/rc')
+                rcfile.read('/path/to/nondefault/rc')
             self.assertIn('read', str(cm.exception).lower())
             self.assertIn('permission', str(cm.exception).lower())

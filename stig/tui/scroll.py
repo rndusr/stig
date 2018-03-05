@@ -126,9 +126,9 @@ class Scrollable(urwid.WidgetDecoration):
         elif command_map[key] == urwid.CURSOR_PAGE_DOWN:
             self._scroll_action = SCROLL_PAGE_DOWN
 
-        elif command_map[key] == urwid.CURSOR_MAX_LEFT:  # 'home'
+        elif command_map[key] == urwid.CURSOR_MAX_LEFT:   # 'home'
             self._scroll_action = SCROLL_TO_TOP
-        elif command_map[key] == urwid.CURSOR_MAX_RIGHT: # 'end'
+        elif command_map[key] == urwid.CURSOR_MAX_RIGHT:  # 'end'
             self._scroll_action = SCROLL_TO_END
 
         else:
@@ -376,11 +376,11 @@ class ScrollBar(urwid.WidgetDecoration):
             handled = ow.mouse_event(ow_size, event, button, col, row, focus)
 
         if not handled and hasattr(ow, 'set_scrollpos'):
-            if button == 4: # scroll wheel up
+            if button == 4:    # scroll wheel up
                 pos = ow.get_scrollpos(ow_size)
                 ow.set_scrollpos(pos - 1)
                 return True
-            elif button == 5: # scroll wheel down
+            elif button == 5:  # scroll wheel down
                 pos = ow.get_scrollpos(ow_size)
                 ow.set_scrollpos(pos + 1)
                 return True

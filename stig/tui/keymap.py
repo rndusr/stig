@@ -162,11 +162,9 @@ class Keymapped():
     """Mixin class that provides a keypress method"""
 
     def keypress(self, size, key_orig):
-        keymap     = self.__keymap
-        context    = self.__context
-        callback   = self.__callback
-        parent_cls = self.__parent_cls
-
+        keymap   = self.__keymap
+        context  = self.__context
+        callback = self.__callback
         key_eval = Key(key_orig)
 
         def try_parent_class(key, sup=super()):
@@ -494,8 +492,7 @@ class KeyMap():
         clsname = cls.__name__ + '_Keymapped'
         return type(clsname,
                     (Keymapped, cls),
-                    {'_Keymapped__parent_cls': cls,
-                     '_Keymapped__keymap': self,
+                    {'_Keymapped__keymap': self,
                      '_Keymapped__context': context,
                      '_Keymapped__callback': staticmethod(callback)})
 

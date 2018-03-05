@@ -61,14 +61,14 @@ class CLIEditWidget(urwid.Edit):
         elif self._command_map[key] is urwid.DELETE_WORD_LEFT:
             start_pos = self.edit_pos
             end_pos = self.move_to_next_word(forward=True)
-            if end_pos != None:
+            if end_pos is not None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             self.edit_pos = start_pos
             key = None
         elif self._command_map[key] is urwid.DELETE_WORD_RIGHT:
             end_pos = self.edit_pos
             start_pos = self.move_to_next_word(forward=False)
-            if start_pos != None:
+            if start_pos is not None:
                 self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
             key = None
         elif self._command_map[key] is urwid.ACTIVATE:

@@ -11,4 +11,3 @@
 
 def clear_line():
     print('\x1b[2K\x1b[1`', end='', flush=True)
-

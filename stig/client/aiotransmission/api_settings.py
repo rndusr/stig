@@ -14,7 +14,6 @@ log = make_logger(__name__)
 
 import blinker
 from collections import abc
-from types import MethodType
 from types import SimpleNamespace
 import os
 
@@ -488,7 +487,6 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def _set_limit_rate(self, limit, direction, alt=False):
         key = self._limit_rate_key(direction, alt)
         field_value, field_enabled = self._limit_rate_fields(direction, alt)
-        prop_name = _key2property(key)
         limit = self._converters[key](limit)
         if isinstance(limit, Bool):
             await self._set({field_enabled: bool(limit)})

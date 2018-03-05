@@ -100,8 +100,8 @@ class TestListTorrentsCmd(CommandTestCase):
             self.assert_logged(logged,
                                ('INFO', 'Some Torrent'),
                                ('INFO', 'Another Torrent'))
-            keys_exp = set(process.mock_tsorter.needed_keys + \
-                           process.mock_tfilter.needed_keys + \
+            keys_exp = set(process.mock_tsorter.needed_keys +
+                           process.mock_tfilter.needed_keys +
                            ('name',))  # columns
             self.api.torrent.assert_called(1, 'torrents', (process.mock_tfilter,),
                                            {'keys': keys_exp})

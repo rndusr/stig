@@ -1,4 +1,4 @@
-from stig.client.constants import (get_constant, is_constant)
+from stig.client.constants import get_constant
 
 def test_simple():
     c = get_constant('foo')

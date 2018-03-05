@@ -157,7 +157,7 @@ def _shrink_by_removing_columns(table):
             # Find non-fixed-width columns that could use more width
             candidates = [(colname,table.colwidths[colname])
                           for colname in table.colorder
-                          if _column_has_variable_width(table, colname) and \
+                          if _column_has_variable_width(table, colname) and
                              _column_could_use_more_width(table, colname)]
             if not candidates:
                 # We have space left, but no column wants it
@@ -223,4 +223,3 @@ def print_table(items, order, column_specs):
             if pretty_output and line_index % (TERMSIZE.lines-2) == 0:
                 log.info(headerstr)
             log.info(_assemble_line(table, line_index, pretty=pretty_output))
-

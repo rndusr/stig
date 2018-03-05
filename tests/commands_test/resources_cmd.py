@@ -44,7 +44,7 @@ class Callback():
 
 
 def assertIsException(obj, exccls, text):
-    assert isinstance(obj, exccls), 'Not a {!r}: {!r}'.format(exccls.__name__, exc)
+    assert isinstance(obj, exccls), 'Not a {!r}: {!r}'.format(exccls.__name__, obj)
     assert text in str(obj), 'Not in {!r}: {!r}'.format(obj, text)
     return True
 

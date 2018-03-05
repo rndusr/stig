@@ -214,9 +214,9 @@ class Timedelta(int):
                 if 1 <= abs_secs/amount < 10 and i < len(SECONDS)-1:
                     subunit, subamount = SECONDS[i+1]
                     if num >= 0:
-                        subnum = abs( ((num%1) * amount) / subamount )
+                        subnum = abs(((num % 1) * amount) / subamount)
                     else:
-                        subnum = abs( ((num%-1) * amount) / subamount )
+                        subnum = abs(((num % -1) * amount) / subamount)
 
                     if subnum >= 1:
                         return '%d%s%d%s' % (int(num), unit, int(subnum), subunit)
@@ -325,9 +325,9 @@ class Timestamp(int):
             return 'never'
 
         abs_delta = abs(self - time.time())
-        if abs_delta < 120:     # <= 2 minutes
+        if abs_delta < 120:      # <= 2 minutes
             frmt = '%H:%M:%S'
-        elif abs_delta < 86400: # <= 1 day
+        elif abs_delta < 86400:  # <= 1 day
             frmt = '%H:%M'
         else:
             frmt = '%Y-%m-%d'

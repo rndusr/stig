@@ -14,8 +14,6 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-import re
-
 from . import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter,
                Filter, FilterChain)
 

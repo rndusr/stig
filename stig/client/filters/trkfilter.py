@@ -13,7 +13,7 @@
 
 from ..ttypes import TorrentTracker
 VALUETYPES = TorrentTracker.TYPES
-from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, make_cmp_filter)
+from . import (BoolFilterSpec, Filter, FilterChain, make_cmp_filter)
 
 
 def _make_cmp_filter(*args, **kwargs):

@@ -12,7 +12,8 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from ..commands import is_op as is_cmd_op
+from . import is_op as is_cmd_op
+from . import CmdError
 
 
 class UIGuessError(Exception):

@@ -1,5 +1,4 @@
 from stig.settings import Settings
-from stig.utils.stringables import StringableMixin
 
 import unittest
 from unittest.mock import MagicMock, call

@@ -12,9 +12,6 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-import urwid
-
-from ..scroll import ScrollBar
 from .tlist_columns import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 

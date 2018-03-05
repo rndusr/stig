@@ -19,7 +19,7 @@ class TorrentAPITestCase(asynctest.TestCase):
         self.rpc = TransmissionRPC(self.daemon.host, self.daemon.port, loop=self.loop)
         self.api = TorrentAPI(self.rpc)
         await self.rpc.connect()
-        assert self.rpc.connected == True
+        assert self.rpc.connected is True
 
     async def tearDown(self):
         await self.rpc.disconnect()
@@ -31,7 +31,7 @@ class TorrentAPITestCase(asynctest.TestCase):
 
 class TestConnection(TorrentAPITestCase):
     async def test_send_request_with_lost_connection(self):
-        assert self.rpc.connected == True
+        assert self.rpc.connected is True
         await self.daemon.stop()
         response = await self.api.torrents()
         self.assertEqual(response.success, False)
@@ -239,7 +239,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
         )
-        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), True)
+        await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), True)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1, 2], 'uploadLimited': True}})
 
@@ -248,7 +248,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), False)
+        await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), False)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1, 2], 'uploadLimited': False}})
 
@@ -257,7 +257,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), 1e6)
+        await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), 1e6)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1, 2], 'uploadLimited': True,
                                            'uploadLimit': 1000}})
@@ -267,7 +267,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), 50e3)
+        await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), 50e3)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1], 'uploadLimited': True,
                                            'uploadLimit': 150}})
@@ -280,7 +280,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
+        await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1], 'uploadLimited': True,
                                            'uploadLimit': 50}})
@@ -293,7 +293,7 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
         )
-        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), 50e3)
+        await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), 50e3)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1,2], 'uploadLimited': True,
                                            'uploadLimit': 50}})
@@ -303,5 +303,5 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
         )
-        response = await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
+        await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
         self.daemon.requests == ()  # Assert no requests were sent

@@ -58,7 +58,7 @@ class BindCmd(metaclass=InitCommand):
              'other context wants it.  The same key can be mapped to different '
              'actions in different contexts.'),
             '',
-            'Available contexts are: ' + \
+            'Available contexts are: ' +
               ', '.join('%s' % context for context in _get_KEYMAP_CONTEXTS()),
             '',
             'EXAMPLE',
@@ -434,7 +434,7 @@ class TUICmd(metaclass=InitCommand):
     # of lines or a callable that returns them)
     def __create_element_names():
         from ...tui.main import widgets
-        return ('Available TUI element names are: ' + \
+        return ('Available TUI element names are: ' +
                 ', '.join(str(e) for e in sorted(widgets.names_recursive)),)
     more_sections = { 'ELEMENT NAMES': __create_element_names }
 
@@ -500,10 +500,10 @@ class SortCmd(metaclass=InitCommand):
     from ...client.sorters.psorter import TorrentPeerSorter
     from ...client.sorters.trksorter import TorrentTrackerSorter
     more_sections = {
-        'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) + \
-                       ('',) + \
-                       _list_sort_orders('PEER LISTS', TorrentPeerSorter) + \
-                       ('',) + \
+        'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) +
+                       ('',) +
+                       _list_sort_orders('PEER LISTS', TorrentPeerSorter) +
+                       ('',) +
                        _list_sort_orders('TRACKER LISTS', TorrentTrackerSorter)
     }
 

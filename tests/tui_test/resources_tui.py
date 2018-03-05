@@ -7,4 +7,3 @@ def get_canvas_text(x):
     else:
         t.append(x[2].decode('utf-8'))
     return ''.join(t)
-

@@ -54,14 +54,14 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Malformed filter expression: 'name! =foo'")
 
     def test_parsing_spaces(self):
-       self.assertEqual(str(SingleTorrentFilter(' idle ')), 'idle')
-       self.assertEqual(str(SingleTorrentFilter('   %downloaded   ')), '%downloaded')
-       self.assertEqual(str(SingleTorrentFilter(' name = foo')), '=foo')
-       self.assertEqual(str(SingleTorrentFilter(' name != foo  ')), '!=foo')
-       self.assertEqual(str(SingleTorrentFilter(' name= foo, bar and baz  ')), '= foo, bar and baz  ')
+        self.assertEqual(str(SingleTorrentFilter(' idle ')), 'idle')
+        self.assertEqual(str(SingleTorrentFilter('   %downloaded   ')), '%downloaded')
+        self.assertEqual(str(SingleTorrentFilter(' name = foo')), '=foo')
+        self.assertEqual(str(SingleTorrentFilter(' name != foo  ')), '!=foo')
+        self.assertEqual(str(SingleTorrentFilter(' name= foo, bar and baz  ')), '= foo, bar and baz  ')
 
-       self.assertEqual(str(SingleTorrentFilter(' =   foo, bar and baz ')), '=foo, bar and baz')
-       self.assertEqual(str(SingleTorrentFilter('=   foo, bar and baz ')), '=   foo, bar and baz ')
+        self.assertEqual(str(SingleTorrentFilter(' =   foo, bar and baz ')), '=foo, bar and baz')
+        self.assertEqual(str(SingleTorrentFilter('=   foo, bar and baz ')), '=   foo, bar and baz ')
 
     def test_unknown_filter(self):
         with self.assertRaises(ValueError) as cm:

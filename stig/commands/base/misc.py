@@ -101,8 +101,7 @@ class LogCmdbase(metaclass=InitCommand):
                                  'Valid PARAMETERs are "up", "down", "page up", "page down", '
                                  '"top" and "bottom".',),
                       'info': ('Join all PARAMETERs and display them as a normal message.',),
-                      'error': ('Join all PARAMETERs and display them as an error message.',),
-    }
+                      'error': ('Join all PARAMETERs and display them as an error message.',) }
 
     def run(self, ACTION):
         if len(ACTION) < 1:

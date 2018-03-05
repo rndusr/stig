@@ -15,5 +15,4 @@ from .torrent import *
 from .file import *
 from .peer import *
 from .tracker import *
-
 from .tui import *

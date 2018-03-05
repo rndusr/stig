@@ -11,7 +11,6 @@
 
 from ..base import peer as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, InitCommand)
 
 
 class ListPeersCmd(base.ListPeersCmdbase,

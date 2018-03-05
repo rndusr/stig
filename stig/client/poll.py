@@ -249,4 +249,3 @@ class RequestPoller():
                 self._debug_info.get('update_cbs'), self._debug_info.get('error_cbs'))
         else:
             return '<%s>' % type(self).__name__
-

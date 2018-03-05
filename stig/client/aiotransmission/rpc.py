@@ -133,10 +133,10 @@ class TransmissionRPC():
         return self._path
     @path.setter
     def path(self, path):
-       if not path or path[0] != '/':
-           path = '/' + path
-       self._path = path
-       asyncio.ensure_future(self.disconnect('Changing path: %r' % self._path))
+        if not path or path[0] != '/':
+            path = '/' + path
+        self._path = path
+        asyncio.ensure_future(self.disconnect('Changing path: %r' % self._path))
 
     @property
     def port(self):

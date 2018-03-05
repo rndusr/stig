@@ -11,7 +11,6 @@
 
 from ..base import tracker as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, InitCommand)
 
 
 class ListTrackersCmd(base.ListTrackersCmdbase,

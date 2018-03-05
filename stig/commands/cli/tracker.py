@@ -15,7 +15,7 @@ log = make_logger(__name__)
 from ..base import tracker as base
 from . import _mixin as mixin
 from .. import ExpectedResource
-from ._table import (print_table, TERMSIZE)
+from ._table import print_table
 
 
 class ListTrackersCmd(base.ListTrackersCmdbase,
