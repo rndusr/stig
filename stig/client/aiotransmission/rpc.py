@@ -268,11 +268,11 @@ class TransmissionRPC():
             log.debug('Connecting to %s (timeout=%ss)', self.url, self.timeout)
             self._on_connecting.send(self)
 
+            import aiohttp
             session_args = {'loop': self.loop}
             if self.user and self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')
-            import aiohttp
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works
