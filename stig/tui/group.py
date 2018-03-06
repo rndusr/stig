@@ -41,7 +41,6 @@ class Group(urwid.WidgetWrap):
 
         All other keyword arguments are forwarded to `cls` on instantiation.
         """
-        self._cls = cls
         self._main = cls([], **kwargs)
         self._items_list = []
         self._items_dict = {}

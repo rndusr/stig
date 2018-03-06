@@ -65,11 +65,6 @@ def _get_colwidth(table, colindex):
     return max(strwidth(str(row[colindex].get_value()))
                for row in table.rows)
 
-def _get_min_colwidth(table, colindex):
-    # Return minimum column width according to column specs (column becomes
-    # useless if narrower)
-    return table.rows[0][colindex].min_width
-
 def _column_has_variable_width(table, colname):
     # Whether column has fixed or variable width
     return not isinstance(table.colspecs[colname].width, int)

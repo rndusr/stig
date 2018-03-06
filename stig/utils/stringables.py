@@ -480,10 +480,7 @@ class _NumberMixin(StringableMixin):
                     raise ValueError('Cannot convert %s to %s' % (unit, convert_to))
 
         if issubclass(cls, int):
-            parent_type = int
             value = round(value)
-        else:
-            parent_type = float
 
         if min is not None and value < min:
             if autolimit:
@@ -500,8 +497,6 @@ class _NumberMixin(StringableMixin):
             self = super().__new__(cls, value)
         except TypeError:
             raise ValueError('Not a %s' % cls.typename)
-
-        self._parent_type = parent_type
 
         if hide_unit:
             self._str = lambda: self.without_unit
