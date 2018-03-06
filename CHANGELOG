@@ -15,6 +15,7 @@
       installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
 
   Fixed bugs:
+    * Mitigate high CPU load for urwid 2.x and later
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
     * Catch SIGINT (<ctrl-c>) in CLI mode
     * The settings 'connect.port' and 'srv.port' are now properly displayed in
