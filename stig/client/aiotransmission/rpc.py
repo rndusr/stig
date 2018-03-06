@@ -397,7 +397,9 @@ class TransmissionRPC():
 
         Raises RPCError, ConnectionError, AuthError
         """
-        async def request(arguments={}, **kwargs):
+        async def request(arguments=None, **kwargs):
+            arguments = arguments or {}
+
             async with self._request_lock:
                 if not self.connected:
                     log.debug('Autoconnecting for %r', method)
