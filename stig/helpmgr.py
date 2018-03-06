@@ -179,7 +179,7 @@ class HelpManager():
             ("\t\t\t- \tWithout CLI commands, the TUI is loaded."),
             ("\t\t\t- \tCommands in the TORRENT category (see below) prevent the TUI."),
             ("\t\t\t- \tChanging TUI settings ('(re)set tui.*') enforces the TUI."),
-            ("\t\t\t- \tChanging remote settings ('(re)set srv.*') prevents the TUI."),
+            ("\t\t\t- \tChanging remote settings ('set srv.*') prevents the TUI."),
             ("\t\t\t- \tCommands that are exclusive to TUI or CLI "
              "(e.g. 'tab') enforce their interface.  Providing both TUI- "
              "and CLI-only commands produces an error."),
