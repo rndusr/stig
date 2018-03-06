@@ -332,8 +332,8 @@ class TransmissionRPC():
 
             elif response.status == AUTH_ERROR_CODE:
                 await response.release()
-                log.debug('Authentication failed: %s: user=%r, password=%r' % (
-                    self.url, self.user, self.password))
+                log.debug('Authentication failed: %s: user=%r, password=%r',
+                          self.url, self.user, self.password)
                 raise AuthError(self.url)
 
             else:
