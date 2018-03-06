@@ -19,7 +19,6 @@ import json
 import textwrap
 from blinker import Signal
 import warnings
-import aiohttp
 import async_timeout
 
 from ..errors import (ConnectionError, RPCError, AuthError, ClientError)
@@ -258,7 +257,6 @@ class TransmissionRPC():
                     raise self._connection_exception
 
         async with self._connecting_lock:
-            import aiohttp
             log.debug('Acquired connect() lock')
 
             if self.connected:
@@ -274,6 +272,7 @@ class TransmissionRPC():
             if self.user and self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')
+            import aiohttp
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works
@@ -338,9 +337,10 @@ class TransmissionRPC():
                 raise AuthError(self.url)
 
             else:
+                import aiohttp
                 try:
                     answer = await response.json()
-                except aiohttp.ClientResponseError as e:
+                except aiohttp.ClientResponseError:
                     text = textwrap.shorten(await response.text(),
                                             50, placeholder='...')
                     raise RPCError('Server sent malformed JSON: %s' % text)
@@ -358,6 +358,7 @@ class TransmissionRPC():
 
         Raises ClientError.
         """
+        import aiohttp
         try:
             answer = await self._post(post_data)
 
