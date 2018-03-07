@@ -327,7 +327,7 @@ class RateLimitDown(ColumnBase):
         return self._from_cache(_ensure_hide_unit, self.data['limit-rate-down'])
 
     def get_raw(self):
-        return int(self.get_value())
+        return self.get_value().copy(prefix='none')
 
     @classmethod
     def set_unit(cls, unit):
@@ -346,7 +346,7 @@ class RateLimitUp(ColumnBase):
         return self._from_cache(_ensure_hide_unit, self.data['limit-rate-up'])
 
     def get_raw(self):
-        return int(self.get_value())
+        return self.get_value().copy(prefix='none')
 
     @classmethod
     def set_unit(cls, unit):
