@@ -72,8 +72,8 @@ class PerfectInterval():
         else:
             expected = self._last_timestamp + seconds
             diff = now - expected
-            interval = seconds - diff
-            self._last_timestamp += seconds
+            interval = max(seconds - diff, 0)
+            self._last_timestamp = expected
             return interval
 
 
