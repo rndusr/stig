@@ -46,16 +46,6 @@ class Settings(abc.Mapping):
         self._defaults[name] = self[name]
         self._global_signal.send(self, name=name, value=self[name])
 
-    @property
-    def values(self):
-        """Iterate over values"""
-        yield from self._values.values()
-
-    @property
-    def names(self):
-        """Iterate over settings' names"""
-        yield from self._values
-
     def reset(self, name):
         """Reset setting `name` to default/initial value"""
         self[name] = self._defaults[name]

@@ -20,12 +20,6 @@ class TestSettings(unittest.TestCase):
         constructor.assert_called_once_with('biz')
         self.assertEqual(self.s['four'], 'biz')
 
-    def test_values_property(self):
-        self.assertEqual(tuple(self.s.values), ('FOO', 'bar', '(baz)'))
-
-    def test_names_property(self):
-        self.assertEqual(tuple(self.s.names), ('one', 'two', 'three'))
-
     def test_getting_values(self):
         self.assertEqual(self.s['one'], 'FOO')
         self.assertEqual(self.s['two'], 'bar')
