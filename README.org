@@ -31,7 +31,6 @@
    - Full *API abstraction layer* makes it possible to add support for other
      BitTorrent clients with RPC interfaces (contributors are welcome)
 
-# TODO: Make sure to remove 'srv.url' here before the next release.
 ** Examples
    Add two torrents, one by file and one by hash, and exit
    #+BEGIN_SRC sh
@@ -40,12 +39,12 @@
 
    Connect to non-default host and present the TUI
    #+BEGIN_SRC sh
-   $ stig set srv.url torrents.local:1234
+   $ stig set connect.host torrents.local
    #+END_SRC
 
-   Print all uploading and/or downloading torrents on torrents.local and exit
+   Print all uploading and/or downloading torrents on localhost:9092 and exit
    #+BEGIN_SRC sh
-   $ stig set srv.url torrents.local \; ls active
+   $ stig set connect.port 9092 \; ls active
    #+END_SRC
 
    List torrents with more than 50 seeds, then remove them
@@ -54,7 +53,8 @@
    $ stig rm 'seeds>50'
    #+END_SRC
 
-   Stop/pause torrents with ~/foo/~ in their download path and a ratio above 10
+   Stop down/uploading torrents with ~/foo/~ in their download path and a ratio
+   above 10
    #+BEGIN_SRC sh
    $ stig stop 'path~/foo/&ratio>10'
    #+END_SRC
