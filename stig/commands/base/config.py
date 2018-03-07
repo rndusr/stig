@@ -239,7 +239,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
     aliases = ('rate',)
     provides = set()
     category = 'configuration'
-    description = "Limit up-/download rate per torrent or globally"
+    description = "Limit transfer rates per torrent or globally"
     usage = ('ratelimit <DIRECTION> <LIMIT>',
              'ratelimit <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('ratelimit up 5Mb',

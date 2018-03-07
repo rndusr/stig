@@ -92,19 +92,19 @@ def init_defaults(cfg):
     cfg.add('columns.torrents',
             Tuple.partial(options=torrentlist.COLUMNS, aliases=torrentlist.ALIASES),
             default=DEFAULT_TORRENT_COLUMNS,
-            description='Which columns to show in torrent lists')
+            description='Default columns in torrent lists')
     cfg.add('columns.peers',
             Tuple.partial(options=peerlist.COLUMNS, aliases=peerlist.ALIASES),
             default=DEFAULT_PEER_COLUMNS,
-            description='Which columns to show in peer lists')
+            description='Default columns in peer lists')
     cfg.add('columns.files',
             Tuple.partial(options=filelist.COLUMNS, aliases=filelist.ALIASES),
             default=DEFAULT_FILE_COLUMNS,
-            description='Which columns to show in file lists')
+            description='Default columns in file lists')
     cfg.add('columns.trackers',
             Tuple.partial(options=trackerlist.COLUMNS, aliases=trackerlist.ALIASES),
             default=DEFAULT_TRACKER_COLUMNS,
-            description='Which columns to show in tracker lists')
+            description='Default columns in tracker lists')
 
     cfg.add('sort.torrents',
             partial_sort_order(TorrentSorter),
