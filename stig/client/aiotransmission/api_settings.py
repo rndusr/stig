@@ -113,6 +113,10 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """Return setting's value syntax"""
         return self._converters[name].syntax
 
+    def default(self, name):
+        # Maintain consistency with local Settings class
+        return const.DISCONNECTED
+
     async def update(self):
         """Request update from server"""
         log.debug('Requesting immediate settings update')

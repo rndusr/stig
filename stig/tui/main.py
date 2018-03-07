@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 import urwid
 from . import urwidpatches
-from ..main import (aioloop, cfg, cmdmgr, srvapi, helpmgr)
+from ..main import (aioloop, cfg, cmdmgr, srvapi)
 
 
 #
@@ -31,7 +31,6 @@ for args in DEFAULT_KEYMAP:
     if args['action'][0] == '<' and args['action'][-1] == '>':
         args['action'] = keymap.mkkey(args['action'])
     keymap.bind(**args)
-helpmgr.keymap = keymap
 
 
 #

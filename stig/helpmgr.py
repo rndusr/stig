@@ -41,11 +41,6 @@ def finalize_lines(lines):
 
 class HelpManager():
     """Provide help texts for CommandManager, Settings and KeyMap objects"""
-    def __init__(self):
-        self._cmdmgr = None
-        self._settings = None
-        self._keymap = None
-
     def find(self, topic=None):
         """Find help topic and return lines"""
         if topic in ALIASES:
@@ -55,12 +50,12 @@ class HelpManager():
             return self.overview
         elif topic in MAIN_TOPICS:
             return getattr(self, topic)
-        elif topic in self._cmdmgr:
+        elif topic in self.cmdmgr:
             return self.command(topic)
-        elif topic in self._settings:
+        elif topic in self.localcfg or topic[4:] in self.remotecfg:
             return self.setting(topic)
-        else:
-            raise ValueError('Unknown help topic: {!r}'.format(topic))
+
+        raise ValueError('Unknown help topic: %r' % topic)
 
     @property
     def overview(self):
@@ -85,8 +80,9 @@ class HelpManager():
 
     @property
     def settings(self):
-        """Must be set to a Settings object; provides a help text"""
-        cfg = self._settings
+        """Return help text for all settings"""
+        localcfg = self.localcfg
+        remotecfg = self.remotecfg
 
         lines = [
             'SETTINGS',
@@ -96,22 +92,28 @@ class HelpManager():
             '',
         ]
 
-        if cfg is None:
-            lines.append('\tSettings have not been loaded.')
-        else:
-            lines.append('\tAVAILABLE SETTINGS')
-            for name in sorted(cfg.names):
-                lines.append('\t\t' + name + '  \t' + cfg.description(name))
-        return finalize_lines(lines)
+        lines.append('\tLOCAL SETTINGS')
+        for name in sorted(localcfg):
+            lines.append('\t\t' + name + '  \t' + localcfg.description(name))
 
-    @settings.setter
-    def settings(self, settings):
-        self._settings = settings
+        lines += ['']
+
+        lines.append('\tREMOTE SETTINGS')
+        for name in sorted(remotecfg):
+            lines.append('\t\tsrv.' + name + '  \t' + remotecfg.description(name))
+        return finalize_lines(lines)
 
     def setting(self, name):
         """Return help text for setting"""
-        cfg = self._settings
-        value = cfg[name]
+        if name in self.localcfg:
+            cfg = self.localcfg
+            key = name
+        elif name[4:] in self.remotecfg:
+            cfg = self.remotecfg
+            key = name[4:]
+        else:
+            raise ValueError('Unknown help topic: %r' % name)
+        value = cfg[key]
 
         def maybe_quote(value):
             if isinstance(value, str) and re.match(r'^\s+$', value):
@@ -119,9 +121,9 @@ class HelpManager():
             else:
                 return str(value)
 
-        lines = ['%s - \t%s' % (name, cfg.description(name)),
-                 '\tValue: \t' + maybe_quote(cfg[name]),
-                 '\tDefault: \t' + maybe_quote(cfg.default(name))]
+        lines = ['%s - \t%s' % (name, cfg.description(key)),
+                 '\tValue: \t' + maybe_quote(cfg[key]),
+                 '\tDefault: \t' + maybe_quote(cfg.default(key))]
 
         if hasattr(value, 'options'):
             opt_strs = []
@@ -133,7 +135,7 @@ class HelpManager():
                     opt_strs[-1] += ' (%s)' % (', '.join(aliases))
             lines.append('\tOptions: \t' + ', '.join(opt_strs))
 
-        lines.append('\tSyntax: \t' + cfg.syntax(name))
+        lines.append('\tSyntax: \t' + cfg.syntax(key))
 
         return finalize_lines(lines)
 
@@ -186,34 +188,27 @@ class HelpManager():
             '',
         ]
 
-        cmdmgr = self._cmdmgr
-        if cmdmgr is None:
-            lines.append('\tCommands have not been loaded.')
-        else:
-            for category in cmdmgr.categories:
-                lines.append('\t{} COMMANDS'.format(category.upper()))
+        cmdmgr = self.cmdmgr
+        for category in cmdmgr.categories:
+            lines.append('\t{} COMMANDS'.format(category.upper()))
 
-                # To deduplicate commands with the same name that provide
-                # different interfaces (but should have the same docs), map
-                # command names to commands.
-                cmds = {}
-                for cmd in cmdmgr.all_commands:
-                    if category == cmd.category:
-                        cmds[cmd.name] = cmd
+            # To deduplicate commands with the same name that provide
+            # different interfaces (but should have the same docs), map
+            # command names to commands.
+            cmds = {}
+            for cmd in cmdmgr.all_commands:
+                if category == cmd.category:
+                    cmds[cmd.name] = cmd
 
-                for cmdname,cmd in sorted(cmds.items()):
-                    lines.append('\t\t{}  \t{}'.format(', '.join((cmd.name,)+cmd.aliases),
-                                                       cmd.description))
-                lines.append('')
+            for cmdname,cmd in sorted(cmds.items()):
+                lines.append('\t\t{}  \t{}'.format(', '.join((cmd.name,)+cmd.aliases),
+                                                   cmd.description))
+            lines.append('')
         return finalize_lines(lines)
-
-    @commands.setter
-    def commands(self, cmdmgr):
-        self._cmdmgr = cmdmgr
 
     def command(self, name):
         """Return help text for command"""
-        cmd = self._cmdmgr[name]
+        cmd = self.cmdmgr[name]
 
         def takes_value(argspec):
             if argspec.get('action') in ('store_true', 'store_false', 'store_const'):
@@ -308,37 +303,28 @@ class HelpManager():
     def keymap(self):
         """Must be set to a KeyMap object; provides a help text"""
 
-        # Make sure the TUI (i.e. the keymap) is loaded
-        from .tui import main
-
-        km = self._keymap
+        from .tui import main as tui
+        km = tui.keymap
         lines = []
 
-        if km is None:
-            lines.append('Keybindings have not been loaded.')
-        else:
-            def stringify(s):
-                return ' '.join(s) if not isinstance(s, str) else s
+        def stringify(s):
+            return ' '.join(s) if not isinstance(s, str) else s
 
-            for context in sorted(km.contexts, key=lambda c: '' if c is None else c):
-                if context is None:
-                    lines.append('GENERAL KEYBINDINGS')
-                else:
-                    lines.append('{} KEYBINDINGS'.format(context.upper()))
+        for context in sorted(km.contexts, key=lambda c: '' if c is None else c):
+            if context is None:
+                lines.append('GENERAL KEYBINDINGS')
+            else:
+                lines.append('{} KEYBINDINGS'.format(context.upper()))
 
-                keymap = ((key, stringify(action)) for key,action in km.map(context))
+            keymap = ((key, stringify(action)) for key,action in km.map(context))
 
-                # Sort by command
-                from natsort import (natsort_keygen, natsorted, ns)
-                get_cmd = natsort_keygen(key=lambda pair: pair[1], alg=ns.IGNORECASE)
-                for key, action in natsorted(keymap, key=get_cmd):
-                    lines.append('\t{}  \t{}'.format(key, action))
-                lines.append('')
+            # Sort by command
+            from natsort import (natsort_keygen, natsorted, ns)
+            get_cmd = natsort_keygen(key=lambda pair: pair[1], alg=ns.IGNORECASE)
+            for key,action in natsorted(keymap, key=get_cmd):
+                lines.append('\t%s  \t%s' % (key, action))
+            lines.append('')
         return finalize_lines(lines)
-
-    @keymap.setter
-    def keymap(self, keymap):
-        self._keymap = keymap
 
     @property
     def filter(self):

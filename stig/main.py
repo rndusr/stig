@@ -43,7 +43,7 @@ settings.init_defaults(cfg)
 
 from .helpmgr import HelpManager
 helpmgr = HelpManager()
-helpmgr.settings = cfg
+helpmgr.localcfg = cfg
 
 
 from .client import API
@@ -56,7 +56,7 @@ srvapi = API(host=cfg['connect.host'],
              interval=cfg['tui.poll'],
              loop=aioloop)
 srvapi.rpc.enabled = False
-
+helpmgr.remotecfg = srvapi.settings
 
 
 from .commands import CommandManager
@@ -66,10 +66,11 @@ cmdmgr.resources.update(aioloop=aioloop,
                         cfg=cfg,
                         srvcfg=srvapi.settings,
                         helpmgr=helpmgr)
-helpmgr.commands = cmdmgr
 cmdmgr.load_cmds_from_module(
     'stig.commands.cli', 'stig.commands.tui',
 )
+helpmgr.cmdmgr = cmdmgr
+
 
 def _pre_run_hook(cmdline):
     # Change command before it is executed
