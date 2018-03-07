@@ -26,8 +26,10 @@ class RateLimitCmd(base.RateLimitCmdbase,
                    mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
     provides = {'tui'}
 
-    async def _set_limits(self, TORRENT_FILTER, directions, limit, method_start):
+    async def _set_limits(self, TORRENT_FILTER, directions, limit, adjust=False, quiet=False):
         if TORRENT_FILTER == ['global']:
-            return await self._set_global_limit(directions, limit, method_start)
+            return await self._set_global_limit(directions, limit,
+                                                adjust=adjust, quiet=quiet)
         else:
-            return await self._set_individual_limit(TORRENT_FILTER, directions, limit, method_start)
+            return await self._set_individual_limit(TORRENT_FILTER, directions, limit,
+                                                    adjust=adjust, quiet=quiet)

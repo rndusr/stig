@@ -248,16 +248,21 @@ class RateLimitCmdbase(metaclass=InitCommand):
     argspecs = (
         {'names': ('DIRECTION',),
          'description': 'Any combination of "up", "down" or "dn" separated by a comma'},
+
         {'names': ('LIMIT',),
          'description': ('Maximum allowed transfer rate; see `help srv.limit.rate.up` for the syntax')},
+
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*',
                            more_text=('"global" to set global limit (same as setting '
                                       "srv.limit.rate.<DIRECTION>); may be omitted in CLI mode "
                                       'for the same effect as specifying "global"')),
+
+        { 'names': ('--quiet','-q'), 'action': 'store_true',
+          'description': 'Do not show new bandwidth rate(s)' },
     )
     srvapi = ExpectedResource
 
-    async def run(self, DIRECTION, LIMIT, TORRENT_FILTER):
+    async def run(self, DIRECTION, LIMIT, TORRENT_FILTER, quiet):
         directions = set('down' if d == 'dn' else d
                          for d in map(str.lower, DIRECTION.split(',')))
         for d in directions:
@@ -268,29 +273,35 @@ class RateLimitCmdbase(metaclass=InitCommand):
         # Do we adjust current limits or set absolute limits?
         limit = LIMIT.strip()
         if limit[:2] == '+=' or limit[:2] == '-=':
-            method_start = 'adjust_limit_rate_'
+            adjust = True
             limit = limit[0] + limit[2:]  # Remove '=' so it can be parsed as a number
         else:
-            method_start = 'set_limit_rate_'
+            adjust = False
 
         # _set_limits() is defined in cli.config and tui.config and behaves slightly differently
-        return await self._set_limits(TORRENT_FILTER, directions, limit, method_start)
+        return await self._set_limits(TORRENT_FILTER, directions, limit,
+                                      adjust=adjust, quiet=quiet)
 
-    async def _set_global_limit(self, directions, limit, method_start):
+    async def _set_global_limit(self, directions, limit, quiet=False, adjust=False):
         for d in directions:
             log.debug('Setting global %s rate limit: %r', d, limit)
-            method = getattr(self.srvapi.settings, method_start + d)
+            set_method = getattr(self.srvapi.settings,
+                                 ('adjust' if adjust else 'set') + '_limit_rate_' + d)
+            get_method = getattr(self.srvapi.settings, 'get_limit_rate_' + d)
             try:
-                await method(limit)
-            except ValueError as e:
-                log.error('%s: %r', e, limit)
-                return False
+                try:
+                    await set_method(limit)
+                except ValueError as e:
+                    log.error('%s: %r', e, limit)
+                    return False
+                if not quiet:
+                    log.info('Global %sload rate: %s' % (d, await get_method()))
             except ClientError as e:
                 log.error('%s', e)
                 return False
         return True
 
-    async def _set_individual_limit(self, TORRENT_FILTER, directions, limit, method_start):
+    async def _set_individual_limit(self, TORRENT_FILTER, directions, limit, quiet=False, adjust=False):
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
@@ -303,8 +314,9 @@ class RateLimitCmdbase(metaclass=InitCommand):
                   '+'.join(directions), tfilter, limit)
 
         for d in directions:
-            method = getattr(self.srvapi.torrent, method_start + d)
+            method = getattr(self.srvapi.torrent,
+                             ('adjust' if adjust else 'set') + '_limit_rate_' + d)
             response = await self.make_request(method(tfilter, limit),
-                                               polling_frenzy=True)
+                                               polling_frenzy=True, quiet=quiet)
             if not response.success:
                 return False
