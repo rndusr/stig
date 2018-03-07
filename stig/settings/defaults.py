@@ -221,11 +221,11 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'alt-home', 'action': 'log scroll top'},
     {'context': 'main', 'key': 'alt-end',  'action': 'log scroll bottom'},
 
-    # Bandwidth limits
-    {'context': 'main', 'key': 'shift-up',    'action': 'rate dn -- +=100kB global'},
-    {'context': 'main', 'key': 'shift-down',  'action': 'rate dn -- -=100kB global'},
-    {'context': 'main', 'key': 'shift-right', 'action': 'rate up -- +=100kB global'},
-    {'context': 'main', 'key': 'shift-left',  'action': 'rate up -- -=100kB global'},
+    # Global bandwidth limits
+    {'context': 'main', 'key': 'shift-up',    'action': 'rate --quiet dn -- +=100kB global'},
+    {'context': 'main', 'key': 'shift-down',  'action': 'rate --quiet dn -- -=100kB global'},
+    {'context': 'main', 'key': 'shift-right', 'action': 'rate --quiet up -- +=100kB global'},
+    {'context': 'main', 'key': 'shift-left',  'action': 'rate --quiet up -- -=100kB global'},
 
     # Tab management
     {'context': 'tabs', 'key': 'n',      'action': 'tab'},
