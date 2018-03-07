@@ -238,7 +238,7 @@ class RequestPoller():
 
     @interval.setter
     def interval(self, interval):
-        self._interval = interval
+        self._interval = float(interval)
         if self.running:
             self.poll()
 

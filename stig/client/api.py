@@ -48,9 +48,9 @@ class API():
         self.loop = loop if loop is not None else asyncio.get_event_loop()
         self._rpc = TransmissionRPC(host=host, port=port, tls=tls, user=user,
                                     password=password, loop=self.loop, path=path)
-        self._interval = interval
         self._pollers = []
         self._manage_pollers_interval = SleepUneasy(loop=self.loop)
+        self.interval = interval
 
     @property
     def rpc(self):
@@ -64,9 +64,9 @@ class API():
 
     @interval.setter
     def interval(self, interval):
-        self._interval = interval
+        self._interval = float(interval)
         for poller in self._existing_pollers:
-            poller.interval = interval
+            poller.interval = self._interval
 
 
     def created(self, prop):

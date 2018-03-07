@@ -60,7 +60,7 @@ cfg.on_change(_refresh_lists, name='unitprefix.size')
 
 
 def _set_poll_interval(settings, name, value):
-    tui.srvapi.interval = int(value)
+    tui.srvapi.interval = value
 cfg.on_change(_set_poll_interval, name='tui.poll')
 
 
