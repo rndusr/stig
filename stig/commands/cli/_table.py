@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ...utils import (strwidth, crop_and_align)
+from ...utils.string import (strwidth, crop_and_align)
 
 from types import SimpleNamespace
 from shutil import get_terminal_size

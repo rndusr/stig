@@ -18,8 +18,8 @@ from collections import abc
 import re
 
 from . import (__appname__, __version__)
-from .utils import (striplines, expandtabs)
-
+from .utils import expandtabs
+from .utils.string import striplines
 from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
 
 MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filter', 'rcfile')

@@ -1,4 +1,4 @@
-from stig.utils import (strwidth, strcrop, stralign)
+from stig.utils.string import (strwidth, strcrop, stralign)
 
 import unittest
 

@@ -12,7 +12,7 @@
 
 def make_tab_title_widget(text_cropable, text_fixed='', attr_unfocused='', attr_focused=''):
     import urwid
-    from ...utils import strcrop
+    from ...utils.string import strcrop
     from ...tui.main import MAX_TAB_TITLE_WIDTH
     max_width = max(1, MAX_TAB_TITLE_WIDTH-len(text_fixed))
     text_cropped = strcrop(text_cropable, max_width, tail='…')

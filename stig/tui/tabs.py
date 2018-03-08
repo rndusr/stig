@@ -15,7 +15,7 @@ log = make_logger(__name__)
 import urwid
 import collections
 
-from ..utils import strwidth
+from ..utils.string import strwidth
 
 
 class TabID(int):
