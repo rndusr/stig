@@ -27,10 +27,10 @@ aioloop = asyncio.get_event_loop()
 
 
 from . import cliopts
-from . import logging
 cliargs, clicmds = cliopts.parse()
 
 
+from . import logging
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 log = logging.make_logger()
