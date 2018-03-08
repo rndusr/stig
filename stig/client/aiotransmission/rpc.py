@@ -21,7 +21,7 @@ from blinker import Signal
 import warnings
 import async_timeout
 
-from ..errors import (ConnectionError, RPCError, AuthError, ClientError)
+from ..errors import (ConnectionError, TimeoutError, RPCError, AuthError, ClientError)
 
 
 AUTH_ERROR_CODE = 401
@@ -341,9 +341,7 @@ class TransmissionRPC():
                 try:
                     answer = await response.json()
                 except aiohttp.ClientResponseError:
-                    text = textwrap.shorten(await response.text(),
-                                            50, placeholder='...')
-                    raise RPCError('Server sent malformed JSON: %s' % text)
+                    raise RPCError('Server sent malformed JSON: %s' % await response.text())
                 else:
                     return answer
 
@@ -370,8 +368,7 @@ class TransmissionRPC():
             raise ConnectionError(self.url)
 
         except asyncio.TimeoutError as e:
-            log.debug('Caught TimeoutError: %r', e)
-            raise ConnectionError('Timeout after %ss: %s' % (self.timeout, self.url))
+            raise TimeoutError(self.timeout, self.url)
 
         else:
             if answer['result'] != 'success':

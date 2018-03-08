@@ -9,12 +9,13 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+import textwrap
 
 class ClientError(Exception):
-    prefix = ''
-    def __init__(self, message, *args, **kwargs):
-        super().__init__(self.prefix + str(message))
+    def __init__(self, message):
+        super().__init__(str(message))
 
+    # Making exceptions with the same arguments equal helps in the tests
     def __eq__(self, other):
         return type(self) == type(other) and self.args == other.args
 
@@ -25,10 +26,18 @@ class ClientError(Exception):
         return hash(type(self).__name__ + str(self))
 
 class ConnectionError(ClientError):
-    prefix = 'Failed to connect: '
+    def __init__(self, url):
+        super().__init__('Failed to connect: %s' % url)
+
+class TimeoutError(ClientError):
+    def __init__(self, timeout, url):
+        super().__init__('Timeout after %ss: %s' % (timeout, url))
 
 class RPCError(ClientError):
-    prefix = 'Invalid RPC response: '
+    def __init__(self, response):
+        super().__init__('Invalid RPC response: %s' %
+                         textwrap.shorten(response, 100, placeholder='...'))
 
 class AuthError(ClientError):
-    prefix = 'Authentication failed: '
+    def __init__(self, url):
+        super().__init__('Authentication failed: %s' % url)

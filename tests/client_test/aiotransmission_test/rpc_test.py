@@ -1,5 +1,5 @@
 from stig.client.aiotransmission.rpc import TransmissionRPC
-from stig.client import (ConnectionError, RPCError, AuthError)
+from stig.client import (ConnectionError, TimeoutError, RPCError, AuthError)
 
 import resources_aiotransmission as rsrc
 
@@ -288,12 +288,12 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
             return web.Response(json=rsrc.SESSION_GET_RESPONSE)
         self.daemon.response = delayed_response
 
-        with self.assertRaises(ConnectionError) as cm:
+        with self.assertRaises(TimeoutError) as cm:
             await asyncio.gather(self.advance(delay),
                                  self.client.connect(),
                                  loop=self.loop)
         self.assertEqual(str(cm.exception),
-                         'Failed to connect: Timeout after %ds: %s' % (self.client.timeout, self.client.url))
+                         'Timeout after %ds: %s' % (self.client.timeout, self.client.url))
         self.assert_cb_connected_called(calls=0)
         self.assert_cb_disconnected_called(calls=0)
         self.assert_cb_error_called(calls=1,
