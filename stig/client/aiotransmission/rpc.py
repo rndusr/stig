@@ -241,20 +241,25 @@ class TransmissionRPC():
 
         Raises RPCError, ConnectionError or AuthError.
         """
-        if self._connecting_lock.locked():
-            log.debug('Connection is already being established')
-            while True:
-                log.debug('Waiting for connection to come up ...')
-                await asyncio.sleep(0.1, loop=self.loop)
+        log.debug('Connecting to %s (timeout=%ss)', self.url, self.timeout)
+        self._on_connecting.send(self)
 
+        if self._connecting_lock.locked():
+            if self._connection_exception is not None:
+                # The other connect() call failed
+                log.debug('Found connection error: %r', self._connection_exception)
+                raise self._connection_exception
+
+            log.debug('Connection is already being established - Waiting ...')
+            try:
+                async with async_timeout.timeout(self.timeout):
+                    await self._enabled_event.wait()
+            except asyncio.TimeoutError:
+                raise TimeoutError(self.timeout, self.url)
+            else:
                 if self.connected:
                     log.debug('Connection is up: %r', self.url)
                     return
-
-                elif self._connection_exception is not None:
-                    # The other connect() call failed
-                    log.debug('Found connection error: %r', self._connection_exception)
-                    raise self._connection_exception
 
         async with self._connecting_lock:
             log.debug('Acquired connect() lock')
@@ -264,9 +269,6 @@ class TransmissionRPC():
 
             # Block until we're enabled
             await self._enabled_event.wait()
-
-            log.debug('Connecting to %s (timeout=%ss)', self.url, self.timeout)
-            self._on_connecting.send(self)
 
             import aiohttp
             session_args = {'loop': self.loop}
