@@ -232,8 +232,11 @@ class Bool(str, StringableMixin):
         elif _value in false:
             is_true = False
         elif isinstance(_value, bool):
-            is_true = bool(_value)
-            value = str(_value).lower()
+            is_true = _value
+            if is_true:
+                value = true[0]
+            else:
+                value = false[0]
         else:
             raise ValueError('Not a %s' % cls.typename)
 
