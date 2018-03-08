@@ -1,6 +1,6 @@
 import unittest
-from stig.utils.stringables import (String, Bool, Path, Tuple, Option, Float,
-                                    Int, StringableMixin, multitype)
+from stig.utils.usertypes import (String, Bool, Path, Tuple, Option, Float,
+                                  Int, StringableMixin, multitype)
 
 
 from contextlib import contextmanager

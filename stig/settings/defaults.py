@@ -48,7 +48,7 @@ else:
 
 
 def init_defaults(cfg):
-    from ..utils.stringables import (String, Int, Float, Bool, Path, Tuple, Option)
+    from ..utils.usertypes import (String, Int, Float, Bool, Path, Tuple, Option)
 
     class SortOrder(str):
         """String that is equal to the same string with '!' or '.' prepended"""

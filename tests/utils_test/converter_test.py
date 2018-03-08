@@ -1,5 +1,5 @@
 from stig.utils._converter import DataCountConverter
-from stig.utils.stringables import Float
+from stig.utils.usertypes import Float
 
 import unittest
 

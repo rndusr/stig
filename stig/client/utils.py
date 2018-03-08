@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..utils.stringables import (Bool, Int, Float, Option, Path, multitype)
+from ..utils.usertypes import (Bool, Int, Float, Option, Path, multitype)
 from ..utils import convert
 from . import constants as const
 

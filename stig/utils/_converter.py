@@ -12,7 +12,7 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-from .stringables import (Float, Int)
+from .usertypes import (Float, Int)
 
 
 class DataCountConverter():
