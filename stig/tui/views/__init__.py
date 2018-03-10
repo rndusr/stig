@@ -127,11 +127,13 @@ class ItemWidgetBase(urwid.WidgetWrap):
 
         # Create focusable or unfocusable item widget
         if self.columns_focus_map is not NotImplemented:
-            itemw = urwid.AttrMap(urwid.AttrMap(cells, attr_map=None, focus_map=self.columns_focus_map),
-                                  self.palette_unfocused, self.palette_focused)
+            item_widget = urwid.AttrMap(
+                urwid.AttrMap(cells, attr_map=None, focus_map=self.columns_focus_map),
+                self.palette_unfocused, self.palette_focused
+            )
         else:
-            itemw = urwid.AttrMap(cells, self.palette_unfocused)
-        urwid.WidgetWrap.__init__(self, itemw)
+            item_widget = urwid.AttrMap(cells, self.palette_unfocused)
+        urwid.WidgetWrap.__init__(self, item_widget)
 
         # Initialize cell widgets
         self.update(item)
@@ -263,10 +265,10 @@ class ListWidgetBase(urwid.WidgetWrap):
         if item_dict:
             table = self._table
             cls = self._ListItemClass
-            for tid in item_dict:
-                table.register(tid)
-                itemw = table.get_row(tid)  # itemw = item widget
-                walker.append(cls(item_dict[tid], itemw))
+            for item_id in item_dict:
+                table.register(item_id)
+                item_widget = table.get_row(item_id)
+                walker.append(cls(item_dict[item_id], item_widget))
 
         # Sort items in walker
         if self._sort is not None:
