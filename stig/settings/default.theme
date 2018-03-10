@@ -563,12 +563,12 @@ trackerlist.next-announce.unfocused        $next-announce_fg           on $trkli
 trackerlist.next-announce.focused          $next-announce_fg           on $trklist_bg.f
 
 $last-scrape_fg = white
-trackerlist.last-scrape.header           $last-scrape_fg,underline on $trklist_bg.uf
-trackerlist.last-scrape.unfocused        $last-scrape_fg           on $trklist_bg.uf
-trackerlist.last-scrape.focused          $last-scrape_fg           on $trklist_bg.f
+trackerlist.last-scrape.header             $last-scrape_fg,underline on $trklist_bg.uf
+trackerlist.last-scrape.unfocused          $last-scrape_fg           on $trklist_bg.uf
+trackerlist.last-scrape.focused            $last-scrape_fg           on $trklist_bg.f
 
 $next-scrape_fg = white
-trackerlist.next-scrape.header           $next-scrape_fg,underline on $trklist_bg.uf
-trackerlist.next-scrape.unfocused        $next-scrape_fg           on $trklist_bg.uf
-trackerlist.next-scrape.focused          $next-scrape_fg           on $trklist_bg.f
+trackerlist.next-scrape.header             $next-scrape_fg,underline on $trklist_bg.uf
+trackerlist.next-scrape.unfocused          $next-scrape_fg           on $trklist_bg.uf
+trackerlist.next-scrape.focused            $next-scrape_fg           on $trklist_bg.f
 
