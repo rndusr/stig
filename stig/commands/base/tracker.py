@@ -49,7 +49,7 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
     cfg = ExpectedResource
 
     from ...views.trackerlist import COLUMNS
-    from ...client.sorters.trksorter import TorrentTrackerSorter
+    from ...client.sorters.tracker import TorrentTrackerSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.trackers', append=(
             '',

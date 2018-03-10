@@ -266,9 +266,9 @@ class SortCmd(metaclass=InitCommand):
             tuple('\t{}\t - \t{}'.format(', '.join((sname,) + s.aliases), s.description)
                   for sname,s in sorted(sortercls.SORTSPECS.items()))
 
-    from ...client.sorters.tsorter import TorrentSorter
-    from ...client.sorters.psorter import TorrentPeerSorter
-    from ...client.sorters.trksorter import TorrentTrackerSorter
+    from ...client.sorters.torrent import TorrentSorter
+    from ...client.sorters.peer import TorrentPeerSorter
+    from ...client.sorters.tracker import TorrentTrackerSorter
     more_sections = {
         'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) +
                        ('',) +

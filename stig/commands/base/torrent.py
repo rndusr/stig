@@ -49,7 +49,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     )
 
     from ...views.trackerlist import COLUMNS
-    from ...client.sorters.tsorter import TorrentSorter
+    from ...client.sorters.torrent import TorrentSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.torrents'),
         'SORT ORDERS': make_SORT_ORDERS_doc(TorrentSorter, '--sort', 'sort.torrents'),

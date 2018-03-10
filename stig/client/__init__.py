@@ -14,9 +14,9 @@ from .constants import *
 
 from .utils import (Response, URL)
 
-from .sorters.tsorter import TorrentSorter
-from .sorters.psorter import TorrentPeerSorter
-from .sorters.trksorter import TorrentTrackerSorter
+from .sorters.torrent import TorrentSorter
+from .sorters.peer import TorrentPeerSorter
+from .sorters.tracker import TorrentTrackerSorter
 
 from .filters.tfilter import TorrentFilter
 from .filters.ffilter import TorrentFileFilter
