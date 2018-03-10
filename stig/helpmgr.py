@@ -371,10 +371,10 @@ class HelpManager():
             "\tExample: 'name=foo paused' is the same as 'name=foo|paused'.",
         ]
 
-        from .client.filters.tfilter import SingleTorrentFilter
-        from .client.filters.ffilter import SingleTorrentFileFilter
-        from .client.filters.pfilter import SingleTorrentPeerFilter
-        from .client.filters.trkfilter import SingleTrackerFilter
+        from .client.filters.torrent import SingleTorrentFilter
+        from .client.filters.file import SingleTorrentFileFilter
+        from .client.filters.peer import SingleTorrentPeerFilter
+        from .client.filters.tracker import SingleTrackerFilter
 
         for caption,filt in (('TORRENT FILTERS', SingleTorrentFilter),
                              ('FILE FILTERS', SingleTorrentFileFilter),

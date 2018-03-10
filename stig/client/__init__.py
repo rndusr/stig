@@ -18,10 +18,10 @@ from .sorters.torrent import TorrentSorter
 from .sorters.peer import TorrentPeerSorter
 from .sorters.tracker import TorrentTrackerSorter
 
-from .filters.tfilter import TorrentFilter
-from .filters.ffilter import TorrentFileFilter
-from .filters.pfilter import TorrentPeerFilter
-from .filters.trkfilter import TorrentTrackerFilter
+from .filters.torrent import TorrentFilter
+from .filters.file import TorrentFileFilter
+from .filters.peer import TorrentPeerFilter
+from .filters.tracker import TorrentTrackerFilter
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool

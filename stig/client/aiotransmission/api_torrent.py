@@ -20,8 +20,8 @@ import base64
 from ..utils import (Response, URL)
 from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
-from ..filters.tfilter import TorrentFilter
-from ..filters.ffilter import TorrentFileFilter
+from ..filters.torrent import TorrentFilter
+from ..filters.file import TorrentFileFilter
 from ..utils import (Bool, Bandwidth, BoolOrBandwidth)
 
 

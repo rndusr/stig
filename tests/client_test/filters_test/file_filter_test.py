@@ -1,4 +1,4 @@
-from stig.client.filters.ffilter import (TorrentFileFilter)
+from stig.client.filters.file import (TorrentFileFilter)
 from stig.client.ttypes import TorrentFile
 
 import unittest
