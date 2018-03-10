@@ -194,7 +194,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._items = ()
         self._marked = set()
 
-        self._columns = columns or []
         self._sort = sort
         self._sort_orig = sort
 
@@ -202,7 +201,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         self.title_updater = None
 
         self._table = Table(**self.tuicolumns)
-        self._table.columns = self._columns
+        self._table.columns = columns or ()
 
         if self.focusable_items:
             walker = urwid.SimpleFocusListWalker([])

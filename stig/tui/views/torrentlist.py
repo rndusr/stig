@@ -48,7 +48,7 @@ class TorrentListWidget(ListWidgetBase):
             keys.extend(self._sort.needed_keys)
         if hasattr(self._tfilter, 'needed_keys'):
             keys.extend(self._tfilter.needed_keys)
-        for colname in self._columns:
+        for colname in self.columns:
             keys.extend(self.tuicolumns[colname].needed_keys)
 
         # Register new request in request pool
