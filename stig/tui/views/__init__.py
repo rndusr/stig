@@ -81,10 +81,11 @@ class CellWidgetBase(urwid.WidgetWrap):
     header = urwid.AttrMap(ColumnHeaderWidget(left='', right=''), 'header')
     width = ('weight', 100)
     align = 'right'
+    wrap = 'clip'
 
     def __init__(self):
         self.value = None
-        self.text = urwid.Text('', wrap='clip', align=self.align)
+        self.text = urwid.Text('', wrap=self.wrap, align=self.align)
         self.attrmap = urwid.AttrMap(self.text, self.style.attrs('unfocused'))
         return super().__init__(self.attrmap)
 
