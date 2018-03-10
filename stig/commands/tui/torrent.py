@@ -22,8 +22,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.create_list_widget):
     provides = {'tui'}
 
-    def make_tlist(self, tfilter, sort, columns):
-        from ...tui.views.torrentlist import TorrentListWidget
+    def make_torrent_list(self, tfilter, sort, columns):
+        from ...tui.views.torrent_list import TorrentListWidget
         self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
                                 tfilter=tfilter, sort=sort, columns=columns,
                                 markable_items=True)

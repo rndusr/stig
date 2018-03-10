@@ -48,7 +48,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                           "(see COLUMNS section)") },
     )
 
-    from ...views.trackerlist import COLUMNS
+    from ...views.torrent import COLUMNS
     from ...client.sorters.torrent import TorrentSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.torrents'),
@@ -72,10 +72,10 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
             return False
         else:
             log.debug('Listing %s torrents sorted by %s', tfilter, sort)
-            if asyncio.iscoroutinefunction(self.make_tlist):
-                return await self.make_tlist(tfilter, sort, columns)
+            if asyncio.iscoroutinefunction(self.make_torrent_list):
+                return await self.make_torrent_list(tfilter, sort, columns)
             else:
-                return self.make_tlist(tfilter, sort, columns)
+                return self.make_torrent_list(tfilter, sort, columns)
 
 
 class TorrentSummaryCmdbase(mixin.get_torrent, metaclass=InitCommand):

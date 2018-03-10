@@ -17,7 +17,7 @@ from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
 
 from .. import __appname__
-from ..views import (torrentlist, filelist, peerlist, trackerlist)
+from ..views import (torrent, file, peer, tracker)
 from ..client.sorters.torrent import TorrentSorter
 from ..client.sorters.peer import TorrentPeerSorter
 from ..client.sorters.tracker import TorrentTrackerSorter
@@ -90,19 +90,19 @@ def init_defaults(cfg):
             description='Whether to connect via HTTPS to the Transmission RPC interface')
 
     cfg.add('columns.torrents',
-            Tuple.partial(options=torrentlist.COLUMNS, aliases=torrentlist.ALIASES),
+            Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),
             default=DEFAULT_TORRENT_COLUMNS,
             description='Default columns in torrent lists')
     cfg.add('columns.peers',
-            Tuple.partial(options=peerlist.COLUMNS, aliases=peerlist.ALIASES),
+            Tuple.partial(options=peer.COLUMNS, aliases=peer.ALIASES),
             default=DEFAULT_PEER_COLUMNS,
             description='Default columns in peer lists')
     cfg.add('columns.files',
-            Tuple.partial(options=filelist.COLUMNS, aliases=filelist.ALIASES),
+            Tuple.partial(options=file.COLUMNS, aliases=file.ALIASES),
             default=DEFAULT_FILE_COLUMNS,
             description='Default columns in file lists')
     cfg.add('columns.trackers',
-            Tuple.partial(options=trackerlist.COLUMNS, aliases=trackerlist.ALIASES),
+            Tuple.partial(options=tracker.COLUMNS, aliases=tracker.ALIASES),
             default=DEFAULT_TRACKER_COLUMNS,
             description='Default columns in tracker lists')
 

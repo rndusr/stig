@@ -49,7 +49,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
                           "(see COLUMNS section)") },
     )
 
-    from ...views.peerlist import COLUMNS
+    from ...views.peer import COLUMNS
     from ...client.sorters.peer import TorrentPeerSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.peers', append=(
@@ -84,7 +84,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
 
         log.debug('Listing %s peers of %s torrents', pfilter, tfilter)
 
-        if asyncio.iscoroutinefunction(self.make_plist):
-            return await self.make_plist(tfilter, pfilter, sort, columns)
+        if asyncio.iscoroutinefunction(self.make_peer_list):
+            return await self.make_peer_list(tfilter, pfilter, sort, columns)
         else:
-            return self.make_plist(tfilter, pfilter, sort, columns)
+            return self.make_peer_list(tfilter, pfilter, sort, columns)

@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from . import CellWidgetBase
-from ...views.torrentlist import COLUMNS as _COLUMNS
+from ...views.torrent import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 

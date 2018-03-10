@@ -40,7 +40,7 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
                           "(see COLUMNS section)") },
     )
 
-    from ...views.filelist import COLUMNS
+    from ...views.file import COLUMNS
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.files'),
         'SCRIPTING': make_SCRIPTING_doc(name),
@@ -64,10 +64,10 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
 
         log.debug('Listing %s files of %s torrents', ffilter, tfilter)
 
-        if asyncio.iscoroutinefunction(self.make_flist):
-            return await self.make_flist(tfilter, ffilter, columns)
+        if asyncio.iscoroutinefunction(self.make_file_list):
+            return await self.make_file_list(tfilter, ffilter, columns)
         else:
-            return self.make_flist(tfilter, ffilter, columns)
+            return self.make_file_list(tfilter, ffilter, columns)
 
 
 class PriorityCmdbase(metaclass=InitCommand):

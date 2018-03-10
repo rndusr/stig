@@ -33,7 +33,7 @@ class TorrentRequestPool(RequestPoller):
         self._tfilters = {}
         self._keys = {}
         super().__init__(request=None, interval=interval, loop=srvapi.loop)
-        self.on_response(self._handle_tlist)
+        self.on_response(self._handle_torrent_list)
 
     def register(self, sid, callback, keys=(), tfilter=None):
         """Add new request to request pool
@@ -87,7 +87,7 @@ class TorrentRequestPool(RequestPoller):
             log.debug('Combined keys: %s', kwargs['keys'])
             self.set_request(self._api.torrents, **kwargs)
 
-    def _handle_tlist(self, response):
+    def _handle_torrent_list(self, response):
         # If the request failed, response is None and tlist is empty.
         tlist = response.torrents if response is not None else ()
 

@@ -17,11 +17,11 @@ import urwidtrees
 from collections import abc
 import builtins
 
-from .flist_columns import TUICOLUMNS
+from .file import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 
 
-from ...views.filelist import (create_directory_data, create_directory_name)
+from ...views.file import (create_directory_data, create_directory_name)
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
     """urwidtrees decorator for TorrentFiles and TorrentFileTrees"""

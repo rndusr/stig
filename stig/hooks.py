@@ -16,9 +16,9 @@ log = make_logger(__name__)
 
 from .main import (cfg, srvapi)
 from .utils import convert
-from .views.torrentlist import COLUMNS as TORRENT_COLUMNS
-from .views.filelist import COLUMNS as FILE_COLUMNS
-from .views.peerlist import COLUMNS as PEER_COLUMNS
+from .views.torrent import COLUMNS as TORRENT_COLUMNS
+from .views.file import COLUMNS as FILE_COLUMNS
+from .views.peer import COLUMNS as PEER_COLUMNS
 
 
 def _make_connection_callback(attr):

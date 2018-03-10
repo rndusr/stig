@@ -24,8 +24,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
 
-    async def make_tlist(self, tfilter, sort, columns):
-        from ...views.torrentlist import COLUMNS as TORRENT_COLUMNS
+    async def make_torrent_list(self, tfilter, sort, columns):
+        from ...views.torrent import COLUMNS as TORRENT_COLUMNS
 
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, TORRENT_COLUMNS)

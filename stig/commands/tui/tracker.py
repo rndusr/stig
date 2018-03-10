@@ -19,8 +19,8 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
                       mixin.create_list_widget):
     provides = {'tui'}
 
-    def make_trklist(self, torfilter, trkfilter, sort, columns):
-        from ...tui.views.trackerlist import TrackerListWidget
+    def make_tracker_list(self, torfilter, trkfilter, sort, columns):
+        from ...tui.views.tracker_list import TrackerListWidget
         self.create_list_widget(TrackerListWidget, theme_name='trackerlist',
                                 torfilter=torfilter, trkfilter=trkfilter,
                                 sort=sort, columns=columns,

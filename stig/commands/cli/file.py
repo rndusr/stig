@@ -26,7 +26,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource
 
-    async def make_flist(self, tfilter, ffilter, columns):
+    async def make_file_list(self, tfilter, ffilter, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
             quiet=True)
@@ -41,7 +41,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             filelist.extend(files)
 
         if filelist:
-            from ...views.filelist import COLUMNS as FILE_COLUMNS
+            from ...views.file import COLUMNS as FILE_COLUMNS
             # Remove columns that aren't supported by CLI interface (e.g. 'marked')
             columns = self.only_supported_columns(columns, FILE_COLUMNS)
             print_table(filelist, columns, FILE_COLUMNS)
@@ -70,7 +70,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 node['name'] = '%s%s' % ('  '*(_indent_level), node['name'])
             indent_directory_name = indent_file_name
 
-        from ...views.filelist import create_directory_data
+        from ...views.file import create_directory_data
         flist = []
         filtered_count = 0
         for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):

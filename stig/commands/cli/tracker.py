@@ -23,7 +23,7 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource
 
-    async def make_trklist(self, torfilter, trkfilter, sort, columns):
+    async def make_tracker_list(self, torfilter, trkfilter, sort, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(torfilter, keys=('name', 'trackers')),
             quiet=True)
@@ -44,7 +44,7 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
         sort.apply(trklist, inplace=True)
 
         if trklist:
-            from ...views.trackerlist import COLUMNS as TRACKER_COLUMNS
+            from ...views.tracker import COLUMNS as TRACKER_COLUMNS
             print_table(trklist, columns, TRACKER_COLUMNS)
             return True
         else:

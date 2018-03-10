@@ -17,12 +17,12 @@ from functools import partial
 from ..main import (cfg, srvapi, aioloop)
 from . import main as tui
 
-from .views.torrentlist import TorrentListWidget
-from .views.filelist import FileListWidget
-from .views.peerlist import PeerListWidget
+from .views.torrent_list import TorrentListWidget
+from .views.file_list import FileListWidget
+from .views.peer_list import PeerListWidget
 
-from .views.tlist_columns import TUICOLUMNS as TORRENT_COLUMNS
-from .views.flist_columns import TUICOLUMNS as FILE_COLUMNS
+from .views.torrent import TUICOLUMNS as TORRENT_COLUMNS
+from .views.file import TUICOLUMNS as FILE_COLUMNS
 
 
 def _reconnect(settings, name, value):

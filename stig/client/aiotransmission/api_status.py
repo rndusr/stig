@@ -73,13 +73,13 @@ class StatusAPI():
                                             keys=('rate-down', 'rate-up', 'status'),
                                             interval=interval,
                                             loop=srvapi.loop)
-        self._poller_tcount.on_response(self._handle_tlist)
+        self._poller_tcount.on_response(self._handle_torrent_list)
 
     def _reset_session_stats(self):
         self._session_stats = None
 
     def _reset_tcounts(self):
-        self._tlist = None
+        self._torrent_list = None
 
     def _handle_session_stats(self, stats):
         if stats is None:
@@ -89,11 +89,11 @@ class StatusAPI():
         self._session_stats_updated = True
         self._maybe_run_callbacks()
 
-    def _handle_tlist(self, response):
+    def _handle_torrent_list(self, response):
         if response is None:
             self._reset_tcounts()
         else:
-            self._tlist = response.torrents
+            self._torrent_list = response.torrents
         self._tcounts_updated = True
         self._maybe_run_callbacks()
 
@@ -119,7 +119,7 @@ class StatusAPI():
     def count(self):
         """Torrent counts by category"""
         stats = self._session_stats
-        tlist = self._tlist
+        tlist = self._torrent_list
         tc_args = {field:const.DISCONNECTED for field in TorrentCount._fields}
         if stats is not None:
             tc_args.update(

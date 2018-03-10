@@ -23,7 +23,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
     provides = {'cli'}
     srvapi = ExpectedResource
 
-    async def make_plist(self, tfilter, pfilter, sort, columns):
+    async def make_peer_list(self, tfilter, pfilter, sort, columns):
         response = await self.make_request(
             self.srvapi.torrent.torrents(tfilter, keys=('name', 'peers')),
             quiet=True)
@@ -44,7 +44,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
         sort.apply(peerlist, inplace=True)
 
         if peerlist:
-            from ...views.peerlist import COLUMNS as PEER_COLUMNS
+            from ...views.peer import COLUMNS as PEER_COLUMNS
             print_table(peerlist, columns, PEER_COLUMNS)
             return True
         else:
