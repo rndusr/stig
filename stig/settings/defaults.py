@@ -208,10 +208,10 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': '?',    'action': '<F1>'},
 
     # Hide/Show TUI elements
-    {'context': 'main', 'key': 'meta-L', 'action': 'tui toggle log'},
-    {'context': 'main', 'key': 'meta-M', 'action': 'tui toggle main'},
-    {'context': 'main', 'key': 'meta-T', 'action': 'tui toggle topbar'},
-    {'context': 'main', 'key': 'meta-B', 'action': 'tui toggle bottombar'},
+    {'context': 'main', 'key': 'alt-L', 'action': 'tui toggle log'},
+    {'context': 'main', 'key': 'alt-M', 'action': 'tui toggle main'},
+    {'context': 'main', 'key': 'alt-T', 'action': 'tui toggle topbar'},
+    {'context': 'main', 'key': 'alt-B', 'action': 'tui toggle bottombar'},
 
     # Log messages
     {'context': 'main', 'key': 'ctrl-l',   'action': 'tui toggle log'},
@@ -228,19 +228,19 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': 'shift-left',  'action': 'rate --quiet up -- -=100kB global'},
 
     # Tab management
-    {'context': 'tabs', 'key': 'n',      'action': 'tab'},
-    {'context': 'tabs', 'key': 'd',      'action': 'tab --close'},
-    {'context': 'tabs', 'key': 'D',      'action': 'tab --close --focus left'},
-    {'context': 'tabs', 'key': 'meta-1', 'action': 'tab --focus 1'},
-    {'context': 'tabs', 'key': 'meta-2', 'action': 'tab --focus 2'},
-    {'context': 'tabs', 'key': 'meta-3', 'action': 'tab --focus 3'},
-    {'context': 'tabs', 'key': 'meta-4', 'action': 'tab --focus 4'},
-    {'context': 'tabs', 'key': 'meta-5', 'action': 'tab --focus 5'},
-    {'context': 'tabs', 'key': 'meta-6', 'action': 'tab --focus 6'},
-    {'context': 'tabs', 'key': 'meta-7', 'action': 'tab --focus 7'},
-    {'context': 'tabs', 'key': 'meta-8', 'action': 'tab --focus 8'},
-    {'context': 'tabs', 'key': 'meta-9', 'action': 'tab --focus 9'},
-    {'context': 'tabs', 'key': 'meta-0', 'action': 'tab --focus 10'},
+    {'context': 'tabs', 'key': 'n',     'action': 'tab'},
+    {'context': 'tabs', 'key': 'd',     'action': 'tab --close'},
+    {'context': 'tabs', 'key': 'D',     'action': 'tab --close --focus left'},
+    {'context': 'tabs', 'key': 'alt-1', 'action': 'tab --focus 1'},
+    {'context': 'tabs', 'key': 'alt-2', 'action': 'tab --focus 2'},
+    {'context': 'tabs', 'key': 'alt-3', 'action': 'tab --focus 3'},
+    {'context': 'tabs', 'key': 'alt-4', 'action': 'tab --focus 4'},
+    {'context': 'tabs', 'key': 'alt-5', 'action': 'tab --focus 5'},
+    {'context': 'tabs', 'key': 'alt-6', 'action': 'tab --focus 6'},
+    {'context': 'tabs', 'key': 'alt-7', 'action': 'tab --focus 7'},
+    {'context': 'tabs', 'key': 'alt-8', 'action': 'tab --focus 8'},
+    {'context': 'tabs', 'key': 'alt-9', 'action': 'tab --focus 9'},
+    {'context': 'tabs', 'key': 'alt-0', 'action': 'tab --focus 10'},
 
     # List torrents with different filters
     {'context': 'tabs', 'key': 'f a', 'action': 'tab ls active'},
