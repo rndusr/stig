@@ -262,7 +262,7 @@ class Bool(str, StringableMixin):
         elif isinstance(other, type(self)):
             return other._is_true == self._is_true
         else:
-            return NotImplemented
+            return False
 
     def __ne__(self, other):
         return not self.__eq__(other)

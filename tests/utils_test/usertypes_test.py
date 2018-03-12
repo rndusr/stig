@@ -215,6 +215,9 @@ class TestBool(_TestBase):
         self.assertEqual(B(2), B(3))
         self.assertEqual(B(3), False)
 
+        self.assertNotEqual(B('x'), None)
+        self.assertNotEqual(B(2), None)
+
 
 class TestPath(_TestBase):
     def test_syntax(self):
