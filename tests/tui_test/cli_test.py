@@ -22,8 +22,8 @@ class TestCLIEditWidget(unittest.TestCase):
 
     def enter_line(self, line):
         for char in str(line):
-            self.w.keypress((80,25), char)
-        self.w.keypress((80,25), 'enter')
+            self.w.keypress((80,), char)
+        self.w.keypress((80,), 'enter')
 
     def get_history_on_disk(self):
         with open(self.history_filepath, 'r') as f:

@@ -60,6 +60,59 @@ urwid.command_map[Key('ctrl-g')]         = urwid.CANCEL
 urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
 
 
+import re
+import operator
+class Edit_readline(urwid.Edit):
+    def keypress(self, size, key):
+        def move_to_next_word(forward=True):
+            if forward:
+                match_iterator  = re.finditer(r'(\b\W+|$)', self.edit_text, flags=re.UNICODE)
+                match_positions = (m.start() for m in match_iterator)
+                op = operator.gt
+            else:
+                match_iterator  = re.finditer(r'(\w+\b|^)', self.edit_text, flags=re.UNICODE)
+                match_positions = reversed([m.start() for m in match_iterator])
+                op = operator.lt
+            for pos in match_positions:
+                if op(pos, self.edit_pos):
+                    self.set_edit_pos(pos)
+                    return pos
+
+        cmd = self._command_map[key]
+        if cmd is urwid.DELETE_TO_EOL:
+            self.edit_text = self.edit_text[:self.edit_pos]
+            return None
+        elif cmd is urwid.DELETE_LINE:
+            self.set_edit_text('')
+            return None
+        elif cmd is urwid.DELETE_CHAR_UNDER_CURSOR:
+            return super().keypress(size, 'delete')
+        elif cmd is urwid.CURSOR_WORD_RIGHT:
+            move_to_next_word(forward=True)
+            return None
+        elif cmd is urwid.CURSOR_WORD_LEFT:
+            move_to_next_word(forward=False)
+            return None
+        elif cmd is urwid.DELETE_WORD_LEFT:
+            start_pos = self.edit_pos
+            end_pos = move_to_next_word(forward=True)
+            if end_pos is not None:
+                self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
+            self.edit_pos = start_pos
+            return None
+        elif cmd is urwid.DELETE_WORD_RIGHT:
+            end_pos = self.edit_pos
+            start_pos = move_to_next_word(forward=False)
+            if start_pos is not None:
+                self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
+            return None
+        elif key == 'space':
+            return super().keypress(size, ' ')
+        else:
+            return super().keypress(size, key)
+
+urwid.Edit = Edit_readline
+
 
 # Limit the impact of the high CPU load bug
 # https://github.com/urwid/urwid/pull/86

@@ -13,8 +13,6 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import urwid
-import re
-import operator
 import os
 
 
@@ -36,48 +34,21 @@ class CLIEditWidget(urwid.Edit):
         return super().__init__(*args, **kwargs)
 
     def keypress(self, size, key):
-        size = (size[0],)
         text_before = self.get_edit_text()
-        if self._command_map[key] is urwid.CURSOR_UP:
+        cmd = self._command_map[key]
+        if cmd is urwid.CURSOR_UP:
             self._set_history_prev()
             key = None
-        elif self._command_map[key] is urwid.CURSOR_DOWN:
+        elif cmd is urwid.CURSOR_DOWN:
             self._set_history_next()
             key = None
-        elif self._command_map[key] is urwid.DELETE_TO_EOL:
-            self.edit_text = self.edit_text[:self.edit_pos]
-            key = None
-        elif self._command_map[key] is urwid.DELETE_LINE:
-            self.set_edit_text('')
-            key = None
-        elif self._command_map[key] is urwid.DELETE_CHAR_UNDER_CURSOR:
-            return super().keypress(size, 'delete')
-        elif self._command_map[key] is urwid.CURSOR_WORD_RIGHT:
-            self.move_to_next_word(forward=True)
-            key = None
-        elif self._command_map[key] is urwid.CURSOR_WORD_LEFT:
-            self.move_to_next_word(forward=False)
-            key = None
-        elif self._command_map[key] is urwid.DELETE_WORD_LEFT:
-            start_pos = self.edit_pos
-            end_pos = self.move_to_next_word(forward=True)
-            if end_pos is not None:
-                self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
-            self.edit_pos = start_pos
-            key = None
-        elif self._command_map[key] is urwid.DELETE_WORD_RIGHT:
-            end_pos = self.edit_pos
-            start_pos = self.move_to_next_word(forward=False)
-            if start_pos is not None:
-                self.set_edit_text(self.edit_text[:start_pos] + self.edit_text[end_pos:])
-            key = None
-        elif self._command_map[key] is urwid.ACTIVATE:
+        elif cmd is urwid.ACTIVATE:
             self._append_to_history(self.edit_text)
             if self._on_accept is not None:
                 self._on_accept(self)
             self._history_pos = -1
             key = None
-        elif self._command_map[key] is urwid.CANCEL:
+        elif cmd is urwid.CANCEL:
             if self._on_cancel is not None:
                 self._on_cancel(self)
             self._history_pos = -1
@@ -86,26 +57,11 @@ class CLIEditWidget(urwid.Edit):
             return super().keypress(size, ' ')
         else:
             key = super().keypress(size, key)
+
         text_after = self.get_edit_text()
         if self._on_change is not None and text_before != text_after:
             self._on_change(self)
         return key
-
-    def move_to_next_word(self, forward=True):
-        if forward:
-            match_iterator  = re.finditer(r'(\b\W+|$)', self.edit_text,
-                                          flags=re.UNICODE)
-            match_positions = [m.start() for m in match_iterator]
-            op = operator.gt
-        else:
-            match_iterator  = re.finditer(r'(\w+\b|^)', self.edit_text,
-                                          flags=re.UNICODE)
-            match_positions = reversed([m.start() for m in match_iterator])
-            op = operator.lt
-        for pos in match_positions:
-            if op(pos, self.edit_pos):
-                self.set_edit_pos(pos)
-                return pos
 
     def _set_history_prev(self):
         # Remember whatever is currently in line when user starts exploring history
