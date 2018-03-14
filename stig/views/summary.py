@@ -28,8 +28,7 @@ def _size_mr(t):
 
 
 def _limit_rate_hr(direction, t):
-    limit = t['limit-rate-' + direction]
-    return limit.with_unit if hasattr(limit, 'with_unit') else str(limit)
+    return str(t['limit-rate-' + direction])
 
 def _limit_rate_mr(direction, t):
     limit = t['limit-rate-' + direction]
