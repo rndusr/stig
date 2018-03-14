@@ -33,7 +33,8 @@ class get_torrent():
 
         Return None if no match is found.
         """
-        request = self.srvapi.torrent.torrents(tfilter, keys=keys)
+        request = self.srvapi.torrent.torrents(tfilter,
+                                               keys=tuple(keys) + ('name',))
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
             from ...client import TorrentSorter
