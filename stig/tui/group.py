@@ -22,6 +22,9 @@ class _Fill(urwid.SolidFill):
             size = (size[0], 0)
         return super().render(size, focus=False)
 
+    def rows(self, size, focus=False):
+        return 0
+
 
 class Group(urwid.WidgetWrap):
     """Wrapper aroung Pile or Columns widget
