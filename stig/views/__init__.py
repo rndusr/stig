@@ -87,7 +87,7 @@ class ColumnBase():
         return self.get_value()
 
     def __repr__(self):
-        if self.data:
+        if getattr(self, 'data', None):
             return '<{} {}>'.format(type(self).__name__, self.get_value())
         else:
             return '<{} <UNINITIALIZED>>'.format(type(self).__name__)
