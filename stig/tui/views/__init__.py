@@ -150,12 +150,6 @@ class ItemWidgetBase(urwid.WidgetWrap):
         return self._item['id']
 
     @property
-    def torrent_id(self):
-        """ID of the torrent the displayed item belongs to"""
-        item = self._item
-        return item['tid'] if 'tid' in item else item['id']
-
-    @property
     def item(self):
         """Displayed data in dictionary form"""
         return self._item
@@ -234,7 +228,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         if self._items is not None:
             self._update_listitems()
             self._items = None
-        # focus=True because we always want to display the focused torrent, for
+        # focus=True because we always want to highlight the focused item, for
         # example when the CLI is open
         return super().render(size, focus=True)
 
@@ -363,7 +357,7 @@ class ListWidgetBase(urwid.WidgetWrap):
 
     @property
     def marked(self):
-        """Generator that yields TorrentItemWidgets"""
+        """Generator that yields ItemWidgetBase descendants"""
         yield from self._marked
 
     def _set_mark(self, mark, toggle=False, all=False):
@@ -404,13 +398,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         focused_widget = self._listbox.focus
         if focused_widget is not None:
             return focused_widget.id
-
-    @property
-    def focused_torrent_id(self):
-        """ID of the torrent that the currently focused list item belongs to or `None`"""
-        focused_widget = self._listbox.focus
-        if focused_widget is not None:
-            return focused_widget.torrent_id
 
     @property
     def focus_position(self):

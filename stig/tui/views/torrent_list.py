@@ -23,6 +23,10 @@ class TorrentItemWidget(ItemWidgetBase):
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
 
+    @property
+    def torrent_id(self):
+        return self._item['id']
+
 
 class TorrentListWidget(ListWidgetBase):
     tuicolumns      = TUICOLUMNS
@@ -90,3 +94,10 @@ class TorrentListWidget(ListWidgetBase):
         self._srvapi.treqpool.remove(self.id)
         ListWidgetBase.sort.fset(self, sort)
         self._register_request()
+
+    @property
+    def focused_torrent_id(self):
+        """Torrent ID of the currently focused torrent or `None`"""
+        focused_widget = self._listbox.focus
+        if focused_widget is not None:
+            return focused_widget.torrent_id

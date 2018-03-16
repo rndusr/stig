@@ -20,6 +20,10 @@ class TrackerItemWidget(ItemWidgetBase):
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
 
+    @property
+    def torrent_id(self):
+        return self._item['tid']
+
 
 class TrackerListWidget(ListWidgetBase):
     tuicolumns      = TUICOLUMNS
@@ -75,3 +79,10 @@ class TrackerListWidget(ListWidgetBase):
     def sort(self, sort):
         ListWidgetBase.sort.fset(self, sort)
         self._poller.poll()
+
+    @property
+    def focused_torrent_id(self):
+        """Torrent ID of the currently focused tracker or `None`"""
+        focused_widget = self._listbox.focus
+        if focused_widget is not None:
+            return focused_widget.torrent_id

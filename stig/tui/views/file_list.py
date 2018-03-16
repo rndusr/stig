@@ -262,6 +262,13 @@ class FileListWidget(ListWidgetBase):
             fid = focused.file_id
             return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
 
+    @property
+    def focused_torrent_id(self):
+        """Torrent ID of the currently focused file or `None`"""
+        focused_widget = self._listbox.focus
+        if focused_widget is not None:
+            return focused_widget.torrent_id
+
 
     def all_children(self, pos):
         """Yield (position, widget) tuples of all sub-nodes (leaves and parents)"""
