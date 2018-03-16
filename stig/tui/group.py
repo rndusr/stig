@@ -236,8 +236,13 @@ class Group(urwid.WidgetWrap):
             if item['widget'].selectable():
                 self.focus_name = item['name']
 
-    def hide(self, name):
-        """Hide widget specified by `name` and focus next selectable widget"""
+    def hide(self, name, free_space=True):
+        """
+        Hide widget specified by `name` and focus next selectable widget
+
+        If `free_space` is False, the widget's space is still occupied but
+        empty.  This only works for widgets with a relative size.
+        """
         if not self.exists(name):
             raise ValueError('Unknown item name: {!r}'.format(name))
         elif self.visible(name):
@@ -245,22 +250,25 @@ class Group(urwid.WidgetWrap):
             item = self._get_item_by_name(name)
             opts = item['options']
 
+            if not free_space and opts[0] == 'weight':
+                placeholder_size = str(opts[1])
+            else:
+                placeholder_size = 0
+
             if len(self._items_list) == 1:
                 content = (_Fill(), self._parse_options('100'))
-            elif opts[0] == 'weight':
-                content = (_Fill(), self._parse_options(str(opts[1])))
             else:
-                content = (_Fill(), self._parse_options(0))
+                content = (_Fill(), self._parse_options(placeholder_size))
             self._main.contents[position] = content
 
             # Try to focus next selectable item
             self.focus_selectable(forward=False)
             self.focus_selectable(forward=True)
 
-    def toggle(self, name):
-        """Show widget if it's hidden and vice versa"""
+    def toggle(self, name, free_space=True):
+        """Show widget if it's hidden and vice versa (see also `hide`)"""
         if self.exists(name):
-            self.hide(name) if self.visible(name) else self.show(name)
+            self.hide(name, free_space=free_space) if self.visible(name) else self.show(name)
         else:
             raise ValueError('Unknown item name: {!r}'.format(name))
 
