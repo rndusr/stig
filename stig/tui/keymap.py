@@ -169,11 +169,11 @@ class Keymapped():
 
         def try_parent_class(key, sup=super()):
             if sup.selectable():
-                mro = sup.__self_class__.mro()
-                super_cls = mro[mro.index(sup.__thisclass__) + 1]
-                log.debug('%s: Offering %r to %s.keypress()', context, key, super_cls.__name__)
+                # mro = sup.__self_class__.mro()
+                # super_cls = mro[mro.index(sup.__thisclass__) + 1]
+                # log.debug('%s: Offering %r to %s.keypress()', context, key, super_cls.__name__)
                 key = sup.keypress(size, key)
-                log.debug('%s: %s.keypress() returned %r', context, super_cls.__name__, key)
+                # log.debug('%s: %s.keypress() returned %r', context, super_cls.__name__, key)
             return key
 
         log.debug('%s: %r / %r pressed', context, key_orig, key_eval)
