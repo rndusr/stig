@@ -70,10 +70,6 @@ class Style():
         return '.'.join(x for x in (strings) if x)
 
 
-# TODO: It would be great if some columns (e.g. rate-up/down) would shrink to
-#       the widest visible value (including its header).  Other columns would
-#       share the remaining width using ('weight', x), giving some of them
-#       (e.g. name) more space than others (e.g. path).
 class CellWidgetBase(urwid.WidgetWrap):
     """Base class for cells in items in Torrent/File/Peer/... lists"""
 

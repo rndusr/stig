@@ -188,8 +188,6 @@ class BandwidthStatusWidget(urwid.Widget):
             self._connected = False
         self._invalidate()
 
-    # TODO: This doesn't really need the settings object since we have cfg and
-    # can grab srv.limit.rate.up/down
     def _update_rate_limits(self, settings):
         up = settings['limit.rate.up']
         dn = settings['limit.rate.down']
