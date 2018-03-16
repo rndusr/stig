@@ -209,7 +209,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Network settings
 
-    @_setting(Int, prefix='none')
+    @_setting(Int, min=0, max=65535, prefix='none')
     def port(self):
         """Port used to communicate with peers"""
         return self._get('port', 'peer-port')
