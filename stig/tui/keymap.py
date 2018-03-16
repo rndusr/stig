@@ -193,9 +193,12 @@ class Keymapped():
 
         # Offer our own key format to original keypress() in case there are any
         # Key instances in urwid.command_map
-        key_ = try_parent_class(key_eval)
-        if key_ is None:
-            return None
+        if str(key_orig) != str(key_eval):
+            key_ = try_parent_class(key_eval)
+            if key_ is None:
+                return None
+        else:
+            log.debug('%s: Not feeding %r to parent again (%r == %r)', context, key_eval, key_orig, key_eval)
 
         # Offer key to KeyMap
         key_ = keymap.evaluate(key_eval, context=context, callback=callback, widget=self)
