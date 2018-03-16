@@ -47,7 +47,7 @@ else:
                             'rate-est', 'eta', )
 
 
-def init_defaults(cfg):
+def init_defaults(localcfg):
     from ..utils.usertypes import (String, Int, Float, Bool, Path, Tuple, Option)
 
     class SortOrder(str):
@@ -60,125 +60,125 @@ def init_defaults(cfg):
         options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)
         return Tuple.partial(options=options, dedup=True)
 
-    cfg.add('connect.host',
-            constructor=String.partial(),
-            default='localhost',
-            description='Hostname or IP of Transmission RPC interface')
-    cfg.add('connect.port',
-            Int.partial(min=1, max=65535, prefix='none'),
-            default=9091,
-            description='Port of Transmission RPC interface')
-    cfg.add('connect.path',
-            String.partial(),
-            default='/transmission/rpc',
-            description='Path of Transmission RPC interface')
-    cfg.add('connect.user',
-            String.partial(),
-            default='',
-            description='Username to use for authentication with Transmission RPC interface')
-    cfg.add('connect.password',
-            String.partial(),
-            default='',
-            description='Password to use for authentication with Transmission RPC interface')
-    cfg.add('connect.timeout',
-            Float.partial(min=0),
-            default=10,
-            description='Number of seconds before connecting to Transmission RPC interface fails')
-    cfg.add('connect.tls',
-            Bool.partial(),
-            default='off',
-            description='Whether to connect via HTTPS to the Transmission RPC interface')
+    localcfg.add('connect.host',
+                 constructor=String.partial(),
+                 default='localhost',
+                 description='Hostname or IP of Transmission RPC interface')
+    localcfg.add('connect.port',
+                 Int.partial(min=1, max=65535, prefix='none'),
+                 default=9091,
+                 description='Port of Transmission RPC interface')
+    localcfg.add('connect.path',
+                 String.partial(),
+                 default='/transmission/rpc',
+                 description='Path of Transmission RPC interface')
+    localcfg.add('connect.user',
+                 String.partial(),
+                 default='',
+                 description='Username to use for authentication with Transmission RPC interface')
+    localcfg.add('connect.password',
+                 String.partial(),
+                 default='',
+                 description='Password to use for authentication with Transmission RPC interface')
+    localcfg.add('connect.timeout',
+                 Float.partial(min=0),
+                 default=10,
+                 description='Number of seconds before connecting to Transmission RPC interface fails')
+    localcfg.add('connect.tls',
+                 Bool.partial(),
+                 default='off',
+                 description='Whether to connect via HTTPS to the Transmission RPC interface')
 
-    cfg.add('columns.torrents',
-            Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),
-            default=DEFAULT_TORRENT_COLUMNS,
-            description='Default columns in torrent lists')
-    cfg.add('columns.peers',
-            Tuple.partial(options=peer.COLUMNS, aliases=peer.ALIASES),
-            default=DEFAULT_PEER_COLUMNS,
-            description='Default columns in peer lists')
-    cfg.add('columns.files',
-            Tuple.partial(options=file.COLUMNS, aliases=file.ALIASES),
-            default=DEFAULT_FILE_COLUMNS,
-            description='Default columns in file lists')
-    cfg.add('columns.trackers',
-            Tuple.partial(options=tracker.COLUMNS, aliases=tracker.ALIASES),
-            default=DEFAULT_TRACKER_COLUMNS,
-            description='Default columns in tracker lists')
+    localcfg.add('columns.torrents',
+                 Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),
+                 default=DEFAULT_TORRENT_COLUMNS,
+                 description='Default columns in torrent lists')
+    localcfg.add('columns.peers',
+                 Tuple.partial(options=peer.COLUMNS, aliases=peer.ALIASES),
+                 default=DEFAULT_PEER_COLUMNS,
+                 description='Default columns in peer lists')
+    localcfg.add('columns.files',
+                 Tuple.partial(options=file.COLUMNS, aliases=file.ALIASES),
+                 default=DEFAULT_FILE_COLUMNS,
+                 description='Default columns in file lists')
+    localcfg.add('columns.trackers',
+                 Tuple.partial(options=tracker.COLUMNS, aliases=tracker.ALIASES),
+                 default=DEFAULT_TRACKER_COLUMNS,
+                 description='Default columns in tracker lists')
 
-    cfg.add('sort.torrents',
-            partial_sort_order(TorrentSorter),
-            default=DEFAULT_TORRENT_SORT,
-            description='List of sort orders in torrent lists')
-    cfg.add('sort.peers',
-            partial_sort_order(TorrentPeerSorter),
-            default=DEFAULT_PEER_SORT,
-            description='List of sort orders in peer lists')
-    cfg.add('sort.trackers',
-            partial_sort_order(TorrentTrackerSorter),
-            default=DEFAULT_TRACKER_SORT,
-            description='List of sort orders in tracker lists')
+    localcfg.add('sort.torrents',
+                 partial_sort_order(TorrentSorter),
+                 default=DEFAULT_TORRENT_SORT,
+                 description='List of sort orders in torrent lists')
+    localcfg.add('sort.peers',
+                 partial_sort_order(TorrentPeerSorter),
+                 default=DEFAULT_PEER_SORT,
+                 description='List of sort orders in peer lists')
+    localcfg.add('sort.trackers',
+                 partial_sort_order(TorrentTrackerSorter),
+                 default=DEFAULT_TRACKER_SORT,
+                 description='List of sort orders in tracker lists')
 
-    cfg.add('tui.theme',
-            Path.partial(),
-            default=DEFAULT_THEME_FILE,
-            description='Path to theme file'),
-    cfg.add('tui.log.height',
-            Int.partial(min=1),
-            default=10,
-            description='Maximum height of the log section')
-    cfg.add('tui.log.autohide',
-            Float.partial(min=0),
-            default=10,
-            description=('If the log is hidden, show it for this many seconds '
-                         'for new log entries before hiding it again'))
-    cfg.add('tui.cli.history-file',
-            Path.partial(),
-            default=DEFAULT_HISTORY_FILE,
-            description='Path to TUI command line history file')
-    cfg.add('tui.cli.history-size',
-            Int.partial(min=0),
-            default=10000,
-            description='Maximum number of lines in history file')
-    cfg.add('tui.poll',
-            Float.partial(min=0.1),
-            default=5,
-            description='Interval in seconds between TUI updates')
+    localcfg.add('tui.theme',
+                 Path.partial(),
+                 default=DEFAULT_THEME_FILE,
+                 description='Path to theme file'),
+    localcfg.add('tui.log.height',
+                 Int.partial(min=1),
+                 default=10,
+                 description='Maximum height of the log section')
+    localcfg.add('tui.log.autohide',
+                 Float.partial(min=0),
+                 default=10,
+                 description=('If the log is hidden, show it for this many seconds '
+                              'for new log entries before hiding it again'))
+    localcfg.add('tui.cli.history-file',
+                 Path.partial(),
+                 default=DEFAULT_HISTORY_FILE,
+                 description='Path to TUI command line history file')
+    localcfg.add('tui.cli.history-size',
+                 Int.partial(min=0),
+                 default=10000,
+                 description='Maximum number of lines in history file')
+    localcfg.add('tui.poll',
+                 Float.partial(min=0.1),
+                 default=5,
+                 description='Interval in seconds between TUI updates')
 
-    cfg.add('unit.bandwidth',
-            Option.partial(options=('bit', 'byte')),
-            default='byte',
-            description="Unit for bandwidth rates ('bit' or 'byte')")
-    cfg.add('unitprefix.bandwidth',
-            Option.partial(options=('metric', 'binary')),
-            default='metric',
-            description=("Unit prefix for bandwidth rates ('metric' or 'binary')"))
+    localcfg.add('unit.bandwidth',
+                 Option.partial(options=('bit', 'byte')),
+                 default='byte',
+                 description="Unit for bandwidth rates ('bit' or 'byte')")
+    localcfg.add('unitprefix.bandwidth',
+                 Option.partial(options=('metric', 'binary')),
+                 default='metric',
+                 description=("Unit prefix for bandwidth rates ('metric' or 'binary')"))
 
-    cfg.add('unit.size',
-            Option.partial(options=('bit', 'byte')),
-            default='byte',
-            description="Unit for file sizes ('bit' or 'byte')")
-    cfg.add('unitprefix.size',
-            Option.partial(options=('metric', 'binary')),
-            default='binary',
-            description=("Unit prefix for file sizes ('metric' or 'binary')"))
+    localcfg.add('unit.size',
+                 Option.partial(options=('bit', 'byte')),
+                 default='byte',
+                 description="Unit for file sizes ('bit' or 'byte')")
+    localcfg.add('unitprefix.size',
+                 Option.partial(options=('metric', 'binary')),
+                 default='binary',
+                 description=("Unit prefix for file sizes ('metric' or 'binary')"))
 
-    cfg.add('tui.marked.on',
-            String.partial(minlen=1, maxlen=1),
-            default='✔',
-            description=("Character displayed in 'marked' column for marked "
-                         "list items (see 'mark' command)")),
-    cfg.add('tui.marked.off',
-            String.partial(minlen=1, maxlen=1),
-            default=' ',
-            description=("Character displayed in 'marked' column for unmarked "
-                         "list items (see 'mark' command)")),
+    localcfg.add('tui.marked.on',
+                 String.partial(minlen=1, maxlen=1),
+                 default='✔',
+                 description=("Character displayed in 'marked' column for marked "
+                              "list items (see 'mark' command)"))
+    localcfg.add('tui.marked.off',
+                 String.partial(minlen=1, maxlen=1),
+                 default=' ',
+                 description=("Character displayed in 'marked' column for unmarked "
+                              "list items (see 'mark' command)"))
 
-    cfg.add('remove.max-hits',
-            Int.partial(min=0),
-            default=10,
-            description=('Maximum number of torrents to remove without '
-                         'extra confirmation')),
+    localcfg.add('remove.max-hits',
+                 Int.partial(min=0),
+                 default=10,
+                 description=('Maximum number of torrents to remove without '
+                              'extra confirmation'))
 
 
 

@@ -19,7 +19,7 @@ from . import CmdError
 class UIGuessError(Exception):
     pass
 
-def guess_ui(clicmds, cmdmgr, cfg):
+def guess_ui(clicmds, cmdmgr):
     """Guess desired user interface based on CLI commands
 
     Return 'tui' or 'cli'

@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 import urwid
 from . import urwidpatches
-from ..main import (aioloop, cfg, cmdmgr, srvapi)
+from ..main import (aioloop, localcfg, cmdmgr, srvapi)
 
 
 #
@@ -82,7 +82,7 @@ def _create_cli_widget():
 
     return CLIEditWidget(':',
                          on_accept=on_accept, on_cancel=on_cancel,
-                         history_file=cfg['tui.cli.history-file'])
+                         history_file=localcfg['tui.cli.history-file'])
 
 
 def _greedy_spacer():
@@ -105,8 +105,8 @@ bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
 
 cli = urwid.AttrMap(_create_cli_widget(), 'cli')
 
-logwidget = LogWidget(height=int(cfg['tui.log.height']),
-                      autohide_delay=cfg['tui.log.autohide'])
+logwidget = LogWidget(height=int(localcfg['tui.log.height']),
+                      autohide_delay=localcfg['tui.log.autohide'])
 
 keychains = KeyChainsWidget()
 keymap.on_keychain(keychains.update)
@@ -141,7 +141,7 @@ def run(command_runner):
     """
     # Don't catch theme.ParserError - a broken default theme should make us
     # croak obviously and horribly
-    theme.init(cfg.default('tui.theme'), urwidscreen)
+    theme.init(localcfg.default('tui.theme'), urwidscreen)
 
     # Load tui-specific hooks before commands run (commands may trigger hooks)
     from . import hooks

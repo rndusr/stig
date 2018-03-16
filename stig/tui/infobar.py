@@ -12,7 +12,7 @@
 import urwid
 
 from ..main import srvapi
-from ..main import cfg
+from ..main import localcfg
 from . import main as tui
 from ..client import constants as const
 
@@ -205,7 +205,7 @@ class BandwidthStatusWidget(urwid.Widget):
         self._invalidate()
 
     def _mk_tail_canv(self, direction, icon):
-        unit = {'bit': 'b', 'byte': 'B'}[cfg['unit.bandwidth']]
+        unit = {'bit': 'b', 'byte': 'B'}[localcfg['unit.bandwidth']]
         text = urwid.Text('%s/s%s' % (unit, icon))
         attr_text = urwid.AttrMap(text, 'bottombar.bandwidth.%s' % direction)
         return attr_text.render((self._TAIL_WIDTH,))

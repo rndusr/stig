@@ -18,9 +18,9 @@ log = make_logger(__name__)
 from .. import utils
 
 
-def _get_columns(columns, setting, cfg):
+def _get_columns(columns, setting, localcfg):
     # Resolve aliases and complain about invalid values
-    return cfg.validate(setting, columns)
+    return localcfg.validate(setting, columns)
 
 
 class get_torrent():

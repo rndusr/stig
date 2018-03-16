@@ -14,7 +14,7 @@
 from .logging import make_logger
 log = make_logger(__name__)
 
-from .main import (cfg, srvapi)
+from .main import (localcfg, srvapi)
 from .utils import convert
 from .views.torrent import COLUMNS as TORRENT_COLUMNS
 from .views.file import COLUMNS as FILE_COLUMNS
@@ -26,13 +26,13 @@ def _make_connection_callback(attr):
         log.debug('Setting rpc.%s=%r', attr, value)
         setattr(srvapi.rpc, attr, value)
     return on_set
-cfg.on_change(_make_connection_callback('host'),     name='connect.host',     autoremove=False)
-cfg.on_change(_make_connection_callback('port'),     name='connect.port',     autoremove=False)
-cfg.on_change(_make_connection_callback('path'),     name='connect.path',     autoremove=False)
-cfg.on_change(_make_connection_callback('user'),     name='connect.user',     autoremove=False)
-cfg.on_change(_make_connection_callback('password'), name='connect.password', autoremove=False)
-cfg.on_change(_make_connection_callback('tls'),      name='connect.tls',      autoremove=False)
-cfg.on_change(_make_connection_callback('timeout'),  name='connect.timeout',  autoremove=False)
+localcfg.on_change(_make_connection_callback('host'),     name='connect.host',     autoremove=False)
+localcfg.on_change(_make_connection_callback('port'),     name='connect.port',     autoremove=False)
+localcfg.on_change(_make_connection_callback('path'),     name='connect.path',     autoremove=False)
+localcfg.on_change(_make_connection_callback('user'),     name='connect.user',     autoremove=False)
+localcfg.on_change(_make_connection_callback('password'), name='connect.password', autoremove=False)
+localcfg.on_change(_make_connection_callback('tls'),      name='connect.tls',      autoremove=False)
+localcfg.on_change(_make_connection_callback('timeout'),  name='connect.timeout',  autoremove=False)
 
 
 _BANDWIDTH_COLUMNS = (TORRENT_COLUMNS['rate-up'], TORRENT_COLUMNS['rate-down'],
@@ -46,8 +46,8 @@ def _set_bandwidth_unit(settings, name, value):
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg.on_change(_set_bandwidth_unit, name='unit.bandwidth')
-_set_bandwidth_unit(cfg, name='unit.bandwidth', value=cfg['unit.bandwidth'])  # Init columns' units
+localcfg.on_change(_set_bandwidth_unit, name='unit.bandwidth')
+_set_bandwidth_unit(localcfg, name='unit.bandwidth', value=localcfg['unit.bandwidth'])  # Init columns' units
 
 def _set_bandwidth_prefix(settings, name, value):
     convert.bandwidth.prefix = value
@@ -55,7 +55,7 @@ def _set_bandwidth_prefix(settings, name, value):
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg.on_change(_set_bandwidth_prefix, name='unitprefix.bandwidth')
+localcfg.on_change(_set_bandwidth_prefix, name='unitprefix.bandwidth')
 
 
 _SIZE_COLUMNS = (TORRENT_COLUMNS['size'], TORRENT_COLUMNS['downloaded'],
@@ -69,8 +69,8 @@ def _set_size_unit(settings, name, value):
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg.on_change(_set_size_unit, name='unit.size')
-_set_size_unit(cfg, name='unit.size', value=cfg['unit.size'])  # Init columns' units
+localcfg.on_change(_set_size_unit, name='unit.size')
+_set_size_unit(localcfg, name='unit.size', value=localcfg['unit.size'])  # Init columns' units
 
 def _set_size_prefix(settings, name, value):
     convert.size.prefix = value
@@ -78,4 +78,4 @@ def _set_size_prefix(settings, name, value):
         column.clearcache()
     srvapi.torrent.clearcache()
     srvapi.poll()
-cfg.on_change(_set_size_prefix, name='unitprefix.size')
+localcfg.on_change(_set_size_prefix, name='unitprefix.size')

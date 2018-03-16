@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...main import cfg
+from ...main import localcfg
 from .torrent import TUICOLUMNS as TCOLUMNS
 from .file import TUICOLUMNS as FCOLUMNS
 from .peer import TUICOLUMNS as PCOLUMNS
@@ -23,7 +23,7 @@ def _set_bandwidth_unit(settings, name, value):
     unit_short += '/s'
     for column in _BANDWIDTH_COLUMNS:
         column.set_header(right=unit_short)
-cfg.on_change(_set_bandwidth_unit, name='unit.bandwidth')
+localcfg.on_change(_set_bandwidth_unit, name='unit.bandwidth')
 
 
 _SIZE_COLUMNS = (TCOLUMNS['size'], TCOLUMNS['downloaded'],
@@ -33,4 +33,4 @@ def _set_size_unit(settings, name, value):
     unit_short = {'bit': 'b', 'byte': 'B'}.get(value, value)
     for column in _SIZE_COLUMNS:
         column.set_header(right=unit_short)
-cfg.on_change(_set_size_unit, name='unit.size')
+localcfg.on_change(_set_size_unit, name='unit.size')

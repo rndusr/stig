@@ -37,33 +37,34 @@ log = logging.make_logger()
 
 
 from . import settings
-cfg = settings.Settings()
-settings.init_defaults(cfg)
+localcfg = settings.Settings()
+settings.init_defaults(localcfg)
 
 
 from .helpmgr import HelpManager
 helpmgr = HelpManager()
-helpmgr.localcfg = cfg
+helpmgr.localcfg = localcfg
 
 
 from .client import API
-srvapi = API(host=cfg['connect.host'],
-             port=cfg['connect.port'],
-             path=cfg['connect.path'],
-             user=cfg['connect.user'],
-             password=cfg['connect.password'],
-             tls=cfg['connect.tls'],
-             interval=cfg['tui.poll'],
+srvapi = API(host=localcfg['connect.host'],
+             port=localcfg['connect.port'],
+             path=localcfg['connect.path'],
+             user=localcfg['connect.user'],
+             password=localcfg['connect.password'],
+             tls=localcfg['connect.tls'],
+             interval=localcfg['tui.poll'],
              loop=aioloop)
 srvapi.rpc.enabled = False
-helpmgr.remotecfg = srvapi.settings
+remotecfg = srvapi.settings
+helpmgr.remotecfg = remotecfg
 
 
 from .commands import CommandManager
 cmdmgr = CommandManager(loop=aioloop)
 cmdmgr.resources.update(aioloop=aioloop,
                         srvapi=srvapi,
-                        cfg=cfg,
+                        cfg=localcfg,
                         srvcfg=srvapi.settings,
                         helpmgr=helpmgr)
 cmdmgr.load_cmds_from_module(
@@ -124,7 +125,7 @@ def run():
         cmdmgr.active_interface = 'cli'
     else:
         try:
-            cmdmgr.active_interface = guess_ui(clicmds, cmdmgr, cfg)
+            cmdmgr.active_interface = guess_ui(clicmds, cmdmgr)
         except UIGuessError as e:
             log.error('Unable to guess user interface')
             log.error('Provide one of these options: --tui/-t or --no-tui/-T')
