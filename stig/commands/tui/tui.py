@@ -19,6 +19,7 @@ from . import _mixin as mixin
 from ._common import make_tab_title_widget
 
 import shlex
+from functools import partial
 
 
 # Import tui.main module only on demand
@@ -537,6 +538,10 @@ class TUICmd(metaclass=InitCommand):
 
             if widget is not None:
                 action = getattr(widget, ACTION)
+                if any(ACTION == x for x in ('hide', 'toggle')):
+                    action = partial(action, free_space=False)
+                log.debug(action)
+
                 log.debug('%sing %s in %s', ACTION.capitalize(), target_name, widget)
                 try:
                     action(target_name)
