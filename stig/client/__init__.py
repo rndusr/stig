@@ -17,6 +17,7 @@ from .utils import (Response, URL)
 from .sorters.torrent import TorrentSorter
 from .sorters.peer import TorrentPeerSorter
 from .sorters.tracker import TorrentTrackerSorter
+from .sorters.setting import SettingSorter
 
 from .filters.torrent import TorrentFilter
 from .filters.file import TorrentFileFilter
