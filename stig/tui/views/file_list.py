@@ -100,10 +100,11 @@ class FileTreeDecorator(ArrowTree):
         # We use parent's decorate() method to give the name column a tree
         # structure.  But we also need the original update() method so we can
         # apply new data to the widget.  This is dirty but it works.
-        update_method = row.name.update
-        decowidget = super().decorate(pos, row.name, is_first=is_first)
-        decowidget.update = update_method
-        row.replace('name', decowidget)
+        if row.exists('name'):
+            update_method = row.name.update
+            decowidget = super().decorate(pos, row.name, is_first=is_first)
+            decowidget.update = update_method
+            row.replace('name', decowidget)
 
         # Wrap the whole row in a FileItemWidget with keymapping.  This also
         # applies all the other values besides the name (size, progress, etc).
