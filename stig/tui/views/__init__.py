@@ -137,7 +137,8 @@ class ItemWidgetBase(urwid.WidgetWrap):
 
     def update(self, item):
         for widget in self._cells.widgets:
-            widget.update(item)
+            if hasattr(widget, 'update'):
+                widget.update(item)
         self._item = item
 
     @property
