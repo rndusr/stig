@@ -152,3 +152,18 @@ class get_tracker_columns():
         Raise ValueError or return a new list of `columns`.
         """
         return _get_columns(columns, 'columns.trackers', self.cfg)
+
+
+class get_setting_sorter():
+    def get_setting_sorter(self, args):
+        """
+        Return SettingSorter instance or None
+
+        If `args` evaluates to True, it is passed to SettingSorter and the
+        result is returned.
+
+        If `args` evaluates to False, None is returned.
+        """
+        if args:
+            from ...client import SettingSorter
+            return SettingSorter(utils.listify_args(args))

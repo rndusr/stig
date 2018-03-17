@@ -54,8 +54,10 @@ tabs.peerlist.unfocused       light green   on dark gray
 tabs.peerlist.focused         black         on dark green
 tabs.trackerlist.unfocused    white         on dark gray
 tabs.trackerlist.focused      black         on light gray
-tabs.help.unfocused           yellow        on dark gray
-tabs.help.focused             black         on yellow
+tabs.settinglist.unfocused    yellow        on dark blue
+tabs.settinglist.focused      dark blue     on yellow
+tabs.help.unfocused           light green   on dark blue
+tabs.help.focused             dark blue     on light green
 
 $topbar_bg = dark blue
 topbar                    light gray    on $topbar_bg
@@ -572,3 +574,24 @@ trackerlist.next-scrape.header             $next-scrape_fg,underline on $trklist
 trackerlist.next-scrape.unfocused          $next-scrape_fg           on $trklist_bg.uf
 trackerlist.next-scrape.focused            $next-scrape_fg           on $trklist_bg.f
 
+
+$slist_bg.uf = black
+$slist_bg.f  = dark gray
+settinglist                                default              on $slist_bg.uf
+settinglist.focused                        default              on $slist_bg.f
+settinglist.header                         light gray,underline on $slist_bg.uf
+
+$name_fg = light blue
+settinglist.name.header                    $name_fg,underline on $slist_bg.uf
+settinglist.name.unfocused                 $name_fg           on $slist_bg.uf
+settinglist.name.focused                   $name_fg           on $slist_bg.f
+
+$value_fg = light gray
+settinglist.value.header                   $value_fg,underline on $slist_bg.uf
+settinglist.value.unfocused                $value_fg           on $slist_bg.uf
+settinglist.value.focused                  $value_fg           on $slist_bg.f
+
+$description_fg = light gray
+settinglist.description.header             $description_fg,underline on $slist_bg.uf
+settinglist.description.unfocused          $description_fg           on $slist_bg.uf
+settinglist.description.focused            $description_fg           on $slist_bg.f

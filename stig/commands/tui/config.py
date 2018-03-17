@@ -19,8 +19,15 @@ class RcCmd(base.RcCmdbase):
 class ResetCmd(base.ResetCmdbase):
     provides = {'tui'}
 
-class SetCmd(base.SetCmdbase):
+
+class SetCmd(base.SetCmdbase,
+             mixin.create_list_widget):
     provides = {'tui'}
+
+    def make_setting_list(self, sort):
+        from ...tui.views.setting_list import SettingListWidget
+        self.create_list_widget(SettingListWidget, theme_name='settinglist', sort=sort)
+
 
 class RateLimitCmd(base.RateLimitCmdbase,
                    mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):

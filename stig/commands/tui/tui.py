@@ -267,9 +267,8 @@ class SortCmd(metaclass=InitCommand):
             tuple('\t{}\t - \t{}'.format(', '.join((sname,) + s.aliases), s.description)
                   for sname,s in sorted(sortercls.SORTSPECS.items()))
 
-    from ...client.sorters.torrent import TorrentSorter
-    from ...client.sorters.peer import TorrentPeerSorter
-    from ...client.sorters.tracker import TorrentTrackerSorter
+    from ...client import (TorrentSorter, TorrentPeerSorter,
+                           TorrentTrackerSorter, SettingSorter)
     more_sections = {
         'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) +
                        ('',) +
@@ -294,12 +293,15 @@ class SortCmd(metaclass=InitCommand):
             from ...tui.views.torrent_list import TorrentListWidget
             from ...tui.views.peer_list import PeerListWidget
             from ...tui.views.tracker_list import TrackerListWidget
+            from ...tui.views.setting_list import SettingListWidget
             if isinstance(current_tab, TorrentListWidget):
                 sortcls = self.TorrentSorter
             elif isinstance(current_tab, PeerListWidget):
                 sortcls = self.TorrentPeerSorter
             elif isinstance(current_tab, TrackerListWidget):
                 sortcls = self.TorrentTrackerSorter
+            elif isinstance(current_tab, SettingListWidget):
+                sortcls = self.SettingSorter
             else:
                 log.error('Current tab is not sortable.')
                 return False

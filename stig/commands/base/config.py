@@ -15,6 +15,7 @@ log = make_logger(__name__)
 from .. import (InitCommand, ExpectedResource, utils)
 from ._common import make_X_FILTER_spec
 from ...utils.usertypes import Float
+from . import _mixin as mixin
 
 import subprocess
 import operator
@@ -91,22 +92,27 @@ class ResetCmdbase(metaclass=InitCommand):
 
 
 from ...client import ClientError
-class SetCmdbase(metaclass=InitCommand):
+class SetCmdbase(mixin.get_setting_sorter, metaclass=InitCommand):
     name = 'set'
     category = 'configuration'
     provides = set()
     description = 'Change {__appname__} settings'
-    usage = ('set <NAME>[:eval] <VALUE>',)
+    usage = ('set [<NAME>[:eval]] [<VALUE>]',)
     examples = ('set connect.host my.server.example.org',
                 'set connect.user jonny_sixpack',
                 'set connect.password:eval getpw --id transmission',
                 'set tui.log.height +=10')
     argspecs = (
-        {'names': ('NAME',),
+        {'names': ('NAME',), 'nargs': '?',
          'description': "Name of setting; append ':eval' to turn VALUE into a shell command"},
+
         {'names': ('VALUE',), 'nargs': 'REMAINDER',
          'description': ('New value or shell command that prints the new value to stdout; '
                          "numerical values can be adjusted by prepending '+=' or '-='")},
+
+        { 'names': ('--sort', '-s'), 'default': 'name',
+          'description': ('Comma-separated list of sort orders; '
+                          'valid sort orders are "name" and "value"') },
     )
     more_sections = {
         'SEE ALSO': (('Run `help settings` for a list of all available '
@@ -115,7 +121,13 @@ class SetCmdbase(metaclass=InitCommand):
     cfg = ExpectedResource
     srvcfg = ExpectedResource
 
-    async def run(self, NAME, VALUE):
+    async def run(self, NAME, VALUE, sort):
+        if not NAME and not VALUE:
+            # Show list of settings
+            sort = self.get_setting_sorter(sort)
+            self.make_setting_list(sort)
+            return True
+
         # NAME might have ':eval' attached if VALUE is shell command
         try:
             name, key, is_local_setting = self._parse_name(NAME)
