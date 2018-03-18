@@ -28,6 +28,15 @@ class Marked(MarkedBase):
 TUICOLUMNS['marked'] = Marked
 
 
+class Id(_COLUMNS['id'], CellWidgetBase):
+    style = Style(prefix='torrentlist.id', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['id'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['id'] = Id
+
+
 class Path(_COLUMNS['path'], CellWidgetBase):
     width = 20
     style = Style(prefix='torrentlist.path', focusable=True,

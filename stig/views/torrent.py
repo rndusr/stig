@@ -39,6 +39,18 @@ ALIASES = { '%avail'   : '%available',
             't-comp'   : 'time-completed' }
 
 
+class Id(ColumnBase):
+    header = {'left': 'ID'}
+    width = 4
+    needed_keys = ('id',)
+    align = 'right'
+
+    def get_value(self):
+        return self.data['id']
+
+COLUMNS['id'] = Id
+
+
 import os
 PATHSEP = os.sep
 class Path(ColumnBase):
