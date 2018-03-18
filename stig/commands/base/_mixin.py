@@ -11,10 +11,6 @@
 
 """Mixin classes that are common between TUI and CLI commands"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-
 from .. import utils
 
 
