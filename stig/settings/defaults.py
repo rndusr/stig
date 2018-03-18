@@ -201,8 +201,9 @@ DEFAULT_KEYMAP = (
     {'key': 'ctrl-b', 'action': '<left>'},
 
     # Global TUI keys
-    {'context': 'main', 'key': 'q', 'action': 'quit'},
-    {'context': 'main', 'key': ':', 'action': 'tui show cli'},
+    {'context': 'main', 'key': 'q',     'action': 'quit'},
+    {'context': 'main', 'key': ':',     'action': 'tui show cli'},
+    {'context': 'main', 'key': 'alt-s', 'action': 'tab set'},
 
     # Help
     {'context': 'main', 'key': 'F1+c', 'action': 'tab help commands'},
