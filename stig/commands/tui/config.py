@@ -24,9 +24,10 @@ class SetCmd(base.SetCmdbase,
              mixin.create_list_widget):
     provides = {'tui'}
 
-    def make_setting_list(self, sort):
+    def make_setting_list(self, sort, columns):
         from ...tui.views.setting_list import SettingListWidget
-        self.create_list_widget(SettingListWidget, theme_name='settinglist', sort=sort)
+        self.create_list_widget(SettingListWidget, theme_name='settinglist',
+                                sort=sort, columns=columns)
 
 
 class RateLimitCmd(base.RateLimitCmdbase,

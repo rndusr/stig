@@ -154,6 +154,7 @@ class get_tracker_columns():
         return _get_columns(columns, 'columns.trackers', self.cfg)
 
 
+
 class get_setting_sorter():
     def get_setting_sorter(self, args):
         """
@@ -167,3 +168,12 @@ class get_setting_sorter():
         if args:
             from ...client import SettingSorter
             return SettingSorter(utils.listify_args(args))
+
+class get_setting_columns():
+    def get_setting_columns(self, columns):
+        """
+        Check if each item in iterable `columns` is a valid setting list column name
+
+        Raise ValueError or return a new list of `columns`.
+        """
+        return _get_columns(columns, 'columns.settings', self.cfg)

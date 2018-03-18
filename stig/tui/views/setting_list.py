@@ -55,18 +55,20 @@ class SettingItemWidget(ItemWidgetBase):
         cells = self._cells
 
         def edit():
-            self._text_widget_temp = text_widget = cells.value
-            attrmap = text_widget.attrmap
-            current_value = text_widget.value
-            edit_widget = urwid.AttrMap(urwid.Edit(edit_text=str(current_value)),
-                                        attr_map=attrmap.attr_map, focus_map=attrmap.focus_map)
-            cells.replace('value', edit_widget)
+            # value column might be missing
+            if cells.exists('value'):
+                self._text_widget_temp = text_widget = cells.value
+                attrmap = text_widget.attrmap
+                current_value = text_widget.value
+                edit_widget = urwid.AttrMap(urwid.Edit(edit_text=str(current_value)),
+                                            attr_map=attrmap.attr_map, focus_map=attrmap.focus_map)
+                cells.replace('value', edit_widget)
 
         def unedit():
             cells.replace('value', self._text_widget_temp)
             delattr(self, '_text_widget_temp')
 
-        edit_mode = hasattr(cells.value, 'keypress')
+        edit_mode = cells.exists('value') and hasattr(cells.value, 'keypress')
 
         cmd = self._command_map[key]
         if cmd is urwid.ACTIVATE:
@@ -101,9 +103,8 @@ class SettingListWidget(ListWidgetBase):
     palette_name    = 'settinglist'
     focusable_items = True
 
-    def __init__(self, srvapi, keymap, sort=None):
-        super().__init__(srvapi, keymap, title='Settings',
-                         columns=('name', 'value', 'description'))
+    def __init__(self, srvapi, keymap, sort=None, columns=('name', 'value', 'description')):
+        super().__init__(srvapi, keymap, title='Settings', columns=columns)
         self._sort = sort
         localcfg.on_change(self._handle_update)
         remotecfg.on_update(self._handle_update)

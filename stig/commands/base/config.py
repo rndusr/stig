@@ -92,7 +92,8 @@ class ResetCmdbase(metaclass=InitCommand):
 
 
 from ...client import ClientError
-class SetCmdbase(mixin.get_setting_sorter, metaclass=InitCommand):
+class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
+                 metaclass=InitCommand):
     name = 'set'
     category = 'configuration'
     provides = set()
@@ -113,6 +114,10 @@ class SetCmdbase(mixin.get_setting_sorter, metaclass=InitCommand):
         { 'names': ('--sort', '-s'), 'default': 'name',
           'description': ('Comma-separated list of sort orders; '
                           'valid sort orders are "name" and "value"') },
+
+        { 'names': ('--columns', '-c'), 'default': ('name', 'value', 'description'),
+          'description': ('Comma-separated list of column names; '
+                          'valid column names "name", "value" and "description"') },
     )
     more_sections = {
         'SEE ALSO': (('Run `help settings` for a list of all available '
@@ -121,12 +126,18 @@ class SetCmdbase(mixin.get_setting_sorter, metaclass=InitCommand):
     cfg = ExpectedResource
     srvcfg = ExpectedResource
 
-    async def run(self, NAME, VALUE, sort):
+    async def run(self, NAME, VALUE, sort, columns):
         if not NAME and not VALUE:
             # Show list of settings
-            sort = self.get_setting_sorter(sort)
-            self.make_setting_list(sort)
-            return True
+            try:
+                sort = self.get_setting_sorter(sort)
+                columns = self.get_setting_columns(columns)
+            except ValueError as e:
+                log.error(e)
+                return False
+            else:
+                self.make_setting_list(sort, columns)
+                return True
 
         # NAME might have ':eval' attached if VALUE is shell command
         try:
