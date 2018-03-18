@@ -14,11 +14,6 @@
 from .. import utils
 
 
-def _get_columns(columns, setting, localcfg):
-    # Resolve aliases and complain about invalid values
-    return localcfg.validate(setting, columns)
-
-
 class get_torrent():
     async def get_torrent(self, tfilter, keys=()):
         """
@@ -58,7 +53,7 @@ class get_torrent_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return _get_columns(columns, 'columns.torrents', self.cfg)
+        return self.cfg.validate('columns.torrents', columns)
 
 
 
@@ -69,7 +64,7 @@ class get_file_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return _get_columns(columns, 'columns.files', self.cfg)
+        return self.cfg.validate('columns.files', columns)
 
 
 
@@ -108,7 +103,7 @@ class get_peer_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return _get_columns(columns, 'columns.peers', self.cfg)
+        return self.cfg.validate('columns.peers', columns)
 
 
 
@@ -147,7 +142,7 @@ class get_tracker_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return _get_columns(columns, 'columns.trackers', self.cfg)
+        return self.cfg.validate('columns.trackers', columns)
 
 
 
@@ -172,4 +167,4 @@ class get_setting_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return _get_columns(columns, 'columns.settings', self.cfg)
+        return self.cfg.validate('columns.settings', columns)
