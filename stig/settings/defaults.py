@@ -17,7 +17,7 @@ from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
 
 from .. import __appname__
-from ..views import (torrent, file, peer, tracker)
+from ..views import (torrent, file, peer, tracker, setting)
 from ..client.sorters.torrent import TorrentSorter
 from ..client.sorters.peer import TorrentPeerSorter
 from ..client.sorters.tracker import TorrentTrackerSorter
@@ -37,6 +37,7 @@ DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size
 DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',
                            'leeches', 'seeds', 'downloads',
                            'last-announce', 'next-announce')
+DEFAULT_SETTING_COLUMNS = ('name', 'value', 'description')
 
 from ..client.geoip import GEOIP_AVAILABLE
 if GEOIP_AVAILABLE:
@@ -105,6 +106,10 @@ def init_defaults(localcfg):
                  Tuple.partial(options=tracker.COLUMNS, aliases=tracker.ALIASES),
                  default=DEFAULT_TRACKER_COLUMNS,
                  description='Default columns in tracker lists')
+    localcfg.add('columns.settings',
+                 Tuple.partial(options=setting.COLUMNS, aliases=setting.ALIASES),
+                 default=DEFAULT_SETTING_COLUMNS,
+                 description='Default columns in setting lists')
 
     localcfg.add('sort.torrents',
                  partial_sort_order(TorrentSorter),
