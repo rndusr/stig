@@ -15,11 +15,13 @@ log = make_logger(__name__)
 from . import is_op as is_cmd_op
 from . import CmdError
 
+from ..main import cmdmgr
+
 
 class UIGuessError(Exception):
     pass
 
-def guess_ui(clicmds, cmdmgr):
+def guess_ui(clicmds):
     """Guess desired user interface based on CLI commands
 
     Return 'tui' or 'cli'
