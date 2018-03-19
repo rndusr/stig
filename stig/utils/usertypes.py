@@ -208,6 +208,13 @@ class String(str, StringableMixin):
             text += ' (at most %s %s)' % (maxlen, chrstr)
         return text
 
+    _whitespace_at_start_or_end = re.compile(r'(?:^\s+|\s+$)')
+    def __str__(self):
+        if len(self) == 0 or self._whitespace_at_start_or_end.search(self):
+            return super().__repr__()
+        else:
+            return super().__str__()
+
 
 class Bool(str, StringableMixin):
     """
