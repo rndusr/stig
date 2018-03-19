@@ -12,33 +12,53 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ...utils.string import (strwidth, crop_and_align)
+from ...utils.string import (strwidth, stralign, crop_and_align)
 
+import textwrap
 from types import SimpleNamespace
 from shutil import get_terminal_size
 TERMSIZE = get_terminal_size(fallback=(None, None))
 
 
-def _get_cell_string(cell):
+def _get_cell_lines(cell):
     # Return string of single cell correctly cropped/padded and aligned
     value = cell.get_value()
     width = cell.width
     if isinstance(width, int):
-        return crop_and_align(str(value), width, cell.align,
-                              has_wide_chars=cell.may_have_wide_chars)
-    else:
-        return str(value)
-
-def _assemble_line(table, line_index, pretty=True):
-    # Concatenate all cells in a row with delimiters
-    row = table.rows[line_index]
-    line = []
-    for cell in row:
-        if pretty:
-            line.append(_get_cell_string(cell))
+        if cell.wrap == 'clip':
+            return (crop_and_align(str(value), width, cell.align,
+                                   has_wide_chars=cell.may_have_wide_chars),)
         else:
-            line.append(str(cell.get_raw()))
-    return table.delimiter.join(line)
+            return tuple(stralign(line, width=width)
+                         for line in textwrap.wrap(str(value), width=width,
+                                                   break_on_hyphens=False))
+    else:
+        return (str(value),)
+
+def _assemble_row(table, line_index, pretty=True):
+    # Concatenate all cells in a row with delimiters
+    # Return a list of lines (cells may have multiple lines)
+    row = []
+    for cell in table.rows[line_index]:
+        if pretty:
+            row.append(_get_cell_lines(cell))
+        else:
+            row.append((str(cell.get_raw()),))
+
+    lines_count = max(len(cell) for cell in row)
+    lines = []
+    delimiter = table.delimiter
+    for i in range(lines_count):
+        # `row` is a list of cells; each `cell` is a list of lines in an
+        # individual cell.
+        line = []
+        for cell in row:
+            cell_lines = len(cell)
+            empty_space = ' ' * len(cell[0])
+            line.append(cell[i] if i < cell_lines else empty_space)
+        line = table.delimiter.join(line)
+        lines.append(line)
+    return lines
 
 def _assemble_headers(table):
     # Concatenate all column headers with delimiters
@@ -92,7 +112,8 @@ def _set_maxcolwidth(table, colindex, maxwidth):
 
 def _get_excess_width(table):
     # Return width by which table must be narrowed to fit in max_width
-    return strwidth(_assemble_line(table, 0)) - table.max_width
+    first_line = _assemble_row(table, 0)[0]
+    return strwidth(first_line) - table.max_width
 
 def _remove_column(table, colindex):
     # Delete column from internal structures
@@ -177,7 +198,8 @@ def _fit_table_into_terminal(table):
     _shrink_by_removing_columns(table)
 
 def print_table(items, order, column_specs):
-    """Print table from a two-dimensional array of column objects
+    """
+    Print table from a two-dimensional array of column objects
 
     `column_specs` maps column IDs to ColumnBase classes.  A column ID is any
     hashable object, but you probably want strings like 'name', 'id', 'date',
@@ -217,4 +239,5 @@ def print_table(items, order, column_specs):
             # Print column headers after every screen full
             if pretty_output and line_index % (TERMSIZE.lines-2) == 0:
                 log.info(headerstr)
-            log.info(_assemble_line(table, line_index, pretty=pretty_output))
+            for row in _assemble_row(table, line_index, pretty=pretty_output):
+                log.info(row)
