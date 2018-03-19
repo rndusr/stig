@@ -14,11 +14,22 @@ log = make_logger(__name__)
 
 from ...utils.string import (strwidth, stralign, crop_and_align)
 
+import re
 import textwrap
 from types import SimpleNamespace
 from shutil import get_terminal_size
 TERMSIZE = get_terminal_size(fallback=(None, None))
 
+
+_whitespace_regex = re.compile(r'^\s*$')
+def _wrapped(line, width):
+    # Prevent textwrap.wrap() from filtering lines with nothing but spaces
+    for line in textwrap.wrap(line, width=width,
+                              break_on_hyphens=False, drop_whitespace=False):
+        if _whitespace_regex.match(line):
+            yield line
+        else:
+            yield line.strip()
 
 def _get_cell_lines(cell):
     # Return string of single cell correctly cropped/padded and aligned
@@ -30,8 +41,7 @@ def _get_cell_lines(cell):
                                    has_wide_chars=cell.may_have_wide_chars),)
         else:
             return tuple(stralign(line, width=width)
-                         for line in textwrap.wrap(str(value), width=width,
-                                                   break_on_hyphens=False))
+                         for line in _wrapped(str(value), width))
     else:
         return (str(value),)
 
