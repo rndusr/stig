@@ -23,13 +23,11 @@ TERMSIZE = get_terminal_size(fallback=(None, None))
 
 _whitespace_regex = re.compile(r'^\s*$')
 def _wrapped(line, width):
-    # Prevent textwrap.wrap() from filtering lines with nothing but spaces
-    for line in textwrap.wrap(line, width=width,
-                              break_on_hyphens=False, drop_whitespace=False):
-        if _whitespace_regex.match(line):
-            yield line
-        else:
-            yield line.strip()
+    # Prevent textwrap.wrap() from filtering out empty lines
+    if _whitespace_regex.match(line):
+        yield line
+    else:
+        yield from textwrap.wrap(line, width=width, break_on_hyphens=False)
 
 def _get_cell_lines(cell):
     # Return string of single cell correctly cropped/padded and aligned
