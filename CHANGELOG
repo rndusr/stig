@@ -9,12 +9,15 @@
     * The setting 'srv.autostart-torrents' was renamed to 'srv.autostart'
 
   Other changes:
+    * The 'set' command now shows a list of settings when called without
+      argments
     * Get the value of a setting from shell command
       (e.g. `set connect.password:eval pass transmission`)
     * Process name in tmux sessions is set to 'stig' if setproctitle module is
       installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
     * 'ratelimit' command now prints the new limit by default for global and
       per-torrent rates unless the --quiet option is given
+    * Added torrent list column: 'id'
 
   Fixed bugs:
     * Mitigate high CPU load for urwid 2.x and later
