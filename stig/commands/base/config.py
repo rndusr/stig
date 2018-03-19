@@ -128,6 +128,13 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
 
     async def run(self, NAME, VALUE, sort, columns):
         if not NAME and not VALUE:
+            # Get remote setting values
+            try:
+                await self.srvcfg.update()
+            except ClientError as e:
+                log.error('%s', e)
+                return False
+
             # Show list of settings
             try:
                 sort = self.get_setting_sorter(sort)
