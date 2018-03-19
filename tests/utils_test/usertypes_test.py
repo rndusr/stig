@@ -185,12 +185,6 @@ class TestString(_TestBase):
             s = String(value, maxlen=99)
             self.assertEqual(s, str(value))
 
-    def test_appropriate_quoting(self):
-        self.assertEqual(str(String(' foo')), "' foo'")
-        self.assertEqual(str(String('bar ')), "'bar '")
-        self.assertEqual(str(String(' baz ')), "' baz '")
-        self.assertEqual(str(String('')), "''")
-
 
 class TestBool(_TestBase):
     def test_syntax(self):
