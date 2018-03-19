@@ -23,6 +23,7 @@ class ColumnBase():
     width = None
     min_width = 1
     align = 'right'
+    wrap = 'clip'
     interfaces = ('cli', 'tui')
     may_have_wide_chars = False
 

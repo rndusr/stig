@@ -77,7 +77,6 @@ class CellWidgetBase(urwid.WidgetWrap):
     header = urwid.AttrMap(ColumnHeaderWidget(left='', right=''), 'header')
     width = ('weight', 100)
     align = 'right'
-    wrap = 'clip'
 
     def __init__(self):
         self.value = None

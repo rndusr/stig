@@ -28,7 +28,6 @@ TUICOLUMNS['name'] = Name
 
 class Value(_COLUMNS['value'], CellWidgetBase):
     width = ('weight', 100)
-    wrap = 'space'
     style = Style(prefix='settinglist.value', focusable=True, extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['value'].header),
                            style.attrs('header'))
@@ -38,7 +37,6 @@ TUICOLUMNS['value'] = Value
 
 class Description(_COLUMNS['description'], CellWidgetBase):
     width = ('weight', 100)
-    wrap = 'space'
     style = Style(prefix='settinglist.description', focusable=True, extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['description'].header),
                            style.attrs('header'))

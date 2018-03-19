@@ -33,6 +33,7 @@ class Value(ColumnBase):
     header = {'left': 'Value'}
     align = 'left'
     width = None
+    wrap = 'space'
 
     def get_value(self):
         return self.data['value']
@@ -44,6 +45,7 @@ class Description(ColumnBase):
     header = {'left': 'Description'}
     align = 'left'
     width = None
+    wrap = 'space'
 
     def get_value(self):
         return self.data['description']
