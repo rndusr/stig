@@ -1,25 +1,3 @@
-# TODO: See if using slots for stringables is a good idea:
-#       https://stackoverflow.com/questions/472000/usage-of-slots
-
-# TODO: Rename remote settings so they fit in with
-#          - local settings
-#          - torrent, file, peer, tracker filters
-#          - torrent, file, peer, tracker column names
-
-
-
-# TODO: Hit alt-enter on torrent - the new tab is named id=?? instead of torrent name
-
-# TODO: Reverse dns: https://stackoverflow.com/questions/17775365/
-
-# TODO: In usertypes, separate types from settings:
-#         - Like NumberFloat/Int, types derive from int, float, list, etc
-#         - Types are immutable, but they should return instances of their type
-#           when operated on (e.g. adding)
-#         - Settings expose the same methods and properties but use new
-#           immutable types internally.
-
-
 This is a list of rough ideas.  Feel free to contribute your own, ask/answer
 questions and point out issues.
 
