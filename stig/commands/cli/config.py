@@ -11,6 +11,9 @@
 
 from ..base import config as base
 from . import _mixin as mixin
+from ._table import print_table
+
+from itertools import chain
 
 
 class RcCmd(base.RcCmdbase):
@@ -19,8 +22,28 @@ class RcCmd(base.RcCmdbase):
 class ResetCmd(base.ResetCmdbase):
     provides = {'cli'}
 
-class SetCmd(base.SetCmdbase):
+
+class SetCmd(base.SetCmdbase,
+             mixin.only_supported_columns):
     provides = {'cli'}
+
+    def make_setting_list(self, sort, columns):
+        from ...views.setting import COLUMNS as SETTING_COLUMNS
+        from ...main import (localcfg, remotecfg)
+
+        # Remove columns that aren't supported by CLI interface (e.g. 'marked')
+        columns = self.only_supported_columns(columns, SETTING_COLUMNS)
+
+        settings = sort.apply(
+            chain(({'id': k, 'value': v, 'description': localcfg.description(k)}
+                   for k,v in localcfg.items()),
+                  ({'id': 'srv.'+k, 'value': v, 'description': remotecfg.description(k)}
+                   for k,v in remotecfg.items()))
+        )
+
+        print_table(settings, columns, SETTING_COLUMNS)
+        return True
+
 
 class RateLimitCmd(base.RateLimitCmdbase,
                    mixin.make_request, mixin.select_torrents):
