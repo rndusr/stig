@@ -66,8 +66,20 @@ def guess_ui(clicmds, cmdmgr):
         # commands shouldn't care.
         elif cmdline[0] == 'set' and len(cmdline) >= 2 or \
              cmdline[0] == 'reset' and len(cmdline) >= 2:
-            setting = cmdline[1]
-            if setting.startswith('tui.'):
+
+            # Get name of setting
+            i = 1
+            args = list(cmdline[1:])
+            while i < len(args):
+                if args[0][0] == '-':
+                    args.pop(0) ; args.pop(0)
+                i += 1
+            setting = args[0] if args else None
+
+            if setting is None:
+                debugmsg += 'no setting means print list of settings - guessing CLI'
+                guess = 'cli'
+            elif setting.startswith('tui.'):
                 debugmsg += 'TUI setting: %r - guessing TUI' % setting
                 guess = 'tui'
             elif setting.startswith('srv.'):
