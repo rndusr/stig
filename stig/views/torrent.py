@@ -122,9 +122,6 @@ class Connections(ColumnBase):
     def get_value(self):
         return self.data['peers-connected']
 
-    def get_raw(self):
-        return int(self.get_value())
-
 COLUMNS['connections'] = Connections
 
 
@@ -136,9 +133,6 @@ class Seeds(ColumnBase):
 
     def get_value(self):
         return self.data['peers-seeding']
-
-    def get_raw(self):
-        return int(self.get_value())
 
 COLUMNS['seeds'] = Seeds
 
@@ -163,9 +157,6 @@ class Progress(ColumnBase):
         t = self.data
         return self._from_cache(self._get_value, t['%verified'], t['%downloaded'], t['%metadata'])
 
-    def get_raw(self):
-        return float(self.get_value()) / 100
-
 COLUMNS['progress'] = Progress
 
 
@@ -186,9 +177,6 @@ class PercentAvailable(ColumnBase):
         t = self.data
         return self._from_cache(self._get_value, t['%available'], t['peers-seeding'])
 
-    def get_raw(self):
-        return float(self.get_value()) / 100
-
 COLUMNS['%available'] = PercentAvailable
 
 
@@ -201,9 +189,6 @@ class Ratio(ColumnBase):
     def get_value(self):
         return self.data['ratio']
 
-    def get_raw(self):
-        return float(self.get_value())
-
 COLUMNS['ratio'] = Ratio
 
 
@@ -215,9 +200,6 @@ class Size(ColumnBase):
 
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['size-final'])
-
-    def get_raw(self):
-        return int(self.get_value())
 
     @classmethod
     def set_unit(cls, unit):
@@ -235,9 +217,6 @@ class Downloaded(ColumnBase):
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['size-downloaded'])
 
-    def get_raw(self):
-        return int(self.get_value())
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = unit
@@ -253,9 +232,6 @@ class Uploaded(ColumnBase):
 
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['size-uploaded'])
-
-    def get_raw(self):
-        return int(self.get_value())
 
     @classmethod
     def set_unit(cls, unit):
@@ -281,9 +257,6 @@ class BytesAvailable(ColumnBase):
         t = self.data
         return self._from_cache(self._get_value, t['size-final'], t['size-available'], t['peers-seeding'])
 
-    def get_raw(self):
-        return int(self.get_value())
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = unit
@@ -299,9 +272,6 @@ class RateDown(ColumnBase):
 
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
-
-    def get_raw(self):
-        return int(self.get_value())
 
     @classmethod
     def set_unit(cls, unit):
@@ -319,9 +289,6 @@ class RateUp(ColumnBase):
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['rate-up'])
 
-    def get_raw(self):
-        return int(self.get_value())
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
@@ -337,9 +304,6 @@ class RateLimitDown(ColumnBase):
 
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['limit-rate-down'])
-
-    def get_raw(self):
-        return self.get_value().copy(prefix='none')
 
     @classmethod
     def set_unit(cls, unit):
@@ -357,9 +321,6 @@ class RateLimitUp(ColumnBase):
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['limit-rate-up'])
 
-    def get_raw(self):
-        return self.get_value().copy(prefix='none')
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
@@ -375,9 +336,6 @@ class EtaComplete(ColumnBase):
 
     def get_value(self):
         return self.data['timespan-eta']
-
-    def get_raw(self):
-        return int(self.get_value())
 
 COLUMNS['eta'] = EtaComplete
 
@@ -446,9 +404,6 @@ COLUMNS['marked'] = Marked
 class TimeBase(ColumnBase):
     width = 10
     min_width = 10
-
-    def get_raw(self):
-        return int(self.get_value())
 
 class TimeCreated(TimeBase):
     header = {'left': 'Created'}

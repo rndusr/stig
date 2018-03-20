@@ -85,7 +85,11 @@ class ColumnBase():
         raise NotImplementedError()
 
     def get_raw(self):
-        return self.get_value()
+        value = self.get_value()
+        if isinstance(value, (int, float)) and value < float('inf'):
+            return repr(value)
+        else:
+            return value
 
     def __repr__(self):
         if getattr(self, 'data', None):

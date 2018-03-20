@@ -149,9 +149,6 @@ class Downloads(ColumnBase):
     def get_value(self):
         return self.data['count-downloads']
 
-    def get_raw(self):
-        return int(self.get_value())
-
 COLUMNS['downloads'] = Downloads
 
 
@@ -164,9 +161,6 @@ class Leeches(ColumnBase):
     def get_value(self):
         return self.data['count-leeches']
 
-    def get_raw(self):
-        return int(self.get_value())
-
 COLUMNS['leeches'] = Leeches
 
 
@@ -178,9 +172,6 @@ class Seeds(ColumnBase):
 
     def get_value(self):
         return self.data['count-seeds']
-
-    def get_raw(self):
-        return int(self.get_value())
 
 COLUMNS['seeds'] = Seeds
 

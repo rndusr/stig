@@ -105,9 +105,6 @@ class RateDown(ColumnBase):
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
 
-    def get_raw(self):
-        return int(self.get_value())
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
@@ -122,9 +119,6 @@ class RateUp(ColumnBase):
 
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['rate-up'])
-
-    def get_raw(self):
-        return int(self.get_value())
 
     @classmethod
     def set_unit(cls, unit):
@@ -141,9 +135,6 @@ class ETA(ColumnBase):
     def get_value(self):
         return self.data['eta']
 
-    def get_raw(self):
-        return int(self.get_value())
-
 COLUMNS['eta'] = ETA
 
 
@@ -154,9 +145,6 @@ class EstimatedPeerRate(ColumnBase):
 
     def get_value(self):
         return self._from_cache(_ensure_hide_unit, self.data['rate-est'])
-
-    def get_raw(self):
-        return int(self.get_value())
 
     @classmethod
     def set_unit(cls, unit):

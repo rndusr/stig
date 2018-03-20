@@ -46,9 +46,6 @@ class Size(ColumnBase):
     def get_value(self):
         return _ensure_hide_unit(self.data['size-total'])
 
-    def get_raw(self):
-        return int(self.get_value())
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = unit
@@ -64,9 +61,6 @@ class Downloaded(ColumnBase):
     def get_value(self):
         return _ensure_hide_unit(self.data['size-downloaded'])
 
-    def get_raw(self):
-        return int(self.get_value())
-
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = unit
@@ -81,9 +75,6 @@ class Progress(ColumnBase):
 
     def get_value(self):
         return _ensure_hide_unit(self.data['progress'])
-
-    def get_raw(self):
-        return int(self.get_value())
 
 COLUMNS['progress'] = Progress
 
