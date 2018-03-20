@@ -14,7 +14,7 @@ from ..utils import convert
 from . import constants as const
 
 
-class Bandwidth(Float):
+class Bandwidth(Int):
     typename = 'bandwidth'
 
     def __new__(cls, value, **kwargs):

@@ -17,8 +17,8 @@ from .usertypes import (Float, Int)
 
 class DataCountConverter():
     """
-    Convert bits to bytes or vice versa, ensuring a Float instance with a common
-    unit prefix
+    Convert bits to bytes or vice versa, ensuring a Int instance with a unit
+    prefix that is common throughout the application
     """
     __slots__ = ('_unit', '_prefix')
 
@@ -30,24 +30,24 @@ class DataCountConverter():
 
     def __call__(self, num, unit=None):
         """
-        Make Float from `num`
+        Make Int from `num`
 
-        The returned Float is converted to bits or bytes depending on what the
+        The returned Int is converted to bits or bytes depending on what the
         `unit` property is set to.
 
-        If no unit is given by passing a Float object with a specified `unit`
-        property or by passing the `unit` argument, it is assumed to be what the
-        `unit` property of this object is set to.
+        If no unit is given (by passing a Int/Float object with a specified
+        `unit` property or by passing the `unit` argument), it is assumed to be
+        what the `unit` property of this object is set to.
         """
-        if not isinstance(num, (Float, Int)):
+        if not isinstance(num, (Int, Float)):
             # Parse unit; fall back to given or our own unit
-            num = Float(num, unit=unit or self._unit, prefix=self._prefix)
+            num = Int(num, unit=unit or self._unit, prefix=self._prefix)
 
         unit_given = self._short.get(num.unit, num.unit) or self._unit
         if unit_given not in ('b', 'B'):
             raise ValueError("Unit must be 'b' (bit) or 'B' (byte), not %r" % unit_given)
         else:
-            return Float(num, unit=unit_given, convert_to=self._unit, prefix=self._prefix)
+            return Int(num, unit=unit_given, convert_to=self._unit, prefix=self._prefix)
 
     @property
     def unit(self):
