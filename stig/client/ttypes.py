@@ -61,7 +61,7 @@ class Ratio(Float):
 class Count(Int):
     UNKNOWN = -1
     def __str__(self):
-        return '?' if self < 0 else super().without_unit
+        return '?' if self == self.UNKNOWN else super().without_unit
 
 
 class Status(tuple):
