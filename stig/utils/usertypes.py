@@ -408,7 +408,7 @@ class Option(str, StringableMixin):
         return self._config['aliases']
 
 
-class _NumberMixin(StringableMixin):
+class _NumberBase(StringableMixin):
     _prefixes_binary = (('Ti', 1024**4), ('Gi', 1024**3), ('Mi', 1024**2), ('Ki', 1024))
     _prefixes_metric = (('T', 1000**4), ('G', 1000**3), ('M', 1000**2), ('k', 1000))
     _prefixes_dct = {prefix.lower():size
@@ -569,7 +569,7 @@ class _NumberMixin(StringableMixin):
     def _do_math(self, funcname, other=None, **kwargs):
         # If self and other have a unit specified, convert other if possible, or
         # raise an exception.
-        if other is not None and isinstance(other, _NumberMixin) and self.unit != other.unit:
+        if other is not None and isinstance(other, _NumberBase) and self.unit != other.unit:
             other = other.copy(other, convert_to=self.unit)
 
         # Get the new value as int or float
@@ -603,14 +603,14 @@ class _NumberMixin(StringableMixin):
     def __ceil__(self):                return self._do_math('__ceil__')
     def __round__(self, ndigits=None): return self._do_math('__round__', ndigits)
 
-class Float(_NumberMixin, float):
+class Float(_NumberBase, float):
     """
     Floating point number
 
     TODO: ...
     """
 
-class Int(_NumberMixin, int):
+class Int(_NumberBase, int):
     """
     Integer number
 
