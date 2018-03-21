@@ -102,9 +102,9 @@ class CellWidgetBase(urwid.WidgetWrap):
     @classmethod
     def set_header(cls, left=None, right=None):
         if left is not None:
-            cls.header.original_widget.left = str(left)
+            cls.header.base_widget.left = str(left)
         if right is not None:
-            cls.header.original_widget.right = str(right)
+            cls.header.base_widget.right = str(right)
 
 
 class ItemWidgetBase(urwid.WidgetWrap):
