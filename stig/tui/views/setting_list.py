@@ -17,6 +17,7 @@ import urwid
 from .setting import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase)
 from ...main import (localcfg, remotecfg, srvapi, aioloop)
+from ...utils.usertypes import (Bool, Option)
 
 
 def _change_setting(name, new_value, on_success=None):
@@ -53,49 +54,103 @@ class SettingItemWidget(ItemWidgetBase):
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
 
+    def selectable(self):
+        return True
+
+    @property
+    def name(self):
+        if self._cells.exists('name'):
+            return self._cells.name.text.text
+
+    @property
+    def value_widget(self):
+        if self._cells.exists('value'):
+            return self._cells.value.base_widget
+
+    @property
+    def current_value(self):
+        if self._cells.exists('value'):
+            value_widget = self.value_widget
+            if isinstance(value_widget, urwid.Edit):
+                return value_widget.edit_text
+            elif hasattr(value_widget, 'get_value'):
+                return value_widget.get_value()
+
+    @property
+    def edit_mode(self):
+        if self._cells.exists('value'):
+            return isinstance(self._cells.value.base_widget, urwid.Edit)
+        return False
+
     def keypress(self, size, key):
-        cells = self._cells
+        current_value = self.current_value
+        if current_value is None:
+            return key
+        elif isinstance(current_value, Bool):
+            return self._keypress_bool(size, key)
+        elif isinstance(current_value, Option):
+            return self._keypress_option(size, key)
+        else:
+            return self._keypress_string(size, key)
 
-        def edit():
-            # value column might be missing
-            if cells.exists('value'):
-                self._text_widget_temp = text_widget = cells.value
-                attrmap = text_widget.attrmap
-                current_value = text_widget.value
-                edit_widget = urwid.AttrMap(urwid.Edit(edit_text=str(current_value)),
-                                            attr_map=attrmap.attr_map, focus_map=attrmap.focus_map)
-                cells.replace('value', edit_widget)
-
-        def unedit():
-            cells.replace('value', self._text_widget_temp)
-            delattr(self, '_text_widget_temp')
-
-        edit_mode = cells.exists('value') and hasattr(cells.value, 'keypress')
-
+    def _keypress_bool(self, size, key):
         cmd = self._command_map[key]
         if cmd is urwid.ACTIVATE:
-            if not edit_mode:
+            new_value = not self.current_value
+            _change_setting(self.name, new_value)
+        else:
+            return key
+
+    def _keypress_option(self, size, key):
+        cmd = self._command_map[key]
+        if cmd is urwid.ACTIVATE:
+            current_value = self.current_value
+            options = current_value.options
+            index = options.index(current_value)
+            if index < len(options)-1:
+                index += 1
+            else:
+                index = 0
+            new_value = options[index]
+            _change_setting(self.name, new_value)
+        else:
+            return key
+
+    def _keypress_string(self, size, key):
+        cells = self._cells
+        cmd = self._command_map[key]
+        current_value = self.current_value
+        value_widget = self.value_widget
+
+        def edit():
+            attrmap = self._cells.value.attrmap
+            edit_widget = urwid.AttrMap(urwid.Edit(edit_text=str(current_value)),
+                                        attr_map=attrmap.attr_map,
+                                        focus_map=attrmap.focus_map)
+            cells.replace('value', edit_widget)
+            self._value_widget_temp = value_widget
+
+        def unedit():
+            cells.replace('value', self._value_widget_temp)
+            delattr(self, '_value_widget_temp')
+
+        if cmd is urwid.ACTIVATE:
+            if not self.edit_mode:
                 edit()
             else:
-                new_value = cells.value.base_widget.edit_text
-                _change_setting(cells.name.text.text, new_value, on_success=unedit)
-
+                new_value = value_widget.edit_text
+                _change_setting(self.name, new_value, on_success=unedit)
         elif cmd is urwid.CANCEL:
-            if edit_mode:
+            if self.edit_mode:
                 unedit()
-
-        elif edit_mode:
+        elif self.edit_mode:
             key = super().keypress(size, key)
             cmd = self._command_map[key]
             # Don't allow user to focus next/previous setting when editing
             if cmd not in (urwid.CURSOR_DOWN, urwid.CURSOR_UP):
                 return key
-
         else:
             return key
-
-    def selectable(self):
-        return True
 
 
 class SettingListWidget(ListWidgetBase):
