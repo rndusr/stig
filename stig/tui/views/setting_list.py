@@ -19,7 +19,7 @@ from . import (ItemWidgetBase, ListWidgetBase)
 from ...main import (localcfg, remotecfg, srvapi, aioloop)
 
 
-def _change_setting(name, new_value, on_success):
+def _change_setting(name, new_value, on_success=None):
     remote_name = name[4:]  # Remove 'srv.'
 
     if name in localcfg:
@@ -28,7 +28,8 @@ def _change_setting(name, new_value, on_success):
         except ValueError as e:
             log.error('Cannot set %s = %r: %s', name, new_value, e)
         else:
-            on_success()
+            if on_success is not None:
+                on_success()
 
     elif remote_name in remotecfg:
         async def setter():
@@ -37,11 +38,12 @@ def _change_setting(name, new_value, on_success):
             except (ValueError, srvapi.ClientError) as e:
                 log.error('Cannot set %s = %r: %s', name, new_value, e)
             else:
-                on_success()
+                if on_success is not None:
+                    on_success()
         aioloop.create_task(setter())
 
     else:
-        raise RuntimeError('Invalid setting: %r' % name)
+        raise RuntimeError('Not a setting name: %r' % name)
 
 
 class SettingItemWidget(ItemWidgetBase):
