@@ -55,7 +55,6 @@ srvapi = API(host=localcfg['connect.host'],
              tls=localcfg['connect.tls'],
              interval=localcfg['tui.poll'],
              loop=aioloop)
-srvapi.rpc.enabled = False
 remotecfg = srvapi.settings
 helpmgr.remotecfg = remotecfg
 
@@ -145,17 +144,9 @@ def run():
 
         # Exit if CLI commands fail
         if clicmds:
-            if cmdmgr.active_interface == 'cli':
-                # CLI commands (e.g. 'ls') will block indefinitely unless we enable now.
-                srvapi.rpc.enabled = True
-
             success = cmdmgr.run_sync(clicmds, on_error=log.error)
             if not success:
                 return False
-
-        # Now that potential connect.* settings are made either via rc file or
-        # command line arguments, we can allow any requests to go through.
-        srvapi.rpc.enabled = True
 
         return True
 
