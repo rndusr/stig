@@ -216,10 +216,10 @@ class TransmissionRPC():
         return self._enabled_event.is_set()
     @enabled.setter
     def enabled(self, enabled):
-        if enabled:
+        if enabled and not self.enabled:
             log.debug('Enabling %r', self)
             self._enabled_event.set()
-        else:
+        elif not enabled and self.enabled:
             log.debug('Disabling %r', self)
             self._enabled_event.clear()
             if self.connected:
