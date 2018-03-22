@@ -395,29 +395,30 @@ class HelpManager():
         """Provide help text for rc file"""
         lines = [
             'RC FILES',
-            ("\tAn rc file contains a list of arbitrary commands, one per line.  "
-             "Lines starting with '#' (more precisely: '\s*#') are ignored."),
+            ('\tAn rc file is a script that contains a list of arbitrary commands.  '
+             'Commands can span multiple lines by escaping linebreaks with "\\".  '
+             'Lines starting with "#" (more precisely: "\s*#") are ignored.'),
             '',
-            ("\tThe default rc file path is '$XDG_CONFIG_HOME/{__appname__}/rc', "
-             "where XDG_CONFIG_HOME defaults to '~/.config' if it is not set."),
+            ('\tThe default rc file path is "$XDG_CONFIG_HOME/{__appname__}/rc", '
+             'where XDG_CONFIG_HOME defaults to "~/.config" if it is not set.'),
             '',
-            ("\tA different path can be provided with the '--rcfile' option.  "
-             "An existing rc file at the default path can be ignored with the "
-             "'--norcfile' option."),
+            ('\tA different path can be provided with the "--rcfile" option.  '
+             'An existing rc file at the default path can be ignored with the '
+             '"--norcfile" option.'),
             '',
             '\tTo permanently change the default config file, create an alias:',
             '',
             '\t\t$ alias stig="command stig --rcfile ~/.stigrc"',
             '',
-            ("\tTo load an additional rc file after the default one, use the "
-             "'rc' command.  (Note that this will prevent the TUI from being "
-             "loaded unless you provide the '--tui' option.  See the GUESSING "
-             "THE USER INTERFACE section in the 'commands' help for more information.)"),
+            ('\tTo load an additional rc file after the default one, use the '
+             '"rc" command.  (Note that this will prevent the TUI from being '
+             'loaded unless you provide the "--tui" option.  See the GUESSING '
+             'THE USER INTERFACE section in the "commands" help for more information.)'),
             '',
             ('\tCommands in an rc file are called during startup before the '
              'commands given on the command line.'),
             '',
-            ("\tTUI commands (e.g. 'tab' or 'bind') in an rc file are ignored "
-             "in CLI mode."),
+            ('\tTUI commands (e.g. "tab" or "bind") in an rc file are ignored '
+             'in CLI mode.'),
         ]
         return finalize_lines(lines)

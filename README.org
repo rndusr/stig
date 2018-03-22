@@ -68,10 +68,10 @@
    #+END_SRC
 
 ** Configuration and Scripting
-   All configuration is done in an rc file which contains a list of commands
-   that are executed during startup.  The default rc file is
-   ~$XDG_CONFIG_HOME/stig/rc~.  ~XDG_CONFIG_HOME~ defaults to ~~/.config~ if not
-   set.
+   All configuration is done in an rc file, which is just a script containing a
+   list of commands (think vim and .vimrc) that are executed during startup.
+   The default rc file is ~$XDG_CONFIG_HOME/stig/rc~.  ~XDG_CONFIG_HOME~
+   defaults to `/.config` if not set.
 
    See ~stig help rcfile~ for more information.
 
