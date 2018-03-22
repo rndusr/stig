@@ -27,13 +27,8 @@ from .views.file import TUICOLUMNS as FILE_COLUMNS
 
 def _reconnect(settings, name, value):
     # See also ..hooks
-    async def coro():
-        log.debug('Reconnecting because %s changed to %r', name, value)
-        try:
-            await srvapi.rpc.connect()
-        except srvapi.ClientError as e:
-            log.error(str(e))
-    aioloop.create_task(coro())
+    log.debug('Reconnecting because %s changed to %r', name, value)
+    srvapi.poll()
 localcfg.on_change(_reconnect, name='connect.host')
 localcfg.on_change(_reconnect, name='connect.port')
 localcfg.on_change(_reconnect, name='connect.path')
