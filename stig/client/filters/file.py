@@ -37,7 +37,7 @@ class SingleTorrentFileFilter(Filter):
     }
 
     COMPARATIVE_FILTERS = {
-        'file'        : _make_cmp_filter('name', 'Match VALUE against file name', aliases=('name',)),
+        'name'        : _make_cmp_filter('name', 'Match VALUE against file name', aliases=('name',)),
         'path'        : _make_cmp_filter('path', 'Match VALUE against path in torrent', aliases=('dir',)),
         'size'        : _make_cmp_filter('size-total', 'Match VALUE against file size'),
         'downloaded'  : _make_cmp_filter('size-downloaded',
