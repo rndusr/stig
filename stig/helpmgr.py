@@ -330,45 +330,46 @@ class HelpManager():
     def filter(self):
         """Provide help text for arguments to TorrentFilter"""
         lines = [
-            'FILTERING TORRENTS, FILES AND PEERS',
-            ('\tCommands that accept FILTER arguments for torrents, files or peers '
-             'are applied to torrents, files or peers that match these arguments.'),
+            'FILTERING TORRENTS, FILES, PEERS, ETC',
+            ('\tCommands that accept FILTER arguments are applied to items '
+             'that match these filters.'),
             '',
             '\tThere are two kinds of filters:',
-            "\t\t- \tBoolean filters stand on their own (e.g. 'downloading')",
-            "\t\t- \tComparative filters match against values (e.g. 'seeds>20').",
+            '\t\t- \tBoolean filters stand on their own (e.g. "downloading")',
+            '\t\t- \tComparative filters need a value (e.g. "seeds>20")',
             '',
-            '\tThe syntax of comparative filters is: [[<FILTER NAME>] <OPERATOR>] <VALUE>',
+            '\tThe syntax of comparative filters is: [[<FILTER NAME>]<OPERATOR>]<VALUE>',
             '',
-            ("\tBesides the usual operators (=, !=, >, <, >=, <=), '~' matches "
-             "if the torrent's value contains VALUE."),
-            "\tExample: 'name~foo' matches all torrents with 'foo' in their name.",
+            ('\tBesides the usual operators (=, !=, >, <, >=, <=), "~" matches '
+             'if the item\'s value contains VALUE.'),
+            '\tExample: "name~foo" matches all torrents with "foo" in their name.',
             '',
-            ("\tIf FILTER NAME is omitted, it defaults to 'name'.  If OPERATOR is "
-             "omitted, it defaults to '~'."),
-            "\tExample: 'foo' is the same as '~foo' is the same as 'name~foo'.",
+            ('\tIf FILTER NAME is omitted, it defaults to "name" for torrents and '
+             'files and "domain" for trackers. Peers don\'t have a default filter.  '
+             'If OPERATOR is omitted, it defaults to "~".'),
+            '\tExample: "foo" is the same as "~foo" is the same as "name~foo".',
             '',
             ('\tSpaces before the filter name are ignored.  If there is a space '
              'between the filter name and the operator, all spaces at the '
              'start and end of VALUE are removed, otherwise they are preserved.  '),
-            "\tExample: 'name = foo  ' matches 'foo'; 'name= foo  ' matches ' foo  '.",
+            '\tExample: "name = foo  " matches "foo"; "name= foo  " matches " foo  ".',
             '',
-            "\tAll filters can be inverted by prepending '!'.",
-            ("\tExample: 'name!=foo' is the same as '!name=foo'; "
-             "'!name!=foo' is the same as 'name=foo'."),
+            '\tAll filters can be inverted by prepending "!" to the filter name.',
+            ('\tExample: "name!=foo" is the same as "!name=foo"; '
+             '"!name!=foo" is the same as "name=foo".'),
             '',
             ('\tWhen matching strings, matches are case-sensitive if VALUE includes '
              'upper-case characters, otherwise it is case-insensitive.'),
             '',
-            ("\tWhen matching numbers, the unit prefixes 'k', 'M', 'G', 'T' and "
-             "their binary counterparts 'Ki', 'Mi', 'Gi', 'Ti' are supported.  "
-             "The case of unit prefixes is ignored."),
-            ("\tExample: 'size>1mi' is the same as 'size>1048576' (1 Mebibyte); "
-             "'size>1m' is the same as 'size>1000000' (1 Megabyte)"),
+            ('\tWhen matching numbers, the unit prefixes "k", "M", "G", "T" and '
+             'their binary counterparts "Ki", "Mi", "Gi", "Ti" are supported.  '
+             'The case of unit prefixes is ignored.'),
+            ('\tExample: "size>1mi" is the same as "size>1048576" (1 Mebibyte); '
+             '"size>1m" is the same as "size>1000000" (1 Megabyte)'),
             '',
-            ("\tFilters can be combined with the operators '&' (logical AND) "
-             "and '|' (logical OR).  Multiple FILTER arguments are combined with '|'."),
-            "\tExample: 'name=foo paused' is the same as 'name=foo|paused'.",
+            ('\tFilters can be combined with the operators "&" (logical AND) '
+             'and "|" (logical OR).  Multiple FILTER arguments are combined with "|".'),
+            '\tExample: "name=foo paused" is the same as "name=foo|paused".',
         ]
 
         from .client.filters.torrent import SingleTorrentFilter
