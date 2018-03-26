@@ -184,25 +184,26 @@ def _create_TorrentFileTree(t):
     if len(fileStats) < 1:
         # filelist is empty if torrent was added by hash and metadata isn't
         # downloaded yet.
-        files = [{'name': t['name'], 'priority': 0, 'length': 0,
-                  'wanted': True, 'id': 0, 'bytesCompleted': 0}]
+        filelist = [{'tid': -1, 'id': (-1, -1), 'name': t['name'], 'priority': 0,
+                     'length': 0, 'wanted': True, 'bytesCompleted': 0}]
     else:
         # Combine 'files' and 'fileStats' fields and add the 'id' key to each
-        # file, which is the index in the list provided by Transmission.
-        files = ({'id': i, **f, **fS}
-                 for i,(f,fS) in enumerate(zip(t['files'], fileStats)))
-    return TorrentFileTree(t['id'], entries=files)
+        # file, which is a (torrent ID, file list index) tuple
+        tid = t['id']
+        filelist = ({'id': (tid, i), **f, **fS}
+                    for i,(f,fS) in enumerate(zip(t['files'], fileStats)))
+    return TorrentFileTree(t['id'], filelist, path=())
 
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
-    def __init__(self, torrent_id, entries, path=[]):
+    def __init__(self, torrent_id, filelist, path):
         log.debug('Creating new TorrentFileTree for torrent %r', torrent_id)
+        super().__init__(path)
 
-        self._path = os.sep.join(path)
         items = {}
         subdirs = {}
 
-        for entry in entries:
+        for entry in filelist:
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
                 filename = parts[0]
@@ -223,8 +224,8 @@ class TorrentFileTree(base.TorrentFileTreeBase):
             else:
                 raise RuntimeError(parts)
 
-        for subdir,entries in subdirs.items():
-            items[subdir] = TorrentFileTree(torrent_id, entries, path=path+[subdir])
+        for subdir,filelist in subdirs.items():
+            items[subdir] = TorrentFileTree(torrent_id, filelist, path=path+(subdir,))
         self._items = items
 
     def update(self, raw_torrent):
@@ -238,7 +239,8 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 if isinstance(entry, ttypes.TorrentFile):
                     # File ID is its index in the list provided by
                     # Transmission (see _create_TorrentFileTree)
-                    fstats = fileStats[entry['id']]
+                    index = entry['id'][1]
+                    fstats = fileStats[index]
                     entry.update({'size-downloaded': fstats['bytesCompleted'],
                                   'is-wanted': fstats['wanted'],
                                   'priority': fstats['priority']})
@@ -328,9 +330,9 @@ class TrackerList(tuple):
         return super().__new__(cls,
             (ttypes.TorrentTracker(
                 (utils.LazyDict({
+                    'id'                 : (raw_torrent['id'], raw_tracker['id']),
                     'tid'                : raw_torrent['id'],
                     'tname'              : raw_torrent['name'],
-                    'id'                 : (raw_torrent['id'], raw_tracker['id']),
                     'tier'               : raw_tracker['tier'],
 
                     'url-announce'       : raw_tracker['announce'],

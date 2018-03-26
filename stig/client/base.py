@@ -60,6 +60,7 @@ class TorrentBase(abc.Mapping):
 
 
 from collections import abc
+import os
 class TorrentFileTreeBase(abc.Mapping):
     """Nested mapping of a Torrent's files"""
 
@@ -67,8 +68,8 @@ class TorrentFileTreeBase(abc.Mapping):
     # ("parent" or "leaf")
     nodetype = 'parent'
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError()
+    def __init__(self, path, *args, **kwargs):
+        self._path = os.sep.join(path)
 
     @property
     def files(self):
@@ -90,6 +91,10 @@ class TorrentFileTreeBase(abc.Mapping):
     @property
     def path(self):
         return self._path
+
+    @property
+    def id(self):
+        return tuple(f['id'] for f in self.files)
 
     def __repr__(self):
         return '<%s %r>' % (type(self).__name__, self._items)

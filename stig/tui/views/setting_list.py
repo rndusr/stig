@@ -54,6 +54,10 @@ class SettingItemWidget(ItemWidgetBase):
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
 
+    @property
+    def id(self):
+        return self.data['id']
+
     def selectable(self):
         return True
 
@@ -168,7 +172,7 @@ class SettingListWidget(ListWidgetBase):
         self.refresh()
 
     def _handle_update(self, *_, **__):
-        self._items = {
+        self._data_dict = {
             **{k: {'id': k, 'value': v,
                    'description': localcfg.description(k)}
                for k,v in localcfg.items()},

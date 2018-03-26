@@ -107,44 +107,35 @@ class PriorityCmdbase(metaclass=InitCommand):
             log.error('Invalid priority: {!r}'.format(PRIORITY))
             return False
 
+        # Whether the user manually typed a filter
+        utilize_tui = not bool(TORRENT_FILTER)
+
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
                                            discover_torrent=True)
+
+            # If the user specified a filter instead of selecting via the TUI,
+            # ignore focused/marked files.
+            log.debug('%sdiscovering file(s)', '' if utilize_tui else 'Not ')
             ffilter = self.select_files(FILE_FILTER,
                                         allow_no_filter=True,
-                                        discover_file=True)
+                                        discover_file=utilize_tui)
         except ValueError as e:
             log.error(e)
             return False
 
-        if not isinstance(tfilter, tuple):
-            # tfilter must be TorrentFilter instance, which means the user
-            # specified a filter and will be informed about the matches.
-            if isinstance(ffilter, tuple):
-                # The user did specify a torrent filter but not a file filter,
-                # so select_files() may have returned a focused file.  But we
-                # assume that the user meant all files of the matching
-                # torrents, otherwise they wouldn't have given a torrent
-                # filter.
-                ffilter = None
-
-            msg = 'New download priority of %s files in %s torrents: %s' % (
-                'all' if ffilter is None else ffilter, tfilter, priority)
-            log.info(msg)
+        if not utilize_tui:
+            log.info('New download priority of %s files in %s torrents: %s',
+                     'all' if ffilter is None else ffilter, tfilter, priority)
             quiet = False
         else:
-            # We're operating on the focused file and success is indiciated by
-            # the updated file list, so no info message necessary.
+            # We're operating on focused/marked file and changes are indiciated
+            # by the updated file list, so no info messages necessary.
             quiet = True
 
-        # If ffilter is a tuple, it is a tuple of (torrent_id, file_id) tuples.
-        # In that case, we overload tfilter with the torrent_ids from ffilter.
-        if isinstance(ffilter, tuple):
-            tfilter = tuple(set(ids[0] for ids in ffilter))
         log.debug('Setting file download priority to %s for %s files of %s torrents',
                   priority, ffilter, tfilter)
-
         response = await self.make_request(
             self.srvapi.torrent.file_priority(tfilter, ffilter, priority),
             polling_frenzy=True, quiet=quiet)

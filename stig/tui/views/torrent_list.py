@@ -24,8 +24,12 @@ class TorrentItemWidget(ItemWidgetBase):
         columns_focus_map.update(col.style.focus_map)
 
     @property
+    def id(self):
+        return self.data['id']
+
+    @property
     def torrent_id(self):
-        return self._item['id']
+        return self.data['id']
 
 
 class TorrentListWidget(ListWidgetBase):
@@ -42,7 +46,7 @@ class TorrentListWidget(ListWidgetBase):
 
     @property
     def id(self):
-        """Hashable object that is unique among all torrent lists"""
+        """Hashable that is unique among all torrent lists"""
         return id(self)
 
     def _register_request(self):
@@ -74,12 +78,12 @@ class TorrentListWidget(ListWidgetBase):
         # Auto-generate title from our filters if not set
         if self._title_name is None:
             self._title_name = stringify_torrent_filter(self._tfilter, torrents)
-        self._items = {t['id']:t for t in torrents}
+        self._data_dict = {t['id']:t for t in torrents}
         self._invalidate()
 
     def clear(self):
         for w in self._listbox.body:
-            w.item.clearcache()
+            w.data.clearcache()
         super().clear()
 
     def refresh(self):

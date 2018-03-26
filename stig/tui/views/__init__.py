@@ -117,8 +117,8 @@ class ItemWidgetBase(urwid.WidgetWrap):
     palette_unfocused = NotImplemented
     palette_focused   = NotImplemented
 
-    def __init__(self, item, cells):
-        self._item = item    # Info of torrent/tracker/file/peer/...
+    def __init__(self, data, cells):
+        self._data = data    # Info of torrent/tracker/file/peer/... as mapping
         self._cells = cells  # Group instance that combines widgets horizontally
 
         # Create focusable or unfocusable item widget
@@ -132,23 +132,23 @@ class ItemWidgetBase(urwid.WidgetWrap):
         urwid.WidgetWrap.__init__(self, item_widget)
 
         # Initialize cell widgets
-        self.update(item)
+        self.update(data)
 
-    def update(self, item):
+    def update(self, data):
         for widget in self._cells.widgets:
             if hasattr(widget, 'update'):
-                widget.update(item)
-        self._item = item
+                widget.update(data)
+        self._data = data
 
     @property
     def id(self):
-        """ID of the displayed item"""
-        return self._item['id']
+        """Unique, hashable ID of the displayed item"""
+        raise NotImplementedError()
 
     @property
-    def item(self):
+    def data(self):
         """Displayed data in dictionary form"""
-        return self._item
+        return self._data
 
     @property
     def is_marked(self):
@@ -182,7 +182,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         else:
             self._ListItemClass = self.ListItemClass
 
-        self._items = ()
+        self._data_dict = ()
         self._marked = set()
 
         self._sort = sort
@@ -221,9 +221,9 @@ class ListWidgetBase(urwid.WidgetWrap):
         super()._invalidate()
 
     def render(self, size, focus=False):
-        if self._items is not None:
+        if self._data_dict is not None:
             self._update_listitems()
-            self._items = None
+            self._data_dict = None
         # focus=True because we always want to highlight the focused item, for
         # example when the CLI is open
         return super().render(size, focus=True)
@@ -233,16 +233,16 @@ class ListWidgetBase(urwid.WidgetWrap):
         focusedw = self.focused_widget
 
         walker = self._listbox.body
-        item_dict = self._items
+        data_dict = self._data_dict
         dead_items = []
         for w in walker:  # w = *ItemWidget instance
             id = w.id
             try:
                 # Update existing *ItemWidget instances with new data
-                w.update(item_dict[id])
-                del item_dict[id]
+                w.update(data_dict[id])
+                del data_dict[id]
             except KeyError:
-                # Item no longer exists in self._items anymore
+                # Item no longer exists in data_dict anymore
                 dead_items.append(w)
 
         # Remove dead *ItemWidget instances
@@ -252,18 +252,18 @@ class ListWidgetBase(urwid.WidgetWrap):
             marked.discard(w)  # self._marked may have a reference too
 
         # Any items that haven't been used to update an existing *ItemWidget instance are new
-        if item_dict:
+        if data_dict:
             table = self._table
             cls = self._ListItemClass
-            for item_id in item_dict:
-                table.register(item_id)
-                item_widget = table.get_row(item_id)
-                walker.append(cls(item_dict[item_id], item_widget))
+            for data_id in data_dict:
+                table.register(data_id)
+                item_widget = table.get_row(data_id)
+                walker.append(cls(data_dict[data_id], item_widget))
 
         # Sort items in walker
         if self._sort is not None:
             self._sort.apply(walker,
-                            item_getter=lambda w: w.item,
+                            item_getter=lambda w: w.data,
                             inplace=True)
 
         # Items could be added/removed - re-focus previously focused item if necessary
@@ -311,11 +311,11 @@ class ListWidgetBase(urwid.WidgetWrap):
     def count(self):
         """Number of listed items"""
         # If this method was called before rendering, the contents of the
-        # listbox widget are inaccurate and we have to use self._items.  But if
-        # we're called after rendering, self._items is reset to None and we have
-        # to count items in the listbox.
-        if self._items is not None:
-            return len(self._items)
+        # listbox widget are inaccurate and we have to use self._data_dict.  But
+        # if we're called after rendering, self._data_dict is reset to None and
+        # we have to count items in the listbox.
+        if self._data_dict is not None:
+            return len(self._data_dict)
         else:
             return len(self._listbox.body)
 

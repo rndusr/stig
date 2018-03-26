@@ -16,6 +16,14 @@ from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 class PeerItemWidget(ItemWidgetBase):
     palette_unfocused = 'peerlist'
 
+    @property
+    def id(self):
+        return self.data['id']
+
+    @property
+    def torrent_id(self):
+        return self.data['tid']
+
 
 class PeerListWidget(ListWidgetBase):
     tuicolumns      = TUICOLUMNS
@@ -57,7 +65,7 @@ class PeerListWidget(ListWidgetBase):
             def peers_combined(torrents):
                 for t in torrents:
                     yield from self._maybe_filter_peers(t['peers'])
-            self._items = {p['id']:p for p in peers_combined(response.torrents)}
+            self._data_dict = {p['id']:p for p in peers_combined(response.torrents)}
         self._invalidate()
 
     def refresh(self):

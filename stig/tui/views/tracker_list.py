@@ -21,8 +21,12 @@ class TrackerItemWidget(ItemWidgetBase):
         columns_focus_map.update(col.style.focus_map)
 
     @property
+    def id(self):
+        return self.data['tid']
+
+    @property
     def torrent_id(self):
-        return self._item['tid']
+        return self.data['tid']
 
 
 class TrackerListWidget(ListWidgetBase):
@@ -65,7 +69,7 @@ class TrackerListWidget(ListWidgetBase):
             def trackers_combined(torrents):
                 for t in torrents:
                     yield from self._maybe_filter_trackers(t['trackers'])
-            self._items = {trk['id']:trk for trk in trackers_combined(response.torrents)}
+            self._data_dict = {trk['id']:trk for trk in trackers_combined(response.torrents)}
         self._invalidate()
 
     def refresh(self):

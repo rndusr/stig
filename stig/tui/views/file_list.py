@@ -74,8 +74,7 @@ class FileTreeDecorator(ArrowTree):
                         dirnode = create_directory_data(name=k, tree=v)
                         tree.append(create_tree(dirnode, v))
 
-                node_id = (node['tid'], node['id'])
-                self._filtered_counts[node_id] = filtered_count
+                self._filtered_counts[node['id']] = filtered_count
                 node['name'] = create_directory_name(node['name'], filtered_count)
                 return (node, tree or None)
 
@@ -109,8 +108,7 @@ class FileTreeDecorator(ArrowTree):
         # Wrap the whole row in a FileItemWidget with keymapping.  This also
         # applies all the other values besides the name (size, progress, etc).
         file_widget = self._filewidgetcls(data, row)
-        node_id = (data['tid'], data['id'])
-        self._widgets[node_id] = file_widget
+        self._widgets[data['id']] = file_widget
         return file_widget
 
     def update(self, torrents):
@@ -120,15 +118,14 @@ class FileTreeDecorator(ArrowTree):
 
             # Update file nodes
             for f in t['files'].files:
-                fid = f['id']
-                node_id = (tid, fid)
+                node_id = f['id']
+                # File might be filtered
                 if node_id in widgets:
                     widgets[node_id].update(f)
 
             # Update directory nodes
             for name,content in t['files'].directories:
-                fids = frozenset(f['id'] for f in content.files)
-                node_id = (tid, fids)
+                node_id = content.id
                 if node_id in widgets:
                     filtered_count = self._filtered_counts[node_id]
                     data = create_directory_data(name, tree=content,
@@ -150,17 +147,17 @@ class FileItemWidget(ItemWidgetBase):
         columns_focus_map.update(col.style.focus_map)
 
     @property
-    def torrent_id(self):
-        return self._item['tid']
+    def id(self):
+        return self.data['id']
 
     @property
-    def file_id(self):
-        return self._item['id']
+    def torrent_id(self):
+        return self.data['tid']
 
     @property
     def nodetype(self):
         """'parent' or 'leaf'"""
-        return self._item.nodetype
+        return self.data.nodetype
 
 
 class FileListWidget(ListWidgetBase):
@@ -258,15 +255,18 @@ class FileListWidget(ListWidgetBase):
         focused = self.focused_widget
         if focused is not None:
             # The focused widget in the list can be a file or a directory.  If
-            # it's a directory, the 'file_id' property returns the IDs of all
-            # the contained files recursively.
-            fid = focused.file_id
-            return tuple(fid) if isinstance(fid, (abc.Sequence, abc.Set)) else (fid,)
+            # it's a directory, the 'id' property returns the IDs of all the
+            # contained files recursively, otherwise it's just a single ID.  For
+            # consistency, we always return a sequence of IDs.
+            if focused.nodetype == 'leaf':
+                return (focused.id,)
+            else:
+                return focused.id
 
     @property
     def focused_torrent_id(self):
         """Torrent ID of the currently focused file or `None`"""
-        focused_widget = self._listbox.focus
+        focused_widget = self.focused_widget
         if focused_widget is not None:
             return focused_widget.torrent_id
 

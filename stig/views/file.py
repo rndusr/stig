@@ -144,8 +144,8 @@ def create_directory_data(name, tree, filtered_count=0):
     except ZeroDivisionError:
         data['progress'] = progress_cls(0)
     data['tid'] = tfiles[0]['tid']
+    data['id'] = tuple(tf['id'] for tf in tfiles)
     data['path'] = tree.path
-    data['id'] = frozenset(tf['id'] for tf in tfiles)
     return TorrentFileDirectory(data)
 
 def create_directory_name(name, filtered_count):

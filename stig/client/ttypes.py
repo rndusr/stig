@@ -400,6 +400,7 @@ class TorrentFilePriority(str):
     def __int__(self): return self.STR2INT[self]
     def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
+
 class TorrentFile(abc.Mapping):
     """Mapping that holds the values of a single file in a torrent"""
 
@@ -407,8 +408,8 @@ class TorrentFile(abc.Mapping):
     nodetype = 'leaf'
 
     TYPES = {
-        'tid'             : int,
-        'id'              : int,
+        'id'              : lambda val: val,
+        'tid'             : lambda val: val,
         'name'            : SmartCmpStr,
         'path'            : Path,
         'size-total'      : lambda size: convert.size(size, unit='byte'),
@@ -419,8 +420,8 @@ class TorrentFile(abc.Mapping):
     }
 
     _MODIFIERS = {
-        'tid'             : lambda raw: raw['tid'],
         'id'              : lambda raw: raw['id'],
+        'tid'             : lambda raw: raw['tid'],
         'name'            : lambda raw: raw['name'],
         'path'            : lambda raw: os.sep.join(raw['path']),
         'size-total'      : lambda raw: raw['size-total'],
@@ -439,7 +440,11 @@ class TorrentFile(abc.Mapping):
     def __getitem__(self, key):
         if key not in self._cache:
             val = self._MODIFIERS[key](self._raw)
-            self._cache[key] = self.TYPES[key](val)
+            typ = self.TYPES.get(key)
+            if typ is not None:
+                self._cache[key] = typ(val)
+            else:
+                self._cache[key] = val
         return self._cache[key]
 
     def update(self, raw):
@@ -535,7 +540,7 @@ class TorrentPeer(abc.Mapping):
     }
 
     _MODIFIERS = {
-        'id'      : lambda p: hash((p['tid'], p['ip'], p['port'])),
+        'id'      : lambda p: (p['tid'], p['ip'], p['port']),
         'country' : lambda p: geoip.country_code(p['ip']) or '?',
     }
 
@@ -574,9 +579,9 @@ class TorrentTracker(abc.Mapping):
             return SmartCmpStr(string)
 
     TYPES = {
+        'id'                 : lambda val: val,
         'tid'                : int,
         'tname'              : SmartCmpStr,
-        'id'                 : lambda val: val,
         'tier'               : int,
 
         'url-announce'       : URL,
@@ -601,7 +606,7 @@ class TorrentTracker(abc.Mapping):
         'time-next-scrape'   : Timestamp,
     }
 
-    _GENERATORS = {
+    _MODIFIERS = {
         'id'     : lambda self: hash((self['tid'], self['url-announce'])),
         'domain' : lambda self: self['url-announce'].domain,
         'state'  : lambda self: (self['state-scrape'] if self['state-announce'] == 'idle'
@@ -619,14 +624,12 @@ class TorrentTracker(abc.Mapping):
     def __getitem__(self, key):
         cache = self._cache
         if key not in self._cache:
-            types = self.TYPES
-            generators = self._GENERATORS
-
-            if key in generators:
-                val = generators[key](self)
+            modifier = self._MODIFIERS.get(key)
+            if modifier is not None:
+                val = modifier(self)
             else:
                 val = self._dct[key]
-            cache[key] = types[key](val)
+            cache[key] = self.TYPES[key](val)
 
         return cache[key]
 

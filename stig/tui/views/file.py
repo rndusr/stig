@@ -37,7 +37,7 @@ class Filename(_COLUMNS['name'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        if isinstance(self.data['id'], int):
+        if self.data.nodetype == 'leaf':
             return 'file'
         else:
             return 'folder'

@@ -122,9 +122,11 @@ class select_torrents():
         """
         tids = self.get_marked_torrent_ids()
         if tids:
+            log.debug('Found marked torrents: %r', tids)
             return tids
         tid = self.get_focused_torrent_id()
         if tid:
+            log.debug('Found focused torrent: %r', tid)
             return (tid,)
 
     def get_marked_torrent_ids(self):
@@ -135,9 +137,9 @@ class select_torrents():
         """
         widget = self._get_current_or_previous_tab()
         if hasattr(widget, 'marked'):
-            tids = tuple(twidget.id for twidget in widget.marked)
+            tids = tuple(twidget.torrent_id for twidget in widget.marked)
             if tids:
-                return tids
+                return set(tids)
 
     def get_focused_torrent_id(self):
         """
@@ -172,7 +174,7 @@ class select_torrents():
             from ...client import TorrentFilter
             return TorrentFilter('|'.join(('id=%d' % id for id in ids)))
         else:
-            raise RuntimeError('Not a list of IDs: %r' % ids)
+            raise RuntimeError('Not a list of IDs: %r' % (ids,))
 
 
 class select_files():
@@ -180,17 +182,17 @@ class select_files():
 
     def select_files(self, FILTER, allow_no_filter=True, discover_file=True):
         """
-        Get TorrentFileFilter instance, focused file ID or None
+        Get TorrentFileFilter instance, focused/marked file IDs or None
 
         If `FILTER` evaluates to True, it is passed to TorrentFileFilter and the
         resulting object is returned.
 
         If `FILTER` evaluates to False and `discover_file` evaluates to True,
-        the file ID (or IDs) are returned in a tuple if possible. Otherwise,
-        None is returned if `allow_no_filter` evaluates to True, else a
-        ValueError is raised.
+        a tuple of (<torrent ID>, <file ID>) tuples is returned.  If
+        `discover_file` evaluates to False, None is returned if
+        `allow_no_filter` evaluates to True, else a ValueError is raised.
 
-        File are discovered by getting the `focused_file_id` of the focused
+        Files are discovered by getting the `focused_file_ids` of the focused
         tab's widget.
         """
         if FILTER:
@@ -199,7 +201,8 @@ class select_files():
         else:
             if discover_file:
                 fids = self._find_file_ids()
-                if fids is not None:
+                if fids:
+                    log.debug('Found file IDs: %r', fids)
                     return fids
             if allow_no_filter:
                 return None
@@ -208,19 +211,21 @@ class select_files():
 
     def _find_file_ids(self):
         focused_widget = self.tui.tabs.focus
-
+        # Get marked file IDs
         if hasattr(focused_widget, 'marked'):
-            tfids = tuple((fwidget.torrent_id, fwidget.file_id)
-                          for fwidget in focused_widget.marked
-                          if isinstance(fwidget.file_id, int))
-            if tfids:
-                return tfids
+            fids = tuple(fwidget.id for fwidget in focused_widget.marked)
+            if fids:
+                log.debug('Found marked files: %r', fids)
+                return fids
 
-        # Get torrent ID from widget in focused tab
-        if hasattr(focused_widget, 'focused_file_ids') and \
-           focused_widget.focused_file_ids is not None:
-            return tuple((focused_widget.focused_torrent_id, fid)
-                         for fid in focused_widget.focused_file_ids)
+        # Get focused file IDs (if directory is focused, include all files in it)
+        if hasattr(focused_widget, 'focused_file_ids'):
+            fids = tuple(focused_widget.focused_file_ids)
+            if fids:
+                log.debug('Found focused files: %r', fids)
+                return fids
+
+        return ()
 
 
 class create_list_widget():

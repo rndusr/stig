@@ -608,10 +608,9 @@ class TorrentAPI():
                 filter_files = lambda ftree: tuple(ftree.files)
             elif isinstance(files, TorrentFileFilter):
                 filter_files = lambda ftree: tuple(files.apply(ftree.files))
-            elif isinstance(files, abc.Sequence) and \
-                 all(isinstance(tid, int) and isinstance(fid, int) for tid,fid in files):
+            elif isinstance(files, abc.Sequence):
                 filter_files = lambda ftree: tuple(f for f in ftree.files
-                                                   if (f['tid'],f['id']) in files)
+                                                   if f['id'] in files)
             else:
                 raise ValueError("Invalid 'files' argument: {!r}".format(files))
 
@@ -629,9 +628,11 @@ class TorrentAPI():
                                     .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
                 success = len(flist) > 0 or success
 
-                # Transmission wants a list of file indexes; luckily, the
-                # file's ID is its index (see .torrent.TorrentFileTree).
-                findexes = tuple(f['id'] for f in flist)
+                # Transmission wants a list of file indexes.  For
+                # aiotransmission, the 'id' field of a TorrentFile is a tuple:
+                #     (<torrent ID>, <file index>)
+                # (See aiotransmission.torrent._create_TorrentFileTree())
+                findexes = tuple(f['id'][1] for f in flist)
                 if findexes:
                     response = await self._set_files_priority(priority, t['id'], findexes)
                     if response.success:
@@ -646,6 +647,7 @@ class TorrentAPI():
 
     async def _set_files_priority(self, priority, torrent_id, file_indexes):
         fi = tuple(file_indexes)
+        log.debug('Setting priority of torrent #%d: %r: %s', torrent_id, priority, file_indexes)
         if priority in ('high', 'normal', 'low'):
             return await self._torrent_action(
                 self.rpc.torrent_set, (torrent_id,),
