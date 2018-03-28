@@ -111,6 +111,12 @@ def init_defaults(localcfg):
                  default=DEFAULT_SETTING_COLUMNS,
                  description='Default columns in setting lists')
 
+    localcfg.add('remove.max-hits',
+                 Int.partial(min=0),
+                 default=10,
+                 description=('Maximum number of torrents to remove without '
+                              'extra confirmation'))
+
     localcfg.add('sort.torrents',
                  partial_sort_order(TorrentSorter),
                  default=DEFAULT_TORRENT_SORT,
@@ -178,12 +184,6 @@ def init_defaults(localcfg):
                  default=' ',
                  description=("Character displayed in 'marked' column for unmarked "
                               "list items (see 'mark' command)"))
-
-    localcfg.add('remove.max-hits',
-                 Int.partial(min=0),
-                 default=10,
-                 description=('Maximum number of torrents to remove without '
-                              'extra confirmation'))
 
 
 
