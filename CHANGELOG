@@ -1,4 +1,7 @@
-2017-??-?? ?.?.?a
+2018-??-?? ?.?.?a
+  Changed dependencies:
+    * The legacy GeoIP module has been replaced by maxminddb
+
   Breaking changes:
     * 'rate[.-]limit' in the names of settings/columns/etc is now reversed to
       'limit[.-]rate' for consistency (e.g. the column 'rate-limit-up' is now
@@ -13,6 +16,9 @@
       argments
     * Get the value of a setting from shell command
       (e.g. `set connect.password:eval pass transmission`)
+    * New settings:
+        - 'geoip' en/disables lookup of country codes in peer lists
+        - 'geoip.dir' specifies where the geolocation database is cached
     * Process name in tmux sessions is set to 'stig' if setproctitle module is
       installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
     * 'ratelimit' command now prints the new limit by default for global and
