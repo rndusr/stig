@@ -17,10 +17,7 @@ from . import urwidpatches
 from ..main import (aioloop, localcfg, cmdmgr, srvapi, geoip)
 
 
-#
 # Keybindings
-#
-
 KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'filelist', 'file',
                    'peerlist', 'trackerlist', 'tracker')
 
@@ -33,10 +30,7 @@ for args in DEFAULT_KEYMAP:
     keymap.bind(**args)
 
 
-#
 # Widgets
-#
-
 MAX_TAB_TITLE_WIDTH = 50
 
 from .group import Group
