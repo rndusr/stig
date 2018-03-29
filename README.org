@@ -126,6 +126,7 @@
 *** Extras
    The following extras are available to enable optional features:
      - ~geoip~  :: Display peers' country codes
+     - ~setproctitle~  :: Change process title when running in tmux session
 
    To automatically install depdencies for an extra, append
    ~[<EXTRA1>,<EXTRA2>,...]~ to the installation source.
