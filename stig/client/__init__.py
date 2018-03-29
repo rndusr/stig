@@ -14,6 +14,9 @@ from .constants import *
 
 from .utils import (Response, URL)
 
+from .geoip import GeoIP
+geoip = GeoIP()
+
 from .sorters.torrent import TorrentSorter
 from .sorters.peer import TorrentPeerSorter
 from .sorters.tracker import TorrentTrackerSorter
