@@ -14,7 +14,7 @@
 from .logging import make_logger
 log = make_logger(__name__)
 
-from .main import (localcfg, srvapi)
+from .main import (localcfg, srvapi, geoip)
 from .utils import convert
 from .views.torrent import COLUMNS as TORRENT_COLUMNS
 from .views.file import COLUMNS as FILE_COLUMNS
@@ -79,3 +79,13 @@ def _set_size_prefix(settings, name, value):
     srvapi.torrent.clearcache()
     srvapi.poll()
 localcfg.on_change(_set_size_prefix, name='unitprefix.size')
+
+
+def _set_geoip(settings, name, value):
+    geoip.enabled = value
+localcfg.on_change(_set_geoip, name='geoip')
+
+def _set_geoip_dir(settings, name, value):
+    import os
+    geoip.filepath = os.path.join(value, os.path.basename(geoip.filepath))
+localcfg.on_change(_set_geoip_dir, name='geoip.dir')

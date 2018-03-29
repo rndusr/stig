@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 import urwid
 from . import urwidpatches
-from ..main import (aioloop, localcfg, cmdmgr, srvapi)
+from ..main import (aioloop, localcfg, cmdmgr, srvapi, geoip)
 
 
 #
@@ -152,6 +152,16 @@ def run(command_runner):
     # Make 'quit' behave as expected
     except urwid.ExitMainLoop:
         return True
+
+    # Load/Download GeoIP database
+    if localcfg['geoip']:
+        def _handle_geoip_load_result(task):
+            try:
+                task.result()
+            except geoip.GeoIPError as e:
+                log.error(e)
+        task = aioloop.create_task(geoip.load(loop=aioloop))
+        task.add_done_callback(_handle_geoip_load_result)
 
     # Start logging to TUI widget instead of stdout/stderr
     logwidget.enable()

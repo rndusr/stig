@@ -24,6 +24,7 @@ from ..client.sorters.tracker import TorrentTrackerSorter
 
 DEFAULT_RCFILE       = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_FILE = os.path.join(XDG_CACHE_HOME, __appname__, 'history')
+DEFAULT_GEOIP_DIR    = os.path.join(XDG_CACHE_HOME, __appname__)
 DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TORRENT_SORT = ('name',)
@@ -38,14 +39,8 @@ DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',
                            'leeches', 'seeds', 'downloads',
                            'last-announce', 'next-announce')
 DEFAULT_SETTING_COLUMNS = ('name', 'value', 'description')
-
-from ..client.geoip import GEOIP_AVAILABLE
-if GEOIP_AVAILABLE:
-    DEFAULT_PEER_COLUMNS = ('client', 'country', 'ip', 'progress', 'rate-down',
-                            'rate-up', 'rate-est', 'eta')
-else:
-    DEFAULT_PEER_COLUMNS = ('client', 'ip', 'progress', 'rate-down', 'rate-up',
-                            'rate-est', 'eta', )
+DEFAULT_PEER_COLUMNS    = ('client', 'country', 'ip', 'progress', 'rate-down',
+                           'rate-up', 'rate-est', 'eta')
 
 
 def init_defaults(localcfg):
@@ -111,11 +106,19 @@ def init_defaults(localcfg):
                  default=DEFAULT_SETTING_COLUMNS,
                  description='Default columns in setting lists')
 
+    localcfg.add('geoip',
+                 Bool.partial(),
+                 default=True,
+                 description='Whether to lookup peers\' country codes')
+    localcfg.add('geoip.dir',
+                 Path.partial(),
+                 default=DEFAULT_GEOIP_DIR,
+                 description='Where to cache the downloaded geolocation database')
+
     localcfg.add('remove.max-hits',
                  Int.partial(min=0),
                  default=10,
-                 description=('Maximum number of torrents to remove without '
-                              'extra confirmation'))
+                 description=('Maximum number of torrents to remove without extra confirmation'))
 
     localcfg.add('sort.torrents',
                  partial_sort_order(TorrentSorter),

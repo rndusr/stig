@@ -59,6 +59,12 @@ remotecfg = srvapi.settings
 helpmgr.remotecfg = remotecfg
 
 
+from .client import geoip
+geoip.enabled = localcfg['geoip']
+geoip.filepath = os.path.join(localcfg['geoip.dir'],
+                              os.path.basename(geoip.filepath))
+
+
 from .commands import CommandManager
 cmdmgr = CommandManager(loop=aioloop)
 cmdmgr.resources.update(aioloop=aioloop,
@@ -157,6 +163,15 @@ def run():
         # Exit when pipe is closed (e.g. `stig help | head -1`)
         import signal
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+        # Load geoip database
+        if localcfg['geoip']:
+            try:
+                aioloop.run_until_complete(geoip.load(loop=aioloop))
+            except geoip.GeoIPError as e:
+                log.error(e)
+                exit_code = 1
+
         try:
             if not run_commands():
                 exit_code = 1
