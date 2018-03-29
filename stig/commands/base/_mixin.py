@@ -103,7 +103,12 @@ class get_peer_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return self.cfg.validate('columns.peers', columns)
+        cols = self.cfg.validate('columns.peers', columns)
+        if 'country' in cols:
+            from ...main import geoip
+            if not geoip.enabled:
+                cols = cols.copy(*(col for col in cols if col != 'country'))
+        return cols
 
 
 
