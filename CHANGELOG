@@ -10,6 +10,9 @@
       'connect.port', 'connect.path', 'connect.user', 'connect.password' and
       'connect.tls' (Thanks to David Blajda for adding 'connect.path')
     * The setting 'srv.autostart-torrents' was renamed to 'srv.autostart'
+    * The history for the built-in command line is now stored in
+      ~/.local/share/stig/history by default (Thanks to Paulo Marcel Coelho
+      Aragão)
 
   Other changes:
     * The 'set' command now shows a list of settings when called without
