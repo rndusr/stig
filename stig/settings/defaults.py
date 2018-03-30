@@ -15,6 +15,7 @@ log = make_logger(__name__)
 import os
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
+from xdg.BaseDirectory import xdg_data_home  as XDG_DATA_HOME
 
 from .. import __appname__
 from ..views import (torrent, file, peer, tracker, setting)
@@ -23,7 +24,7 @@ from ..client.sorters.peer import TorrentPeerSorter
 from ..client.sorters.tracker import TorrentTrackerSorter
 
 DEFAULT_RCFILE       = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
-DEFAULT_HISTORY_FILE = os.path.join(XDG_CACHE_HOME, __appname__, 'history')
+DEFAULT_HISTORY_FILE = os.path.join(XDG_DATA_HOME, __appname__, 'history')
 DEFAULT_GEOIP_DIR    = os.path.join(XDG_CACHE_HOME, __appname__)
 DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
 
