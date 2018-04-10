@@ -192,11 +192,11 @@ def _create_TorrentFileTree(t):
         tid = t['id']
         filelist = ({'id': (tid, i), **f, **fS}
                     for i,(f,fS) in enumerate(zip(t['files'], fileStats)))
-    return TorrentFileTree(t['id'], filelist, path=())
+    return TorrentFileTree(t['id'], t['downloadDir'], filelist, path=())
 
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
-    def __init__(self, torrent_id, filelist, path):
+    def __init__(self, torrent_id, torrent_location, filelist, path):
         log.debug('Creating new TorrentFileTree for torrent %r', torrent_id)
         super().__init__(path)
 
@@ -209,7 +209,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 filename = parts[0]
                 items[filename] = ttypes.TorrentFile(
                     tid=torrent_id, id=entry['id'],
-                    name=entry['name'], path=path,
+                    name=entry['name'], path=path, location=torrent_location,
                     size_total=entry['length'],
                     size_downloaded=entry['bytesCompleted'],
                     is_wanted=entry['wanted'],
@@ -225,7 +225,8 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 raise RuntimeError(parts)
 
         for subdir,filelist in subdirs.items():
-            items[subdir] = TorrentFileTree(torrent_id, filelist, path=path+(subdir,))
+            items[subdir] = TorrentFileTree(torrent_id, torrent_location,
+                                            filelist, path=path+(subdir,))
         self._items = items
 
     def update(self, raw_torrent):
@@ -243,7 +244,8 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                     fstats = fileStats[index]
                     entry.update({'size-downloaded': fstats['bytesCompleted'],
                                   'is-wanted': fstats['wanted'],
-                                  'priority': fstats['priority']})
+                                  'priority': fstats['priority'],
+                                  'location': raw_torrent['downloadDir']})
                 else:
                     update_files(entry, fileStats)
 
@@ -410,7 +412,7 @@ DEPENDENCIES = {
     'error'                        : ('errorString', 'error', 'trackerStats'),
     'trackers'                     : ('trackerStats', 'name', 'id'),
     'peers'                        : ('peers', 'totalSize', 'name'),
-    'files'                        : ('files', 'fileStats',),
+    'files'                        : ('files', 'fileStats', 'downloadDir'),
 }
 
 # Map our keys to callables that adjust the raw RPC values or create new

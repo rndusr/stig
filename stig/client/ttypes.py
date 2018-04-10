@@ -412,6 +412,7 @@ class TorrentFile(abc.Mapping):
         'tid'             : lambda val: val,
         'name'            : SmartCmpStr,
         'path'            : Path,
+        'location'        : Path,
         'size-total'      : lambda size: convert.size(size, unit='byte'),
         'size-downloaded' : lambda size: convert.size(size, unit='byte'),
         'is-wanted'       : bool,
@@ -424,6 +425,7 @@ class TorrentFile(abc.Mapping):
         'tid'             : lambda raw: raw['tid'],
         'name'            : lambda raw: raw['name'],
         'path'            : lambda raw: os.sep.join(raw['path']),
+        'location'        : lambda raw: raw['location'],
         'size-total'      : lambda raw: raw['size-total'],
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
@@ -431,8 +433,8 @@ class TorrentFile(abc.Mapping):
         'progress'        : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
 
-    def __init__(self, tid, id, name, path, size_total, size_downloaded, is_wanted, priority):
-        self._raw = {'tid': tid, 'id': id, 'name': name, 'path': path,
+    def __init__(self, tid, id, name, path, location, size_total, size_downloaded, is_wanted, priority):
+        self._raw = {'tid': tid, 'id': id, 'name': name, 'path': path, 'location': location,
                      'is-wanted': is_wanted, 'priority': priority,
                      'size-total': size_total, 'size-downloaded': size_downloaded}
         self._cache = {}

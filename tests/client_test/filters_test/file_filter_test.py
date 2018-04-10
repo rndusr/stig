@@ -6,15 +6,15 @@ import unittest
 
 flist = (
     TorrentFile(tid=1, path='', id=1, name='Foo',  is_wanted=True,  priority='normal',
-                size_total=10e3, size_downloaded=10e3),
+                location='/download/path', size_total=10e3, size_downloaded=10e3),
     TorrentFile(tid=1, path='', id=2, name='Bar',  is_wanted=False, priority='normal',
-                size_total=20e3, size_downloaded=10e3),
+                location='/download/path', size_total=20e3, size_downloaded=10e3),
     TorrentFile(tid=1, path='', id=3, name='Baz',  is_wanted=True,  priority='low',
-                size_total=20e3, size_downloaded=20e3),
+                location='/download/path', size_total=20e3, size_downloaded=20e3),
     TorrentFile(tid=1, path='', id=4, name='Bang', is_wanted=True,  priority='high',
-                size_total=30e3, size_downloaded=20e3),
+                location='/download/path', size_total=30e3, size_downloaded=20e3),
     TorrentFile(tid=1, path='', id=5, name='Flup', is_wanted=False, priority='high',
-                size_total=30e3, size_downloaded=30e3),
+                location='/download/path', size_total=30e3, size_downloaded=30e3),
 )
 
 
