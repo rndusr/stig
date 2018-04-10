@@ -64,6 +64,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 path = node['path']
                 if path != '.':
                     node['name'] = os.path.join(path, node['name'])
+                node['name'] = os.path.join(node['location'], node['name'])
 
             def indent_directory_name(node):
                 node['name'] = node['path']
