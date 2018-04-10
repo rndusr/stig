@@ -27,6 +27,8 @@
     * 'ratelimit' command now prints the new limit by default for global and
       per-torrent rates unless the --quiet option is given
     * Added torrent list column: 'id'
+    * When listing files in the CLI, the 'name' column now contains the absolute
+      path to each file if stdout is not a TTY
 
   Fixed bugs:
     * Mitigate high CPU load for urwid 2.x and later
