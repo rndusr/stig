@@ -87,9 +87,10 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
             elif value.nodetype == 'parent':
                 sub_flist, sub_filtered_count = self._flatten_tree(value, ffilter, _indent_level+1)
-                dirnode = create_directory_data(key, value, sub_filtered_count)
-                indent_directory_name(dirnode)
-                flist.append(dirnode)
+                if TERMSIZE.columns is not None:
+                    dirnode = create_directory_data(key, value, sub_filtered_count)
+                    indent_directory_name(dirnode)
+                    flist.append(dirnode)
                 flist.extend(sub_flist)
 
         return flist, filtered_count
