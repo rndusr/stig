@@ -61,7 +61,9 @@ class ListFilesCmd(base.ListFilesCmdbase,
         """
         if TERMSIZE.columns is None:
             def indent_file_name(node):
-                node['name'] = os.path.join(node['path'], node['name'])
+                path = node['path']
+                if path != '.':
+                    node['name'] = os.path.join(path, node['name'])
 
             def indent_directory_name(node):
                 node['name'] = node['path']
