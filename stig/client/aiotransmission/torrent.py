@@ -15,7 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import ttypes
-from .. import utils
+from ..utils import (LazyDict, normalize_unicode)
 from .. import base
 
 
@@ -331,7 +331,7 @@ class TrackerList(tuple):
     def __new__(cls, raw_torrent):
         return super().__new__(cls,
             (ttypes.TorrentTracker(
-                (utils.LazyDict({
+                (LazyDict({
                     'id'                 : (raw_torrent['id'], raw_tracker['id']),
                     'tid'                : raw_torrent['id'],
                     'tname'              : raw_torrent['name'],
@@ -418,6 +418,11 @@ DEPENDENCIES = {
 # Map our keys to callables that adjust the raw RPC values or create new
 # values from existing RPC values.
 _MODIFY = {
+    'name'                         : lambda raw: normalize_unicode(raw['name']),
+    'path'                         : lambda raw: normalize_unicode(raw['downloadDir']),
+    'comment'                      : lambda raw: normalize_unicode(raw['comment']),
+    'creator'                      : lambda raw: normalize_unicode(raw['creator']),
+
     '%downloaded'                  : lambda raw: raw['percentDone'] * 100,
     '%uploaded'                    : _percent_uploaded,
     '%metadata'                    : lambda raw: raw['metadataPercentComplete'] * 100,

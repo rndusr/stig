@@ -104,12 +104,6 @@ class SmartCmpStr(str):
     lower-case characters.
     """
 
-    def __new__(cls, string):
-        # Combine characters with diacritical marks ("a˚" -> "å") so len()
-        # reports the correct length.
-        # http://www.unicode.org/faq/char_combmark.html
-        return super().__new__(cls, unicodedata.normalize('NFC', string))
-
     def __cmp(self, op, other):
         if not isinstance(other, str):
             return NotImplemented

@@ -12,6 +12,14 @@
 from ..utils.usertypes import (Bool, Int, Float, Option, Path, multitype)
 from ..utils import convert
 from . import constants as const
+from unicodedata import normalize as _normalize_unicode
+
+def normalize_unicode(string):
+    """
+    Combine characters with diacritical marks ("a˚" -> "å") so len() reports the
+    correct length.  http://www.unicode.org/faq/char_combmark.html
+    """
+    return _normalize_unicode('NFC', string)
 
 
 class Bandwidth(Int):
