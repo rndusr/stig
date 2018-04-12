@@ -206,7 +206,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         for entry in filelist:
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
-                filename = parts[0]
+                filename = normalize_unicode(parts[0])
                 items[filename] = ttypes.TorrentFile(
                     tid=torrent_id, id=entry['id'],
                     name=entry['name'], path=path, location=torrent_location,
@@ -216,7 +216,8 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                     priority=entry['priority'])
 
             elif len(parts) == 2:
-                subdir, subpath = parts
+                subdir = normalize_unicode(parts[0])
+                subpath = normalize_unicode(parts[1])
                 if subdir not in subdirs:
                     subdirs[subdir] = []
                 entry['name'] = subpath
