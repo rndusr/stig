@@ -15,6 +15,7 @@ from ..table import ColumnHeaderWidget
 from . import (Style, CellWidgetBase)
 from ...views.torrent import COLUMNS as _COLUMNS
 from ...client import ttypes
+from ...utils.string import normalize_unicode
 
 
 TUICOLUMNS = {}
@@ -355,6 +356,7 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
     def render(self, size, focus=False):
         (maxcol,) = size
         name, mode, progress = self.status
+        name = normalize_unicode(name)
         name = name[:maxcol].ljust(maxcol, ' ')  # Expand/Shrink name to full width
         if progress == 100:
             attrs = self.style.attrs(mode+'.complete', focused=focus)

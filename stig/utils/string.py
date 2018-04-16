@@ -11,6 +11,15 @@
 
 import unicodedata
 
+from unicodedata import normalize as _normalize_unicode
+def normalize_unicode(string):
+    """
+    Convert combining character sequences into graphemes (e.g. "a˚" -> "å") so
+    that len() reports the correct length.
+    http://www.unicode.org/faq/char_combmark.html
+    """
+    return _normalize_unicode('NFC', string)
+
 
 def striplines(lines):
     """Remove empty strings from start and end of `lines` using `pop`"""

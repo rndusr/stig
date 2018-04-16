@@ -15,7 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import ttypes
-from ..utils import (LazyDict, normalize_unicode)
+from ..utils import LazyDict
 from .. import base
 
 
@@ -206,7 +206,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         for entry in filelist:
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
-                filename = normalize_unicode(parts[0])
+                filename = parts[0]
                 items[filename] = ttypes.TorrentFile(
                     tid=torrent_id, id=entry['id'],
                     name=entry['name'], path=path, location=torrent_location,
@@ -216,8 +216,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                     priority=entry['priority'])
 
             elif len(parts) == 2:
-                subdir = normalize_unicode(parts[0])
-                subpath = normalize_unicode(parts[1])
+                subdir, subpath = parts
                 if subdir not in subdirs:
                     subdirs[subdir] = []
                 entry['name'] = subpath
@@ -419,11 +418,6 @@ DEPENDENCIES = {
 # Map our keys to callables that adjust the raw RPC values or create new
 # values from existing RPC values.
 _MODIFY = {
-    'name'                         : lambda raw: normalize_unicode(raw['name']),
-    'path'                         : lambda raw: normalize_unicode(raw['downloadDir']),
-    'comment'                      : lambda raw: normalize_unicode(raw['comment']),
-    'creator'                      : lambda raw: normalize_unicode(raw['creator']),
-
     '%downloaded'                  : lambda raw: raw['percentDone'] * 100,
     '%uploaded'                    : _percent_uploaded,
     '%metadata'                    : lambda raw: raw['metadataPercentComplete'] * 100,

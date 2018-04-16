@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ...utils.string import (strwidth, stralign, crop_and_align)
+from ...utils.string import (strwidth, stralign, crop_and_align, normalize_unicode)
 
 import re
 import textwrap
@@ -31,17 +31,17 @@ def _wrapped(line, width):
 
 def _get_cell_lines(cell):
     # Return string of single cell correctly cropped/padded and aligned
-    value = cell.get_value()
+    line = normalize_unicode(str(cell.get_value()))
     width = cell.width
     if isinstance(width, int):
         if cell.wrap == 'clip':
-            return (crop_and_align(str(value), width, cell.align,
+            return (crop_and_align(line, width, cell.align,
                                    has_wide_chars=cell.may_have_wide_chars),)
         else:
             return tuple(stralign(line, width=width)
-                         for line in _wrapped(str(value), width))
+                         for line in _wrapped(line, width))
     else:
-        return (str(value),)
+        return (line,)
 
 def _assemble_row(table, line_index, pretty=True):
     # Concatenate all cells in a row with delimiters
@@ -90,8 +90,9 @@ def _get_header_width(table, colname):
 
 def _get_colwidth(table, colindex):
     # Return width of widest cell in column
-    return max(strwidth(str(row[colindex].get_value()))
-               for row in table.rows)
+    rows = (normalize_unicode(str(row[colindex].get_value()))
+            for row in table.rows)
+    return max(strwidth(row) for row in rows)
 
 def _column_has_variable_width(table, colname):
     # Whether column has fixed or variable width

@@ -29,6 +29,7 @@ class Marked(MarkedBase):
 TUICOLUMNS['marked'] = Marked
 
 
+from ...utils.string import normalize_unicode
 class Filename(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='filelist.name', focusable=True,
@@ -41,6 +42,9 @@ class Filename(_COLUMNS['name'], CellWidgetBase):
             return 'file'
         else:
             return 'folder'
+
+    def get_value(self):
+        return normalize_unicode(super().get_value())
 
 TUICOLUMNS['name'] = Filename
 
