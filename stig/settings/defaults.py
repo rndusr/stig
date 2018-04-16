@@ -180,7 +180,7 @@ def init_defaults(localcfg):
 
     localcfg.add('tui.marked.on',
                  String.partial(minlen=1, maxlen=1),
-                 default='✔',
+                 default='●',
                  description=("Character displayed in 'marked' column for marked "
                               "list items (see 'mark' command)"))
     localcfg.add('tui.marked.off',
