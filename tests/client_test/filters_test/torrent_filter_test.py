@@ -301,6 +301,26 @@ class TestTorrentFilter(TestCaseWithTorrentList):
                                 'connections&!downloading|id=4').apply(self.tlist)
         self.assertEqual(getids(ftlist), {1, 2, 3, 4})
 
+    def test_escaping_operators(self):
+        self.tlist += (Torrent({'id': 100, 'name': 'Foo & Bar', 'downloadDir': '/path/to/torrents',
+                                'isPrivate': True, 'status': 0, 'percentDone': 0.8, 'eta': 3600,
+                                'peersConnected': 1, 'rateUpload': 0, 'rateDownload': 16, 'downloadedEver': 1024,
+                                'metadataPercentComplete': 1, 'trackerStats': []}),)
+        self.tlist += (Torrent({'id': 101, 'name': 'Foo | Bar', 'downloadDir': '/path/to/torrents',
+                                'isPrivate': True, 'status': 0, 'percentDone': 1, 'eta': 3600,
+                                'peersConnected': 1, 'rateUpload': 32, 'rateDownload': 0, 'downloadedEver': 2048,
+                                'metadataPercentComplete': 1, 'trackerStats': []}),)
+        ftlist = TorrentFilter('name~\&').apply(self.tlist)
+        self.assertEqual(getids(ftlist), {100})
+        ftlist = TorrentFilter('name~\|').apply(self.tlist)
+        self.assertEqual(getids(ftlist), {101})
+        ftlist = TorrentFilter('name~\&|name~\|').apply(self.tlist)
+        self.assertEqual(getids(ftlist), {100, 101})
+        ftlist = TorrentFilter('name!~\|').apply(self.tlist)
+        self.assertEqual(getids(ftlist), {1, 2, 3, 4, 100})
+        ftlist = TorrentFilter('name!~\&').apply(self.tlist)
+        self.assertEqual(getids(ftlist), {1, 2, 3, 4, 101})
+
     def test_equality(self):
         self.assertEqual(TorrentFilter('idle&private'),
                          TorrentFilter('idle&private'))
