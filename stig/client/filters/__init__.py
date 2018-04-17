@@ -230,6 +230,8 @@ class Filter():
             name = self._name if self._name != self.DEFAULT_FILTER else ''
             op = ('!' if self._invert else '') + self._op
             val = str(self._value)
+            if val[0] == ' ' or val[-1] == ' ':
+                val = repr(val)
             return name + op + val
 
     @property
