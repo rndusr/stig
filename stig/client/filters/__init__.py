@@ -259,7 +259,7 @@ class FilterChain():
     """One or more filters combined with AND and OR operators"""
 
     filterclass = None
-    _op_regex = re.compile(r'([&|])')
+    _op_regex = re.compile(r'(?<!\\)([&|])')
 
     def __init__(self, filters=''):
         if not isinstance(self.filterclass, type) or not issubclass(self.filterclass, Filter):
@@ -293,6 +293,8 @@ class FilterChain():
             for i,part in enumerate(parts):
                 if expect is 'filter':
                     if part not in '&|':
+                        # Remove backslashes from escaped operators
+                        part = part.replace('\&', '&').replace('\|', '|')
                         f = self.filterclass(part)
                         if f == nofilter:
                             # part is something like 'all' or '*' - this
