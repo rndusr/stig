@@ -133,7 +133,7 @@ class Filter():
                 op = match.group('op') or None
                 invert = bool(match.group('invert1')) ^ bool(match.group('invert2'))
                 value = match.group('value')
-                value = None if value.strip() == '' else value
+                value = None if value == '' else value
 
         # No operator but a value doesn't make any sense
         if op is None and value is not None:
