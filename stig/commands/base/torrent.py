@@ -78,7 +78,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                 return self.make_torrent_list(tfilter, sort, columns)
 
 
-class TorrentSummaryCmdbase(mixin.get_torrent, metaclass=InitCommand):
+class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
     name = 'summary'
     aliases = ('info', 'details')
     provides = set()
@@ -96,16 +96,21 @@ class TorrentSummaryCmdbase(mixin.get_torrent, metaclass=InitCommand):
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
-                                           discover_torrent=True)
+                                           discover_torrent=True,
+                                           prefer_focused=True)
         except ValueError as e:
             log.error(e)
             return False
         else:
-            log.debug('Showing summary of torrent: %r', tfilter)
-            if asyncio.iscoroutinefunction(self.display_summary):
-                return await self.display_summary(tfilter)
+            torrent = await self.get_single_torrent(tfilter, keys=('id', 'name'))
+            if not torrent:
+                return False
             else:
-                return self.display_summary(tfilter)
+                log.debug('Showing summary of torrent %r: %r', tfilter, torrent)
+                if asyncio.iscoroutinefunction(self.display_summary):
+                    return await self.display_summary(torrent['id'])
+                else:
+                    return self.display_summary(torrent['id'])
 
 
 class AddTorrentsCmdbase(metaclass=InitCommand):

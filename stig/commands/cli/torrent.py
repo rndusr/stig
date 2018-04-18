@@ -51,12 +51,7 @@ class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
                          mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
-    async def display_summary(self, tfilter):
-        torrent = await self.get_torrent(tfilter, keys=('id',))
-        if torrent is None:
-            return False
-        tid = torrent['id']
-
+    async def display_summary(self, torrent_id):
         from ...views.summary import SECTIONS
         needed_keys = set(('name',))
         for _section in SECTIONS:
@@ -64,7 +59,7 @@ class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
                 needed_keys.update(_item.needed_keys)
 
         response = await self.make_request(
-            self.srvapi.torrent.torrents((tid,), keys=needed_keys),
+            self.srvapi.torrent.torrents((torrent_id,), keys=needed_keys),
             quiet=True)
         if len(response.torrents) < 1:
             return False

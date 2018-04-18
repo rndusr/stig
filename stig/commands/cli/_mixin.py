@@ -89,7 +89,7 @@ class ask_yes_no():
 
 
 class select_torrents():
-    def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=None):
+    def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=None, prefer_focused=None):
         """
         Get TorrentFilter instance or None
 
@@ -99,8 +99,8 @@ class select_torrents():
         If `FILTER` evaluates to False, None is returned if allow_no_filter
         evaluates to True, otherwise a ValueError is raised.
 
-        `discover_torrent` is ignored and only used in the TUI version of this
-        method (see ..tui.mixin.select_torrent).
+        `discover_torrent` and `prefer_focused` are ignored and only used in the
+        TUI version of this method.
         """
         if FILTER:
             from ...client import TorrentFilter

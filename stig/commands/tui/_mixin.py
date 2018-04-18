@@ -84,7 +84,7 @@ class ask_yes_no():
 class select_torrents():
     tui = ExpectedResource
 
-    def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True):
+    def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True, prefer_focused=False):
         """
         Get TorrentFilter instance or None
 
@@ -92,16 +92,17 @@ class select_torrents():
         resulting object is returned.
 
         If `FILTER` evaluates to False, the result of `discover_torrent_ids` is
-        returned if `discover_torrent` evaluates to True. Otherwise, None is
-        returned if `allow_no_filter` evaluates to True, else a ValueError is
-        raised.
+        returned if `discover_torrent` evaluates to True.  `prefer_focused` is
+        forwarded to `discover_torrent_ids`.  If `discover_torrent` evaluates to
+        False, None is returned if `allow_no_filter` evaluates to True,
+        otherwise a ValueError is raised.
         """
         if FILTER:
             from ...client import TorrentFilter
             return TorrentFilter(FILTER)
         else:
             if discover_torrent:
-                tids = self.discover_torrent_ids()
+                tids = self.discover_torrent_ids(prefer_focused=prefer_focused)
                 if tids is not None:
                     return self.ids2tfilter(tids)
 
@@ -111,23 +112,34 @@ class select_torrents():
             else:
                 raise ValueError('No torrent specified')
 
-    def discover_torrent_ids(self):
+    def discover_torrent_ids(self, prefer_focused=False):
         """
         Auto-detect which torrents are currently selected by the user
 
-        Try `get_marked_torrent_ids` first, then `get_focused_torrent_id`.
+        Torrents are selected by marking them or by focusing them.  If
+        `prefer_focused` evaluates to True, the focused torrent ID is returned,
+        if possible, before looking for marks.  Otherwise, the focused torrent
+        ID is only returned if there are no marked torrents.
 
         If any torrents are found, return a tuple of torrent IDs, otherwise
         None.
         """
-        tids = self.get_marked_torrent_ids()
-        if tids:
-            log.debug('Found marked torrents: %r', tids)
-            return tids
-        tid = self.get_focused_torrent_id()
-        if tid:
-            log.debug('Found focused torrent: %r', tid)
-            return (tid,)
+        def get_marked():
+            tids = self.get_marked_torrent_ids()
+            if tids:
+                log.debug('Found marked torrents: %r', tids)
+                return tids
+
+        def get_focused():
+            tid = self.get_focused_torrent_id()
+            if tid:
+                log.debug('Found focused torrent: %r', tid)
+                return (tid,)
+
+        if prefer_focused:
+            return get_focused() or get_marked()
+        else:
+            return get_marked() or get_focused()
 
     def get_marked_torrent_ids(self):
         """

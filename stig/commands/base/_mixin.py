@@ -14,8 +14,8 @@
 from .. import utils
 
 
-class get_torrent():
-    async def get_torrent(self, tfilter, keys=()):
+class get_single_torrent():
+    async def get_single_torrent(self, tfilter, keys=()):
         """
         Get a single torrent that matches TorrentFilter `tfilter`
 
@@ -24,8 +24,7 @@ class get_torrent():
 
         Return None if no match is found.
         """
-        request = self.srvapi.torrent.torrents(tfilter,
-                                               keys=tuple(keys) + ('name',))
+        request = self.srvapi.torrent.torrents(tfilter, keys=tuple(keys) + ('name',))
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
             from ...client import TorrentSorter

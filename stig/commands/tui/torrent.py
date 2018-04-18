@@ -35,23 +35,7 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
     provides = {'tui'}
     tui = ExpectedResource
 
-    async def display_summary(self, tfilter):
-        if tfilter.needed_keys == ('id',):
-            # If the filter is looking exclusively for IDs, we assume that it
-            # specifies either a bunch of marked torrents or a focused torrent
-            # in a list.  Since we can't show a summary for multiple torrents,
-            # ignore the marks and pick the focused torrent.
-            torrent_id = self.get_focused_torrent_id()
-        else:
-            # The user specified an arbitrary filter (e.g. 'summary foo|bar')
-            # that we have to apply to get an ID.
-            # Pick the first matching torrent.
-            torrent = await self.get_torrent(tfilter, keys=('id',))
-            if torrent is None:
-                return False
-            else:
-                torrent_id = torrent['id']
-
+    async def display_summary(self, torrent_id):
         make_titlew = partial(make_tab_title_widget,
                               attr_unfocused='tabs.torrentsummary.unfocused',
                               attr_focused='tabs.torrentsummary.focused')
