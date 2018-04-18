@@ -83,7 +83,8 @@ class Filter():
 
     @classmethod
     def _check_value(cls, name, value, op):
-        """Convert `value` to correct type for comparative filter `name`
+        """
+        Convert `value` to correct type for comparative filter `name`
 
         Also ensure operator `op` is compatible with `value`.
 
