@@ -20,7 +20,7 @@
     * Get the value of a setting from shell command
       (e.g. `set connect.password:eval pass transmission`)
     * New settings:
-        - 'geoip' en/disables lookup of country codes in peer lists
+        - 'geoip' en-/disables lookup of country codes in peer lists
         - 'geoip.dir' specifies where the geolocation database is cached
     * Process name in tmux sessions is set to 'stig' if setproctitle module is
       installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
@@ -29,6 +29,7 @@
     * Added torrent list column: 'id'
     * When listing files in the CLI, the 'name' column now contains the absolute
       path to each file if stdout is not a TTY
+    * Filter operators ("&" and "|") are now escapable with "\"
 
   Fixed bugs:
     * Mitigate high CPU load for urwid 2.x and later
