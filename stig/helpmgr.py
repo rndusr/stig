@@ -368,8 +368,12 @@ class HelpManager():
              '"size>1m" is the same as "size>1000000" (1 Megabyte)'),
             '',
             ('\tFilters can be combined with the operators "&" (logical AND) '
-             'and "|" (logical OR).  Multiple FILTER arguments are combined with "|".'),
+             'and "|" (logical OR).  Multiple FILTER arguments are implicitly '
+             'combined with "|".'),
             '\tExample: "name=foo paused" is the same as "name=foo|paused".',
+            '',
+            ('\tOperators can be escaped with a preceding "\\" to remove their meaning.'),
+            '\tExample: "name=foo\&bar" matches torrents with the name "foo & bar".',
         ]
 
         from .client.filters.torrent import SingleTorrentFilter
