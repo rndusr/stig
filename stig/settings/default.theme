@@ -381,7 +381,8 @@ torrentlist.name.discovering.complete.unfocused    $name.discovering_fg         
 torrentlist.name.discovering.complete.focused      $name.discovering_fg           on $tlist_bg.f
 
 
-torrentsummary light gray on black
+torrentsummary       light gray on black
+torrentsummary.error light red  on black
 
 
 $flist_bg.uf = black

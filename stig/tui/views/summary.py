@@ -77,29 +77,37 @@ class TorrentSummaryWidget(urwid.WidgetWrap):
             opts = grid.options('given', section.width)
             section_wrapped = add_title(section.title, section)
             grid.contents.append((section_wrapped, opts))
+        self._grid = grid
+        self._content = Scrollable(grid)
 
-        grid_sb = urwid.AttrMap(
-            ScrollBar(urwid.AttrMap(Scrollable(grid), 'torrentsummary')),
+        super().__init__(urwid.AttrMap(
+            ScrollBar(urwid.AttrMap(self._content, 'torrentsummary')),
             'scrollbar'
-        )
-        super().__init__(grid_sb)
+        ))
 
         # Register new request in request pool
         keys = set(('name',)).union(key for w in sections for key in w.needed_keys)
         self._poller = srvapi.create_poller(srvapi.torrent.torrents, (tid,), keys=keys)
         self._poller.on_response(self._handle_response)
+        self._poller.on_error(self._handle_error)
 
     def _handle_response(self, response):
         if response is not None and response.success:
             self._torrent = response.torrents[0]
+            self._content.original_widget = self._grid
             for w in self._sections.values():
                 w.update(self._torrent)
 
             # Set new tab title if necessary
             if self.title_updater is not None:
                 self.title_updater(self.title)
-        else:
-            self._torrent = {}
+        elif response is not None:
+            self._handle_error(*response.msgs)
+
+    def _handle_error(self, *errors):
+        self._torrent = {'name': None, 'id': None}
+        pile = urwid.Pile(urwid.Text(('torrentsummary.error', str(e))) for e in errors)
+        self._content.original_widget = pile
 
     @property
     def title(self):
