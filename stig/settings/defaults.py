@@ -33,7 +33,7 @@ DEFAULT_PEER_SORT    = ('torrent',)
 DEFAULT_TRACKER_SORT = ('domain',)
 
 DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
-                           'seeds', 'connections', 'status', 'eta', 'progress',
+                           'seeds', 'peers', 'status', 'eta', '%downloaded',
                            'rate-down', 'rate-up', 'name')
 DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
 DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',

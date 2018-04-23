@@ -38,273 +38,7 @@ class Id(_COLUMNS['id'], CellWidgetBase):
 TUICOLUMNS['id'] = Id
 
 
-class Path(_COLUMNS['path'], CellWidgetBase):
-    width = 20
-    style = Style(prefix='torrentlist.path', focusable=True,
-                  extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['path'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['path'] = Path
-
-
-class Connections(_COLUMNS['connections'], CellWidgetBase):
-    style = Style(prefix='torrentlist.connections', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['connections'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value > 0 else ''
-
-TUICOLUMNS['connections'] = Connections
-
-
-class Seeds(_COLUMNS['seeds'], CellWidgetBase):
-    style = Style(prefix='torrentlist.seeds', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['seeds'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value < 5 else ''
-
-TUICOLUMNS['seeds'] = Seeds
-
-
-class Progress(_COLUMNS['progress'], CellWidgetBase):
-    style = Style(prefix='torrentlist.progress', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['progress'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value < 100 else ''
-
-TUICOLUMNS['progress'] = Progress
-
-
-class PercentAvailable(_COLUMNS['%available'], CellWidgetBase):
-    style = Style(prefix='torrentlist.%available', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['%available'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value < 100 else ''
-
-TUICOLUMNS['%available'] = PercentAvailable
-
-
-class Ratio(_COLUMNS['ratio'], CellWidgetBase):
-    style = Style(prefix='torrentlist.ratio', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['ratio'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        if 0 <= self.value < 1:
-            return 'highlighted'
-
-TUICOLUMNS['ratio'] = Ratio
-
-
-class Size(_COLUMNS['size'], CellWidgetBase):
-    style = Style(prefix='torrentlist.size', focusable=True,
-                  extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['size'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['size'] = Size
-
-
-class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
-    style = Style(prefix='torrentlist.downloaded', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['downloaded'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        t = self.data
-        if t['%downloaded'] < 100 and 0 < t['size-downloaded'] < t['size-final']:
-            return 'highlighted'
-
-TUICOLUMNS['downloaded'] = Downloaded
-
-
-class Uploaded(_COLUMNS['uploaded'], CellWidgetBase):
-    style = Style(prefix='torrentlist.uploaded', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['uploaded'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        if self.data['size-uploaded'] < self.data['size-downloaded']:
-            return 'highlighted'
-
-TUICOLUMNS['uploaded'] = Uploaded
-
-
-class BytesAvailable(_COLUMNS['available'], CellWidgetBase):
-    style = Style(prefix='torrentlist.available', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['available'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        if self.value < self.data['size-final']:
-            return 'highlighted'
-
-TUICOLUMNS['available'] = BytesAvailable
-
-
-class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
-    style = Style(prefix='torrentlist.rate-down', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-down'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value > 0 else ''
-
-TUICOLUMNS['rate-down'] = RateDown
-
-
-class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
-    style = Style(prefix='torrentlist.rate-up', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-up'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value > 0 else ''
-
-TUICOLUMNS['rate-up'] = RateUp
-
-
-
-class RateLimitDown(_COLUMNS['limit-rate-down'], CellWidgetBase):
-    style = Style(prefix='torrentlist.limit-rate-down', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-rate-down'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value < float('inf') else ''
-
-TUICOLUMNS['limit-rate-down'] = RateLimitDown
-
-
-class RateLimitUp(_COLUMNS['limit-rate-up'], CellWidgetBase):
-    style = Style(prefix='torrentlist.limit-rate-up', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-rate-up'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value < float('inf') else ''
-
-TUICOLUMNS['limit-rate-up'] = RateLimitUp
-
-
-class EtaComplete(_COLUMNS['eta'], CellWidgetBase):
-    style = Style(prefix='torrentlist.eta', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['eta'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if bool(self.value) else ''
-
-TUICOLUMNS['eta'] = EtaComplete
-
-
-class TimeCreated(_COLUMNS['time-created'], CellWidgetBase):
-    style = Style(prefix='torrentlist.created', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-created'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['time-created'] = TimeCreated
-
-class TimeAdded(_COLUMNS['time-added'], CellWidgetBase):
-    style = Style(prefix='torrentlist.added', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-added'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['time-added'] = TimeAdded
-
-class TimeStarted(_COLUMNS['time-started'], CellWidgetBase):
-    style = Style(prefix='torrentlist.started', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-started'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['time-started'] = TimeStarted
-
-class TimeActive(_COLUMNS['time-activity'], CellWidgetBase):
-    style = Style(prefix='torrentlist.activity', focusable=True, extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-activity'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['time-activity'] = TimeActive
-
-class TimeCompleted(_COLUMNS['time-completed'], CellWidgetBase):
-    style = Style(prefix='torrentlist.completed', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['time-completed'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        return 'highlighted' if self.value.in_future else ''
-
-TUICOLUMNS['time-completed'] = TimeCompleted
-
-
-class Tracker(_COLUMNS['tracker'], CellWidgetBase):
-    style = Style(prefix='torrentlist.tracker', focusable=True,
-                  extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['tracker'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['tracker'] = Tracker
-
-
-class Error(_COLUMNS['error'], CellWidgetBase):
-    style = Style(prefix='torrentlist.error', focusable=True,
-                  extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['error'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['error'] = Error
-
-
-class Status(_COLUMNS['status'], CellWidgetBase):
-    style = Style(prefix='torrentlist.status', focusable=True,
-                  extras=('header',),
-                  modes=('idle', 'downloading', 'uploading', 'connected', 'seeding',
-                         'stopped', 'queued', 'isolated', 'verifying', 'discovering'))
-
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
-                           style.attrs('header'))
-
-    MODE_MAP = {
-        ttypes.Status.IDLE      : 'idle',
-        ttypes.Status.DOWNLOAD  : 'downloading',
-        ttypes.Status.UPLOAD    : 'uploading',
-        ttypes.Status.CONNECTED : 'connected',
-        ttypes.Status.SEED      : 'seeding',
-        ttypes.Status.STOPPED   : 'stopped',
-        ttypes.Status.QUEUED    : 'queued',
-        ttypes.Status.ISOLATED  : 'isolated',
-        ttypes.Status.VERIFY    : 'verifying',
-        ttypes.Status.INIT      : 'discovering',
-    }
-    def get_mode(self):
-        return self.MODE_MAP[self.value]
-
-TUICOLUMNS['status'] = Status
-
-
-class TorrentName(_COLUMNS['name'], CellWidgetBase):
+class Name(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),
                   modes=('idle.progress1', 'idle.progress2', 'idle.complete',
@@ -374,4 +108,269 @@ class TorrentName(_COLUMNS['name'], CellWidgetBase):
     def get_mode(self):
         return self.status[1]
 
-TUICOLUMNS['name'] = TorrentName
+TUICOLUMNS['name'] = Name
+
+
+class Path(_COLUMNS['path'], CellWidgetBase):
+    width = 20
+    style = Style(prefix='torrentlist.path', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['path'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['path'] = Path
+
+
+class Status(_COLUMNS['status'], CellWidgetBase):
+    style = Style(prefix='torrentlist.status', focusable=True,
+                  extras=('header',),
+                  modes=('idle', 'downloading', 'uploading', 'connected', 'seeding',
+                         'stopped', 'queued', 'isolated', 'verifying', 'discovering'))
+
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
+                           style.attrs('header'))
+
+    MODE_MAP = {
+        ttypes.Status.IDLE      : 'idle',
+        ttypes.Status.DOWNLOAD  : 'downloading',
+        ttypes.Status.UPLOAD    : 'uploading',
+        ttypes.Status.CONNECTED : 'connected',
+        ttypes.Status.SEED      : 'seeding',
+        ttypes.Status.STOPPED   : 'stopped',
+        ttypes.Status.QUEUED    : 'queued',
+        ttypes.Status.ISOLATED  : 'isolated',
+        ttypes.Status.VERIFY    : 'verifying',
+        ttypes.Status.INIT      : 'discovering',
+    }
+    def get_mode(self):
+        return self.MODE_MAP[self.value]
+
+TUICOLUMNS['status'] = Status
+
+
+class Error(_COLUMNS['error'], CellWidgetBase):
+    style = Style(prefix='torrentlist.error', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['error'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['error'] = Error
+
+
+class Uploaded(_COLUMNS['uploaded'], CellWidgetBase):
+    style = Style(prefix='torrentlist.uploaded', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['uploaded'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        if self.data['size-uploaded'] < self.data['size-downloaded']:
+            return 'highlighted'
+
+TUICOLUMNS['uploaded'] = Uploaded
+
+
+class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
+    style = Style(prefix='torrentlist.downloaded', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['downloaded'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        t = self.data
+        if t['%downloaded'] < 100 and 0 < t['size-downloaded'] < t['size-final']:
+            return 'highlighted'
+
+TUICOLUMNS['downloaded'] = Downloaded
+
+
+class PercentDownloaded(_COLUMNS['%downloaded'], CellWidgetBase):
+    style = Style(prefix='torrentlist.%downloaded', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['%downloaded'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < 100 else ''
+
+TUICOLUMNS['%downloaded'] = PercentDownloaded
+
+
+class Available(_COLUMNS['available'], CellWidgetBase):
+    style = Style(prefix='torrentlist.available', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['available'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        if self.value < self.data['size-final']:
+            return 'highlighted'
+
+TUICOLUMNS['available'] = Available
+
+
+class PercentAvailable(_COLUMNS['%available'], CellWidgetBase):
+    style = Style(prefix='torrentlist.%available', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['%available'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < 100 else ''
+
+TUICOLUMNS['%available'] = PercentAvailable
+
+
+class Size(_COLUMNS['size'], CellWidgetBase):
+    style = Style(prefix='torrentlist.size', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['size'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['size'] = Size
+
+
+class Peers(_COLUMNS['peers'], CellWidgetBase):
+    style = Style(prefix='torrentlist.peers', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['peers'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value > 0 else ''
+
+TUICOLUMNS['peers'] = Peers
+
+
+class Seeds(_COLUMNS['seeds'], CellWidgetBase):
+    style = Style(prefix='torrentlist.seeds', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['seeds'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < 5 else ''
+
+TUICOLUMNS['seeds'] = Seeds
+
+
+class Ratio(_COLUMNS['ratio'], CellWidgetBase):
+    style = Style(prefix='torrentlist.ratio', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['ratio'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        if 0 <= self.value < 1:
+            return 'highlighted'
+
+TUICOLUMNS['ratio'] = Ratio
+
+
+class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
+    style = Style(prefix='torrentlist.rate-up', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-up'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value > 0 else ''
+
+TUICOLUMNS['rate-up'] = RateUp
+
+
+class RateDown(_COLUMNS['rate-down'], CellWidgetBase):
+    style = Style(prefix='torrentlist.rate-down', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['rate-down'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value > 0 else ''
+
+TUICOLUMNS['rate-down'] = RateDown
+
+
+class LimitRateUp(_COLUMNS['limit-rate-up'], CellWidgetBase):
+    style = Style(prefix='torrentlist.limit-rate-up', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-rate-up'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < float('inf') else ''
+
+TUICOLUMNS['limit-rate-up'] = LimitRateUp
+
+
+class LimitRateDown(_COLUMNS['limit-rate-down'], CellWidgetBase):
+    style = Style(prefix='torrentlist.limit-rate-down', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-rate-down'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value < float('inf') else ''
+
+TUICOLUMNS['limit-rate-down'] = LimitRateDown
+
+
+class Tracker(_COLUMNS['tracker'], CellWidgetBase):
+    style = Style(prefix='torrentlist.tracker', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['tracker'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['tracker'] = Tracker
+
+
+class Eta(_COLUMNS['eta'], CellWidgetBase):
+    style = Style(prefix='torrentlist.eta', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['eta'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if bool(self.value) else ''
+
+TUICOLUMNS['eta'] = Eta
+
+
+class Created(_COLUMNS['created'], CellWidgetBase):
+    style = Style(prefix='torrentlist.created', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['created'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['created'] = Created
+
+class Added(_COLUMNS['added'], CellWidgetBase):
+    style = Style(prefix='torrentlist.added', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['added'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['added'] = Added
+
+class Started(_COLUMNS['started'], CellWidgetBase):
+    style = Style(prefix='torrentlist.started', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['started'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['started'] = Started
+
+class Active(_COLUMNS['activity'], CellWidgetBase):
+    style = Style(prefix='torrentlist.activity', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['activity'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['activity'] = Active
+
+class Completed(_COLUMNS['completed'], CellWidgetBase):
+    style = Style(prefix='torrentlist.completed', focusable=True,
+                  extras=('header',), modes=('highlighted',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['completed'].header),
+                           style.attrs('header'))
+
+    def get_mode(self):
+        return 'highlighted' if self.value.in_future else ''
+
+TUICOLUMNS['completed'] = Completed

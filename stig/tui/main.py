@@ -164,15 +164,13 @@ def run(command_runner):
 
     # If no tab has been opened by cli or rc file, open default tabs
     if len(tabs) <= 0:
-        for cmd in ( 'tab ls -c size,ratio,seeds,status,tracker,path,name,time-activity',
-                     'tab ls active|incomplete',
-                    ('tab ls downloading -c size,downloaded,progress,'
-                     'rate-down,time-completed,eta,path,name'),
-                    ('tab ls uploading -c size,uploaded,ratio,'
-                     'rate-up,connections,seeds,tracker,path,name -s ratio'),
-                    'tab ls stopped -c size,progress,seeds,time-activity,path,name',
-                    'tab ls isolated -c error,tracker,path,name -s tracker',
-                    'tab -t peers lsp -s eta,torrent',):
+        for cmd in ('tab ls -c seeds,status,ratio,path,name,tracker',
+                    'tab ls active|incomplete',
+                    'tab ls downloading -c size,downloaded,%downloaded,rate-down,completed,eta,path,name',
+                    'tab ls uploading -c size,ratio,uploaded,rate-up,peers,seeds,tracker,path,name',
+                    'tab -t peers lsp -s torrent',
+                    'tab ls stopped -s ratio,path -c size,%downloaded,seeds,ratio,activity,path,name',
+                    'tab ls isolated -c error,tracker,path,name -s tracker'):
             cmdmgr.run_sync(cmd, on_error=log.error)
         tabs.focus_position = 1
 

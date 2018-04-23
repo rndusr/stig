@@ -287,7 +287,7 @@ class TestTorrentFilter(TestCaseWithTorrentList):
         self.assertEqual(getids(ftlist), {1, 2})
 
         ftlist = TorrentFilter('seeding|%downloaded<30 |'
-                                'connections=1|path~/different/').apply(self.tlist)
+                                'peers=1|path~/different/').apply(self.tlist)
         self.assertEqual(getids(ftlist), {1, 2, 3, 4})
 
     def test_AND_OR_operator(self):
@@ -298,7 +298,7 @@ class TestTorrentFilter(TestCaseWithTorrentList):
         self.assertEqual(getids(ftlist), {1, 2, 4})
 
         ftlist = TorrentFilter('name~f&seeding|!complete&downloading|'
-                                'connections&!downloading|id=4').apply(self.tlist)
+                                'peers&!downloading|id=4').apply(self.tlist)
         self.assertEqual(getids(ftlist), {1, 2, 3, 4})
 
     def test_escaping_operators(self):

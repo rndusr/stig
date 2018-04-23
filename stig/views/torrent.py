@@ -17,26 +17,36 @@ log = make_logger(__name__)
 from . import (ColumnBase, _ensure_hide_unit)
 
 COLUMNS = {}
-ALIASES = { '%avail'   : '%available',
-            'avail'    : 'available',
-            'dn'       : 'downloaded',
-            'up'       : 'uploaded',
-            'con'      : 'connections',
-            'mark'     : 'marked',
-            'torrent'  : 'name',
-            '%'        : 'progress',
+ALIASES = { 'mark'     : 'marked',
+            'n'        : 'name',
             'dir'      : 'path',
-            'rdn'      : 'rate-down',
+            'st'       : 'status',
+            'err'      : 'error',
+            'up'       : 'uploaded',
+            'dn'       : 'downloaded',
+            '%dn'      : '%downloaded',
+            'av'       : 'available',
+            '%av'      : '%available',
+            'sz'       : 'size',
+            'prs'      : 'peers',
+            'sds'      : 'seeds',
+            'rto'      : 'ratio',
             'rup'      : 'rate-up',
-            'lrdn'     : 'limit-rate-down',
+            'rdn'      : 'rate-down',
             'lrup'     : 'limit-rate-up',
-            'state'    : 'status',
+            'lrdn'     : 'limit-rate-down',
             'trk'      : 'tracker',
-            't-create' : 'time-created',
-            't-add'    : 'time-added',
-            't-start'  : 'time-started',
-            't-active' : 'time-activity',
-            't-comp'   : 'time-completed' }
+            'tcrt'     : 'created',
+            'tadd'     : 'added',
+            'tsta'     : 'started',
+            'tact'     : 'activity',
+            'tcmp'     : 'completed' }
+
+
+class Marked(ColumnBase):
+    interfaces = ('tui',)
+
+COLUMNS['marked'] = Marked
 
 
 class Id(ColumnBase):
@@ -49,6 +59,20 @@ class Id(ColumnBase):
         return self.data['id']
 
 COLUMNS['id'] = Id
+
+
+class Name(ColumnBase):
+    header = {'left': 'Name'}
+    width = None
+    min_width = 5
+    needed_keys = ('name',)
+    align = 'left'
+    may_have_wide_chars = True
+
+    def get_value(self):
+        return self.data['name']
+
+COLUMNS['name'] = Name
 
 
 import os
@@ -113,31 +137,64 @@ class Path(ColumnBase):
 COLUMNS['path'] = Path
 
 
-class Connections(ColumnBase):
-    header = {'left': 'Conn'}
-    width = 5
-    min_width = 5
-    needed_keys = ('peers-connected',)
+class Status(ColumnBase):
+    header = {'left': 'Status'}
+    width = 11
+    min_width = 11
+    needed_keys = ('status',)
 
     def get_value(self):
-        return self.data['peers-connected']
+        return self.data['status'][0]
 
-COLUMNS['connections'] = Connections
+COLUMNS['status'] = Status
 
 
-class Seeds(ColumnBase):
-    header = {'left': 'Seeds'}
-    width = 5
-    min_width = 5
-    needed_keys = ('peers-seeding',)
+class Error(ColumnBase):
+    header = {'left': 'Error'}
+    width = ('weight', 300)
+    min_width = 10
+    needed_keys = ('error',)
+    align = 'left'
 
     def get_value(self):
-        return self.data['peers-seeding']
+        return self.data['error']
 
-COLUMNS['seeds'] = Seeds
+COLUMNS['error'] = Error
 
 
-class Progress(ColumnBase):
+class Uploaded(ColumnBase):
+    header = {'left': 'Up', 'right': '?'}
+    width = 6
+    min_width = 6
+    needed_keys = ('size-uploaded', 'size-downloaded')
+
+    def get_value(self):
+        return self._from_cache(_ensure_hide_unit, self.data['size-uploaded'])
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = unit
+
+COLUMNS['uploaded'] = Uploaded
+
+
+class Downloaded(ColumnBase):
+    header = {'left': 'Dn', 'right': '?'}
+    width = 6
+    min_width = 6
+    needed_keys = ('size-downloaded', 'size-final')
+
+    def get_value(self):
+        return self._from_cache(_ensure_hide_unit, self.data['size-downloaded'])
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = unit
+
+COLUMNS['downloaded'] = Downloaded
+
+
+class PercentDownloaded(ColumnBase):
     header = {'right': '%'}
     width = 4
     min_width = 4
@@ -157,7 +214,31 @@ class Progress(ColumnBase):
         t = self.data
         return self._from_cache(self._get_value, t['%verified'], t['%downloaded'], t['%metadata'])
 
-COLUMNS['progress'] = Progress
+COLUMNS['%downloaded'] = PercentDownloaded
+
+
+class Available(ColumnBase):
+    header = {'left': 'Avail', 'right': '?'}
+    width = 7
+    min_width = 7
+    needed_keys = ('size-available', 'size-final', 'peers-seeding')
+
+    @staticmethod
+    def _get_value(size_final, size_available, peers_seeding):
+        if peers_seeding > 0:
+            return _ensure_hide_unit(size_final)
+        else:
+            return _ensure_hide_unit(size_available)
+
+    def get_value(self):
+        t = self.data
+        return self._from_cache(self._get_value, t['size-final'], t['size-available'], t['peers-seeding'])
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = unit
+
+COLUMNS['available'] = Available
 
 
 class PercentAvailable(ColumnBase):
@@ -180,18 +261,6 @@ class PercentAvailable(ColumnBase):
 COLUMNS['%available'] = PercentAvailable
 
 
-class Ratio(ColumnBase):
-    header = {'left': 'Ratio'}
-    width = 5
-    min_width = 5
-    needed_keys = ('ratio',)
-
-    def get_value(self):
-        return self.data['ratio']
-
-COLUMNS['ratio'] = Ratio
-
-
 class Size(ColumnBase):
     header = {'left': 'Size', 'right': '?'}
     width = 6
@@ -208,76 +277,40 @@ class Size(ColumnBase):
 COLUMNS['size'] = Size
 
 
-class Downloaded(ColumnBase):
-    header = {'left': 'Dn', 'right': '?'}
-    width = 6
-    min_width = 6
-    needed_keys = ('size-downloaded', 'size-final')
+class Peers(ColumnBase):
+    header = {'left': 'Peers'}
+    width = 5
+    min_width = 5
+    needed_keys = ('peers-connected',)
 
     def get_value(self):
-        return self._from_cache(_ensure_hide_unit, self.data['size-downloaded'])
+        return self.data['peers-connected']
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header['right'] = unit
-
-COLUMNS['downloaded'] = Downloaded
+COLUMNS['peers'] = Peers
 
 
-class Uploaded(ColumnBase):
-    header = {'left': 'Up', 'right': '?'}
-    width = 6
-    min_width = 6
-    needed_keys = ('size-uploaded', 'size-downloaded')
+class Seeds(ColumnBase):
+    header = {'left': 'Seeds'}
+    width = 5
+    min_width = 5
+    needed_keys = ('peers-seeding',)
 
     def get_value(self):
-        return self._from_cache(_ensure_hide_unit, self.data['size-uploaded'])
+        return self.data['peers-seeding']
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header['right'] = unit
-
-COLUMNS['uploaded'] = Uploaded
+COLUMNS['seeds'] = Seeds
 
 
-class BytesAvailable(ColumnBase):
-    header = {'left': 'Avail', 'right': '?'}
-    width = 7
-    min_width = 7
-    needed_keys = ('size-available', 'size-final', 'peers-seeding')
-
-    @staticmethod
-    def _get_value(size_final, size_available, peers_seeding):
-        if peers_seeding > 0:
-            return _ensure_hide_unit(size_final)
-        else:
-            return _ensure_hide_unit(size_available)
+class Ratio(ColumnBase):
+    header = {'left': 'Ratio'}
+    width = 5
+    min_width = 5
+    needed_keys = ('ratio',)
 
     def get_value(self):
-        t = self.data
-        return self._from_cache(self._get_value, t['size-final'], t['size-available'], t['peers-seeding'])
+        return self.data['ratio']
 
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header['right'] = unit
-
-COLUMNS['available'] = BytesAvailable
-
-
-class RateDown(ColumnBase):
-    header = {'left': 'Dn', 'right': '?/s'}
-    width = 6
-    min_width = 6
-    needed_keys = ('rate-down',)
-
-    def get_value(self):
-        return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header['right'] = '%s/s' % unit
-
-COLUMNS['rate-down'] = RateDown
+COLUMNS['ratio'] = Ratio
 
 
 class RateUp(ColumnBase):
@@ -296,23 +329,23 @@ class RateUp(ColumnBase):
 COLUMNS['rate-up'] = RateUp
 
 
-class RateLimitDown(ColumnBase):
-    header = {'left': 'LmtDn', 'right': '?/s'}
-    width = 9
-    min_width = 9
-    needed_keys = ('limit-rate-down',)
+class RateDown(ColumnBase):
+    header = {'left': 'Dn', 'right': '?/s'}
+    width = 6
+    min_width = 6
+    needed_keys = ('rate-down',)
 
     def get_value(self):
-        return self._from_cache(_ensure_hide_unit, self.data['limit-rate-down'])
+        return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
 
     @classmethod
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
 
-COLUMNS['limit-rate-down'] = RateLimitDown
+COLUMNS['rate-down'] = RateDown
 
 
-class RateLimitUp(ColumnBase):
+class LimitRateUp(ColumnBase):
     header = {'left': 'LmtUp', 'right': '?/s'}
     width = 9
     min_width = 9
@@ -325,10 +358,26 @@ class RateLimitUp(ColumnBase):
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
 
-COLUMNS['limit-rate-up'] = RateLimitUp
+COLUMNS['limit-rate-up'] = LimitRateUp
 
 
-class EtaComplete(ColumnBase):
+class LimitRateDown(ColumnBase):
+    header = {'left': 'LmtDn', 'right': '?/s'}
+    width = 9
+    min_width = 9
+    needed_keys = ('limit-rate-down',)
+
+    def get_value(self):
+        return self._from_cache(_ensure_hide_unit, self.data['limit-rate-down'])
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = '%s/s' % unit
+
+COLUMNS['limit-rate-down'] = LimitRateDown
+
+
+class Eta(ColumnBase):
     header = {'left': 'ETA'}
     width = 5
     min_width = 9
@@ -337,33 +386,7 @@ class EtaComplete(ColumnBase):
     def get_value(self):
         return self.data['timespan-eta']
 
-COLUMNS['eta'] = EtaComplete
-
-
-class TorrentName(ColumnBase):
-    header = {'left': 'Name'}
-    width = None
-    min_width = 5
-    needed_keys = ('name',)
-    align = 'left'
-    may_have_wide_chars = True
-
-    def get_value(self):
-        return self.data['name']
-
-COLUMNS['name'] = TorrentName
-
-
-class Status(ColumnBase):
-    header = {'left': 'Status'}
-    width = 11
-    min_width = 11
-    needed_keys = ('status',)
-
-    def get_value(self):
-        return self.data['status'][0]
-
-COLUMNS['status'] = Status
+COLUMNS['eta'] = Eta
 
 
 class Tracker(ColumnBase):
@@ -382,70 +405,51 @@ class Tracker(ColumnBase):
 COLUMNS['tracker'] = Tracker
 
 
-class Error(ColumnBase):
-    header = {'left': 'Error'}
-    width = ('weight', 300)
-    min_width = 10
-    needed_keys = ('error',)
-    align = 'left'
-
-    def get_value(self):
-        return self.data['error']
-
-COLUMNS['error'] = Error
-
-
-class Marked(ColumnBase):
-    interfaces = ('tui',)
-
-COLUMNS['marked'] = Marked
-
-
-class TimeBase(ColumnBase):
+class _TimeBase(ColumnBase):
     width = 10
     min_width = 10
 
-class TimeCreated(TimeBase):
+class Created(_TimeBase):
     header = {'left': 'Created'}
     needed_keys = ('time-created',)
 
     def get_value(self):
         return self.data['time-created']
 
-COLUMNS['time-created'] = TimeCreated
+COLUMNS['created'] = Created
 
-class TimeAdded(TimeBase):
+class Added(_TimeBase):
     header = {'left': 'Added'}
     needed_keys = ('time-added',)
 
     def get_value(self):
         return self.data['time-added']
 
-COLUMNS['time-added'] = TimeAdded
+COLUMNS['added'] = Added
 
-class TimeStarted(TimeBase):
+class Started(_TimeBase):
     header = {'left': 'Started'}
     needed_keys = ('time-started',)
 
     def get_value(self):
         return self.data['time-started']
 
-COLUMNS['time-started'] = TimeStarted
+COLUMNS['started'] = Started
 
-class TimeActivity(TimeBase):
+class Activity(_TimeBase):
     header = {'left': 'Activity'}
     needed_keys = ('time-activity',)
 
     def get_value(self):
         return self.data['time-activity']
 
-COLUMNS['time-activity'] = TimeActivity
+COLUMNS['activity'] = Activity
 
-class TimeCompleted(TimeBase):
+class Completed(_TimeBase):
     header = {'left': 'Completed'}
     needed_keys = ('time-completed',)
 
     def get_value(self):
         return self.data['time-completed']
 
-COLUMNS['time-completed'] = TimeCompleted
+COLUMNS['completed'] = Completed

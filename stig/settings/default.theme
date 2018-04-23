@@ -139,13 +139,13 @@ torrentlist.path.header                            $path_fg,underline on $tlist_
 torrentlist.path.unfocused                         $path_fg           on $tlist_bg.uf
 torrentlist.path.focused                           $path_fg           on $tlist_bg.f
 
-$connections_fg = light gray
-$connections_hl = white
-torrentlist.connections.header                     $connections_fg,underline on $tlist_bg.uf
-torrentlist.connections.unfocused                  $connections_fg           on $tlist_bg.uf
-torrentlist.connections.focused                    $connections_fg           on $tlist_bg.f
-torrentlist.connections.highlighted.unfocused      $connections_hl           on $tlist_bg.uf
-torrentlist.connections.highlighted.focused        $connections_hl           on $tlist_bg.f
+$peers_fg = light gray
+$peers_hl = white
+torrentlist.peers.header                           $peers_fg,underline on $tlist_bg.uf
+torrentlist.peers.unfocused                        $peers_fg           on $tlist_bg.uf
+torrentlist.peers.focused                          $peers_fg           on $tlist_bg.f
+torrentlist.peers.highlighted.unfocused            $peers_hl           on $tlist_bg.uf
+torrentlist.peers.highlighted.focused              $peers_hl           on $tlist_bg.f
 
 $seeds_fg = light gray
 $seeds_hl = white
@@ -155,13 +155,13 @@ torrentlist.seeds.focused                          $seeds_fg           on $tlist
 torrentlist.seeds.highlighted.unfocused            $seeds_hl           on $tlist_bg.uf
 torrentlist.seeds.highlighted.focused              $seeds_hl           on $tlist_bg.f
 
-$progress_fg = dark blue
-$progress_hl = light blue
-torrentlist.progress.header                        $progress_fg,underline on $tlist_bg.uf
-torrentlist.progress.unfocused                     $progress_fg           on $tlist_bg.uf
-torrentlist.progress.focused                       $progress_fg           on $tlist_bg.f
-torrentlist.progress.highlighted.unfocused         $progress_hl           on $tlist_bg.uf
-torrentlist.progress.highlighted.focused           $progress_hl           on $tlist_bg.f
+$%downloaded_fg = dark blue
+$%downloaded_hl = light blue
+torrentlist.%downloaded.header                     $%downloaded_fg,underline on $tlist_bg.uf
+torrentlist.%downloaded.unfocused                  $%downloaded_fg           on $tlist_bg.uf
+torrentlist.%downloaded.focused                    $%downloaded_fg           on $tlist_bg.f
+torrentlist.%downloaded.highlighted.unfocused      $%downloaded_hl           on $tlist_bg.uf
+torrentlist.%downloaded.highlighted.focused        $%downloaded_hl           on $tlist_bg.f
 
 $%available_fg = dark blue
 $%available_hl = light blue
