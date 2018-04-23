@@ -20,14 +20,14 @@ from ...views.tracker import COLUMNS as _COLUMNS
 
 TUICOLUMNS = {}
 
-class TorrentName(_COLUMNS['torrent'], CellWidgetBase):
+class Torrent(_COLUMNS['torrent'], CellWidgetBase):
     width = ('weight', 50)
     style = Style(prefix='trackerlist.torrent', focusable=True,
                   extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['torrent'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['torrent'] = TorrentName
+TUICOLUMNS['torrent'] = Torrent
 
 
 class Tier(_COLUMNS['tier'], CellWidgetBase):
@@ -69,13 +69,13 @@ class ScrapeURL(_COLUMNS['url-scrape'], CellWidgetBase):
 TUICOLUMNS['url-scrape'] = ScrapeURL
 
 
-class State(_COLUMNS['state'], CellWidgetBase):
-    style = Style(prefix='trackerlist.state', focusable=True,
+class Status(_COLUMNS['status'], CellWidgetBase):
+    style = Style(prefix='trackerlist.status', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['state'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
                            style.attrs('header'))
 
-TUICOLUMNS['state'] = State
+TUICOLUMNS['status'] = Status
 
 
 class Error(_COLUMNS['error'], CellWidgetBase):

@@ -36,9 +36,8 @@ DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
                            'seeds', 'peers', 'status', 'eta', '%downloaded',
                            'rate-down', 'rate-up', 'name')
 DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size', 'name')
-DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'state', 'error',
-                           'leeches', 'seeds', 'downloads',
-                           'last-announce', 'next-announce')
+DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'error', 'last-announce', 'next-announce',
+                           'leeches', 'seeds', 'downloads')
 DEFAULT_SETTING_COLUMNS = ('name', 'value', 'description')
 DEFAULT_PEER_COLUMNS    = ('client', 'country', 'ip', 'progress', 'rate-down',
                            'rate-up', 'rate-est', 'eta')

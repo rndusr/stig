@@ -525,10 +525,10 @@ trackerlist.url-scrape.header              $url-scrape_fg,underline on $trklist_
 trackerlist.url-scrape.unfocused           $url-scrape_fg           on $trklist_bg.uf
 trackerlist.url-scrape.focused             $url-scrape_fg           on $trklist_bg.f
 
-$state_fg = dark cyan
-trackerlist.state.header                   $state_fg,underline on $trklist_bg.uf
-trackerlist.state.unfocused                $state_fg           on $trklist_bg.uf
-trackerlist.state.focused                  $state_fg           on $trklist_bg.f
+$status_fg = dark cyan
+trackerlist.status.header                  $status_fg,underline on $trklist_bg.uf
+trackerlist.status.unfocused               $status_fg           on $trklist_bg.uf
+trackerlist.status.focused                 $status_fg           on $trklist_bg.f
 
 $error_fg = dark red
 trackerlist.error.header                   $error_fg,underline on $trklist_bg.uf

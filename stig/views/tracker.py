@@ -18,20 +18,23 @@ from . import ColumnBase
 
 
 COLUMNS = {}
-ALIASES = { 'host'   : 'domain',
-            'u-an'   : 'url-announce',
-            'u-sc'   : 'url-scrape',
-            'e-an'   : 'error-announce',
-            'e-sc'   : 'error-scrape',
-            'l-an'   : 'last-announce',
-            'n-an'   : 'next-announce',
-            'l-sc'   : 'last-scrape',
-            'n-sc'   : 'next-scrape',
-            'dns'    : 'downloads',
-            'status' : 'state' }
+ALIASES = { 'dom'   : 'domain',
+            'an'    : 'url-announce',
+            'sc'    : 'url-scrape',
+            'st'    : 'status',
+            'err'   : 'err',
+            'erran' : 'error-announce',
+            'errsc' : 'error-scrape',
+            'dns'   : 'downloads',
+            'lcs'   : 'leeches',
+            'sds'   : 'seeds',
+            'lan'   : 'last-announce',
+            'nan'   : 'next-announce',
+            'lsc'   : 'last-scrape',
+            'nsc'   : 'next-scrape' }
 
 
-class TorrentName(ColumnBase):
+class Torrent(ColumnBase):
     header = {'left': 'Torrent'}
     align = 'left'
     width = None
@@ -41,7 +44,7 @@ class TorrentName(ColumnBase):
     def get_value(self):
         return self.data['tname']
 
-COLUMNS['torrent'] = TorrentName
+COLUMNS['torrent'] = Torrent
 
 
 class Tier(ColumnBase):
@@ -92,8 +95,8 @@ class ScrapeURL(ColumnBase):
 COLUMNS['url-scrape'] = ScrapeURL
 
 
-class State(ColumnBase):
-    header = {'left': 'State'}
+class Status(ColumnBase):
+    header = {'left': 'Status'}
     align = 'right'
     width = 10
     min_width = 5
@@ -101,7 +104,7 @@ class State(ColumnBase):
     def get_value(self):
         return self.data['state']
 
-COLUMNS['state'] = State
+COLUMNS['status'] = Status
 
 
 class Error(ColumnBase):
