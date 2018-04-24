@@ -18,11 +18,12 @@ from . import (ColumnBase, _ensure_hide_unit)
 
 
 COLUMNS = {}
-ALIASES = { 'dn'   : 'downloaded',
-            'mark' : 'marked',
-            'file' : 'name',
+ALIASES = { 'n'    : 'name',
+            'sz'   : 'size',
+            'dn'   : 'downloaded',
+            '%dn'  : '%downloaded',
             'prio' : 'priority',
-            '%'    : 'progress' }
+            'mark' : 'marked' }
 
 
 class Filename(ColumnBase):
@@ -68,15 +69,15 @@ class Downloaded(ColumnBase):
 COLUMNS['downloaded'] = Downloaded
 
 
-class Progress(ColumnBase):
+class PercentDownloaded(ColumnBase):
     header = {'right': '%'}
     width = 4
     min_width = 4
 
     def get_value(self):
-        return _ensure_hide_unit(self.data['progress'])
+        return _ensure_hide_unit(self.data['%downloaded'])
 
-COLUMNS['progress'] = Progress
+COLUMNS['%downloaded'] = PercentDownloaded
 
 
 class Priority(ColumnBase):
@@ -138,11 +139,11 @@ def create_directory_data(name, tree, filtered_count=0):
 
     data['name'] = create_directory_name(name, filtered_count)
 
-    progress_cls = type(tfiles[0]['progress'])
+    pdownloaded_cls = type(tfiles[0]['%downloaded'])
     try:
-        data['progress'] = progress_cls(data['size-downloaded'] / data['size-total'] * 100)
+        data['%downloaded'] = pdownloaded_cls(data['size-downloaded'] / data['size-total'] * 100)
     except ZeroDivisionError:
-        data['progress'] = progress_cls(0)
+        data['%downloaded'] = pdownloaded_cls(0)
     data['tid'] = tfiles[0]['tid']
     data['id'] = tuple(tf['id'] for tf in tfiles)
     data['path'] = tree.path

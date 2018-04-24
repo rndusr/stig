@@ -411,7 +411,7 @@ class TorrentFile(abc.Mapping):
         'size-downloaded' : lambda size: convert.size(size, unit='byte'),
         'is-wanted'       : bool,
         'priority'        : TorrentFilePriority,
-        'progress'        : Percent,
+        '%downloaded'     : Percent,
     }
 
     _MODIFIERS = {
@@ -424,7 +424,7 @@ class TorrentFile(abc.Mapping):
         'size-downloaded' : lambda raw: raw['size-downloaded'],
         'is-wanted'       : lambda raw: raw['is-wanted'],
         'priority'        : lambda raw: 'off' if not raw['is-wanted'] else raw['priority'],
-        'progress'        : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
+        '%downloaded'     : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
 
     def __init__(self, tid, id, name, path, location, size_total, size_downloaded, is_wanted, priority):
@@ -449,7 +449,7 @@ class TorrentFile(abc.Mapping):
             for k in raw:
                 del self._cache[k]
             if 'size-downloaded' in raw:
-                del self._cache['progress']
+                del self._cache['%downloaded']
         except KeyError:
             pass
 

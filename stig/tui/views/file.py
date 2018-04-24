@@ -65,21 +65,21 @@ class Downloaded(_COLUMNS['downloaded'], CellWidgetBase):
                            style.attrs('header'))
 
     def get_mode(self):
-        return 'highlighted' if self.data['progress'] < 100 else None
+        return 'highlighted' if self.data['%downloaded'] < 100 else None
 
 TUICOLUMNS['downloaded'] = Downloaded
 
 
-class Progress(_COLUMNS['progress'], CellWidgetBase):
-    style = Style(prefix='filelist.progress', focusable=True,
+class PercentDownloaded(_COLUMNS['%downloaded'], CellWidgetBase):
+    style = Style(prefix='filelist.%downloaded', focusable=True,
                   extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['progress'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['%downloaded'].header),
                            style.attrs('header'))
 
     def get_mode(self):
         return 'highlighted' if self.value < 100 else ''
 
-TUICOLUMNS['progress'] = Progress
+TUICOLUMNS['%downloaded'] = PercentDownloaded
 
 
 class Priority(_COLUMNS['priority'], CellWidgetBase):

@@ -31,19 +31,19 @@ class SingleTorrentFileFilter(Filter):
             lambda f: f['is-wanted'],
             description='Wanted files'),
         'complete': BoolFilterSpec(
-            lambda f: f['progress'] >= 100,
+            lambda f: f['%downloaded'] >= 100,
             aliases=('comp',),
             description='Fully downloaded files'),
     }
 
     COMPARATIVE_FILTERS = {
-        'name'        : _make_cmp_filter('name', 'Match VALUE against file name', aliases=('name',)),
+        'name'        : _make_cmp_filter('name', 'Match VALUE against file name', aliases=('n',)),
         'path'        : _make_cmp_filter('path', 'Match VALUE against path in torrent', aliases=('dir',)),
-        'size'        : _make_cmp_filter('size-total', 'Match VALUE against file size'),
+        'size'        : _make_cmp_filter('size-total', 'Match VALUE against file size', aliases=('sz',)),
         'downloaded'  : _make_cmp_filter('size-downloaded',
                                          'Match VALUE against number of downloaded bytes',
                                          aliases=('dn',)),
-        '%downloaded' : _make_cmp_filter('progress',
+        '%downloaded' : _make_cmp_filter('%downloaded',
                                          'Match VALUE against percentage of downloaded bytes',
                                          aliases=('%dn',)),
         'priority'    : _make_cmp_filter('priority',

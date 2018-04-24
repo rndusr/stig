@@ -417,13 +417,13 @@ filelist.downloaded.focused                $downloaded_fg           on $flist_bg
 filelist.downloaded.highlighted.unfocused  $downloaded_hl           on $flist_bg.uf
 filelist.downloaded.highlighted.focused    $downloaded_hl           on $flist_bg.f
 
-$progress_fg = dark blue
-$progress_hl = light blue
-filelist.progress.header                   $progress_fg,underline on $flist_bg.uf
-filelist.progress.unfocused                $progress_fg           on $flist_bg.uf
-filelist.progress.focused                  $progress_fg           on $flist_bg.f
-filelist.progress.highlighted.unfocused    $progress_hl           on $flist_bg.uf
-filelist.progress.highlighted.focused      $progress_hl           on $flist_bg.f
+$%downloaded_fg = dark blue
+$%downloaded_hl = light blue
+filelist.%downloaded.header                $%downloaded_fg,underline on $flist_bg.uf
+filelist.%downloaded.unfocused             $%downloaded_fg           on $flist_bg.uf
+filelist.%downloaded.focused               $%downloaded_fg           on $flist_bg.f
+filelist.%downloaded.highlighted.unfocused $%downloaded_hl           on $flist_bg.uf
+filelist.%downloaded.highlighted.focused   $%downloaded_hl           on $flist_bg.f
 
 $priority_fg = brown
 $priority_hl = yellow
