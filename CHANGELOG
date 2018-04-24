@@ -3,9 +3,11 @@
     * The legacy GeoIP module has been replaced by maxminddb
 
   Breaking changes:
-    * 'rate[.-]limit' in the names of settings/columns/etc is now reversed to
-      'limit[.-]rate' for consistency (e.g. the column 'rate-limit-up' is now
-      called 'limit-rate-up' in line with the setting 'srv.limit.rate.up')
+    * The names and aliases of columns, filters and columns have been changed
+      again (sorry) to make them more consistent and easier to guess (e.g. the
+      column 'rate-limit-up' is now called 'limit-rate-up' like the setting
+      'srv.limit.rate.up' and '%dn' is now a filter, sorter and column in all
+      lists (if applicable))
     * The setting 'srv.url' was replaced by the new settings 'connect.host',
       'connect.port', 'connect.path', 'connect.user', 'connect.password' and
       'connect.tls' (Thanks to David Blajda for adding 'connect.path')
