@@ -33,18 +33,30 @@ class SingleTorrentPeerFilter(Filter):
             aliases=('dng',),
             description='Peers we are downloading from'),
         'seeding': BoolFilterSpec(
-            lambda p: p['progress'] >= 100,
+            lambda p: p['%downloaded'] >= 100,
             aliases=('sdg',),
             description='Peers that have downloaded all data'),
     }
 
     COMPARATIVE_FILTERS = {
+        'downloaded': CmpFilterSpec(
+            lambda p, op, v: op(p['tsize'] * (p['%downloaded']/100), v),
+            aliases=('dn',),
+            description='Match VALUE against number of bytes peer has downloaded',
+            value_type=TorrentPeer.TYPES['tsize']),
+        '%downloaded': CmpFilterSpec(
+            lambda p, op, v: op(p['%downloaded'], v),
+            aliases=('%dn',),
+            description='Match VALUE against percentage of bytes peer has downloaded',
+            value_type=TorrentPeer.TYPES['%downloaded']),
         'client': CmpFilterSpec(
             lambda p, op, v: op(p['client'], v),
+            aliases=('cl',),
             description='Match VALUE against peer client',
             value_type=TorrentPeer.TYPES['client']),
         'country': CmpFilterSpec(
             lambda p, op, v: op(p['country'], v),
+            aliases=('cn',),
             description='Match VALUE against peer country',
             value_type=TorrentPeer.TYPES['country']),
         'ip': CmpFilterSpec(
@@ -55,16 +67,6 @@ class SingleTorrentPeerFilter(Filter):
             lambda p, op, v: op(p['port'], v),
             description='Match VALUE against peer port',
             value_type=TorrentPeer.TYPES['port']),
-        'downloaded': CmpFilterSpec(
-            lambda p, op, v: op(p['tsize'] * (p['progress']/100), v),
-            aliases=('dn',),
-            description='Match VALUE against number of bytes peer has downloaded',
-            value_type=TorrentPeer.TYPES['tsize']),
-        '%downloaded': CmpFilterSpec(
-            lambda p, op, v: op(p['progress'], v),
-            aliases=('%dn',),
-            description='Match VALUE against percentage of bytes peer has downloaded',
-            value_type=TorrentPeer.TYPES['progress']),
     }
 
 

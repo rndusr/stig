@@ -39,7 +39,7 @@ DEFAULT_FILE_COLUMNS    = ('marked', 'priority', 'progress', 'downloaded', 'size
 DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'error', 'last-announce', 'next-announce',
                            'leeches', 'seeds', 'downloads')
 DEFAULT_SETTING_COLUMNS = ('name', 'value', 'description')
-DEFAULT_PEER_COLUMNS    = ('client', 'country', 'ip', 'progress', 'rate-down',
+DEFAULT_PEER_COLUMNS    = ('client', 'country', 'ip', '%downloaded', 'rate-down',
                            'rate-up', 'rate-est', 'eta')
 
 

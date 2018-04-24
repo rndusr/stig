@@ -259,7 +259,7 @@ class PeerList(tuple):
         return super().__new__(cls,
             (TorrentPeer(tid=t['id'], tname=t['name'], tsize=t['totalSize'],
                          ip=p['address'], port=p['port'], client=p['clientName'],
-                         progress=p['progress']*100,
+                         pdownloaded=p['progress']*100,
                          rate_up=p['rateToPeer'], rate_down=p['rateToClient'])
              for p in t['peers'])
         )

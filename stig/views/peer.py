@@ -18,14 +18,15 @@ from . import (ColumnBase, _ensure_hide_unit)
 
 
 COLUMNS = {}
-ALIASES = { '%'    : 'progress',
-            'rdn'  : 'rate-down',
+ALIASES = { 'cl'   : 'client',
+            'cn'   : 'country',
+            '%dn'  : '%downloaded',
             'rup'  : 'rate-up',
-            'rest' : 'rate-est',
-            'name' : 'torrent' }
+            'rdn'  : 'rate-down',
+            're'   : 'rate-est' }
 
 
-class TorrentName(ColumnBase):
+class Torrent(ColumnBase):
     header = {'left': 'Torrent'}
     align = 'left'
     width = None
@@ -35,7 +36,7 @@ class TorrentName(ColumnBase):
     def get_value(self):
         return self.data['tname']
 
-COLUMNS['torrent'] = TorrentName
+COLUMNS['torrent'] = Torrent
 
 
 class Client(ColumnBase):
@@ -62,7 +63,7 @@ class Country(ColumnBase):
 COLUMNS['country'] = Country
 
 
-class IPAddress(ColumnBase):
+class IP(ColumnBase):
     header = {'left': 'IP'}
     align = 'right'
     width = 15
@@ -71,7 +72,7 @@ class IPAddress(ColumnBase):
     def get_value(self):
         return self.data['ip']
 
-COLUMNS['ip'] = IPAddress
+COLUMNS['ip'] = IP
 
 
 class Port(ColumnBase):
@@ -86,30 +87,15 @@ class Port(ColumnBase):
 COLUMNS['port'] = Port
 
 
-class Progress(ColumnBase):
+class PercentDownloaded(ColumnBase):
     header = {'right': '%'}
     width = 4
     min_width = 4
 
     def get_value(self):
-        return self._from_cache(_ensure_hide_unit, self.data['progress'])
+        return self._from_cache(_ensure_hide_unit, self.data['%downloaded'])
 
-COLUMNS['progress'] = Progress
-
-
-class RateDown(ColumnBase):
-    header = {'left': 'Dn', 'right': '?/s'}
-    width = 6
-    min_width = 6
-
-    def get_value(self):
-        return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
-
-    @classmethod
-    def set_unit(cls, unit):
-        cls.header['right'] = '%s/s' % unit
-
-COLUMNS['rate-down'] = RateDown
+COLUMNS['%downloaded'] = PercentDownloaded
 
 
 class RateUp(ColumnBase):
@@ -127,6 +113,21 @@ class RateUp(ColumnBase):
 COLUMNS['rate-up'] = RateUp
 
 
+class RateDown(ColumnBase):
+    header = {'left': 'Dn', 'right': '?/s'}
+    width = 6
+    min_width = 6
+
+    def get_value(self):
+        return self._from_cache(_ensure_hide_unit, self.data['rate-down'])
+
+    @classmethod
+    def set_unit(cls, unit):
+        cls.header['right'] = '%s/s' % unit
+
+COLUMNS['rate-down'] = RateDown
+
+
 class ETA(ColumnBase):
     header = {'left': 'ETA'}
     width = 5
@@ -138,7 +139,7 @@ class ETA(ColumnBase):
 COLUMNS['eta'] = ETA
 
 
-class EstimatedPeerRate(ColumnBase):
+class RateEst(ColumnBase):
     header = {'left': 'Est', 'right': '?/s'}
     width = 7
     min_width = 7
@@ -150,4 +151,4 @@ class EstimatedPeerRate(ColumnBase):
     def set_unit(cls, unit):
         cls.header['right'] = '%s/s' % unit
 
-COLUMNS['rate-est'] = EstimatedPeerRate
+COLUMNS['rate-est'] = RateEst

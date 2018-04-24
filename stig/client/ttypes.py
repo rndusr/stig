@@ -520,19 +520,19 @@ def _guess_peer_rate_and_eta(peer_id, peer_progress, torrent_size):
 from . import geoip
 class TorrentPeer(abc.Mapping):
     TYPES = {
-        'id'        : lambda val: val,
-        'tid'       : lambda val: val,
-        'tname'     : SmartCmpStr,
-        'tsize'     : lambda size: convert.size(size, unit='byte'),
-        'ip'        : str,
-        'port'      : int,
-        'client'    : SmartCmpStr,
-        'country'   : SmartCmpStr,
-        'progress'  : Percent,
-        'rate-up'   : lambda rate: convert.bandwidth(rate, unit='byte'),
-        'rate-down' : lambda rate: convert.bandwidth(rate, unit='byte'),
-        'eta'       : Timedelta,
-        'rate-est'  : lambda rate: convert.bandwidth(rate, unit='byte'),
+        'id'          : lambda val: val,
+        'tid'         : lambda val: val,
+        'tname'       : SmartCmpStr,
+        'tsize'       : lambda size: convert.size(size, unit='byte'),
+        'ip'          : str,
+        'port'        : int,
+        'client'      : SmartCmpStr,
+        'country'     : SmartCmpStr,
+        '%downloaded' : Percent,
+        'rate-up'     : lambda rate: convert.bandwidth(rate, unit='byte'),
+        'rate-down'   : lambda rate: convert.bandwidth(rate, unit='byte'),
+        'eta'         : Timedelta,
+        'rate-est'    : lambda rate: convert.bandwidth(rate, unit='byte'),
     }
 
     _MODIFIERS = {
@@ -540,16 +540,16 @@ class TorrentPeer(abc.Mapping):
         'country' : lambda p: geoip.country_code(p['ip']) or '?',
     }
 
-    def __init__(self, tid, tname, tsize, ip, port, client, progress, rate_up, rate_down):
+    def __init__(self, tid, tname, tsize, ip, port, client, pdownloaded, rate_up, rate_down):
         self._dct = {'tid': tid, 'tname': tname, 'tsize': tsize,
-                     'ip': ip, 'port': port, 'client': client, 'progress': progress,
+                     'ip': ip, 'port': port, 'client': client, '%downloaded': pdownloaded,
                      'rate-up': rate_up, 'rate-down': rate_down}
         self._cache = {}
 
     def __getitem__(self, key):
         if key not in self._cache:
             if key in ('eta', 'rate-est'):
-                rate, eta = _guess_peer_rate_and_eta(self['id'], self['progress'] / 100, self['tsize'])
+                rate, eta = _guess_peer_rate_and_eta(self['id'], self['%downloaded'] / 100, self['tsize'])
                 self._cache['rate-est'] = self.TYPES['rate-est'](rate)
                 self._cache['eta'] = self.TYPES['eta'](eta)
 

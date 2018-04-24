@@ -459,11 +459,11 @@ $client_fg = dark magenta
 peerlist.client.header                     $client_fg,underline on $plist_bg
 peerlist.client.unfocused                  $client_fg           on $plist_bg
 
-$progress_fg = dark blue
-$progress_hl = light blue
-peerlist.progress.header                   $progress_fg,underline on $plist_bg
-peerlist.progress.unfocused                $progress_fg           on $plist_bg
-peerlist.progress.highlighted.unfocused    $progress_hl           on $plist_bg
+$%downloaded_fg = dark blue
+$%downloaded_hl = light blue
+peerlist.%downloaded.header                $%downloaded_fg,underline on $plist_bg
+peerlist.%downloaded.unfocused             $%downloaded_fg           on $plist_bg
+peerlist.%downloaded.highlighted.unfocused $%downloaded_hl           on $plist_bg
 
 $rate-down_fg = dark cyan
 $rate-down_hl = light cyan
