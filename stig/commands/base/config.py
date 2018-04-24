@@ -169,6 +169,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                                       listify=isinstance(cfg[key], tuple),
                                       is_cmd=NAME.endswith(':eval'))
         except ValueError as e:
+            # Report potential stderr output if VALUE is a command
             log.error('%s: %s' % (name, e))
             return False
 
@@ -176,7 +177,8 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         try:
             op, value = self._get_operator(value)
         except ValueError as e:
-            log.error('%s = %s: %s' % (name, value, e))
+            # Report invalid value after operator (e.g. nan)
+            log.error('%s = %s: %s' % (name, self._stringify(value), e))
             return False
 
         # Value may have an operator (e.g. '+=' or '-=') to adjust the current value
@@ -184,10 +186,11 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             try:
                 value = self._adjust_value(cfg[key], op, value)
             except ValueError as e:
+                # Report out-of-bounds value
                 opfunc = getattr(operator, op)
                 unbound = cfg[key].copy(min=-float('inf'), max=float('inf'))
                 invalid = opfunc(unbound, value)
-                log.error('%s = %s: %s' % (name, invalid, e))
+                log.error('%s = %s: %s' % (name, self._stringify(invalid), e))
                 return False
 
         # Update setting's value
@@ -199,7 +202,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 log.debug('Remote setting: %r = %r', name, value)
                 await cfg.set(key, value)
         except ValueError as e:
-            log.error('%s = %s: %s', name, value, e)
+            log.error('%s = %s: %s', name, self._stringify(value), e)
             return False
         except ClientError as e:
             log.error('%s', e)
@@ -262,6 +265,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             func = getattr(operator, op)
             value = func(current, value)
         return value
+
+    @staticmethod
+    def _stringify(value):
+        from collections.abc import Iterable
+        if not isinstance(value, str) and isinstance(value, Iterable):
+            return ', '.join(str(item) for item in value)
+        else:
+            return str(value)
 
 
 class RateLimitCmdbase(metaclass=InitCommand):
