@@ -94,6 +94,8 @@ else:
                 return maxminddb.open_database(self.filepath)
             except maxminddb.InvalidDatabaseError as e:
                 raise GeoIPError('Unable to read geolocation database %s: Invalid format' % (self.filepath,))
+            except FileNotFoundError as e:
+                raise GeoIPError('Unable to read geolocation database %s' % (self.filepath,))
 
         async def _update_dbfile(self, loop):
             import aiohttp
