@@ -268,6 +268,9 @@ class TestTuple(_TestBase):
         self.assertEqual(Tuple('foo'), ('foo',))
         self.assertEqual(Tuple('bar'), ('bar',))
 
+    def test_asterisk_sets_all_options(self):
+        self.assertEqual(Tuple('*', options=('foo', 'bar')), ('foo', 'bar'))
+
     def test_options_property(self):
         t = Tuple(3, 2, options=(1, 2, 3))
         self.assertEqual(t.options, (1, 2, 3))

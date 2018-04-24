@@ -336,8 +336,12 @@ class Tuple(tuple, StringableMixin):
             value = (item for item in value if not (item in _seen or _seen.add(item)))
         self = super().__new__(cls, value)
 
-        # Validate
         if options is not None:
+            # A single '*' replaces it with all available options
+            if len(self) == 1 and self[0] == '*':
+                self = super().__new__(cls, options)
+
+            # Validate
             invalid_items = tuple(str(item) for item in self if item not in options)
             if invalid_items:
                 raise ValueError('Invalid option%s: %s' % (
