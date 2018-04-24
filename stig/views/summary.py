@@ -64,10 +64,10 @@ def _private_mr(t):
     return 'yes' if t['private'] else 'no'
 
 
-def _state_hr(t):
+def _status_hr(t):
     return ', '.join(t['status'])
 
-def _state_mr(t):
+def _status_mr(t):
     return ','.join(t['status'])
 
 
@@ -194,8 +194,8 @@ SECTIONS = (
     {'title': 'Status', 'width': 51, 'items': (
         Item('State',
              needed_keys=('status',),
-             human_readable=_state_hr,
-             machine_readable=_state_mr),
+             human_readable=_status_hr,
+             machine_readable=_status_mr),
         Item('Location',
              needed_keys=('path',),),
         Item('Available',

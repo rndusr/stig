@@ -26,7 +26,7 @@ class TorrentTrackerSorter(SorterBase):
         'domain':          _SortSpec(lambda t: t['domain'],
                                      aliases=('dom',),
                                      description='domain from announce URL'),
-        'status':          _SortSpec(lambda t: t['state'],
+        'status':          _SortSpec(lambda t: t['status'],
                                      aliases=('st',),
                                      description='tracker status'),
         'error':           _SortSpec(lambda t: t['error'],

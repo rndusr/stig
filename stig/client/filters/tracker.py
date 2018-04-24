@@ -29,7 +29,7 @@ class SingleTrackerFilter(Filter):
             aliases=('*',),
             description='All trackers'),
         'alive': BoolFilterSpec(
-            lambda trk: trk['error'] == '' or trk['state'] == 'inactive',
+            lambda trk: trk['error'] == '' or trk['status'] == 'inactive',
             description='Trackers we are trying to connect to'),
     }
 
@@ -45,7 +45,7 @@ class SingleTrackerFilter(Filter):
         'url-scrape'     : _make_cmp_filter('url-scrape',
                                             aliases=('sc',),
                                             description='Match VALUE against scrape URL'),
-        'status'         : _make_cmp_filter('state',
+        'status'         : _make_cmp_filter('status',
                                             aliases=('st',),
                                             description=('Match VALUE against tracker status '
                                                          '(stopped, idle, queued, announcing, scraping)')),

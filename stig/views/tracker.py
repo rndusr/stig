@@ -102,7 +102,7 @@ class Status(ColumnBase):
     min_width = 5
 
     def get_value(self):
-        return self.data['state']
+        return self.data['status']
 
 COLUMNS['status'] = Status
 

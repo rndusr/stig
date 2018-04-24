@@ -340,8 +340,8 @@ class TrackerList(tuple):
                     'url-announce'       : raw_tracker['announce'],
                     'url-scrape'         : raw_tracker['scrape'],
 
-                    'state-announce'     : cls._STATES_ANNOUNCE[raw_tracker['announceState']],
-                    'state-scrape'       : cls._STATES_SCRAPE[raw_tracker['scrapeState']],
+                    'status-announce'    : cls._STATES_ANNOUNCE[raw_tracker['announceState']],
+                    'status-scrape'      : cls._STATES_SCRAPE[raw_tracker['scrapeState']],
 
                     'error-announce'     : lambda: cls._error_announce(raw_tracker),
                     'error-scrape'       : lambda: cls._error_scrape(raw_tracker),

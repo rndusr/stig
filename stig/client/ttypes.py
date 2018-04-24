@@ -568,9 +568,9 @@ class TorrentPeer(abc.Mapping):
 
 
 class TorrentTracker(abc.Mapping):
-    def _validate_tracker_state(string):
+    def _validate_tracker_status(string):
         if string not in ('stopped', 'idle', 'queued', 'announcing', 'scraping'):
-            raise TypeError('Invalid tracker state: %r' % string)
+            raise ValueError('Invalid tracker status: %r' % string)
         else:
             return SmartCmpStr(string)
 
@@ -584,9 +584,9 @@ class TorrentTracker(abc.Mapping):
         'url-scrape'         : URL,
         'domain'             : SmartCmpStr,
 
-        'state-announce'     : _validate_tracker_state,
-        'state-scrape'       : _validate_tracker_state,
-        'state'              : _validate_tracker_state,
+        'status-announce'    : _validate_tracker_status,
+        'status-scrape'      : _validate_tracker_status,
+        'status'             : _validate_tracker_status,
 
         'error-announce'     : SmartCmpStr,
         'error-scrape'       : SmartCmpStr,
@@ -605,8 +605,8 @@ class TorrentTracker(abc.Mapping):
     _MODIFIERS = {
         'id'     : lambda self: hash((self['tid'], self['url-announce'])),
         'domain' : lambda self: self['url-announce'].domain,
-        'state'  : lambda self: (self['state-scrape'] if self['state-announce'] == 'idle'
-                                 else self['state-announce']),
+        'status' : lambda self: (self['status-scrape'] if self['status-announce'] == 'idle'
+                                 else self['status-announce']),
         'error'  : lambda self: ('Announce error: %s' % self['error-announce']
                                  if self['error-announce'] else
                                  'Scrape error: %s' % self['error-scrape']
