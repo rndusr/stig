@@ -100,7 +100,7 @@ def _ratio_hr(t):
     elif ratio == ratio.NOT_APPLICABLE:
         return 'not applicable'
     else:
-        return '%.4f' % ratio
+        return '%g' % ratio
 _ratio_mr = _ratio_hr
 
 
