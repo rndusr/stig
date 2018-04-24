@@ -263,10 +263,10 @@ class TestTuple(_TestBase):
         with self.assert_raises(ValueError, 'Invalid option: baz'):
             Tuple('foo', 'bar', 'baz', options=('foo', 'bar'))
 
-        self.assertEqual(Tuple('foo, bar'), ('foo', 'bar'))
-        self.assertEqual(Tuple('bar', 'foo'), ('bar', 'foo'))
-        self.assertEqual(Tuple('foo'), ('foo',))
-        self.assertEqual(Tuple('bar'), ('bar',))
+        self.assertEqual(Tuple('foo, bar', options=('foo', 'bar')), ('foo', 'bar'))
+        self.assertEqual(Tuple('bar', 'foo', options=('foo', 'bar')), ('bar', 'foo'))
+        self.assertEqual(Tuple('foo', options=('foo', 'bar')), ('foo',))
+        self.assertEqual(Tuple('bar', options=('foo', 'bar')), ('bar',))
 
     def test_asterisk_sets_all_options(self):
         self.assertEqual(Tuple('*', options=('foo', 'bar')), ('foo', 'bar'))
