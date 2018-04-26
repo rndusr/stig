@@ -57,6 +57,19 @@ class IP(_COLUMNS['ip'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['ip'].header),
                            style.attrs('header'))
 
+    def update(self, data):
+        # Set IP address initially
+        super().update(data)
+
+        # Lookup hostname once per instance
+        from ...main import localcfg
+        if localcfg['reverse-dns']:
+            def set_hostname(hostname):
+                if self.text.text != hostname:
+                    self.text.set_text(hostname)
+            from ...client import rdns
+            rdns.query(data['ip'], callback=set_hostname)
+
 TUICOLUMNS['ip'] = IP
 
 
