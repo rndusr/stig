@@ -120,6 +120,11 @@ def init_defaults(localcfg):
                  default=10,
                  description=('Maximum number of torrents to remove without extra confirmation'))
 
+    localcfg.add('reverse-dns',
+                 Bool.partial(),
+                 default=True,
+                 description=('Whether to lookup peers\' host names'))
+
     localcfg.add('sort.torrents',
                  partial_sort_order(TorrentSorter),
                  default=DEFAULT_TORRENT_SORT,
