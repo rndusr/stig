@@ -51,6 +51,7 @@ TUICOLUMNS['country'] = Country
 
 
 class IP(_COLUMNS['ip'], CellWidgetBase):
+    width = ('weight', 50)
     style = Style(prefix='peerlist.ip', focusable=True,
                   extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['ip'].header),

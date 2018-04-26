@@ -66,8 +66,8 @@ COLUMNS['country'] = Country
 class IP(ColumnBase):
     header = {'left': 'IP'}
     align = 'right'
-    width = 15
-    min_width = 15
+    width = None
+    min_width = 2
 
     def get_value(self):
         return self.data['ip']
