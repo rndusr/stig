@@ -93,9 +93,6 @@ class CellWidgetBase(urwid.WidgetWrap):
             attr = self.style.attrs(self.get_mode(), focused=False)
             self.attrmap.set_attr_map({None: attr})
 
-    def get_value(self):
-        raise NotImplementedError()
-
     def get_mode(self):
         return None
 
