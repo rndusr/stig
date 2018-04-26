@@ -84,6 +84,12 @@ class ColumnBase():
     def get_value(self):
         raise NotImplementedError()
 
+    def get_cli_value(self):
+        return self.get_value()
+
+    def get_tui_value(self):
+        return self.get_value()
+
     def get_raw_value(self):
         value = self.get_value()
         if isinstance(value, (int, float)) and value < float('inf'):

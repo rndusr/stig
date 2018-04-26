@@ -31,7 +31,7 @@ def _wrapped(line, width):
 
 def _get_cell_lines(cell):
     # Return string of single cell correctly cropped/padded and aligned
-    line = normalize_unicode(str(cell.get_value()))
+    line = normalize_unicode(str(cell.get_cli_value()))
     width = cell.width
     if isinstance(width, int):
         if cell.wrap == 'clip':
@@ -90,7 +90,7 @@ def _get_header_width(table, colname):
 
 def _get_colwidth(table, colindex):
     # Return width of widest cell in column
-    rows = (normalize_unicode(str(row[colindex].get_value()))
+    rows = (normalize_unicode(str(row[colindex].get_cli_value()))
             for row in table.rows)
     return max(strwidth(row) for row in rows)
 

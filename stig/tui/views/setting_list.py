@@ -77,8 +77,8 @@ class SettingItemWidget(ItemWidgetBase):
             value_widget = self.value_widget
             if isinstance(value_widget, urwid.Edit):
                 return value_widget.edit_text
-            elif hasattr(value_widget, 'get_value'):
-                return value_widget.get_value()
+            elif hasattr(value_widget, 'get_tui_value'):
+                return value_widget.get_tui_value()
 
     @property
     def edit_mode(self):

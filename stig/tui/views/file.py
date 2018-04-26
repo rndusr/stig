@@ -43,8 +43,8 @@ class Filename(_COLUMNS['name'], CellWidgetBase):
         else:
             return 'folder'
 
-    def get_value(self):
-        return normalize_unicode(super().get_value())
+    def get_tui_value(self):
+        return normalize_unicode(super().get_tui_value())
 
 TUICOLUMNS['name'] = Filename
 
