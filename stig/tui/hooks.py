@@ -52,6 +52,7 @@ localcfg.on_change(_refresh_lists, name='unit.bandwidth')
 localcfg.on_change(_refresh_lists, name='unit.size')
 localcfg.on_change(_refresh_lists, name='unitprefix.bandwidth')
 localcfg.on_change(_refresh_lists, name='unitprefix.size')
+localcfg.on_change(_refresh_lists, name='reverse-dns')
 
 
 def _set_poll_interval(settings, name, value):
