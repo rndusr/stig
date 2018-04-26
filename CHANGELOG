@@ -24,6 +24,8 @@
     * New settings:
         - 'geoip' en-/disables lookup of country codes in peer lists
         - 'geoip.dir' specifies where the geolocation database is cached
+    * Lookup peers' host names in peer lists (can be disabled by 'reverse-dns'
+      setting)
     * Process name in tmux sessions is set to 'stig' if setproctitle module is
       installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
     * 'ratelimit' command now prints the new limit by default for global and
