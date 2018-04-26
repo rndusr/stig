@@ -87,10 +87,10 @@ class Priority(ColumnBase):
     align = 'left'
 
     def get_value(self):
-        val = self.get_raw()
+        val = self.get_raw_value()
         return '' if val == 'normal' else val
 
-    def get_raw(self):
+    def get_raw_value(self):
         return 'off' if self.data['is-wanted'] is False else self.data['priority']
 
 COLUMNS['priority'] = Priority

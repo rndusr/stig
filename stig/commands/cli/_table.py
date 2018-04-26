@@ -51,7 +51,7 @@ def _assemble_row(table, line_index, pretty=True):
         if pretty:
             row.append(_get_cell_lines(cell))
         else:
-            row.append((str(cell.get_raw()),))
+            row.append((str(cell.get_raw_value()),))
 
     lines_count = max(len(cell) for cell in row)
     lines = []
