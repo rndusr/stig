@@ -41,6 +41,12 @@ class ListPeersCmd(base.ListPeersCmdbase,
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
             peerlist.extend(filter_peers(torrent['peers']))
 
+        # Pre-lookup peers' IPs
+        from ...main import localcfg
+        if 'ip' in columns and localcfg['reverse-dns']:
+            from ...client import rdns
+            rdns.query(*(p['ip'] for p in peerlist))
+
         sort.apply(peerlist, inplace=True)
 
         if peerlist:
