@@ -150,11 +150,15 @@ class ItemWidgetBase(urwid.WidgetWrap):
     @property
     def is_marked(self):
         """Whether this item has been marked by the user"""
-        return self._cells.marked.is_marked
+        if self._cells.exists('marked'):
+            return self._cells.marked.is_marked
+        else:
+            return False
 
     @is_marked.setter
     def is_marked(self, is_marked):
-        self._cells.marked.is_marked = bool(is_marked)
+        if self._cells.exists('marked'):
+            self._cells.marked.is_marked = bool(is_marked)
 
 
 
