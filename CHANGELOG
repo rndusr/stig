@@ -19,13 +19,12 @@
   Other changes:
     * The 'set' command now shows a list of settings when called without
       argments
-    * Get the value of a setting from shell command
-      (e.g. `set connect.password:eval pass transmission`)
-    * New settings:
-        - 'geoip' en-/disables lookup of country codes in peer lists
-        - 'geoip.dir' specifies where the geolocation database is cached
-    * Lookup peers' host names in peer lists (can be disabled by 'reverse-dns'
-      setting)
+    * The value of a setting can now come from shell command,
+      e.g. `set connect.password:eval pass transmission`
+    * New setting 'geoip' enables/disables country code lookups for peer lists
+    * New setting 'geoip.dir' specifies where the geolocation database is cached
+    * In peer lists, peers' host names are displayed instead of their IPs (may
+      be slow; disable with 'set reverse-dns false')
     * Process name in tmux sessions is set to 'stig' if setproctitle module is
       installed (Thanks to Kutsan Kaplan and Nicholas Marriott)
     * 'ratelimit' command now prints the new limit by default for global and
@@ -39,8 +38,8 @@
     * Mitigate high CPU load for urwid 2.x and later
     * Invalid tracker URLs (e.g. with port -1) don't cause crash anymore
     * Catch SIGINT (<ctrl-c>) in CLI mode
-    * The settings 'connect.port' and 'srv.port' are now properly displayed in
-      'help' output
+    * The values of the settings 'connect.port' and 'srv.port' are now properly
+      displayed in 'help' output
 
 
 2018-02-25 0.8.3a
