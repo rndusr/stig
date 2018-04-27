@@ -344,6 +344,10 @@ class ListWidgetBase(urwid.WidgetWrap):
         return ' '.join(parts)
 
 
+    @property
+    def has_marked_column(self):
+        return 'marked' in self._table.columns
+
     def mark(self, toggle=False, all=False):
         """Mark the currently focused item or all items"""
         self._set_mark(True, toggle=toggle, all=all)

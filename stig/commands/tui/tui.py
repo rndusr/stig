@@ -188,7 +188,7 @@ class MarkCmd(metaclass=InitCommand):
 
     def run(self, focus_next, toggle, all):
         widget = self.tui.tabs.focus
-        if not hasattr(widget, 'mark'):
+        if not widget.has_marked_column:
             log.error('Nothing to mark here.')
             return False
         else:
@@ -218,7 +218,7 @@ class UnmarkCmd(metaclass=InitCommand):
 
     def run(self, focus_next, toggle, all):
         widget = self.tui.tabs.focus
-        if not hasattr(widget, 'unmark'):
+        if not widget.has_marked_column:
             log.error('Nothing to unmark here.')
             return False
         else:
