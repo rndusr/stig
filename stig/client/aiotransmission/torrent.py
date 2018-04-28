@@ -232,8 +232,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
     def update(self, raw_torrent):
         def update_files(ftree, fileStats):
             if not fileStats:
-                # If fileStats is empty (e.g. no metadata yet), there is a dummy
-                # entry in ftree created by _create_TorrentFileTree().
+                # We don't have any metadata yet, so there is nothing to update
                 return
 
             for entry in ftree.values():
