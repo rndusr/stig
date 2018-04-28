@@ -72,3 +72,31 @@ class TestTorrent(unittest.TestCase):
         t = torrent.Torrent(raw)
         self.assertEqual(set(t), {'id', 'name', 'rate-down', 'hash',
                                   'time-created', '%verified'})
+
+class TestTorrentFileTree(unittest.TestCase):
+    def test_update(self):
+        raw = {'id': 1, 'name': 'Fake torrent', 'downloadDir': '/a/path',
+               'fileStats': [{'bytesCompleted': 0, 'priority': 0, 'wanted': True},
+                             {'bytesCompleted': 0, 'priority': 0, 'wanted': True}],
+               'files': [{'bytesCompleted': 0, 'length': 1000, 'name': 'Fake torrent/file1'},
+                         {'bytesCompleted': 0, 'length': 2000, 'name': 'Fake torrent/subdir/file2'}]}
+        ft = torrent._create_TorrentFileTree(raw)
+        self.assertEqual(ft['Fake torrent']['file1']['%downloaded'], 0)
+        self.assertEqual(ft['Fake torrent']['file1']['size-downloaded'], 0)
+        self.assertEqual(ft['Fake torrent']['subdir']['file2']['%downloaded'], 0)
+        self.assertEqual(ft['Fake torrent']['subdir']['file2']['size-downloaded'], 0)
+
+        raw['fileStats'][0]['bytesCompleted'] = raw['files'][0]['bytesCompleted'] = 100
+        ft.update(raw)
+        self.assertEqual(ft['Fake torrent']['file1']['%downloaded'], 10)
+        self.assertEqual(ft['Fake torrent']['file1']['size-downloaded'], 100)
+        self.assertEqual(ft['Fake torrent']['subdir']['file2']['%downloaded'], 0)
+        self.assertEqual(ft['Fake torrent']['subdir']['file2']['size-downloaded'], 0)
+
+        raw['fileStats'][0]['bytesCompleted'] = raw['files'][0]['bytesCompleted'] = 500
+        raw['fileStats'][1]['bytesCompleted'] = raw['files'][1]['bytesCompleted'] = 200
+        ft.update(raw)
+        self.assertEqual(ft['Fake torrent']['file1']['%downloaded'], 50)
+        self.assertEqual(ft['Fake torrent']['file1']['size-downloaded'], 500)
+        self.assertEqual(ft['Fake torrent']['subdir']['file2']['%downloaded'], 10)
+        self.assertEqual(ft['Fake torrent']['subdir']['file2']['size-downloaded'], 200)
