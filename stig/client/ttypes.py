@@ -445,13 +445,19 @@ class TorrentFile(abc.Mapping):
 
     def update(self, raw):
         self._raw.update(raw)
-        try:
-            for k in raw:
-                del self._cache[k]
-            if 'size-downloaded' in raw:
-                del self._cache['%downloaded']
-        except KeyError:
-            pass
+        cache = self._cache
+        for key,new_value in raw.items():
+            cached_value = cache.get(key)
+            if cached_value is not None and cached_value != new_value:
+                del cache[key]
+
+        # %downloaded is never in raw because it is calculated from
+        # size-downloaded and size-total
+        if 'size-downloaded' in raw:
+            try:
+                del cache['%downloaded']
+            except KeyError:
+                pass
 
     def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
     def __iter__(self): return iter(self.TYPES)
