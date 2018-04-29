@@ -35,8 +35,15 @@ class Value(ColumnBase):
     width = None
     wrap = 'space'
 
-    def get_value(self):
+    def get_raw_value(self):
         return self.data['value']
+
+    def get_value(self):
+        value = self.data['value']
+        if hasattr(value, 'prettified'):
+            return value.prettified
+        else:
+            return value
 
 COLUMNS['value'] = Value
 
