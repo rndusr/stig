@@ -293,12 +293,13 @@ class Path(str, StringableMixin):
     def _get_syntax(mustexist=defaults['mustexist']):
         return 'file system path'
 
-    def __str__(self):
+    @property
+    def prettified(self):
         home = os.environ['HOME']
         if self.startswith(home):
             return '~' + self[len(home):]
         else:
-            return self
+            return str(self)
 
 
 class Tuple(tuple, StringableMixin):

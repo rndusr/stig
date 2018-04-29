@@ -227,12 +227,14 @@ class TestPath(_TestBase):
         import os
         homedir = os.environ['HOME']
         self.assertEqual(Path('~/foo/bar'), os.path.join(homedir, 'foo/bar'))
+        self.assertEqual(str(Path('~/foo/bar')), os.path.join(homedir, 'foo/bar'))
+        self.assertEqual(repr(Path('~/foo/bar')), repr(os.path.join(homedir, 'foo/bar')))
 
-    def test_string(self):
+    def test_prettified(self):
         import os
         homedir = os.environ['HOME']
         p = Path(os.path.join(homedir, 'foo/bar'))
-        self.assertEqual(str(p), '~/foo/bar')
+        self.assertEqual(p.prettified, '~/foo/bar')
 
     def test_mustexist(self):
         with self.assert_raises(ValueError, 'No such file or directory'):
