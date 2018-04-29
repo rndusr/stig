@@ -148,7 +148,7 @@ def run(command_runner):
         return True
 
     # Load/Download GeoIP database
-    if localcfg['geoip']:
+    if geoip.available and localcfg['geoip']:
         def _handle_geoip_load_result(task):
             try:
                 task.result()

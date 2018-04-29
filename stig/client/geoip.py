@@ -20,27 +20,23 @@ class GeoIPError(Exception):
 class GeoIPBase():
     GeoIPError = GeoIPError
 
-    def __init__(self):
-        self._filepath = None
-        self._enabled = None
-
     @property
-    def filepath(self):
-        """Where to cache downloaded database"""
-        return self._filepath
-    @filepath.setter
-    def filepath(self, filepath):
-        self._filepath = filepath if filepath is None else str(filepath)
+    def cachedir(self):
+        """Where to cache the downloaded database"""
+        return getattr(self, '_cachedir', None)
+    @cachedir.setter
+    def cachedir(self, cachedir):
+        self._cachedir = str(cachedir)
 
     @property
     def enabled(self):
         """Whether lookup functions always return None"""
-        return self._enabled
+        return getattr(self, '_enabled', False)
     @enabled.setter
     def enabled(self, enabled):
         self._enabled = bool(enabled)
 
-    def load(self):
+    async def load(self, *args, **kwargs):
         pass
 
     def country_code(self, addr):
@@ -51,51 +47,59 @@ try:
     import maxminddb
 except ImportError:
     class GeoIP(GeoIPBase):
-        pass
-
+        available = False
 else:
     import os
     import time
     import asyncio
 
     class GeoIP(GeoIPBase):
+        available = True
         max_age = 60*24*7
         timeout = 5
         url = 'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz'
 
         def __init__(self):
             super().__init__()
-            self._filepath = self.url.split('/')[-1][:-3]
-            self._cache = {}
-            self.enabled = True
+            self.filename = self.url.split('/')[-1]
+            if self.filename[-3:] == '.gz':
+                self.filename = self.filename[:-3]
+            self._lookup_cache = {}
+
+        @property
+        def cachefile(self):
+            return os.path.join(self.cachedir, self.filename)
 
         async def load(self, force_update=False, loop=None):
-            if not self.enabled:
-                return
-
             if loop is None:
                 loop = asyncio.get_event_loop()
 
             if force_update:
+                log.debug('Forcing database update')
                 await self._update_dbfile(loop)
             else:
-                filepath = self.filepath
-                if os.path.exists(filepath):
-                    age = time.time() - os.path.getmtime(filepath)
+                cachefile = self.cachefile
+                if os.path.exists(cachefile):
+                    age = time.time() - os.path.getmtime(cachefile)
                     if age > self.max_age:
+                        log.debug('Cached database is older than %r seconds', self.max_age)
                         await self._update_dbfile(loop)
                 else:
+                    log.debug('No database found: %r', self.cachefile)
                     await self._update_dbfile(loop)
 
             self._db = self._read_dbfile()
 
         def _read_dbfile(self):
+            cachefile = self.cachefile
             try:
-                return maxminddb.open_database(self.filepath)
+                return maxminddb.open_database(cachefile)
             except maxminddb.InvalidDatabaseError as e:
-                raise GeoIPError('Unable to read geolocation database %s: Invalid format' % (self.filepath,))
+                raise GeoIPError('Unable to read geolocation database %s: Invalid format'
+                                 % (cachefile,))
             except FileNotFoundError as e:
-                raise GeoIPError('Unable to read geolocation database %s' % (self.filepath,))
+                raise GeoIPError('Unable to read geolocation database %s'
+                                 % (cachefile,))
 
         async def _update_dbfile(self, loop):
             import aiohttp
@@ -108,31 +112,34 @@ else:
                     async with session.get(self.url, timeout=self.timeout) as resp:
                         data = await resp.content.read()
                 except aiohttp.ClientError as e:
-                    raise GeoIPError('Failed to download geolocation database %s: %s' % (self.url, os.strerror(e.errno)))
+                    raise GeoIPError('Failed to download geolocation database %s: %s'
+                                     % (self.url, os.strerror(e.errno)))
 
             try:
                 data = gzip.decompress(data)
             except OSError:
                 pass   # Maybe downloaded data isn't gzipped
 
-            dirpath = os.path.dirname(self.filepath)
+            cachedir = self.cachedir
+            cachefile = self.cachefile
             try:
-                if not os.path.exists(dirpath):
-                    os.makedirs(dirpath)
-                with open(self.filepath, 'wb') as f:
+                if not os.path.exists(cachedir):
+                    os.makedirs(cachedir)
+                with open(cachefile, 'wb') as f:
                     f.write(data)
             except OSError as e:
-                if os.path.exists(self.filepath):
-                    os.remove(self.filepath)
-                raise GeoIPError('Unable to write geolocation database %s: %s' % (self.filepath, os.strerror(e.errno)))
+                if os.path.exists(cachefile):
+                    os.remove(cachefile)
+                raise GeoIPError('Unable to write geolocation database %s: %s'
+                                 % (cachefile, os.strerror(e.errno)))
 
-            log.debug('Wrote new geoip cache: %s', self.filepath)
+            log.debug('Wrote new geoip database: %s', self.cachefile)
 
         def country_code(self, addr):
             if not self.enabled:
                 return None
 
-            cache = self._cache
+            cache = self._lookup_cache
             country, timestamp = cache.get(addr, (None, 0))
             now = time.time()
             if country is not None and now - timestamp < self.max_age:

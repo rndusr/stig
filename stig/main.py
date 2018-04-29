@@ -60,9 +60,12 @@ helpmgr.remotecfg = remotecfg
 
 
 from .client import geoip
-geoip.enabled = localcfg['geoip']
-geoip.filepath = os.path.join(localcfg['geoip.dir'],
-                              os.path.basename(geoip.filepath))
+if geoip.available:
+    geoip.enabled = localcfg['geoip']
+    if geoip.enabled:
+        geoip.cachedir = localcfg['geoip.dir']
+else:
+    localcfg['geoip'] = False
 
 
 from .commands import CommandManager
