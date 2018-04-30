@@ -68,6 +68,11 @@ class PeerListWidget(ListWidgetBase):
             self._data_dict = {p['id']:p for p in peers_combined(response.torrents)}
         self._invalidate()
 
+    def clear(self):
+        for w in self._listbox.body:
+            w.data.clearcache()
+        super().clear()
+
     def refresh(self):
         self._poller.poll()
 
