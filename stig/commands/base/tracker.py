@@ -31,7 +31,8 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
     usage = ('trackerlist [<OPTIONS>]',
              'trackerlist [<OPTIONS>] <TORRENT FILTER>',
              'trackerlist [<OPTIONS>] <TORRENT FILTER> <TRACKER FILTER>')
-    examples = ()  # TODO
+    examples = ("trackerlist 'name~debian'",
+                "trackerlist tracker=my.tracker.local error")
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('TRACKER', or_focused=True, nargs='?'),
