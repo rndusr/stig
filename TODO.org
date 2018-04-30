@@ -14,14 +14,6 @@ questions and point out issues.
    3. Implement 'interactive' command (see below) and use it to add comparative
       filters to lists with more 'f ...' key chains.
 
-** TODO Show number of selected torrents/files
-    The best place would probably be in the bottom bar.  Either implement that
-    in tui.infobar.TorrentCountersWidget or create a new widget.
-
-    Another place could be the column header for the 'marked' column.  With no
-    torrents marked, show 'tui.marked.on', otherwise the number of marked
-    torrents.  But that would widen the column to at least 3 characters.
-
 ** TODO New command: interactive
    Take an arbitrary amount of (option, prompt) pairs and any command.  The
    command contains placeholders.  First, for each (option, prompt) pair, the
