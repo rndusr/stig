@@ -64,6 +64,21 @@ def load_theme(themeobj):
     theme.load(themeobj, urwidscreen)
 
 
+
+def load_geoip_db():
+    """
+    Load geolocation database in a background task
+    """
+    def _handle_geoip_load_result(task):
+        try:
+            task.result()
+        except geoip.GeoIPError as e:
+            log.error(e)
+    task = aioloop.create_task(geoip.load(loop=aioloop))
+    task.add_done_callback(_handle_geoip_load_result)
+
+
+
 def _create_cli_widget():
     def on_cancel(widget):
         widget.set_edit_text('')
@@ -149,13 +164,7 @@ def run(command_runner):
 
     # Load/Download GeoIP database
     if geoip.available and localcfg['geoip']:
-        def _handle_geoip_load_result(task):
-            try:
-                task.result()
-            except geoip.GeoIPError as e:
-                log.error(e)
-        task = aioloop.create_task(geoip.load(loop=aioloop))
-        task.add_done_callback(_handle_geoip_load_result)
+        load_geoip_db()
 
     # Start logging to TUI widget instead of stdout/stderr
     logwidget.enable()

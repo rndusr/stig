@@ -104,3 +104,9 @@ _set_tui_marked_char('set_unmarked_char', localcfg, name='tui.marked.off', value
 def _update_quickhelp(keymap):
     tui.topbar.help.update()
 tui.keymap.on_bind_unbind(_update_quickhelp)
+
+
+def _set_geoip(settings, name, value):
+    if value:
+        tui.load_geoip_db()
+localcfg.on_change(_set_geoip, name='geoip')
