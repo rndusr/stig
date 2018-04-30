@@ -84,8 +84,7 @@ localcfg.on_change(_set_size_prefix, name='unitprefix.size')
 def _set_geoip(settings, name, value):
     if value and not geoip.available:
         log.error('Missing geoip dependency: maxminddb')
-        localcfg['geoip'] = False
-        value = False
+        localcfg['geoip'] = value = False
     geoip.enabled = value
 localcfg.on_change(_set_geoip, name='geoip')
 
