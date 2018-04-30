@@ -38,7 +38,7 @@ from .tabs import (Tabs, TabBar)
 from .cli import CLIEditWidget
 from .logger import LogWidget
 from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
-                      BandwidthStatusWidget, TorrentCountersWidget)
+                      BandwidthStatusWidget, TorrentCountersWidget, MarkedItemsWidget)
 from . import theme
 
 def load_theme(themeobj):
@@ -109,7 +109,9 @@ tabs = keymap.wrap(Tabs, context='tabs')(
 
 bottombar = Group(cls=urwid.Columns)
 bottombar.add(name='counters', widget=TorrentCountersWidget(), options='pack')
-bottombar.add(name='spacer', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
+bottombar.add(name='spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
+bottombar.add(name='marked', widget=MarkedItemsWidget(), options='pack')
+bottombar.add(name='spacer2', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
 bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
 
 cli = urwid.AttrMap(_create_cli_widget(), 'cli')

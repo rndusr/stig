@@ -17,6 +17,11 @@ from . import main as tui
 from ..client import constants as const
 
 
+# Workaround for urwid bug: When a Text widget is initialized with an empty
+# string, subsequent set_text() calls have no effect.
+EMPTY_TEXT = ' '
+
+
 class KeyChainsWidget(urwid.WidgetWrap):
     _selectable = False
     _sizing = ['flow']
@@ -254,7 +259,7 @@ class BandwidthStatusWidget(urwid.Widget):
 
 class TorrentCountersWidget(urwid.WidgetWrap):
     def __init__(self):
-        self._text = urwid.Text(' ')
+        self._text = urwid.Text(EMPTY_TEXT)
         super().__init__(urwid.AttrMap(self._text, 'bottombar'))
         tui.srvapi.status.on_update(self._update_counters)
 
@@ -277,4 +282,20 @@ class TorrentCountersWidget(urwid.WidgetWrap):
         if counters.isolated > 0:
             text[-1] += ', '
             text.append(('bottombar.important', '%s isolated' % counters.isolated))
+
         self._text.set_text(text)
+
+
+class MarkedItemsWidget(urwid.WidgetWrap):
+    def __init__(self):
+        self._text = urwid.Text('.')
+        super().__init__(urwid.AttrMap(self._text, 'bottombar.marked'))
+
+    def update(self, count):
+        if count > 0:
+            new_text = '%d marked' % count
+        else:
+            new_text = EMPTY_TEXT
+
+        if new_text != self._text.text:
+            self._text.set_text(new_text)

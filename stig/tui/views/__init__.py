@@ -13,6 +13,7 @@ import urwid
 import collections
 
 from ..table import ColumnHeaderWidget
+from ..main import bottombar
 
 
 class Style():
@@ -225,6 +226,10 @@ class ListWidgetBase(urwid.WidgetWrap):
         if self._data_dict is not None:
             self._update_listitems()
             self._data_dict = None
+
+        # Update number of marked items in this list
+        bottombar.marked.update(len(self._marked))
+
         # focus=True because we always want to highlight the focused item, for
         # example when the CLI is open
         return super().render(size, focus=True)
