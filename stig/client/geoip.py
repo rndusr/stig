@@ -74,6 +74,7 @@ else:
             if loop is None:
                 loop = asyncio.get_event_loop()
 
+            # Maybe get fresh database from URL
             if force_update:
                 log.debug('Forcing database update')
                 await self._update_dbfile(loop)
@@ -88,12 +89,9 @@ else:
                     log.debug('No database found: %r', self.cachefile)
                     await self._update_dbfile(loop)
 
-            self._db = self._read_dbfile()
-
-        def _read_dbfile(self):
-            cachefile = self.cachefile
+            # Read database
             try:
-                return maxminddb.open_database(cachefile)
+                self._db = maxminddb.open_database(cachefile)
             except maxminddb.InvalidDatabaseError as e:
                 raise GeoIPError('Unable to read geolocation database %s: Invalid format'
                                  % (cachefile,))
