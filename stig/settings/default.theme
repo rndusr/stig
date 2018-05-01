@@ -598,6 +598,11 @@ settinglist.value.header                   $value_fg,underline on $slist_bg.uf
 settinglist.value.unfocused                $value_fg           on $slist_bg.uf
 settinglist.value.focused                  $value_fg           on $slist_bg.f
 
+$default_fg = light gray
+settinglist.default.header                 $default_fg,underline on $slist_bg.uf
+settinglist.default.unfocused              $default_fg           on $slist_bg.uf
+settinglist.default.focused                $default_fg           on $slist_bg.f
+
 $description_fg = light gray
 settinglist.description.header             $description_fg,underline on $slist_bg.uf
 settinglist.description.unfocused          $description_fg           on $slist_bg.uf

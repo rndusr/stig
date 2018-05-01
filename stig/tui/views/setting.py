@@ -35,6 +35,15 @@ class Value(_COLUMNS['value'], CellWidgetBase):
 TUICOLUMNS['value'] = Value
 
 
+class Default(_COLUMNS['default'], CellWidgetBase):
+    width = ('weight', 100)
+    style = Style(prefix='settinglist.default', focusable=True, extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['default'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['default'] = Default
+
+
 class Description(_COLUMNS['description'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='settinglist.description', focusable=True, extras=('header',))

@@ -48,6 +48,26 @@ class Value(ColumnBase):
 COLUMNS['value'] = Value
 
 
+class Default(ColumnBase):
+    header = {'left': 'Default'}
+    align = 'left'
+    width = None
+    wrap = 'space'
+
+    def get_raw_value(self):
+        return self.data['default']
+
+    def get_value(self):
+        value = self.data['default']
+        # Paths are prettified by replacing '~' with $HOME
+        if hasattr(value, 'prettified'):
+            return value.prettified
+        else:
+            return value
+
+COLUMNS['default'] = Default
+
+
 class Description(ColumnBase):
     header = {'left': 'Description'}
     align = 'left'
