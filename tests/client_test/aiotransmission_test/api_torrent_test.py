@@ -201,7 +201,7 @@ class TestManipulatingTorrents(TorrentAPITestCase):
 
         response = await self.api._torrent_action(
             method=self.mock_method,
-            check=check_func, keys_check=wanted_keys,
+            check=check_func, check_keys=wanted_keys,
         )
         self.assertEqual(self.mock_method_args, (1, 3))
         self.assertEqual(self.mock_method_kwargs, {})

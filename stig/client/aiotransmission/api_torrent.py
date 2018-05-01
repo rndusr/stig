@@ -345,8 +345,8 @@ class TorrentAPI():
         else:
             raise ValueError("Invalid 'torrents' argument: {!r}".format(torrents))
 
-    async def _torrent_action(self, method, torrents=None, method_args={}, check=None,
-                              keys_check=()):
+    async def _torrent_action(self, method, torrents=None, method_args={},
+                              check=None, check_keys=()):
         """
         Helper method that operates on torrents (start, stop, remove, etc)
 
@@ -357,7 +357,7 @@ class TorrentAPI():
                a 2-tuple of (SUCCESS, MESSAGE) where SUCCESS is evaluated as
                bool and MESSAGE a string or None.  If SUCCESS evaluates to
                True, `method` is applied to the torrent, otherwise not.
-        keys_check: List of Torrent keys the check function needs ('id' and
+        check_keys: List of Torrent keys the check function needs ('id' and
                     'name' are always included)
 
         Return Response with the following properties:
@@ -371,9 +371,9 @@ class TorrentAPI():
         msgs = []
 
         # Always provide some basic keys
-        keys_check = set(tuple(keys_check) + ('id', 'name'))
+        check_keys = set(tuple(check_keys) + ('id', 'name'))
 
-        response = await self.torrents(torrents, keys=keys_check)
+        response = await self.torrents(torrents, keys=check_keys)
         if not response.success:
             return Response(success=False, torrents=(), msgs=response.msgs)
         else:
@@ -425,7 +425,7 @@ class TorrentAPI():
                 return (True, 'Stopping ' + t['name'])
 
         return await self._torrent_action(self.rpc.torrent_stop, torrents,
-                                          check=check, keys_check=('status',))
+                                          check=check, check_keys=('status',))
 
     async def start(self, torrents, force=False):
         """
@@ -452,7 +452,7 @@ class TorrentAPI():
             method = self.rpc.torrent_start
 
         return await self._torrent_action(method, torrents,
-                                          check=check, keys_check=('status',),
+                                          check=check, check_keys=('status',),
                                           method_args={'force':force})
 
     async def toggle_stopped(self, torrents, force=False):
@@ -514,7 +514,7 @@ class TorrentAPI():
                 return (True, 'Verifying ' + t['name'])
 
         return await self._torrent_action(self.rpc.torrent_verify, torrents,
-                                          check=check, keys_check=('status',))
+                                          check=check, check_keys=('status',))
 
     async def remove(self, torrents, delete=False):
         """
@@ -570,7 +570,7 @@ class TorrentAPI():
                 return (False, 'Already in %s: %s' % (destination, t['name']))
 
         return await self._torrent_action(self.rpc.torrent_set_location, torrents,
-                                          check=create_info_msg, keys_check=('path',),
+                                          check=create_info_msg, check_keys=('path',),
                                           method_args={'move': True, 'location': destination})
 
 
@@ -949,5 +949,5 @@ class TorrentAPI():
                 return (True, 'Announcing: %s' % t['name'])
 
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
-                                          check=check, keys_check=('status', 'trackers',
+                                          check=check, check_keys=('status', 'trackers',
                                                                    'time-manual-announce-allowed'))
