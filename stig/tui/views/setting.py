@@ -28,9 +28,16 @@ TUICOLUMNS['name'] = Name
 
 class Value(_COLUMNS['value'], CellWidgetBase):
     width = ('weight', 100)
-    style = Style(prefix='settinglist.value', focusable=True, extras=('header',))
+    style = Style(prefix='settinglist.value', focusable=True, extras=('header',),
+                  modes=('highlighted',))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['value'].header),
                            style.attrs('header'))
+
+    def get_mode(self):
+        default = self.data['default']
+        value = self.data['value']
+        if not self.data['id'].startswith('srv.') and value != default:
+            return 'highlighted'
 
 TUICOLUMNS['value'] = Value
 

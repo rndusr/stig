@@ -594,9 +594,12 @@ settinglist.name.unfocused                 $name_fg           on $slist_bg.uf
 settinglist.name.focused                   $name_fg           on $slist_bg.f
 
 $value_fg = light gray
+$value_hl = white,bold
 settinglist.value.header                   $value_fg,underline on $slist_bg.uf
 settinglist.value.unfocused                $value_fg           on $slist_bg.uf
 settinglist.value.focused                  $value_fg           on $slist_bg.f
+settinglist.value.highlighted.unfocused    $value_hl           on $slist_bg.uf
+settinglist.value.highlighted.focused      $value_hl           on $slist_bg.f
 
 $default_fg = light gray
 settinglist.default.header                 $default_fg,underline on $slist_bg.uf
