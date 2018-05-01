@@ -464,7 +464,7 @@ class Torrent(base.TorrentBase):
         raw_old = self._raw
 
         # Remove cached values if their original/raw value(s) differ
-        for k,v in tuple(cache.items()):
+        for k in tuple(cache):
             # Each key depends on one or more RPC field
             fields = DEPENDENCIES[k]
             for field in fields:
