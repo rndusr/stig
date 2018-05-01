@@ -156,14 +156,14 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
     description = "Change torrents' location"
     usage = ('move <PATH>',
              'move <TORRENT FILTER> <PATH>')
-    examples = ('move new/path',
-                'move size>50g path/to/lots/of/storage')
+    examples = ('move ./new/path',
+                'move size>50G /path/to/lots/of/storage')
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         {'names': ('PATH',),
-         'description': ('New location of the specified torrent(s).  If PATH is relative '
-                         '(does not start with "/"), it is relative to the value of the '
-                         'setting "srv.path.complete".')},
+         'description': ('Move the specified torrent(s) to this directory.  If PATH is relative '
+                         '(i.e. does not start with "/"), it is relative to the value of the '
+                         'setting "srv.path.complete".  That means "." is the download path.')},
     )
     srvapi = ExpectedResource
 
