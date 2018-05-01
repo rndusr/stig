@@ -35,9 +35,15 @@ class SetCmd(base.SetCmdbase,
         columns = self.only_supported_columns(columns, SETTING_COLUMNS)
 
         settings = sort.apply(
-            chain(({'id': k, 'value': v, 'description': localcfg.description(k)}
+            chain(({'id': k,
+                    'value': v,
+                    'default': localcfg.default(k),
+                    'description': localcfg.description(k)}
                    for k,v in localcfg.items()),
-                  ({'id': 'srv.'+k, 'value': v, 'description': remotecfg.description(k)}
+                  ({'id': 'srv.'+k,
+                    'value': v,
+                    'default': '',
+                    'description': remotecfg.description(k)}
                    for k,v in remotecfg.items()))
         )
 

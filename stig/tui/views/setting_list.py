@@ -173,10 +173,14 @@ class SettingListWidget(ListWidgetBase):
 
     def _handle_update(self, *_, **__):
         self._data_dict = {
-            **{k: {'id': k, 'value': v,
+            **{k: {'id': k,
+                   'value': v,
+                   'default': localcfg.default(k),
                    'description': localcfg.description(k)}
                for k,v in localcfg.items()},
-            **{'srv.'+k: {'id': 'srv.'+k, 'value': v,
+            **{'srv.'+k: {'id': 'srv.'+k,
+                          'value': v,
+                          'default': '',
                           'description': remotecfg.description(k)}
                for k,v in remotecfg.items()},
         }
