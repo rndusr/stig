@@ -13,7 +13,8 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, ExpectedResource, utils)
-from ._common import make_X_FILTER_spec
+from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
+                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 from ...utils.usertypes import Float
 from . import _mixin as mixin
 
@@ -115,13 +116,19 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
           'description': ('Comma-separated list of sort orders; '
                           'valid sort orders are "name" and "value"') },
 
-        { 'names': ('--columns', '-c'), 'default': ('name', 'value', 'description'),
+        { 'names': ('--columns', '-c'),
+          'default_description': "current value of 'columns.settings' setting",
           'description': ('Comma-separated list of column names; '
                           'valid column names "name", "value" and "description"') },
     )
+    from ...views.setting import COLUMNS
+    from ...client.sorters.setting import SettingSorter
     more_sections = {
-        'SEE ALSO': (('Run `help settings` for a list of all available '
-                      'local and remote settings.'),),
+        'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.settings'),
+        'SORT ORDERS': make_SORT_ORDERS_doc(SettingSorter, '--sort', 'sort.settings'),
+        'SCRIPTING': make_SCRIPTING_doc(name),
+        'SEE ALSO': (('Run `help settings` or run `set` without commands '
+                      'for a list of available local and remote settings.'),),
     }
     cfg = ExpectedResource
     srvcfg = ExpectedResource
@@ -138,6 +145,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             # Show list of settings
             try:
                 sort = self.get_setting_sorter(sort)
+                columns = self.cfg['columns.settings'] if columns is None else columns
                 columns = self.get_setting_columns(columns)
             except ValueError as e:
                 log.error(e)
