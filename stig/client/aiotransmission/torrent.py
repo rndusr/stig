@@ -477,7 +477,7 @@ class Torrent(base.TorrentBase):
                     # update() method to update the object in cache instead of
                     # removing it from the cache.
                     value = cache[k]
-                    if hasattr(value, 'update'):
+                    if hasattr(value, 'update') and all(field in raw_torrent for field in fields):
                         value.update(raw_torrent)
                     else:
                         del cache[k]
