@@ -294,7 +294,8 @@ class TrackerList(tuple):
 
     @staticmethod
     def _next_time(tracker, which):
-        """Handle next(Announce|Scrape)Time RPC key
+        """
+        Handle next(Announce|Scrape)Time RPC key
 
         `which` must be 'Scrape' or 'Announce'.
 
@@ -314,7 +315,8 @@ class TrackerList(tuple):
 
     @staticmethod
     def _last_time(tracker, which):
-        """Handle last(Announce|Scrape)Time RPC key
+        """
+        Handle last(Announce|Scrape)Time RPC key
 
         `which` must be 'Scrape' or 'Announce'.
 
@@ -450,7 +452,8 @@ _MODIFY = {
 }
 
 class Torrent(base.TorrentBase):
-    """Information about a torrent as a mapping
+    """
+    Information about a torrent as a mapping
 
     The available keys are specified in DEPENDENCIES and ttypes.TYPES.
     """
@@ -538,7 +541,8 @@ class Torrent(base.TorrentBase):
 
 
 class TorrentFields(tuple):
-    """Convert Torrent keys to those specified in rpc-spec.txt
+    """
+    Convert Torrent keys to those specified in rpc-spec.txt
 
     The resulting tuple has no duplicates and the keys 'id' and 'name' are
     always included.
