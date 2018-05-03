@@ -39,6 +39,12 @@ def init_defaults(localcfg):
         def __eq__(self, other):
             return self.lstrip(self._invert_chars) == other.lstrip(self._invert_chars)
 
+        # An overloaded __eq__() obligates an overloaded __hash__(), or
+        # instances won't be hashable.
+        def __hash__(self):
+            return super().__hash__()
+
+
     def partial_sort_order(sortercls):
         options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)
         return Tuple.partial(options=options, dedup=True)
