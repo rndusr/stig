@@ -179,23 +179,24 @@ def _make_status(t):
     return statuses
 
 
-def _create_TorrentFileTree(t):
-    fileStats = t['fileStats']
-    if len(fileStats) < 1:
-        # filelist is empty if torrent was added by hash and metadata isn't
-        # downloaded yet.
-        filelist = [{'tid': -1, 'id': (-1, -1), 'name': t['name'], 'priority': 0,
-                     'length': 0, 'wanted': True, 'bytesCompleted': 0}]
-    else:
-        # Combine 'files' and 'fileStats' fields and add the 'id' key to each
-        # file, which is a (torrent ID, file list index) tuple
-        tid = t['id']
-        filelist = ({'id': (tid, i), **f, **fS}
-                    for i,(f,fS) in enumerate(zip(t['files'], fileStats)))
-    return TorrentFileTree(t['id'], t['downloadDir'], filelist, path=())
-
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
+    @classmethod
+    def create(cls, raw_torrent):
+        fileStats = raw_torrent['fileStats']
+        if len(fileStats) < 1:
+            # filelist is empty if torrent was added by hash and metadata isn't
+            # downloaded yet.
+            filelist = [{'tid': -1, 'id': (-1, -1), 'name': raw_torrent['name'], 'priority': 0,
+                         'length': 0, 'wanted': True, 'bytesCompleted': 0}]
+        else:
+            # Combine 'files' and 'fileStats' fields and add the 'id' key to each
+            # file, which is a (torrent ID, file list index) tuple
+            tid = raw_torrent['id']
+            filelist = ({'id': (tid, i), **f, **fS}
+                        for i,(f,fS) in enumerate(zip(raw_torrent['files'], fileStats)))
+        return cls(raw_torrent['id'], raw_torrent['downloadDir'], filelist, path=())
+
     def __init__(self, torrent_id, torrent_location, filelist, path):
         log.debug('Creating new TorrentFileTree for torrent %r: %r', torrent_id, path)
         super().__init__(path)
@@ -448,7 +449,7 @@ _MODIFY = {
     'error'                        : _find_error,
     'trackers'                     : TrackerList,
     'peers'                        : PeerList,
-    'files'                        : _create_TorrentFileTree,
+    'files'                        : TorrentFileTree.create,
 }
 
 class Torrent(base.TorrentBase):

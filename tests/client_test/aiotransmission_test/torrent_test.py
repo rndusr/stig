@@ -80,7 +80,7 @@ class TestTorrentFileTree(unittest.TestCase):
                              {'bytesCompleted': 0, 'priority': 0, 'wanted': True}],
                'files': [{'bytesCompleted': 0, 'length': 1000, 'name': 'Fake torrent/file1'},
                          {'bytesCompleted': 0, 'length': 2000, 'name': 'Fake torrent/subdir/file2'}]}
-        ft = torrent._create_TorrentFileTree(raw)
+        ft = torrent.TorrentFileTree.create(raw)
         self.assertEqual(ft['Fake torrent']['file1']['%downloaded'], 0)
         self.assertEqual(ft['Fake torrent']['file1']['size-downloaded'], 0)
         self.assertEqual(ft['Fake torrent']['subdir']['file2']['%downloaded'], 0)
