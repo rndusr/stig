@@ -21,6 +21,9 @@
       argments
     * The value of a setting can now come from shell command,
       e.g. `set connect.password:eval pass transmission`
+    * Setting any list with a limited number of options to "*" sets it to all
+      options (e.g. `set columns.torrents '*'`).  This also works for --columns
+      and --sort arguments options (e.g. `lsp -c '*'`).
     * New setting 'geoip' enables/disables country code lookups for peer lists
     * New setting 'geoip.dir' specifies where the geolocation database is cached
     * In peer lists, peers' host names are displayed instead of their IPs (may
