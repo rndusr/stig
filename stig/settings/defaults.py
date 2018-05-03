@@ -29,11 +29,6 @@ DEFAULT_HISTORY_FILE = os.path.join(XDG_DATA_HOME, __appname__, 'history')
 DEFAULT_GEOIP_DIR    = os.path.join(XDG_CACHE_HOME, __appname__)
 DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
 
-DEFAULT_TORRENT_SORT = ('name',)
-DEFAULT_PEER_SORT    = ('torrent',)
-DEFAULT_TRACKER_SORT = ('domain',)
-DEFAULT_SETTING_SORT = ('name',)
-
 DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
                            'seeds', 'peers', 'status', 'eta', '%downloaded',
                            'rate-down', 'rate-up', 'name')
@@ -129,19 +124,19 @@ def init_defaults(localcfg):
 
     localcfg.add('sort.torrents',
                  partial_sort_order(TorrentSorter),
-                 default=DEFAULT_TORRENT_SORT,
+                 default=TorrentSorter.DEFAULT_SORT,
                  description='List of sort orders in torrent lists')
     localcfg.add('sort.peers',
                  partial_sort_order(TorrentPeerSorter),
-                 default=DEFAULT_PEER_SORT,
+                 default=TorrentPeerSorter.DEFAULT_SORT,
                  description='List of sort orders in peer lists')
     localcfg.add('sort.trackers',
                  partial_sort_order(TorrentTrackerSorter),
-                 default=DEFAULT_TRACKER_SORT,
+                 default=TorrentTrackerSorter.DEFAULT_SORT,
                  description='List of sort orders in tracker lists')
     localcfg.add('sort.settings',
                  partial_sort_order(SettingSorter),
-                 default=DEFAULT_SETTING_SORT,
+                 default=SettingSorter.DEFAULT_SORT,
                  description='List of sort orders in setting lists')
 
     localcfg.add('tui.theme',
