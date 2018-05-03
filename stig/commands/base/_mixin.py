@@ -43,7 +43,7 @@ class get_torrent_sorter():
         """
         if args:
             from ...client import TorrentSorter
-            return TorrentSorter(utils.listify_args(args))
+            return TorrentSorter(self.cfg.validate('sort.torrents', args))
 
 class get_torrent_columns():
     def get_torrent_columns(self, columns):
@@ -79,7 +79,7 @@ class get_peer_sorter():
         """
         if args:
             from ...client import TorrentPeerSorter
-            return TorrentPeerSorter(utils.listify_args(args))
+            return TorrentPeerSorter(self.cfg.validate('sort.peers', args))
 
 class get_peer_filter():
     def get_peer_filter(self, FILTER):
@@ -123,7 +123,7 @@ class get_tracker_sorter():
         """
         if args:
             from ...client import TorrentTrackerSorter
-            return TorrentTrackerSorter(utils.listify_args(args))
+            return TorrentTrackerSorter(self.cfg.validate('sort.trackers', args))
 
 class get_tracker_filter():
     def get_tracker_filter(self, FILTER):
@@ -162,7 +162,7 @@ class get_setting_sorter():
         """
         if args:
             from ...client import SettingSorter
-            return SettingSorter(utils.listify_args(args))
+            return SettingSorter(self.cfg.validate('sort.settings', args))
 
 class get_setting_columns():
     def get_setting_columns(self, columns):
