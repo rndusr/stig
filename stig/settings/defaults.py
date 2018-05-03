@@ -22,6 +22,7 @@ from ..views import (torrent, file, peer, tracker, setting)
 from ..client.sorters.torrent import TorrentSorter
 from ..client.sorters.peer import TorrentPeerSorter
 from ..client.sorters.tracker import TorrentTrackerSorter
+from ..client.sorters.setting import SettingSorter
 
 DEFAULT_RCFILE       = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_FILE = os.path.join(XDG_DATA_HOME, __appname__, 'history')
@@ -31,6 +32,7 @@ DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
 DEFAULT_TORRENT_SORT = ('name',)
 DEFAULT_PEER_SORT    = ('torrent',)
 DEFAULT_TRACKER_SORT = ('domain',)
+DEFAULT_SETTING_SORT = ('name',)
 
 DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
                            'seeds', 'peers', 'status', 'eta', '%downloaded',
@@ -137,6 +139,10 @@ def init_defaults(localcfg):
                  partial_sort_order(TorrentTrackerSorter),
                  default=DEFAULT_TRACKER_SORT,
                  description='List of sort orders in tracker lists')
+    localcfg.add('sort.settings',
+                 partial_sort_order(SettingSorter),
+                 default=DEFAULT_SETTING_SORT,
+                 description='List of sort orders in setting lists')
 
     localcfg.add('tui.theme',
                  Path.partial(),
