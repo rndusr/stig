@@ -23,7 +23,7 @@ class _SortSpec(SortSpecBase):
 
 class TorrentSorter(SorterBase):
     SORTSPECS = {
-        'id':                _SortSpec(lambda t: t['id'].lower(),
+        'id':                _SortSpec(lambda t: t['id'],
                                        needed_keys=('id',),
                                        description='ID'),
         'name':              _SortSpec(lambda t: t['name'].lower(),
