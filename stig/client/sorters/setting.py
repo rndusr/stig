@@ -20,10 +20,14 @@ class _SortSpec(SortSpecBase):
 
 class SettingSorter(SorterBase):
     SORTSPECS = {
-        'name' : _SortSpec(lambda s: s['id'],
-                           description='name'),
+        'name'        : _SortSpec(lambda s: s['id'],
+                                  description='name'),
         # repr() because values have incompatible types
-        'value' : _SortSpec(lambda s: repr(s['value']),
-                            description='value'),
+        'value'       : _SortSpec(lambda s: repr(s['value']),
+                                  description='value'),
+        'default'     : _SortSpec(lambda s: repr(s['default']),
+                                  description='default'),
+        'description' : _SortSpec(lambda s: s['description'],
+                                  description='description'),
     }
     DEFAULT_SORT = 'name'
