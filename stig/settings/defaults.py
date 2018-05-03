@@ -29,16 +29,6 @@ DEFAULT_HISTORY_FILE = os.path.join(XDG_DATA_HOME, __appname__, 'history')
 DEFAULT_GEOIP_DIR    = os.path.join(XDG_CACHE_HOME, __appname__)
 DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
 
-DEFAULT_TORRENT_COLUMNS = ('marked', 'size', 'downloaded', 'uploaded', 'ratio',
-                           'seeds', 'peers', 'status', 'eta', '%downloaded',
-                           'rate-down', 'rate-up', 'name')
-DEFAULT_FILE_COLUMNS    = ('marked', 'priority', '%downloaded', 'downloaded', 'size', 'name')
-DEFAULT_TRACKER_COLUMNS = ('tier', 'domain', 'error', 'last-announce', 'next-announce',
-                           'leeches', 'seeds', 'downloads')
-DEFAULT_SETTING_COLUMNS = ('name', 'value', 'default', 'description')
-DEFAULT_PEER_COLUMNS    = ('ip', 'client', 'country', '%downloaded', 'rate-down',
-                           'rate-up', 'rate-est', 'eta')
-
 
 def init_defaults(localcfg):
     from ..utils.usertypes import (String, Int, Float, Bool, Path, Tuple, Option)
@@ -84,23 +74,27 @@ def init_defaults(localcfg):
 
     localcfg.add('columns.torrents',
                  Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),
-                 default=DEFAULT_TORRENT_COLUMNS,
+                 default=('marked', 'size', 'downloaded', 'uploaded', 'ratio',
+                          'seeds', 'peers', 'status', 'eta', '%downloaded',
+                          'rate-down', 'rate-up', 'name'),
                  description='Default columns in torrent lists')
     localcfg.add('columns.peers',
                  Tuple.partial(options=peer.COLUMNS, aliases=peer.ALIASES),
-                 default=DEFAULT_PEER_COLUMNS,
+                 default=('ip', 'client', 'country', '%downloaded', 'rate-down',
+                          'rate-up', 'rate-est', 'eta'),
                  description='Default columns in peer lists')
     localcfg.add('columns.files',
                  Tuple.partial(options=file.COLUMNS, aliases=file.ALIASES),
-                 default=DEFAULT_FILE_COLUMNS,
+                 default=('marked', 'priority', '%downloaded', 'downloaded', 'size', 'name'),
                  description='Default columns in file lists')
     localcfg.add('columns.trackers',
                  Tuple.partial(options=tracker.COLUMNS, aliases=tracker.ALIASES),
-                 default=DEFAULT_TRACKER_COLUMNS,
+                 default=('tier', 'domain', 'error', 'last-announce', 'next-announce',
+                          'leeches', 'seeds', 'downloads'),
                  description='Default columns in tracker lists')
     localcfg.add('columns.settings',
                  Tuple.partial(options=setting.COLUMNS, aliases=setting.ALIASES),
-                 default=DEFAULT_SETTING_COLUMNS,
+                 default=('name', 'value', 'default', 'description'),
                  description='Default columns in setting lists')
 
     localcfg.add('geoip',
