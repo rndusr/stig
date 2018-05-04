@@ -147,31 +147,6 @@ urwid.AsyncioEventLoop = AsyncioEventLoop_patched
 
 
 class ListBox_patched(urwid.ListBox):
-    def keypress(self, size, key):
-        # Offer key to focused widget first
-        # https://github.com/urwid/urwid/pull/233
-        focused_widget = self.focus
-        if focused_widget is not None and focused_widget.selectable() and \
-           focused_widget.keypress((size[0],), key) is None:
-            return None
-
-        # Add support for home/end keys
-        # https://github.com/urwid/urwid/pull/229
-        key = super().keypress(size, key)
-        if self.focus is not None:
-            if key == 'home':
-                self.focus_position = next(iter(self.body.positions()))
-                self.set_focus_valign('top')
-                self._invalidate()
-                return None
-            elif key == 'end':
-                self.focus_position = next(iter(self.body.positions(reverse=True)))
-                self.set_focus_valign('bottom')
-                self._invalidate()
-                return None
-        return key
-
-
     # Add support for ScrollBar class (see stig.tui.scroll)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
