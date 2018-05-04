@@ -18,9 +18,6 @@ from ..main import (aioloop, localcfg, cmdmgr, srvapi, geoip)
 
 
 # Keybindings
-KEYMAP_CONTEXTS = ('main', 'tabs', 'torrentlist', 'torrent', 'filelist', 'file',
-                   'peerlist', 'trackerlist', 'tracker')
-
 from ..settings.defaults import DEFAULT_KEYMAP
 from .keymap import KeyMap
 keymap = KeyMap(callback=lambda cmd,widget: cmdmgr.run_task(cmd, on_error=log.error))

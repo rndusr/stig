@@ -23,9 +23,9 @@ from functools import partial
 
 
 # Import tui.main module only on demand
-def _get_KEYMAP_CONTEXTS():
-    from ...tui.main import KEYMAP_CONTEXTS
-    return sorted(KEYMAP_CONTEXTS)
+def _get_keymap_contexts():
+    from ...tui.main import keymap
+    return tuple(keymap.contexts)
 
 
 class BindCmd(metaclass=InitCommand):
@@ -60,7 +60,7 @@ class BindCmd(metaclass=InitCommand):
              'actions in different contexts.'),
             '',
             'Available contexts are: ' +
-              ', '.join('%s' % context for context in _get_KEYMAP_CONTEXTS()),
+              ', '.join('%s' % context for context in _get_keymap_contexts()),
             '',
             'EXAMPLE',
             '\tbind --context torrent ctrl-t start',
@@ -105,7 +105,7 @@ class BindCmd(metaclass=InitCommand):
         if context is None:
             from ...tui.keymap import DEFAULT_CONTEXT
             context = DEFAULT_CONTEXT
-        elif context not in _get_KEYMAP_CONTEXTS():
+        elif context not in _get_keymap_contexts():
             log.error('Invalid context: {!r}'.format(context))
             return False
 
@@ -146,7 +146,7 @@ class UnbindCmd(metaclass=InitCommand):
         if context is None:
             from ...tui.keymap import DEFAULT_CONTEXT
             context = DEFAULT_CONTEXT
-        elif context not in _get_KEYMAP_CONTEXTS():
+        elif context not in _get_keymap_contexts():
             log.error('Invalid context: {!r}'.format(context))
             return False
 
