@@ -379,4 +379,7 @@ DEFAULT_KEYMAP = (
     {'context': 'settinglist', 'key': 's C', 'action': 'sort --add !description'},
     {'context': 'settinglist', 'key': 's ,', 'action': 'sort --reset'},
     {'context': 'settinglist', 'key': 's .', 'action': 'sort --none'},
+
+    # Setting actions
+    {'context': 'setting', 'key': 'ctrl-r', 'action': 'reset'},
 )
