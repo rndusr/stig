@@ -138,7 +138,6 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 await self.srvcfg.update()
             except ClientError as e:
                 log.error('%s', e)
-                return False
 
             # Show list of settings
             sort = self.cfg['sort.settings'] if sort is None else sort
