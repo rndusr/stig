@@ -370,10 +370,11 @@ class Tabs(urwid.Widget):
 
         if key is not None:
             focus_pos = self.focus_position
-            if key == 'left' and focus_pos > 0:
+            cmd = self._command_map[key]
+            if cmd == urwid.CURSOR_LEFT and focus_pos > 0:
                 self.focus_position -= 1
                 key = None
-            elif key == 'right' and focus_pos < len(self._contents)-1:
+            elif cmd == urwid.CURSOR_RIGHT and focus_pos < len(self._contents)-1:
                 self.focus_position += 1
                 key = None
         return key
