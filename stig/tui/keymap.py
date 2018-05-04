@@ -219,10 +219,6 @@ class Keymapped():
         return True
 
 
-NO_CONTEXT      = object()
-ALL_CONTEXTS    = object()
-DEFAULT_CONTEXT = 'default'
-
 class KeyMap():
     """Bind keys to actions in different contexts
 
@@ -242,14 +238,18 @@ class KeyMap():
     >>> pw = Password('', 'Enter password or <Alt-g> to generate one')
     """
 
+    NO_CONTEXT      = object()
+    ALL_CONTEXTS    = object()
+    DEFAULT_CONTEXT = 'default'
+
     def __init__(self, callback=None):
         self._default_callback = callback
-        self._actions = {DEFAULT_CONTEXT: {}}
+        self._actions = {self.DEFAULT_CONTEXT: {}}
 
         self._bindunbind_callbacks = blinker.Signal()
         self._keychain_callbacks = blinker.Signal()
         self._keychain_partial = []
-        self._keychain_context = NO_CONTEXT
+        self._keychain_context = self.NO_CONTEXT
 
     def clear(self):
         """Remove all keybindings"""
@@ -304,7 +304,7 @@ class KeyMap():
             del self._actions[context][key]
             log.debug('%s: Unmapped %r', context, key)
         else:
-            if context == DEFAULT_CONTEXT:
+            if context == self.DEFAULT_CONTEXT:
                 key_removed = self._unbind_from_urwid_command_map(key)
             else:
                 key_removed = False
@@ -340,7 +340,7 @@ class KeyMap():
         # Try to advance keychains only if no keychain was started previously or
         # if that previously started keychain was in the same context as we're
         # in now.
-        if action is None and (self._keychain_context == NO_CONTEXT or
+        if action is None and (self._keychain_context == self.NO_CONTEXT or
                                self._keychain_context == context):
             log.debug('%s: Evaluating %r as chain key for widget %r', context, key, widget)
             action = self._get_keychain_action(key, context)
@@ -400,8 +400,8 @@ class KeyMap():
         if key in actions:
             return actions[key]
 
-        if context is not DEFAULT_CONTEXT:
-            actions = self._actions[DEFAULT_CONTEXT]
+        if context is not self.DEFAULT_CONTEXT:
+            actions = self._actions[self.DEFAULT_CONTEXT]
             if key in actions:
                 return actions[key]
 
@@ -429,7 +429,7 @@ class KeyMap():
                 if isinstance(kc, KeyChain):
                     yield (kc, action)
 
-        if context is ALL_CONTEXTS:
+        if context is self.ALL_CONTEXTS:
             for cntxt in self.contexts:
                 yield from keychains_from(cntxt)
         else:
@@ -444,7 +444,7 @@ class KeyMap():
     def _reset_keychains(self, context=ALL_CONTEXTS):
         log.debug('%s: Resetting keychains', context)
         self._keychain_partial.clear()
-        self._keychain_context = NO_CONTEXT
+        self._keychain_context = self.NO_CONTEXT
         self._run_keychain_callbacks()
 
     @property
@@ -459,7 +459,7 @@ class KeyMap():
 
     def _run_keychain_callbacks(self):
         context = self._keychain_context
-        if context is NO_CONTEXT:
+        if context is self.NO_CONTEXT:
             self._keychain_callbacks.send(self, active_keychains=(), keys_given=())
         else:
             self._keychain_callbacks.send(self,

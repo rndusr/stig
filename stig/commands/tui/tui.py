@@ -103,8 +103,7 @@ class BindCmd(metaclass=InitCommand):
             action = ' '.join(shlex.quote(x) for x in ACTION)
 
         if context is None:
-            from ...tui.keymap import DEFAULT_CONTEXT
-            context = DEFAULT_CONTEXT
+            context = keymap.DEFAULT_CONTEXT
         elif context not in _get_keymap_contexts():
             log.error('Invalid context: {!r}'.format(context))
             return False
@@ -144,8 +143,7 @@ class UnbindCmd(metaclass=InitCommand):
             keymap.clear()
 
         if context is None:
-            from ...tui.keymap import DEFAULT_CONTEXT
-            context = DEFAULT_CONTEXT
+            context = keymap.DEFAULT_CONTEXT
         elif context not in _get_keymap_contexts():
             log.error('Invalid context: {!r}'.format(context))
             return False
