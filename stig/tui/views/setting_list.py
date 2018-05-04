@@ -164,8 +164,8 @@ class SettingListWidget(ListWidgetBase):
     palette_name    = 'settinglist'
     focusable_items = True
 
-    def __init__(self, srvapi, keymap, sort=None, columns=('name', 'value', 'description')):
-        super().__init__(srvapi, keymap, title='Settings', columns=columns)
+    def __init__(self, srvapi, keymap, sort=None, columns=None, title='Settings'):
+        super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._sort = sort
         localcfg.on_change(self._handle_update)
         remotecfg.on_update(self._handle_update)
