@@ -76,19 +76,20 @@ class ResetCmdbase(metaclass=InitCommand):
         'SEE ALSO': ('Run `help settings` for a list of all available settings.',
                      'Note that remote settings (srv.*) cannot be reset.'),
     }
-    cfg = ExpectedResource
 
     def run(self, NAME):
+        from ...main import localcfg, remotecfg
         success = True
         for name in NAME:
-            if name not in self.cfg:
-                log.error('Unknown setting: {}'.format(name))
+
+            if name.startswith('srv.') and name[4:] in remotecfg:
+                log.error('Remote settings cannot be reset: %s' % name)
                 success = False
-            elif name.startswith('srv.'):
-                log.error('Remote settings cannot be reset: {}'.format(name))
+            elif name not in localcfg:
+                log.error('Unknown setting: %s' % name)
                 success = False
             else:
-                self.cfg.reset(name)
+                localcfg.reset(name)
         return success
 
 
