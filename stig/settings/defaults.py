@@ -367,4 +367,16 @@ DEFAULT_KEYMAP = (
     # Tracker actions
     {'context': 'tracker', 'key': 'enter',       'action': 'tab summary'},
     {'context': 'tracker', 'key': 'alt-enter',   'action': 'tab filelist'},
+
+    # Setting list actions
+    {'context': 'settinglist', 'key': 's n', 'action': 'sort --add name'},
+    {'context': 'settinglist', 'key': 's N', 'action': 'sort --add !name'},
+    {'context': 'settinglist', 'key': 's v', 'action': 'sort --add value'},
+    {'context': 'settinglist', 'key': 's V', 'action': 'sort --add !value'},
+    {'context': 'settinglist', 'key': 's d', 'action': 'sort --add default'},
+    {'context': 'settinglist', 'key': 's D', 'action': 'sort --add !default'},
+    {'context': 'settinglist', 'key': 's c', 'action': 'sort --add description'},
+    {'context': 'settinglist', 'key': 's C', 'action': 'sort --add !description'},
+    {'context': 'settinglist', 'key': 's ,', 'action': 'sort --reset'},
+    {'context': 'settinglist', 'key': 's .', 'action': 'sort --none'},
 )
