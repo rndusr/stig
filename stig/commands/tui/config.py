@@ -19,6 +19,17 @@ class RcCmd(base.RcCmdbase):
 class ResetCmd(base.ResetCmdbase):
     provides = {'tui'}
 
+    def run(self, NAME):
+        if not NAME:
+            # Get name from focused item in setting list
+            from ...tui import main as tui
+            from ...tui.views.setting_list import SettingListWidget
+            widget = tui.tabs.focus
+            if isinstance(widget, SettingListWidget):
+                setting_name = widget.focused_widget.name
+                return super().run((setting_name,))
+        return super().run(NAME)
+
 
 class SetCmd(base.SetCmdbase,
              mixin.create_list_widget):

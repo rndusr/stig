@@ -69,7 +69,7 @@ class ResetCmdbase(metaclass=InitCommand):
     usage = ('reset <NAME> <NAME> <NAME> ...',)
     examples = ('reset connect.port',)
     argspecs = (
-        {'names': ('NAME',), 'nargs': '+',
+        {'names': ('NAME',), 'nargs': '*',
          'description': 'Name of setting'},
     )
     more_sections = {
@@ -78,6 +78,10 @@ class ResetCmdbase(metaclass=InitCommand):
     }
 
     def run(self, NAME):
+        if not NAME:
+            log.error('Missing NAME argument')
+            return False
+
         from ...main import localcfg, remotecfg
         success = True
         for name in NAME:
