@@ -112,14 +112,12 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
          'description': ('New value or shell command that prints the new value to stdout; '
                          "numerical values can be adjusted by prepending '+=' or '-='")},
 
-        { 'names': ('--sort', '-s'), 'default': 'name',
-          'description': ('Comma-separated list of sort orders; '
-                          'valid sort orders are "name" and "value"') },
+        { 'names': ('--sort', '-s'),
+          'description': 'Comma-separated list of sort orders (see SORT ORDERS section)' },
 
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'columns.settings' setting",
-          'description': ('Comma-separated list of column names; '
-                          'valid column names "name", "value" and "description"') },
+          'description': 'Comma-separated list of column names (see COLUMNS section)' },
     )
     from ...views.setting import COLUMNS
     from ...client.sorters.setting import SettingSorter
