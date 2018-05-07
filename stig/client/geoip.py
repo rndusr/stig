@@ -145,8 +145,12 @@ else:
 
             db = getattr(self, '_db', None)
             if db is not None:
-                info = db.get(addr)
-                if info is not None:
-                    country = info['country']['iso_code']
-                    cache[addr] = (country, now)
-                    return country
+                try:
+                    info = db.get(addr)
+                except maxminddb.InvalidDatabaseError:
+                    pass
+                else:
+                    if info is not None:
+                        country = info['country']['iso_code']
+                        cache[addr] = (country, now)
+                        return country
