@@ -360,8 +360,8 @@ class Tabs(urwid.Widget):
 
         if focus_widget is not None:
             if len(size) > 1:
-                #       maxcol   maxrow (-1 for the tab bar)
-                size = (size[0], size[1]-1)
+                cols, rows = size
+                size = (cols, rows - self._tabbar.rows((cols,)))
             else:
                 size = (size[0],)
 
