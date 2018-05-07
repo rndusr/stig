@@ -1,9 +1,10 @@
 2018-??-?? ?.?.?a
   Changed dependencies:
     * The legacy GeoIP module has been replaced by maxminddb
+      https://pypi.org/project/maxminddb/
 
   Breaking changes:
-    * The names and aliases of columns, filters and columns have been changed
+    * The names and aliases of columns, filters and sorters have been changed
       again (sorry) to make them more consistent and easier to guess (e.g. the
       column 'rate-limit-up' is now called 'limit-rate-up' like the setting
       'srv.limit.rate.up' and '%dn' is now a filter, sorter and column in all
