@@ -5,6 +5,8 @@ try:
     import os
     if os.path.exists('README.org'):
         long_description = pypandoc.convert('README.org', 'rst')
+        import restructuredtext_lint as rst
+        rst.lint(long_description)
 except ImportError:
     pass
 
