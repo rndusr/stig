@@ -288,14 +288,14 @@ class TorrentCountersWidget(urwid.WidgetWrap):
 
 class MarkedItemsWidget(urwid.WidgetWrap):
     def __init__(self):
-        self._text = urwid.Text('.')
-        super().__init__(urwid.AttrMap(self._text, 'bottombar.marked'))
+        self._text = urwid.Text(('bottombar', ' '))
+        super().__init__(self._text)
 
     def update(self, count):
         if count > 0:
-            new_text = '%d marked' % count
+            new_text = ('bottombar.marked', ' %d marked ' % count)
         else:
-            new_text = EMPTY_TEXT
+            new_text = ('bottombar', EMPTY_TEXT)
 
         if new_text != self._text.text:
             self._text.set_text(new_text)

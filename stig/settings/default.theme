@@ -72,7 +72,7 @@ topbar.help.space         light cyan    on $topbar_bg
 $bottombar_bg = dark gray
 bottombar                             light gray     on $bottombar_bg
 bottombar.important                   light red,bold on $bottombar_bg
-bottombar.marked                      yellow,bold    on $bottombar_bg
+bottombar.marked                      black,bold     on yellow
 bottombar.bandwidth.up                dark green     on $bottombar_bg
 bottombar.bandwidth.up.highlighted    light green    on $bottombar_bg
 bottombar.bandwidth.down              dark cyan      on $bottombar_bg
