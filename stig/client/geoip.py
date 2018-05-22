@@ -150,7 +150,9 @@ else:
                 except maxminddb.InvalidDatabaseError:
                     pass
                 else:
-                    if info is not None:
-                        country = info['country']['iso_code']
-                        cache[addr] = (country, now)
-                        return country
+                    if isinstance(info, dict):
+                        country = info.get('country')
+                        if isinstance(country, dict):
+                            iso_code = country.get('iso_code')
+                            cache[addr] = (iso_code, now)
+                            return iso_code
