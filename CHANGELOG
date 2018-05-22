@@ -1,3 +1,9 @@
+2018-05-?? 0.9.1a
+  Fixed bugs:
+    * No longer crash with a KeyError when listing peers with an unknown country
+      code
+
+
 2018-05-07 0.9.0a
   Changed dependencies:
     * The legacy GeoIP module has been replaced by maxminddb
