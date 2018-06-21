@@ -195,13 +195,19 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 'remove -d "unwanted torrent"')
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+
         { 'names': ('--delete-files','-d'), 'action': 'store_true',
           'description': 'Delete any downloaded files' },
+
+        { 'names': ('--force','-f'), 'action': 'store_true',
+          'description': ('Ignore remove.max-hits setting: Remove all '
+                          'matching torrents instead of asking for confirmation '
+                          'if the number of matches exceeds remove.max-hits')},
     )
     srvapi = ExpectedResource
     cfg = ExpectedResource
 
-    async def run(self, TORRENT_FILTER, delete_files):
+    async def run(self, TORRENT_FILTER, delete_files, force):
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
@@ -222,7 +228,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
 
             response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
-            if hits > self.cfg['remove.max-hits']:
+            if hits > self.cfg['remove.max-hits'] and not force:
                 await self.show_list_of_hits(tfilter)
                 question = 'Are you sure you want to remove %d torrent%s' % (
                     hits, '' if hits == 1 else 's')

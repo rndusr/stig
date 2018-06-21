@@ -186,9 +186,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
 
         RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
 
-        async def mock_show_list_of_hits(self_, *args, **kwargs):
-            pass
-        RemoveTorrentsCmd.show_list_of_hits = mock_show_list_of_hits
+        from asynctest import CoroutineMock
+        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no__yes(self_, *args, yes, no, **kwargs):
             await yes() ; return True
@@ -198,11 +197,13 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no__yes
         await self.do(['all'], tlist=tlist, remove_called=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
+        self.assertTrue(RemoveTorrentsCmd.show_list_of_hits.called)
 
         self.api.torrent.forget_calls()
         RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no__no
         await self.do(['all'], tlist=tlist, remove_called=False,
                       msgs=(ClientError('Keeping'),))
+        self.assertTrue(RemoveTorrentsCmd.show_list_of_hits.called)
 
 
 from stig.commands.cli import StartTorrentsCmd
