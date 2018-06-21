@@ -143,17 +143,22 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         RemoveTorrentsCmd.select_torrents = mock_select_torrents
         RemoveTorrentsCmd.cfg = self.cfg
 
-    async def do(self, args, msgs, tlist, delete=False):
+    async def do(self, args, msgs, tlist, delete=False, remove_called=True):
         success_exp = all(isinstance(msg, str) for msg in msgs)
         self.api.torrent.response = Response(success=success_exp, msgs=msgs, torrents=tlist)
+
         process = RemoveTorrentsCmd(args, loop=self.loop)
         with self.assertLogs(level='INFO') as logged:
             await self.finish(process)
-        self.api.torrent.assert_called(1, 'remove', (process.mock_tfilter,), {'delete': delete})
-        self.assertEqual(process.success, success_exp)
         exp_msgs = tuple( (('INFO' if isinstance(msg, str) else 'ERROR'), str(msg))
                           for msg in msgs )
         self.assert_logged(logged, *exp_msgs)
+
+        if remove_called:
+            self.api.torrent.assert_called(1, 'remove', (process.mock_tfilter,), {'delete': delete})
+        else:
+            self.api.torrent.assert_called(0, 'remove')
+        self.assertEqual(process.success, success_exp)
 
     async def test_remove(self):
         tlist = (MockTorrent(id=1, name='Some Torrent', seeds='51'),)
@@ -173,6 +178,31 @@ class TestRemoveTorrentsCmd(CommandTestCase):
     async def test_no_torrents_found(self):
         await self.do(['seeds>5000'], delete=False, tlist=(),
                       msgs=(ClientError('no torrents found'),))
+
+    async def test_max_hits(self):
+        tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
+                 MockTorrent(id=2, name='Torrent2', seeds='52'),
+                 MockTorrent(id=3, name='Torrent3', seeds='53'))
+
+        RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
+
+        async def mock_show_list_of_hits(self_, *args, **kwargs):
+            pass
+        RemoveTorrentsCmd.show_list_of_hits = mock_show_list_of_hits
+
+        async def mock_ask_yes_no__yes(self_, *args, yes, no, **kwargs):
+            await yes() ; return True
+        async def mock_ask_yes_no__no(self_, *args, yes, no, **kwargs):
+            await no() ; return False
+
+        RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no__yes
+        await self.do(['all'], tlist=tlist, remove_called=True,
+                      msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
+
+        self.api.torrent.forget_calls()
+        RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no__no
+        await self.do(['all'], tlist=tlist, remove_called=False,
+                      msgs=(ClientError('Keeping'),))
 
 
 from stig.commands.cli import StartTorrentsCmd
