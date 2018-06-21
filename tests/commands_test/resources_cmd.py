@@ -75,15 +75,18 @@ class MockAPI():
         return mock_method
 
     def assert_called(self, calls_exp, methodname, *args_exp):
-        assert methodname in self._methods, '{!r} method was not called'.format(methodname)
-        calls = self._methods[methodname]['calls']
-        assert calls == calls_exp, '{!r} method was called {} times, not {}'.format(methodname, calls, calls_exp)
-        posargs = self._methods[methodname]['posargs']
-        kwargs = self._methods[methodname]['kwargs']
-        posargs_exp = list(arg for arg in args_exp if isinstance(arg, tuple))
-        kwargs_exp = list(arg for arg in args_exp if isinstance(arg, dict))
-        assert posargs == posargs_exp, '\n{} !=\n{}'.format(posargs, posargs_exp)
-        assert kwargs == kwargs_exp, '\n{} !=\n{}'.format(kwargs, kwargs_exp)
+        if calls_exp == 0:
+            assert methodname not in self._methods, '{!r} method was called'.format(methodname)
+        else:
+            assert methodname in self._methods, '{!r} method was not called'.format(methodname)
+            calls = self._methods[methodname]['calls']
+            assert calls == calls_exp, '{!r} method was called {} times, not {}'.format(methodname, calls, calls_exp)
+            posargs = self._methods[methodname]['posargs']
+            kwargs = self._methods[methodname]['kwargs']
+            posargs_exp = list(arg for arg in args_exp if isinstance(arg, tuple))
+            kwargs_exp = list(arg for arg in args_exp if isinstance(arg, dict))
+            assert posargs == posargs_exp, '\n{} !=\n{}'.format(posargs, posargs_exp)
+            assert kwargs == kwargs_exp, '\n{} !=\n{}'.format(kwargs, kwargs_exp)
 
     def forget_calls(self):
         self._methods.clear()
