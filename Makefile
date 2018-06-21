@@ -6,3 +6,6 @@ clean:
 
 test:
 	python3 -m pytest --tb no tests
+
+release:
+	pyrelease CHANGELOG ./stig/__version__.py
