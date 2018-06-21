@@ -109,8 +109,10 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
     cmdmgr = ExpectedResource
 
     async def show_list_of_hits(self, tfilter):
-        cmd = 'ls --sort name %s' % tfilter
-        await self.cmdmgr.run_async(cmd)
+        import sys
+        if sys.stdout.isatty():
+            cmd = 'ls --sort name %s' % tfilter
+            await self.cmdmgr.run_async(cmd)
 
     def remove_list_of_hits(self):
         pass
