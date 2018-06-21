@@ -10,4 +10,4 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 def clear_line():
-    print('\x1b[2K\x1b[1`', end='', flush=True)
+    print('\x1b[2K\x1b[0E', end='', flush=True)
