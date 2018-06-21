@@ -160,6 +160,7 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 'move size>50G /path/to/lots/of/storage')
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+
         {'names': ('PATH',),
          'description': ('Move the specified torrent(s) to this directory.  If PATH is relative '
                          '(i.e. does not start with "/"), it is relative to the value of the '
@@ -253,8 +254,10 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
                 'start ubuntu --force')
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+
         { 'names': ('--force','-f'), 'action': 'store_true',
           'description': 'Ignore download queue' },
+
         ARGSPEC_TOGGLE,
     )
     srvapi = ExpectedResource
