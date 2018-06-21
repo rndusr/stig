@@ -48,7 +48,30 @@ class ask_yes_no():
         coroutines. They don't get any arguments and their return value is
         ignored.
         """
+        answer = await self._get_answer(question)
+        if answer:
+            await self._run_func_or_coro(yes)
+        else:
+            await self._run_func_or_coro(no)
+        await self._run_func_or_coro(after)
+        return answer
+
+    async def _run_func_or_coro(self, func_or_coro):
+        import asyncio
+        if asyncio.iscoroutinefunction(func_or_coro):
+            await func_or_coro()
+        elif asyncio.iscoroutine(func_or_coro):
+            await func_or_coro
+        elif func_or_coro is not None:
+            func_or_coro()
+
+    async def _get_answer(self, question):
         import sys, tty, termios
+
+        if not sys.stdout.isatty():
+            # We can't ask the user - default to None (which evaluates to False)
+            return None
+
         async def aiogetch(loop):
             # Disable printing of typed characters
             old_settings = termios.tcgetattr(sys.stdin.fileno())
@@ -62,29 +85,13 @@ class ask_yes_no():
 
             return key
 
-        # Get an answer from user
+        # Get answer from user
         answer = None
         while answer is None:
             print(question, end=' [y|n] ', flush=True)
             key = await aiogetch(self.aioloop)
             clear_line()
             answer = self.ANSWERS.get(key, None)
-
-        # Run yes, no and after callbacks
-        import asyncio
-        async def run_func_or_coro(func_or_coro):
-            if asyncio.iscoroutinefunction(func_or_coro):
-                await func_or_coro()
-            elif asyncio.iscoroutine(func_or_coro):
-                await func_or_coro
-            elif func_or_coro is not None:
-                func_or_coro()
-
-        if answer:
-            await run_func_or_coro(yes)
-        else:
-            await run_func_or_coro(no)
-        await run_func_or_coro(after)
         return answer
 
 
