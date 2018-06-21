@@ -92,7 +92,7 @@ keychains.keys       light gray   on $keychains_bg
 keychains.keys.next  yellow       on $keychains_bg
 keychains.action     white        on $keychains_bg
 
-prompt white on dark red
+prompt black,bold on yellow
 
 
 $tlist_bg.uf = black
