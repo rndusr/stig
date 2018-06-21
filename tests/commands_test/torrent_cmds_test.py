@@ -205,6 +205,22 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                       msgs=(ClientError('Keeping'),))
         self.assertTrue(RemoveTorrentsCmd.show_list_of_hits.called)
 
+    async def test_force_option(self):
+        tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
+                 MockTorrent(id=2, name='Torrent2', seeds='52'),
+                 MockTorrent(id=3, name='Torrent3', seeds='53'))
+
+        RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
+
+        from asynctest import CoroutineMock
+        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
+        RemoveTorrentsCmd.ask_yes_no = CoroutineMock()
+
+        await self.do(['all', '--force'], tlist=tlist, remove_called=True,
+                      msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
+        self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
+        self.assertFalse(RemoveTorrentsCmd.ask_yes_no.called)
+
 
 from stig.commands.cli import StartTorrentsCmd
 class TestStartTorrentsCmd(CommandTestCase):
