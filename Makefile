@@ -1,4 +1,3 @@
-
 clean:
 	find . -name "*.pyc" -delete
 	find . -name "__pycache__" -delete
@@ -6,4 +5,4 @@ clean:
 	rm -rf .cache  # py.test junk
 
 test:
-	python3 -m pytest
+	python3 -m pytest --tb no tests
