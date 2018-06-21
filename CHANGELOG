@@ -2,6 +2,8 @@
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
       code
+    * In yes/no prompts, default to 'no' in non-interactive mode (stdout is not
+      a TTY)
 
 
 2018-05-07 0.9.0a
