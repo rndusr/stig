@@ -215,6 +215,10 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                     polling_frenzy=True)
                 return response.success
 
+            async def do_keep(tfilter=tfilter):
+                log.error(('Keeping %s torrents: Too many hits ' % tfilter) +
+                          '(use --force or increase remove.max-hits setting)')
+
             response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
             if hits > self.cfg['remove.max-hits']:
@@ -224,7 +228,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 if delete_files:
                     question += ' and their files'
                 question += '?'
-                return await self.ask_yes_no(question, yes=do_remove,
+                return await self.ask_yes_no(question, yes=do_remove, no=do_keep,
                                              after=self.remove_list_of_hits)
             else:
                 return await do_remove()
