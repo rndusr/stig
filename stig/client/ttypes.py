@@ -247,7 +247,7 @@ class Timestamp(int):
                      ('%Y-%m-%d', ('tm_year', 'tm_mon', 'tm_mday')),
                      ('%d',       ('tm_mday',)),
                      ('%m-%d',    ('tm_mon', 'tm_mday')))
-    _FORMATS_TIME = (('%H:%M', ('tm_hour', 'tm_min')),
+    _FORMATS_TIME = (('%H:%M',    ('tm_hour', 'tm_min')),
                      ('%H:%M:%S', ('tm_hour', 'tm_min', 'tm_sec')))
 
     # Create all combinations of date, time and date+time formats, keeping track
