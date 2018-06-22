@@ -113,9 +113,10 @@ def init_defaults(localcfg):
                  description='Where to cache the downloaded geolocation database')
 
     localcfg.add('remove.max-hits',
-                 Int.partial(min=0),
+                 Int.partial(),
                  default=10,
-                 description=('Maximum number of torrents to remove without extra confirmation'))
+                 description=('Maximum number of torrents to remove without extra confirmation'
+                              '; negative numbers mean "unlimited"'))
 
     localcfg.add('reverse-dns',
                  Bool.partial(),

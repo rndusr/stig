@@ -228,7 +228,9 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
 
             response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
-            if hits > self.cfg['remove.max-hits'] and not force:
+            if force or self.cfg['remove.max-hits'] < 0 or hits < self.cfg['remove.max-hits']:
+                return await do_remove()
+            else:
                 await self.show_list_of_hits(tfilter)
                 question = 'Are you sure you want to remove %d torrent%s' % (
                     hits, '' if hits == 1 else 's')
@@ -237,8 +239,6 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 question += '?'
                 return await self.ask_yes_no(question, yes=do_remove, no=do_keep,
                                              after=self.remove_list_of_hits)
-            else:
-                return await do_remove()
 
 
 # Argument definitions that are shared between commands
