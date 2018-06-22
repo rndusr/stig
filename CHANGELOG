@@ -1,9 +1,11 @@
-2018-05-?? 0.9.1a
+2018-??-?? 0.10.0a
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
       code
-    * In yes/no prompts, default to 'no' in non-interactive mode (stdout is not
-      a TTY)
+    * In yes/no prompts, default to 'no' in non-interactive mode (when stdout is
+      not a TTY)
+    * Remove an unlimited number of torrents without confirmation with the
+      --force option or by setting 'remove.max-hits' to a negative number
 
 
 2018-05-07 0.9.0a
