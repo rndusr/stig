@@ -8,7 +8,7 @@ clean:
 venv:
 	python3 -m venv './venv'
 	venv/bin/pip install --editable .
-	venv/bin/pip install --upgrade pytest asynctest
+	venv/bin/pip install --upgrade pytest asynctest maxminddb
 
 test:
 	test -n $(VIRTUAL_ENV) && python3 -m pytest --tb no tests
