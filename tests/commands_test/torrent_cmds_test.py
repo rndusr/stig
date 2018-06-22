@@ -179,31 +179,51 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         await self.do(['seeds>5000'], delete=False, tlist=(),
                       msgs=(ClientError('no torrents found'),))
 
-    async def test_max_hits(self):
+    async def test_max_hits_exceeded_and_user_says_yes(self):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-
         RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
 
         from asynctest import CoroutineMock
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
-        async def mock_ask_yes_no__yes(self_, *args, yes, no, **kwargs):
+        async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
             await yes() ; return True
-        async def mock_ask_yes_no__no(self_, *args, yes, no, **kwargs):
-            await no() ; return False
+        RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no
 
-        RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no__yes
         await self.do(['all'], tlist=tlist, remove_called=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
         self.assertTrue(RemoveTorrentsCmd.show_list_of_hits.called)
 
-        self.api.torrent.forget_calls()
-        RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no__no
+    async def test_max_hits_exceeded_and_user_says_no(self):
+        tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
+                 MockTorrent(id=2, name='Torrent2', seeds='52'),
+                 MockTorrent(id=3, name='Torrent3', seeds='53'))
+        RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
+
+        from asynctest import CoroutineMock
+        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
+
+        async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
+            await no() ; return False
+        RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no
+
         await self.do(['all'], tlist=tlist, remove_called=False,
                       msgs=(ClientError('Keeping'),))
         self.assertTrue(RemoveTorrentsCmd.show_list_of_hits.called)
+
+    async def test_max_hits_negative(self):
+        tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
+                 MockTorrent(id=2, name='Torrent2', seeds='52'),
+                 MockTorrent(id=3, name='Torrent3', seeds='53'))
+
+        from asynctest import CoroutineMock
+        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
+        RemoveTorrentsCmd.cfg['remove.max-hits'] = -1
+        await self.do(['all'], tlist=tlist, remove_called=True,
+                      msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
+        self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
 
     async def test_force_option(self):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
