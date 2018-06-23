@@ -123,7 +123,7 @@ class SmartCmpStr(str):
         elif other.isdigit():
             return op(len(s), int(o))
         else:
-            return op(s, o)
+            return op(len(s), len(o))
 
     def __lt__(self, other): return self.__cmp(operator.lt, other)
     def __le__(self, other): return self.__cmp(operator.le, other)

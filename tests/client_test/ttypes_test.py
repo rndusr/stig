@@ -25,33 +25,35 @@ class TestSmartCmpStr(unittest.TestCase):
 
     def test_lt(self):
         self.assertTrue(ttypes.SmartCmpStr('foo') < '4')
-        self.assertTrue(ttypes.SmartCmpStr('aaa') < 'bbb')
+        self.assertTrue(ttypes.SmartCmpStr('aaa') < 'bbbb')
+
         self.assertFalse(ttypes.SmartCmpStr('foo') < '3')
         self.assertFalse(ttypes.SmartCmpStr('def') < 'abc')
-
-    def test_gt(self):
-        self.assertTrue(ttypes.SmartCmpStr('foo') > '2')
-        self.assertTrue(ttypes.SmartCmpStr('bbb') > 'aaa')
-        self.assertFalse(ttypes.SmartCmpStr('foo') > '3')
-        self.assertFalse(ttypes.SmartCmpStr('abc') > 'def')
 
     def test_le(self):
         self.assertTrue(ttypes.SmartCmpStr('foo') <= '3')
         self.assertTrue(ttypes.SmartCmpStr('foo') <= '4')
-        self.assertTrue(ttypes.SmartCmpStr('abc') <= 'def')
-        self.assertTrue(ttypes.SmartCmpStr('abc') <= 'zoo')
+        self.assertTrue(ttypes.SmartCmpStr('abc') <= 'cba')
+        self.assertTrue(ttypes.SmartCmpStr('abc') <= 'abcd')
 
         self.assertFalse(ttypes.SmartCmpStr('foo') <= '2')
-        self.assertFalse(ttypes.SmartCmpStr('zoo') <= 'aaa')
+        self.assertFalse(ttypes.SmartCmpStr('zoo') <= 'aa')
+
+    def test_gt(self):
+        self.assertTrue(ttypes.SmartCmpStr('foo') > '2')
+        self.assertTrue(ttypes.SmartCmpStr('bbb') > 'aa')
+
+        self.assertFalse(ttypes.SmartCmpStr('foo') > '3')
+        self.assertFalse(ttypes.SmartCmpStr('abc') > 'def')
 
     def test_ge(self):
         self.assertTrue(ttypes.SmartCmpStr('foo') >= '3')
         self.assertTrue(ttypes.SmartCmpStr('foo') >= '2')
-        self.assertTrue(ttypes.SmartCmpStr('zoo') >= 'zoo')
-        self.assertTrue(ttypes.SmartCmpStr('zoo') >= 'abc')
+        self.assertTrue(ttypes.SmartCmpStr('zoo') >= 'ooz')
+        self.assertTrue(ttypes.SmartCmpStr('zoo') >= 'ab')
 
         self.assertFalse(ttypes.SmartCmpStr('foo') >= '4')
-        self.assertFalse(ttypes.SmartCmpStr('foo') >= 'zoo')
+        self.assertFalse(ttypes.SmartCmpStr('foo') >= 'zooo')
 
     def test_contains(self):
         # Case-insensitive
