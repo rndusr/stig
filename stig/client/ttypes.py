@@ -65,7 +65,7 @@ class Count(Int):
 
 
 class Status(tuple):
-    """A Torrent's status as string"""
+    """A Torrent's status as a tuple of strings"""
 
     IDLE      = 'idle'
     DOWNLOAD  = 'downloading'
