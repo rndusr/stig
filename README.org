@@ -136,9 +136,9 @@
 *** Extras
    The following extras are available to enable optional features:
      - ~geoip~ :: Display peers' country codes
-     - ~setproctitle~ :: Change process title when running in tmux session (this
-                         requires Python headers; e.g. ~apt-get install
-                         libpython3-dev~)
+     - ~setproctitle~ :: Strip arguments from process title when running in tmux
+                         session (this requires Python headers; e.g. ~apt-get
+                         install libpython3-dev~)
 
    To install depdencies for an extra, append ~[<EXTRA1>,<EXTRA2>,...]~ to the
    installation source.
