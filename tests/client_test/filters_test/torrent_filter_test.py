@@ -293,9 +293,39 @@ class TestSingleTorrentFilter(unittest.TestCase):
         result = tuple(SingleTorrentFilter('eta>=1h').apply(tlist, key='name'))
         self.assertEqual(result, ('foo', 'bar'))
 
-    # def test_date_filter(self):
-    #     tids = SingleTorrentFilter('completed>2002-01-01').apply(self.tlist, key='id')
-    #     self.assertEqual(set(tids), {3, 4})
+    def test_completed_filter_with_absolute_dates(self):
+        from datetime import datetime
+        class MockTimestamp(int):
+            def __new__(cls, year, month, day, is_known):
+                obj = super().__new__(cls, datetime(year, month, day).timestamp())
+                obj.is_known = is_known
+                return obj
+
+        tlist = (MockTorrent({'name': 'foo', 'time-completed': MockTimestamp(2000, 1, 2, is_known=True)}),
+                 MockTorrent({'name': 'bar', 'time-completed': MockTimestamp(2001, 2, 3, is_known=True)}),
+                 MockTorrent({'name': 'baz', 'time-completed': MockTimestamp(2001, 3, 4, is_known=True)}))
+
+        tids = tuple(SingleTorrentFilter('completed<2001').apply(tlist, key='name'))
+        self.assertEqual(tids, ('foo',))
+        tids = tuple(SingleTorrentFilter('completed<2001-03').apply(tlist, key='name'))
+        self.assertEqual(tids, ('foo', 'bar'))
+        tids = tuple(SingleTorrentFilter('completed<2001-03-05').apply(tlist, key='name'))
+        self.assertEqual(tids, ('foo', 'bar', 'baz'))
+        tids = tuple(SingleTorrentFilter('completed<=2001-03-04').apply(tlist, key='name'))
+        self.assertEqual(tids, ('foo', 'bar', 'baz'))
+        tids = tuple(SingleTorrentFilter('completed<=2001-03-03').apply(tlist, key='name'))
+        self.assertEqual(tids, ('foo', 'bar'))
+
+        tids = tuple(SingleTorrentFilter('completed>2001').apply(tlist, key='name'))
+        self.assertEqual(tids, ('bar', 'baz'))
+        tids = tuple(SingleTorrentFilter('completed>2001-02').apply(tlist, key='name'))
+        self.assertEqual(tids, ('bar', 'baz'))
+        tids = tuple(SingleTorrentFilter('completed>2001-02-03').apply(tlist, key='name'))
+        self.assertEqual(tids, ('baz',))
+        tids = tuple(SingleTorrentFilter('completed>=2001-02-03').apply(tlist, key='name'))
+        self.assertEqual(tids, ('bar', 'baz'))
+        tids = tuple(SingleTorrentFilter('completed>=2001-02-04').apply(tlist, key='name'))
+        self.assertEqual(tids, ('baz',))
 
 
 class TestTorrentFilter(unittest.TestCase):
