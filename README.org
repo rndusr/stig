@@ -106,34 +106,56 @@
    #+END_SRC
 
 ** Installation
+   The [[https://pypi.python.org/pypi/stig][latest release]] is always on PyPI.
+
    For Arch Linux stig is available on AUR as [[https://aur.archlinux.org/packages/stig][stig]] and the latest development
    version as [[https://aur.archlinux.org/packages/stig-git][stig-git]].
 
-   The [[https://pypi.python.org/pypi/stig][latest release]] can be installed from PyPI.
-   #+BEGIN_SRC sh
-   $ pip3 install stig         # Installs stig system-wide (/usr/local/)
-   $ pip3 install --user stig  # Installs stig in your home (~/.local/)
-   #+END_SRC
+*** Pipsi (recommended)
+    [[https://github.com/mitsuhiko/pipsi][pipsi]] installs applications in self-contained virtual environments in
+    ~\~/.local/venvs/~ that include all dependencies.  Executables are
+    sym-linked to ~\~/.local/bin/~.
 
-   Install the latest development version from GitHub.
-   #+BEGIN_SRC sh
-   $ pip3 install [--user] git+https://github.com/rndusr/stig.git
-   #+END_SRC
+    #+BEGIN_SRC sh
+    $ pipsi install stig
+    $ pipsi upgrade stig
+    $ pipsi uninstall stig
+    #+END_SRC
 
-   To makes changes to the source code effective immediately, developers can
-   either install stig with ~pip3~ from a local path and pass the ~--editable~
-   option or run ~python3 -m stig~ in the project directory.
+*** Pip
+    [[https://pip.pypa.io/en/stable/][pip]] installs applications with their dependencies in the system-wide
+    (~/usr/local~) or user-wide (~\~/.local~) environment.
+
+    #+BEGIN_SRC sh
+    $ pip3 install stig         # Installs in /usr/local/
+    $ pip3 install --user stig  # Installs in ~/.local/
+    #+END_SRC
+
+    To update, add the ~--upgrade~ or ~-U~ option.
 
 *** Extras
    The following extras are available to enable optional features:
-     - ~geoip~  :: Display peers' country codes
-     - ~setproctitle~  :: Change process title when running in tmux session
+     - ~geoip~ :: Display peers' country codes
+     - ~setproctitle~ :: Change process title when running in tmux session (this
+                         requires Python headers; e.g. ~apt-get install
+                         libpython3-dev~)
 
-   To automatically install depdencies for an extra, append
-   ~[<EXTRA1>,<EXTRA2>,...]~ to the installation source.
+   To install depdencies for an extra, append ~[<EXTRA1>,<EXTRA2>,...]~ to the
+   installation source.
    #+BEGIN_SRC sh
-   $ pip3 install 'stig[geoip]'
+   $ pipsi install 'stig[setproctitle,geoip]'
    #+END_SRC
+
+*** Development version
+    To install the latest development version, simply replace ~stig~ in the
+    commands above with ~git+https://github.com/rndusr/stig.git#egg=stig~.  (You
+    may need to escape the ~#~.)
+
+*** Developers
+    If you have cloned the Git repository and want to make your changes
+    effective immediately, you can either run ~python3 -m stig~ in the project
+    directory or install stig with ~pip3~ from a local path and pass the
+    ~--editable~ option.
 
 ** Requirements
    - Python >=3.5
