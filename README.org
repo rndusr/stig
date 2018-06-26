@@ -113,8 +113,8 @@
 
 *** Pipsi (recommended)
     [[https://github.com/mitsuhiko/pipsi][pipsi]] installs applications in self-contained virtual environments in
-    ~\~/.local/venvs/~ that include all dependencies.  Executables are
-    sym-linked to ~\~/.local/bin/~.
+    ~$HOME/.local/venvs/~ that include all dependencies.  Executables are
+    sym-linked to ~$HOME/.local/bin/~.
 
     #+BEGIN_SRC sh
     $ pipsi install stig
@@ -124,11 +124,11 @@
 
 *** Pip
     [[https://pip.pypa.io/en/stable/][pip]] installs applications with their dependencies in the system-wide
-    (~/usr/local~) or user-wide (~\~/.local~) environment.
+    (~/usr/local~) or user-wide (~$HOME/.local~) environment.
 
     #+BEGIN_SRC sh
     $ pip3 install stig         # Installs in /usr/local/
-    $ pip3 install --user stig  # Installs in ~/.local/
+    $ pip3 install --user stig  # Installs in $HOME/.local/
     #+END_SRC
 
     To update, add the ~--upgrade~ or ~-U~ option.
