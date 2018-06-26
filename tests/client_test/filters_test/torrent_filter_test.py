@@ -21,6 +21,22 @@ class MockTorrent(TorrentBase):
     def __getitem__(self, item):
         return self._dct[item]
 
+class MockTimespan(int):
+    def __new__(cls, days=0, hours=0, minutes=0, seconds=0):
+        seconds += minutes * 60
+        seconds += hours * 3600
+        seconds += days * 86400
+        obj = super().__new__(cls, seconds)
+        obj.is_known = not all(x == 0 for x in (days, hours, minutes, seconds))
+        return obj
+
+class MockTimestamp(int):
+    def __new__(cls, year, month, day):
+        from datetime import datetime
+        obj = super().__new__(cls, datetime(year, month, day).timestamp())
+        obj.is_known = not all(x == 0 for x in (year, month, day))
+        return obj
+
 
 class TestSingleTorrentFilter(unittest.TestCase):
     def test_parser(self):
@@ -280,30 +296,21 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(result, ('foo',))
 
     def test_eta_filter_larger_smaller(self):
-        class MockTimespan(int):
-            def __new__(cls, seconds, is_known):
-                obj = super().__new__(cls, seconds)
-                obj.is_known = is_known
-                return obj
-
-        tlist = (MockTorrent({'name': 'foo', 'timespan-eta': MockTimespan((60*60),   is_known=True)}),
-                 MockTorrent({'name': 'bar', 'timespan-eta': MockTimespan((60*60)+1, is_known=True)}))
+        tlist = (MockTorrent({'name': 'foo', 'timespan-eta': MockTimespan(hours=1)}),
+                 MockTorrent({'name': 'bar', 'timespan-eta': MockTimespan(hours=1, seconds=1)}))
         result = tuple(SingleTorrentFilter('eta>1h').apply(tlist, key='name'))
         self.assertEqual(result, ('bar',))
         result = tuple(SingleTorrentFilter('eta>=1h').apply(tlist, key='name'))
         self.assertEqual(result, ('foo', 'bar'))
+        result = tuple(SingleTorrentFilter('eta<1h').apply(tlist, key='name'))
+        self.assertEqual(result, ())
+        result = tuple(SingleTorrentFilter('eta<=1h').apply(tlist, key='name'))
+        self.assertEqual(result, ('foo',))
 
     def test_completed_filter_with_absolute_dates(self):
-        from datetime import datetime
-        class MockTimestamp(int):
-            def __new__(cls, year, month, day, is_known):
-                obj = super().__new__(cls, datetime(year, month, day).timestamp())
-                obj.is_known = is_known
-                return obj
-
-        tlist = (MockTorrent({'name': 'foo', 'time-completed': MockTimestamp(2000, 1, 2, is_known=True)}),
-                 MockTorrent({'name': 'bar', 'time-completed': MockTimestamp(2001, 2, 3, is_known=True)}),
-                 MockTorrent({'name': 'baz', 'time-completed': MockTimestamp(2001, 3, 4, is_known=True)}))
+        tlist = (MockTorrent({'name': 'foo', 'time-completed': MockTimestamp(2000, 1, 2)}),
+                 MockTorrent({'name': 'bar', 'time-completed': MockTimestamp(2001, 2, 3)}),
+                 MockTorrent({'name': 'baz', 'time-completed': MockTimestamp(2001, 3, 4)}))
 
         tids = tuple(SingleTorrentFilter('completed<2001').apply(tlist, key='name'))
         self.assertEqual(tids, ('foo',))
