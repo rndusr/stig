@@ -151,8 +151,8 @@ class TestTimedelta(unittest.TestCase):
         self.assertEqual(str(ttypes.Timedelta(-3*DAY - 2*HOUR)), '-3d2h')
 
     def test_preposition_string(self):
-        self.assertEqual(ttypes.Timedelta(7 * DAY).with_preposition, 'in 7d')
-        self.assertEqual(ttypes.Timedelta(-7 * DAY).with_preposition, '7d ago')
+        self.assertEqual(ttypes.Timedelta(6 * DAY).with_preposition, 'in 6d')
+        self.assertEqual(ttypes.Timedelta(-6 * DAY).with_preposition, '6d ago')
 
     def test_sorting(self):
         lst = [ttypes.Timedelta(-2 * HOUR),
