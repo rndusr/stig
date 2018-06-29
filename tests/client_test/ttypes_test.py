@@ -110,36 +110,54 @@ MIN = 60
 HOUR = 60*MIN
 DAY = 24*HOUR
 YEAR = 365.25*DAY
+MONTH = YEAR / 12
 
 class TestTimedelta(unittest.TestCase):
-    def test_from_string(self):
-        for s, i, s_exp in (('0', 0, 'now'),
-                            ('0d', 0, 'now'),
-                            ('600', 600, '10m'),
-                            ('1m270s', 330, '5m30s'),
-                            ('1m270', 330, '5m30s'),
-                            ('600m', 36000, '10h'),
-                            ('1h10m', 4200, '1h10m'),
-                            ('1h10m2d', 4200+(2*24*3600), '2d1h'),
-                            ('24.5h', 3600*24.5, '1d'),
-                            ('1y370d', YEAR+(DAY*370), '2y')):
-            t = ttypes.Timedelta.from_string(s)
-            self.assertEqual(t, i)
-            self.assertEqual(str(t), s_exp)
+    def test_from_string__no_unit(self):
+        self.assertEqual(ttypes.Timedelta.from_string('0'), 0)
+        self.assertEqual(ttypes.Timedelta.from_string('60'), MIN)
+        self.assertEqual(ttypes.Timedelta.from_string('600'), 10*MIN)
 
-        for string in ('', 'x', '?m', '1.2.3', '5g10s', '1y2x10d'):
-            with self.assertRaises(ValueError):
+    def test_from_string__single_unit(self):
+        self.assertEqual(ttypes.Timedelta.from_string('1s'), 1)
+        self.assertEqual(ttypes.Timedelta.from_string('2m'), 2*MIN)
+        self.assertEqual(ttypes.Timedelta.from_string('3h'), 3*HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('4d'), 4*DAY)
+        self.assertEqual(ttypes.Timedelta.from_string('2w'), 2*7*DAY)
+        self.assertEqual(ttypes.Timedelta.from_string('6M'), 6*MONTH)
+        self.assertEqual(ttypes.Timedelta.from_string('7y'), 7*YEAR)
+
+    def test_from_string__multiple_units(self):
+        self.assertEqual(ttypes.Timedelta.from_string('1d2h3m4s'), DAY + (2*HOUR) + (3*MIN) + 4)
+        self.assertEqual(ttypes.Timedelta.from_string('4s1d2h3m'), DAY + (2*HOUR) + (3*MIN) + 4)
+
+    def test_from_string__fractions(self):
+        self.assertEqual(ttypes.Timedelta.from_string('2.5h.2m'), (2*HOUR) + (30*MIN) + 12)
+
+    def test_from_string__too_large_numbers(self):
+        self.assertEqual(ttypes.Timedelta.from_string('600'), 10*MIN)
+        self.assertEqual(ttypes.Timedelta.from_string('600m'), 10*HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('30h'), DAY + (6*HOUR))
+
+    def test_from_string__signs(self):
+        self.assertEqual(ttypes.Timedelta.from_string('-3h'), -3*HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('+3h'), 3*HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('-3h5s'), (-3*HOUR) - 5)
+        self.assertEqual(ttypes.Timedelta.from_string('+3h5s'), (3*HOUR) + 5)
+
+    def test_from_string__in_ago_notation(self):
+        self.assertEqual(ttypes.Timedelta.from_string('in 1h30m20s'),  HOUR + (30*MIN) + 20)
+        self.assertEqual(ttypes.Timedelta.from_string('-1.5h20s ago'), -HOUR - (30*MIN) - 20)
+
+    def test_from_string__contradicting_signs(self):
+        for string in ('in -1h', 'in 1h ago'):
+            with self.assertRaises(ValueError) as exc:
                 ttypes.Timedelta.from_string(string)
 
     def test_special_values(self):
         self.assertEqual(str(ttypes.Timedelta(0)), 'now')
         self.assertEqual(str(ttypes.Timedelta(ttypes.Timedelta.NOT_APPLICABLE)), '')
         self.assertEqual(str(ttypes.Timedelta(ttypes.Timedelta.UNKNOWN)), '?')
-
-    def test_even_units(self):
-        for unit,char in ((1, 's'), (MIN, 'm'), (HOUR, 'h'), (DAY, 'd'), (YEAR, 'y')):
-            for i in range(1, 6):
-                self.assertEqual(str(ttypes.Timedelta(i * unit)), '%d%s' % (i, char))
 
     def test_added_subunits_for_small_numbers(self):
         self.assertEqual(str(ttypes.Timedelta(9*HOUR + 59*MIN + 59)), '9h59m')
