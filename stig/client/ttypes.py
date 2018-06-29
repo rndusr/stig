@@ -164,32 +164,49 @@ class Timedelta(int):
     UNKNOWN        = 1e10
     NOT_APPLICABLE = 1e11
 
-    _FROM_STRING_REGEX = re.compile((r'(\d+(?:\.\d+|)[' +
-                                     r''.join(unit for unit,secs in SECONDS) +
-                                     r']?)'), flags=re.IGNORECASE)
+    _FULL_REGEX = re.compile((r'^(in|-|\+|) ?(\S+) ?(ago|)$'), flags=re.IGNORECASE)
+    _SPLIT_REGEX = re.compile((r'((?:\d+\.\d+|\d+|\.\d+)[' +
+                               r''.join(unit for unit,secs in SECONDS) +
+                               r']?)'))
+
     @classmethod
     def from_string(cls, string):
-        string = string.replace(' ', '')
-        if len(string) < 1:
-            raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, string))
+        exc = ValueError('Invalid %s: %r' % (cls.__name__, string))
+
+        match = cls._FULL_REGEX.match(string)
+        if not match:
+            raise exc
+
+        sign_start = match.group(1).lower()
+        timespan = match.group(2)
+        sign_end = match.group(3).lower()
+        sign = 1  # 1/-1 to represent +/-
+
+        if sign_start == '-' or sign_end == 'ago':
+            if sign_start == '+':
+                raise exc
+            sign = -1
+        if any(sign_start == x for x in ('+', 'in')):
+            if sign_end == 'ago':
+                raise exc
 
         secs_total = 0
-        for s in cls._FROM_STRING_REGEX.split(string):
+        for s in cls._SPLIT_REGEX.split(timespan):
             if len(s) < 1:
                 continue
-            elif not cls._FROM_STRING_REGEX.match(s):
-                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, s))
+            elif not cls._SPLIT_REGEX.match(s):
+                raise exc
             elif s[-1].isdigit():
-                # No unit specified
+                # No unit specified - assume seconds
                 secs_total += float(s)
             else:
-                unit, num = s[-1], s[:-1]
+                num, unit = s[:-1], s[-1]
                 for unit_,secs in SECONDS:
                     if unit == unit_:
                         secs_total += float(num) * secs
                         break
 
-        return cls(secs_total)
+        return cls(secs_total * sign)
 
     def __str__(self):
         if self == self.UNKNOWN:
