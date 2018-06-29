@@ -95,10 +95,10 @@ class Filter():
 
         # Convert value to proper type
         target_type = cls.COMPARATIVE_FILTERS[name].value_type
-        str2target_type = cls.COMPARATIVE_FILTERS[name].value_convert
         if type(value) is not target_type:
+            converter = cls.COMPARATIVE_FILTERS[name].value_convert
             try:
-                value = str2target_type(value)
+                value = converter(value)
             except ValueError:
                 raise ValueError('Invalid value for filter {!r}: {!r}'.format(name, value))
 
