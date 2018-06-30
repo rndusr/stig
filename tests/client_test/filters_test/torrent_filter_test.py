@@ -378,9 +378,9 @@ class TestSingleTorrentFilter(unittest.TestCase):
 
         with mock_time(2000, 1, 1, 0, 0, 1):
             tids = tuple(SingleTorrentFilter('completed<1s ago').apply(tlist, key='name'))
-            self.assertEqual(tids, ())
+            self.assertEqual(tids, ('1',))
             tids = tuple(SingleTorrentFilter('completed<=1s ago').apply(tlist, key='name'))
-            self.assertEqual(tids, ('0',))
+            self.assertEqual(tids, ('0', '1'))
 
             tids = tuple(SingleTorrentFilter('completed>1s ago').apply(tlist, key='name'))
             self.assertEqual(tids, ())
@@ -389,9 +389,9 @@ class TestSingleTorrentFilter(unittest.TestCase):
 
         with mock_time(2000, 1, 1, 0, 2, 0):
             tids = tuple(SingleTorrentFilter('completed<1m59s ago').apply(tlist, key='name'))
-            self.assertEqual(tids, ())
+            self.assertEqual(tids, ('2',))
             tids = tuple(SingleTorrentFilter('completed<=1m59s ago').apply(tlist, key='name'))
-            self.assertEqual(tids, ('1',))
+            self.assertEqual(tids, ('1', '2'))
 
             tids = tuple(SingleTorrentFilter('completed>1m59s ago').apply(tlist, key='name'))
             self.assertEqual(tids, ('0',))
@@ -400,9 +400,9 @@ class TestSingleTorrentFilter(unittest.TestCase):
 
         with mock_time(2000, 1, 1, 3, 0, 0):
             tids = tuple(SingleTorrentFilter('completed<2h58m ago').apply(tlist, key='name'))
-            self.assertEqual(tids, ())
+            self.assertEqual(tids, ('3',))
             tids = tuple(SingleTorrentFilter('completed<=2h58m ago').apply(tlist, key='name'))
-            self.assertEqual(tids, ('2',))
+            self.assertEqual(tids, ('2', '3'))
 
             tids = tuple(SingleTorrentFilter('completed>2h58m ago').apply(tlist, key='name'))
             self.assertEqual(tids, ('0', '1'))
@@ -418,9 +418,9 @@ class TestSingleTorrentFilter(unittest.TestCase):
 
         with mock_time(2000, 1, 1, 3, 0, 0):
             tids = tuple(SingleTorrentFilter('completed<3h').apply(tlist, key='name'))
-            self.assertEqual(tids, ('1', '2'))
+            self.assertEqual(tids, ('1', '2', '3'))
             tids = tuple(SingleTorrentFilter('completed<=3h').apply(tlist, key='name'))
-            self.assertEqual(tids, ('0', '1', '2'))
+            self.assertEqual(tids, ('0', '1', '2', '3'))
             tids = tuple(SingleTorrentFilter('completed>3h').apply(tlist, key='name'))
             self.assertEqual(tids, ())
             tids = tuple(SingleTorrentFilter('completed>=3h').apply(tlist, key='name'))

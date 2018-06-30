@@ -50,9 +50,9 @@ def _time_filter(key, torrent, op, value):
     elif isinstance(value, Timedelta):
         # value is seconds relative to current system time
         timedelta = timestamp.timedelta
-        if value < 0:
+        if value <= 0:
             # Negative time delta - we're looking for torrents in the past
-            if timedelta >= 0:
+            if timedelta > 0:
                 return False
         elif value > 0:
             # Positive time delta - we're looking for torrents in the future
