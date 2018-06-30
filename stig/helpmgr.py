@@ -345,7 +345,7 @@ class HelpManager():
             '\tExample: "name~foo" matches all torrents with "foo" in their name.',
             '',
             ('\tIf FILTER NAME is omitted, it defaults to "name" for torrents and '
-             'files and "domain" for trackers. Peers don\'t have a default filter.  '
+             'files and "domain" for trackers.  Peers don\'t have a default filter.  '
              'If OPERATOR is omitted, it defaults to "~".'),
             '\tExample: "foo" is the same as "~foo" is the same as "name~foo".',
             '',
@@ -358,8 +358,8 @@ class HelpManager():
             ('\tExample: "name!=foo" is the same as "!name=foo"; '
              '"!name!=foo" is the same as "name=foo".'),
             '',
-            ('\tWhen matching strings, matches are case-sensitive if VALUE includes '
-             'upper-case characters, otherwise it is case-insensitive.'),
+            ('\tMatching strings is case-insensitive if VALUE does not contain any '
+             'upper-case characters, otherwise it is case-sensitive.'),
             '',
             ('\tWhen matching numbers, the unit prefixes "k", "M", "G", "T" and '
              'their binary counterparts "Ki", "Mi", "Gi", "Ti" are supported.  '
