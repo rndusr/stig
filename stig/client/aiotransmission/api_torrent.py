@@ -944,7 +944,7 @@ class TorrentAPI():
             elif t['time-manual-announce-allowed'] > time.time():
                 return (False, ('Not allowing manual announce until %s (in %s): %r' %
                                 (t['time-manual-announce-allowed'],
-                                 t['time-manual-announce-allowed'].delta, t['name'])))
+                                 t['time-manual-announce-allowed'].timedelta, t['name'])))
             else:
                 return (True, 'Announcing: %s' % t['name'])
 

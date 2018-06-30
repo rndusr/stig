@@ -369,7 +369,7 @@ class Timestamp(int):
         return bool(self)
 
     @property
-    def delta(self):
+    def timedelta(self):
         if self == self.UNKNOWN:
             return Timedelta(Timedelta.UNKNOWN)
         elif self == self.NOT_APPLICABLE:

@@ -125,7 +125,7 @@ def _isolated_mr(t):
 def _date_hr(key, t):
     date = t[key]
     if date.is_known:
-        delta = date.delta
+        delta = date.timedelta
         if abs(delta) < 5:
             return 'now'
         else:
@@ -135,7 +135,7 @@ def _date_hr(key, t):
 
 def _date_mr(key, t):
     date = t[key]
-    return '%d\t%d' % (date, date.delta)
+    return '%d\t%d' % (date, date.timedelta)
 
 
 def _timespan_hr(key, t):
