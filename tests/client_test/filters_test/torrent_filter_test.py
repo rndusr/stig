@@ -1,5 +1,6 @@
 from stig.client.filters.torrent import (SingleTorrentFilter, TorrentFilter)
 from stig.client.base import TorrentBase
+from stig.client.ttypes import (Timedelta, Timestamp)
 import unittest
 
 
@@ -21,21 +22,7 @@ class MockTorrent(TorrentBase):
     def __getitem__(self, item):
         return self._dct[item]
 
-class MockTimespan(int):
-    def __new__(cls, days=0, hours=0, minutes=0, seconds=0):
-        seconds += minutes * 60
-        seconds += hours * 3600
-        seconds += days * 86400
-        obj = super().__new__(cls, seconds)
-        obj.is_known = not all(x == 0 for x in (days, hours, minutes, seconds))
-        return obj
 
-class MockTimestamp(int):
-    def __new__(cls, year, month, day):
-        from datetime import datetime
-        obj = super().__new__(cls, datetime(year, month, day).timestamp())
-        obj.is_known = not all(x == 0 for x in (year, month, day))
-        return obj
 
 
 class TestSingleTorrentFilter(unittest.TestCase):
@@ -296,8 +283,8 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(result, ('foo',))
 
     def test_eta_filter_larger_smaller(self):
-        tlist = (MockTorrent({'name': 'foo', 'timespan-eta': MockTimespan(hours=1)}),
-                 MockTorrent({'name': 'bar', 'timespan-eta': MockTimespan(hours=1, seconds=1)}))
+        tlist = (MockTorrent({'name': 'foo', 'timespan-eta': Timedelta.from_string('1h')}),
+                 MockTorrent({'name': 'bar', 'timespan-eta': Timedelta.from_string('1h1s')}))
         result = tuple(SingleTorrentFilter('eta>1h').apply(tlist, key='name'))
         self.assertEqual(result, ('bar',))
         result = tuple(SingleTorrentFilter('eta>=1h').apply(tlist, key='name'))
@@ -307,10 +294,10 @@ class TestSingleTorrentFilter(unittest.TestCase):
         result = tuple(SingleTorrentFilter('eta<=1h').apply(tlist, key='name'))
         self.assertEqual(result, ('foo',))
 
-    def test_completed_filter_with_absolute_dates(self):
-        tlist = (MockTorrent({'name': 'foo', 'time-completed': MockTimestamp(2000, 1, 2)}),
-                 MockTorrent({'name': 'bar', 'time-completed': MockTimestamp(2001, 2, 3)}),
-                 MockTorrent({'name': 'baz', 'time-completed': MockTimestamp(2001, 3, 4)}))
+    def test_completed_filter_with_absolute_time(self):
+        tlist = (MockTorrent({'name': 'foo', 'time-completed': Timestamp.from_string('2000-01-02')}),
+                 MockTorrent({'name': 'bar', 'time-completed': Timestamp.from_string('2001-02-03')}),
+                 MockTorrent({'name': 'baz', 'time-completed': Timestamp.from_string('2001-03-04')}))
 
         tids = tuple(SingleTorrentFilter('completed<2001').apply(tlist, key='name'))
         self.assertEqual(tids, ('foo',))
