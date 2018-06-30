@@ -14,8 +14,9 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from . import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter,
-               Filter, FilterChain)
+from . import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter, Filter, FilterChain)
+from ..ttypes import (Timedelta, Timestamp)
+
 
 from ..ttypes import TYPES as VALUETYPES
 def _make_cmp_filter(*args, **kwargs):
@@ -25,6 +26,41 @@ def _desc(text):
     if text.startswith('...'):
         text = 'Match VALUE against ' + text[4:]
     return text
+
+
+def _timestamp_or_timedelta(string):
+    try:
+        return Timestamp.from_string(string)
+    except ValueError:
+        delta = Timedelta.from_string(string)
+        # Default to negative delta (i.e. matching dates in the past)
+        if (not string.startswith('in') and
+            not string.endswith('ago') and
+            string[0] not in ('+', '-')):
+            delta = Timedelta(-delta)
+        return delta
+
+def _time_filter(key, torrent, op, value):
+    timestamp = torrent[key]
+    if not timestamp.is_known:
+        return False
+    elif isinstance(value, Timestamp):
+        # value is an absolute/fixed time
+        return op(timestamp, value)
+    elif isinstance(value, Timedelta):
+        # value is seconds relative to current system time
+        timedelta = timestamp.timedelta
+        if value < 0:
+            # Negative time delta - we're looking for torrents in the past
+            if timedelta >= 0:
+                return False
+        elif value > 0:
+            # Positive time delta - we're looking for torrents in the future
+            if timedelta <= 0:
+                return False
+        return op(abs(timedelta), abs(value))
+    else:
+        raise RuntimeError('cannot compare {timestamp!r} with {value!}')
 
 
 from ..ttypes import Status
@@ -115,7 +151,6 @@ class SingleTorrentFilter(Filter):
             needed_keys=('private',)),
     }
 
-
     # Filters with arguments
     COMPARATIVE_FILTERS = {
         'id'          : _make_cmp_filter('id', _desc('... ID')),
@@ -160,45 +195,46 @@ class SingleTorrentFilter(Filter):
             value_type=VALUETYPES['timespan-eta'],
             value_convert=VALUETYPES['timespan-eta'].from_string,
         ),
+
         'created': CmpFilterSpec(
-            lambda t, op, v: t['time-created'].is_known and op(t['time-created'], v),
+            lambda t, op, v: _time_filter('time-created', t, op, v),
             aliases=('tcrt',),
             description=_desc('... time torrent was created'),
             needed_keys=('time-created',),
             value_type=VALUETYPES['time-created'],
-            value_convert=VALUETYPES['time-created'].from_string,
+            value_convert=_timestamp_or_timedelta,
         ),
         'added': CmpFilterSpec(
-            lambda t, op, v: t['time-added'].is_known and op(t['time-added'], v),
+            lambda t, op, v: _time_filter('time-added', t, op, v),
             aliases=('tadd',),
             description=_desc('... time torrent was added'),
             needed_keys=('time-added',),
             value_type=VALUETYPES['time-added'],
-            value_convert=VALUETYPES['time-added'].from_string,
+            value_convert=_timestamp_or_timedelta,
         ),
         'started': CmpFilterSpec(
-            lambda t, op, v: t['time-started'].is_known and op(t['time-started'], v),
+            lambda t, op, v: _time_filter('time-started', t, op, v),
             aliases=('tsta',),
             description=_desc('... last time torrent was started'),
             needed_keys=('time-started',),
             value_type=VALUETYPES['time-started'],
-            value_convert=VALUETYPES['time-started'].from_string,
+            value_convert=_timestamp_or_timedelta,
         ),
         'activity': CmpFilterSpec(
-            lambda t, op, v: t['time-activity'].is_known and op(t['time-activity'], v),
+            lambda t, op, v: _time_filter('time-activity', t, op, v),
             aliases=('tact',),
             description=_desc('... last time torrent was active'),
             needed_keys=('time-activity',),
             value_type=VALUETYPES['time-activity'],
-            value_convert=VALUETYPES['time-activity'].from_string,
+            value_convert=_timestamp_or_timedelta,
         ),
         'completed': CmpFilterSpec(
-            lambda t, op, v: t['time-completed'].is_known and op(t['time-completed'], v),
+            lambda t, op, v: _time_filter('time-completed', t, op, v),
             aliases=('tcmp',),
             description=_desc('... time all wanted files where downloaded'),
             needed_keys=('time-completed',),
             value_type=VALUETYPES['time-completed'],
-            value_convert=VALUETYPES['time-completed'].from_string,
+            value_convert=_timestamp_or_timedelta,
         ),
     }
 
