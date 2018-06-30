@@ -251,6 +251,15 @@ class Timedelta(int):
     def is_known(self):
         return bool(self)
 
+    @property
+    def timestamp(self):
+        if self == self.UNKNOWN:
+            return Timestamp(Timestamp.UNKNOWN)
+        elif self == self.NOT_APPLICABLE:
+            return Timestamp(Timestamp.NOT_APPLICABLE)
+        else:
+            return Timestamp(self + time.time())
+
 
 class Timestamp(int):
     NOW            = -2
