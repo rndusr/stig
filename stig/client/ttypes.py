@@ -260,6 +260,9 @@ class Timedelta(int):
         else:
             return Timestamp(self + time.time())
 
+    def __repr__(self):
+        return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
+
 
 class Timestamp(int):
     NOW            = -2
@@ -395,6 +398,9 @@ class Timestamp(int):
     @property
     def in_future(self):
         return bool(self) and self > time.time()
+
+    def __repr__(self):
+        return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
 
 
 
