@@ -184,7 +184,7 @@ class ListWidgetBase(urwid.WidgetWrap):
         else:
             self._ListItemClass = self.ListItemClass
 
-        self._data_dict = ()
+        self._data_dict = None
         self._marked = set()
 
         self._sort = sort
