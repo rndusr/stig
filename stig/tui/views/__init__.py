@@ -260,11 +260,11 @@ class ListWidgetBase(urwid.WidgetWrap):
         # Any items that haven't been used to update an existing *ItemWidget instance are new
         if data_dict:
             table = self._table
-            cls = self._ListItemClass
-            for data_id in data_dict:
+            ListItemClass = self._ListItemClass
+            for data_id,data in data_dict.items():
                 table.register(data_id)
-                item_widget = table.get_row(data_id)
-                walker.append(cls(data_dict[data_id], item_widget))
+                row = table.get_row(data_id)
+                walker.append(ListItemClass(data, row))
 
         # Sort items in walker
         if self._sort is not None:
