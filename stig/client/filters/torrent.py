@@ -28,16 +28,17 @@ def _desc(text):
     return text
 
 
-def _timestamp_or_timedelta(string):
+def _timestamp_or_timedelta(string, default_sign=1):
     try:
         return Timestamp.from_string(string)
     except ValueError:
         delta = Timedelta.from_string(string)
-        # Default to negative delta (i.e. matching dates in the past)
+        # Apply default_sign if no sign was given explicitly
+        string = string.strip()
         if (not string.startswith('in') and
             not string.endswith('ago') and
             string[0] not in ('+', '-')):
-            delta = Timedelta(-delta)
+            delta = Timedelta(delta * default_sign)
         return delta
 
 def _time_filter(key, torrent, op, value):
@@ -202,7 +203,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... time torrent was created'),
             needed_keys=('time-created',),
             value_type=VALUETYPES['time-created'],
-            value_convert=_timestamp_or_timedelta,
+            value_convert=lambda v: _timestamp_or_timedelta(v, default_sign=-1),
         ),
         'added': CmpFilterSpec(
             lambda t, op, v: _time_filter('time-added', t, op, v),
@@ -210,7 +211,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... time torrent was added'),
             needed_keys=('time-added',),
             value_type=VALUETYPES['time-added'],
-            value_convert=_timestamp_or_timedelta,
+            value_convert=lambda v: _timestamp_or_timedelta(v, default_sign=-1),
         ),
         'started': CmpFilterSpec(
             lambda t, op, v: _time_filter('time-started', t, op, v),
@@ -218,7 +219,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... last time torrent was started'),
             needed_keys=('time-started',),
             value_type=VALUETYPES['time-started'],
-            value_convert=_timestamp_or_timedelta,
+            value_convert=lambda v: _timestamp_or_timedelta(v, default_sign=-1),
         ),
         'activity': CmpFilterSpec(
             lambda t, op, v: _time_filter('time-activity', t, op, v),
@@ -226,7 +227,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... last time torrent was active'),
             needed_keys=('time-activity',),
             value_type=VALUETYPES['time-activity'],
-            value_convert=_timestamp_or_timedelta,
+            value_convert=lambda v: _timestamp_or_timedelta(v, default_sign=-1),
         ),
         'completed': CmpFilterSpec(
             lambda t, op, v: _time_filter('time-completed', t, op, v),
@@ -234,7 +235,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... time all wanted files where downloaded'),
             needed_keys=('time-completed',),
             value_type=VALUETYPES['time-completed'],
-            value_convert=_timestamp_or_timedelta,
+            value_convert=lambda v: _timestamp_or_timedelta(v, default_sign=-1),
         ),
     }
 
