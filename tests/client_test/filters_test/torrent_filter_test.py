@@ -290,7 +290,7 @@ class TestSingleTorrentFilter(unittest.TestCase):
         result = tuple(SingleTorrentFilter('path~y/z').apply(tlist, key='name'))
         self.assertEqual(result, ('foo',))
 
-    def test_eta_filter_larger_smaller(self):
+    def test_eta_filter_with_relative_time(self):
         tlist = (MockTorrent({'name': 'foo', 'timespan-eta': Timedelta.from_string('1h')}),
                  MockTorrent({'name': 'bar', 'timespan-eta': Timedelta.from_string('1h1s')}))
         result = tuple(SingleTorrentFilter('eta>1h').apply(tlist, key='name'))
@@ -301,6 +301,21 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(result, ())
         result = tuple(SingleTorrentFilter('eta<=1h').apply(tlist, key='name'))
         self.assertEqual(result, ('foo',))
+
+    def test_eta_filter_with_absolute_time(self):
+        tlist = (MockTorrent({'name': 'foo', 'timespan-eta': Timedelta.from_string('1h')}),
+                 MockTorrent({'name': 'bar', 'timespan-eta': Timedelta.from_string('1h1s')}))
+
+        with mock_time(2000, 1, 1, 0, 0, 0):
+            tids = tuple(SingleTorrentFilter('eta<2000-01-01 01:00:00').apply(tlist, key='name'))
+            self.assertEqual(tids, ())
+            tids = tuple(SingleTorrentFilter('eta<=2000-01-01 01:00:00').apply(tlist, key='name'))
+            self.assertEqual(tids, ('foo',))
+
+            tids = tuple(SingleTorrentFilter('eta>2000-01-01 01:00:00').apply(tlist, key='name'))
+            self.assertEqual(tids, ('bar',))
+            tids = tuple(SingleTorrentFilter('eta>=2000-01-01 01:00:00').apply(tlist, key='name'))
+            self.assertEqual(tids, ('foo', 'bar'))
 
     def test_completed_filter_with_absolute_time(self):
         tlist = (MockTorrent({'name': 'foo', 'time-completed': Timestamp.from_string('2000-01-02')}),
