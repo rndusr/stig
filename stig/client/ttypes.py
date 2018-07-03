@@ -164,7 +164,7 @@ class Timedelta(int):
     UNKNOWN        = 1e10
     NOT_APPLICABLE = 1e11
 
-    _FULL_REGEX = re.compile((r'^(in|-|\+|) ?(\S+) ?(ago|)$'), flags=re.IGNORECASE)
+    _FULL_REGEX = re.compile((r'^(in |-|\+|)(\S+)( ago|)$'), flags=re.IGNORECASE)
     _SPLIT_REGEX = re.compile((r'((?:\d+\.\d+|\d+|\.\d+)[' +
                                r''.join(unit for unit,secs in SECONDS) +
                                r']?)'))
@@ -177,9 +177,9 @@ class Timedelta(int):
         if not match:
             raise exc
 
-        sign_start = match.group(1).lower()
+        sign_start = match.group(1).lower().strip()
         timespan = match.group(2)
-        sign_end = match.group(3).lower()
+        sign_end = match.group(3).lower().strip()
         sign = 1  # 1/-1 to represent +/-
 
         if sign_start == '-' or sign_end == 'ago':
