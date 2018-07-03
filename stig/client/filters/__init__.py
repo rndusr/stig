@@ -18,6 +18,54 @@ import operator
 import re
 from collections import abc
 from itertools import zip_longest
+from ..ttypes import (Timedelta, Timestamp)
+
+
+def timestamp_or_timedelta(string, default_sign=1):
+    try:
+        return Timestamp.from_string(string)
+    except ValueError:
+        delta = Timedelta.from_string(string)
+        # Apply default_sign if no sign was given explicitly
+        string = string.strip()
+        if (not string.startswith('in') and
+            not string.endswith('ago') and
+            string[0] not in ('+', '-')):
+            delta = Timedelta(delta * default_sign)
+        return delta
+
+def time_filter(torrent_value, op, user_value):
+    if not torrent_value.is_known:
+        return False
+
+    type_torrent_value = type(torrent_value)
+    type_user_value = type(user_value)
+
+    if type_torrent_value is Timestamp:
+        if type_user_value is Timestamp:
+            return op(torrent_value, user_value)
+        elif type_user_value is Timedelta:
+            return _compare_timedelta(torrent_value.timedelta, op,  user_value)
+
+    elif type_torrent_value is Timedelta:
+        if type_user_value is Timedelta:
+            return _compare_timedelta(torrent_value, op, user_value)
+        elif type_user_value is Timestamp:
+            return _compare_timedelta(torrent_value, op, user_value.timedelta)
+
+    raise RuntimeError('cannot compare {torrent_value!r} with {user_value!}')
+
+def _compare_timedelta(delta_torrent, op, delta_user):
+    if delta_user <= 0:
+        # User's time delta is in the past - ignore future times
+        if delta_torrent > 0:
+            return False
+    elif delta_user > 0:
+        # User's time delta is in the future - ignore past times
+        if delta_torrent <= 0:
+            return False
+    return op(abs(delta_torrent), abs(delta_user))
+
 
 
 class BoolFilterSpec():
@@ -28,7 +76,6 @@ class BoolFilterSpec():
         self.needed_keys = needed_keys
         self.aliases = aliases
         self.description = description
-
 
 class CmpFilterSpec(BoolFilterSpec):
     """Comparative filter specification"""
@@ -56,6 +103,7 @@ def make_cmp_filter(types, key, description, aliases=()):
         kwargs['value_convert'] = kwargs['value_type'].from_string
 
     return CmpFilterSpec(filterfunc, **kwargs)
+
 
 
 class Filter():
