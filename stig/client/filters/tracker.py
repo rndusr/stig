@@ -12,12 +12,13 @@
 """Filtering TrackerList items by various values"""
 
 from ..ttypes import TorrentTracker
-VALUETYPES = TorrentTracker.TYPES
-from . import (BoolFilterSpec, Filter, FilterChain, make_cmp_filter)
+from . import (BoolFilterSpec, Filter, FilterChain, make_cmp_filter, CmpFilterSpec)
+from . import (timestamp_or_timedelta, time_filter)
 
 
 def _make_cmp_filter(*args, **kwargs):
     return make_cmp_filter(TorrentTracker.TYPES, *args, **kwargs)
+
 
 class SingleTrackerFilter(Filter):
     DEFAULT_FILTER = 'domain'
@@ -61,18 +62,38 @@ class SingleTrackerFilter(Filter):
         'seeds'          : _make_cmp_filter('count-seeds',
                                             aliases=('sds',),
                                             description='Match VALUE against number of known seeding peers'),
-        'last-announce'  : _make_cmp_filter('time-last-announce',
-                                            aliases=('lan',),
-                                            description='Match VALUE against time of last announce'),
-        'next-announce'  : _make_cmp_filter('time-next-announce',
-                                            aliases=('nan',),
-                                            description='Match VALUE against time of next announce'),
-        'last-scrape'    : _make_cmp_filter('time-last-scrape',
-                                            aliases=('lsc',),
-                                            description='Match VALUE against time of last scrape'),
-        'next-scrape'    : _make_cmp_filter('time-next-scrape',
-                                            aliases=('nsc',),
-                                            description='Match VALUE against time of next scrape'),
+        'last-announce': CmpFilterSpec(
+            lambda t, op, v: time_filter(t['time-last-announce'], op, v),
+            aliases=('lan',),
+            description='Match VALUE against time of last announce',
+            needed_keys=('time-last-announce',),
+            value_type=TorrentTracker.TYPES['time-last-announce'],
+            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+        ),
+        'next-announce': CmpFilterSpec(
+            lambda t, op, v: time_filter(t['time-next-announce'], op, v),
+            aliases=('nan',),
+            description='Match VALUE against time of next announce',
+            needed_keys=('time-next-announce',),
+            value_type=TorrentTracker.TYPES['time-next-announce'],
+            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=1),
+        ),
+        'last-scrape': CmpFilterSpec(
+            lambda t, op, v: time_filter(t['time-last-scrape'], op, v),
+            aliases=('lsc',),
+            description='Match VALUE against time of last scrape',
+            needed_keys=('time-last-scrape',),
+            value_type=TorrentTracker.TYPES['time-last-scrape'],
+            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+        ),
+        'next-scrape': CmpFilterSpec(
+            lambda t, op, v: time_filter(t['time-next-scrape'], op, v),
+            aliases=('nsc',),
+            description='Match VALUE against time of next scrape',
+            needed_keys=('time-next-scrape',),
+            value_type=TorrentTracker.TYPES['time-next-scrape'],
+            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=1),
+        ),
     }
 
 
