@@ -27,6 +27,7 @@ from collections import abc
 import os
 import re
 import time
+import datetime
 
 from .utils import (URL, Float, Int, convert, const)
 
@@ -264,14 +265,6 @@ class Timedelta(float):
         return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
 
 
-
-    _FORMATS_DATE = (('%Y',       ('tm_year',)),
-                     ('%Y-%m',    ('tm_year', 'tm_mon')),
-                     ('%Y-%m-%d', ('tm_year', 'tm_mon', 'tm_mday')),
-                     ('%d',       ('tm_mday',)),
-                     ('%m-%d',    ('tm_mon', 'tm_mday')))
-    _FORMATS_TIME = (('%H:%M',    ('tm_hour', 'tm_min')),
-                     ('%H:%M:%S', ('tm_hour', 'tm_min', 'tm_sec')))
 class Timestamp(float):
     # These constants get "random" fractions added to make it less likely that
     # any real-world value equals them.
@@ -280,6 +273,14 @@ class Timestamp(float):
     UNKNOWN        = 1e10 + 0.123456789
     NOT_APPLICABLE = 1e11 + 0.123456789
     NEVER          = 1e12 + 0.123456789
+
+    _FORMATS_DATE = (('%Y',       ('year',)),
+                     ('%Y-%m',    ('year', 'month')),
+                     ('%Y-%m-%d', ('year', 'month', 'day')),
+                     ('%d',       ('day',)),
+                     ('%m-%d',    ('month', 'day')))
+    _FORMATS_TIME = (('%H:%M',    ('hour', 'minute')),
+                     ('%H:%M:%S', ('hour', 'minute', 'second')))
 
     # Create all combinations of date, time and date+time formats, keeping track
     # of the values they specify
@@ -295,47 +296,90 @@ class Timestamp(float):
     @classmethod
     def from_string(cls, string):
         string = string.strip().replace('  ', ' ')
+        dt_now = datetime.datetime.now().replace(second=0, microsecond=0)
+        dt_default = datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        def fill_in_missing_values(t, given):
-            # Today with seconds set to 0
-            t_now = time.localtime()
-            t_now = time.struct_time((t_now.tm_year, t_now.tm_mon, t_now.tm_mday,
-                                      t_now.tm_hour, t_now.tm_min, 0,
-                                      t_now.tm_wday, t_now.tm_yday, -1))
-
-            # THISYEAR-01-01 00:00:00
-            t_default = time.struct_time((t_now.tm_year, 1, 1, 0, 0, 0, 0, 1, -1))
-
-            names = ('tm_year', 'tm_mon', 'tm_mday', 'tm_hour', 'tm_min',
-                     'tm_sec', 'tm_wday', 'tm_yday', 'tm_isdst')
-            args = []
-
-            # Copy values from `t` if they are in `given`, otherwise from
-            # `t_now` or `t_default`.
+        def fill_in_missing_values(dt, given):
+            names = ('year', 'month', 'day', 'hour', 'minute', 'second')
+            most_significant_given = names.index(given[0])
+            new_args = {}
             for name in names:
                 if name in given:
-                    args.append(getattr(t, name))
+                    new_args[name] = getattr(dt, name)
                 else:
-                    if names.index(given[0]) > names.index(name):
-                        args.append(getattr(t_now, name))
+                    # If `name` is less significant than the most significant
+                    # user-given value, fill in value from current time,
+                    # otherwise fill in the lowest possible value from default.
+                    # Example: User gave month and day: Get year from t_now.
+                    #          Get hours, minutes and seconds from t_default.
+                    if most_significant_given > names.index(name):
+                        new_args[name] = getattr(dt_now, name)
                     else:
-                        args.append(getattr(t_default, name))
-            return time.struct_time(args)
+                        new_args[name] = getattr(dt_default, name)
+            return datetime.datetime(**new_args)
 
-        t = None
-        for frmt, given in cls._FORMATS:
-            try:
-                t = time.strptime(string, frmt)
-            except ValueError:
-                pass
+        def get_timespan(dt, given):
+            # Return min/max timestamp based on the least significant value.
+            # Example: Use gave '2012-08' (year and month): Return timestamp for
+            #          '2012-08-01 00:00:00' and '2012-08-31 23:59:59'.
+            least_significant_given = given[-1]
+            if least_significant_given == 'year':
+                ts_min = datetime.datetime(year=dt.year, month=1, day=1)
+                ts_max = datetime.datetime(year=dt.year+1, month=1, day=1) - datetime.timedelta(seconds=1)
+            elif least_significant_given == 'month':
+                ts_min = datetime.datetime(year=dt.year, month=dt.month, day=1)
+                if dt.month < 12:
+                    ts_max = (datetime.datetime(year=dt.year, month=dt.month+1, day=1)
+                              - datetime.timedelta(seconds=1))
+                else:
+                    ts_max = (datetime.datetime(year=dt.year+1, month=1, day=1)
+                              - datetime.timedelta(seconds=1))
+            elif least_significant_given == 'day':
+                ts_min = datetime.datetime(year=dt.year, month=dt.month, day=dt.day)
+                ts_max = ts_min + datetime.timedelta(hours=23, minutes=59, seconds=59)
+            elif least_significant_given == 'hour':
+                ts_min = datetime.datetime(year=dt.year, month=dt.month, day=dt.day, hour=dt.hour)
+                ts_max = ts_min + datetime.timedelta(minutes=59, seconds=59)
+            elif least_significant_given == 'minute':
+                ts_min = datetime.datetime(year=dt.year, month=dt.month, day=dt.day, hour=dt.hour, minute=dt.minute)
+                ts_max = ts_min + datetime.timedelta(seconds=59)
             else:
-                t = fill_in_missing_values(t, given)
-                break
+                ts_min, ts_max = dt, dt
+            return (int(ts_min.timestamp()), int(ts_max.timestamp()))
 
-        if t is None:
-            raise ValueError('Invalid format: %r' % string)
-        else:
-            return cls(time.mktime(t))
+        for frmt,given in cls._FORMATS:
+            try:
+                dt = datetime.datetime.strptime(string, frmt)
+            except ValueError:
+                continue
+            else:
+                dt = fill_in_missing_values(dt, given)
+                return cls(dt.timestamp(), _timespan=get_timespan(dt, given))
+
+        raise ValueError('Invalid format: %r' % string)
+
+    def __new__(cls, seconds, _timespan=None):
+        obj = super().__new__(cls, seconds)
+        obj._timespan = _timespan if _timespan is not None else (seconds, seconds)
+        return obj
+
+    def __eq__(self, other):
+        return self._timespan[0] <= other <= self._timespan[1]
+
+    def __hash__(self):  # Needed to stay hashable with __eq__()
+        return super().__hash__()
+
+    def __gt__(self, other):
+        return self._timespan[0] > other
+
+    def __ge__(self, other):
+        return self._timespan[1] >= other
+
+    def __lt__(self, other):
+        return self._timespan[1] < other
+
+    def __le__(self, other):
+        return self._timespan[0] <= other
 
     def __str__(self):
         if self == self.UNKNOWN:
@@ -349,10 +393,11 @@ class Timestamp(float):
         elif self == self.NEVER:
             return 'never'
 
+        # The format is based on the delta of seconds compared to the current time
         abs_delta = abs(self - time.time())
-        if abs_delta < 120:      # <= 2 minutes
+        if abs_delta < 120:
             frmt = '%H:%M:%S'
-        elif abs_delta < 86400:  # <= 1 day
+        elif abs_delta < 86400:
             frmt = '%H:%M'
         else:
             frmt = '%Y-%m-%d'

@@ -318,9 +318,9 @@ class TestSingleTorrentFilter(unittest.TestCase):
             self.assertEqual(tids, ('foo', 'bar'))
 
     def test_completed_filter_with_absolute_time(self):
-        tlist = (MockTorrent({'name': 'foo', 'time-completed': Timestamp.from_string('2000-01-02')}),
-                 MockTorrent({'name': 'bar', 'time-completed': Timestamp.from_string('2001-02-03')}),
-                 MockTorrent({'name': 'baz', 'time-completed': Timestamp.from_string('2001-03-04')}))
+        tlist = (MockTorrent({'name': 'foo', 'time-completed': Timestamp.from_string('2000-01-02 01:02:03')}),
+                 MockTorrent({'name': 'bar', 'time-completed': Timestamp.from_string('2001-02-03 04:05:06')}),
+                 MockTorrent({'name': 'baz', 'time-completed': Timestamp.from_string('2001-03-04 07:08:09')}))
 
         tids = tuple(SingleTorrentFilter('completed<2001').apply(tlist, key='name'))
         self.assertEqual(tids, ('foo',))
@@ -334,15 +334,17 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(tids, ('foo', 'bar'))
 
         tids = tuple(SingleTorrentFilter('completed>2001').apply(tlist, key='name'))
+        self.assertEqual(tids, ())
+        tids = tuple(SingleTorrentFilter('completed>=2001').apply(tlist, key='name'))
         self.assertEqual(tids, ('bar', 'baz'))
         tids = tuple(SingleTorrentFilter('completed>2001-02').apply(tlist, key='name'))
+        self.assertEqual(tids, ('baz',))
+        tids = tuple(SingleTorrentFilter('completed>=2001-02').apply(tlist, key='name'))
         self.assertEqual(tids, ('bar', 'baz'))
         tids = tuple(SingleTorrentFilter('completed>2001-02-03').apply(tlist, key='name'))
         self.assertEqual(tids, ('baz',))
         tids = tuple(SingleTorrentFilter('completed>=2001-02-03').apply(tlist, key='name'))
         self.assertEqual(tids, ('bar', 'baz'))
-        tids = tuple(SingleTorrentFilter('completed>=2001-02-04').apply(tlist, key='name'))
-        self.assertEqual(tids, ('baz',))
 
     def test_completed_filter_with_positive_time_delta(self):
         tlist = (MockTorrent({'name': '0', 'time-completed': Timestamp.from_string('2000-01-01 00:00:00')}),
