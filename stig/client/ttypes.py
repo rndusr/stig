@@ -373,12 +373,11 @@ class Timestamp(int):
 
     def __bool__(self):
         """Whether timestamp known"""
-        return self != self.UNKNOWN and self != self.NOT_APPLICABLE and \
-               self != self.NOW and self != self.SOON and self != self.NEVER
+        return self not in (self.UNKNOWN, self.NOT_APPLICABLE, self.NEVER)
 
     @property
     def is_known(self):
-        return bool(self)
+        return self not in (self.NOW, self.SOON, self.UNKNOWN, self.NOT_APPLICABLE, self.NEVER)
 
     @property
     def timedelta(self):
