@@ -59,7 +59,7 @@ def _modify_timestamp_completed(t):
     if t['percentDone'] >= 1:
         doneDate = t['doneDate']
         if doneDate == 0:
-            return ttypes.Timestamp.UNKNOWN  # We are the original uploader
+            return t['addedDate']            # We are the original uploader
         else:
             return doneDate                  # Torrent has been completed in the past
     elif t['eta'] <= 0:
@@ -394,7 +394,7 @@ DEPENDENCIES = {
     'time-added'                   : ('addedDate',),
     'time-started'                 : ('startDate',),
     'time-activity'                : ('activityDate',),
-    'time-completed'               : ('doneDate', 'percentDone', 'eta'),
+    'time-completed'               : ('doneDate', 'addedDate', 'percentDone', 'eta'),
     'time-manual-announce-allowed' : ('manualAnnounceTime',),
 
     'rate-down'                    : ('rateDownload',),
