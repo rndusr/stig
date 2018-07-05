@@ -157,12 +157,12 @@ SECONDS = (('y', 31557600),  # 365.25 days
            ('m',       60),
            ('s',        1))
 
-class Timedelta(int):
+class Timedelta(float):
     # To sort unknown and not applicable Timedeltas below the rest, these
     # constants have large values that are very likely never encountered as
-    # actual values.
-    UNKNOWN        = 1e10
-    NOT_APPLICABLE = 1e11
+    # actual values.  The added float makes it even less likely.
+    UNKNOWN        = 1e10 + 0.123456789
+    NOT_APPLICABLE = 1e11 + 0.123456789
 
     _FULL_REGEX = re.compile((r'^(in |-|\+|)(\S+)( ago|)$'), flags=re.IGNORECASE)
     _SPLIT_REGEX = re.compile((r'((?:\d+\.\d+|\d+|\.\d+)[' +
@@ -264,12 +264,6 @@ class Timedelta(int):
         return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
 
 
-class Timestamp(int):
-    NOW            = -2
-    SOON           = -1
-    UNKNOWN        = 1e10
-    NOT_APPLICABLE = 1e11
-    NEVER          = 1e12
 
     _FORMATS_DATE = (('%Y',       ('tm_year',)),
                      ('%Y-%m',    ('tm_year', 'tm_mon')),
@@ -278,6 +272,14 @@ class Timestamp(int):
                      ('%m-%d',    ('tm_mon', 'tm_mday')))
     _FORMATS_TIME = (('%H:%M',    ('tm_hour', 'tm_min')),
                      ('%H:%M:%S', ('tm_hour', 'tm_min', 'tm_sec')))
+class Timestamp(float):
+    # These constants get "random" fractions added to make it less likely that
+    # any real-world value equals them.
+    NOW            = -2 + 0.123456789
+    SOON           = -1 + 0.123456789
+    UNKNOWN        = 1e10 + 0.123456789
+    NOT_APPLICABLE = 1e11 + 0.123456789
+    NEVER          = 1e12 + 0.123456789
 
     # Create all combinations of date, time and date+time formats, keeping track
     # of the values they specify
