@@ -367,6 +367,24 @@ class HelpManager():
             ('\tExample: "size>1mi" is the same as "size>1048576" (1 Mebibyte); '
              '"size>1m" is the same as "size>1000000" (1 Megabyte)'),
             '',
+            ('\tFor time-based filters, VALUE is either an absolute time stamp '
+             'or a relative time delta based on the current time.'),
+            '',
+            ('\tTime stamps support a date in the format [[YYYY-]MM-]DD or YYYY[-MM] '
+             'and a time in the format HH:MM[:SS].  Date and time can be combined by '
+             'separating them with a space.'),
+            '\tExamples: \t"added=2015-05" matches torrents that were added in May 2015.',
+            '\t\t"completed>=01" matches torrents that finished downloading earlier this month.',
+            ('\t\t"activity<10-17 18:45" matches torrents that were last active before '
+             '18:45 (6:45 pm) on the 17th of October of this year.'),
+            '',
+            ('\tTime deltas use the format [in |+|-]AMOUNT[s|m|h|d|w|M|y][ ago].  '
+             'The words "in" and "ago" are aliases for "+" and "-".  Negative time '
+             'deltas match time stamps in the past and positive time deltas '
+             'match time stamps in the future.  Filters have individual defaults for '
+             'the sign; e.g. "eta > 1h" is the same as "eta > in 1h" while '
+             '"completed > 1h" is the same as "completed > 1h ago".'),
+            '',
             ('\tFilters can be combined with the operators "&" (logical AND) '
              'and "|" (logical OR).  Multiple FILTER arguments are implicitly '
              'combined with "|".'),
