@@ -1,5 +1,11 @@
 2018-??-?? 0.10.0a
+  Breaking changes:
+    * Filter values with a space at the start or end must now be enclosed by
+      single or double quotes (see `help filter`).
+
   Other changes:
+    * Remove an unlimited number of torrents without confirmation with the
+      --force option or by setting 'remove.max-hits' to a negative number.
     * All time-based filters now accept relative time deltas (e.g. "1h30m") and
       absolute time stamps (e.g. "2018-07-05").  Their behaviour has also
       changed slightly (see `help filter`).
@@ -11,8 +17,8 @@
       code.
     * In yes/no prompts, default to 'no' in non-interactive mode (when stdout is
       not a TTY).
-    * Remove an unlimited number of torrents without confirmation with the
-      --force option or by setting 'remove.max-hits' to a negative number.
+    * Using a boolean filter as a comparative filter (e.g. 'downloading = asdf')
+      now results in an error.
 
 
 2018-05-07 0.9.0a
