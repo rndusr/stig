@@ -105,6 +105,17 @@ def make_cmp_filter(types, key, description, aliases=()):
     return CmpFilterSpec(filterfunc, **kwargs)
 
 
+def _unquote(string):
+    if len(string) <= 2:
+        return string
+
+    firstchar, lastchar = string[0], string[-1]
+    if (firstchar == "'" and lastchar == "'" or
+          firstchar == '"' and lastchar == '"'):
+        return string[1:-1]
+
+    return string
+
 
 class Filter():
     """Match sequences of objects against a single filter"""
@@ -173,6 +184,7 @@ class Filter():
         # op: Comparison operator as string (see _OPERATORS)
         # value: User-given value as string (will be converted to proper type)
         name, invert, op, value = (None, False, None, None)
+        filter_str = filter_str.strip()
         if filter_str != '':
             match = self._FILTER_REGEX.fullmatch(filter_str)
             if match is None:
@@ -182,18 +194,12 @@ class Filter():
                 op = match.group('op') or None
                 invert = bool(match.group('invert1')) ^ bool(match.group('invert2'))
                 value = match.group('value')
-                value = None if value == '' else value
+                value = _unquote(value.strip(' ')) if value else None
 
         # No operator but a value doesn't make any sense
         if op is None and value is not None:
             raise ValueError('Malformed filter expression: {!r}'.format(filter_str))
 
-        # Handle spaces around operator: If there's a space before the
-        # operator, strip value.  Otherwise, preserve them.  In any case,
-        # strip name.
-        if op is not None:
-            if name.endswith(' '):
-                value = value.strip(' ')
         if name is not None:
             name = name.strip()
 
@@ -239,7 +245,7 @@ class Filter():
 
         elif value is op is None and self.DEFAULT_FILTER is not None:
             # `name` is no known filter - default to DEFAULT_FILTER with operator '~'.
-            value = name
+            value = _unquote(name)
             op = '~'
             name = self.DEFAULT_FILTER
             if name in self.BOOLEAN_FILTERS:
@@ -281,7 +287,7 @@ class Filter():
             name = self._name if self._name != self.DEFAULT_FILTER else ''
             op = ('!' if self._invert else '') + self._op
             val = str(self._value)
-            if val[0] == ' ' or val[-1] == ' ':
+            if val == '' or val[0] == ' ' or val[-1] == ' ':
                 val = repr(val)
             return name + op + val
 

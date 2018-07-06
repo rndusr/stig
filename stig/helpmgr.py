@@ -349,10 +349,11 @@ class HelpManager():
              'If OPERATOR is omitted, it defaults to "~".'),
             '\tExample: "foo" is the same as "~foo" is the same as "name~foo".',
             '',
-            ('\tSpaces before the filter name are ignored.  If there is a space '
-             'between the filter name and the operator, all spaces at the '
-             'start and end of VALUE are removed, otherwise they are preserved.  '),
-            '\tExample: "name = foo  " matches "foo"; "name= foo  " matches " foo  ".',
+            ('\tSpaces at the start and the end of VALUE are always removed.  '
+             'If the result is enclosed by matching single or double quotes, they '
+             'are removed.  Any other quotes are not interpreted, i.e. they must '
+             'not be escaped.'),
+            '\tExample: "name = foo " matches "foo"; "name = \' foo \' " matches " foo "',
             '',
             '\tAll filters can be inverted by prepending "!" to the filter name.',
             ('\tExample: "name!=foo" is the same as "!name=foo"; '
