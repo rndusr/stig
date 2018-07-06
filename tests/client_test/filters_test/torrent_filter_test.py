@@ -213,7 +213,15 @@ class TestSingleTorrentFilter(unittest.TestCase):
         result = tuple(SingleTorrentFilter('name<=yy').apply(tlist, key='name'))
         self.assertEqual(result, ('x', 'xx'))
 
-    def test_boolean_evaluation_without_value(self):
+    def test_boolean_filter_gets_value(self):
+        tlist = (MockTorrent({'name': 'foo', 'rate-down': 0}),
+                 MockTorrent({'name': 'bar', 'rate-down': 100}))
+        for op in ('=', '!=', '<', '<=', '>', '>='):
+            f = 'downloading%s50' % op
+            with self.assertRaisesRegex(ValueError, "Boolean filter does not accept any values: %s" % f):
+                SingleTorrentFilter(f)
+
+    def test_boolean_evaluation_of_comparative_filters(self):
         tlist = (MockTorrent({'name': 'foo', 'rate-down': 0}),
                  MockTorrent({'name': 'bar', 'rate-down': 100}))
         result = tuple(SingleTorrentFilter('rate-down').apply(tlist, key='name'))

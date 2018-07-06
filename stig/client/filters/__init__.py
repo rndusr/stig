@@ -215,6 +215,8 @@ class Filter():
 
         # Filter that doesn't use value argument
         if name in self.BOOLEAN_FILTERS:
+            if op or value:
+                raise ValueError('Boolean filter does not accept any values: {} '.format(filter_str))
             f = self.BOOLEAN_FILTERS[name]
             self._filter_func = f.filter_function
             self._needed_keys = f.needed_keys
