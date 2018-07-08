@@ -218,7 +218,6 @@ class ListWidgetBase(urwid.WidgetWrap):
     def _invalidate(self):
         if self.title_updater is not None:
             # First argument can be cropped if too long, second argument is fixed
-            # self.title_updater(self.title, ' [%d]' % self.count)
             self.title_updater(self.title, ' [%d]' % self.count)
         super()._invalidate()
 
