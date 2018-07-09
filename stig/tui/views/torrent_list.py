@@ -42,6 +42,7 @@ class TorrentListWidget(ListWidgetBase):
     def __init__(self, srvapi, keymap, tfilter=None, sort=None, columns=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._tfilter = tfilter
+        self._search_filter = None
         self._register_request()
 
     @property
@@ -105,3 +106,24 @@ class TorrentListWidget(ListWidgetBase):
         focused_widget = self._listbox.focus
         if focused_widget is not None:
             return focused_widget.torrent_id
+
+    @property
+    def search_term(self):
+        return self._search_filter
+
+    @search_term.setter
+    def search_term(self, term):
+        from ...client import TorrentFilter
+        if term is None:
+            self._search_filter = None
+        else:
+            self._search_filter = TorrentFilter(term)
+        log.debug('Filtering %r torrents', self._search_filter)
+        self._invalidate()
+
+    def _limit_items(self, torrent_widgets):
+        f = self._search_filter
+        if f is not None:
+            for tw in torrent_widgets:
+                if not f.match(tw.data):
+                    yield tw

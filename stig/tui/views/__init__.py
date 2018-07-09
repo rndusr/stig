@@ -187,6 +187,9 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._data_dict = None
         self._marked = set()
 
+        self._existing_widgets = set()
+        self._hidden_widgets = set()
+
         self._sort = sort
         self._sort_orig = sort
 
@@ -222,9 +225,24 @@ class ListWidgetBase(urwid.WidgetWrap):
         super()._invalidate()
 
     def render(self, size, focus=False):
+        # Remember focused item widget in case items get added or removed
+        focusedw = self.focused_widget
+
         if self._data_dict is not None:
-            self._update_listitems()
+            self._update_existing_widgets(self._data_dict)
             self._data_dict = None
+
+        self._hide_or_unhide_widgets()
+        self._sort_widgets()
+
+        # Ensure focus doesn't change when items get added or removed
+        if focusedw is not None and self.focused_widget is not None and \
+           focusedw.id != self.focused_widget.id:
+            focused_id = focusedw.id
+            for i,w in enumerate(self._listbox.body):
+                if w.id == focused_id:
+                    self._listbox.focus_position = i
+                    break
 
         # Update number of marked items in this list
         bottombar.marked.update(len(self._marked))
@@ -233,14 +251,11 @@ class ListWidgetBase(urwid.WidgetWrap):
         # example when the CLI is open
         return super().render(size, focus=True)
 
-    def _update_listitems(self):
-        # Remember focused item widget in case items get added or removed
-        focusedw = self.focused_widget
+    def _update_existing_widgets(self, data_dict):
+        existing_widgets = self._existing_widgets
+        dead_widgets = []
 
-        walker = self._listbox.body
-        data_dict = self._data_dict
-        dead_items = []
-        for w in walker:  # w = *ItemWidget instance
+        for w in existing_widgets:  # w = *ItemWidget instance
             id = w.id
             try:
                 # Update existing *ItemWidget instances with new data
@@ -248,12 +263,15 @@ class ListWidgetBase(urwid.WidgetWrap):
                 del data_dict[id]
             except KeyError:
                 # Item no longer exists in data_dict anymore
-                dead_items.append(w)
+                dead_widgets.append(w)
 
         # Remove dead *ItemWidget instances
+        walker = self._listbox.body
         marked = self._marked
-        for w in dead_items:
-            walker.remove(w)
+        for w in dead_widgets:
+            if w in walker:
+                walker.remove(w)
+            existing_widgets.remove(w)
             marked.discard(w)  # self._marked may have a reference too
 
         # Any items that haven't been used to update an existing *ItemWidget instance are new
@@ -263,22 +281,36 @@ class ListWidgetBase(urwid.WidgetWrap):
             for data_id,data in data_dict.items():
                 table.register(data_id)
                 row = table.get_row(data_id)
-                walker.append(ListItemClass(data, row))
+                existing_widgets.add(ListItemClass(data, row))
 
-        # Sort items in walker
+    def _sort_widgets(self):
+        walker = self._listbox.body
         if self._sort is not None:
             self._sort.apply(walker,
-                            item_getter=lambda w: w.data,
-                            inplace=True)
+                             item_getter=lambda w: w.data,
+                             inplace=True)
 
-        # Items could be added/removed - re-focus previously focused item if necessary
-        if focusedw is not None and self.focused_widget is not None and \
-           focusedw.id != self.focused_widget.id:
-            focused_id = focusedw.id
-            for i,w in enumerate(walker):
-                if w.id == focused_id:
-                    self._listbox.focus_position = i
-                    break
+    def _hide_or_unhide_widgets(self):
+        walker = self._listbox.body
+        existing_widgets = self._existing_widgets
+        hidden_widgets = self._hidden_widgets
+        hidden_ids = tuple(w.id for w in self._limit_items(existing_widgets))
+        for w in existing_widgets:
+            widget_is_visible = w in walker
+            hide_widget = w.id in hidden_ids
+            if hide_widget and widget_is_visible:
+                walker.remove(w)
+                self._hidden_widgets.add(w)
+            elif not hide_widget and not widget_is_visible:
+                walker.append(w)
+
+        if self.title_updater is not None:
+            self.title_updater(self.title, ' [%d]' % self.count)
+
+
+    def _limit_items(self, existing_widgets):
+        """Iterate over filtered widgets"""
+        return ()
 
     def clear(self):
         """Remove all list items"""
