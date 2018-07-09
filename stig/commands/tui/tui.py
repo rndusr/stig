@@ -237,6 +237,41 @@ class QuitCmd(metaclass=InitCommand):
         raise urwid.ExitMainLoop()
 
 
+class SearchCmd(metaclass=InitCommand):
+    name = 'search'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Search the content of the focused tab'
+    usage = ('search [<OPTIONS>] <TERM> <TERM> ...',)
+    # TODO
+    # examples = ('',)
+    argspecs = (
+        { 'names': ('--clear','-c'), 'action': 'store_true',
+          'description': 'Remove previously applied search terms' },
+        { 'names': ('TERM',), 'nargs': '?',
+          'description': 'Filter expression or plain text' },
+    )
+    tui = ExpectedResource
+
+    def run(self, clear, TERM):
+        content = self.tui.tabs.focus
+        if not hasattr(content, 'search_term'):
+            log.error('Current tab does not support searching.')
+            return False
+        else:
+            if clear:
+                content.search_term = None
+                return True
+            else:
+                try:
+                    content.search_term = TERM
+                except ValueError as e:
+                    log.error(e)
+                    return False
+                else:
+                    return True
+
+
 class SortCmd(metaclass=InitCommand):
     name = 'sort'
     aliases = ()
