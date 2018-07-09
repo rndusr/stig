@@ -255,16 +255,16 @@ class SearchCmd(metaclass=InitCommand):
 
     def run(self, clear, TERM):
         content = self.tui.tabs.focus
-        if not hasattr(content, 'search_term'):
+        if not hasattr(content, 'secondary_filter'):
             log.error('Current tab does not support searching.')
             return False
         else:
             if clear:
-                content.search_term = None
+                content.secondary_filter = None
                 return True
             else:
                 try:
-                    content.search_term = TERM
+                    content.secondary_filter = TERM
                 except ValueError as e:
                     log.error(e)
                     return False
