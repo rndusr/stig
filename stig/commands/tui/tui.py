@@ -160,6 +160,89 @@ class UnbindCmd(metaclass=InitCommand):
         return success
 
 
+class InteractiveCmd(metaclass=InitCommand):
+    name = 'interactive'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Complete partial command with user input from a dialog'
+    usage = ('interactive [<OPTIONS>] <COMMAND>',)
+    examples = ('tab ls & interactive -c "tab --close --focus left" search %s',
+                'tab ls & interactive -a "mark --all & start" -x "tab --close --focus left" search "%s & stopped"',)
+    argspecs = (
+        { 'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
+          'description': 'Command to run when the dialog is aborted with escape' },
+        { 'names': ('--on-accept', '-a'), 'metavar': 'ACCEPT COMMAND',
+          'description': 'Command to run when the dialog is accepted with enter' },
+        { 'names': ('--on-close', '-x'), 'metavar': 'CLOSE COMMAND',
+          'description': 'Command to run after the dialog is closed either way' },
+        { 'names': ('COMMAND',), 'nargs': '+',
+          'description': ('The command to run when the user types something.  The first occurence '
+                          'of "%s" is replaced with the user input.  If "%s" doesn\'t occur, '
+                          'user input is appended.') },
+    )
+    tui = ExpectedResource
+    cmdmgr = ExpectedResource
+
+    _EDIT_WIDGET_NAME = 'interactive_prompt'
+    _PLACEHOLDER = '%s'
+
+    def run(self, on_cancel, on_accept, on_close, COMMAND):
+        from ...tui.cli import CLIEditWidget
+        import urwid
+
+        command_skeleton = ' '.join(shlex.quote(arg) for arg in COMMAND)
+        self._cancel_cmd = on_cancel
+        self._accept_cmd = on_accept
+        self._close_cmd = on_close
+
+        log.debug('cmd: %r', command_skeleton)
+        log.debug('cancel_cmd: %r', self._cancel_cmd)
+        log.debug('accept_cmd: %r', self._accept_cmd)
+        log.debug('close_cmd: %r', self._close_cmd)
+
+        if self._PLACEHOLDER in command_skeleton:
+            self._before_edit, _, self._after_edit = command_skeleton.partition(self._PLACEHOLDER)
+        else:
+            self._before_edit = command_skeleton + ' '
+            self._after_edit = ''
+
+        self._before_edit_widget = urwid.Text(self._before_edit)
+        self._edit_widget = CLIEditWidget(on_change=self._change_callback,
+                                          on_accept=self._accept_callback,
+                                          on_cancel=self._cancel_callback)
+        self._after_edit_widget = urwid.Text(self._after_edit)
+
+        self._columns = urwid.Columns([('pack', self._before_edit_widget),
+                                       (25, urwid.AttrMap(self._edit_widget, 'prompt')),
+                                       ('pack', self._after_edit_widget)])
+        self.tui.widgets.add(name=self._EDIT_WIDGET_NAME,
+                             widget=urwid.AttrMap(self._columns, 'cli'),
+                             position=self.tui.widgets.get_position('cli'),
+                             removable=True,
+                             options='pack')
+        return True
+
+    def _change_callback(self, widget):
+        cmd = ''.join((self._before_edit, widget.edit_text, self._after_edit))
+        self.cmdmgr.run_task(cmd, on_error=log.error)
+
+    def _accept_callback(self, widget):
+        if self._accept_cmd is not None:
+            self.cmdmgr.run_task(self._accept_cmd, on_error=log.error)
+        self._close()
+
+    def _cancel_callback(self, widget):
+        if self._cancel_cmd is not None:
+            self.cmdmgr.run_task(self._cancel_cmd, on_error=log.error)
+        self._close()
+
+    def _close(self):
+        self.tui.widgets.remove(self._EDIT_WIDGET_NAME)
+        self.tui.widgets.focus_name = 'main'
+        if self._close_cmd is not None:
+            self.cmdmgr.run_task(self._close_cmd, on_error=log.error)
+
+
 class MarkCmd(metaclass=InitCommand):
     name = 'mark'
     provides = {'tui'}
