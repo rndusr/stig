@@ -11,6 +11,7 @@
 
 from .peer import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
+from ...client import TorrentPeerFilter
 
 
 class PeerItemWidget(ItemWidgetBase):
@@ -36,6 +37,7 @@ class PeerListWidget(ListWidgetBase):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._tfilter = tfilter
         self._pfilter = pfilter
+        self._secondary_filter = None
 
         # Create peer filter generator
         if pfilter is not None:
@@ -84,3 +86,29 @@ class PeerListWidget(ListWidgetBase):
     def sort(self, sort):
         ListWidgetBase.sort.fset(self, sort)
         self._poller.poll()
+
+    @property
+    def secondary_filter(self):
+        return self._secondary_filter
+
+    @secondary_filter.setter
+    def secondary_filter(self, term):
+        if term is None:
+            self._secondary_filter = None
+        else:
+            self._secondary_filter = TorrentPeerFilter(term)
+        self._invalidate()
+
+    def _limit_items(self, peer_widgets):
+        # Combine primary and secondary file filters
+        pfilter = self._pfilter
+        spfilter = self._secondary_filter
+        if pfilter is None:
+            pfilter = spfilter
+        elif spfilter is not None:
+            pfilter = TorrentPeerFilter('&'.join((str(pfilter), str(spfilter))))
+
+        if pfilter is not None:
+            for pw in peer_widgets:
+                if not pfilter.match(pw.data):
+                    yield pw
