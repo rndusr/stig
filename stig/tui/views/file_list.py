@@ -19,6 +19,7 @@ import builtins
 
 from .file import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
+from ...client import TorrentFileFilter
 
 
 from ...views.file import (create_directory_data, create_directory_name)
@@ -171,6 +172,7 @@ class FileListWidget(ListWidgetBase):
         super().__init__(srvapi, keymap, columns=columns, title=title)
         self._tfilter = tfilter
         self._ffilter = ffilter
+        self._secondary_filter = None
         self._initialized = False
         self._torrents = None
 
@@ -187,22 +189,45 @@ class FileListWidget(ListWidgetBase):
                 self._update_listitems(response.torrents)
             else:
                 self._init_listitems(response.torrents)
+                self._initialized = True
         self._invalidate()
 
     def _init_listitems(self, torrents):
         self.clear()
         if torrents:
-            self._filetree = FileTreeDecorator(torrents, self._keymap,
-                                               self._table, self._ffilter)
-            self._listbox.body = urwidtrees.widgets.TreeListWalker(self._filetree)
-            self._listbox._invalidate()
-            self._initialized = True
             self._torrents = torrents
+            self._create_filetree()
+            self._listbox._invalidate()
+
+    def _create_filetree(self):
+        # Combine primary and secondary file filters
+        ffilter = self._ffilter
+        sffilter = self._secondary_filter
+        if ffilter is None:
+            ffilter = sffilter
+        elif sffilter is not None:
+            ffilter = TorrentFileFilter('&'.join((str(ffilter), str(sffilter))))
+
+        self._filetree = FileTreeDecorator(self._torrents, self._keymap, self._table, ffilter)
+        self._listbox.body = urwidtrees.widgets.TreeListWalker(self._filetree)
 
     def _update_listitems(self, torrents=()):
         if torrents:
             self._filetree.update(torrents)
             self._torrents = torrents
+
+    @property
+    def secondary_filter(self):
+        return self._secondary_filter
+
+    @secondary_filter.setter
+    def secondary_filter(self, term):
+        if term is None:
+            self._secondary_filter = None
+        else:
+            self._secondary_filter = TorrentFileFilter(term)
+        self._create_filetree()
+
 
     @property
     def title(self):
