@@ -156,7 +156,7 @@ class LazyDict(dict):
 
 
 import re
-class URL():
+class URL(str):
     """Parse URL as lenient as possible (no validation)"""
 
     ### Pilfered from yurl: https://github.com/homm/yurl
