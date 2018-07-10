@@ -11,6 +11,7 @@
 
 from .tracker import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
+from ...client import TorrentTrackerFilter
 
 
 class TrackerItemWidget(ItemWidgetBase):
@@ -40,6 +41,7 @@ class TrackerListWidget(ListWidgetBase):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._torfilter = torfilter
         self._trkfilter = trkfilter
+        self._secondary_filter = None
 
         # Create tracker filter generator
         if trkfilter is not None:
@@ -90,3 +92,30 @@ class TrackerListWidget(ListWidgetBase):
         focused_widget = self._listbox.focus
         if focused_widget is not None:
             return focused_widget.torrent_id
+
+
+    @property
+    def secondary_filter(self):
+        return self._secondary_filter
+
+    @secondary_filter.setter
+    def secondary_filter(self, term):
+        if term is None:
+            self._secondary_filter = None
+        else:
+            self._secondary_filter = TorrentTrackerFilter(term)
+        self._invalidate()
+
+    def _limit_items(self, tracker_widgets):
+        # Combine primary and secondary file filters
+        trkfilter = self._trkfilter
+        strkfilter = self._secondary_filter
+        if trkfilter is None:
+            trkfilter = strkfilter
+        elif strkfilter is not None:
+            trkfilter = TorrentTrackerFilter('&'.join((str(trkfilter), str(strkfilter))))
+
+        if trkfilter is not None:
+            for tw in tracker_widgets:
+                if not trkfilter.match(tw.data):
+                    yield tw
