@@ -161,8 +161,10 @@ class Filter():
             except ValueError:
                 raise ValueError('Invalid value for filter {!r}: {!r}'.format(name, value))
 
-        # Make sure value and operator are compatible
-        if op == '~' and not isinstance(value, str):
+        # Test if target_type supports operator
+        try:
+            cls._OPERATORS[op](value, value)
+        except TypeError as e:
             raise ValueError('Invalid operator for filter {!r}: {}'.format(name, op))
 
         return value
