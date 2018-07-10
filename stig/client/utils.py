@@ -235,21 +235,22 @@ class URL():
 
     @property
     def domain(self):
-        """TLD Domain"""
-        if not hasattr(self, '_domain_cached'):
+        domain = getattr(self, '_domain_cached', None)
+        if domain is None:
             host = self.host
             if not host:
                 self._domain_cached = None
             else:
                 if host.count('.') <= 1:
-                    self._domain_cached = host
+                    domain = self._domain_cached = host
                 else:
                     parts = host.rsplit('.', maxsplit=2)
-                    self._domain_cached = '.'.join(parts[-2:])
-        return self._domain_cached
+                    domain = self._domain_cached = '.'.join(parts[-2:])
+        return domain
 
     def __str__(self):
-        if not hasattr(self, '_cached_string'):
+        string = getattr(self, '_cached_string', None)
+        if string is None:
             parts = []
             if self.scheme:
                 parts.append('%s://' % self.scheme)
@@ -264,8 +265,8 @@ class URL():
                 parts.append(':%s' % self.port)
             if self.path:
                 parts.append('%s' % self.path)
-            self._cached_string = ''.join(parts)
-        return self._cached_string
+            string = self._cached_string = ''.join(parts)
+        return string
 
     def __setattr__(self, name, value):
         super().__setattr__(name, value)
