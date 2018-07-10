@@ -156,7 +156,7 @@ class LazyDict(dict):
 
 
 import re
-class URL(str):
+class URL():
     """Parse URL as lenient as possible (no validation)"""
 
     ### Pilfered from yurl: https://github.com/homm/yurl
@@ -285,5 +285,17 @@ class URL(str):
     def __eq__(self, other):
         return str(self) == str(other)
 
-    def __ne__(self, other):
-        return str(self) != str(other)
+    def __lt__(self, other):
+        return len(str(self)) < len(str(other))
+
+    def __le__(self, other):
+        return len(str(self)) <= len(str(other))
+
+    def __gt__(self, other):
+        return len(str(self)) > len(str(other))
+
+    def __ge__(self, other):
+        return len(str(self)) >= len(str(other))
+
+    def __contains__(self, other):
+        return str(other) in str(self)
