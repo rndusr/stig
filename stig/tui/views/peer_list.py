@@ -100,7 +100,7 @@ class PeerListWidget(ListWidgetBase):
         self._invalidate()
 
     def _limit_items(self, peer_widgets):
-        # Combine primary and secondary file filters
+        # Combine primary and secondary peer filters
         pfilter = self._pfilter
         spfilter = self._secondary_filter
         if pfilter is None:

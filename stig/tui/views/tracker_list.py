@@ -107,7 +107,7 @@ class TrackerListWidget(ListWidgetBase):
         self._invalidate()
 
     def _limit_items(self, tracker_widgets):
-        # Combine primary and secondary file filters
+        # Combine primary and secondary tracker filters
         trkfilter = self._trkfilter
         strkfilter = self._secondary_filter
         if trkfilter is None:
