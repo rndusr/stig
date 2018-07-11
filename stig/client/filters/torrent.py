@@ -143,6 +143,10 @@ class SingleTorrentFilter(Filter):
                                          aliases=('rup',)),
         'rate-down'   : _make_cmp_filter('rate-down', _desc('... download rate'),
                                          aliases=('rdn',)),
+        'limit-rate-up'   : _make_cmp_filter('limit-rate-up', _desc('... upload rate limit'),
+                                         aliases=('lrup',)),
+        'limit-rate-down' : _make_cmp_filter('limit-rate-down', _desc('... download rate limit'),
+                                         aliases=('lrdn',)),
 
         'tracker': CmpFilterSpec(
             lambda t, op, v: any(op(tracker['url-announce'].domain, v)
