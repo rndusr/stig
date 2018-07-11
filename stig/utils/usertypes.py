@@ -488,7 +488,10 @@ class _NumberBase(StringableMixin):
                     raise ValueError('Cannot convert %s to %s' % (unit, convert_to))
 
         if issubclass(cls, int):
-            value = round(value)
+            try:
+                value = round(value)
+            except OverflowError:
+                raise ValueError('Not a %s' % cls.typename)
 
         if min is not None and value < min:
             if autolimit:
