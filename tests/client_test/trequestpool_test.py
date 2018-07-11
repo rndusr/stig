@@ -63,7 +63,7 @@ class Subscriber():
 
     def __add__(self, other):
         if other.tfilter is not None:
-            tfilter = str(self.tfilter + other.tfilter)
+            tfilter = str(self.tfilter | other.tfilter)
         else:
             tfilter = str(self.tfilter)
         s = Subscriber(tfilter, *(self.keys + other.keys))

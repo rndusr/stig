@@ -431,31 +431,16 @@ class FilterChain():
     def __repr__(self):
         return '<{} {}>'.format(type(self).__name__, str(self))
 
-    def __add__(self, other):
+    def __and__(self, other):
         cls = type(self)
-        nofilter = cls()
         if not isinstance(other, cls):
             return NotImplemented
-        elif other == nofilter or self == nofilter:
-            return nofilter
         else:
-            # Start with our own stuff
-            new_fc = list(self._filterchains)
+            return cls(str(self) + '&' + str(other))
 
-            # Because foo&bar is the same as bar&foo, comparing sets makes
-            # everything much easier
-            self_fc_sets = tuple(set(x) for x in self._filterchains)
-
-            # Copy each AND_chain from other unless we already have it
-            for AND_chain in other._filterchains:
-                AND_chain_set = set(AND_chain)
-                if AND_chain_set not in self_fc_sets:
-                    new_fc.append(AND_chain)
-
-            # Make string from new_fc
-            OR_chains = []
-            for AND_chain in new_fc:
-                OR_chains.append('&'.join(str(f) for f in AND_chain))
-            new_fc_str = '|'.join(OR_chains)
-
-            return cls(new_fc_str)
+    def __or__(self, other):
+        cls = type(self)
+        if not isinstance(other, cls):
+            return NotImplemented
+        else:
+            return cls(str(self) + '|' + str(other))

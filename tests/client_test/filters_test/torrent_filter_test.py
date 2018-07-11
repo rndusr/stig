@@ -567,37 +567,47 @@ class TestTorrentFilter(unittest.TestCase):
     def test_multiple_implied_name_filters(self):
         self.assertEqual(str(TorrentFilter('foo|bar')), '~foo|~bar')
 
-    def test_combining_filters(self):
+    def test_combining_filters_with_or_operator(self):
         f1 = TorrentFilter('name=foo')
         f2 = TorrentFilter('active')
-        f3 = f1+f2
+        f3 = f1 | f2
         self.assertEqual(f3, TorrentFilter('name=foo|active'))
 
         f1 = TorrentFilter('name~foo&private|path~other')
         f2 = TorrentFilter('active&private|public&!complete')
-        f3 = f1+f2
-        self.assertEqual(str(f3), ('~foo&private|path~other|'
-                                   'active&private|public&!complete'))
+        f3 = f1 | f2
+        self.assertEqual(f3, TorrentFilter('~foo&private|path~other|'
+                                           'active&private|public&!complete'))
 
         f1 = TorrentFilter('public&active')
         f2 = TorrentFilter('active&public')
-        self.assertEqual(str(f1+f2), 'public&active')
+        self.assertEqual(f1 | f2, TorrentFilter('public&active'))
         f3 = TorrentFilter('complete')
-        self.assertEqual(str(f1+f2+f3), 'public&active|complete')
-        self.assertEqual(str(f3+f2+f1), 'complete|active&public')
+        self.assertEqual(f1 | f2 | f3, TorrentFilter('public&active|complete'))
+        self.assertEqual(f3 | f2 | f1, TorrentFilter('complete|active&public'))
+
+    def test_combining_filters_with_and_operator(self):
+        f1 = TorrentFilter('name=foo')
+        f2 = TorrentFilter('active')
+        f3 = f1 & f2
+        self.assertEqual(f3, TorrentFilter('name=foo&active'))
 
     def test_combining_any_filter_with_all_is_all(self):
-        f = TorrentFilter('active') + TorrentFilter('all')
+        f = TorrentFilter('active') & TorrentFilter('all')
+        self.assertEqual(f, TorrentFilter('all'))
+        f = TorrentFilter('active') | TorrentFilter('all')
         self.assertEqual(f, TorrentFilter('all'))
 
-        f = TorrentFilter('active') + TorrentFilter('private')
+        f = TorrentFilter('active') & TorrentFilter('private')
+        self.assertEqual(f, TorrentFilter('active&private'))
+        f = TorrentFilter('active') | TorrentFilter('private')
         self.assertEqual(f, TorrentFilter('active|private'))
 
     def test_needed_keys(self):
         f1 = TorrentFilter('public')
         self.assertEqual(set(f1.needed_keys), set(['private']))
         f2 = TorrentFilter('complete')
-        self.assertEqual(set((f1+f2).needed_keys), set(['private', '%downloaded']))
+        self.assertEqual(set((f1 & f2).needed_keys), set(['private', '%downloaded']))
         f3 = TorrentFilter('!private|active')
-        self.assertEqual(set((f1+f2+f3).needed_keys),
+        self.assertEqual(set((f1 & f2 & f3).needed_keys),
                          set(['private', '%downloaded', 'peers-connected', 'status']))

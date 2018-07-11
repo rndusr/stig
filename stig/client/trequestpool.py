@@ -74,7 +74,7 @@ class TorrentRequestPool(RequestPoller):
                 # No subscribers or at least one subscriber wants all torrents
                 kwargs['torrents'] = None
             else:
-                kwargs['torrents'] = reduce(operator.__add__, all_filters)
+                kwargs['torrents'] = reduce(operator.__or__, all_filters)
 
             kwargs['keys'] = reduce(operator.__add__, self._keys.values())
             # Filters also need certain keys
