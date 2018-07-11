@@ -16,7 +16,7 @@ from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 
 class SingleTorrentPeerFilter(Filter):
-    DEFAULT_FILTER = None
+    DEFAULT_FILTER = 'ip'
 
     # Filters without arguments
     BOOLEAN_FILTERS = {
