@@ -106,7 +106,7 @@ class PeerListWidget(ListWidgetBase):
         if pfilter is None:
             pfilter = spfilter
         elif spfilter is not None:
-            pfilter = TorrentPeerFilter('&'.join((str(pfilter), str(spfilter))))
+            pfilter = pfilter & spfilter
 
         if pfilter is not None:
             for pw in peer_widgets:

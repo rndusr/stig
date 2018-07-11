@@ -206,7 +206,7 @@ class FileListWidget(ListWidgetBase):
         if ffilter is None:
             ffilter = sffilter
         elif sffilter is not None:
-            ffilter = TorrentFileFilter('&'.join((str(ffilter), str(sffilter))))
+            ffilter = ffilter & sffilter
 
         self._filetree = FileTreeDecorator(self._torrents, self._keymap, self._table, ffilter)
         self._listbox.body = urwidtrees.widgets.TreeListWalker(self._filetree)

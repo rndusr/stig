@@ -113,7 +113,7 @@ class TrackerListWidget(ListWidgetBase):
         if trkfilter is None:
             trkfilter = strkfilter
         elif strkfilter is not None:
-            trkfilter = TorrentTrackerFilter('&'.join((str(trkfilter), str(strkfilter))))
+            trkfilter = trkfilter & strkfilter
 
         if trkfilter is not None:
             for tw in tracker_widgets:
