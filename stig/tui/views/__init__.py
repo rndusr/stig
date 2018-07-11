@@ -307,7 +307,6 @@ class ListWidgetBase(urwid.WidgetWrap):
         if self.title_updater is not None:
             self.title_updater(self.title, ' [%d]' % self.count)
 
-
     def _limit_items(self, existing_widgets):
         """Iterate over filtered widgets"""
         return ()
