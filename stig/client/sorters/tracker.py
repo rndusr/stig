@@ -18,6 +18,7 @@ class _SortSpec(SortSpecBase):
 
 
 class TorrentTrackerSorter(SorterBase):
+    DEFAULT_SORT = 'domain'
     SORTSPECS = {
         'torrent':         _SortSpec(lambda t: t['tname'].lower(),
                                      description='torrent name'),
@@ -54,4 +55,3 @@ class TorrentTrackerSorter(SorterBase):
                                      aliases=('nsc',),
                                      description='next time the torrent is scraped'),
     }
-    DEFAULT_SORT = 'torrent'
