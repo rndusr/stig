@@ -18,6 +18,7 @@ from .setting import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase)
 from ...main import (localcfg, remotecfg, srvapi, aioloop)
 from ...utils.usertypes import (Bool, Option)
+from ...client import SettingFilter
 
 
 def _change_setting(name, new_value, on_success=None):
@@ -167,6 +168,7 @@ class SettingListWidget(ListWidgetBase):
     def __init__(self, srvapi, keymap, sort=None, columns=None, title='Settings'):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._sort = sort
+        self._secondary_filter = None
         localcfg.on_change(self._handle_update)
         remotecfg.on_update(self._handle_update)
         self.refresh()
@@ -197,3 +199,23 @@ class SettingListWidget(ListWidgetBase):
     def sort(self, sort):
         ListWidgetBase.sort.fset(self, sort)
         self.refresh()
+
+    @property
+    def secondary_filter(self):
+        return self._secondary_filter
+
+    @secondary_filter.setter
+    def secondary_filter(self, term):
+        if term is None:
+            self._secondary_filter = None
+        else:
+            self._secondary_filter = SettingFilter(term)
+        self._invalidate()
+
+    def _limit_items(self, setting_widgets):
+        sfilter = self._secondary_filter
+        if sfilter is not None:
+            for sw in setting_widgets:
+                if not sfilter.match(sw.data):
+                    yield sw
+
