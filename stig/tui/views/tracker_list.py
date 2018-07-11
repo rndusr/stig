@@ -26,7 +26,7 @@ class TrackerItemWidget(ItemWidgetBase):
 
     @property
     def id(self):
-        return self.data['tid']
+        return self.data['id']
 
     @property
     def torrent_id(self):
