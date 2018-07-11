@@ -13,6 +13,9 @@ from .tracker import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 from ...client import TorrentTrackerFilter
 
+from ...logging import make_logger
+log = make_logger(__name__)
+
 
 class TrackerItemWidget(ItemWidgetBase):
     palette_unfocused = 'trackerlist'
@@ -118,4 +121,7 @@ class TrackerListWidget(ListWidgetBase):
         if trkfilter is not None:
             for tw in tracker_widgets:
                 if not trkfilter.match(tw.data):
+                    log.debug('%r does not match %r', trkfilter, tw.data['domain'])
                     yield tw
+                else:
+                    log.debug('%r does match %r', trkfilter, tw.data['domain'])
