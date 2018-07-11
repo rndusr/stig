@@ -358,10 +358,14 @@ DEFAULT_KEYMAP = (
     {'context': 'trackerlist', 'key': 's s',     'action': 'sort --add seeds'},
     {'context': 'trackerlist', 'key': 's S',     'action': 'sort --add !seeds'},
 
+    {'context': 'trackerlist', 'key': 's o',     'action': 'sort --add domain'},
+    {'context': 'trackerlist', 'key': 's O',     'action': 'sort --add !domain'},
+    {'context': 'trackerlist', 'key': 's t',     'action': 'sort --add torrent'},
+    {'context': 'trackerlist', 'key': 's T',     'action': 'sort --add !torrent'},
     {'context': 'trackerlist', 'key': 's e',     'action': 'sort --add error'},
     {'context': 'trackerlist', 'key': 's E',     'action': 'sort --add !error'},
-    {'context': 'trackerlist', 'key': 's t',     'action': 'sort --add status'},
-    {'context': 'trackerlist', 'key': 's T',     'action': 'sort --add !status'},
+    {'context': 'trackerlist', 'key': 's a',     'action': 'sort --add status'},
+    {'context': 'trackerlist', 'key': 's A',     'action': 'sort --add !status'},
 
     {'context': 'trackerlist', 'key': 's ,',     'action': 'sort --reset'},
     {'context': 'trackerlist', 'key': 's .',     'action': 'sort --none'},
