@@ -158,12 +158,12 @@ SECONDS = (('y', 31557600),  # 365.25 days
            ('m',       60),
            ('s',        1))
 
-class Timedelta(float):
+class Timedelta(int):
     # To sort unknown and not applicable Timedeltas below the rest, these
     # constants have large values that are very likely never encountered as
-    # actual values.  The added float makes it even less likely.
-    UNKNOWN        = 1e10 + 0.123456789
-    NOT_APPLICABLE = 1e11 + 0.123456789
+    # actual values.
+    UNKNOWN        = 1e10
+    NOT_APPLICABLE = 1e11
 
     _FULL_REGEX = re.compile((r'^(in |-|\+|)(\S+)( ago|)$'), flags=re.IGNORECASE)
     _SPLIT_REGEX = re.compile((r'((?:\d+\.\d+|\d+|\.\d+)[' +
@@ -215,7 +215,7 @@ class Timedelta(float):
         elif self == self.NOT_APPLICABLE:
             return ''
         elif self == 0:
-            return 'now'
+            return '0s'
 
         abs_secs = abs(self)
         for i,(unit,amount) in enumerate(SECONDS):

@@ -141,6 +141,7 @@ class TestTimedelta(unittest.TestCase):
         self.assertEqual(ttypes.Timedelta.from_string('600'), 10*MIN)
 
     def test_from_string__single_unit(self):
+        self.assertEqual(ttypes.Timedelta.from_string('0s'), 0)
         self.assertEqual(ttypes.Timedelta.from_string('1s'), 1)
         self.assertEqual(ttypes.Timedelta.from_string('2m'), 2*MIN)
         self.assertEqual(ttypes.Timedelta.from_string('3h'), 3*HOUR)
@@ -177,7 +178,9 @@ class TestTimedelta(unittest.TestCase):
                 ttypes.Timedelta.from_string(string)
 
     def test_special_values(self):
-        self.assertEqual(str(ttypes.Timedelta(0)), 'now')
+        self.assertEqual(str(ttypes.Timedelta(0)), '0s')
+        self.assertEqual(str(ttypes.Timedelta(0.4)), '0s')
+        self.assertEqual(str(ttypes.Timedelta(-0.4)), '0s')
         self.assertEqual(str(ttypes.Timedelta(ttypes.Timedelta.NOT_APPLICABLE)), '')
         self.assertEqual(str(ttypes.Timedelta(ttypes.Timedelta.UNKNOWN)), '?')
 
@@ -193,6 +196,8 @@ class TestTimedelta(unittest.TestCase):
     def test_preposition_string(self):
         self.assertEqual(ttypes.Timedelta(6 * DAY).with_preposition, 'in 6d')
         self.assertEqual(ttypes.Timedelta(-6 * DAY).with_preposition, '6d ago')
+        self.assertEqual(ttypes.Timedelta(0.3).with_preposition, 'now')
+        self.assertEqual(ttypes.Timedelta(-0.3).with_preposition, 'now')
 
     def test_sorting(self):
         lst = [ttypes.Timedelta(-2 * HOUR),
