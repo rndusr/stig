@@ -16,6 +16,7 @@
       changed slightly (see `help filter`).
     * The completed time of a torrent now defaults to the time it was added if
       it was never downloaded (e.g. if you're the original uploader).
+    * The default filter in peer lists is now 'ip'.
 
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
@@ -24,6 +25,8 @@
       not a TTY).
     * Using a boolean filter as a comparative filter (e.g. 'downloading = asdf')
       now results in an error.
+    * Fix rare crash on peer lists: "TypeError: __str__ returned non-string
+      (type NoneType)"
 
 
 2018-05-07 0.9.0a
