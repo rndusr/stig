@@ -26,6 +26,7 @@ from .filters.torrent import TorrentFilter
 from .filters.file import TorrentFileFilter
 from .filters.peer import TorrentPeerFilter
 from .filters.tracker import TorrentTrackerFilter
+from .filters.setting import SettingFilter
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
