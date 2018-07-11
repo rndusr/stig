@@ -18,7 +18,7 @@ class MockTorrent(TorrentBase):
             type(self).mock_id += 1
             dct['id'] = type(self).mock_id
         if 'name' not in dct:
-            kwargs['name'] = 'MockTorrent #' + str(type(self).mock_id)
+            dct['name'] = 'MockTorrent #' + str(type(self).mock_id)
         self._dct = dct
 
     def __getitem__(self, item):
