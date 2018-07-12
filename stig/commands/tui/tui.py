@@ -325,18 +325,16 @@ class SearchCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Search the content of the focused tab'
-    usage = ('search [<OPTIONS>] <TERM> <TERM> ...',)
-    # TODO
-    # examples = ('',)
+    usage = ('search [<OPTIONS>] <FILTER>',)
     argspecs = (
         { 'names': ('--clear','-c'), 'action': 'store_true',
-          'description': 'Remove previously applied search terms' },
-        { 'names': ('TERM',), 'nargs': '?',
-          'description': 'Filter expression or plain text' },
+          'description': 'Remove previously applied filter' },
+        { 'names': ('FILTER',), 'nargs': '?',
+          'description': 'Filter expression (see `help filter`)' },
     )
     tui = ExpectedResource
 
-    def run(self, clear, TERM):
+    def run(self, clear, FILTER):
         content = self.tui.tabs.focus
         if not hasattr(content, 'secondary_filter'):
             log.error('Current tab does not support searching.')
@@ -347,7 +345,7 @@ class SearchCmd(metaclass=InitCommand):
                 return True
             else:
                 try:
-                    content.secondary_filter = TERM
+                    content.secondary_filter = FILTER
                 except ValueError as e:
                     log.error(e)
                     return False
