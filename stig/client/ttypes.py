@@ -97,7 +97,8 @@ class Status(tuple):
 
 import operator
 class SmartCmpStr(str):
-    """String with smart comparison capabilities
+    """
+    String with smart comparison capabilities
 
     Adds the <, >, <=, >= operators that compare length of strings and makes
     comparison case-insensitive if the other string consists solely of
