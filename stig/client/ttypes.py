@@ -96,7 +96,6 @@ class Status(tuple):
 
 
 import operator
-import unicodedata
 class SmartCmpStr(str):
     """String with smart comparison capabilities
 
