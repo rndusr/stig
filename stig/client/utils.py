@@ -287,16 +287,16 @@ class URL():
         return str(self) == str(other)
 
     def __lt__(self, other):
-        return len(str(self)) < len(str(other))
+        return str(self) < str(other)
 
     def __le__(self, other):
-        return len(str(self)) <= len(str(other))
+        return str(self) <= str(other)
 
     def __gt__(self, other):
-        return len(str(self)) > len(str(other))
+        return str(self) > str(other)
 
     def __ge__(self, other):
-        return len(str(self)) >= len(str(other))
+        return str(self) >= str(other)
 
     def __contains__(self, other):
         return str(other) in str(self)
