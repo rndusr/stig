@@ -98,33 +98,22 @@ class Status(tuple):
 import operator
 class SmartCmpStr(str):
     """
-    String with smart comparison capabilities
-
-    Adds the <, >, <=, >= operators that compare length of strings and makes
-    comparison case-insensitive if the other string consists solely of
-    lower-case characters.
+    String that compares case-insensitively if the other string consists solely
+    of lower case characters.
     """
 
     def __cmp(self, op, other):
         if not isinstance(other, str):
             return NotImplemented
 
-        # Do case-insensitive comparison?
-        # Make copies to avoid infinite recursion.
+        # Do case-insensitive comparison if `other` consists solely of
+        # lower-case characters
         o = str(other)
-        if o == o.lower():
-            s = str(self.lower())
+        if o == o.casefold():
+            s = self.casefold()
         else:
             s = str(self)
-
-        if op in (operator.__eq__, operator.__ne__, operator.__contains__):
-            return op(s, o)
-        elif self.isdigit():
-            return op(int(s), len(o))
-        elif other.isdigit():
-            return op(len(s), int(o))
-        else:
-            return op(len(s), len(o))
+        return op(s, o)
 
     def __lt__(self, other): return self.__cmp(operator.lt, other)
     def __le__(self, other): return self.__cmp(operator.le, other)
@@ -134,8 +123,8 @@ class SmartCmpStr(str):
     def __ge__(self, other): return self.__cmp(operator.ge, other)
     def __contains__(self, other): return self.__cmp(operator.contains, other)
 
-    def __hash__(self):
-        return super().__hash__()
+    # Defining __eq__ mandates defining __hash__ to make instances hashable
+    def __hash__(self): return super().__hash__()
 
 
 class Path(SmartCmpStr):

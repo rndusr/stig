@@ -42,49 +42,33 @@ class TestPercent(unittest.TestCase):
 class TestSmartCmpStr(unittest.TestCase):
     def test_eq_ne(self):
         self.assertTrue(ttypes.SmartCmpStr('foo') == 'foo')
-        self.assertTrue(ttypes.SmartCmpStr('foo') != 'bar')
-        self.assertTrue(ttypes.SmartCmpStr('foo') != '3')
+        self.assertTrue(ttypes.SmartCmpStr('Foo') == 'foo')
+        self.assertTrue(ttypes.SmartCmpStr('foo') != 'Foo')
 
     def test_lt(self):
-        self.assertTrue(ttypes.SmartCmpStr('foo') < '4')
-        self.assertTrue(ttypes.SmartCmpStr('aaa') < 'bbbb')
-
-        self.assertFalse(ttypes.SmartCmpStr('foo') < '3')
-        self.assertFalse(ttypes.SmartCmpStr('def') < 'abc')
+        self.assertFalse(ttypes.SmartCmpStr('foo') < 'foo')
+        self.assertFalse(ttypes.SmartCmpStr('Foo') < 'foo')
+        self.assertFalse(ttypes.SmartCmpStr('foo') < 'Foo')
 
     def test_le(self):
-        self.assertTrue(ttypes.SmartCmpStr('foo') <= '3')
-        self.assertTrue(ttypes.SmartCmpStr('foo') <= '4')
-        self.assertTrue(ttypes.SmartCmpStr('abc') <= 'cba')
-        self.assertTrue(ttypes.SmartCmpStr('abc') <= 'abcd')
-
-        self.assertFalse(ttypes.SmartCmpStr('foo') <= '2')
-        self.assertFalse(ttypes.SmartCmpStr('zoo') <= 'aa')
+        self.assertTrue(ttypes.SmartCmpStr('foo') <= 'foo')
+        self.assertTrue(ttypes.SmartCmpStr('Foo') <= 'foo')
+        self.assertFalse(ttypes.SmartCmpStr('foo') <= 'Foo')
 
     def test_gt(self):
-        self.assertTrue(ttypes.SmartCmpStr('foo') > '2')
-        self.assertTrue(ttypes.SmartCmpStr('bbb') > 'aa')
-
-        self.assertFalse(ttypes.SmartCmpStr('foo') > '3')
-        self.assertFalse(ttypes.SmartCmpStr('abc') > 'def')
+        self.assertFalse(ttypes.SmartCmpStr('foo') > 'foo')
+        self.assertFalse(ttypes.SmartCmpStr('Foo') > 'foo')
+        self.assertTrue(ttypes.SmartCmpStr('foo') > 'Foo')
 
     def test_ge(self):
-        self.assertTrue(ttypes.SmartCmpStr('foo') >= '3')
-        self.assertTrue(ttypes.SmartCmpStr('foo') >= '2')
-        self.assertTrue(ttypes.SmartCmpStr('zoo') >= 'ooz')
-        self.assertTrue(ttypes.SmartCmpStr('zoo') >= 'ab')
-
-        self.assertFalse(ttypes.SmartCmpStr('foo') >= '4')
-        self.assertFalse(ttypes.SmartCmpStr('foo') >= 'zooo')
+        self.assertTrue(ttypes.SmartCmpStr('foo') >= 'foo')
+        self.assertTrue(ttypes.SmartCmpStr('Foo') >= 'foo')
+        self.assertTrue(ttypes.SmartCmpStr('foo') >= 'Foo')
 
     def test_contains(self):
-        # Case-insensitive
-        self.assertTrue('oo' in ttypes.SmartCmpStr('foo'))
-        self.assertTrue('oo' in ttypes.SmartCmpStr('FOO'))
-
-        # Case-sensitive
-        self.assertFalse('OO' in ttypes.SmartCmpStr('foo'))
-        self.assertTrue('OO' in ttypes.SmartCmpStr('FOO'))
+        self.assertTrue('foo' in ttypes.SmartCmpStr('foo'))
+        self.assertTrue('foo' in ttypes.SmartCmpStr('Foo'))
+        self.assertFalse('Foo' in ttypes.SmartCmpStr('foo'))
 
 
 class TestPath(unittest.TestCase):

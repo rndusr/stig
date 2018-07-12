@@ -190,30 +190,22 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(result, ('foo', 'bar', 'baz'))
 
     def test_larger_operator_with_strings(self):
-        tlist = (MockTorrent({'name': 'x'}),
-                 MockTorrent({'name': 'xx'}),
-                 MockTorrent({'name': 'xxx'}))
-        result = SingleTorrentFilter('name>2').apply(tlist, key='name')
-        self.assertEqual(set(result), {'xxx'})
-        result = SingleTorrentFilter('name>=2').apply(tlist, key='name')
-        self.assertEqual(set(result), {'xx', 'xxx'})
-        result = tuple(SingleTorrentFilter('name>yy').apply(tlist, key='name'))
-        self.assertEqual(result, ('xxx',))
-        result = SingleTorrentFilter('name>=yy').apply(tlist, key='name')
-        self.assertEqual(set(result), {'xx', 'xxx'})
+        tlist = (MockTorrent({'name': 'a'}),
+                 MockTorrent({'name': 'b'}),
+                 MockTorrent({'name': 'c'}))
+        result = SingleTorrentFilter('name>a').apply(tlist, key='name')
+        self.assertEqual(set(result), {'b', 'c'})
+        result = SingleTorrentFilter('name>=b').apply(tlist, key='name')
+        self.assertEqual(set(result), {'b', 'c'})
 
     def test_smaller_operator_with_strings(self):
-        tlist = (MockTorrent({'name': 'x'}),
-                 MockTorrent({'name': 'xx'}),
-                 MockTorrent({'name': 'xxx'}))
-        result = tuple(SingleTorrentFilter('name<2').apply(tlist, key='name'))
-        self.assertEqual(result, ('x',))
-        result = tuple(SingleTorrentFilter('name<=2').apply(tlist, key='name'))
-        self.assertEqual(result, ('x', 'xx'))
-        result = tuple(SingleTorrentFilter('name<yy').apply(tlist, key='name'))
-        self.assertEqual(result, ('x',))
-        result = tuple(SingleTorrentFilter('name<=yy').apply(tlist, key='name'))
-        self.assertEqual(result, ('x', 'xx'))
+        tlist = (MockTorrent({'name': 'a'}),
+                 MockTorrent({'name': 'b'}),
+                 MockTorrent({'name': 'c'}))
+        result = tuple(SingleTorrentFilter('name<c').apply(tlist, key='name'))
+        self.assertEqual(result, ('a', 'b'))
+        result = tuple(SingleTorrentFilter('name<=b').apply(tlist, key='name'))
+        self.assertEqual(result, ('a', 'b'))
 
     def test_boolean_filter_gets_value(self):
         tlist = (MockTorrent({'name': 'foo', 'rate-down': 0}),
