@@ -38,7 +38,8 @@ class CallbackDict(dict):
 
 from collections import abc
 def listify_args(args):
-    """Make list from `args`
+    """
+    Make list from `args`
 
     Ensure `args` is a string and use split(',') to turn it into a list.  If
     `args` is any non-string iterable, recursively listify each item and append
@@ -64,7 +65,8 @@ def listify_args(args):
 
 
 def log_msgs(logger, msgs, quiet=False):
-    """Log messages to `logger`
+    """
+    Log messages to `logger`
 
     `msgs` is an iterable of strings or exceptions.  Strings are logged to
     level INFO, exceptions are logged to level ERROR.
