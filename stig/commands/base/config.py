@@ -43,7 +43,7 @@ class RcCmdbase(metaclass=InitCommand):
         from ...settings.defaults import DEFAULT_RCFILE
         import os
 
-        if FILE[0] not in (os.sep, '.', '~'):
+        if not os.path.isabs(FILE) and not os.path.exists(FILE):
             default_dir = os.path.dirname(DEFAULT_RCFILE)
             FILE = os.path.join(default_dir, FILE)
 
