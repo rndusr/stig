@@ -11,8 +11,6 @@
 
 """Mixin classes that are common between TUI and CLI commands"""
 
-from .. import utils
-
 
 class get_single_torrent():
     async def get_single_torrent(self, tfilter, keys=()):
