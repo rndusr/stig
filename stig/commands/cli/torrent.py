@@ -30,11 +30,13 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, TORRENT_COLUMNS)
 
-        # Get wanted torrents and sort them
+        # Get needed keys
         if tfilter is None:
             keys = set(sort.needed_keys)
         else:
             keys = set(sort.needed_keys + tfilter.needed_keys)
+
+        # Get wanted torrents and sort them
         for colname in columns:
             keys.update(TORRENT_COLUMNS[colname].needed_keys)
         response = await self.make_request(
@@ -42,6 +44,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
             quiet=True)
         torrents = sort.apply(response.torrents)
 
+        # Show table of found torrents
         if torrents:
             print_table(torrents, columns, TORRENT_COLUMNS)
         return len(torrents) > 0
