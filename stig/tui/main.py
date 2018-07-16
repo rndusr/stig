@@ -67,8 +67,11 @@ def load_geoip_db():
     Load geolocation database in a background task
     """
     def _handle_geoip_load_result(task):
+        import asyncio
         try:
             task.result()
+        except asyncio.CancelledError:
+            pass
         except geoip.GeoIPError as e:
             log.error(e)
     task = aioloop.create_task(geoip.load(loop=aioloop))
