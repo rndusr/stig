@@ -55,7 +55,7 @@ else:
 
     class GeoIP(GeoIPBase):
         available = True
-        max_age = 60*60*24*7
+        max_age = 60*60*24*30
         timeout = 5
         url = 'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz'
 
