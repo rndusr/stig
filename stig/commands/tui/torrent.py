@@ -27,7 +27,6 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
                                 tfilter=tfilter, sort=sort, columns=columns,
                                 markable_items=True)
-        return True
 
 
 class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
@@ -57,8 +56,6 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
                 pass
         summaryw.title_updater = set_tab_title
 
-        return True
-
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.polling_frenzy, mixin.make_request):
@@ -75,7 +72,7 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.ask_yes_no):
     provides = {'tui'}
     cmdmgr = ExpectedResource
-    CONFIRMATION_TAB_TITLE = "Removal Confirmation"
+    CONFIRMATION_TAB_TITLE = 'Removal Confirmation'
 
     async def show_list_of_hits(self, tfilter):
         cmd = 'tab --title %r ls --sort name %s' % (self.CONFIRMATION_TAB_TITLE, tfilter)

@@ -47,7 +47,6 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         # Show table of found torrents
         if torrents:
             print_table(torrents, columns, TORRENT_COLUMNS)
-        return len(torrents) > 0
 
 
 class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
@@ -64,17 +63,15 @@ class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
         response = await self.make_request(
             self.srvapi.torrent.torrents((torrent_id,), keys=needed_keys),
             quiet=True)
-        if len(response.torrents) < 1:
-            return False
+        if not response.torrents:
+            raise CmdError()
         else:
             torrent = response.torrents[0]
 
-        # Whether to print for a human or for a machine to read our output
         if TERMSIZE.columns is None:
             self._machine_readable(torrent)
         else:
             self._human_readable(torrent)
-        return True
 
     def _human_readable(self, torrent):
         from ...views.summary import SECTIONS
@@ -84,16 +81,16 @@ class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
                           for item in section['items'])
 
         for section in SECTIONS:
-            log.info('\033[1m' + section['title'].upper() + '\033[0m')
+            print('\033[1m' + section['title'].upper() + '\033[0m')
             for item in section['items']:
-                log.info('  %s: %s', item.label.rjust(label_width), item.human_readable(torrent))
+                print('  %s: %s' % (item.label.rjust(label_width), item.human_readable(torrent)))
 
     def _machine_readable(self, torrent):
         from ...views.summary import SECTIONS
 
         for section in SECTIONS:
             for item in section['items']:
-                log.info('%s\t%s', item.label.lower(), item.machine_readable(torrent))
+                print('%s\t%s' % (item.label.lower(), item.machine_readable(torrent)))
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,

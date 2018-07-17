@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource)
+from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
@@ -68,14 +68,13 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                                            discover_torrent=False)
             sort = self.get_torrent_sorter(sort)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             log.debug('Listing %s torrents sorted by %s', tfilter, sort)
             if asyncio.iscoroutinefunction(self.make_torrent_list):
-                return await self.make_torrent_list(tfilter, sort, columns)
+                await self.make_torrent_list(tfilter, sort, columns)
             else:
-                return self.make_torrent_list(tfilter, sort, columns)
+                self.make_torrent_list(tfilter, sort, columns)
 
 
 class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
@@ -99,18 +98,17 @@ class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
                                            discover_torrent=True,
                                            prefer_focused=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             torrent = await self.get_single_torrent(tfilter, keys=('id', 'name'))
             if not torrent:
-                return False
+                raise CmdError()
             else:
                 log.debug('Showing summary of torrent %r: %r', tfilter, torrent)
                 if asyncio.iscoroutinefunction(self.display_summary):
-                    return await self.display_summary(torrent['id'])
+                    await self.display_summary(torrent['id'])
                 else:
-                    return self.display_summary(torrent['id'])
+                    self.display_summary(torrent['id'])
 
 
 class AddTorrentsCmdbase(metaclass=InitCommand):
@@ -145,7 +143,9 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         # Update torrentlist AFTER all 'add' requests
         if force_torrentlist_update and hasattr(self, 'polling_frenzy'):
             self.polling_frenzy()
-        return success
+
+        if not success:
+            raise CmdError()
 
 
 class MoveTorrentsCmdbase(metaclass=InitCommand):
@@ -174,12 +174,12 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             response = await self.make_request(self.srvapi.torrent.move(tfilter, PATH),
                                                polling_frenzy=True)
-            return response.success
+            if not response.success:
+                raise CmdError()
 
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
@@ -213,32 +213,36 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             async def do_remove(tfilter=tfilter, delete_files=delete_files):
                 response = await self.make_request(
                     self.srvapi.torrent.remove(tfilter, delete=delete_files),
                     polling_frenzy=True)
-                return response.success
+                if not response.success:
+                    raise CmdError()
 
             async def do_keep(tfilter=tfilter):
-                log.error(('Keeping %s torrents: Too many hits ' % tfilter) +
-                          '(use --force or increase remove.max-hits setting)')
+                self.error(('Keeping %s torrents: Too many hits ' % tfilter) +
+                           '(use --force or increase remove.max-hits setting)')
 
             response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
+            success = hits > 0
             if force or self.cfg['remove.max-hits'] < 0 or hits < self.cfg['remove.max-hits']:
                 return await do_remove()
             else:
                 await self.show_list_of_hits(tfilter)
-                question = 'Are you sure you want to remove %d torrent%s' % (
-                    hits, '' if hits == 1 else 's')
-                if delete_files:
-                    question += ' and their files'
-                question += '?'
-                return await self.ask_yes_no(question, yes=do_remove, no=do_keep,
-                                             after=self.remove_list_of_hits)
+                if hits > 0:
+                    question = 'Are you sure you want to remove %d torrent%s' % (
+                        hits, '' if hits == 1 else 's')
+                    if delete_files:
+                        question += ' and their files'
+                    question += '?'
+                    success = await self.ask_yes_no(question, yes=do_remove, no=do_keep,
+                                                    after=self.remove_list_of_hits)
+                if not success:
+                    raise CmdError()
 
 
 # Argument definitions that are shared between commands
@@ -274,8 +278,7 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             if toggle:
                 response = await self.make_request(
@@ -285,7 +288,8 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
                 response = await self.make_request(
                     self.srvapi.torrent.start(tfilter, force=force),
                     polling_frenzy=True)
-            return response.success
+            if not response.success:
+                raise CmdError()
 
 
 class StopTorrentsCmdbase(metaclass=InitCommand):
@@ -311,8 +315,7 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             if toggle:
                 response = await self.make_request(
@@ -322,7 +325,8 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
                 response = await self.make_request(
                     self.srvapi.torrent.stop(tfilter),
                     polling_frenzy=True)
-            return response.success
+            if not response.success:
+                raise CmdError()
 
 
 class VerifyTorrentsCmdbase(metaclass=InitCommand):
@@ -346,9 +350,9 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             response = await self.make_request(self.srvapi.torrent.verify(tfilter),
                                                polling_frenzy=False)
-            return response.success
+            if not response.success:
+                raise CmdError()
