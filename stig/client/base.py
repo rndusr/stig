@@ -69,7 +69,7 @@ class TorrentFileTreeBase(abc.Mapping):
     nodetype = 'parent'
 
     def __init__(self, path, *args, **kwargs):
-        self._path = os.sep.join(path)
+        self._path = path
         self._items = NotImplemented
 
     @property

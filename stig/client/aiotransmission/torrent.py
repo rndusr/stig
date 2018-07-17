@@ -199,18 +199,18 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
     def __init__(self, torrent_id, torrent_location, filelist, path):
         log.debug('Creating new TorrentFileTree for torrent %r: %r', torrent_id, path)
-        super().__init__(path)
+        path_str = os.sep.join(path)
+        super().__init__(os.path.join(torrent_location, path_str))
 
         items = {}
         subdirs = {}
-
         for entry in filelist:
             parts = entry['name'].split(os.sep, 1)
             if len(parts) == 1:
                 filename = parts[0]
                 items[filename] = ttypes.TorrentFile(
                     tid=torrent_id, id=entry['id'],
-                    name=entry['name'], path=path, location=torrent_location,
+                    name=entry['name'], path=path_str, location=torrent_location,
                     size_total=entry['length'],
                     size_downloaded=entry['bytesCompleted'],
                     is_wanted=entry['wanted'],

@@ -59,18 +59,11 @@ class ListFilesCmd(base.ListFilesCmdbase,
         `ffilter` must be a TorrentFileFilter instance or None.
         """
         if TERMSIZE.columns is None:
-            def indent_file_name(node):
-                path = node['path']
-                if path != '.':
-                    node['name'] = os.path.join(path, node['name'])
-                node['name'] = os.path.join(node['location'], node['name'])
-
-            def indent_directory_name(node):
-                node['name'] = node['path']
+            def indent(node):
+                node['name'] = node['path-absolute']
         else:
-            def indent_file_name(node):
+            def indent(node):
                 node['name'] = '%s%s' % ('  '*(_indent_level), node['name'])
-            indent_directory_name = indent_file_name
 
         from ...views.file import create_directory_data
         flist = []
@@ -79,7 +72,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             if value.nodetype == 'leaf':
                 if ffilter is None or ffilter.match(value):
                     filenode = dict(value)  # Copy original TorrentFile
-                    indent_file_name(filenode)
+                    indent(filenode)
                     flist.append(filenode)
                 else:
                     filtered_count += 1
@@ -88,7 +81,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                 sub_flist, sub_filtered_count = self._flatten_tree(value, ffilter, _indent_level+1)
                 if TERMSIZE.columns is not None:
                     dirnode = create_directory_data(key, value, sub_filtered_count)
-                    indent_directory_name(dirnode)
+                    indent(dirnode)
                     flist.append(dirnode)
                 flist.extend(sub_flist)
 
