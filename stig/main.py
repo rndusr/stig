@@ -68,7 +68,17 @@ geoip.enabled = localcfg['geoip']
 
 
 from .commands import CommandManager
-cmdmgr = CommandManager(loop=aioloop)
+def _on_cmd_error(process):
+    msg = str(process.exception)
+    if msg:
+        if process.name:
+            log.error('%s: %s' % (process.name, msg))
+        else:
+            log.error(msg)
+cmdmgr = CommandManager(loop=aioloop,
+                        info_handler=lambda msg: log.info(msg),
+                        error_handler=lambda msg: log.error(msg),
+                        on_failure=_on_cmd_error)
 cmdmgr.resources.update(aioloop=aioloop,
                         srvapi=srvapi,
                         cfg=localcfg,
@@ -143,7 +153,7 @@ def run():
 
     def run_commands():
         for cmdline in rclines:
-            success = cmdmgr.run_sync(cmdline, on_error=log.error)
+            success = cmdmgr.run_sync(cmdline)
             # Ignored commands return None, which we consider a success here
             # because TUI commands like 'tab' in the rc file should have no
             # effect at all when in CLI mode.
@@ -152,7 +162,7 @@ def run():
 
         # Exit if CLI commands fail
         if clicmds:
-            success = cmdmgr.run_sync(clicmds, on_error=log.error)
+            success = cmdmgr.run_sync(clicmds)
             if not success:
                 return False
 

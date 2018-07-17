@@ -9,7 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Create and manage commands
+"""
+Create and manage commands
 
 Commands can be created anywhere by defining a class with metaclass set to
 InitCommand.
@@ -21,9 +22,10 @@ Every command class must have a 'run' method, which is called when the command
 is executed. It can be a coroutine function or a normal, synchronous function.
 The command's arguments are passed to 'run' as keywords.
 
-The 'run' method should return True on success and False on failure.  It may
-also raise CmdError.  If False is returned, it is assumed that any errors have
-already been reported (i.e. logged to the ERROR level).
+The return value of the 'run' method is ignored.  It must raise CmdError on
+failure.  The argument to CmdError is used as the error message.  It may also
+print errors via its 'error' method or informational messages via its 'info'
+method.
 
 If a command executes multiple actions (e.g. pausing two torrents) and any of
 those actions fails, it should be a failure (e.g. first torrent was paused,
@@ -33,13 +35,13 @@ Every command class must have the following class attributes:
 
     run (callable):            Method that is called when the command runs
     name (string):             Name of the command
-    category (string):         Name of the category (used only for `help commands`)
+    category (string):         Name of the command category (used by `help commands`)
     provides (set of strings): Supported interfaces ('cli' and/or 'tui')
     description (string):      One-line description for command
 
 These class attributes are optional:
 
-    aliases (sequence of strings):   Alternative names
+    aliases (sequence of strings):   Alternative command names
     argspecs (sequence of mappings): argparse specs for arguments
     usage (sequence of strings):     Syntax string of any arguments (in man pages
                                      this is called SYNOPSIS)
@@ -60,7 +62,7 @@ are exceptions:
   as the positional arguments to add_argument.  The first string is used as
   the keyword when providing the argument to the run method.
 
-- 'description' must be set to a string that describes what the command does.
+- 'description' must be set to a string that describes what the argument does.
 
 - 'nargs' can be the string 'REMAINDER', which is replaced with the value of
   argparse.REMAINDER.
@@ -89,6 +91,7 @@ from inspect import getmembers
 from importlib import import_module
 from collections import abc
 from .utils import CallbackDict
+import sys
 
 
 def ExpectedResource(name):
@@ -132,7 +135,8 @@ _OPTIONAL_CMD_ATTRS = {
     'aliases': (), 'usage': (), 'examples': (), 'argspecs': (), 'more_sections': {}
 }
 def InitCommand(clsname, bases, attrs):
-    """Class factory that inits all commands
+    """
+    Class factory that inits all commands
 
     This takes care of inheritance, complains about missing mandatory class
     attributes, adds defaults for optional class attributes, etc.
@@ -199,14 +203,17 @@ def InitCommand(clsname, bases, attrs):
 
 
 class _CommandBase():
-    """Base for all commands classes"""
-    def __init__(self, args=(), on_success=None, on_error=None, loop=None, **kwargs):
-        for k,v in kwargs.items():
-            setattr(self, k, v)
+    """Base for all command classes"""
+    def __init__(self, args=(), on_success=None, on_failure=None,
+                 info_handler=None, error_handler=None, loop=None, **kwargs):
         self._loop = loop
         self._args = args
+        for k,v in kwargs.items():
+            setattr(self, k, v)
+        self._info_handler = info_handler or sys.stdout.write
+        self._error_handler = error_handler or sys.stderr.write
         self.on_success = on_success
-        self.on_error = on_error
+        self.on_failure = on_failure
         self._task = None
         self._success = None
         self._is_async = False
@@ -216,8 +223,7 @@ class _CommandBase():
         try:
             args_parsed = self._argparser.parse_args(args)
         except CmdArgError as e:
-            self._finish(success=False,
-                         exception=CmdArgError('{}: {}'.format(self.name, e)))
+            self._finish(success=False, exception=CmdArgError(e))
         else:
             # Create keyword args for run() method
             kwargs = {}
@@ -240,21 +246,11 @@ class _CommandBase():
 
     def _catch_exceptions(self, callabee, *args, **kwargs):
         try:
-            success = callabee(*args, **kwargs)
+            callabee(*args, **kwargs)
         except Exception as e:
-            success = False
-            exc = e
+            self._finish(success=False, exception=e)
         else:
-            exc = None
-        self._handle_result(success, exc)
-
-    def _handle_result(self, success, exception):
-        if success:
             self._finish(success=True)
-        else:
-            if exception is None:
-                exception = CmdError()
-            self._finish(success=False, exception=exception)
 
     def _finish(self, success, exception=None):
         if self.finished:
@@ -268,12 +264,13 @@ class _CommandBase():
                 log.debug('Calling success callback: %r', self.on_success)
                 self.on_success(self)
         else:
-            if self.on_error is not None:
-                log.debug('Calling error callback: %r', self.on_error)
-                self.on_error(self.exception)
+            if self.on_failure is not None:
+                log.debug('Calling failure callback: %r', self.on_failure)
+                self.on_failure(self.exception)
 
     def wait_sync(self):
-        """Wait synchronously until this command has finished
+        """
+        Wait synchronously until this command has finished
 
         This uses the run_until_complete() method, so the loop must not be
         running or closed.
@@ -292,17 +289,25 @@ class _CommandBase():
         if not self.finished:
             log.debug('Waiting until finished: %r', self)
             try:
-                success = await self._task
+                await self._task
             except Exception as e:
-                self._handle_result(success=False, exception=e)
+                self._finish(success=False, exception=e)
             else:
-                self._handle_result(success=success, exception=None)
+                self._finish(success=True, exception=None)
 
     def __del__(self):
         """Raise stored, unraised exception"""
         exc = self.exception
         if exc and not self._exc_fetched:
             raise exc
+
+    def info(self, msg):
+        """Show info message (use this as your stdout)"""
+        self._info_handler('%s: %s' % (self.name, msg))
+
+    def error(self, msg):
+        """Show error message (use this as your stderr)"""
+        self._error_handler('%s: %s' % (self.name, msg))
 
     @property
     def loop(self):
@@ -358,7 +363,7 @@ def _dummy_process(**kwargs):
     # This creates a rudimentary process with only the needed attributes
     # so the caller can report success or failure as if it were a proper
     # _CommandBase derivative.
-    attrs = {'finished': True, 'success': False, 'exception': None}
+    attrs = {'name': None, 'finished': True, 'success': False, 'exception': None}
     attrs.update(kwargs)
     def __repr__(self):
         kws = ', '.join('%s=%r' % (k,v) for k,v in attrs.items()
@@ -368,17 +373,44 @@ def _dummy_process(**kwargs):
     return type('FakeCommand', (), attrs)()
 
 
+
 class CommandManager():
-    def __init__(self, loop=None, pre_run_hook=None):
+    def __init__(self, loop=None, pre_run_hook=None, on_success=None, on_failure=None,
+                 info_handler=None, error_handler=None):
         self.loop = loop if loop is not None else asyncio.get_event_loop()
+        self.on_success = on_success
+        self.on_failure = on_failure
+        self._info_handler = info_handler
+        self._error_handler = error_handler
         self.pre_run_hook = pre_run_hook
         self._cmds = {}
         self._active_interface = None
         self._resources = CallbackDict(callback=self._update_resources)
         self._resources.update(cmdmgr=self)
 
+    @property
+    def on_success(self):
+        """Instance-wide callback that gets called when a command succeeded"""
+        return self._on_success
+
+    @on_success.setter
+    def on_success(self, callback):
+        assert callable(callback) or callback is None, 'Not a callable or None: %r' % callback
+        self._on_success = callback
+
+    @property
+    def on_failure(self):
+        """Instance-wide callback that gets called when a command failed"""
+        return self._on_failure
+
+    @on_failure.setter
+    def on_failure(self, callback):
+        assert callable(callback) or callback is None, 'Not a callable or None: %r' % callback
+        self._on_failure = callback
+
     def load_cmds_from_module(self, *modules):
-        """Import modules and look for command classes
+        """
+        Import modules and look for command classes
 
         Command classes must have set metaclass=InitCommand.
         """
@@ -387,13 +419,12 @@ class CommandManager():
             mod = import_module(modname)
             for member in getmembers(mod):
                 cmdcls = member[1]
-                # We're interested in classes that inherit from _CommandBase
-                # but are not _CommandBase.
                 if iscmdcls(cmdcls):
                     self.register(cmdcls)
 
     def register(self, cmdcls):
-        """Add new command
+        """
+        Add new command
 
         cmdcls: command class (must have InitCommand as metaclass)
         """
@@ -454,7 +485,8 @@ class CommandManager():
         return tuple(cmds)
 
     def get_cmdcls(self, cmdname, interface='ACTIVE', exclusive=False):
-        """Resolve command name `cmdname` to command class
+        """
+        Resolve command name `cmdname` to command class
 
         If `interface` is 'ACTIVE', return command class from
         `active_commands`.
@@ -467,7 +499,7 @@ class CommandManager():
         If `exclusive` evaluates to True, the returned command class does not
         support any other interfaces.
 
-        Returns None if not matching command class is registered.
+        Returns None if no matching command class is registered.
         """
         if interface == 'ACTIVE':
             cmdpool = self.active_commands
@@ -506,25 +538,30 @@ class CommandManager():
             categories.add(cmd.category)
         return tuple(sorted(categories))
 
-
-    def _maybe_run_callbacks(self, process, on_success, on_error):
+    def _maybe_run_callbacks(self, process, on_success, on_failure):
         exc = process.exception
         if process.success:
             if on_success is not None:
                 on_success(process)
+            elif self.on_success is not None:
+                self.on_success(process)
             return True
-        elif on_error is not None and isinstance(exc, CmdError):
-            # A command raises an empty CmdError if its run() method returned
-            # False.  That should mean the run() method already reported any
-            # errors, so we ignore that error here.
-            if exc.args:
-                log.debug('Calling %r with %r', on_error, exc)
-                on_error(exc)
-                return False
+
+        elif isinstance(exc, CmdError):
+            # Forward CmdErrors to error handler if possible
+            if on_failure is not None:
+                log.debug('Calling %r with %r', on_failure, exc)
+                on_failure(process)
+            elif self.on_failure is not None:
+                log.debug('Calling %r with %r', self.on_failure, exc)
+                self.on_failure(process)
             else:
-                log.debug('Ignoring empty CmdError')
-                return False
+                log.debug('Re-raising %r', exc)
+                raise exc
+            return False
+
         elif exc is not None:
+            # Always raise non-CmdError exceptions
             log.debug('Re-raising %r', exc)
             raise exc
 
@@ -540,63 +577,60 @@ class CommandManager():
         else:
             return process.success
 
-    def run_sync(self, commands, on_success=None, on_error=None, **kwargs):
-        """Run `commands`, return boolean result
+    def run_sync(self, commands, on_success=None, on_failure=None, **kwargs):
+        """
+        Run `commands`, return boolean result
 
-        Use this method in non-async code. The asyncio loop must be not
-        running and not closed.
+        Use this method in non-async code. The asyncio loop must be not running
+        and not closed.
 
-        command: See `split_cmdchain`
-        block: Whether to return immediately or wait for an async command to
-               finish (if enabled, the asyncio event loop must be stopped and
-               not closed)
-        on_error: Callable that gets any CmdErrors
+        command:    See `split_cmdchain`
+        on_success: Callable that gets the command instance if the command succeeds
+        on_failure: Callable that gets the command instance if the command fails
 
-        Any other keyword arguments are forwarded to the command instance
-        which makes them available as attributes so the 'run' method can
-        access them via its instance (self).
+        Any other keyword arguments are forwarded to the command instance which
+        makes them available as attributes so the 'run' method can access them
+        via its instance (self).
 
-        Any exceptions from the command (besides CmdErrors) are re-raised
-        unless.  If `on_error` is None, CmdErrors are also re-raised.
-
-        Returns True if the command chain ran successfully, False if it
-        failed, and None if it is async and `block` is False.
+        Returns True if all `commands` ran successfully, False otherwise.
         """
         log.debug('Running command chain synchronously: %r', commands)
         try:
             cmdchain = self.split_cmdchain(commands)
         except CmdError as e:
             process = _dummy_process(exception=e)
-            self._maybe_run_callbacks(process, on_success, on_error)
+            return self._maybe_run_callbacks(process, on_success, on_failure)
         else:
             process = None
+            reraise = not on_failure and not self.on_failure
             for process in self._yield_from_cmdchain(cmdchain, **kwargs):
                 if not process.finished:
                     process.wait_sync()
-                self._maybe_run_callbacks(process, on_success, on_error)
-            return self._handle_final_process(process, reraise=not bool(on_error))
+                self._maybe_run_callbacks(process, on_success, on_failure)
+            return self._handle_final_process(process, reraise=reraise)
 
-    async def run_async(self, commands, on_success=None, on_error=None, **kwargs):
-        """Same as `run_sync` but for async code"""
+    async def run_async(self, commands, on_success=None, on_failure=None, **kwargs):
+        """Same as `run_sync` but in asynchronous contexts"""
         log.debug('Running command chain asynchronously: %r', commands)
         try:
             cmdchain = self.split_cmdchain(commands)
         except CmdError as e:
             process = _dummy_process(exception=e)
-            self._maybe_run_callbacks(process, on_success, on_error)
+            self._maybe_run_callbacks(process, on_success, on_failure)
         else:
             process = None
+            reraise = not on_failure and not self.on_failure
             for process in self._yield_from_cmdchain(cmdchain, **kwargs):
                 if not process.finished:
                     await process.wait_async()
-                self._maybe_run_callbacks(process, on_success, on_error)
-        return self._handle_final_process(process, reraise=not bool(on_error))
+                self._maybe_run_callbacks(process, on_success, on_failure)
+        return self._handle_final_process(process, reraise=reraise)
 
-    def run_task(self, commands, on_success=None, on_error=None, **kwargs):
-        """Return task that runs `run_async`"""
+    def run_task(self, commands, on_success=None, on_failure=None, **kwargs):
+        """Return Task that runs `run_async`"""
         log.debug('Creating command chain task: %r', commands)
-        return self.loop.create_task(self.run_async(
-            commands, on_success, on_error, **kwargs))
+        return self.loop.create_task(
+            self.run_async(commands, on_success, on_failure, **kwargs))
 
     def _yield_from_cmdchain(self, cmdchain, **kwargs):
         prev_process_success = True
@@ -612,7 +646,7 @@ class CommandManager():
             else:
                 process = self._create_process(cmdline, **kwargs)
                 yield process
-                assert process.finished, 'Not finished: {!r}'.format(process)
+                assert process.finished, 'Not finished: %r' % process
                 prev_process_success = process.success
 
     def _create_process(self, cmdline, **kwargs):
@@ -642,11 +676,15 @@ class CommandManager():
                            .format(cmdname, self._active_interface))
             process = _dummy_process(exception=exc)
         else:
-            process = cmdcls(cmdargs, loop=self.loop, **kwargs)
+            process = cmdcls(cmdargs, loop=self.loop,
+                             info_handler=self._info_handler,
+                             error_handler=self._error_handler,
+                             **kwargs)
         return process
 
     def split_cmdchain(self, commands):
-        """Yield split commands and command operators
+        """
+        Yield split commands and command operators
 
         commands: Command string or iterable
 

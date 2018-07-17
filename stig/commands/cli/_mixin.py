@@ -23,7 +23,7 @@ class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
         """Awaits request coroutine and logs messages; returns response"""
         response = await request_coro
-        utils.log_msgs(log, response.msgs, quiet)
+        utils.log_msgs(self, response.msgs, quiet)
         return response
 
 

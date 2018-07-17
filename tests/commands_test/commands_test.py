@@ -12,13 +12,11 @@ class TestCommand(asynctest.TestCase):
         def run_sync(self_, A, B):
             assert isinstance(self_, _CommandBase)
             self.div_result = A / B
-            return True
 
         async def run_async(self_, A, B):
             assert isinstance(self_, _CommandBase)
             await asyncio.sleep(0, loop=self_.loop)
             self.div_result = A / B
-            return True
 
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
                     {'names': ('B',), 'type': int, 'description': 'Second number'})
@@ -74,7 +72,7 @@ class TestCommand(asynctest.TestCase):
         def run(self, A, B):
             nonlocal result
             result = self.template.format(number=int(int(A)/int(B)))
-            return True
+
         cmdcls = make_cmdcls(run=run, argspecs=argspecs,
                              template=ExpectedResource)
         cmdcls.template = 'Result: {number}'
@@ -100,7 +98,7 @@ class TestCommand(asynctest.TestCase):
     @asynctest.ignore_loop
     def test_argparser_error(self):
         process = self.div_sync(['10', '2', '--frobnicate'], loop=None,
-                                on_success=self.cb_success, on_error=self.cb_error)
+                                on_success=self.cb_success, on_failure=self.cb_error)
 
         self.assertEqual(process.finished, True)
         self.assertEqual(process.success, False)
@@ -132,22 +130,22 @@ class TestCommand(asynctest.TestCase):
     @asynctest.ignore_loop
     def test_run_does_not_raise_exception_with_stopped_loop(self):
         process = self.div_sync(['10', '2'], loop=None,
-                                on_success=self.cb_success, on_error=self.cb_error)
+                                on_success=self.cb_success, on_failure=self.cb_error)
         self.check(process, result=5, calls_success=1)
 
         process = self.div_async(['10', '2'], loop=self.loop,
-                                 on_success=self.cb_success, on_error=self.cb_error)
+                                 on_success=self.cb_success, on_failure=self.cb_error)
         process.wait_sync()
         self.check(process, result=5, calls_success=2)
 
     @asynctest.ignore_loop
     def test_run_raises_exception_with_stopped_loop(self):
         process = self.div_sync(['10', '0'], loop=None,
-                                on_success=self.cb_success, on_error=self.cb_error)
+                                on_success=self.cb_success, on_failure=self.cb_error)
         self.check(process, result=None, calls_error=1, exccls=ZeroDivisionError)
 
         process = self.div_async(['10', '0'], loop=self.loop,
-                                 on_success=self.cb_success, on_error=self.cb_error)
+                                 on_success=self.cb_success, on_failure=self.cb_error)
         process.wait_sync()
         self.check(process, result=None, calls_error=2, exccls=ZeroDivisionError)
 
@@ -155,24 +153,23 @@ class TestCommand(asynctest.TestCase):
     ### Test running commands with running asyncio loop
 
     async def test_run_does_not_raise_exception_with_running_loop(self):
-
         process = self.div_sync(['10', '2'], loop=None,
-                                on_success=self.cb_success, on_error=self.cb_error)
+                                on_success=self.cb_success, on_failure=self.cb_error)
         self.check(process, result=5, calls_success=1)
 
         process = self.div_async(['10', '2'], loop=self.loop,
-                                 on_success=self.cb_success, on_error=self.cb_error)
+                                 on_success=self.cb_success, on_failure=self.cb_error)
         await process.wait_async()
         self.check(process, result=5, calls_success=2)
 
     @asynctest.ignore_loop
     async def test_run_raises_exception(self):
         process = self.div_sync(['10', '0'], loop=None,
-                                on_success=self.cb_success, on_error=self.cb_error)
+                                on_success=self.cb_success, on_failure=self.cb_error)
         self.check(process, result=None, calls_error=1, exccls=ZeroDivisionError)
 
         process = self.div_async(['10', '0'], loop=self.loop,
-                                 on_success=self.cb_success, on_error=self.cb_error)
+                                 on_success=self.cb_success, on_failure=self.cb_error)
         await process.wait_async()
         self.check(process, result=None, calls_error=2, exccls=ZeroDivisionError)
 
@@ -255,13 +252,11 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
         def sync_run(self_, A, B):
             assert isinstance(self_, _CommandBase)
             self.div_result = A / B
-            return True
 
         async def async_run(self_, A, B):
             assert isinstance(self_, _CommandBase)
             await asyncio.sleep(0, loop=self_.loop)
             self.div_result = A / B
-            return True
 
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
                     {'names': ('B',), 'type': int, 'description': 'Second number'})
@@ -311,7 +306,8 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
         for iface in ('sync', 'async'):
             self.cmdmgr.active_interface = iface
             success = self.cmdmgr.run_sync('div 20 4',
-                                           on_success=self.cb_success, on_error=self.cb_error)
+                                           on_success=self.cb_success,
+                                           on_failure=self.cb_error)
             self.assertEqual(success, True)
             self.assertEqual(self.cb_success.calls, 1)
             self.assertIsInstance(self.cb_success.args[-1][0], _CommandBase)
@@ -325,7 +321,8 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
         for iface in ('sync', 'async'):
             self.cmdmgr.active_interface = iface
             success = await self.cmdmgr.run_async('div 20 4',
-                                                  on_success=self.cb_success, on_error=self.cb_error)
+                                                  on_success=self.cb_success,
+                                                  on_failure=self.cb_error)
             self.assertEqual(success, True)
             self.assertEqual(self.cb_success.calls, 1)
             self.assertIsInstance(self.cb_success.args[-1][0], _CommandBase)
@@ -341,7 +338,6 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
         def run(self_cmd):
             for k,v in kwargs.items():
                 self.assertEqual(getattr(self_cmd, k), v)
-            return True
 
         cmdcls = make_cmdcls(name='kwargs-test', run=run, provides=('sync',))
         self.cmdmgr.register(cmdcls)
@@ -365,7 +361,8 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
             # With error handler (non-CmdErrors are always raised)
             with self.assertRaises(ZeroDivisionError):
                 self.cmdmgr.run_sync('div 1 0',
-                                     on_success=self.cb_success, on_error=self.cb_error)
+                                     on_success=self.cb_success,
+                                     on_failure=self.cb_error)
             self.assertEqual(self.cb_success.calls, 0)
             self.assertEqual(self.cb_error.calls, 0)
 
@@ -382,7 +379,8 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
             # With error handler (non-CmdErrors are always raised)
             with self.assertRaises(ZeroDivisionError):
                 await self.cmdmgr.run_async('div 1 0',
-                                            on_success=self.cb_success, on_error=self.cb_error)
+                                            on_success=self.cb_success,
+                                            on_failure=self.cb_error)
             self.assertEqual(self.cb_success.calls, 0)
             self.assertEqual(self.cb_error.calls, 0)
 
@@ -401,12 +399,13 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
 
             # With error handler
             success = self.cmdmgr.run_sync('error "No!"',
-                                           on_success=self.cb_success, on_error=self.cb_error)
+                                           on_success=self.cb_success,
+                                           on_failure=self.cb_error)
             self.assertEqual(success, False)
             self.assertEqual(self.cb_success.calls, 0)
             self.assertEqual(self.cb_error.calls, 1)
-            exc = self.cb_error.args[0][0]
-            assertIsException(exc, CmdError, 'No!')
+            process = self.cb_error.args[0][0]
+            assertIsException(process.exception, CmdError, 'No!')
 
             self.cb_success.reset()
             self.cb_error.reset()
@@ -424,12 +423,13 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
 
             # With error handler
             success = await self.cmdmgr.run_async('error "No!"',
-                                                  on_success=self.cb_success, on_error=self.cb_error)
+                                                  on_success=self.cb_success,
+                                                  on_failure=self.cb_error)
             self.assertEqual(success, False)
             self.assertEqual(self.cb_success.calls, 0)
             self.assertEqual(self.cb_error.calls, 1)
-            exc = self.cb_error.args[0][0]
-            assertIsException(exc, CmdError, 'No!')
+            process = self.cb_error.args[0][0]
+            assertIsException(process.exception, CmdError, 'No!')
 
             self.cb_success.reset()
             self.cb_error.reset()
@@ -459,12 +459,13 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
         for iface in ('sync', 'async'):
             self.cmdmgr.active_interface = iface
             success = self.cmdmgr.run_sync('foo',
-                                           on_success=self.cb_success, on_error=self.cb_error)
+                                           on_success=self.cb_success,
+                                           on_failure=self.cb_error)
             self.assertEqual(success, False)
             self.assertEqual(self.cb_success.calls, 0)
             self.assertEqual(self.cb_error.calls, 1)
-            exc = self.cb_error.args[0][0]
-            assertIsException(exc, CmdError, 'foo')
+            process = self.cb_error.args[0][0]
+            assertIsException(process.exception, CmdError, 'foo')
 
             self.cb_success.reset()
             self.cb_error.reset()
@@ -473,12 +474,13 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
         for iface in ('sync', 'async'):
             self.cmdmgr.active_interface = iface
             success = await self.cmdmgr.run_async('foo',
-                                                  on_success=self.cb_success, on_error=self.cb_error)
+                                                  on_success=self.cb_success,
+                                                  on_failure=self.cb_error)
             self.assertEqual(success, False)
             self.assertEqual(self.cb_success.calls, 0)
             self.assertEqual(self.cb_error.calls, 1)
-            exc = self.cb_error.args[0][0]
-            assertIsException(exc, CmdError, 'foo')
+            process = self.cb_error.args[0][0]
+            assertIsException(process.exception, CmdError, 'foo')
 
             self.cb_success.reset()
             self.cb_error.reset()
@@ -490,7 +492,7 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
         self.true_cb = Callback()
         self.false_cb = Callback()
 
-        def true_run(self_, *args, **kwargs): self.true_cb(*args, **kwargs) ; return True
+        def true_run(self_, *args, **kwargs): self.true_cb(*args, **kwargs)
         def false_run(self_, *args, **kwargs): self.false_cb(*args, **kwargs) ; raise CmdError('Nope')
 
         args = ({'names': ('-a',), 'action': 'store_true', 'description': 'A args'},
@@ -503,13 +505,15 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
         self.cmdmgr.register(false_cmd)
 
     def assert_success(self, cmdchain):
-        success = self.cmdmgr.run_sync(cmdchain, on_success=self.cb_success,
-                                       on_error=self.cb_error)
+        success = self.cmdmgr.run_sync(cmdchain,
+                                       on_success=self.cb_success,
+                                       on_failure=self.cb_error)
         self.assertEqual(success, True)
 
     def assert_failure(self, cmdchain):
-        success = self.cmdmgr.run_sync(cmdchain, on_success=self.cb_success,
-                                       on_error=self.cb_error)
+        success = self.cmdmgr.run_sync(cmdchain,
+                                       on_success=self.cb_success,
+                                       on_failure=self.cb_error)
         self.assertEqual(success, False)
 
     @asynctest.ignore_loop
@@ -559,8 +563,9 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     def test_nonexisting_cmd_in_cmdchain(self):
         def do_test(cmdchain, success, success_calls, error_calls, true_calls, false_calls,
                     true_args, false_args):
-            succ = self.cmdmgr.run_sync(cmdchain, on_success=self.cb_success,
-                                           on_error=self.cb_error)
+            succ = self.cmdmgr.run_sync(cmdchain,
+                                        on_success=self.cb_success,
+                                        on_failure=self.cb_error)
             self.assertEqual(succ, success)
             self.assertEqual(self.cb_success.calls, success_calls)
             self.assertEqual(self.cb_error.calls, error_calls)
@@ -589,8 +594,9 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     def test_only_cmds_from_active_interface_are_called(self):
         def do_test(cmdchain, success, success_calls, error_calls, true_calls, false_calls,
                     true_args, false_args):
-            succ = self.cmdmgr.run_sync(cmdchain, on_success=self.cb_success,
-                                        on_error=self.cb_error)
+            succ = self.cmdmgr.run_sync(cmdchain,
+                                        on_success=self.cb_success,
+                                        on_failure=self.cb_error)
             self.assertEqual(succ, success)
             self.assertEqual(self.cb_success.calls, success_calls)
             self.assertEqual(self.cb_error.calls, error_calls)
@@ -626,8 +632,9 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     @asynctest.ignore_loop
     def test_final_process_determines_overall_success(self):
         def do_test(cmdchain, success):
-            result = self.cmdmgr.run_sync(cmdchain, on_success=self.cb_success,
-                                           on_error=self.cb_error)
+            result = self.cmdmgr.run_sync(cmdchain,
+                                          on_success=self.cb_success,
+                                          on_failure=self.cb_error)
             self.assertEqual(result, success)
 
         do_test([['true'], ';', ['true']], success=True)
@@ -649,12 +656,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     @asynctest.ignore_loop
     def test_sync_complete_chain_with_AND_operator(self):
         result = self.cmdmgr.run_sync('true -a  &  true -a -b  &  true -a -b -c',
-                                      on_success=self.cb_success, on_error=self.cb_error)
+                                      on_success=self.cb_success,
+                                      on_failure=self.cb_error)
         self.confirm_complete_chain_with_AND_operator(result)
 
     async def test_async_complete_chain_with_AND_operator(self):
         result = await self.cmdmgr.run_async('true -a  &  true -a -b  &  true -a -b -c',
-                                             on_success=self.cb_success, on_error=self.cb_error)
+                                             on_success=self.cb_success,
+                                             on_failure=self.cb_error)
         self.confirm_complete_chain_with_AND_operator(result)
 
     def confirm_complete_chain_with_AND_operator(self, result):
@@ -671,12 +680,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     @asynctest.ignore_loop
     def test_sync_broken_chain_with_AND_operator(self):
         result = self.cmdmgr.run_sync('true -a  &  false -a -b  &  true -a -b -c',
-                                      on_success=self.cb_success, on_error=self.cb_error)
+                                      on_success=self.cb_success,
+                                      on_failure=self.cb_error)
         self.confirm_broken_chain_with_AND_operator(result)
 
     async def test_async_broken_chain_with_AND_operator(self):
         result = await self.cmdmgr.run_async('true -a  &  false -a -b  &  true -a -b -c',
-                                             on_success=self.cb_success, on_error=self.cb_error)
+                                             on_success=self.cb_success,
+                                             on_failure=self.cb_error)
         self.confirm_broken_chain_with_AND_operator(result)
 
     def confirm_broken_chain_with_AND_operator(self, result):
@@ -692,12 +703,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     @asynctest.ignore_loop
     def test_sync_complete_chain_with_OR_operator(self):
         result = self.cmdmgr.run_sync('false -a  |  false -a -b  |  true -a -b -c',
-                                      on_success=self.cb_success, on_error=self.cb_error)
+                                      on_success=self.cb_success,
+                                      on_failure=self.cb_error)
         self.confirm_complete_chain_with_OR_operator(result)
 
     async def test_async_complete_chain_with_OR_operator(self):
         result = await self.cmdmgr.run_async('false -a  |  false -a -b  |  true -a -b -c',
-                                             on_success=self.cb_success, on_error=self.cb_error)
+                                             on_success=self.cb_success,
+                                             on_failure=self.cb_error)
         self.confirm_complete_chain_with_OR_operator(result)
 
     def confirm_complete_chain_with_OR_operator(self, result):
@@ -714,12 +727,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     @asynctest.ignore_loop
     def test_sync_broken_chain_with_OR_operator(self):
         result = self.cmdmgr.run_sync('false -a  |  true -a -b  |  false -a -b -c',
-                                      on_success=self.cb_success, on_error=self.cb_error)
+                                      on_success=self.cb_success,
+                                      on_failure=self.cb_error)
         self.confirm_broken_chain_with_OR_operator(result)
 
     async def test_async_broken_chain_with_OR_operator(self):
         result = await self.cmdmgr.run_async('false -a  |  true -a -b  |  false -a -b -c',
-                                             on_success=self.cb_success, on_error=self.cb_error)
+                                             on_success=self.cb_success,
+                                             on_failure=self.cb_error)
         self.confirm_broken_chain_with_OR_operator(result)
 
     def confirm_broken_chain_with_OR_operator(self, result):
