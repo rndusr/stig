@@ -18,7 +18,7 @@ from . import (ColumnBase, _ensure_hide_unit)
 
 
 COLUMNS = {}
-ALIASES = { 'n'    : 'name',
+ALIASES = { 'n'    : 'name', 'filename': 'name',
             'sz'   : 'size',
             'dn'   : 'downloaded',
             '%dn'  : '%downloaded',
