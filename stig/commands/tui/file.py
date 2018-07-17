@@ -25,7 +25,6 @@ class ListFilesCmd(base.ListFilesCmdbase,
                                 tfilter=tfilter, ffilter=ffilter,
                                 columns=columns,
                                 markable_items=True)
-        return True
 
 
 class PriorityCmd(base.PriorityCmdbase,

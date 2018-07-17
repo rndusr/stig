@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource)
+from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc, make_SCRIPTING_doc)
 
@@ -59,15 +59,14 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
                                         allow_no_filter=True,
                                         discover_file=False)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         log.debug('Listing %s files of %s torrents', ffilter, tfilter)
 
         if asyncio.iscoroutinefunction(self.make_file_list):
-            return await self.make_file_list(tfilter, ffilter, columns)
+            await self.make_file_list(tfilter, ffilter, columns)
         else:
-            return self.make_file_list(tfilter, ffilter, columns)
+            self.make_file_list(tfilter, ffilter, columns)
 
 
 class PriorityCmdbase(metaclass=InitCommand):
@@ -104,8 +103,7 @@ class PriorityCmdbase(metaclass=InitCommand):
                 priority = p
                 break
         if priority is None:
-            log.error('Invalid priority: {!r}'.format(PRIORITY))
-            return False
+            raise CmdError('Invalid priority: %r' % PRIORITY)
 
         # Whether the user manually typed a filter
         utilize_tui = not bool(TORRENT_FILTER)
@@ -122,16 +120,16 @@ class PriorityCmdbase(metaclass=InitCommand):
                                         allow_no_filter=True,
                                         discover_file=utilize_tui)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         if not utilize_tui:
-            log.info('New download priority of %s files in %s torrents: %s',
-                     'all' if ffilter is None else ffilter, tfilter, priority)
+            self.info('New download priority of %s files in %s torrents: %s' %
+                      ('all' if ffilter is None else ffilter, tfilter, priority))
             quiet = False
         else:
-            # We're operating on focused/marked file and changes are indiciated
-            # by the updated file list, so no info messages necessary.
+            # We're operating on focused or marked files and changes are
+            # indiciated by the updated file list, so no info messages
+            # necessary.
             quiet = True
 
         log.debug('Setting file download priority to %s for %s files of %s torrents',
@@ -139,4 +137,5 @@ class PriorityCmdbase(metaclass=InitCommand):
         response = await self.make_request(
             self.srvapi.torrent.file_priority(tfilter, ffilter, priority),
             polling_frenzy=True, quiet=quiet)
-        return response.success
+        if not response.success:
+            raise CmdError()

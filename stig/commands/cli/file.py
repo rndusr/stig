@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 from ..base import file as base
 from . import _mixin as mixin
-from .. import ExpectedResource
+from .. import (CmdError, ExpectedResource)
 from ._table import (print_table, TERMSIZE)
 
 import os
@@ -33,7 +33,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
         torrents = response.torrents
 
         if len(torrents) < 1:
-            return False
+            raise CmdError()
 
         filelist = []
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
@@ -45,16 +45,15 @@ class ListFilesCmd(base.ListFilesCmdbase,
             # Remove columns that aren't supported by CLI interface (e.g. 'marked')
             columns = self.only_supported_columns(columns, FILE_COLUMNS)
             print_table(filelist, columns, FILE_COLUMNS)
-            return True
         else:
             if str(tfilter) != 'all':
-                log.error('No matching files in {} torrents: {}'.format(tfilter, ffilter))
+                raise CmdError('No matching files in %s torrents: %s' % (tfilter, ffilter))
             else:
-                log.error('No matching files: {}'.format(ffilter))
-            return False
+                raise CmdError('No matching files: %s' % (ffilter))
 
     def _flatten_tree(self, files, ffilter=None, _indent_level=0):
-        """Return list of rows for `print_table`
+        """
+        Return list of rows for `print_table`
 
         `files` must be a nested mapping tree (i.e. TorrentFileTree).
         `ffilter` must be a TorrentFileFilter instance or None.
