@@ -20,15 +20,16 @@ class ResetCmd(base.ResetCmdbase):
     provides = {'tui'}
 
     def run(self, NAME):
-        if not NAME:
+        if NAME:
+            super().run(NAME)
+        else:
             # Get name from focused item in setting list
             from ...tui import main as tui
             from ...tui.views.setting_list import SettingListWidget
             widget = tui.tabs.focus
             if isinstance(widget, SettingListWidget):
                 setting_name = widget.focused_widget.name
-                return super().run((setting_name,))
-        return super().run(NAME)
+                super().run((setting_name,))
 
 
 class SetCmd(base.SetCmdbase,
@@ -47,8 +48,8 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
     async def _set_limits(self, TORRENT_FILTER, directions, limit, adjust=False, quiet=False):
         if TORRENT_FILTER == ['global']:
-            return await self._set_global_limit(directions, limit,
-                                                adjust=adjust, quiet=quiet)
+            await self._set_global_limit(directions, limit,
+                                         adjust=adjust, quiet=quiet)
         else:
-            return await self._set_individual_limit(TORRENT_FILTER, directions, limit,
-                                                    adjust=adjust, quiet=quiet)
+            await self._set_individual_limit(TORRENT_FILTER, directions, limit,
+                                             adjust=adjust, quiet=quiet)

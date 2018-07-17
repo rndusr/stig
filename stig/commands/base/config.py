@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource, utils)
+from .. import (InitCommand, CmdError, ExpectedResource, utils)
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 from ...utils.usertypes import Float
@@ -50,15 +50,11 @@ class RcCmdbase(metaclass=InitCommand):
         try:
             lines = rcfile.read(FILE)
         except rcfile.RcFileError as e:
-            log.error('Loading rc file failed: {}'.format(e))
-            return False
+            raise CmdError('Loading rc file failed: %s' % e)
         else:
             log.debug('Running commands from rc file: %r', FILE)
             for cmdline in lines:
-                success = await self.cmdmgr.run_async(cmdline, on_error=log.error)
-                if success is False:
-                    return False
-            return True
+                await self.cmdmgr.run_async(cmdline)
 
 
 class ResetCmdbase(metaclass=InitCommand):
@@ -81,21 +77,20 @@ class ResetCmdbase(metaclass=InitCommand):
 
     def run(self, NAME):
         if not NAME:
-            log.error('Missing NAME argument')
-            return False
+            raise CmdError('Missing NAME argument')
 
         success = True
         for name in NAME:
-
             if name.startswith('srv.') and name[4:] in self.srvcfg:
-                log.error('Remote settings cannot be reset: %s' % name)
+                self.error('Remote settings cannot be reset: %s' % name)
                 success = False
             elif name not in self.cfg:
-                log.error('Unknown setting: %s' % name)
+                self.error('Unknown setting: %s' % name)
                 success = False
             else:
                 self.cfg.reset(name)
-        return success
+        if not success:
+            raise CmdError()
 
 
 from ...client import ClientError
@@ -143,7 +138,9 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             try:
                 await self.srvcfg.update()
             except ClientError as e:
-                log.error('%s', e)
+                error = e
+            else:
+                error = None
 
             # Show list of settings
             sort = self.cfg['sort.settings'] if sort is None else sort
@@ -152,18 +149,18 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 sort = self.get_setting_sorter(sort)
                 columns = self.get_setting_columns(columns)
             except ValueError as e:
-                log.error(e)
-                return False
+                raise CmdError(e)
             else:
                 self.make_setting_list(sort, columns)
-                return True
+                if error:
+                    raise CmdError(error)
+            return
 
         # NAME might have ':eval' attached if VALUE is shell command
         try:
             name, key, is_local_setting = self._parse_name(NAME)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         cfg = self.cfg if is_local_setting else self.srvcfg
 
@@ -172,8 +169,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             try:
                 await cfg.update()
             except ClientError as e:
-                log.error('%s', e)
-                return False
+                raise CmdError(e)
 
         # VALUE might be shell command or have '+='/'-=' prepended
         try:
@@ -182,16 +178,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                                       is_cmd=NAME.endswith(':eval'))
         except ValueError as e:
             # Report potential stderr output if VALUE is a command
-            log.error('%s: %s' % (name, e))
-            return False
+            raise CmdError('%s: %s' % (name, e))
 
         # Separate '+=' or '-=' from value
         try:
             op, value = self._get_operator(value)
         except ValueError as e:
             # Report invalid value after operator (e.g. nan)
-            log.error('%s = %s: %s' % (name, self._stringify(value), e))
-            return False
+            raise CmdError('%s = %s: %s' % (name, self._stringify(value), e))
 
         # Value may have an operator (e.g. '+=' or '-=') to adjust the current value
         if op is not None:
@@ -202,8 +196,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 opfunc = getattr(operator, op)
                 unbound = cfg[key].copy(min=-float('inf'), max=float('inf'))
                 invalid = opfunc(unbound, value)
-                log.error('%s = %s: %s' % (name, self._stringify(invalid), e))
-                return False
+                raise CmdError('%s = %s: %s' % (name, self._stringify(invalid), e))
 
         # Update setting's value
         try:
@@ -214,13 +207,9 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 log.debug('Remote setting: %r = %r', name, value)
                 await cfg.set(key, value)
         except ValueError as e:
-            log.error('%s = %s: %s', name, self._stringify(value), e)
-            return False
+            raise CmdError('%s = %s: %s' % (name, self._stringify(value), e))
         except ClientError as e:
-            log.error('%s', e)
-            return False
-        else:
-            return True
+            raise CmdError(e)
 
     def _parse_name(self, name):
         if name.endswith(':eval'):
@@ -292,7 +281,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
     aliases = ('rate',)
     provides = set()
     category = 'configuration'
-    description = "Limit transfer rates per torrent or globally"
+    description = 'Limit transfer rates per torrent or globally'
     usage = ('ratelimit <DIRECTION> <LIMIT>',
              'ratelimit <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('ratelimit up 5Mb',
@@ -320,8 +309,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
                          for d in map(str.lower, DIRECTION.split(',')))
         for d in directions:
             if d not in ('up', 'down'):
-                log.error('%s: Invalid direction: %r', self.name, d)
-                return False
+                raise CmdError('Invalid direction: %r' % (d,))
 
         # Do we adjust current limits or set absolute limits?
         limit = LIMIT.strip()
@@ -332,8 +320,8 @@ class RateLimitCmdbase(metaclass=InitCommand):
             adjust = False
 
         # _set_limits() is defined in cli.config and tui.config and behaves slightly differently
-        return await self._set_limits(TORRENT_FILTER, directions, limit,
-                                      adjust=adjust, quiet=quiet)
+        await self._set_limits(TORRENT_FILTER, directions, limit,
+                               adjust=adjust, quiet=quiet)
 
     async def _set_global_limit(self, directions, limit, quiet=False, adjust=False):
         for d in directions:
@@ -345,14 +333,12 @@ class RateLimitCmdbase(metaclass=InitCommand):
                 try:
                     await set_method(limit)
                 except ValueError as e:
-                    log.error('%s: %r', e, limit)
-                    return False
+                    raise CmdError('%s: %s' % (e, limit))
                 if not quiet:
-                    log.info('Global %sload rate: %s' % (d, await get_method()))
+                    limit = await get_method()
+                    self.info('Global %sload rate: %s' % (d, limit))
             except ClientError as e:
-                log.error('%s', e)
-                return False
-        return True
+                raise CmdError('%s' % e)
 
     async def _set_individual_limit(self, TORRENT_FILTER, directions, limit, quiet=False, adjust=False):
         try:
@@ -360,8 +346,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         log.debug('Setting %sload rate limit for %s torrents: %r',
                   '+'.join(directions), tfilter, limit)
@@ -372,4 +357,4 @@ class RateLimitCmdbase(metaclass=InitCommand):
             response = await self.make_request(method(tfilter, limit),
                                                polling_frenzy=True, quiet=quiet)
             if not response.success:
-                return False
+                raise CmdError()
