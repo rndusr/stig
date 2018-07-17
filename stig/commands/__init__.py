@@ -624,7 +624,7 @@ class CommandManager():
                 if not process.finished:
                     await process.wait_async()
                 self._maybe_run_callbacks(process, on_success, on_failure)
-        return self._handle_final_process(process, reraise=reraise)
+            return self._handle_final_process(process, reraise=reraise)
 
     def run_task(self, commands, on_success=None, on_failure=None, **kwargs):
         """Return Task that runs `run_async`"""
