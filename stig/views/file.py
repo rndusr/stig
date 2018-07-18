@@ -102,56 +102,59 @@ class Marked(ColumnBase):
 COLUMNS['marked'] = Marked
 
 
-
+import os
 class TorrentFileDirectory(dict):
+    """
+    A mapping with the same keys as a TorrentFile instance but represents a directory
+
+    Values recursively summarize the values of all the TorrentFiles in the subtree.
+    """
     nodetype = 'parent'
 
-    def __hash__(self):
-        return hash(self['path'])
+    def __init__(self, name, tree, filtered_count=0):
+        tfiles = tuple(tree.files)
+        self.update({
+            'id'              : tuple(tf['id'] for tf in tfiles),
+            'tid'             : tfiles[0]['tid'],
+            'name'            : self.create_directory_name(name, filtered_count),
+            'path-absolute'   : os.path.join(tree.location, tree.path),
+            'path-relative'   : tree.path,
+            'size-total'      : self._sum_size(tfiles, 'size-total'),
+            'size-downloaded' : self._sum_size(tfiles, 'size-downloaded'),
+            'is-wanted'       : True,
+            'priority'        : self._sum_priority(tfiles),
+        })
+        perc_dl_cls = type(tfiles[0]['%downloaded'])
+        try:
+            self['%downloaded'] = perc_dl_cls(self['size-downloaded'] / self['size-total'] * 100)
+        except ZeroDivisionError:
+            self['%downloaded'] = perc_dl_cls(0)
 
-    def __repr__(self):
-        return '<{} {!r}>'.format(type(self).__name__, self['path'])
-
-def create_directory_data(name, tree, filtered_count=0):
-    # Create a mapping that has the same keys as a TorrentFile instance.
-    # Each value recursively summarizes the values of all the TorrentFiles
-    # in `tree`.
-
-    tfiles = tuple(tree.files)
-
-    def sum_size(tfiles, key):
+    @staticmethod
+    def _sum_size(tfiles, key):
         sizes = tuple(tfile[key] for tfile in tfiles)
         # Preserve the original type (Float)
         first_size = sizes[0]
         start_value = type(first_size)(0, unit=first_size.unit, prefix=first_size.prefix)
         return sum(sizes, start_value)
 
-    def sum_priority(tfiles):
+    @staticmethod
+    def _sum_priority(tfiles):
         if len(set(tfile['priority'] for tfile in tfiles)) == 1:
             return tfiles[0]['priority']
         else:
             return ''
 
-    data = {'size-downloaded': sum_size(tfiles, 'size-downloaded'),
-            'size-total': sum_size(tfiles, 'size-total'),
-            'priority': sum_priority(tfiles),
-            'is-wanted': True}
+    @staticmethod
+    def create_directory_name(name, filtered_count):
+        if filtered_count > 0:
+            return '%s (%d file%s filtered)' % (name, filtered_count,
+                                                '' if filtered_count == 1 else 's')
+        else:
+            return str(name)
 
-    data['name'] = create_directory_name(name, filtered_count)
+    def __hash__(self):
+        return hash(self['path'])
 
-    pdownloaded_cls = type(tfiles[0]['%downloaded'])
-    try:
-        data['%downloaded'] = pdownloaded_cls(data['size-downloaded'] / data['size-total'] * 100)
-    except ZeroDivisionError:
-        data['%downloaded'] = pdownloaded_cls(0)
-    data['tid'] = tfiles[0]['tid']
-    data['id'] = tuple(tf['id'] for tf in tfiles)
-    data['path'] = tree.path
-    return TorrentFileDirectory(data)
-
-def create_directory_name(name, filtered_count):
-    if filtered_count > 0:
-        return '%s (%d file%s filtered)' % (name, filtered_count,
-                                            '' if filtered_count == 1 else 's')
-    else:
-        return str(name)
+    def __repr__(self):
+        return '<%s %s>' % (type(self).__name__, self['path-absolute'])

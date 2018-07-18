@@ -68,8 +68,9 @@ class TorrentFileTreeBase(abc.Mapping):
     # ("parent" or "leaf")
     nodetype = 'parent'
 
-    def __init__(self, path, *args, **kwargs):
-        self._path = path
+    def __init__(self, location, path, *args, **kwargs):
+        self._location = location  # Absolute download location
+        self._path = path          # Path within torrent relative to location
         self._items = NotImplemented
 
     @property
@@ -88,6 +89,10 @@ class TorrentFileTreeBase(abc.Mapping):
             if entry.nodetype == 'parent':
                 yield (name, entry)
                 yield from entry.directories
+
+    @property
+    def location(self):
+        return self._location
 
     @property
     def path(self):

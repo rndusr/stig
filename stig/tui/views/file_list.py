@@ -22,7 +22,7 @@ from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
 from ...client import TorrentFileFilter
 
 
-from ...views.file import (create_directory_data, create_directory_name)
+from ...views.file import TorrentFileDirectory
 from urwidtrees.decoration import ArrowTree
 class FileTreeDecorator(ArrowTree):
     """urwidtrees decorator for TorrentFiles and TorrentFileTrees"""
@@ -72,11 +72,11 @@ class FileTreeDecorator(ArrowTree):
                         else:
                             filtered_count += 1
                     elif v.nodetype == 'parent':
-                        dirnode = create_directory_data(name=k, tree=v)
+                        dirnode = TorrentFileDirectory(name=k, tree=v)
                         tree.append(create_tree(dirnode, v))
 
                 self._filtered_counts[node['id']] = filtered_count
-                node['name'] = create_directory_name(node['name'], filtered_count)
+                node['name'] = TorrentFileDirectory.create_directory_name(node['name'], filtered_count)
                 return (node, tree or None)
 
         fcount = 0
@@ -85,7 +85,7 @@ class FileTreeDecorator(ArrowTree):
             filetree = t['files']
             # This works because t['files'] always has 1 item: the torrent's name
             rootnodename = next(iter(filetree.keys()))
-            rootnode = create_directory_data(rootnodename, tree=filetree)
+            rootnode = TorrentFileDirectory(rootnodename, tree=filetree)
             tree = create_tree(rootnode, filetree[rootnodename])
             if tree is not None:
                 forest.append(tree)
@@ -129,7 +129,7 @@ class FileTreeDecorator(ArrowTree):
                 node_id = content.id
                 if node_id in widgets:
                     filtered_count = self._filtered_counts[node_id]
-                    data = create_directory_data(name, tree=content,
+                    data = TorrentFileDirectory(name, tree=content,
                                                  filtered_count=filtered_count)
                     widgets[node_id].update(data)
 

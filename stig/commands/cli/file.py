@@ -65,7 +65,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             def indent(node):
                 node['name'] = '%s%s' % ('  '*(_indent_level), node['name'])
 
-        from ...views.file import create_directory_data
+        from ...views.file import TorrentFileDirectory
         flist = []
         filtered_count = 0
         for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
@@ -80,7 +80,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             elif value.nodetype == 'parent':
                 sub_flist, sub_filtered_count = self._flatten_tree(value, ffilter, _indent_level+1)
                 if TERMSIZE.columns is not None:
-                    dirnode = create_directory_data(key, value, sub_filtered_count)
+                    dirnode = TorrentFileDirectory(key, value, sub_filtered_count)
                     indent(dirnode)
                     flist.append(dirnode)
                 flist.extend(sub_flist)

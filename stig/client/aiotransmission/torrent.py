@@ -200,7 +200,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
     def __init__(self, torrent_id, torrent_location, filelist, path):
         log.debug('Creating new TorrentFileTree for torrent %r: %r', torrent_id, path)
         path_str = os.sep.join(path)
-        super().__init__(os.path.join(torrent_location, path_str))
+        super().__init__(torrent_location, path_str)
 
         items = {}
         subdirs = {}
