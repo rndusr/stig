@@ -54,7 +54,11 @@ class RcCmdbase(metaclass=InitCommand):
         else:
             log.debug('Running commands from rc file: %r', FILE)
             for cmdline in lines:
-                await self.cmdmgr.run_async(cmdline)
+                success = await self.cmdmgr.run_async(cmdline)
+                # False means failure, None means the command didn't run because
+                # the active interface doesn't support it
+                if success is False:
+                    raise CmdError()
 
 
 class ResetCmdbase(metaclass=InitCommand):
