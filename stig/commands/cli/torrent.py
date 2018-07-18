@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 from ..base import torrent as base
 from . import _mixin as mixin
-from .. import ExpectedResource
+from .. import (ExpectedResource, CmdError)
 from ._table import (print_table, TERMSIZE)
 
 
@@ -47,6 +47,8 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         # Show table of found torrents
         if torrents:
             print_table(torrents, columns, TORRENT_COLUMNS)
+        else:
+            raise CmdError()
 
 
 class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
