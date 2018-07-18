@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 from ..base import peer as base
 from . import _mixin as mixin
-from .. import ExpectedResource
+from .. import (ExpectedResource, CmdError)
 from ._table import print_table
 
 
@@ -30,7 +30,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
         torrents = response.torrents
 
         if len(torrents) < 1:
-            return False
+            raise CmdError()
 
         if pfilter is None:
             filter_peers = lambda peers: peers
@@ -52,7 +52,6 @@ class ListPeersCmd(base.ListPeersCmdbase,
         if peerlist:
             from ...views.peer import COLUMNS as PEER_COLUMNS
             print_table(peerlist, columns, PEER_COLUMNS)
-            return True
         else:
             filter_is_relevant = lambda f: f and str(f) != 'all'
 
@@ -67,5 +66,4 @@ class ListPeersCmd(base.ListPeersCmdbase,
             if filter_is_relevant(pfilter):
                 errmsg += ': {}'.format(pfilter)
 
-            log.error(errmsg)
-            return False
+            raise CmdError(errmsg)

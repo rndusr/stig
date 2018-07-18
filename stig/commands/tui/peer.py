@@ -25,4 +25,3 @@ class ListPeersCmd(base.ListPeersCmdbase,
                                 tfilter=tfilter, pfilter=pfilter,
                                 sort=sort, columns=columns,
                                 markable_items=False)
-        return True

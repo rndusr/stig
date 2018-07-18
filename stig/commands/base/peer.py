@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource)
+from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
@@ -73,8 +73,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
             sort    = self.get_peer_sorter(sort)
             columns = self.get_peer_columns(columns)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         # Unless we're listing peers of exactly one torrent, specified by its
         # ID, automatically add the 'torrent' column.
@@ -85,6 +84,6 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
         log.debug('Listing %s peers of %s torrents', pfilter, tfilter)
 
         if asyncio.iscoroutinefunction(self.make_peer_list):
-            return await self.make_peer_list(tfilter, pfilter, sort, columns)
+            await self.make_peer_list(tfilter, pfilter, sort, columns)
         else:
-            return self.make_peer_list(tfilter, pfilter, sort, columns)
+            self.make_peer_list(tfilter, pfilter, sort, columns)
