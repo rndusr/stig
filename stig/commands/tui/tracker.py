@@ -25,7 +25,6 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
                                 torfilter=torfilter, trkfilter=trkfilter,
                                 sort=sort, columns=columns,
                                 markable_items=False)
-        return True
 
 
 class AnnounceCmd(base.AnnounceCmdbase,

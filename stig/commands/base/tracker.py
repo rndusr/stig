@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource)
+from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
@@ -71,8 +71,7 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
             sort      = self.get_tracker_sorter(sort)
             columns   = self.get_tracker_columns(columns)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         # Unless we're listing trackers of exactly one torrent, specified by its
         # ID, automatically add the 'torrent' column.
@@ -83,9 +82,9 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
         log.debug('Listing %s trackers of %s torrents', trkfilter, torfilter)
 
         if asyncio.iscoroutinefunction(self.make_tracker_list):
-            return await self.make_tracker_list(torfilter, trkfilter, sort, columns)
+            await self.make_tracker_list(torfilter, trkfilter, sort, columns)
         else:
-            return self.make_tracker_list(torfilter, trkfilter, sort, columns)
+            self.make_tracker_list(torfilter, trkfilter, sort, columns)
 
 
 class AnnounceCmdbase(metaclass=InitCommand):
@@ -108,13 +107,13 @@ class AnnounceCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
         else:
             response = await self.make_request(
                 self.srvapi.torrent.announce(tfilter),
                 polling_frenzy=False)
-            return response.success
+            if not response.success:
+                raise CmdError()
 
 
 class TrackerCmdbase(metaclass=InitCommand):
@@ -132,7 +131,7 @@ class TrackerCmdbase(metaclass=InitCommand):
     examples = ('tracker add "torrent with no tracker" http://tracker3.example.org:12345/announce',
                 'tracker remove all tracker1.example tracker2.example ')
     argspecs = (
-        { 'names': ('ACTION',), 'choices': _ALL_ACTIONS },
+        { 'names': ('ACTION',) },
 
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
 
@@ -149,8 +148,7 @@ class TrackerCmdbase(metaclass=InitCommand):
                                            allow_no_filter=False,
                                            discover_torrent=True)
         except ValueError as e:
-            log.error(e)
-            return False
+            raise CmdError(e)
 
         if any(ACTION == action for action in self._ADD_ACTIONS):
             request = self.srvapi.torrent.tracker_add(tfilter, urls)
@@ -159,8 +157,8 @@ class TrackerCmdbase(metaclass=InitCommand):
             request = self.srvapi.torrent.tracker_remove(tfilter, urls, partial_match=True)
             log.debug('Removing trackers from %s torrents: %s', tfilter, ', '.join(urls))
         else:
-            log.error('%s: Invalid ACTION: %r', self.name, ACTION)
-            return False
+            raise CmdError('Invalid ACTION: %r' % (ACTION,))
 
         response = await self.make_request(request, polling_frenzy=True)
-        return response.success
+        if not response.success:
+            raise CmdError()

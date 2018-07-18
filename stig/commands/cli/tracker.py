@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 from ..base import tracker as base
 from . import _mixin as mixin
-from .. import ExpectedResource
+from .. import (ExpectedResource, CmdError)
 from ._table import print_table
 
 
@@ -30,7 +30,7 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
         torrents = response.torrents
 
         if len(torrents) < 1:
-            return False
+            raise CmdError()
 
         if trkfilter is None:
             filter_trackers = lambda trackers: trackers
@@ -46,7 +46,6 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
         if trklist:
             from ...views.tracker import COLUMNS as TRACKER_COLUMNS
             print_table(trklist, columns, TRACKER_COLUMNS)
-            return True
         else:
             filter_is_relevant = lambda f: f and str(f) != 'all'
 
@@ -61,8 +60,7 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
             if filter_is_relevant(trkfilter):
                 errmsg += ': %s' % trkfilter
 
-            log.error(errmsg)
-            return False
+            raise CmdError(errmsg)
 
 
 class AnnounceCmd(base.AnnounceCmdbase,
