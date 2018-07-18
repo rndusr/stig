@@ -14,7 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource)
+from .. import (InitCommand, CmdError, ExpectedResource)
 from ... import (__appname__, __version__)
 
 
@@ -49,7 +49,7 @@ class HelpCmdbase(metaclass=InitCommand):
                 try:
                     l = self.helpmgr.find(topic)
                 except ValueError as e:
-                    log.error(e)
+                    self.error(e)
                     success = False
                 else:
                     lines.extend(l)
@@ -65,7 +65,8 @@ class HelpCmdbase(metaclass=InitCommand):
             existing_topics.append(__appname__)
 
         self.display_help(existing_topics, lines)
-        return success
+        if not success:
+            raise CmdError()
 
 
 class VersionCmdbase(metaclass=InitCommand):
@@ -75,8 +76,7 @@ class VersionCmdbase(metaclass=InitCommand):
     description = 'Show {} version'.format(__appname__)
 
     def run(self):
-        log.info('{} version {}'.format(__appname__, __version__))
-        return True
+        print('%s ersion %s' % (__appname__, __version__))
 
 
 class LogCmdbase(metaclass=InitCommand):
@@ -105,16 +105,14 @@ class LogCmdbase(metaclass=InitCommand):
 
     def run(self, ACTION):
         if len(ACTION) < 1:
-            log.error('%s: Missing arguments', self.name)
-            return False
+            raise CmdError('Missing at least one argument')
         elif ACTION[0] == 'clear':
             return self._do('clear', *ACTION[1:])
         elif ACTION[0] == 'scroll':
             return self._do('scroll', *ACTION[1:])
         elif ACTION[0] == 'error':
-            log.error(' '.join(ACTION[1:]))
+            self.error(' '.join(ACTION[1:]))
         elif ACTION[0] == 'info':
-            log.info(' '.join(ACTION[1:]))
+            self.info(' '.join(ACTION[1:]))
         else:
-            log.info(' '.join(ACTION))
-        return True
+            self.info(' '.join(ACTION))

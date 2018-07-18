@@ -15,12 +15,10 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from ..base import misc as base
-from .. import ExpectedResource
+from .. import (ExpectedResource, CmdError)
 
 class HelpCmd(base.HelpCmdbase):
     provides = {'cli'}
-
-    cfg = ExpectedResource
     srvapi = ExpectedResource
 
     async def run(self, TOPIC):
@@ -31,15 +29,14 @@ class HelpCmd(base.HelpCmdbase):
                 try:
                     await self.srvapi.settings.update()
                 except self.srvapi.ClientError as e:
-                    log.error(str(e))
+                    self.error(e)
                 finally:
                     break
-
         return super().run(TOPIC)
 
     def display_help(self, topics, lines):
         for line in lines:
-            log.info(line)
+            print(line)
 
 
 class VersionCmd(base.VersionCmdbase):
@@ -50,6 +47,5 @@ class LogCmd(base.LogCmdbase):
     provides = {'cli'}
 
     def _do(self, action, *args):
-        cmd_str = '%s %s %s' % (self.name, action, ' '.join(args))
-        log.error('Unsupported command in CLI mode: %s', cmd_str)
-        return False
+        cmd_str = '%s %s' % (action, ' '.join(args))
+        raise CmdError('Unsupported command in CLI mode: %s' % cmd_str)

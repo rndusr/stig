@@ -16,7 +16,7 @@ log = make_logger(__name__)
 
 
 from ..base import misc as base
-from .. import ExpectedResource
+from .. import (ExpectedResource, CmdError)
 from ._common import make_tab_title_widget
 
 
@@ -54,7 +54,7 @@ class LogCmd(base.LogCmdbase):
         logwidget = self.tui.logwidget
         if action == 'clear':
             if len(tuple(logwidget.entries)) < 1:
-                return False
+                raise CmdError()
             else:
                 logwidget.clear()
 
@@ -73,13 +73,8 @@ class LogCmd(base.LogCmdbase):
             elif args == 'bottom':
                 logwidget.scroll_to('bottom')
             else:
-                log.error('%s: Invalid arguments for "scroll": %r', self.name, args)
-                return False
+                raise CmdError('Invalid arguments for "scroll": %r' % (args,))
 
         else:
-            cmd_str = '%s %s' % (self.name, action)
-            if args:
-                cmd_str += ' ' + ' '.join(args)
-            log.error('Unsupported action: %s', cmd_str)
-
-        return True
+            cmd_str = '%s %s' % (action, ' '.join(args))
+            raise CmdError('Unsupported command in TUI mode: %s' % cmd_str)
