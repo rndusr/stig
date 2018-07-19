@@ -228,8 +228,8 @@ def print_table(items, order, column_specs):
                             delimiter='\t' if TERMSIZE.columns is None else '│',
                             max_width=TERMSIZE.columns)
 
-    # Create two-dimensional list of cells.  Each cell must be a ColumnBase
-    # instance (see stig.views.__init__.py).
+    # Create two-dimensional list of cells.  Each cell must behave like an
+    # instance of a child class of ColumnBase (see stig.views.__init__.py).
     table.rows = []
     for item in items:
         row = []
@@ -247,6 +247,6 @@ def print_table(items, order, column_specs):
         for line_index in range(len(table.rows)):
             # Print column headers after every screen full
             if pretty_output and line_index % (TERMSIZE.lines-2) == 0:
-                log.info(headerstr)
+                print(headerstr)
             for row in _assemble_row(table, line_index, pretty=pretty_output):
-                log.info(row)
+                print(row)
