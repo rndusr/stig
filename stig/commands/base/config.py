@@ -337,12 +337,12 @@ class RateLimitCmdbase(metaclass=InitCommand):
                 try:
                     await set_method(limit)
                 except ValueError as e:
-                    raise CmdError('%s: %s' % (e, limit))
+                    raise CmdError('%s: %r' % (e, limit))
                 if not quiet:
                     limit = await get_method()
-                    self.info('Global %sload rate: %s' % (d, limit))
+                    self.info('Global %sload rate limit: %s' % (d, limit))
             except ClientError as e:
-                raise CmdError('%s' % e)
+                raise CmdError(e)
 
     async def _set_individual_limit(self, TORRENT_FILTER, directions, limit, quiet=False, adjust=False):
         try:

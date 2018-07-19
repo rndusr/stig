@@ -253,20 +253,17 @@ class _CommandBase():
             self._finish(success=True)
 
     def _finish(self, success, exception=None):
-        if self.finished:
-            return  # _finish() was already called
-
-        self._success = success
-        self._exc = exception
-
-        if success:
-            if self.on_success is not None:
-                log.debug('Calling success callback: %r', self.on_success)
-                self.on_success(self)
-        else:
-            if self.on_failure is not None:
-                log.debug('Calling failure callback: %r', self.on_failure)
-                self.on_failure(self.exception)
+        if not self.finished:
+            self._success = success
+            self._exc = exception
+            if success:
+                if self.on_success is not None:
+                    log.debug('Calling success callback: %r', self.on_success)
+                    self.on_success(self)
+            else:
+                if self.on_failure is not None:
+                    log.debug('Calling failure callback: %r', self.on_failure)
+                    self.on_failure(self.exception)
 
     def wait_sync(self):
         """
@@ -705,7 +702,7 @@ class CommandManager():
             try:
                 args = shlex.split(commands)
             except ValueError as e:
-                raise CmdError(str(e))
+                raise CmdError(e)
 
             cmdchain = []
             cmd = []
