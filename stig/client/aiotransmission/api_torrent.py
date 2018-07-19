@@ -23,6 +23,7 @@ from .. import ClientError
 from ..filters.torrent import TorrentFilter
 from ..filters.file import TorrentFileFilter
 from ..utils import (Bool, Bandwidth, BoolOrBandwidth)
+from ..ttypes import Path
 
 
 class _TorrentCache():
@@ -127,8 +128,8 @@ class TorrentAPI():
             else:
                 download_dir = response.result['download-dir']
                 abs_path = os.path.normpath(os.path.join(download_dir, path))
-                return Response(path=abs_path, success=True)
-        return Response(path=path, success=True)
+                return Response(path=Path(abs_path), success=True)
+        return Response(path=Path(path), success=True)
 
     async def add(self, torrent, stopped=False, path=None):
         """
