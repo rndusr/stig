@@ -70,7 +70,7 @@ class MockAPI():
                 raise exc
             elif isinstance(self.response, Response):
                 return self.response
-            elif isinstance(self.response, list):
+            elif isinstance(self.response, list) and self.response:
                 return self.response.pop(0)
         return mock_method
 
@@ -153,6 +153,8 @@ class MockSettings(dict):
 
 
 from types import SimpleNamespace
+import sys, io
+from unittest.mock import patch
 class CommandTestCase(asynctest.TestCase):
     def setUp(self):
         self.api = SimpleNamespace(torrent=MockAPI(),
@@ -161,18 +163,45 @@ class CommandTestCase(asynctest.TestCase):
         self.cfg = MockSettings()
         self.helpmgr = MockHelpManager()
 
-    def assert_logged(self, logged, *msgs):
-        # msgs is a sequence of two-tuples: The first item is the level name, the
-        # second item is a regular expression that matches the message string.
-        for record,msg in zip(logged.records, msgs):
-            self.assertEqual(record.levelname.lower(), msg[0].lower())
-            self.assertRegex(record.message, msg[1])
+        self.stdout = sys.stdout = io.StringIO()
+        def reset_stdout(): sys.stdout = sys.__stdout__
+        self.addCleanup(reset_stdout)
 
-    async def finish(self, process):
+        self.stderr = sys.stderr = io.StringIO()
+        def reset_stderr(): sys.stderr = sys.__stderr__
+        self.addCleanup(reset_stderr)
+
+    def patch(self, *args, **kwargs):
+        patcher = patch.multiple(*args, **kwargs)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    async def execute(self, cmdcls, *params):
+        process = cmdcls(params,
+                         error_handler=self.stderr.write,
+                         loop=self.loop)
         if not process.finished:
             await process.wait_async()
-        self.assertEqual(process.finished, True)
-        if process.exception is not None:
-            print('process failed: %r: %r' % (process, process.exception))
-            if not isinstance(process.exception, CmdError):
-                raise process.exception
+        self.assertTrue(process.finished)
+        if isinstance(process.exception, CmdError):
+            if str(process.exception):
+                print('%s: %s' % (process.name, process.exception), file=self.stderr)
+        elif process.exception is not None:
+            raise process.exception
+        return process
+
+    def assert_stdout(self, *msgs):
+        self.stdout.seek(0)
+        lines = tuple(line.rstrip('\n') for line in self.stdout.readlines())
+        self.assertEqual(lines, msgs)
+
+    def assert_stderr(self, *msgs):
+        self.stderr.seek(0)
+        lines = tuple(line.rstrip('\n') for line in self.stderr.readlines())
+        self.assertEqual(lines, msgs)
+
+    def clear_stdout(self):
+        self.stdout = sys.stdout = io.StringIO()
+
+    def clear_stderr(self):
+        self.stderr = sys.stderr = io.StringIO()
