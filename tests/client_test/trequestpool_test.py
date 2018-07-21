@@ -35,7 +35,7 @@ class FakeTorrentAPI():
         self.arg_torrents = torrents
         self.arg_keys = keys
         if self.exc is None:
-            return Response(torrents=self.tlist)
+            return Response(success=False, torrents=self.tlist)
         else:
             raise self.exc
 
