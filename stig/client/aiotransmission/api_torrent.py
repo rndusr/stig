@@ -88,9 +88,9 @@ class TorrentAPI():
         try:
             result = await method(*args, **kwargs)
         except ClientError as e:
-            return Response(result=None, msgs=(e,), success=False)
+            return Response(success=False, result=None, errors=(str(e),))
         else:
-            return Response(result=result, msgs=(), success=True)
+            return Response(success=True, result=result)
 
     async def _map_tid_to_torrent_values(self, torrents, keys):
         """
@@ -100,16 +100,14 @@ class TorrentAPI():
         its value of that key.
 
         If `keys` lists two or more keys, the returned map maps torrent IDs to a
-        dict with the keys `keys` and their corresponding values for each torrent.
+        dict that maps keys to each torrent's value for that key.
 
         The result is returned attached to a Response instance via the attribute
         'torrent_values'.
-
-        If request failed, return Response instance from `torrents` object.
         """
         response = await self.torrents(torrents, keys=('id',) + tuple(keys))
         if not response.success:
-            return Response(success=False, torrent_values={}, msgs=response.msgs)
+            return Response(success=False, torrent_values={}, errors=response.errors)
         else:
             if len(keys) == 1:
                 key = keys[0]
@@ -124,19 +122,19 @@ class TorrentAPI():
         if not os.path.isabs(path):
             response = await self._request(self.rpc.session_get)
             if not response.success:
-                return Response(path=None, success=False, msgs=response.msgs)
+                return Response(success=False, path=None, errors=response.errors)
             else:
                 download_dir = response.result['download-dir']
                 abs_path = os.path.normpath(os.path.join(download_dir, path))
-                return Response(path=Path(abs_path), success=True)
-        return Response(path=Path(path), success=True)
+                return Response(success=True, path=Path(abs_path))
+        return Response(success=True, path=Path(path))
 
     async def add(self, torrent, stopped=False, path=None):
         """
         Add torrent from file, URL or hash
 
         torrent: Path to local file, web/magnet link or hash
-        stopped: False to start downloading immediately, True otherise
+        stopped: False to start downloading immediately, True otherwise
         path:    Download directory or `None` for default directory
 
         Return Response with the following properties:
@@ -145,18 +143,16 @@ class TorrentAPI():
                      None
             success: False if torrent could not be added or already exists,
                      True otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            msgs:    List of info messages
+            errors:  List of error messages
         """
         torrent_str = torrent
-        torrent = None
-        msgs = []
-        success = False
-
         args = {'paused': bool(stopped)}
+
         if path is not None:
             response = await self._abs_download_path(path)
             if not response.success:
-                return Response(success=False, torrent=None, msgs=response.msgs)
+                return Response(success=False, torrent=None, errors=response.errors)
             else:
                 args['download-dir'] = response.path
 
@@ -172,8 +168,8 @@ class TorrentAPI():
                     args['metainfo'] = str(base64.b64encode(f.read()),
                                            encoding='ascii')
             except OSError as e:
-                msgs.append(ClientError('%s: %s' % (e.strerror, torrent_str)))
-                return Response(success=success, torrent=torrent, msgs=msgs)
+                return Response(success=False, torrent=None,
+                                errors=('%s: %s' % (e.strerror, torrent_str),))
         elif len(torrent_str) == 40 and all(c in HEXDIGITS for c in torrent_str):
             # Convert hash to magnet link
             args['filename'] = 'magnet:?xt=urn:btih:' + torrent_str
@@ -184,30 +180,38 @@ class TorrentAPI():
 
         response = await self._request(self.rpc.torrent_add, **args)
         if not response.success:
-            if 'Invalid or corrupt' in str(response.msgs[0]):
-                msgs = (ClientError('Torrent file is corrupt or doesn\'t exist: {!r}'.format(torrent_str)),)
-            else:
-                msgs = response.msgs
-            return Response(success=False, torrent=None, msgs=msgs)
+            errors = []
+            for error in response.errors:
+                if 'Invalid or corrupt' in error:
+                    errors.append('Torrent file is corrupt or doesn\'t exist: %r' % torrent_str)
+                else:
+                    errors.append(error)
+            return Response(success=False, torrent=None, msgs=response.msgs, errors=errors)
         else:
             result = response.result
+            errors = ()
+            msgs = ()
             if 'torrent-duplicate' in result:
                 info = result['torrent-duplicate']
-                msgs.append(ClientError('Torrent already exists: ' + info['name']))
+                errors = ('Torrent already exists: ' + info['name'],)
                 success = False
             elif 'torrent-added' in result:
                 info = result['torrent-added']
-                msgs.append('Added %s' % info['name'])
+                msgs = ('Added %s' % info['name'],)
                 success = True
             else:
-                raise RuntimeError('Malformed response: {}'.format(result))
+                raise RuntimeError('Malformed response: %r' % (result,))
             torrent = Torrent({'id': info['id'], 'name': info['name']})
-
-        return Response(success=success, torrent=torrent, msgs=msgs)
+            return Response(success=success, torrent=torrent, msgs=msgs, errors=errors)
 
 
     async def _request_torrents(self, fields, ids=None):
-        """Unmodified 'torrent-get' request"""
+        """
+        Make 'torrent-get' RPC request
+
+        Return a Response object with 'raw_torrents' set to a tuple of torrents
+        according to the RPC spec.
+        """
         if 'id' not in fields:
             fields = ('id',) + tuple(fields)
         try:
@@ -222,7 +226,7 @@ class TorrentAPI():
                     # No IDs (i.e. empty torrent list) requested
                     raw_tlist = []
         except ClientError as e:
-            return Response(success=False, raw_torrents=[], msgs=[e])
+            return Response(success=False, raw_torrents=(), errors=(str(e),))
         else:
             self._tcache.update(raw_tlist)
 
@@ -240,29 +244,27 @@ class TorrentAPI():
 
         keys: 'ALL' for all supported Torrent keys or a sequence of key
               strings (see client.ttypes.TYPES for available keys)
-        ids: None for all torrents or a sequence of wanted IDs
+        ids:  None for all torrents or a sequence of wanted IDs
         """
         if keys == 'ALL':
             fields = TorrentFields(keys)
         else:
             fields = TorrentFields(*keys)
 
-        tlist = ()
-        msgs = []
-        success = False
-
         response = await self._request_torrents(fields, ids)
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
             from time import time
             start = time()
 
+            errors = []
+
             # Get torrents from cache
             if ids is None:
-                tlist = self._tcache.get()
-            elif len(ids) < 1:
-                tlist = ()
+                tlist = self._tcache.get()  # All torrents
+            elif not ids:
+                tlist = ()  # No torrents requested
             else:
                 tlist = self._tcache.get(*ids)
 
@@ -271,19 +273,18 @@ class TorrentAPI():
                 for tid in ids:
                     # Torrent objects are equal to an integer of the torrent's ID
                     if tid not in existing_ids:
-                        msgs.append(ClientError('No torrent with ID: {}'.format(tid)))
+                        errors.append('No torrent with ID: %d' % tid)
 
             success = len(tlist) > 0 or not ids
-
             log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
-        return Response(success=success, torrents=tlist, msgs=msgs)
+        return Response(success=success, torrents=tlist, errors=errors)
 
     async def _get_torrents_by_filter(self, keys, tfilter=None):
         """
         Return a Response object with 'torrents' set to a tuple of Torrents
 
-        keys: See _get_torrents_by_ids
-        tfilter: A TorrentFilter instance or None
+        keys:    See _get_torrents_by_ids
+        tfilter: A TorrentFilter instance or None to get all torrents
         """
         if tfilter is None:
             log.debug('Looking for all torrents with keys: %s', keys)
@@ -291,16 +292,17 @@ class TorrentAPI():
             return await self._get_torrents_by_ids(keys=keys)
         else:
             log.debug('Looking for %s torrents with keys: %s', tfilter, keys)
-            tlist = ()
-            msgs = []
-            success = False
             if isinstance(tfilter, str):
                 tfilter = TorrentFilter(tfilter)
+
+            tlist = ()
 
             # Request all torrents with the keys needed to filter them
             log.debug('Requesting full list with filter keys: %s', tfilter.needed_keys)
             response = await self._get_torrents_by_ids(keys=tfilter.needed_keys)
-            if response.success:
+            if not response.success:
+                return Response(success=False, torrents=(), errors=response.errors)
+            else:
                 # Find IDs of torrents that match tfilter
                 wanted_ids = tuple(t['id'] for t in tfilter.apply(response.torrents))
                 log.debug('Wanted IDs: %s', wanted_ids)
@@ -308,33 +310,32 @@ class TorrentAPI():
                     # Get only wanted torrents with all wanted keys
                     response = await self._get_torrents_by_ids(keys, wanted_ids)
                     if not response.success:
-                        msgs.extend(response.msgs)
+                        return Response(success=False, torrents=(), errors=response.errors)
                     else:
                         tlist = tuple(response.torrents)
-            else:
-                msgs.extend(response.msgs)
 
             success = len(tlist) > 0
+            msgs = errors = ()
             if not success:
-                msgs.append(ClientError('No matching torrents: {}'.format(tfilter)))
+                errors = ('No matching torrents: %s' % (tfilter,),)
             else:
-                msgs.append('Found {} {} torrent{}'.format(
-                    len(tlist), tfilter, '' if len(tlist) == 1 else 's'))
-
-            return Response(success=success, torrents=tlist, msgs=msgs)
+                msgs = ('Found %d %s torrent%s' %
+                        (len(tlist), tfilter, '' if len(tlist) == 1 else 's'),)
+            return Response(success=success, torrents=tlist, msgs=msgs, errors=errors)
 
     async def torrents(self, torrents=None, keys='ALL'):
         """
-        Fetch and return torrents
+        Get torrents
 
         torrents: Iterator of torrent IDs, TorrentFilter object (or its string
                   representation) or None for all torrents
         keys: tuple of Torrent keys to fetch or 'ALL' for all torrents
 
         Return Response with the following properties:
-            torrents: tuple of Torrent objects with requested torrents
-            success: False if no torrents were found, True otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of Torrent objects with requested torrents
+            success:  False if no torrents were found, True otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         if torrents is None:
             return await self._get_torrents_by_ids(keys)
@@ -344,46 +345,50 @@ class TorrentAPI():
              all(isinstance(id, int) for id in torrents):
             return await self._get_torrents_by_ids(keys, ids=torrents)
         else:
-            raise ValueError("Invalid 'torrents' argument: {!r}".format(torrents))
+            raise ValueError("Invalid 'torrents' argument: %r" % (torrents,))
+
 
     async def _torrent_action(self, method, torrents=None, method_args={},
                               check=None, check_keys=()):
         """
         Helper method that operates on torrents (start, stop, remove, etc)
 
-        method: Any method from TransmissionRPC that accepts torrent ids
-        torrents: See `torrents` method
+        method:      Any method from TransmissionRPC that accepts torrent ids
+        torrents:    See `torrents` method
         method_args: Dictionary with keyword arguments for method (except 'ids')
-        check: None or callable that is called with every torrent; must return
-               a 2-tuple of (SUCCESS, MESSAGE) where SUCCESS is evaluated as
-               bool and MESSAGE a string or None.  If SUCCESS evaluates to
-               True, `method` is applied to the torrent, otherwise not.
-        check_keys: List of Torrent keys the check function needs ('id' and
-                    'name' are always included)
+        check:       None or callable that is called with every torrent; must
+                     return a 2-tuple of (SUCCESS, MESSAGE) where SUCCESS is
+                     evaluated as bool and MESSAGE a string or None.  If SUCCESS
+                     evaluates to True, `method` is applied to the torrent,
+                     otherwise not.
+        check_keys:  List of Torrent keys the check function needs ('id' and
+                     'name' are always included)
 
         Return Response with the following properties:
-            torrents: tuple of Torrents that `method` was applied to with the
+            torrents: Tuple of Torrents that `method` was applied to with the
                       keys 'id' and 'name'
-            success: True if `method` was successfully applied to at least one
-                     torrent, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            success:  True if `method` was successfully applied to at least one
+                      torrent, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
-        tlist = []
-        msgs = []
-
         # Always provide some basic keys
         check_keys = set(tuple(check_keys) + ('id', 'name'))
 
+        msgs = []
+        errors = []
         response = await self.torrents(torrents, keys=check_keys)
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
-            msgs = list(response.msgs)
+            msgs.extend(response.msgs)
+            errors.extend(response.errors)
 
         if check is None:
             tlist = response.torrents
         else:
             # Filter torrents through check function
+            tlist = []
             for t in response.torrents:
                 passed, msg = check(t)
                 if passed:
@@ -392,21 +397,21 @@ class TorrentAPI():
                         msgs.append(msg)
                 else:
                     if msg is not None:
-                        msgs.append(ClientError(msg))
+                        errors.append(str(msg))
 
         # Apply method to torrents that passed the check function
         if len(tlist) <= 0:
-            return Response(success=False, torrents=(), msgs=msgs)
+            return Response(success=False, torrents=(), msgs=msgs, errors=errors)
         else:
             try:
                 # Ignore response because it is always {}, except for
                 # 'torrent-get' requests, which this method is not meant for.
                 await method(ids=tuple(t['id'] for t in tlist), **method_args)
             except ClientError as e:
-                msgs.append(e)
-                return Response(success=False, torrents=(), msgs=msgs)
+                errors.append(str(e))
+                return Response(success=False, torrents=(), msgs=msgs, errors=errors)
             else:
-                return Response(success=True, torrents=tuple(tlist), msgs=msgs)
+                return Response(success=True, torrents=tuple(tlist), msgs=msgs, errors=errors)
 
     async def stop(self, torrents):
         """
@@ -415,9 +420,10 @@ class TorrentAPI():
         torrents: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of stopped Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found and stopped, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of stopped Torrents with the keys 'id' and 'name'
+            success:  True if any torrents were stopped, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         def check(t):
             if t['status'].STOPPED in t['status']:
@@ -433,13 +439,13 @@ class TorrentAPI():
         Start down-/uploading torrents
 
         torrents: See `torrents` method
-        force: Start downloading even if download queue is active and full
+        force:    Start downloading even if download queue is active and full
 
         Return Response with the following properties:
-            torrents: tuple of started Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found and started, False
-                     otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of started Torrents with the keys 'id' and 'name'
+            success:  True if any torrents were started, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         def check(t):
             if t['status'].STOPPED in t['status']:
@@ -458,19 +464,20 @@ class TorrentAPI():
 
     async def toggle_stopped(self, torrents, force=False):
         """
-        Start down-/uploading torrents
+        Toggle down-/uploading torrents
 
         torrents: See `torrents` method
-        force: See `start` method
+        force:    See `start` method
 
         Return Response with the following properties:
-            torrents: tuple of toggled Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of toggled Torrents with the keys 'id' and 'name'
+            success:  True if any torrents were toggled, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         response = await self.torrents(torrents, keys=('status',))
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
 
         stopped, running = [], []
         for t in response.torrents:
@@ -479,31 +486,34 @@ class TorrentAPI():
             else:
                 running.append(t)
 
-        torrents, msgs = ((), [])
+        torrents = []
+        msgs = []
+        errors = []
         if len(running) > 0:
-            r = await self.stop(tuple(t['id'] for t in running))
-            torrents += r.torrents
-            msgs += r.msgs
+            response = await self.stop(tuple(t['id'] for t in running))
+            torrents.extend(response.torrents)
+            msgs.extend(response.msgs)
+            errors.extend(response.errors)
         if len(stopped) > 0:
             r = await self.start(tuple(t['id'] for t in stopped), force=force)
-            torrents += r.torrents
-            msgs += r.msgs
+            torrents.extend(response.torrents)
+            msgs.extend(response.msgs)
+            errors.extend(response.errors)
 
-        return Response(torrents=torrents,
-                        success=len(torrents) > 0,
-                        msgs=msgs)
+        return Response(success=len(torrents) > 0, torrents=torrents,
+                        msgs=msgs, errors=errors)
 
     async def verify(self, torrents):
         """
-        Verify torrents's downloaded data
+        Verify torrents' downloaded data
 
         torrents: See `torrents` method
 
         Return Response with the following properties:
             torrents: tuple of to be verified Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found and will be verified,
-                     False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            success:  True if any torrents are going to be verified, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         def check(t):
             if t['status'].VERIFY in t['status']:
@@ -522,13 +532,13 @@ class TorrentAPI():
         Remove torrents
 
         torrents: See `torrents` method
-        delete: True if downloaded files should be deleted
+        delete:   True to deleted downloaded files
 
         Return Response with the following properties:
-            torrents: tuple of removed Torrents  with the keys 'id' and 'name'
-            success: True if any torrents were found and removed, False
-                     otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of removed Torrents with the keys 'id' and 'name'
+            success:  True if any torrents were removed, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         if delete:
             msg = 'Deleting %s (including files)'
@@ -545,22 +555,22 @@ class TorrentAPI():
 
     async def move(self, torrents, destination):
         """
-        Change torrents' location in the file system
+        Change torrents' file system location
 
-        torrents: See `torrents` method
-        destination: New path of the specified torrents; relative paths are
-                     relative to the default download path
+        torrents:    See `torrents` method
+        destination: New path (relative paths are relative to the default
+                     download path
 
         Return Response with the following properties:
-            torrents: tuple of moved Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found and had matching files,
-                     False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of moved Torrents with the keys 'id' and 'name'
+            success:  True if any torrents were moved, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         # Transmission wants an absolute path
         response = await self._abs_download_path(destination)
         if not response.success:
-            return Response(torrents=(), success=False, msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
             destination = response.path
 
@@ -580,26 +590,21 @@ class TorrentAPI():
         Change download priority of individual torrent files
 
         torrents: See `torrents` method
-        files: TorrentFileFilter object (or its string representation), sequence
-               of (torrent ID, file ID) tuples or None for all files
-        priority: 'off', 'low', 'normal' or 'high'
+        files:    TorrentFileFilter object (or its string representation), sequence
+                  of (torrent ID, file ID) tuples or None for all files
+        priority: One of the strings 'off', 'low', 'normal' or 'high'
 
         Return Response with the following properties:
-            torrents: tuple of matching Torrents with matching files with the
+            torrents: Tuple of matching Torrents with matching files with the
                       keys 'id', 'name' and 'files'
-            success: True if any torrents were found and had matching files,
-                     False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            success:  True if any file priorities were changed, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         response = await self.torrents(torrents, keys=('name', 'files'))
         if not response.success:
-            return Response(torrents=(), success=False, msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
-            torrents = ()
-            torrent_ids = []
-            msgs = []
-            success = False
-
             if isinstance(files, str):
                 files = TorrentFileFilter(files)
 
@@ -613,21 +618,24 @@ class TorrentAPI():
                 filter_files = lambda ftree: tuple(f for f in ftree.files
                                                    if f['id'] in files)
             else:
-                raise ValueError("Invalid 'files' argument: {!r}".format(files))
+                raise ValueError("Invalid 'files' argument: %r" % (files,))
 
+            torrent_ids = []
+            msgs = []
+            errors = []
             for t in sorted(response.torrents, key=lambda t: t['name'].lower()):
                 # Filter torrent's files
                 flist = filter_files(t['files'])
                 if files is None:
-                    msgs.append('{} file{}: {}'
-                                .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
+                    msgs.append('%d file%s: %s' %
+                                (len(flist), '' if len(flist) == 1 else 's', t['name']))
                 else:
                     if not flist:
-                        msgs.append(ClientError('No matching files: {}'.format(t['name'])))
+                        errors.append('No matching files: %s' % (t['name'],))
                     else:
-                        msgs.append('{} matching file{}: {}'
-                                    .format(len(flist), '' if len(flist) == 1 else 's', t['name']))
-                success = len(flist) > 0 or success
+                        msgs.append('%d matching file%s: %s' %
+                                    (len(flist), '' if len(flist) == 1 else 's', t['name']))
+                success = len(flist) > 0
 
                 # Transmission wants a list of file indexes.  For
                 # aiotransmission, the 'id' field of a TorrentFile is a tuple:
@@ -639,12 +647,15 @@ class TorrentAPI():
                     if response.success:
                         torrent_ids.append(t['id'])
                     msgs.extend(response.msgs)
+                    errors.extend(response.errors)
 
         if torrent_ids:
             response = await self.torrents(torrent_ids, keys=('id', 'name', 'files'))
-            if response.success:
+            if not response.success:
+                return Response(success=False, torrents=(), errors=response.errors)
+            else:
                 torrents = response.torrents
-        return Response(torrents=torrents, success=success, msgs=msgs)
+        return Response(success=success, torrents=torrents, msgs=msgs, errors=errors)
 
     async def _set_files_priority(self, priority, torrent_id, file_indexes):
         fi = tuple(file_indexes)
@@ -666,8 +677,7 @@ class TorrentAPI():
             try:
                 limit = BoolOrBandwidth(limit)
             except ValueError as e:
-                return Response(torrents=(), success=False,
-                                msgs=[ClientError('%s: %r' % (e, limit))])
+                return Response(success=False, torrents=(), errors=('%s: %r' % (e, limit),))
         if isinstance(limit, (float, int)):
             limit = BoolOrBandwidth(False) if limit < 0 or limit >= float('inf') else limit
 
@@ -679,8 +689,7 @@ class TorrentAPI():
             try:
                 adjustment = Bandwidth(adjustment)
             except ValueError as e:
-                return Response(torrents=(), success=False,
-                                msgs=[ClientError('%s: %r' % (e, adjustment))])
+                return Response(success=False, torrents=(), errors=('%s: %r' % (e, adjustment),))
 
         def add_to_current_limit(current_limit):
             log.debug('Adjusting %sload limit %r by %r', direction, current_limit, adjustment)
@@ -691,7 +700,7 @@ class TorrentAPI():
     async def _limit_rate(self, torrents, direction, get_new_limit):
         response = await self._map_tid_to_torrent_values(torrents, keys=('limit-rate-'+direction,))
         if not response.success:
-            return Response(success=False, torrent_set_args={}, errors=[], msgs=response.msgs)
+            return Response(success=False, torrent_set_args={}, errors=response.errors)
         else:
             current_limits = response.torrent_values
             log.debug('Current %sload rate limits: %r', direction, current_limits)
@@ -735,50 +744,41 @@ class TorrentAPI():
             response = await self._torrent_action(self.rpc.torrent_set, tids,
                                                   method_args=dict(args))
             if not response.success:
-                return Response(success=False, torrents=(), msgs=response.msgs)
+                return Response(success=False, torrents=(), errors=response.errors)
 
         # Fetch torrents again and return Response with new rate limit messages
         all_tids = sum(torrent_set_args.values(), []) + list(errors)
         response = await self.torrents(all_tids, keys=('name', 'id', 'limit-rate-'+direction))
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         msgs = []
+        errors = []
         success = False
         for t in response.torrents:
             if t['id'] in errors:
-                msgs.append(ClientError('%s %sload rate: %s' %
-                                        (t['name'], direction, errors[t['id']])))
+                errors.append('%s %sload rate: %s' % (t['name'], direction, errors[t['id']]))
             else:
                 success = True
                 msgs.append('%s %sload rate: %s' % (t['name'], direction, t['limit-rate-'+direction]))
-        return Response(torrents=response.torrents, success=success, msgs=msgs)
+        return Response(success=success, torrents=response.torrents, msgs=msgs, errors=errors)
 
     async def set_limit_rate_up(self, torrents, limit):
         """
         Limit upload rate for individual torrent(s)
 
         torrents: See `torrents` method
-        limit: Passed to `utils.BoolOrBandwidth`
+        limit:    Passed to `client.utils.BoolOrBandwidth`
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'limit-rate-up'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of Torrents with the keys 'id', 'name' and 'limit-rate-up'
+            success:  True if any upload rate limits were changed, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         return await self._limit_rate_absolute(torrents, 'up', limit)
 
     async def set_limit_rate_down(self, torrents, limit):
-        """
-        Limit download rate for individual torrent(s)
-
-        torrents: See `torrents` method
-        limit: See `set_limit_rate_up` method
-
-        Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id', 'name' and 'limit-rate-down'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
-        """
+        """See `set_limit_rate_up`"""
         return await self._limit_rate_absolute(torrents, 'down', limit)
 
     async def adjust_limit_rate_up(self, torrents, adjustment):
@@ -786,16 +786,13 @@ class TorrentAPI():
         Same as `set_limit_rate_up` but set new limit relative to current limit
 
         adjustment: Negative or positive number to add to the current limit of
-                    each matching torrent; passed to `utils.Bandwidth`
+                    each matching torrent (this is passed to
+                    `client.utils.Bandwidth`)
         """
         return await self._limit_rate_relative(torrents, 'up', adjustment)
 
     async def adjust_limit_rate_down(self, torrents, adjustment):
-        """
-        Same as `set_limit_rate_down` but set new limit relative to current limit
-
-        adjustment: See `adjust_limit_rate_up` method
-        """
+        """See `adjust_limit_rate_up`"""
         return await self._limit_rate_relative(torrents, 'down', adjustment)
 
 
@@ -804,21 +801,22 @@ class TorrentAPI():
         Add tracker(s) to torrents
 
         torrents: See `torrents` method
-        urls: Iterable of announce URLs
+        urls:     Iterable of announce URLs
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            success:  True if any trackers were added, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         if not urls:
-            return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
+            return Response(success=False, torrents=(), errors=('No URLs given',))
 
         # Transmission returns 'Invalid argument' if we try to add an existing
         # tracker, so first we check if any of our URLs already exist.
         response = await self.torrents(torrents, keys=('id', 'name', 'trackers',))
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
             tordict = {tor['id']:tor for tor in response.torrents}
 
@@ -831,16 +829,16 @@ class TorrentAPI():
 
         # For each torrent, report any supplied URLs that are already used
         msgs = []
+        errors = []
         for torid,old_urls in old_url_dict.items():
             for old_url in old_urls:
                 if old_url in new_urls:
-                    msgs.append(ClientError('%s: Tracker already exists: %s' %
-                                            (tordict[torid]['name'], old_url)))
+                    errors.append('%s: Tracker already exists: %s' % (tordict[torid]['name'], old_url))
                     new_urls.remove(old_url)
 
         # No URLs left to add?
         if not new_urls:
-            return Response(success=False, torrents=(), msgs=msgs)
+            return Response(success=False, torrents=(), errors=errors)
 
         for new_url in new_urls:
             msgs.append('%s: Adding tracker: %s' % (tordict[torid]['name'], new_url))
@@ -850,31 +848,33 @@ class TorrentAPI():
         response = await self._torrent_action(self.rpc.torrent_set, torrents,
                                               method_args=args)
         if not response.success:
-            return Response(success=False, torrents=(), msgs=msgs + list(response.msgs))
+            errors.extend(response.errors)
+            return Response(success=False, torrents=(), msgs=msgs, errors=errors)
         else:
-            return Response(success=True, torrents=response.torrents, msgs=msgs)
+            return Response(success=True, torrents=response.torrents, msgs=msgs, errors=errors)
 
     async def tracker_remove(self, torrents, urls, partial_match=False):
         """
         Remove tracker(s) from torrents
 
-        torrents: See `torrents` method
-        urls: Iterable of announce URLs
+        torrents:      See `torrents` method
+        urls:          Iterable of announce URLs
         partial_match: True if given URLs match existing URLs partially
                        (e.g. 'example.org' matches 'http://tracker.example.org/')
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            success:  True if any trackers were removed, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         if not urls:
-            return Response(success=False, torrents=(), msgs=[ClientError('No URLs given')])
+            return Response(success=False, torrents=(), errors=('No URLs given',))
 
         # Get wanted torrent IDs
         response = await self.torrents(torrents, keys=('id',))
         if not response.success:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
             torids = tuple(t['id'] for t in response.torrents)
 
@@ -883,12 +883,13 @@ class TorrentAPI():
         response = await self._request(self.rpc.torrent_get, ids=torids,
                                        fields=('id', 'name', 'trackers'))
         if not response.success or len(response.result) <= 0:
-            return Response(success=False, torrents=(), msgs=response.msgs)
+            return Response(success=False, torrents=(), errors=response.errors)
         else:
             raw_tor_dict = {raw_tor['id']:raw_tor for raw_tor in response.result}
 
         # Map torrent IDs to lists of IDs of matching trackers
         msgs = []
+        errors = []
         remove_urls = urls
         matching_urls = []
         remove_ids = {}
@@ -908,7 +909,7 @@ class TorrentAPI():
 
         # Report error if no matching trackers were found for a given URL
         for mismatch in set(remove_urls).difference(matching_urls):
-            msgs.append(ClientError('No matching trackers found: %r' % mismatch))
+            errors.append('No matching trackers found: %r' % mismatch)
 
         # Finally remove trackers from torrents
         if remove_ids:
@@ -916,25 +917,27 @@ class TorrentAPI():
                 response = await self._torrent_action(self.rpc.torrent_set, (torid,),
                                                       method_args={'trackerRemove': trkids})
                 if not response.success:
-                    return Response(success=False, torrents=(), msgs=response.msgs)
+                    return Response(success=False, torrents=(), errors=response.errors)
 
         # Get new torrent list with newly added trackers
         response = await self.torrents(tuple(remove_ids), keys=('id', 'name', 'trackers'))
         if not response.success:
-            return Response(success=False, torrents=(), msgs=msgs + list(response.msgs))
+            errors.extend(response.errors)
+            return Response(success=False, torrents=(), msgs=msgs, errors=errors)
         else:
-            return Response(success=True, torrents=response.torrents, msgs=msgs)
+            return Response(success=True, torrents=response.torrents, msgs=msgs, errors=errors)
 
     async def announce(self, torrents):
         """
-        Announce torrents' to its tracker(s)
+        Announce torrents to their tracker(s)
 
         torrents: See `torrents` method
 
         Return Response with the following properties:
-            torrents: tuple of Torrents with the keys 'id' and 'name'
-            success: True if any torrents were found, False otherwise
-            msgs: list of strings/`ClientError`s caused by the request
+            torrents: Tuple of Torrents with the keys 'id' and 'name'
+            success:  True if any torrents were found, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
         """
         import time
         def check(t):
