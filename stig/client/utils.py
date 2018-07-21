@@ -117,8 +117,10 @@ class Response(SimpleNamespace):
 
     Any other keyword arguments are made available as attributes.
     """
-    def __init__(self, success=False, msgs=(), **kwargs):
-        super().__init__(success=bool(success), msgs=tuple(msgs), **kwargs)
+    def __init__(self, success, msgs=(), errors=(), **kwargs):
+        super().__init__(success=bool(success),
+                         msgs=tuple(msgs), errors=tuple(errors),
+                         **kwargs)
 
 
 def lazy_property(after_creation=None):

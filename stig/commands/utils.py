@@ -64,7 +64,7 @@ def listify_args(args):
     return [arg for arg in args if arg]
 
 
-def log_msgs(process, msgs, quiet=False):
+def log_msgs(process, response, quiet=False):
     """
     Log messages to `logger`
 
@@ -73,11 +73,9 @@ def log_msgs(process, msgs, quiet=False):
 
     If `quiet` evaluates to True, INFO messages are not logged.
     """
-    for msg in msgs:
-        if isinstance(msg, str):
-            if not quiet:
-                process.info(msg)
-        elif isinstance(msg, Exception):
-            process.error(msg)
-        else:
-            raise RuntimeError('Invalid log message type %s: %r' % (type(msg).__name__, msg))
+    if not quiet:
+        for msg in response.msgs:
+            process.info(msg)
+
+    for error in response.errors:
+        process.error(error)
