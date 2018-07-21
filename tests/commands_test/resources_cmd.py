@@ -178,7 +178,7 @@ class CommandTestCase(asynctest.TestCase):
 
     async def execute(self, cmdcls, *params):
         process = cmdcls(params,
-                         error_handler=self.stderr.write,
+                         error_handler=lambda msg: print(msg, file=self.stderr),
                          loop=self.loop)
         if not process.finished:
             await process.wait_async()
