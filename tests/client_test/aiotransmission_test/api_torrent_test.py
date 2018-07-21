@@ -25,9 +25,6 @@ class TorrentAPITestCase(asynctest.TestCase):
         await self.rpc.disconnect()
         await self.daemon.stop()
 
-    def assert_torrentkeys_equal(self, key, tlist, *exp):
-        self.assertEqual(tuple(t[key] for t in tlist), exp)
-
 
 class TestConnection(TorrentAPITestCase):
     async def test_send_request_with_lost_connection(self):
@@ -36,6 +33,8 @@ class TestConnection(TorrentAPITestCase):
         response = await self.api.torrents()
         self.assertEqual(response.success, False)
         self.assertEqual(response.torrents, ())
+        self.assertEqual(response.msgs, ())
+        self.assertTrue('Failed to connect: ' in response.errors[0])
 
 
 class TestAddingTorrents(TorrentAPITestCase):
@@ -48,17 +47,19 @@ class TestAddingTorrents(TorrentAPITestCase):
         response = await self.api.add(rsrc.TORRENTFILE)
         self.assertEqual(response.success, True)
         self.assertEqual(response.torrent, Torrent({'id': 1, 'name': 'Test Torrent'}))
+        self.assertEqual(response.msgs, ('Added Test Torrent',))
+        self.assertEqual(response.errors, ())
 
     async def test_add_torrent_by_nonexisting_file(self):
         self.daemon.response = rsrc.response_failure(
-            'File does not exist or something'
+            'invalid or corrupt torrent file'
         )
         response = await self.api.add(rsrc.TORRENTFILE_NOEXIST)
         self.assertEqual(response.success, False)
         self.assertEqual(response.torrent, None)
-        self.assertEqual(len(response.msgs), 1)
-        self.assertIsInstance(response.msgs[0], errors.ClientError)
-        self.assertIn('File does not exist or something', str(response.msgs[0]))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors,
+                         ('Torrent file is corrupt or doesn\'t exist: %r' % rsrc.TORRENTFILE_NOEXIST,))
 
     async def test_add_torrent_by_hash(self):
         self.daemon.response = rsrc.response_success(
@@ -69,6 +70,8 @@ class TestAddingTorrents(TorrentAPITestCase):
         response = await self.api.add(rsrc.TORRENTHASH)
         self.assertEqual(response.success, True)
         self.assertEqual(response.torrent, Torrent({'id': 1, 'name': rsrc.TORRENTHASH}))
+        self.assertEqual(response.msgs, ('Added %s' % rsrc.TORRENTHASH,))
+        self.assertEqual(response.errors, ())
 
 
 class TestGettingTorrents(TorrentAPITestCase):
@@ -77,9 +80,13 @@ class TestGettingTorrents(TorrentAPITestCase):
             {'id': 1, 'name': 'Torrent1'},
             {'id': 2, 'name': 'Torrent2'},
         )
-        torrents = (await self.api.torrents()).torrents
-        self.assert_torrentkeys_equal('id', torrents, 1, 2)
-        self.assert_torrentkeys_equal('name', torrents, 'Torrent1', 'Torrent2')
+        response = await self.api.torrents()
+        self.assertEqual(response.success, True)
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 1, 'name': 'Torrent1'}),
+                          Torrent({'id': 2, 'name': 'Torrent2'})))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ())
 
     async def test_get_torrents_by_ids(self):
         self.daemon.response = rsrc.response_torrents(
@@ -89,23 +96,30 @@ class TestGettingTorrents(TorrentAPITestCase):
         )
         response = await self.api.torrents(torrents=(1, 3))
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 1, 3)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Torrent1', 'Torrent3')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 1, 'name': 'Torrent1'}),
+                          Torrent({'id': 3, 'name': 'Torrent3'})))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ())
 
         response = await self.api.torrents(torrents=(2,))
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 2)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Torrent2')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 2, 'name': 'Torrent2'}),))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ())
 
         response = await self.api.torrents(torrents=())
         self.assertEqual(response.success, True)
         self.assertEqual(response.torrents, ())
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ())
 
-        response = await self.api.torrents(torrents=(42, 23))
+        response = await self.api.torrents(torrents=(4, 5))
         self.assertEqual(response.success, False)
         self.assertEqual(response.torrents, ())
-        self.assertIn('42', str(response.msgs[0]))
-        self.assertIn('23', str(response.msgs[1]))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ('No torrent with ID: 4', 'No torrent with ID: 5'))
 
     async def test_get_torrents_by_filter(self):
         self.daemon.response = rsrc.response_torrents(
@@ -115,18 +129,24 @@ class TestGettingTorrents(TorrentAPITestCase):
         )
         response = await self.api.torrents(torrents=TorrentFilter('name=Foo'))
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 1)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Foo')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 1, 'name': 'Foo'}),))
+        self.assertEqual(response.msgs, ('Found 1 =Foo torrent',))
+        self.assertEqual(response.errors, ())
 
         response = await self.api.torrents(torrents=TorrentFilter('name~oo'))
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 1, 3)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Foo', 'Boo')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 1, 'name': 'Foo'}),
+                          Torrent({'id': 3, 'name': 'Boo'})))
+        self.assertEqual(response.msgs, ('Found 2 ~oo torrents',))
+        self.assertEqual(response.errors, ())
 
         response = await self.api.torrents(torrents=TorrentFilter('name=Nope'))
         self.assertEqual(response.success, False)
         self.assertEqual(response.torrents, ())
-        self.assertIn('Nope', str(response.msgs[0]))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ('No matching torrents: =Nope',))
 
 
 class TestManipulatingTorrents(TorrentAPITestCase):
@@ -143,7 +163,8 @@ class TestManipulatingTorrents(TorrentAPITestCase):
     async def mock_method(self, ids, **kwargs):
         self.mock_method_args = ids
         self.mock_method_kwargs = kwargs
-        # None of the RPC methods for torrents have return values
+        # None of the RPC methods for torrents have return values,
+        # so we return nothing
 
     async def test_no_torrents_found(self):
         response = await self.api._torrent_action(
@@ -154,8 +175,8 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         self.assertEqual(self.mock_method_kwargs, None)
         self.assertEqual(response.success, False)
         self.assertEqual(response.torrents, ())
-        self.assertIn('id', str(response.msgs[0]))
-        self.assertIn('4', str(response.msgs[0]))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ('No matching torrents: id=4',))
 
     async def test_rpc_method_without_kwargs(self):
         response = await self.api._torrent_action(
@@ -165,8 +186,10 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         self.assertEqual(self.mock_method_args, (3,))
         self.assertEqual(self.mock_method_kwargs, {})
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 3)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Boo')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 3, 'name': 'Boo'}),))
+        self.assertEqual(response.msgs, ('Found 1 id=4|id=3 torrent',))
+        self.assertEqual(response.errors, ())
 
     async def test_rpc_method_with_kwargs(self):
         response = await self.api._torrent_action(
@@ -176,8 +199,11 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         self.assertEqual(self.mock_method_args, (2,3))
         self.assertEqual(self.mock_method_kwargs, {'foo': 'bar'})
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 2, 3)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Bar', 'Boo')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 2, 'name': 'Bar'}),
+                          Torrent({'id': 3, 'name': 'Boo'}),))
+        self.assertEqual(response.msgs, ('Found 2 ~B torrents',))
+        self.assertEqual(response.errors, ())
 
     async def test_rpc_method_without_filter(self):
         response = await self.api._torrent_action(
@@ -186,8 +212,12 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         self.assertEqual(self.mock_method_args, (1, 2, 3))  # All torrents
         self.assertEqual(self.mock_method_kwargs, {})
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 1, 2, 3)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Foo', 'Bar', 'Boo')
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 1, 'name': 'Foo'}),
+                          Torrent({'id': 2, 'name': 'Bar'}),
+                          Torrent({'id': 3, 'name': 'Boo'}),))
+        self.assertEqual(response.msgs, ())
+        self.assertEqual(response.errors, ())
 
     async def test_check_function(self):
         wanted_keys = ('id', 'name')
@@ -195,9 +225,9 @@ class TestManipulatingTorrents(TorrentAPITestCase):
             self.assertEqual(set(torrent), set(wanted_keys))
 
             if 'oo' in torrent['name']:
-                return (True, 'hit: #{}, {}'.format(torrent['id'], torrent['name']))
+                return (True, 'hit: #%d, %s' % (torrent['id'], torrent['name']))
             else:
-                return (False, 'miss: #{}, {}'.format(torrent['id'], torrent['name']))
+                return (False, 'miss: #%d, %s' % (torrent['id'], torrent['name']))
 
         response = await self.api._torrent_action(
             method=self.mock_method,
@@ -206,13 +236,11 @@ class TestManipulatingTorrents(TorrentAPITestCase):
         self.assertEqual(self.mock_method_args, (1, 3))
         self.assertEqual(self.mock_method_kwargs, {})
         self.assertEqual(response.success, True)
-        self.assert_torrentkeys_equal('id', response.torrents, 1, 3)
-        self.assert_torrentkeys_equal('name', response.torrents, 'Foo', 'Boo')
-        self.assertEqual(response.msgs, (
-            'hit: #1, Foo',
-            errors.ClientError('miss: #2, Bar'),
-            'hit: #3, Boo',
-        ))
+        self.assertEqual(response.torrents,
+                         (Torrent({'id': 1, 'name': 'Foo'}),
+                          Torrent({'id': 3, 'name': 'Boo'}),))
+        self.assertEqual(response.msgs, ('hit: #1, Foo', 'hit: #3, Boo'))
+        self.assertEqual(response.errors, ('miss: #2, Bar',))
 
 
 class TestTorrentBandwidthLimit(TorrentAPITestCase):
@@ -234,23 +262,25 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         self.assertIn(expected_req, existing_reqs)
 
 
-    async def test_enable_rate_limit(self):
-        self.daemon.response = rsrc.response_torrents(
-            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
-            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
-        )
-        await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), True)
-        self.assert_request({'method': 'torrent-set',
-                             'arguments': {'ids': [1, 2], 'uploadLimited': True}})
-
     async def test_disable_rate_limit(self):
         self.daemon.response = rsrc.response_torrents(
             {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': True},
             {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': True},
         )
-        await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), False)
+        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), False)
         self.assert_request({'method': 'torrent-set',
                              'arguments': {'ids': [1, 2], 'uploadLimited': False}})
+        self.assertEqual(response.success, True)
+
+    async def test_enable_rate_limit(self):
+        self.daemon.response = rsrc.response_torrents(
+            {'id': 1, 'name': 'Foo', 'uploadLimit': 100, 'uploadLimited': False},
+            {'id': 2, 'name': 'Bar', 'uploadLimit': 200, 'uploadLimited': False},
+        )
+        response = await self.api.set_limit_rate_up(TorrentFilter('id=1|id=2'), True)
+        self.assert_request({'method': 'torrent-set',
+                             'arguments': {'ids': [1, 2], 'uploadLimited': True}})
+        self.assertEqual(response.success, True)
 
     async def test_set_absolute_rate_limit(self):
         self.daemon.response = rsrc.response_torrents(
