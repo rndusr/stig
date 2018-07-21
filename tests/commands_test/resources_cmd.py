@@ -190,15 +190,19 @@ class CommandTestCase(asynctest.TestCase):
             raise process.exception
         return process
 
-    def assert_stdout(self, *msgs):
+    def assert_stdout(self, *lines_exp):
         self.stdout.seek(0)
-        lines = tuple(line.rstrip('\n') for line in self.stdout.readlines())
-        self.assertEqual(lines, msgs)
+        self._compare_lines(self.stdout.readlines(), lines_exp)
 
-    def assert_stderr(self, *msgs):
+    def assert_stderr(self, *lines_exp):
         self.stderr.seek(0)
-        lines = tuple(line.rstrip('\n') for line in self.stderr.readlines())
-        self.assertEqual(lines, msgs)
+        self._compare_lines(self.stderr.readlines(), lines_exp)
+
+    def _compare_lines(self, lines, lines_exp):
+        from itertools import zip_longest
+        for line,line_exp in zip_longest(lines, lines_exp, fillvalue='<NO MESSAGE>'):
+            line = line.rstrip('\n')
+            self.assertRegex(line, line_exp)
 
     def clear_stdout(self):
         self.stdout = sys.stdout = io.StringIO()
