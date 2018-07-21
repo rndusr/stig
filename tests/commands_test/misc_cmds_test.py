@@ -23,9 +23,9 @@ class TestHelpCmd(CommandTestCase):
     async def test_multiple_topics(self):
         process = await self.execute(HelpCmd, 'foo', 'bar')
         self.assertEqual(process.success, True)
-        self.assert_stdout('Mock help for foo',
-                           *HelpCmd.TOPIC_DELIMITER,
-                           'Mock help for bar')
+        self.assert_stdout('^Mock help for foo$',
+                           *(line or '^$' for line in HelpCmd.TOPIC_DELIMITER),
+                           '^Mock help for bar$')
         self.assert_stderr()
 
     async def test_unknown_topic(self):
