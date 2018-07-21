@@ -444,7 +444,8 @@ _MODIFY = {
     'time-activity'                : lambda raw: _modify_timestamp(raw, 'activityDate',
                                                                    zero_means=ttypes.Timestamp.NEVER),
     'time-completed'               : lambda raw: _modify_timestamp_completed(raw),
-    'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime'),
+    'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime',
+                                                                   zero_means=ttypes.Timestamp.NEVER),
 
     'error'                        : _find_error,
     'trackers'                     : TrackerList,
