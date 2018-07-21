@@ -945,8 +945,10 @@ class TorrentAPI():
                 return (False, 'Torrent has no trackers: %s' % t['name'])
             elif t['status'].STOPPED in t['status']:
                 return (False, 'Not announcing inactive torrent: %s' % t['name'])
+            elif t['time-manual-announce-allowed'] == 0:
+                return (False, 'Manual announce not allowed')
             elif t['time-manual-announce-allowed'] > time.time():
-                return (False, ('Not allowing manual announce until %s (in %s): %r' %
+                return (False, ('Manual announce not allowed until %s (in %s): %r' %
                                 (t['time-manual-announce-allowed'],
                                  t['time-manual-announce-allowed'].timedelta, t['name'])))
             else:
