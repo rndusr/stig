@@ -210,8 +210,8 @@ class _CommandBase():
         self._args = args
         for k,v in kwargs.items():
             setattr(self, k, v)
-        self._info_handler = info_handler or sys.stdout.write
-        self._error_handler = error_handler or sys.stderr.write
+        self._info_handler = info_handler or (lambda msg: print(msg, file=sys.stdout))
+        self._error_handler = error_handler or (lambda msg: print(msg, file=sys.stderr))
         self.on_success = on_success
         self.on_failure = on_failure
         self._task = None
