@@ -194,3 +194,4 @@
 
 #+STARTUP: showeverything
 #+OPTIONS: num:nil
+#+OPTIONS: ^:{}
