@@ -149,13 +149,23 @@
 *** Development version
     To install the latest development version, simply replace ~stig~ in the
     commands above with ~git+https://github.com/rndusr/stig.git#egg=stig~.  (You
-    may need to escape the ~#~.)
+    may need to escape the ~#~ depending on your shell.)
 
-*** Developers
-    If you have cloned the Git repository and want to make your changes
-    effective immediately, you can either run ~python3 -m stig~ in the project
-    directory or install stig with ~pip3~ from a local path and pass the
-    ~--editable~ option.
+*** Developing
+    To make your code changes effective immediately, you can either run ~python3
+    -m stig <ARGUMENTS>~ in the project directory or use ~pip3~'s ~--editable~
+    option.
+
+    To run the tests, simply run ~make test~ in the project directory.  This
+    creates a virtual environment in ~./venv~, installs stig and its
+    dependencies in there and runs all available tests.
+
+    If you want to only run tests for a specific module or package:
+
+    1. Create a virtual environment: ~make venv~
+    2. Activate it: ~. venv/bin/activate~
+    3. Pass any path in the ~tests~ directory to pytest: ~venv/bin/pytest
+       tests/settings~
 
 ** Requirements
    - Python >=3.5
