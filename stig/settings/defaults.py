@@ -225,14 +225,13 @@ DEFAULT_KEYMAP = (
     {'context': 'main', 'key': '?',    'action': '<F1>'},
 
     # Hide/Show TUI elements
-    {'context': 'main', 'key': 'alt-L', 'action': 'tui toggle log'},
-    {'context': 'main', 'key': 'alt-M', 'action': 'tui toggle main'},
-    {'context': 'main', 'key': 'alt-T', 'action': 'tui toggle topbar'},
-    {'context': 'main', 'key': 'alt-B', 'action': 'tui toggle bottombar'},
+    {'context': 'main', 'key': 'alt-m', 'action': 'tui toggle main'},
+    {'context': 'main', 'key': 'alt-t', 'action': 'tui toggle topbar'},
+    {'context': 'main', 'key': 'alt-b', 'action': 'tui toggle bottombar'},
+    {'context': 'main', 'key': 'alt-l', 'action': 'tui toggle log'},
 
     # Log messages
-    {'context': 'main', 'key': 'ctrl-l',   'action': 'tui toggle log'},
-    {'context': 'main', 'key': 'alt-l',    'action': 'log clear'},
+    {'context': 'main', 'key': 'ctrl-l',   'action': 'log clear'},
     {'context': 'main', 'key': 'alt-pgup', 'action': 'log scroll page up'},
     {'context': 'main', 'key': 'alt-pgdn', 'action': 'log scroll page down'},
     {'context': 'main', 'key': 'alt-home', 'action': 'log scroll top'},
