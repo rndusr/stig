@@ -480,8 +480,9 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         cmd_attrs = {}
 
         # The command we're running might be interested in the items the user
-        # had selected in the previously focused tab.  To let the command know
-        # which torrents it is supposed to target, we provide the ID of the
+        # had selected in the previously focused tab, e.g. if the user selects
+        # multiple torrents and runs "tab filelist", the new tab should list the
+        # files of the selected torrnets.  So we provide the ID of the
         # previously focused tab as a command attribute.  The command can then
         # use that to look up the relevant torrents (usually via the
         # select_torrents() mixin class).
