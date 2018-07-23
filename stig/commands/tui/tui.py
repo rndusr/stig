@@ -173,8 +173,8 @@ class InteractiveCmd(metaclass=InitCommand):
           'description': 'Command to run after the dialog is closed either way' },
         { 'names': ('COMMAND',), 'nargs': '+',
           'description': ('The command to run when the user types something.  The first occurence '
-                          'of "%s" is replaced with the user input.  If "%s" doesn\'t occur, '
-                          'user input is appended.') },
+                          'of "%s" in COMMAND is replaced with the user input.  If "%s" doesn\'t occur, '
+                          'user input is appended to COMMAND.') },
     )
     tui = ExpectedResource
     cmdmgr = ExpectedResource
