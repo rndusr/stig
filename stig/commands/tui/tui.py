@@ -435,7 +435,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
     argspecs = (
         { 'names': ('--background', '-b'), 'action': 'store_true',
           'description': 'Do not focus new tab' },
-        { 'names': ('--close-all', '-ca'), 'action': 'store_true',
+        { 'names': ('--close-all', '-C'), 'action': 'store_true',
           'description': 'Close all tabs' },
         { 'names': ('--close', '-c'), 'nargs': '?', 'default': False, 'document_default': False,
           'description': 'Close focused or specified tab (see TAB IDENTIFIERS SECTION)' },
