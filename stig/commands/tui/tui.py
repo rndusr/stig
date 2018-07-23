@@ -14,7 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, ExpectedResource)
+from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
 
@@ -105,16 +105,12 @@ class BindCmd(metaclass=InitCommand):
         if context is None:
             context = keymap.DEFAULT_CONTEXT
         elif context not in _get_keymap_contexts():
-            log.error('Invalid context: {!r}'.format(context))
-            return False
+            raise CmdError('Invalid context: %r' % (context,))
 
         try:
             keymap.bind(key, action, context=context)
         except ValueError as e:
-            log.error(e)
-            return False
-        else:
-            return True
+            raise CmdError(e)
 
 
 class UnbindCmd(metaclass=InitCommand):
@@ -145,19 +141,19 @@ class UnbindCmd(metaclass=InitCommand):
         if context is None:
             context = keymap.DEFAULT_CONTEXT
         elif context not in _get_keymap_contexts():
-            log.error('Invalid context: {!r}'.format(context))
-            return False
+            raise CmdError('Invalid context: %r' % (context,))
 
         success = True
         for key in KEY:
             try:
                 keymap.unbind(key, context=context)
             except ValueError as e:
-                log.error(e)
+                self.error(e)
                 success = False
             else:
                 success = success and True
-        return success
+        if not success:
+            raise CmdError()
 
 
 class InteractiveCmd(metaclass=InitCommand):
@@ -220,27 +216,26 @@ class InteractiveCmd(metaclass=InitCommand):
                              position=self.tui.widgets.get_position('cli'),
                              removable=True,
                              options='pack')
-        return True
 
     def _change_callback(self, widget):
         cmd = ''.join((self._before_edit, widget.edit_text, self._after_edit))
-        self.cmdmgr.run_task(cmd, on_error=log.error)
+        self.cmdmgr.run_task(cmd)
 
     def _accept_callback(self, widget):
         if self._accept_cmd is not None:
-            self.cmdmgr.run_task(self._accept_cmd, on_error=log.error)
+            self.cmdmgr.run_task(self._accept_cmd)
         self._close()
 
     def _cancel_callback(self, widget):
         if self._cancel_cmd is not None:
-            self.cmdmgr.run_task(self._cancel_cmd, on_error=log.error)
+            self.cmdmgr.run_task(self._cancel_cmd)
         self._close()
 
     def _close(self):
         self.tui.widgets.remove(self._EDIT_WIDGET_NAME)
         self.tui.widgets.focus_name = 'main'
         if self._close_cmd is not None:
-            self.cmdmgr.run_task(self._close_cmd, on_error=log.error)
+            self.cmdmgr.run_task(self._close_cmd)
 
 
 class MarkCmd(metaclass=InitCommand):
@@ -270,13 +265,11 @@ class MarkCmd(metaclass=InitCommand):
     def run(self, focus_next, toggle, all):
         widget = self.tui.tabs.focus
         if not widget.has_marked_column:
-            log.error('Nothing to mark here.')
-            return False
+            raise CmdError('Nothing to mark here.')
         else:
             widget.mark(toggle=toggle, all=all)
             if focus_next:
                 widget.focus_position += 1
-            return True
 
 
 class UnmarkCmd(metaclass=InitCommand):
@@ -300,13 +293,11 @@ class UnmarkCmd(metaclass=InitCommand):
     def run(self, focus_next, toggle, all):
         widget = self.tui.tabs.focus
         if not widget.has_marked_column:
-            log.error('Nothing to unmark here.')
-            return False
+            raise CmdError('Nothing to unmark here.')
         else:
             widget.unmark(toggle=toggle, all=all)
             if focus_next:
                 widget.focus_position += 1
-            return True
 
 
 class QuitCmd(metaclass=InitCommand):
@@ -337,8 +328,7 @@ class SearchCmd(metaclass=InitCommand):
     def run(self, clear, FILTER):
         content = self.tui.tabs.focus
         if not hasattr(content, 'secondary_filter'):
-            log.error('Current tab does not support searching.')
-            return False
+            raise CmdError('Current tab does not support searching.')
         else:
             if clear:
                 content.secondary_filter = None
@@ -347,10 +337,7 @@ class SearchCmd(metaclass=InitCommand):
                 try:
                     content.secondary_filter = FILTER
                 except ValueError as e:
-                    log.error(e)
-                    return False
-                else:
-                    return True
+                    raise CmdError(e)
 
 
 class SortCmd(metaclass=InitCommand):
@@ -417,20 +404,17 @@ class SortCmd(metaclass=InitCommand):
             elif isinstance(current_tab, SettingListWidget):
                 sortcls = self.SettingSorter
             else:
-                log.error('Current tab is not sortable.')
-                return False
+                raise CmdError('Current tab is not sortable.')
 
             try:
                 new_sort = sortcls(ORDER)
             except ValueError as e:
-                log.error(e)
-                return False
+                raise CmdError(e)
 
             if add and current_tab.sort is not None:
                 current_tab.sort += new_sort
             else:
                 current_tab.sort = new_sort
-            return True
 
 
 class TabCmd(mixin.select_torrents, metaclass=InitCommand):
@@ -486,11 +470,11 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if focus is not None:
             tabid_focus = self._get_tab_id(focus)
             if tabid_focus is None:
-                return False
+                raise CmdError('No such tab: %r' % (focus,))
         if close is not False:
             tabid_close = self._get_tab_id(close)
             if tabid_close is None:
-                return False
+                raise CmdError('No such tab: %r' % (close,))
 
         # COMMAND may get additional hidden arguments as instance attributes
         cmd_attrs = {}
@@ -535,15 +519,14 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
                       ', '.join('%s=%r' % (k,v) for k,v in cmd_attrs.items()),
                       cmd_str)
 
-            cmd = await self.cmdmgr.run_async(cmd_str, **cmd_attrs)
-            retval = cmd
+            success = await self.cmdmgr.run_async(cmd_str, **cmd_attrs)
         else:
-            retval = True
+            success = True
 
         if background:
             tabs.focus_id = tabid_old
 
-        return retval
+        return success
 
     def _get_tab_id(self, pos):
         tabs = self.tui.tabs
@@ -586,7 +569,6 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
             for index,title in enumerate(tabs.titles):
                 if string in title.original_widget.text:
                     return tabs.get_id(index)
-            log.error('No tab with matching title: {!r}'.format(pos_str))
 
         # Try to use pos as an index
         tabid = find_id_by_index(pos)
@@ -638,7 +620,7 @@ class TUICmd(metaclass=InitCommand):
     def run(self, ACTION, ELEMENT):
         widgets = self.tui.widgets
         widget = None
-        success = False
+        success = True
         for element in ELEMENT:
             # Resolve path
             path = element.split('.')
@@ -650,18 +632,22 @@ class TUICmd(metaclass=InitCommand):
                     current_path.append(widgetname)
                     widget = getattr(widget, widgetname)
             except AttributeError as e:
-                log.error('Unknown TUI element: %r', '.'.join(current_path))
+                self.error('Unknown TUI element: %r' % ('.'.join(current_path),))
 
             if widget is not None:
                 action = getattr(widget, ACTION)
                 if any(ACTION == x for x in ('hide', 'toggle')):
                     action = partial(action, free_space=False)
-                log.debug(action)
 
                 log.debug('%sing %s in %s', ACTION.capitalize(), target_name, widget)
                 try:
                     action(target_name)
-                    success = True
                 except ValueError as e:
-                    log.error(e)
-        return success
+                    success = False
+                    self.error(e)
+                else:
+                    success = success and True
+                log.debug('Success is now %r', success)
+
+        if not success:
+            raise CmdError()
