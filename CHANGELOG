@@ -2,6 +2,7 @@
   Breaking changes:
     * Filter values with a space at the start or end must now be enclosed by
       single or double quotes (see `help filter`).
+    * The short option '-ca' for the 'tab' command was renamed to '-C'.
 
   Other changes:
     * New TUI command 'interactive' takes a command that contains a placeholder
