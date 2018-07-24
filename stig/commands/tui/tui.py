@@ -648,7 +648,6 @@ class TUICmd(metaclass=InitCommand):
                     self.error(e)
                 else:
                     success = success and True
-                log.debug('Success is now %r', success)
 
         if not success:
             raise CmdError()
