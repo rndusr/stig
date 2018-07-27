@@ -15,7 +15,7 @@ Create and manage commands
 Commands can be created anywhere by defining a class with metaclass set to
 InitCommand.
 
->>> class MyCommand(metaclass=InitComand):
+>>> class MyCommand(metaclass=InitCommand):
 >>>     ...
 
 Every command class must have a 'run' method, which is called when the command
