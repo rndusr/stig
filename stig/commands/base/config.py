@@ -161,6 +161,8 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return
 
         # NAME might have ':eval' attached if VALUE is shell command
+        # `name` is the user-facing name of the variable.
+        # `key` is the lookup key in the config mapping.
         try:
             name, key, is_local_setting = self._parse_name(NAME)
         except ValueError as e:
@@ -216,6 +218,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             raise CmdError(e)
 
     def _parse_name(self, name):
+        # Return (name, key, is_local_setting)
         if name.endswith(':eval'):
             name = name[:-5]
         if name in self.cfg:
