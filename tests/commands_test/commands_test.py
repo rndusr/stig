@@ -95,21 +95,15 @@ class TestCommand(asynctest.TestCase):
 
         self.assertEqual(process.finished, True)
         self.assertEqual(process.success, False)
-        assertIsException(process.exception, CmdArgError, '--frobnicate')
-
         self.assertEqual(self.info_handler.calls, 0)
         self.assertEqual(self.error_handler.calls, 1)
         self.assertEqual(str(self.error_handler.args[0][0]),
-                         '%s: %s' % (process.name, process.exception))
+                         'div: Unrecognized arguments: --frobnicate')
 
 
     def check(self, process, success, infos=(), errors=()):
         self.assertEqual(process.finished, True)
         self.assertEqual(process.success, success)
-        if success:
-            self.assertEqual(process.exception, None)
-        else:
-            self.assertIsInstance(process.exception, BaseException)
         self.assertEqual(self.error_handler.args, list(errors))
         self.assertEqual(self.info_handler.args, list(infos))
 

@@ -214,8 +214,6 @@ class _CommandBase():
         self._task = None
         self._success = None
         self._is_async = False
-        self._exc = None
-        self._exc_fetched = False
 
         try:
             args_parsed = self._argparser.parse_args(args)
@@ -252,7 +250,6 @@ class _CommandBase():
     def _finish(self, exception=None):
         if not self.finished:
             log.debug('Finishing %s', self)
-            self._exc = exception
             self._success = not bool(exception)
             if isinstance(exception, CmdError):
                 exc_str = str(exception)
@@ -289,12 +286,6 @@ class _CommandBase():
             else:
                 self._finish()
 
-    def __del__(self):
-        """Raise stored, unraised exception"""
-        exc = self.exception
-        if exc and not self._exc_fetched:
-            raise exc
-
     def info(self, msg):
         """Show info message (use this as your stdout)"""
         self._info_handler('%s: %s' % (self.name, msg))
@@ -315,15 +306,6 @@ class _CommandBase():
     def success(self):
         """True/False if command has finished, None otherwise"""
         return self._success
-
-    @property
-    def exception(self):
-        """Exception if command raised one, None otherwise"""
-        # If this class is called with wrong arguments, __del__ is called
-        # before _exc exists.
-        if hasattr(self, '_exc'):
-            self._exc_fetched = True
-            return self._exc
 
     @property
     def finished(self):
