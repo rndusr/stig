@@ -11,23 +11,21 @@ class TestCommand(asynctest.TestCase):
     def setUp(self):
         def run_sync(self_, A, B):
             assert isinstance(self_, _CommandBase)
-            self.div_result = A / B
+            self_.info(round(int(A) / int(B)))
 
         async def run_async(self_, A, B):
             assert isinstance(self_, _CommandBase)
             await asyncio.sleep(0, loop=self_.loop)
-            self.div_result = A / B
+            self_.info(round(int(A) / int(B)))
 
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
                     {'names': ('B',), 'type': int, 'description': 'Second number'})
 
         self.div_sync = make_cmdcls(name='div', run=run_sync, argspecs=argspecs, provides=('sync',))
         self.div_async = make_cmdcls(name='div', run=run_async, argspecs=argspecs, provides=('async',))
-        self.div_result = None
-        self.cb_success = Callback()
-        self.cb_error = Callback()
+        self.info_handler = Callback()
+        self.error_handler = Callback()
 
-    @asynctest.ignore_loop
     def test_mandatory_properties(self):
         attrs = {'name': 'foo',
                  'run': lambda self: None,
@@ -45,14 +43,12 @@ class TestCommand(asynctest.TestCase):
         # assertRaisesNot
         make_cmdcls(**attrs, defaults=False)
 
-    @asynctest.ignore_loop
     def test_kwargs_become_instance_attributes(self):
         cmdcls = make_cmdcls()
         cmdinst = cmdcls(foo='bar', one=1)
         self.assertEqual(cmdinst.foo, 'bar')
         self.assertEqual(cmdinst.one, 1)
 
-    @asynctest.ignore_loop
     def test_argparser(self):
         argspecs = ({'names': ('ARG1',), 'description': 'First arg'},
                     {'names': ('ARG2',), 'description': 'Second arg'})
@@ -64,7 +60,6 @@ class TestCommand(asynctest.TestCase):
         with self.assertRaises(CmdArgError):
             cmdcls._argparser.parse_args(['foo', 'bar', 'baz'])
 
-    @asynctest.ignore_loop
     def test_expected_resource_available_in_run_method(self):
         argspecs = ({'names': ('A',), 'description': 'First number'},
                     {'names': ('B',), 'description': 'Second number'})
@@ -80,7 +75,6 @@ class TestCommand(asynctest.TestCase):
         self.assertEqual(process.success, True)
         self.assertEqual(result, 'Result: 2')
 
-    @asynctest.ignore_loop
     def test_missing_expected_resource_error(self):
         cmdcls = make_cmdcls(api=ExpectedResource)
         with self.assertRaises(AttributeError) as cm:
@@ -88,91 +82,129 @@ class TestCommand(asynctest.TestCase):
         self.assertIn('api', str(cm.exception))
         self.assertIn('resource', str(cm.exception).lower())
 
-    @asynctest.ignore_loop
     def test_names_and_aliases(self):
         cmdcls = make_cmdcls(name='foo', aliases=('bar', 'baz'))
         self.assertEqual(cmdcls.names, ['foo', 'bar', 'baz'])
         cmdcls = make_cmdcls(name='foo')
         self.assertEqual(cmdcls.names, ['foo'])
 
-    @asynctest.ignore_loop
     def test_argparser_error(self):
         process = self.div_sync(['10', '2', '--frobnicate'], loop=None,
-                                on_success=self.cb_success, on_failure=self.cb_error)
+                                info_handler=self.info_handler,
+                                error_handler=self.error_handler)
 
         self.assertEqual(process.finished, True)
         self.assertEqual(process.success, False)
         assertIsException(process.exception, CmdArgError, '--frobnicate')
 
-        self.assertEqual(self.cb_success.calls, 0)
-        self.assertEqual(self.cb_error.calls, 1)
-        assert self.cb_error.args[0][0] is process.exception, \
-            '{!r} is not {!r}'.format(self.cb_error.args[0][0], process.exception)
+        self.assertEqual(self.info_handler.calls, 0)
+        self.assertEqual(self.error_handler.calls, 1)
+        self.assertEqual(str(self.error_handler.args[0][0]),
+                         '%s: %s' % (process.name, process.exception))
+
+
+    def check(self, process, success, infos=(), errors=()):
+        self.assertEqual(process.finished, True)
+        self.assertEqual(process.success, success)
+        if success:
+            self.assertEqual(process.exception, None)
+        else:
+            self.assertIsInstance(process.exception, BaseException)
+        self.assertEqual(self.error_handler.args, list(errors))
+        self.assertEqual(self.info_handler.args, list(infos))
 
 
     ### Test running commands with stopped asyncio loop
 
-    def check(self, process, result, calls_success=0, calls_error=0, exccls=None):
-        self.assertEqual(process.finished, True)
-        self.assertEqual(process.success, calls_success >= 1)
-        if exccls is None:
-            self.assertEqual(process.exception, None)
-        else:
-            self.assertIsInstance(process.exception, exccls)
-
-        self.assertEqual(self.cb_success.calls, calls_success)
-        self.assertEqual(self.cb_error.calls, calls_error)
-        if calls_success >= 1:
-            assert self.cb_success.args[-1][0] is process
-
-        self.assertEqual(self.div_result, result)
-
-    @asynctest.ignore_loop
-    def test_run_does_not_raise_exception_with_stopped_loop(self):
+    def test_run_does_not_raise_exception_in_sync_context(self):
         process = self.div_sync(['10', '2'], loop=None,
-                                on_success=self.cb_success, on_failure=self.cb_error)
-        self.check(process, result=5, calls_success=1)
+                                info_handler=self.info_handler,
+                                error_handler=self.error_handler)
+        self.check(process, success=True, infos=[('div: 5',)])
 
-        process = self.div_async(['10', '2'], loop=self.loop,
-                                 on_success=self.cb_success, on_failure=self.cb_error)
+        self.info_handler.reset()
+        self.error_handler.reset()
+
+        process = self.div_async(['50', '2'], loop=self.loop,
+                                 info_handler=self.info_handler,
+                                 error_handler=self.error_handler)
         process.wait_sync()
-        self.check(process, result=5, calls_success=2)
+        self.check(process, success=True, infos=[('div: 25',)])
 
-    @asynctest.ignore_loop
-    def test_run_raises_exception_with_stopped_loop(self):
-        process = self.div_sync(['10', '0'], loop=None,
-                                on_success=self.cb_success, on_failure=self.cb_error)
-        self.check(process, result=None, calls_error=1, exccls=ZeroDivisionError)
+    def test_run_raises_CmdError_in_sync_context(self):
+        process = self.div_sync(['10', 'foo'], loop=None,
+                                info_handler=self.info_handler,
+                                error_handler=self.error_handler)
+        self.check(process, success=False, errors=[("div: Argument B: invalid int value: 'foo'",)])
 
-        process = self.div_async(['10', '0'], loop=self.loop,
-                                 on_success=self.cb_success, on_failure=self.cb_error)
+        self.info_handler.reset()
+        self.error_handler.reset()
+
+        process = self.div_async(['1', 'bar'], loop=self.loop,
+                                 info_handler=self.info_handler,
+                                 error_handler=self.error_handler)
         process.wait_sync()
-        self.check(process, result=None, calls_error=2, exccls=ZeroDivisionError)
+        self.check(process, success=False, errors=[("div: Argument B: invalid int value: 'bar'",)])
+
+    def test_run_raises_Exception_in_sync_context(self):
+        with self.assertRaises(ZeroDivisionError):
+            self.div_sync(['10', '0'], loop=None,
+                          info_handler=self.info_handler,
+                          error_handler=self.error_handler)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [])
+
+        self.info_handler.reset()
+        self.error_handler.reset()
+
+        process = self.div_async(['1', '0'], loop=self.loop,
+                                 info_handler=self.info_handler,
+                                 error_handler=self.error_handler)
+        with self.assertRaises(ZeroDivisionError):
+            process.wait_sync()
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [])
 
 
     ### Test running commands with running asyncio loop
 
-    async def test_run_does_not_raise_exception_with_running_loop(self):
+    async def test_run_does_not_raise_exception_in_async_context(self):
         process = self.div_sync(['10', '2'], loop=None,
-                                on_success=self.cb_success, on_failure=self.cb_error)
-        self.check(process, result=5, calls_success=1)
+                                info_handler=self.info_handler,
+                                error_handler=self.error_handler)
+        self.check(process, success=True, infos=[('div: 5',)])
 
-        process = self.div_async(['10', '2'], loop=self.loop,
-                                 on_success=self.cb_success, on_failure=self.cb_error)
+        self.info_handler.reset()
+        self.error_handler.reset()
+
+        process = self.div_async(['10', '5'], loop=self.loop,
+                                info_handler=self.info_handler,
+                                error_handler=self.error_handler)
         await process.wait_async()
-        self.check(process, result=5, calls_success=2)
+        self.check(process, success=True, infos=[('div: 2',)])
 
-    @asynctest.ignore_loop
-    async def test_run_raises_exception(self):
-        process = self.div_sync(['10', '0'], loop=None,
-                                on_success=self.cb_success, on_failure=self.cb_error)
-        self.check(process, result=None, calls_error=1, exccls=ZeroDivisionError)
+    async def test_run_raises_CmdError_in_async_context(self):
+        process = self.div_sync(['10', 'foo'], loop=None,
+                                info_handler=self.info_handler,
+                                error_handler=self.error_handler)
+        self.check(process, success=False, errors=[("div: Argument B: invalid int value: 'foo'",)])
 
-        process = self.div_async(['10', '0'], loop=self.loop,
-                                 on_success=self.cb_success, on_failure=self.cb_error)
+        self.info_handler.reset()
+        self.error_handler.reset()
+
+        process = self.div_async(['100', 'bar'], loop=self.loop,
+                                 info_handler=self.info_handler,
+                                 error_handler=self.error_handler)
         await process.wait_async()
-        self.check(process, result=None, calls_error=2, exccls=ZeroDivisionError)
+        self.check(process, success=False, errors=[("div: Argument B: invalid int value: 'bar'",)])
 
+    async def test_run_raises_Exception_in_async_context(self):
+        with self.assertRaises(ZeroDivisionError):
+            self.div_sync(['10', '0'], loop=None,
+                          info_handler=self.info_handler,
+                          error_handler=self.error_handler)
+        self.assertEqual(self.info_handler.calls, 0)
+        self.assertEqual(self.error_handler.calls, 0)
 
 
 class TestCommandManagerManagement(unittest.TestCase):
@@ -245,94 +277,173 @@ class TestCommandManagerManagement(unittest.TestCase):
 
 
 
+
 class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
     def setUp(self):
-        self.cmdmgr = CommandManager(loop=self.loop)
+        self.info_handler = Callback()
+        self.error_handler = Callback()
+        self.cmdmgr = CommandManager(loop=self.loop,
+                                     info_handler=self.info_handler,
+                                     error_handler=self.error_handler)
 
-        def sync_run(self_, A, B):
+        def run_sync(self_, A, B):
             assert isinstance(self_, _CommandBase)
-            self.div_result = A / B
+            self_.info(round(int(A) / int(B)))
 
-        async def async_run(self_, A, B):
+        async def run_async(self_, A, B):
             assert isinstance(self_, _CommandBase)
             await asyncio.sleep(0, loop=self_.loop)
-            self.div_result = A / B
+            self_.info(round(int(A) / int(B)))
 
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
                     {'names': ('B',), 'type': int, 'description': 'Second number'})
         self.cmdmgr.register(
-            make_cmdcls(name='div', run=sync_run, argspecs=argspecs, provides=('sync',))
+            make_cmdcls(name='div', run=run_sync, argspecs=argspecs, provides=('sync',))
         )
         self.cmdmgr.register(
-            make_cmdcls(name='div', run=async_run, argspecs=argspecs, provides=('async',))
+            make_cmdcls(name='div', run=run_async, argspecs=argspecs, provides=('async',))
         )
 
 
-        async def async_run_CmdError(self_, msg):
+        def run_sync_CmdError(self_, msg):
+            raise CmdError(msg)
+
+        async def run_async_CmdError(self_, msg):
             await asyncio.sleep(0, loop=self_.loop)
             raise CmdError(msg)
 
-        def sync_run_CmdError(self_, msg):
-            raise CmdError(msg)
-
-        argspecs = ({'names': ('msg',), 'type': str, 'description': 'Error message'},)
+        argspecs = ({'names': ('msg',), 'description': 'Error message'},)
         self.cmdmgr.register(
-            make_cmdcls(name='error', run=async_run_CmdError, argspecs=argspecs, provides=('async',))
+            make_cmdcls(name='error', run=run_sync_CmdError, argspecs=argspecs, provides=('sync',))
         )
         self.cmdmgr.register(
-            make_cmdcls(name='error', run=sync_run_CmdError, argspecs=argspecs, provides=('sync',))
+            make_cmdcls(name='error', run=run_async_CmdError, argspecs=argspecs, provides=('async',))
         )
 
 
-        async def async_run_Exception(self_):
+        def run_sync_Exception(self_):
+            1/0
+        async def run_async_Exception(self_):
             await asyncio.sleep(0, loop=self_.loop)
             1/0
-        def sync_run_Exception(self_):
-            1/0
         self.cmdmgr.register(
-            make_cmdcls(name='raise', run=async_run_Exception, argspecs=(), provides=('async',))
+            make_cmdcls(name='raise', run=run_sync_Exception, argspecs=(), provides=('sync',))
         )
         self.cmdmgr.register(
-            make_cmdcls(name='raise', run=sync_run_Exception, argspecs=(), provides=('sync',))
+            make_cmdcls(name='raise', run=run_async_Exception, argspecs=(), provides=('async',))
         )
 
-        self.cb_error = Callback()
-        self.cb_success = Callback()
+    async def check(self, result, success, infos=(), errors=()):
+        self.assertEqual(result, success)
+        self.assertEqual(tuple(self.info_handler.args), infos)
+        self.assertEqual(tuple(self.error_handler.args), errors)
 
 
-class TestCommandManagerCalls(TestCommandManagerCallsBase):
-    @asynctest.ignore_loop
-    def test_run_sync(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-            success = self.cmdmgr.run_sync('div 20 4',
-                                           on_success=self.cb_success,
-                                           on_failure=self.cb_error)
-            self.assertEqual(success, True)
-            self.assertEqual(self.cb_success.calls, 1)
-            self.assertIsInstance(self.cb_success.args[-1][0], _CommandBase)
-            self.assertEqual(self.cb_error.calls, 0)
-            self.assertEqual(self.div_result, 5)
+class TestCommandManagerCalls_NoException(TestCommandManagerCallsBase):
+    def test_run_sync_command_in_sync_context(self):
+        self.cmdmgr.active_interface = 'sync'
+        success = self.cmdmgr.run_sync('div 20 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.info_handler.args, [('div: 5',)])
+        self.assertEqual(self.error_handler.args, [])
 
-            self.cb_success.reset()
-            self.cb_error.reset()
+    def test_run_async_command_in_sync_context(self):
+        self.cmdmgr.active_interface = 'async'
+        success = self.cmdmgr.run_sync('div 24 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.info_handler.args, [('div: 6',)])
+        self.assertEqual(self.error_handler.args, [])
 
-    async def test_run_async(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-            success = await self.cmdmgr.run_async('div 20 4',
-                                                  on_success=self.cb_success,
-                                                  on_failure=self.cb_error)
-            self.assertEqual(success, True)
-            self.assertEqual(self.cb_success.calls, 1)
-            self.assertIsInstance(self.cb_success.args[-1][0], _CommandBase)
-            self.assertEqual(self.cb_error.calls, 0)
-            self.assertEqual(self.div_result, 5)
+    async def test_run_sync_command_in_async_context(self):
+        self.cmdmgr.active_interface = 'sync'
+        success = await self.cmdmgr.run_async('div 28 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.info_handler.args, [('div: 7',)])
+        self.assertEqual(self.error_handler.args, [])
 
-            self.cb_success.reset()
-            self.cb_error.reset()
+    async def test_run_async_command_in_async_context(self):
+        self.cmdmgr.active_interface = 'async'
+        success = await self.cmdmgr.run_async('div 32 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.info_handler.args, [('div: 8',)])
+        self.assertEqual(self.error_handler.args, [])
 
-    @asynctest.ignore_loop
+
+class TestCommandManagerCalls_RaisingCmdError(TestCommandManagerCallsBase):
+    def test_run_sync_command_in_sync_context(self):
+        self.cmdmgr.active_interface = 'sync'
+        success = self.cmdmgr.run_sync('div 1 foo')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [("div: Argument B: invalid int value: 'foo'",)])
+
+    def test_run_async_command_in_sync_context(self):
+        self.cmdmgr.active_interface = 'async'
+        success = self.cmdmgr.run_sync('div 1 foo')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [("div: Argument B: invalid int value: 'foo'",)])
+
+    async def test_run_sync_command_in_async_context(self):
+        self.cmdmgr.active_interface = 'sync'
+        success = self.cmdmgr.run_sync('div 1 foo')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [("div: Argument B: invalid int value: 'foo'",)])
+
+    async def test_run_async_command_in_async_context(self):
+        self.cmdmgr.active_interface = 'async'
+        success = await self.cmdmgr.run_async('div 1 foo')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [("div: Argument B: invalid int value: 'foo'",)])
+
+
+class TestCommandManagerCalls_RaisingException(TestCommandManagerCallsBase):
+    def test_run_sync_command_in_sync_context(self):
+        self.cmdmgr.active_interface = 'sync'
+        with self.assertRaises(ZeroDivisionError):
+            self.cmdmgr.run_sync('div 1 0')
+        self.assertEqual(self.info_handler.calls, 0)
+        self.assertEqual(self.error_handler.calls, 0)
+
+    def test_run_async_command_in_sync_context(self):
+        self.cmdmgr.active_interface = 'async'
+        with self.assertRaises(ZeroDivisionError):
+            self.cmdmgr.run_sync('div 1 0')
+        self.assertEqual(self.info_handler.calls, 0)
+        self.assertEqual(self.error_handler.calls, 0)
+
+    async def test_run_sync_command_in_async_context(self):
+        self.cmdmgr.active_interface = 'sync'
+        with self.assertRaises(ZeroDivisionError):
+            await self.cmdmgr.run_async('div 1 0')
+        self.assertEqual(self.info_handler.calls, 0)
+        self.assertEqual(self.error_handler.calls, 0)
+
+    async def test_run_async_command_in_async_context(self):
+        self.cmdmgr.active_interface = 'async'
+        with self.assertRaises(ZeroDivisionError):
+            await self.cmdmgr.run_async('div 1 0')
+        self.assertEqual(self.info_handler.calls, 0)
+        self.assertEqual(self.error_handler.calls, 0)
+
+
+class TestCommandManagerCalls_UnknownCommand(TestCommandManagerCallsBase):
+    def test_in_sync_context(self):
+        success = self.cmdmgr.run_sync('foo 1 0')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [('foo: Unknown command',)])
+
+    async def test_in_async_context(self):
+        success = await self.cmdmgr.run_async('foo 1 0')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [('foo: Unknown command',)])
+
+
+class TestCommandManagerCalls_OtherTests(TestCommandManagerCallsBase):
     def test_kwargs_are_forwarded_to_cmd_instance(self):
         kwargs = {'foo': 'bar', 'one': 1}
         def run(self_cmd):
@@ -346,144 +457,11 @@ class TestCommandManagerCalls(TestCommandManagerCallsBase):
         success = self.cmdmgr.run_sync('kwargs-test', **kwargs)
         self.assertEqual(success, True)
 
-
-    @asynctest.ignore_loop
-    def test_sync_command_raises_unexpected_exception(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-
-            # Without error handler
-            with self.assertRaises(ZeroDivisionError):
-                self.cmdmgr.run_sync('div 1 0')
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-
-            # With error handler (non-CmdErrors are always raised)
-            with self.assertRaises(ZeroDivisionError):
-                self.cmdmgr.run_sync('div 1 0',
-                                     on_success=self.cb_success,
-                                     on_failure=self.cb_error)
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-
-    async def test_async_command_raises_unexpected_exception(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-
-            # Without error handler
-            with self.assertRaises(ZeroDivisionError):
-                await self.cmdmgr.run_async('div 1 0')
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-
-            # With error handler (non-CmdErrors are always raised)
-            with self.assertRaises(ZeroDivisionError):
-                await self.cmdmgr.run_async('div 1 0',
-                                            on_success=self.cb_success,
-                                            on_failure=self.cb_error)
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-
-
-    @asynctest.ignore_loop
-    def test_sync_command_raises_CmdError(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-
-            # Without error handler
-            with self.assertRaises(CmdError) as cm:
-                self.cmdmgr.run_sync('error "Oops"')
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-            self.assertIn('Oops', str(cm.exception))
-
-            # With error handler
-            success = self.cmdmgr.run_sync('error "No!"',
-                                           on_success=self.cb_success,
-                                           on_failure=self.cb_error)
-            self.assertEqual(success, False)
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 1)
-            process = self.cb_error.args[0][0]
-            assertIsException(process.exception, CmdError, 'No!')
-
-            self.cb_success.reset()
-            self.cb_error.reset()
-
-    async def test_async_command_raises_CmdError(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-
-            # Without error handler
-            with self.assertRaises(CmdError) as cm:
-                await self.cmdmgr.run_async('error "Oops"')
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-            self.assertIn('Oops', str(cm.exception))
-
-            # With error handler
-            success = await self.cmdmgr.run_async('error "No!"',
-                                                  on_success=self.cb_success,
-                                                  on_failure=self.cb_error)
-            self.assertEqual(success, False)
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 1)
-            process = self.cb_error.args[0][0]
-            assertIsException(process.exception, CmdError, 'No!')
-
-            self.cb_success.reset()
-            self.cb_error.reset()
-
-
-    @asynctest.ignore_loop
-    def test_sync_unknown_command_without_error_handler(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-            with self.assertRaises(CmdNotFoundError) as cm:
-                self.cmdmgr.run_sync('foo bar baz')
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-            assertIsException(cm.exception, CmdError, 'foo')
-
-    async def test_async_unknown_command_without_error_handler(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-            with self.assertRaises(CmdNotFoundError) as cm:
-                await self.cmdmgr.run_async('foo bar baz')
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 0)
-            assertIsException(cm.exception, CmdError, 'foo')
-
-    @asynctest.ignore_loop
-    def test_sync_unknown_command_with_error_handler(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-            success = self.cmdmgr.run_sync('foo',
-                                           on_success=self.cb_success,
-                                           on_failure=self.cb_error)
-            self.assertEqual(success, False)
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 1)
-            process = self.cb_error.args[0][0]
-            assertIsException(process.exception, CmdError, 'foo')
-
-            self.cb_success.reset()
-            self.cb_error.reset()
-
-    async def test_async_unknown_command_with_error_handler(self):
-        for iface in ('sync', 'async'):
-            self.cmdmgr.active_interface = iface
-            success = await self.cmdmgr.run_async('foo',
-                                                  on_success=self.cb_success,
-                                                  on_failure=self.cb_error)
-            self.assertEqual(success, False)
-            self.assertEqual(self.cb_success.calls, 0)
-            self.assertEqual(self.cb_error.calls, 1)
-            process = self.cb_error.args[0][0]
-            assertIsException(process.exception, CmdError, 'foo')
-
-            self.cb_success.reset()
-            self.cb_error.reset()
+    def test_unbalanced_quotes_in_command_line(self):
+        success = self.cmdmgr.run_sync('div 12 4 & div 24 "3 | foo')
+        self.assertEqual(success, False)
+        self.assertEqual(self.info_handler.args, [])
+        self.assertEqual(self.error_handler.args, [('No closing quotation',)])
 
 
 class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
@@ -492,279 +470,289 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
         self.true_cb = Callback()
         self.false_cb = Callback()
 
-        def true_run(self_, *args, **kwargs): self.true_cb(*args, **kwargs)
-        def false_run(self_, *args, **kwargs): self.false_cb(*args, **kwargs) ; raise CmdError('Nope')
+        def true_run(self_, *args, **kwargs):
+            assert args is ()
+            self.true_cb(**kwargs)
+
+        def false_run(self_, *args, **kwargs):
+            assert args is ()
+            self.false_cb(**kwargs)
+            raise CmdError()
 
         args = ({'names': ('-a',), 'action': 'store_true', 'description': 'A args'},
                 {'names': ('-b',), 'action': 'store_true', 'description': 'B args'},
                 {'names': ('-c',), 'action': 'store_true', 'description': 'C args'})
         true_cmd = make_cmdcls(name='true', run=true_run, argspecs=args, provides=('T',))
         false_cmd = make_cmdcls(name='false', run=false_run, argspecs=args, provides=('F',))
-
         self.cmdmgr.register(true_cmd)
         self.cmdmgr.register(false_cmd)
 
-    def assert_success(self, cmdchain):
-        success = self.cmdmgr.run_sync(cmdchain,
-                                       on_success=self.cb_success,
-                                       on_failure=self.cb_error)
+
+    async def assert_success(self, cmdchain):
+        success = self.cmdmgr.run_sync(cmdchain)
+        self.assertEqual(success, True)
+        success = await self.cmdmgr.run_async(cmdchain)
         self.assertEqual(success, True)
 
-    def assert_failure(self, cmdchain):
-        success = self.cmdmgr.run_sync(cmdchain,
-                                       on_success=self.cb_success,
-                                       on_failure=self.cb_error)
+    async def assert_failure(self, cmdchain, infos=(), errors=()):
+        success = self.cmdmgr.run_sync(cmdchain)
         self.assertEqual(success, False)
+        if infos: self.assertEqual(self.info_handler.args, list(infos))
+        if errors: self.assertEqual(self.error_handler.args, list(errors))
+        self.info_handler.reset()
+        self.error_handler.reset()
+        success = await self.cmdmgr.run_async(cmdchain)
+        self.assertEqual(success, False)
+        if infos: self.assertEqual(self.info_handler.args, list(infos))
+        if errors: self.assertEqual(self.error_handler.args, list(errors))
 
-    @asynctest.ignore_loop
-    def test_empty_cmdchain(self):
-        self.assert_success([])
-        self.assert_success('')
+    async def test_cmdchain_formats(self):
+        await self.assert_success('true ; true')
+        await self.assert_failure('true ; false')
+        await self.assert_success([['true'], ';', ['true']])
+        await self.assert_failure([['true'], ';', ['false']])
 
-    @asynctest.ignore_loop
-    def test_run_good_parsed_cmdchain(self):
-        self.assert_success([['false'], ';', ('true',)])
-        self.assert_success([['false'], ['true']])
-        self.assert_success((('true',), '&', ['true']))
-        self.assert_success(iter([['false'], '|', ['true']]))
+    async def test_empty_cmdchain(self):
+        await self.assert_success('')
+        await self.assert_success([])
+        await self.assert_success([[], []])
 
-        self.assert_failure([['true'], ';', ('false',)])
-        self.assert_failure([['true'], ['false']])
-        self.assert_failure((['true'], '&', ['false']))
-        self.assert_failure((['false'], '|', ['false']))
+    async def test_valid_cmdchain(self):
+        await self.assert_success([['false'], ';', ['true']])
+        await self.assert_success([['false'], ['true']])
+        await self.assert_success((['true'], '&', ['true']))
+        await self.assert_success([['false'], '|', ('true',)])
+
+        await self.assert_failure([('true',), ';', ['false']])
+        await self.assert_failure([('true',), ('false',)])
+        await self.assert_failure((('true',), '&', ('false',)))
+        await self.assert_failure([['false'], '|', ['false']])
+
+    async def test_trailing_operator(self):
+        await self.assert_failure('true ; false &')
+        await self.assert_success([('false',), ';', ('true',), '|'])
 
 
-    def assert_invalid_cmdchain_format(self, cmdchain):
-        with self.assertRaises(RuntimeError):
+    async def run_testcases(self, testcases, checkfunc):
+        # Run each test in list format and in string format
+        for cmdchain, kwargs in testcases:
+            await checkfunc(cmdchain, **kwargs)
+            cmdchain_str = ' '.join(cmd if isinstance(cmd, str) else ' '.join(cmd)
+                                    for cmd in cmdchain)
+            await checkfunc(cmdchain_str, **kwargs)
+
+    async def test_consecutive_operators(self):
+        async def assert_consecutive_ops(cmdchain, op1, op2):
+            self.error_handler.reset()
             self.cmdmgr.run_sync(cmdchain)
+            self.assertEqual(self.error_handler.args,
+                             [('Consecutive operators: %s %s' % (op1, op2),)])
+            self.error_handler.reset()
+            await self.cmdmgr.run_async(cmdchain)
+            self.assertEqual(self.error_handler.args,
+                             [('Consecutive operators: %s %s' % (op1, op2),)])
 
-    @asynctest.ignore_loop
-    def test_run_bad_parsed_cmdchain(self):
-        self.assert_invalid_cmdchain_format([['true'], ';', 'true'])
-        self.assert_invalid_cmdchain_format((('true',), '&', iter(['true'])))
-        self.assert_invalid_cmdchain_format((('true',), '&&&', ['true']))
+        testcases = (
+            ([['true'], ';', ';', ['false']], {'op1': ';', 'op2': ';'}),
+            ([['true'], '&', '&', ['false']], {'op1': '&', 'op2': '&'}),
+            ([['false'], '|', '|', ['true']], {'op1': '|', 'op2': '|'}),
 
+            ([['true'], ';', '&', ['false']], {'op1': ';', 'op2': '&'}),
+            ([['true'], '&', '|', ['false']], {'op1': '&', 'op2': '|'}),
+            ([['false'], '|', ';', ['true']], {'op1': '|', 'op2': ';'}),
+            ([['false'], ';', '|', ['false']], {'op1': ';', 'op2': '|'}),
+        )
+        await self.run_testcases(testcases, assert_consecutive_ops)
 
-    @asynctest.ignore_loop
-    def test_consecutive_operators(self):
-        def assert_consecutive_ops(cmdchain, op1, op2):
-            with self.assertRaises(CmdError) as cm:
-                self.cmdmgr.run_sync(cmdchain)
-            self.assertIn('Consecutive operators', str(cm.exception))
-            self.assertIn('%s %s' % (op1, op2), str(cm.exception))
-
-        assert_consecutive_ops('true ; ; true', ';', ';')
-        assert_consecutive_ops('true ; & true', ';', '&')
-        assert_consecutive_ops('true &   | true', '&', '|')
-        assert_consecutive_ops([['true'], '&', '|', ['true']], '&', '|')
-
-
-    @asynctest.ignore_loop
-    def test_nonexisting_cmd_in_cmdchain(self):
-        def do_test(cmdchain, success, success_calls, error_calls, true_calls, false_calls,
-                    true_args, false_args):
-            succ = self.cmdmgr.run_sync(cmdchain,
-                                        on_success=self.cb_success,
-                                        on_failure=self.cb_error)
-            self.assertEqual(succ, success)
-            self.assertEqual(self.cb_success.calls, success_calls)
-            self.assertEqual(self.cb_error.calls, error_calls)
-            self.assertEqual(self.true_cb.calls, true_calls)
-            self.assertEqual(self.false_cb.calls, false_calls)
-            self.assertEqual(self.true_cb.kwargs, true_args)
-            self.assertEqual(self.false_cb.kwargs, false_args)
-
-            self.cb_success.reset()
-            self.cb_error.reset()
-            self.true_cb.reset()
-            self.false_cb.reset()
-
-        do_test('true ; foo', False, 1, 1, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('false ; foo', False, 0, 2, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('false | foo', False, 0, 2, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('false & foo', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('true & foo', False, 1, 1, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-
-        do_test('foo & true', False, 0, 1, 0, 0, [], [])
-        do_test('foo | false', False, 0, 2, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('foo ; true', True, 1, 1, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-
-
-    @asynctest.ignore_loop
-    def test_only_cmds_from_active_interface_are_called(self):
-        def do_test(cmdchain, success, success_calls, error_calls, true_calls, false_calls,
-                    true_args, false_args):
-            succ = self.cmdmgr.run_sync(cmdchain,
-                                        on_success=self.cb_success,
-                                        on_failure=self.cb_error)
-            self.assertEqual(succ, success)
-            self.assertEqual(self.cb_success.calls, success_calls)
-            self.assertEqual(self.cb_error.calls, error_calls)
-            self.assertEqual(self.true_cb.calls, true_calls)
-            self.assertEqual(self.false_cb.calls, false_calls)
-            self.assertEqual(self.true_cb.kwargs, true_args)
-            self.assertEqual(self.false_cb.kwargs, false_args)
-
-            self.cb_success.reset()
-            self.cb_error.reset()
-            self.true_cb.reset()
-            self.false_cb.reset()
-
-        # Calls to 'false' are ignored and evaluate to None in the command chain
-        self.cmdmgr.active_interface = 'T'
-        do_test('true ; false', None, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('false ; true', True, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('true & false', None, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('false & true', None, 0, 0, 0, 0, [], [])
-        do_test('true | false', True, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-        do_test('false | true', True, 1, 0, 1, 0, [{'a': False, 'b': False, 'c': False}], [])
-
-        # Calls to 'true' are ignored and evaluate to None in the command chain
-        self.cmdmgr.active_interface = 'F'
-        do_test('true ; false', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('false ; true', None, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('true & false', None, 0, 0, 0, 0, [], [])
-        do_test('false & true', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('true | false', False, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-        do_test('false | true', None, 0, 1, 0, 1, [], [{'a': False, 'b': False, 'c': False}])
-
-
-    @asynctest.ignore_loop
-    def test_final_process_determines_overall_success(self):
-        def do_test(cmdchain, success):
-            result = self.cmdmgr.run_sync(cmdchain,
-                                          on_success=self.cb_success,
-                                          on_failure=self.cb_error)
+    async def test_final_process_determines_overall_success(self):
+        async def do_test(cmdchain, success):
+            result = self.cmdmgr.run_sync(cmdchain)
+            self.assertEqual(result, success)
+            result = await self.cmdmgr.run_async(cmdchain)
             self.assertEqual(result, success)
 
-        do_test([['true'], ';', ['true']], success=True)
-        do_test([['false'], ';', ['true']], success=True)
-        do_test([['true'], ';', ['false']], success=False)
-        do_test([['false'], ';', ['false']], success=False)
+        testcases = (
+            ([['true'], ';', ['true']], {'success': True}),
+            ([['false'], ';', ['true']], {'success': True}),
+            ([['true'], ';', ['false']], {'success': False}),
+            ([['false'], ';', ['false']], {'success': False}),
 
-        do_test([['true'], '&', ['true']], success=True)
-        do_test([['false'], '&', ['true']], success=False)
-        do_test([['true'], '&', ['false']], success=False)
-        do_test([['false'], '&', ['false']], success=False)
+            ([['true'], '&', ['true']], {'success': True}),
+            ([['false'], '&', ['true']], {'success': False}),
+            ([['true'], '&', ['false']], {'success': False}),
+            ([['false'], '&', ['false']], {'success': False}),
 
-        do_test([['true'], '|', ['true']], success=True)
-        do_test([['false'], '|', ['true']], success=True)
-        do_test([['true'], '|', ['false']], success=True)
-        do_test([['false'], '|', ['false']], success=False)
+            ([['true'], '|', ['true']], {'success': True}),
+            ([['false'], '|', ['true']], {'success': True}),
+            ([['true'], '|', ['false']], {'success': True}),
+            ([['false'], '|', ['false']], {'success': False}),
+        )
+        await self.run_testcases(testcases, do_test)
+
+    async def test_nonexisting_cmd_in_cmdchain(self):
+        async def do_test(cmdchain, success, true_calls=0, false_calls=0, errors=()):
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            result = self.cmdmgr.run_sync(cmdchain)
+            self.assertEqual(result, success)
+            self.assertEqual(self.true_cb.calls, true_calls)
+            self.assertEqual(self.false_cb.calls, false_calls)
+            self.assertEqual(self.error_handler.args, list(errors))
+
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            result = await self.cmdmgr.run_async(cmdchain)
+            self.assertEqual(result, success)
+            self.assertEqual(self.true_cb.calls, true_calls)
+            self.assertEqual(self.false_cb.calls, false_calls)
+            self.assertEqual(self.error_handler.args, list(errors))
+
+        testcases = (
+            ([['true'], ';', ['foo'], ';', ['false']],
+             {'success': False, 'true_calls': 1, 'false_calls': 1, 'errors': [('foo: Unknown command',)]}),
+            ([['true'], '|', ['foo'], '|', ['false']],
+             {'success': True, 'true_calls': 1, 'false_calls': 0}),
+            ([['true'], '&', ['foo'], '&', ['false']],
+             {'success': False, 'true_calls': 1, 'false_calls': 0, 'errors': [('foo: Unknown command',)]}),
+            ([['true'], '&', ['foo'], '|', ['false']],
+             {'success': False, 'true_calls': 1, 'false_calls': 1, 'errors': [('foo: Unknown command',)]}),
+            ([['true'], '&', ['foo'], '|', ['true']],
+             {'success': True, 'true_calls': 2, 'false_calls': 0, 'errors': [('foo: Unknown command',)]}),
+            ([['false'], '|', ['foo'], '&', ['true']],
+             {'success': False, 'true_calls': 0, 'false_calls': 1, 'errors': [('foo: Unknown command',)]}),
+            ([['false'], '&', ['foo'], '&', ['true']],
+             {'success': False, 'true_calls': 0, 'false_calls': 1}),
+            ([['false'], '|', ['foo'], '|', ['true']],
+             {'success': True, 'true_calls': 1, 'false_calls': 1, 'errors': [('foo: Unknown command',)]}),
+        )
+        await self.run_testcases(testcases, do_test)
+
+    async def test_cmd_from_inactive_interface_in_cmdchain(self):
+        async def do_test(cmdchain, success, true_calls=0, false_calls=0, errors=()):
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            result = self.cmdmgr.run_sync(cmdchain)
+            self.assertEqual(result, success)
+            self.assertEqual(self.true_cb.calls, true_calls)
+            self.assertEqual(self.false_cb.calls, false_calls)
+            self.assertEqual(self.error_handler.args, list(errors))
+
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            result = await self.cmdmgr.run_async(cmdchain)
+            self.assertEqual(result, success)
+            self.assertEqual(self.true_cb.calls, true_calls)
+            self.assertEqual(self.false_cb.calls, false_calls)
+            self.assertEqual(self.error_handler.args, list(errors))
+
+        ### These are the old tests cases where None was returned by inactive
+        ### commands. I'm trying to get everything working with them returning
+        ### True instead.
+
+        # self.cmdmgr.active_interface = 'T'
+        # do_test('true ; false', None, true_calls=1, false_calls=0)
+        # do_test('false ; true', True, true_calls=1, false_calls=0)
+        # do_test('true & false', None, true_calls=1, false_calls=0)
+        # do_test('false & true', None, true_calls=0, false_calls=0)
+        # do_test('true | false', True, true_calls=1, false_calls=0)
+        # do_test('false | true', True, true_calls=1, false_calls=0)
+
+        # self.cmdmgr.active_interface = 'F'
+        # do_test('true ; false', False, true_calls=0, false_calls=1)
+        # do_test('false ; true', None, true_calls=0, false_calls=1)
+        # do_test('true & false', None, true_calls=0, false_calls=0)
+        # do_test('false & true', False, true_calls=0, false_calls=1)
+        # do_test('true | false', False, true_calls=0, false_calls=1)
+        # do_test('false | true', None, true_calls=0, false_calls=1)
+
+        # Calls to 'false' are ignored and evaluate to True in the command chain
+        self.cmdmgr.active_interface = 'T'
+        testcases = (
+            [[['true'], ';', ['false']], {'success': True, 'true_calls': 1, 'false_calls': 0}],
+            [[['false'], ';', ['true']], {'success': True, 'true_calls': 1, 'false_calls': 0}],
+            [[['true'], '&', ['false']], {'success': True, 'true_calls': 1, 'false_calls': 0}],
+            [[['false'], '&', ['true']], {'success': True, 'true_calls': 1, 'false_calls': 0}],
+            [[['true'], '|', ['false']], {'success': True, 'true_calls': 1, 'false_calls': 0}],
+            [[['false'], '|', ['true']], {'success': True, 'true_calls': 0, 'false_calls': 0}],
+        )
+        await self.run_testcases(testcases, do_test)
+
+        # Calls to 'false' are ignored and evaluate to True in the command chain
+        self.cmdmgr.active_interface = 'F'
+        testcases = (
+            [[['true'], ';', ['false']], {'success': False, 'true_calls': 0, 'false_calls': 1}],
+            [[['false'], ';', ['true']], {'success': True, 'true_calls': 0, 'false_calls': 1}],
+            [[['true'], '&', ['false']], {'success': False, 'true_calls': 0, 'false_calls': 1}],
+            [[['false'], '&', ['true']], {'success': False, 'true_calls': 0, 'false_calls': 1}],
+            [[['true'], '|', ['false']], {'success': True, 'true_calls': 0, 'false_calls': 0}],
+            [[['false'], '|', ['true']], {'success': True, 'true_calls': 0, 'false_calls': 1}],
+        )
+        await self.run_testcases(testcases, do_test)
 
 
-    @asynctest.ignore_loop
-    def test_sync_complete_chain_with_AND_operator(self):
-        result = self.cmdmgr.run_sync('true -a  &  true -a -b  &  true -a -b -c',
-                                      on_success=self.cb_success,
-                                      on_failure=self.cb_error)
-        self.confirm_complete_chain_with_AND_operator(result)
+    async def test_cmdchain_with_arguments(self):
+        async def do_test(cmdchain, success, true_args=(), false_args=(), errors=()):
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            result = self.cmdmgr.run_sync(cmdchain)
+            self.assertEqual(result, success)
+            self.assertEqual(self.true_cb.kwargs, list(true_args))
+            self.assertEqual(self.false_cb.kwargs, list(false_args))
+            self.assertEqual(self.error_handler.args, list(errors))
 
-    async def test_async_complete_chain_with_AND_operator(self):
-        result = await self.cmdmgr.run_async('true -a  &  true -a -b  &  true -a -b -c',
-                                             on_success=self.cb_success,
-                                             on_failure=self.cb_error)
-        self.confirm_complete_chain_with_AND_operator(result)
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            result = await self.cmdmgr.run_async(cmdchain)
+            self.assertEqual(result, success)
+            self.assertEqual(self.true_cb.kwargs, list(true_args))
+            self.assertEqual(self.false_cb.kwargs, list(false_args))
+            self.assertEqual(self.error_handler.args, list(errors))
 
-    def confirm_complete_chain_with_AND_operator(self, result):
-        self.assertEqual(result, True)
-        self.assertEqual(self.cb_success.calls, 3)
-        self.assertEqual(self.cb_error.calls, 0)
-        self.assertEqual(self.true_cb.calls, 3)
-        self.assertEqual(self.true_cb.kwargs, [{'a': True, 'b': False, 'c': False},
-                                               {'a': True, 'b': True, 'c': False},
-                                               {'a': True, 'b': True, 'c': True}])
-        self.assertEqual(self.false_cb.calls, 0)
+        testcases = (
+            ([['true', '-a'], '&', ['true', '-a', '-b'], '&', ['true', '-a', '-b', '-c']],
+             {'success': True,
+              'true_args': [{'a': True, 'b': False, 'c': False},
+                            {'a': True, 'b': True, 'c': False},
+                            {'a': True, 'b': True, 'c': True}]}),
+            ([['true', '-a'], '&', ['true', '-a', '-b'], '|', ['true', '-a', '-b', '-c']],
+             {'success': True,
+              'true_args': [{'a': True, 'b': False, 'c': False},
+                            {'a': True, 'b': True, 'c': False}]}),
+            ([['true', '-a'], '|', ['true', '-a', '-b'], '|', ['true', '-a', '-b', '-c']],
+             {'success': True,
+              'true_args': [{'a': True, 'b': False, 'c': False}]}),
 
+            ([['false', '-a'], '|', ['false', '-a', '-b'], '|', ['false', '-a', '-b', '-c']],
+             {'success': False,
+              'false_args': [{'a': True, 'b': False, 'c': False},
+                             {'a': True, 'b': True, 'c': False},
+                             {'a': True, 'b': True, 'c': True}]}),
+            ([['false', '-a'], '|', ['false', '-a', '-b'], '&', ['false', '-a', '-b', '-c']],
+             {'success': False,
+              'false_args': [{'a': True, 'b': False, 'c': False},
+                             {'a': True, 'b': True, 'c': False}]}),
+            ([['false', '-a'], '&', ['false', '-a', '-b'], '&', ['false', '-a', '-b', '-c']],
+             {'success': False,
+              'false_args': [{'a': True, 'b': False, 'c': False}]}),
 
-    @asynctest.ignore_loop
-    def test_sync_broken_chain_with_AND_operator(self):
-        result = self.cmdmgr.run_sync('true -a  &  false -a -b  &  true -a -b -c',
-                                      on_success=self.cb_success,
-                                      on_failure=self.cb_error)
-        self.confirm_broken_chain_with_AND_operator(result)
-
-    async def test_async_broken_chain_with_AND_operator(self):
-        result = await self.cmdmgr.run_async('true -a  &  false -a -b  &  true -a -b -c',
-                                             on_success=self.cb_success,
-                                             on_failure=self.cb_error)
-        self.confirm_broken_chain_with_AND_operator(result)
-
-    def confirm_broken_chain_with_AND_operator(self, result):
-        self.assertEqual(result, False)
-        self.assertEqual(self.cb_success.calls, 1)
-        self.assertEqual(self.cb_error.calls, 1)
-        self.assertEqual(self.true_cb.calls, 1)
-        self.assertEqual(self.true_cb.kwargs, [{'a': True, 'b': False, 'c': False}])
-        self.assertEqual(self.false_cb.calls, 1)
-        self.assertEqual(self.false_cb.kwargs, [{'a': True, 'b': True, 'c': False}])
-
-
-    @asynctest.ignore_loop
-    def test_sync_complete_chain_with_OR_operator(self):
-        result = self.cmdmgr.run_sync('false -a  |  false -a -b  |  true -a -b -c',
-                                      on_success=self.cb_success,
-                                      on_failure=self.cb_error)
-        self.confirm_complete_chain_with_OR_operator(result)
-
-    async def test_async_complete_chain_with_OR_operator(self):
-        result = await self.cmdmgr.run_async('false -a  |  false -a -b  |  true -a -b -c',
-                                             on_success=self.cb_success,
-                                             on_failure=self.cb_error)
-        self.confirm_complete_chain_with_OR_operator(result)
-
-    def confirm_complete_chain_with_OR_operator(self, result):
-        self.assertEqual(result, True)
-        self.assertEqual(self.cb_success.calls, 1)
-        self.assertEqual(self.cb_error.calls, 2)
-        self.assertEqual(self.false_cb.calls, 2)
-        self.assertEqual(self.false_cb.kwargs, [{'a': True, 'b': False, 'c': False},
-                                                {'a': True, 'b': True, 'c': False}])
-        self.assertEqual(self.true_cb.calls, 1)
-        self.assertEqual(self.true_cb.kwargs, [{'a': True, 'b': True, 'c': True}])
-
-
-    @asynctest.ignore_loop
-    def test_sync_broken_chain_with_OR_operator(self):
-        result = self.cmdmgr.run_sync('false -a  |  true -a -b  |  false -a -b -c',
-                                      on_success=self.cb_success,
-                                      on_failure=self.cb_error)
-        self.confirm_broken_chain_with_OR_operator(result)
-
-    async def test_async_broken_chain_with_OR_operator(self):
-        result = await self.cmdmgr.run_async('false -a  |  true -a -b  |  false -a -b -c',
-                                             on_success=self.cb_success,
-                                             on_failure=self.cb_error)
-        self.confirm_broken_chain_with_OR_operator(result)
-
-    def confirm_broken_chain_with_OR_operator(self, result):
-        self.assertEqual(result, True)
-        self.assertEqual(self.cb_success.calls, 1)
-        self.assertEqual(self.cb_error.calls, 1)
-        self.assertEqual(self.false_cb.calls, 1)
-        self.assertEqual(self.false_cb.kwargs, [{'a': True, 'b': False, 'c': False}])
-        self.assertEqual(self.true_cb.calls, 1)
-        self.assertEqual(self.true_cb.kwargs, [{'a': True, 'b': True, 'c': False}])
+            ([['false', '-a'], ';', ['true', '-a', '-b', '-x'], ';', ['true', '-a', '-b', '-c']],
+             {'success': True,
+              'false_args': [{'a': True, 'b': False, 'c': False}],
+              'true_args': [{'a': True, 'b': True, 'c': True}],
+              'errors': [('true: Unrecognized arguments: -x',)]}),
+        )
+        await self.run_testcases(testcases, do_test)
 
 
 class TestCommandManagerResources(TestCommandManagerCallsBase):
-    @asynctest.ignore_loop
-    def test_adding_resources_to_registered_commands(self):
+    def test_adding_resources_to_commands_that_are_already_registered(self):
         self.cmdmgr.register(make_cmdcls(name='foo', numbers=ExpectedResource))
         resource = tuple(range(10))
         self.cmdmgr.resources['numbers'] = resource
         cmdcls = self.cmdmgr.get_cmdcls('foo', interface='ANY')
         self.assertEqual(cmdcls.numbers, resource)
 
-    @asynctest.ignore_loop
-    def test_adding_resources_to_new_commands(self):
+    def test_adding_resources_commands_to_new_commands(self):
         resource = tuple(range(10))
         self.cmdmgr.resources['numbers'] = resource
         self.cmdmgr.register(make_cmdcls(name='foo', numbers=ExpectedResource))
         foo = self.cmdmgr.get_cmdcls('foo', interface='ANY')
         self.assertEqual(foo.numbers, resource)
 
-    @asynctest.ignore_loop
     def test_commands_get_only_expected_resources(self):
         resource = [50, 93, -11]
         self.cmdmgr.resources['numberwang'] = resource
@@ -778,13 +766,11 @@ class TestCommandManagerResources(TestCommandManagerCallsBase):
         self.assertTrue(hasattr(foo, 'numberwang'))
         self.assertEqual(foo().numberwang, resource)
 
-    @asynctest.ignore_loop
-    def test_command_requests_unknown_resource(self):
+    def test_unknown_resources_raise_AttributeError(self):
         resource = [50, 93, -11]
         self.cmdmgr.resources['numberwang'] = resource
         self.cmdmgr.register(make_cmdcls(name='foo', badgerwang=ExpectedResource))
         foo = self.cmdmgr.get_cmdcls('foo', interface='ANY')
         with self.assertRaises(AttributeError) as cm:
             foo().badgerwang
-        self.assertIn('badgerwang', str(cm.exception))
-        self.assertIn('resource', str(cm.exception).lower())
+        self.assertEqual(str(cm.exception), 'FooCommand misses expected resource: badgerwang')

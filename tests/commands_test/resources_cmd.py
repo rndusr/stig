@@ -183,11 +183,6 @@ class CommandTestCase(asynctest.TestCase):
         if not process.finished:
             await process.wait_async()
         self.assertTrue(process.finished)
-        if isinstance(process.exception, CmdError):
-            if str(process.exception):
-                print('%s: %s' % (process.name, process.exception), file=self.stderr)
-        elif process.exception is not None:
-            raise process.exception
         return process
 
     def assert_stdout(self, *lines_exp):

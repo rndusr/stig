@@ -68,17 +68,9 @@ geoip.enabled = localcfg['geoip']
 
 
 from .commands import CommandManager
-def _on_cmd_error(process):
-    msg = str(process.exception)
-    if msg:
-        if process.name:
-            log.error('%s: %s' % (process.name, msg))
-        else:
-            log.error(msg)
 cmdmgr = CommandManager(loop=aioloop,
                         info_handler=lambda msg: log.info(msg),
-                        error_handler=lambda msg: log.error(msg),
-                        on_failure=_on_cmd_error)
+                        error_handler=lambda msg: log.error(msg))
 cmdmgr.resources.update(aioloop=aioloop,
                         srvapi=srvapi,
                         cfg=localcfg,
