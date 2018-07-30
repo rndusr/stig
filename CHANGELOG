@@ -7,9 +7,9 @@
   Other changes:
     * New TUI command 'interactive' takes a command that contains a placeholder
       which is replaced with user input.
-    * New TUI command 'search' applies a second filter to any list.
-    * New default keybinding '/' runs `interactive search %s` which allows you
-      to quickly search in a long list.
+    * New TUI command 'find' applies a second filter to any list.
+    * New default keybinding '/' runs `interactive find %s` which allows you
+      to quickly find stuff in a long list.
     * Remove an unlimited number of torrents without confirmation with the
       --force option or by setting 'remove.max-hits' to a negative number.
     * All time-based filters now accept relative time deltas (e.g. "1h30m") and

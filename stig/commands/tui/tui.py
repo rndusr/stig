@@ -162,8 +162,15 @@ class InteractiveCmd(metaclass=InitCommand):
     category = 'tui'
     description = 'Complete partial command with user input from a dialog'
     usage = ('interactive [<OPTIONS>] <COMMAND>',)
-    examples = ('tab ls & interactive -c "tab --close --focus left" search %s',
-                'tab ls & interactive -a "mark --all & start" -x "tab --close --focus left" search "%s & stopped"',)
+    examples = ('# Open a new tab with all torrents and filter it interactively.',
+                '# On <enter>, close the text entry field and keep the tab open.',
+                '# On <escape>, close both the text entry field and the tab.',
+                'tab ls & interactive find %s -c "tab --close --focus left"',
+                '',
+                '# Same as above, but add "stopped" to the interactively entered filter.',
+                '# On <enter>, start all the torrents in the list and close the tab.',
+                '# On <escape>, just close the tab.',
+                'tab ls & interactive find "%s & stopped" -a "mark --all & start" -x "tab --close --focus left"',)
     argspecs = (
         { 'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
           'description': 'Command to run when the dialog is aborted with escape' },
@@ -318,12 +325,12 @@ class QuitCmd(metaclass=InitCommand):
         raise urwid.ExitMainLoop()
 
 
-class SearchCmd(metaclass=InitCommand):
-    name = 'search'
+class FindCmd(metaclass=InitCommand):
+    name = 'find'
     provides = {'tui'}
     category = 'tui'
     description = 'Search the content of the focused tab'
-    usage = ('search [<OPTIONS>] <FILTER>',)
+    usage = ('find [<OPTIONS>] <FILTER>',)
     argspecs = (
         { 'names': ('--clear','-c'), 'action': 'store_true',
           'description': 'Remove previously applied filter' },
@@ -335,7 +342,7 @@ class SearchCmd(metaclass=InitCommand):
     def run(self, clear, FILTER):
         content = self.tui.tabs.focus
         if not hasattr(content, 'secondary_filter'):
-            raise CmdError('Current tab does not support searching.')
+            raise CmdError('This tab does not support finding.')
         else:
             if clear:
                 content.secondary_filter = None
