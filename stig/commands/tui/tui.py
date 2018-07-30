@@ -171,6 +171,8 @@ class InteractiveCmd(metaclass=InitCommand):
           'description': 'Command to run when the dialog is accepted with enter' },
         { 'names': ('--on-close', '-x'), 'metavar': 'CLOSE COMMAND',
           'description': 'Command to run after the dialog is closed either way' },
+        { 'names': ('--ignore-errors', '-i'), 'action': 'store_true',
+          'description': 'Whether to ignore errors from COMMAND' },
         { 'names': ('COMMAND',), 'nargs': '+',
           'description': ('The command to run when the user types something.  The first occurence '
                           'of "%s" in COMMAND is replaced with the user input.  If "%s" doesn\'t occur, '
@@ -182,7 +184,7 @@ class InteractiveCmd(metaclass=InitCommand):
     _EDIT_WIDGET_NAME = 'interactive_prompt'
     _PLACEHOLDER = '%s'
 
-    def run(self, on_cancel, on_accept, on_close, COMMAND):
+    def run(self, COMMAND, on_cancel, on_accept, on_close, ignore_errors):
         from ...tui.cli import CLIEditWidget
         import urwid
 
@@ -190,6 +192,7 @@ class InteractiveCmd(metaclass=InitCommand):
         self._cancel_cmd = on_cancel
         self._accept_cmd = on_accept
         self._close_cmd = on_close
+        self._ignore_errors = ignore_errors
 
         log.debug('cmd: %r', command_skeleton)
         log.debug('cancel_cmd: %r', self._cancel_cmd)
@@ -219,7 +222,11 @@ class InteractiveCmd(metaclass=InitCommand):
 
     def _change_callback(self, widget):
         cmd = ''.join((self._before_edit, widget.edit_text, self._after_edit))
-        self.cmdmgr.run_task(cmd)
+        if self._ignore_errors:
+            # Overloads the error() method on the command's instance
+            self.cmdmgr.run_task(cmd, error=lambda msg: None)
+        else:
+            self.cmdmgr.run_task(cmd)
 
     def _accept_callback(self, widget):
         if self._accept_cmd is not None:
