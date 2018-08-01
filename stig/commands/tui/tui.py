@@ -161,95 +161,184 @@ class InteractiveCmd(metaclass=InitCommand):
     provides = {'tui'}
     category = 'tui'
     description = 'Complete partial command with user input from a dialog'
-    usage = ('interactive [<OPTIONS>] <COMMAND>',)
-    examples = ('# Open a new tab with all torrents and filter it interactively.',
-                '# On <enter>, close the text entry field and keep the tab open.',
-                '# On <escape>, close both the text entry field and the tab.',
-                'tab ls & interactive find %s -c "tab --close --focus left"',
-                '',
-                '# Same as above, but add "stopped" to the interactively entered filter.',
-                '# On <enter>, start all the torrents in the list and close the tab.',
-                '# On <escape>, just close the tab.',
-                'tab ls & interactive find "%s & stopped" -a "mark --all & start" -x "tab --close --focus left"',)
+    usage = ('interactive <COMMAND> [<OPTIONS>]',)
+    examples = (
+        'interactive "move \'%s\'"',
+        '\tAsk for the destination directory when moving torrents.',
+        '',
+        'tab ls & interactive "find \'%s\'" --per-change --on-cancel "tab --close --focus left"',
+        ('\tOpen a new tab with all torrents and filter it as you type.  '
+         'Keep the tab open if the text entry field is accepted with <enter> '
+         'or close the tab and focus the previous one if the dialog is aborted '
+         'with <escape>.'),
+        '',
+        'tab ls stopped & interactive \'find "%s"\' -p -a "mark --all & start" -x "tab --close --focus left"',
+        ('\tSearch for stopped torrents only.  When accepted, the matching torrents '
+         'are started.  The new tab is always closed, whether the dialog is '
+         'accepted or not.'),
+    )
     argspecs = (
-        { 'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
-          'description': 'Command to run when the dialog is aborted with escape' },
+        { 'names': ('COMMAND',),
+          'description': 'Any command with "%s" as placeholder for user input' },
+        { 'names': ('--per-change', '-p'), 'action': 'store_true',
+          'description': 'Whether to run command every time the input is changed'},
         { 'names': ('--on-accept', '-a'), 'metavar': 'ACCEPT COMMAND',
-          'description': 'Command to run when the dialog is accepted with enter' },
+          'description': 'Command to run when the dialog is accepted with <enter>' },
+        { 'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
+          'description': 'Command to run when the dialog is aborted with <escape>' },
         { 'names': ('--on-close', '-x'), 'metavar': 'CLOSE COMMAND',
-          'description': 'Command to run after the dialog is closed either way' },
+          'description': 'Command to run after the dialog is closed in any way' },
         { 'names': ('--ignore-errors', '-i'), 'action': 'store_true',
           'description': 'Whether to ignore errors from COMMAND' },
-        { 'names': ('COMMAND',), 'nargs': '+',
-          'description': ('The command to run when the user types something.  The first occurence '
-                          'of "%s" in COMMAND is replaced with the user input.  If "%s" doesn\'t occur, '
-                          'user input is appended to COMMAND.') },
     )
+    more_sections = {
+        'HOW IT WORKS': (('For each occurence of "%s" in COMMAND, the user is '
+                          'prompted for input and the result replaces the "%s".  '
+                          'When all placeholders are replaced (or if there aren\'t any), '
+                          'COMMAND is called.'),
+                         '',
+                         'ACCEPT COMMAND is called after COMMAND.',
+                         '',
+                         ('CANCEL COMMAND is called if the user aborts the replacement '
+                          'procedure at any point.'),
+                         '',
+                         'CLOSE COMMAND is always called after all other commands.',
+                         '',
+                         'ACCEPT, CANCEL and CLOSE COMMAND also support placeholders.',
+                         '',
+                         'To escape a literal "%s", use either "\\%s" or "%%s".'),
+    }
+
     tui = ExpectedResource
     cmdmgr = ExpectedResource
 
-    _EDIT_WIDGET_NAME = 'interactive_prompt'
-    _PLACEHOLDER = '%s'
-
-    def run(self, COMMAND, on_cancel, on_accept, on_close, ignore_errors):
-        from ...tui.cli import CLIEditWidget
-        import urwid
-
-        command_skeleton = ' '.join(shlex.quote(arg) for arg in COMMAND)
-        self._cancel_cmd = on_cancel
-        self._accept_cmd = on_accept
-        self._close_cmd = on_close
+    def run(self, COMMAND, per_change, on_accept, on_cancel, on_close, ignore_errors):
+        self._cmd = self._split_cmd_at_placeholders(COMMAND)
+        self._accept_cmd = self._split_cmd_at_placeholders(on_accept) if on_accept else None
+        self._cancel_cmd = self._split_cmd_at_placeholders(on_cancel) if on_cancel else None
+        self._close_cmd = self._split_cmd_at_placeholders(on_close) if on_close else None
         self._ignore_errors = ignore_errors
 
-        log.debug('cmd: %r', command_skeleton)
-        log.debug('cancel_cmd: %r', self._cancel_cmd)
-        log.debug('accept_cmd: %r', self._accept_cmd)
-        log.debug('close_cmd: %r', self._close_cmd)
+        def close_cb():
+            self._run_cmd_or_open_dialog(self._close_cmd)
 
-        if self._PLACEHOLDER in command_skeleton:
-            self._before_edit, _, self._after_edit = command_skeleton.partition(self._PLACEHOLDER)
+        if per_change:
+            def accept_cb():
+                self._run_cmd_or_open_dialog(self._accept_cmd)
+
+            def cancel_cb():
+                self._run_cmd_or_open_dialog(self._cancel_cmd)
+
+            self._open_dialog(self._cmd,
+                              on_change=self._run_cmd_in_dialog,
+                              on_accept=accept_cb,
+                              on_cancel=cancel_cb,
+                              on_close=close_cb)
         else:
-            self._before_edit = command_skeleton + ' '
-            self._after_edit = ''
+            def accept_cb():
+                self._run_cmd_in_dialog()
+                self._run_cmd_or_open_dialog(self._accept_cmd)
 
-        self._before_edit_widget = urwid.Text(self._before_edit)
-        self._edit_widget = CLIEditWidget(on_change=self._change_callback,
-                                          on_accept=self._accept_callback,
-                                          on_cancel=self._cancel_callback)
-        self._after_edit_widget = urwid.Text(self._after_edit)
+            def cancel_cb():
+                self._run_cmd_or_open_dialog(self._cancel_cmd)
 
-        self._columns = urwid.Columns([('pack', self._before_edit_widget),
-                                       (25, urwid.AttrMap(self._edit_widget, 'prompt')),
-                                       ('pack', self._after_edit_widget)])
-        self.tui.widgets.add(name=self._EDIT_WIDGET_NAME,
-                             widget=urwid.AttrMap(self._columns, 'cli'),
+            self._open_dialog(self._cmd,
+                              on_accept=accept_cb,
+                              on_cancel=cancel_cb,
+                              on_close=close_cb)
+
+    _WIDGET_NAME = 'interactive_prompt'
+    _EDIT_WIDTH = 23
+    def _open_dialog(self, cmd, index=0, on_change=None, on_accept=None, on_cancel=None, on_close=None):
+        import urwid
+        from ...tui.cli import CLIEditWidget
+
+        uncompleted_parts = cmd[index:]
+        if '%s' in uncompleted_parts:
+            index = index + uncompleted_parts.index('%s')
+        else:
+            # In case cmd never contained any %s in the beginning.
+            log.debug('Command is already complete: %r', cmd)
+            if on_accept: on_accept()
+            if on_close: on_close()
+            return
+
+        self._before_edit_widget = urwid.Text(''.join(cmd[:index]))
+        self._after_edit_widget = urwid.Text(''.join(cmd[index+1:]))
+
+        def accept_cb(widget):
+            self._close_dialog()
+            cmd[index] = self._edit_widget.edit_text
+
+            if '%s' in cmd[index+1:]:
+                log.debug('Opening another dialog for incomplete command: %r', cmd)
+                self._open_dialog(cmd, index=index+1, on_change=on_change,
+                                  on_accept=on_accept, on_cancel=on_cancel,
+                                  on_close=on_close)
+            else:
+                # All placeholders have been replaced
+                log.debug('Completed command: %r', cmd)
+                if on_accept: on_accept()
+                if on_close: on_close()
+
+        def cancel_cb(widget):
+            self._close_dialog()
+            if on_cancel: on_cancel()
+            if on_close: on_close()
+
+        def change_cb(widget):
+            if on_change: on_change()
+
+        self._edit_widget = CLIEditWidget(on_change=change_cb,
+                                          on_accept=accept_cb,
+                                          on_cancel=cancel_cb)
+        columns_widget = urwid.Columns([('pack', self._before_edit_widget),
+                                        (self._EDIT_WIDTH, urwid.AttrMap(self._edit_widget, 'prompt')),
+                                        ('pack', self._after_edit_widget)])
+        self.tui.widgets.add(name=self._WIDGET_NAME,
+                             widget=urwid.AttrMap(columns_widget, 'cli'),
                              position=self.tui.widgets.get_position('cli'),
                              removable=True,
                              options='pack')
 
-    def _change_callback(self, widget):
-        cmd = ''.join((self._before_edit, widget.edit_text, self._after_edit))
+
+    def _close_dialog(self):
+        self.tui.widgets.remove(self._WIDGET_NAME)
+        self.tui.widgets.focus_name = 'main'
+
+    def _run_cmd_or_open_dialog(self, cmd):
+        if not cmd:
+            return
+        elif len(cmd) == 1:
+            log.debug('Running command without dialog: %r', cmd)
+            self._run_cmd(cmd[0])
+        else:
+            log.debug('Running command in dialog: %r', cmd)
+            self._open_dialog(cmd, on_accept=self._run_cmd_in_dialog)
+
+    def _run_cmd_in_dialog(self):
+        cmd = ''.join((self._before_edit_widget.text,
+                       self._edit_widget.edit_text,
+                       self._after_edit_widget.text))
+        log.debug('Got command from current dialog: %r', cmd)
+        self._run_cmd(cmd)
+
+    def _run_cmd(self, cmd):
         if self._ignore_errors:
             # Overloads the error() method on the command's instance
             self.cmdmgr.run_task(cmd, error=lambda msg: None)
         else:
             self.cmdmgr.run_task(cmd)
 
-    def _accept_callback(self, widget):
-        if self._accept_cmd is not None:
-            self.cmdmgr.run_task(self._accept_cmd)
-        self._close()
-
-    def _cancel_callback(self, widget):
-        if self._cancel_cmd is not None:
-            self.cmdmgr.run_task(self._cancel_cmd)
-        self._close()
-
-    def _close(self):
-        self.tui.widgets.remove(self._EDIT_WIDGET_NAME)
-        self.tui.widgets.focus_name = 'main'
-        if self._close_cmd is not None:
-            self.cmdmgr.run_task(self._close_cmd)
+    import re
+    _split_cmd_regex = re.compile(r'(?<!\\|%)(%s)')
+    def _split_cmd_at_placeholders(self, cmd):
+        if not cmd:
+            return None
+        else:
+            return [part.replace(r'\%s', '%s').replace('%%s', '%s')
+                    for part in self._split_cmd_regex.split(cmd)
+                    if part]
 
 
 class MarkCmd(metaclass=InitCommand):

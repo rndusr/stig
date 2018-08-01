@@ -213,7 +213,8 @@ DEFAULT_KEYMAP = (
     # Global TUI keys
     {'context': 'main', 'key': 'q',     'action': 'quit'},
     {'context': 'main', 'key': ':',     'action': 'tui show cli'},
-    {'context': 'main', 'key': '/',     'action': "interactive find --ignore-errors --on-cancel 'find --clear' "},
+    {'context': 'main', 'key': '/',     'action': ('interactive "find \'%s\'" --per-change '
+                                                   '--on-cancel "find --clear" --ignore-errors')},
     {'context': 'main', 'key': 'alt-s', 'action': 'tab set'},
 
     # Help
