@@ -429,7 +429,7 @@ class FindCmd(metaclass=InitCommand):
     tui = ExpectedResource
 
     def run(self, clear, FILTER):
-        content = self.tui.tabs.focus
+        content = self.tui.tabs.focus.base_widget
         if not hasattr(content, 'secondary_filter'):
             raise CmdError('This tab does not support finding.')
         else:
