@@ -57,7 +57,10 @@ class Scrollable(urwid.WidgetDecoration):
         # Render complete original widget
         ow = self._original_widget
         ow_size = self._get_original_widget_size(size)
-        canv = urwid.CompositeCanvas(ow.render(ow_size, focus))
+        canv_full = ow.render(ow_size, focus)
+
+        # Make full canvas editable
+        canv = urwid.CompositeCanvas(canv_full)
         canv_cols, canv_rows = canv.cols(), canv.rows()
 
         if canv_cols <= maxcol:
@@ -95,8 +98,30 @@ class Scrollable(urwid.WidgetDecoration):
             if cursrow >= maxrow or cursrow < 0:
                 canv.cursor = None
 
-        # Let keypress() know if original_widget should get keys
-        self._forward_keypress = bool(canv.cursor)
+        # Figure out whether we should forward keypresses to original widget
+        if canv.cursor is not None:
+            # Trimmed canvas contains the cursor, e.g. in an Edit widget
+            self._forward_keypress = True
+        else:
+            if canv_full.cursor is not None:
+                # Full canvas contains the cursor, but scrolled out of view
+                self._forward_keypress = False
+            else:
+                # Original widget does not have a cursor, but may be selectable
+
+                # FIXME: Using ow.selectable() is bad because the original
+                # widget may be selectable because it's a container widget with
+                # a key-grabbing widget that is scrolled out of view.
+                # ow.selectable() returns True anyway because it doesn't know
+                # how we trimmed our canvas.
+                #
+                # To fix this, we need to resolve ow.focus and somehow
+                # ask canv whether it contains bits of the focused widget.  I
+                # can't see a way to do that.
+                if ow.selectable():
+                    self._forward_keypress = True
+                else:
+                    self._forward_keypress = False
 
         return canv
 

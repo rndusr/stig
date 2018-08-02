@@ -155,7 +155,7 @@ class TestScrollable(unittest.TestCase):
                 w.keypress(size, 'page up')
 
 
-    def test_focusable_widget_gets_keypress_only_if_visible(self):
+    def test_widget_with_cursor_gets_keypress_only_if_visible(self):
         w = Scrollable(
             urwid.Pile([urwid.Text('t1'),
                         urwid.Text('t2'),
@@ -179,6 +179,47 @@ class TestScrollable(unittest.TestCase):
         press_keys()
         self.check(w, size, text=('t2'.ljust(size[0]),
                                   'foo'.ljust(size[0])))
+
+    # This test is disabled intentionally. See the FIXME at the end of
+    # Scrollable.render().
+    # def test_selectable_widget_gets_keypress_only_if_visible(self):
+    #     class HungryText(urwid.Text):
+    #         def selectable(self):
+    #             return True
+
+    #         def keypress(self, size, key):
+    #             self.set_text(self.text + key)
+
+    #     h = HungryText('123')
+    #     w = Scrollable(
+    #         urwid.Pile([urwid.Text('wrap this'),
+    #                     urwid.Text('t2'),
+    #                     h])
+    #     )
+    #     size = (4, 3)
+
+    #     def send_text(keys):
+    #         for key in keys:
+    #             w.keypress(size, key)
+
+    #     self.check(w, size, text=('wrap'.ljust(size[0]),
+    #                               'this'.ljust(size[0]),
+    #                               't2'.ljust(size[0])))
+    #     send_text('4')
+    #     self.check(w, size, text=('wrap'.ljust(size[0]),
+    #                               'this'.ljust(size[0]),
+    #                               't2'.ljust(size[0])))
+    #     self.assertEqual(h.text, '123')
+
+    #     w.set_scrollpos(1)
+    #     self.check(w, size, text=('this'.ljust(size[0]),
+    #                               't2'.ljust(size[0]),
+    #                               '123'.ljust(size[0])))
+    #     send_text('4')
+    #     self.check(w, size, text=('this'.ljust(size[0]),
+    #                               't2'.ljust(size[0]),
+    #                               '1234'.ljust(size[0])))
+    #     self.assertEqual(h.text, '1234')
 
     def test_moving_focus_up_down(self):
         w = Scrollable(
