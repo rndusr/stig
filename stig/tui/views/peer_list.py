@@ -92,11 +92,11 @@ class PeerListWidget(ListWidgetBase):
         return self._secondary_filter
 
     @secondary_filter.setter
-    def secondary_filter(self, term):
-        if term is None:
+    def secondary_filter(self, peer_filter):
+        if peer_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentPeerFilter(term)
+            self._secondary_filter = TorrentPeerFilter(peer_filter)
         self._invalidate()
 
     def _limit_items(self, peer_widgets):

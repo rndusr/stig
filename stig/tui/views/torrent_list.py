@@ -113,11 +113,11 @@ class TorrentListWidget(ListWidgetBase):
         return self._secondary_filter
 
     @secondary_filter.setter
-    def secondary_filter(self, term):
-        if term is None:
+    def secondary_filter(self, torrent_filter):
+        if torrent_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentFilter(term)
+            self._secondary_filter = TorrentFilter(torrent_filter)
         log.debug('Filtering %r torrents', self._secondary_filter)
         self._invalidate()
 

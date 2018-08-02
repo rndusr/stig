@@ -221,11 +221,11 @@ class FileListWidget(ListWidgetBase):
         return self._secondary_filter
 
     @secondary_filter.setter
-    def secondary_filter(self, term):
-        if term is None:
+    def secondary_filter(self, file_filter):
+        if file_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentFileFilter(term)
+            self._secondary_filter = TorrentFileFilter(file_filter)
         self._create_filetree()
 
 

@@ -205,11 +205,11 @@ class SettingListWidget(ListWidgetBase):
         return self._secondary_filter
 
     @secondary_filter.setter
-    def secondary_filter(self, term):
-        if term is None:
+    def secondary_filter(self, setting_filter):
+        if setting_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = SettingFilter(term)
+            self._secondary_filter = SettingFilter(setting_filter)
         self._invalidate()
 
     def _limit_items(self, setting_widgets):

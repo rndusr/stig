@@ -102,11 +102,11 @@ class TrackerListWidget(ListWidgetBase):
         return self._secondary_filter
 
     @secondary_filter.setter
-    def secondary_filter(self, term):
-        if term is None:
+    def secondary_filter(self, tracker_filter):
+        if tracker_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentTrackerFilter(term)
+            self._secondary_filter = TorrentTrackerFilter(tracker_filter)
         self._invalidate()
 
     def _limit_items(self, tracker_widgets):
