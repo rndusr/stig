@@ -414,6 +414,35 @@ class QuitCmd(metaclass=InitCommand):
         raise urwid.ExitMainLoop()
 
 
+class FindCmd(metaclass=InitCommand):
+    name = 'find'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Find text in the content of the focused tab'
+    usage = ('find [<OPTIONS>] [<PHRASE>]',)
+    argspecs = (
+        { 'names': ('--clear','-c'), 'action': 'store_true',
+          'description': ('Remove previously applied filter; this is '
+                          'the default if no PHRASE arguments are provided') },
+        { 'names': ('PHRASE',), 'nargs': '*',
+          'description': 'Search phrase' },
+    )
+    tui = ExpectedResource
+
+    def run(self, clear, PHRASE):
+        content = self.tui.tabs.focus.base_widget
+        if not hasattr(content, 'search_phrase'):
+            raise CmdError('This tab does not support finding.')
+        else:
+            if clear:
+                content.search_phrase = None
+            else:
+                try:
+                    content.search_phrase = ' '.join(PHRASE)
+                except ValueError as e:
+                    raise CmdError(e)
+
+
 class LimitCmd(metaclass=InitCommand):
     name = 'limit'
     provides = {'tui'}
