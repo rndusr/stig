@@ -436,7 +436,6 @@ class LimitCmd(metaclass=InitCommand):
         else:
             if clear:
                 content.secondary_filter = None
-                return True
             else:
                 try:
                     content.secondary_filter = FILTER
