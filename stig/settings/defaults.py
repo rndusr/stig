@@ -395,4 +395,8 @@ DEFAULT_KEYMAP = (
 
     # Setting actions
     {'context': 'setting', 'key': 'ctrl-r', 'action': 'reset'},
+
+    # Help actions
+    {'context': 'helptext', 'key': '/', 'action': ('interactive "find \'%s\'" --per-change '
+                                                   '--on-cancel "find --clear" --ignore-errors')},
 )
