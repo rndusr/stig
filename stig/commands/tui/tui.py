@@ -166,13 +166,13 @@ class InteractiveCmd(metaclass=InitCommand):
         'interactive "move \'%s\'"',
         '\tAsk for the destination directory when moving torrents.',
         '',
-        'tab ls & interactive "find \'%s\'" --per-change --on-cancel "tab --close --focus left"',
+        'tab ls & interactive "limit \'%s\'" --per-change --on-cancel "tab --close --focus left"',
         ('\tOpen a new tab with all torrents and filter it as you type.  '
          'Keep the tab open if the text entry field is accepted with <enter> '
          'or close the tab and focus the previous one if the dialog is aborted '
          'with <escape>.'),
         '',
-        'tab ls stopped & interactive \'find "%s"\' -p -a "mark --all & start" -x "tab --close --focus left"',
+        'tab ls stopped & interactive \'limit "%s"\' -p -a "mark --all & start" -x "tab --close --focus left"',
         ('\tSearch for stopped torrents only.  When accepted, the matching torrents '
          'are started.  The new tab is always closed, whether the dialog is '
          'accepted or not.'),
@@ -414,15 +414,16 @@ class QuitCmd(metaclass=InitCommand):
         raise urwid.ExitMainLoop()
 
 
-class FindCmd(metaclass=InitCommand):
-    name = 'find'
+class LimitCmd(metaclass=InitCommand):
+    name = 'limit'
     provides = {'tui'}
     category = 'tui'
-    description = 'Search the content of the focused tab'
-    usage = ('find [<OPTIONS>] <FILTER>',)
+    description = 'Limit contents of the focused tab by applying more filters'
+    usage = ('limit [<OPTIONS>] [<FILTER> <FILTER> ...]',)
     argspecs = (
         { 'names': ('--clear','-c'), 'action': 'store_true',
-          'description': 'Remove previously applied filter' },
+          'description': ('Remove previously applied filter; this is '
+                          'the default if no FILTER arguments are provided') },
         { 'names': ('FILTER',), 'nargs': '?',
           'description': 'Filter expression (see `help filter`)' },
     )
@@ -431,7 +432,7 @@ class FindCmd(metaclass=InitCommand):
     def run(self, clear, FILTER):
         content = self.tui.tabs.focus.base_widget
         if not hasattr(content, 'secondary_filter'):
-            raise CmdError('This tab does not support finding.')
+            raise CmdError('This tab does not support limiting.')
         else:
             if clear:
                 content.secondary_filter = None

@@ -7,8 +7,8 @@
   Other changes:
     * New TUI command 'interactive' takes a command that contains a placeholder
       which is replaced with user input.
-    * New TUI command 'find' applies a second filter to any list.
-    * New default keybinding </> runs `interactive find %s` which allows you
+    * New TUI command 'limit' applies a second filter to any list.
+    * New default keybinding </> runs `interactive limit %s` which allows you
       to quickly search in a long list.
     * Remove an unlimited number of torrents without confirmation with the
       --force option or by setting 'remove.max-hits' to a negative number.
