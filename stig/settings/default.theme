@@ -36,11 +36,13 @@
 # characters.
 
 # Uncomment the next line to automatically make light colors bold.
-# light_is_bold
+#light_is_bold
 
-cli         black      on light gray
-scrollbar   light gray on dark gray
-helptext    light gray on black
+cli             black      on light gray
+scrollbar       light gray on dark gray
+helptext        light gray on black
+prompt          black,bold on yellow
+find.highlight  black on yellow
 
 tabs.unfocused                white         on black
 tabs.focused                  black         on white
@@ -92,7 +94,6 @@ keychains.keys       light gray   on $keychains_bg
 keychains.keys.next  yellow       on $keychains_bg
 keychains.action     white        on $keychains_bg
 
-prompt black,bold on yellow
 
 
 $tlist_bg.uf = black

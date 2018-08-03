@@ -26,7 +26,7 @@ class HelpCmd(base.HelpCmdbase):
 
     def display_help(self, topics, lines):
         import urwid
-        from ...tui.scroll import (Scrollable, ScrollBar)
+        from ...tui.scroll import ScrollBar
         from ...tui.views.help import SearchableText
         from ...tui.main import keymap
 
@@ -41,7 +41,7 @@ class HelpCmd(base.HelpCmdbase):
 
         helptext_widget_cls = keymap.wrap(SearchableText, context='helptext')
         helptext_widget = helptext_widget_cls(lines)
-        textw = urwid.AttrMap(Scrollable(helptext_widget), 'helptext')
+        textw = urwid.AttrMap(helptext_widget, 'helptext')
         contentw = urwid.AttrMap(ScrollBar(textw), 'scrollbar')
         self.tui.tabs.load(titlew, contentw)
 
