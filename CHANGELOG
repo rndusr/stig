@@ -8,15 +8,20 @@
     * New TUI command 'interactive' takes a command that contains a placeholder
       which is replaced with user input.
     * New TUI command 'limit' applies a second filter to any list.
-    * New default keybinding </> runs `interactive limit %s` which allows you
-      to quickly search in a long list.
+    * New default torrentlist/filelist/etc keybinding </> runs `interactive
+      'limit %s' --per-change` which allows you to quickly search in a long
+      list.
+    * New TUI command 'find' highlights and jumps to a search phrase (currently
+      only help texts are supported).
+    * New default helptext keybindings </>, <n> and <N> add support for
+      'less'-style(-ish) highlighting and searching in help texts.
+    * New default keybinding <t m> interactively asks you where to move a
+      torrent.
     * Remove an unlimited number of torrents without confirmation with the
       --force option or by setting 'remove.max-hits' to a negative number.
     * All time-based filters now accept relative time deltas (e.g. "1h30m") and
       absolute time stamps (e.g. "2018-07-05").  Their behaviour has also
       changed slightly (see `help filter`).
-    * New default keybinding <t m> interactively asks you where to move a
-      torrent.
     * The completed time of a torrent now defaults to the time it was added if
       it was never downloaded (e.g. if you're the original uploader).
     * The default filter in peer lists is now 'ip'.
@@ -28,7 +33,7 @@
       not a TTY).
     * Using a boolean filter as a comparative filter (e.g. 'downloading = asdf')
       now results in an error.
-    * Fix rare crash on peer lists: "TypeError: __str__ returned non-string
+    * Fix rare crash in peer lists: "TypeError: __str__ returned non-string
       (type NoneType)"
 
 
