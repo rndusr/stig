@@ -424,23 +424,38 @@ class FindCmd(metaclass=InitCommand):
         { 'names': ('--clear','-c'), 'action': 'store_true',
           'description': ('Remove previously applied filter; this is '
                           'the default if no PHRASE arguments are provided') },
+        { 'names': ('--next','-n'), 'action': 'store_true',
+          'description': 'Jump to next match (call `find <PHRASE>` first)' },
+        { 'names': ('--previous','-p'), 'action': 'store_true',
+          'description': 'Jump to previous match (call `find <PHRASE>` first)' },
         { 'names': ('PHRASE',), 'nargs': '*',
           'description': 'Search phrase' },
     )
     tui = ExpectedResource
 
-    def run(self, clear, PHRASE):
+    def run(self, clear, next, previous, PHRASE):
         content = self.tui.tabs.focus.base_widget
         if not hasattr(content, 'search_phrase'):
             raise CmdError('This tab does not support finding.')
-        else:
-            if clear:
-                content.search_phrase = None
+        elif next and previous:
+            raise CmdError('The options --next and --previous contradict each other.')
+        elif next:
+            if content.search_phrase is None:
+                raise CmdError('Set a search phrase first with `find <PHRASE>`.')
             else:
-                try:
-                    content.search_phrase = ' '.join(PHRASE)
-                except ValueError as e:
-                    raise CmdError(e)
+                content.jump_to_next_match()
+        elif previous:
+            if content.search_phrase is None:
+                raise CmdError('Set a search phrase first with `find <PHRASE>`.')
+            else:
+                content.jump_to_prev_match()
+        elif clear:
+            content.search_phrase = None
+        else:
+            try:
+                content.search_phrase = ' '.join(PHRASE)
+            except ValueError as e:
+                raise CmdError(e)
 
 
 class LimitCmd(metaclass=InitCommand):
