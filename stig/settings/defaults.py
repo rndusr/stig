@@ -397,6 +397,10 @@ DEFAULT_KEYMAP = (
     {'context': 'setting', 'key': 'ctrl-r', 'action': 'reset'},
 
     # Help actions
-    {'context': 'helptext', 'key': '/', 'action': ('interactive "find \'%s\'" --per-change '
-                                                   '--on-cancel "find --clear" --ignore-errors')},
+    {'context': 'helptext', 'key': '/',      'action': ('interactive "find \'%s\'" --per-change '
+                                                        '--on-cancel "find --clear" --ignore-errors')},
+    {'context': 'helptext', 'key': 'n',      'action': 'find --next'},
+    {'context': 'helptext', 'key': 'ctrl-n', 'action': 'find --next'},
+    {'context': 'helptext', 'key': 'N',      'action': 'find --previous'},
+    {'context': 'helptext', 'key': 'ctrl-p', 'action': 'find --previous'},
 )
