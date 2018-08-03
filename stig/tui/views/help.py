@@ -14,19 +14,13 @@ log = make_logger(__name__)
 
 import urwid
 from ...utils.string import strwidth
-from ...tui.main import keymap
 
 
-class HelpText(urwid.WidgetWrap):
-    keymap_context = 'helptext'
-
+class SearchableText(urwid.WidgetWrap):
     def __init__(self, lines):
         self._lines = lines
         self._search_phrase = None
-
-        self._Pile_Keymapped = keymap.wrap(urwid.Pile, context=self.keymap_context)
-        pile = self._Pile_Keymapped([urwid.Text(line) for line in lines])
-        super().__init__(pile)
+        super().__init__(urwid.Pile([urwid.Text(line) for line in lines]))
 
     @property
     def search_phrase(self):
@@ -42,7 +36,7 @@ class HelpText(urwid.WidgetWrap):
 
     def _clear_matches(self):
         self._search_phrase = None
-        self._w = self._Pile_Keymapped([urwid.Text(line) for line in self._lines])
+        self._w = urwid.Pile([urwid.Text(line) for line in self._lines])
 
     def _highlight_matches(self, phrase):
         self._search_phrase = phrase = str(phrase)
@@ -92,4 +86,4 @@ class HelpText(urwid.WidgetWrap):
             texts.append(urwid.Text(line_parts))
 
         # This calls _invalidate()
-        self._w = self._Pile_Keymapped(texts)
+        self._w = urwid.Pile(texts)
