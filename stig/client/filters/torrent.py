@@ -121,6 +121,8 @@ class SingleTorrentFilter(Filter):
         'id'          : _make_cmp_filter('id', _desc('... ID')),
         'name'        : _make_cmp_filter('name', _desc('... name'),
                                          aliases=('n',)),
+        'comment'     : _make_cmp_filter('comment', _desc('... comment'),
+                                         aliases=('cmnt',)),
         'path'        : _make_cmp_filter('path', _desc('... full path to download directory'),
                                          aliases=('dir',)),
         'error'       : _make_cmp_filter('error', _desc('... error message'),
