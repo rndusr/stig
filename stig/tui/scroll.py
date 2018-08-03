@@ -375,7 +375,7 @@ class ScrollBar(urwid.WidgetDecoration):
 
     @property
     def scrolling_base_widget(self):
-        """Nearest `base_widget` that is compatible with the scrolling API"""
+        """Nearest `original_widget` that is compatible with the scrolling API"""
         def orig_iter(w):
             while hasattr(w, 'original_widget'):
                 w = w.original_widget
