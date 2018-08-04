@@ -26,8 +26,8 @@ class SearchableText(urwid.WidgetWrap):
         self._match_indexes = []
         super().__init__(self._make_content([urwid.Text(line) for line in lines]))
 
-    def _make_content(self, lines):
-        return Scrollable(urwid.Pile(lines))
+    def _make_content(self, text_widgets):
+         return Scrollable(urwid.Pile(text_widgets))
 
     @property
     def original_widget(self):
