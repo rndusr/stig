@@ -12,7 +12,8 @@
 
 def make_X_FILTER_spec(filtername, or_focused=False, more_text='', **kwargs):
     spec = { 'names': (filtername.upper() + ' FILTER',),
-             'description': 'Filter expression (see %s FILTERS section in `help filter`)' % filtername.upper()}
+             'description': ('%s filter expression (see %s FILTERS section in `help filter`)' %
+                             (filtername.capitalize(), filtername.upper()))}
     if or_focused:
         spec['description'] += ' or focused %s in the TUI' % filtername.lower()
     if more_text:
