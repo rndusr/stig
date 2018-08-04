@@ -253,13 +253,18 @@ class HelpManager():
                     # Argument has no description
                     continue
 
-                argline = '\t' + ', '.join(argspec['names'])
+                arglines = ['\t' + ', '.join(argspec['names'])]
                 if takes_value(argspec):
                     dest = arg_dest(argspec)
                     if dest is not None:
-                        argline += ' %s' % dest
+                        arglines[0] += ' %s' % dest
 
-                argline += '  \t' + argspec['description']
+                if isinstance(argspec['description'], str):
+                    arglines[0] += '  \t' + argspec['description']
+                else:  # Assume description is a sequence
+                    arglines[0] += '  \t' + argspec['description'][0]
+                    for paragraph in argspec['description'][1:]:
+                        arglines.append('\t  \t' + paragraph)
 
                 if 'document_default' not in argspec or argspec['document_default']:
                     # Argument takes a value that may default to another value
@@ -273,15 +278,11 @@ class HelpManager():
                             return str(dflt)
 
                     if 'default_description' in argspec:
-                        argline += ' (default: {})'.format(
-                            stringify_default(argspec['default_description'])
-                        )
+                        arglines.append('\t  \tDefault: %s' % stringify_default(argspec['default_description']))
                     elif 'default' in argspec:
-                        argline += ' (default: {})'.format(
-                            stringify_default(argspec['default'])
-                        )
+                        arglines.append('\t  \tDefault: %s' % stringify_default(argspec['default']))
 
-                lines_args.append(argline)
+                lines_args.extend(arglines)
             lines += lines_args
             lines.append('')
 
