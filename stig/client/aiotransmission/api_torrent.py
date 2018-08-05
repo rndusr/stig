@@ -406,7 +406,11 @@ class TorrentAPI():
             try:
                 # Ignore response because it is always {}, except for
                 # 'torrent-get' requests, which this method is not meant for.
-                await method(ids=tuple(t['id'] for t in tlist), **method_args)
+                ids = tuple(t['id'] for t in tlist)
+                # log.debug('Sending %s(%s) for IDs: %s', method.__qualname__,
+                #           ', '.join(('%s=%r' % (k,v) for k,v in method_args.items())),
+                #           ids)
+                await method(ids=ids, **method_args)
             except ClientError as e:
                 errors.append(str(e))
                 return Response(success=False, torrents=(), msgs=msgs, errors=errors)
