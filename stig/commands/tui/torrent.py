@@ -67,6 +67,11 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
     provides = {'tui'}
 
 
+class RenameTorrentCmd(base.RenameTorrentCmdbase,
+                      mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
+    provides = {'tui'}
+
+
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.polling_frenzy, mixin.make_request, mixin.select_torrents,
                         mixin.ask_yes_no):

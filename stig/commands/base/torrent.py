@@ -182,6 +182,58 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 raise CmdError()
 
 
+class RenameTorrentCmdbase(metaclass=InitCommand):
+    name = 'rename'
+    aliases = ('rn',)
+    provides = set()
+    category = 'torrent'
+    description = 'Rename a torrent or one of its files or directories'
+    usage = ('rename <NAME>',
+             'rename <TORRENT> <NAME>')
+    examples = ('rename "A Better Name"',
+                'rename id=123 Foo',
+                'rename Foo/some/path new_path')
+    argspecs = (
+        { 'names': ('TORRENT',),
+          'description': ('Torrent filter expression that matches exactly one torrent, '
+                          'optionally followed by a "/" and the relative path to a '
+                          'file or directory in the torrent') },
+
+        {'names': ('NAME',),
+         'description': ('New name of the torrent, file or directory which '
+                         'must not contain "/" or be "." or ".."')},
+    )
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT, NAME):
+        if '/' in TORRENT:
+            FILTER, PATH = TORRENT.split('/', maxsplit=1)
+        else:
+            FILTER, PATH = TORRENT, None
+
+        try:
+            tfilter = self.select_torrents(FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+        else:
+            response = await self.make_request(
+                self.srvapi.torrent.torrents(tfilter, keys=('id',)),
+                quiet=True)
+            if not response.success:
+                raise CmdError()
+            elif len(response.torrents) > 1:
+                raise CmdError('%s matches more than one torrent' % tfilter)
+            else:
+                tid = response.torrents[0]['id']
+                response = await self.make_request(
+                    self.srvapi.torrent.rename(tid, path=PATH, new_name=NAME),
+                    polling_frenzy=True)
+                if not response.success:
+                    raise CmdError()
+
+
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
     name = 'remove'
     aliases = ('rm', 'delete')
