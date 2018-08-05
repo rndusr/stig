@@ -588,6 +588,108 @@ class TorrentAPI():
                                           check=create_info_msg, check_keys=('path',),
                                           method_args={'move': True, 'location': destination})
 
+    async def rename(self, tid, path, new_name):
+        """
+        Change the name of a torrent
+
+        tid:      Torrent ID
+        path:     Full, relative path in the torrent (without the torrent's name)
+        new_name: New file or directory name; must not contain any directory
+                  separators (usually "/") or be "." or ".."
+
+        Return Response with the following properties:
+            torrent: Torrent object with the keys 'id', 'name' and 'files' or
+                     None in case of failure
+            success: True if the torrent was renamed, False otherwise
+            msgs:    List of info messages
+            errors:  List of error messages
+        """
+        # Validate new_name
+        if '/' in new_name:
+            return Response(success=False, torrent=None,
+                            errors=('New name must not contain "/": %s' % new_name,))
+        for forbidden in ('.', '..'):
+            if new_name == forbidden:
+                return Response(success=False, torrent=None,
+                                errors=('Illegal name: %s' % new_name,))
+
+        # Fetch torrent
+        response = await self._get_torrents_by_ids(ids=(tid,),
+                                                   keys=('name', 'id', 'files', 'path'))
+        if not response.success:
+            return Response(success=False, torrent=None, errors=response.errors)
+        else:
+            torrent = response.torrents[0]
+
+        # If path is None, we rename the torrent itself
+        if path is None:
+            path = torrent['name']
+
+            # Check if new_name already exists at torrent's path
+            download_path = torrent['path']
+            response = await self.torrents('path=%s' % download_path, keys=('name',))
+            if not response.success:
+                return Response(success=False, torrent=None, errors=response.errors)
+            else:
+                for t in response.torrents:
+                    if t['name'] == new_name:
+                        return Response(success=False, torrent=None,
+                                        errors=('Torrent already exists in %s: %s' %
+                                                (download_path, new_name),))
+
+        # Rename a file or directory in the torrent
+        else:
+            # Prepend torrent name to path
+            path = os.path.join(torrent['name'], os.path.normpath(path))
+
+            # Check if path is already named new_name
+            if os.path.basename(path) == new_name:
+                return Response(success=False, torrent=None,
+                                errors=('Already named %s: %s' % (new_name, path),))
+
+            # Make a list of existing files and directories; make sure to
+            # include directories that contain no files, meaning
+            # os.path.dirname(filepath) doesn't work
+            existing_paths = set()
+            for file in torrent['files'].files:
+                filepath = str(file['path-relative'])
+                existing_paths.add(filepath)
+                dirs = filepath.split(os.sep)
+                for i in range(1, len(dirs)):
+                    dirpath = os.path.join(*dirs[:i])
+                    existing_paths.add(dirpath)
+
+            # Check if old path exists in torrent's files
+            if path not in existing_paths:
+                return Response(success=False, torrent=None,
+                                errors=('No such path: %s' % path,))
+
+            # Check if new_name would overwrite a file or directory
+            new_filepath = os.path.join(os.path.dirname(path), new_name)
+            if new_filepath in existing_paths:
+                return Response(success=False, torrent=None,
+                                errors=('Path already exists: %s' % new_filepath,))
+
+        # Send the rename RPC call
+        def create_info_msg(t):
+            return (True, 'Renaming %s to %s' % (path, new_name))
+        response = await self._torrent_action(self.rpc.torrent_rename_path, (torrent['id'],),
+                                              check=create_info_msg, check_keys=('name',),
+                                              method_args={'path': path, 'name': new_name})
+        if not response.success:
+            return Response(success=False, torrent=None, errors=response.errors)
+        else:
+            # Preserve info messages for final response
+            msgs = response.msgs
+
+        # Fetch new torrent data and return final response
+        response = await self._get_torrents_by_ids(ids=(tid,),
+                                                   keys=('name', 'id', 'files'))
+        if not response.success:
+            return Response(success=False, torrent=None, errors=response.errors)
+        else:
+            torrent = response.torrents[0]
+            return Response(success=True, torrent=torrent, msgs=msgs)
 
     async def file_priority(self, torrents, files, priority):
         """
