@@ -622,7 +622,7 @@ class TorrentAPI():
             torrent = response.torrents[0]
 
         # If path is None, we rename the torrent itself
-        if path is None:
+        if not path:
             path = torrent['name']
 
             # Check if new_name already exists at torrent's path
