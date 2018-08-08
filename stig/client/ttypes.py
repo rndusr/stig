@@ -461,6 +461,17 @@ class TorrentFilePriority(str):
     def __int__(self): return self.STR2INT[self]
     def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
 
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return super().__eq__(self.INT2STR.get(other))
+        return super().__eq__(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return super().__hash__()
+
 
 class TorrentFile(abc.Mapping):
     """Mapping that holds the values of a single file in a torrent"""
