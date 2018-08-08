@@ -114,6 +114,32 @@ class Edit_readline(urwid.Edit):
 urwid.Edit = Edit_readline
 
 
+# Remove Text._calc_line_translation() to fix rare crash on peer lists.
+# https://github.com/urwid/urwid/pull/307
+#
+# This bug seems impossible, but I've added extensive debugging messages and the
+# issue is as follows:
+#
+# >>> def _update_cache_translation(self, maxcol, ta):
+# >>>     self._cache_maxcol = maxcol  # maxcol is a number
+# >>>     self._calc_line_translation(maxcol)
+# >>>
+# >>> def _calc_line_translation(self, maxcol):
+# >>>     # self._cache_maxcol is now None while maxcol is still a number.
+
+class Text_patched(urwid.Text):
+    def _update_cache_translation(self, maxcol, ta):
+        if ta:
+            text, attr = ta
+        else:
+            text, attr = self.get_text()
+        self._cache_maxcol = maxcol
+        self._cache_translation = self.layout.layout(
+            text, maxcol, self._align_mode, self._wrap_mode)
+
+urwid.Text = Text_patched
+
+
 # Limit the impact of the high CPU load bug
 # https://github.com/urwid/urwid/pull/86
 # https://github.com/urwid/urwid/issues/90
