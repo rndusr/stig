@@ -484,8 +484,7 @@ class Torrent(base.TorrentBase):
                     value = cache[k]
                     if hasattr(value, 'update') and all(field in raw_torrent for field in fields):
                         value.update(raw_torrent)
-                    else:
-                        del cache[k]
+                    del cache[k]
                     break
 
         # Now we can forget the old values
