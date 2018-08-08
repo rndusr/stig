@@ -333,7 +333,7 @@ DEFAULT_KEYMAP = (
     {'context': 'peerlist', 'key': 's ,', 'action': 'sort --reset'},
     {'context': 'peerlist', 'key': 's .', 'action': 'sort --none'},
     {'context': 'peerlist', 'key': '/',   'action': ('interactive "limit \'%s\'" --per-change '
-                                                        '--on-cancel "limit --clear" --ignore-errors')},
+                                                     '--on-cancel "limit --clear" --ignore-errors')},
 
     # File list actions
     {'context': 'filelist', 'key': 'n', 'action': 'interactive "rename \'%s\'"'},
