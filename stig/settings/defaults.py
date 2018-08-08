@@ -336,6 +336,7 @@ DEFAULT_KEYMAP = (
                                                         '--on-cancel "limit --clear" --ignore-errors')},
 
     # File list actions
+    {'context': 'filelist', 'key': 'n', 'action': 'interactive "rename \'%s\'"'},
     {'context': 'filelist', 'key': '/', 'action': ('interactive "limit \'%s\'" --per-change '
                                                    '--on-cancel "limit --clear" --ignore-errors')},
 
