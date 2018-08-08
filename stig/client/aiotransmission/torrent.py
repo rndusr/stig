@@ -476,7 +476,7 @@ class Torrent(base.TorrentBase):
                 new_value = raw_torrent.get(field)
                 old_value = raw_old.get(field)
                 if new_value is not None and new_value != old_value:
-                    # log.debug('Invalidating cached %s: %r -> %r', k, old_value, new_value)
+                    # log.debug('Invalidating cached %s/%s: %r -> %r', k, field, old_value, new_value)
                     # New and previous value differ - if we are dealing with
                     # more complex data structures (e.g. a file tree), use the
                     # update() method to update the object in cache instead of
