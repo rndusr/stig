@@ -192,6 +192,13 @@ class select_torrents():
 class select_files():
     tui = ExpectedResource
 
+    def get_focused_path_in_torrent(self):
+        """Return relative path of focused file or directory in file lists"""
+        focused_widget = self.tui.tabs.focus
+        if hasattr(focused_widget, 'focused_file_ids'):
+            widget = focused_widget.focused_widget
+            return widget.data['path-relative']
+
     def select_files(self, FILTER, allow_no_filter=True, discover_file=True):
         """
         Get TorrentFileFilter instance, focused/marked file IDs or None
