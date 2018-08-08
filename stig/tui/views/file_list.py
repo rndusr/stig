@@ -130,7 +130,7 @@ class FileTreeDecorator(ArrowTree):
                 if node_id in widgets:
                     filtered_count = self._filtered_counts[node_id]
                     data = TorrentFileDirectory(name, tree=content,
-                                                 filtered_count=filtered_count)
+                                                filtered_count=filtered_count)
                     widgets[node_id].update(data)
 
     @property
