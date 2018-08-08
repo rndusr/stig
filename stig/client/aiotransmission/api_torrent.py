@@ -590,10 +590,11 @@ class TorrentAPI():
 
     async def rename(self, tid, path, new_name):
         """
-        Change the name of a torrent
+        Change the name of a torrent or one of its files or directories
 
         tid:      Torrent ID
-        path:     Full, relative path in the torrent (without the torrent's name)
+        path:     Relative path in the torrent without the torrent's name or
+                  anything that evaluates to False to rename the torrent
         new_name: New file or directory name; must not contain any directory
                   separators (usually "/") or be "." or ".."
 
