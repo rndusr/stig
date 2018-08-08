@@ -194,7 +194,7 @@ class RenameTorrentCmdbase(metaclass=InitCommand):
                 'rename id=123 Foo',
                 'rename Foo/some/path new_path')
     argspecs = (
-        { 'names': ('TORRENT',),
+        { 'names': ('TORRENT',), 'nargs': '?',
           'description': ('Torrent filter expression that matches exactly one torrent, '
                           'optionally followed by a "/" and the relative path to a '
                           'file or directory in the torrent') },
