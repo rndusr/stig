@@ -188,28 +188,34 @@ class RenameTorrentCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'torrent'
     description = 'Rename a torrent or one of its files or directories'
-    usage = ('rename <NAME>',
-             'rename <TORRENT> <NAME>')
+    usage = ('rename <NEW>',
+             'rename <CURRENT> <NEW>')
     examples = ('rename "A Better Name"',
                 'rename id=123 Foo',
                 'rename Foo/some/path new_path')
     argspecs = (
-        { 'names': ('TORRENT',), 'nargs': '?',
+        { 'names': ('CURRENT',), 'nargs': '?',
           'description': ('Torrent filter expression that matches exactly one torrent, '
                           'optionally followed by a "/" and the relative path to a '
-                          'file or directory in the torrent') },
+                          'file or directory in the torrent'),
+          'default_description': 'Focused torrent, file or directory in the TUI' },
 
-        {'names': ('NAME',),
-         'description': ('New name of the torrent, file or directory which '
-                         'must not contain "/" or be "." or ".."')},
+        {'names': ('NEW',),
+         'description': ('New name of the torrent, file or directory specified by CURRENT '
+                         '(must not contain "/" or be "." or "..")')},
     )
     srvapi = ExpectedResource
 
-    async def run(self, TORRENT, NAME):
-        if '/' in TORRENT:
-            FILTER, PATH = TORRENT.split('/', maxsplit=1)
+    async def run(self, CURRENT, NEW):
+        if not CURRENT:
+            path = self.get_focused_path_in_torrent()
+            if path:
+                CURRENT = path
+
+        if CURRENT and '/' in CURRENT:
+            FILTER, PATH = CURRENT.split('/', maxsplit=1)
         else:
-            FILTER, PATH = TORRENT, None
+            FILTER, PATH = CURRENT, None
 
         try:
             tfilter = self.select_torrents(FILTER,
@@ -228,7 +234,7 @@ class RenameTorrentCmdbase(metaclass=InitCommand):
             else:
                 tid = response.torrents[0]['id']
                 response = await self.make_request(
-                    self.srvapi.torrent.rename(tid, path=PATH, new_name=NAME),
+                    self.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
                     polling_frenzy=True)
                 if not response.success:
                     raise CmdError()
