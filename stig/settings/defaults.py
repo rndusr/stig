@@ -292,8 +292,8 @@ DEFAULT_KEYMAP = (
     {'context': 'torrentlist', 'key': 's Z', 'action': 'sort --add !size'},
     {'context': 'torrentlist', 'key': 's ,', 'action': 'sort --reset'},
     {'context': 'torrentlist', 'key': 's .', 'action': 'sort --none'},
-    {'context': 'torrentlist', 'key': '/',   'action': ('interactive "limit \'%s\'" --per-change '
-                                                        '--on-cancel "limit --clear" --ignore-errors')},
+    {'context': 'torrentlist', 'key': '/',   'action': ("interactive 'limit \"%s\"' --per-change "
+                                                        "--on-cancel 'limit --clear' --ignore-errors")},
 
     # Torrent actions
     {'context': 'torrent', 'key': 't a',       'action': 'announce'},
@@ -332,13 +332,13 @@ DEFAULT_KEYMAP = (
     {'context': 'peerlist', 'key': 's T', 'action': 'sort --add !torrent'},
     {'context': 'peerlist', 'key': 's ,', 'action': 'sort --reset'},
     {'context': 'peerlist', 'key': 's .', 'action': 'sort --none'},
-    {'context': 'peerlist', 'key': '/',   'action': ('interactive "limit \'%s\'" --per-change '
-                                                     '--on-cancel "limit --clear" --ignore-errors')},
+    {'context': 'peerlist', 'key': '/',   'action': ("interactive 'limit \"%s\"' --per-change "
+                                                     "--on-cancel 'limit --clear' --ignore-errors")},
 
     # File list actions
-    {'context': 'filelist', 'key': 'n', 'action': 'interactive "rename \'%s\'"'},
-    {'context': 'filelist', 'key': '/', 'action': ('interactive "limit \'%s\'" --per-change '
-                                                   '--on-cancel "limit --clear" --ignore-errors')},
+    {'context': 'filelist', 'key': 'n', 'action': "interactive 'rename \"%s\"'"},
+    {'context': 'filelist', 'key': '/', 'action': ("interactive 'limit \"%s\"' --per-change "
+                                                   "--on-cancel 'limit --clear' --ignore-errors")},
 
     # File actions
     {'context': 'file', 'key': '+',         'action': 'priority high'},
@@ -374,8 +374,8 @@ DEFAULT_KEYMAP = (
     {'context': 'trackerlist', 'key': 's A',   'action': 'sort --add !status'},
     {'context': 'trackerlist', 'key': 's ,',   'action': 'sort --reset'},
     {'context': 'trackerlist', 'key': 's .',   'action': 'sort --none'},
-    {'context': 'trackerlist', 'key': '/',     'action': ('interactive "limit \'%s\'" --per-change '
-                                                          '--on-cancel "limit --clear" --ignore-errors')},
+    {'context': 'trackerlist', 'key': '/',     'action': ("interactive 'limit \"%s\"' --per-change "
+                                                          "--on-cancel 'limit --clear' --ignore-errors")},
 
     # Tracker actions
     {'context': 'tracker', 'key': 'enter',       'action': 'tab summary'},
@@ -392,15 +392,15 @@ DEFAULT_KEYMAP = (
     {'context': 'settinglist', 'key': 's C', 'action': 'sort --add !description'},
     {'context': 'settinglist', 'key': 's ,', 'action': 'sort --reset'},
     {'context': 'settinglist', 'key': 's .', 'action': 'sort --none'},
-    {'context': 'settinglist', 'key': '/',   'action': ('interactive "limit \'%s\'" --per-change '
-                                                        '--on-cancel "limit --clear" --ignore-errors')},
+    {'context': 'settinglist', 'key': '/',   'action': ("interactive 'limit \"%s\"' --per-change "
+                                                        "--on-cancel 'limit --clear' --ignore-errors")},
 
     # Setting actions
     {'context': 'setting', 'key': 'ctrl-r', 'action': 'reset'},
 
     # Help actions
-    {'context': 'helptext', 'key': '/',      'action': ('interactive "find \'%s\'" --per-change '
-                                                        '--on-cancel "find --clear" --ignore-errors')},
+    {'context': 'helptext', 'key': '/',      'action': ("interactive 'find \"%s\"' --per-change "
+                                                        "--on-cancel 'find --clear' --ignore-errors")},
     {'context': 'helptext', 'key': 'n',      'action': 'find --next'},
     {'context': 'helptext', 'key': 'ctrl-n', 'action': 'find --next'},
     {'context': 'helptext', 'key': 'N',      'action': 'find --previous'},
