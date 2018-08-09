@@ -142,6 +142,7 @@ class HelpManager():
     @property
     def commands(self):
         """Must be set to a CommandManager object; provides a help text"""
+        from .commands import (OPS_AND, OPS_OR, OPS_SEQ)
         lines = [
             'COMMANDS',
             '\tCommands can be called ',
@@ -156,9 +157,9 @@ class HelpManager():
              "a command based on the previous command's success."),
             "",
             "\t\tAvailable command operators are: ",
-            "\t\t\t&/and \t- \tRun the next command if the previous command succeeded.",
-            "\t\t\t|/or \t- \tRun the next command if the previous command failed.",
-            "\t\t\t;/also \t- \tRun the next command in any case.",
+            "\t\t\t%s \t- \tRun the next command if the previous command succeeded." % '/'.join(OPS_AND),
+            "\t\t\t%s \t- \tRun the next command if the previous command failed." % '/'.join(OPS_OR),
+            "\t\t\t%s \t- \tRun the next command in any case." % '/'.join(OPS_SEQ),
             "",
             "\t\tCommand operators must be enclosed by spaces.",
             "",
