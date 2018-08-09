@@ -292,7 +292,8 @@ class InteractiveCmd(metaclass=InitCommand):
         self._edit_widget = CLIEditWidget(on_change=change_cb,
                                           on_accept=accept_cb,
                                           on_cancel=cancel_cb)
-        columns_widget = urwid.Columns([('pack', self._before_edit_widget),
+        columns_widget = urwid.Columns([('pack', urwid.Text(':')),
+                                        ('pack', self._before_edit_widget),
                                         (self._EDIT_WIDTH, urwid.AttrMap(self._edit_widget, 'prompt')),
                                         ('pack', self._after_edit_widget)])
         self.tui.widgets.add(name=self._WIDGET_NAME,
