@@ -20,6 +20,13 @@ class _SortSpec(SortSpecBase):
         super().__init__(*args, description=description, **kwargs)
 
 
+from .. import rdns
+def _get_hostname_or_ip(torrent):
+    ip = torrent['ip']
+    hostname = rdns.gethostbyaddr_from_cache(ip)
+    return ip if hostname is None else hostname
+
+
 class TorrentPeerSorter(SorterBase):
     SORTSPECS = {
         'torrent'     : _SortSpec(lambda t: t['tname'].lower(),
@@ -47,8 +54,8 @@ class TorrentPeerSorter(SorterBase):
         'country'     : _SortSpec(lambda t: t['country'].lower(),
                                   aliases=('cn',),
                                   description="peer's country"),
-        'ip'          : _SortSpec(lambda t: t['ip'],
-                                  description="peer's IP address (alphabetically)"),
+        'host'        : _SortSpec(_get_hostname_or_ip,
+                                  description="peer's IP address or hostname"),
         'port'        : _SortSpec(lambda t: t['port'],
                                   description="peer's port number"),
     }

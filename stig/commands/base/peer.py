@@ -33,7 +33,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
              'peerlist [<OPTIONS>] <TORRENT FILTER> <PEER FILTER>')
     examples = ('peerlist',
                 'peerlist downloading',
-                'peerlist some_torrent ip=127.0.0.1')
+                'peerlist some_torrent host=127.0.0.1')
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('PEER', nargs='?'),

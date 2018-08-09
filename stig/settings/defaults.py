@@ -86,7 +86,7 @@ def init_defaults(localcfg):
                  description='Default columns in torrent lists')
     localcfg.add('columns.peers',
                  Tuple.partial(options=peer.COLUMNS, aliases=peer.ALIASES),
-                 default=('ip', 'client', 'country', '%downloaded', 'rate-down',
+                 default=('host', 'client', 'country', '%downloaded', 'rate-down',
                           'rate-up', 'rate-est', 'eta'),
                  description='Default columns in peer lists')
     localcfg.add('columns.files',

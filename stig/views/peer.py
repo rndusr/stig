@@ -63,11 +63,11 @@ class Country(ColumnBase):
 COLUMNS['country'] = Country
 
 
-class IP(ColumnBase):
-    header = {'left': 'IP'}
+class Host(ColumnBase):
+    header = {'left': 'Host'}
     align = 'right'
     width = None
-    min_width = 2
+    min_width = 4
 
     def get_value(self):
         return self.data['ip']
@@ -79,7 +79,7 @@ class IP(ColumnBase):
             return rdns.gethostbyaddr(self.data['ip'])
         return self.data['ip']
 
-COLUMNS['ip'] = IP
+COLUMNS['host'] = Host
 
 
 class Port(ColumnBase):

@@ -50,11 +50,11 @@ class Country(_COLUMNS['country'], CellWidgetBase):
 TUICOLUMNS['country'] = Country
 
 
-class IP(_COLUMNS['ip'], CellWidgetBase):
+class Host(_COLUMNS['host'], CellWidgetBase):
     width = ('weight', 50)
-    style = Style(prefix='peerlist.ip', focusable=True,
+    style = Style(prefix='peerlist.host', focusable=True,
                   extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['ip'].header),
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['host'].header),
                            style.attrs('header'))
 
     def update(self, data):
@@ -70,7 +70,7 @@ class IP(_COLUMNS['ip'], CellWidgetBase):
             from ...client import rdns
             rdns.query(data['ip'], callback=set_hostname)
 
-TUICOLUMNS['ip'] = IP
+TUICOLUMNS['host'] = Host
 
 
 class Port(_COLUMNS['port'], CellWidgetBase):

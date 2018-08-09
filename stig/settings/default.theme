@@ -449,9 +449,9 @@ $torrent_fg = light gray
 peerlist.torrent.header                    $torrent_fg,underline on $plist_bg
 peerlist.torrent.unfocused                 $torrent_fg           on $plist_bg
 
-$ip_fg = light gray
-peerlist.ip.header                         $ip_fg,underline on $plist_bg
-peerlist.ip.unfocused                      $ip_fg           on $plist_bg
+$host_fg = light gray
+peerlist.host.header                       $host_fg,underline on $plist_bg
+peerlist.host.unfocused                    $host_fg           on $plist_bg
 
 $port_fg = light gray
 peerlist.port.header                       $port_fg,underline on $plist_bg

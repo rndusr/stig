@@ -25,7 +25,7 @@ def _cmp_host_or_ip(p, op, v):
 
 
 class SingleTorrentPeerFilter(Filter):
-    DEFAULT_FILTER = 'ip'
+    DEFAULT_FILTER = 'host'
 
     # Filters without arguments
     BOOLEAN_FILTERS = {
@@ -68,7 +68,7 @@ class SingleTorrentPeerFilter(Filter):
             aliases=('cn',),
             description='Match VALUE against peer country',
             value_type=TorrentPeer.TYPES['country']),
-        'ip': CmpFilterSpec(
+        'host': CmpFilterSpec(
             _cmp_host_or_ip,
             description='Match VALUE against peer IP address',
             value_type=TorrentPeer.TYPES['ip']),

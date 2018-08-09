@@ -43,7 +43,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
 
         # Pre-lookup peers' IPs
         from ...main import localcfg
-        if 'ip' in columns and localcfg['reverse-dns']:
+        if 'host' in columns and localcfg['reverse-dns']:
             from ...client import rdns
             rdns.query(*(p['ip'] for p in peerlist))
 
