@@ -3,10 +3,12 @@
     * Filter values with a space at the start or end must now be enclosed by
       single or double quotes (see `help filter`).
     * The short option '-ca' for the 'tab' command was renamed to '-C'.
+    * In peer lists, the 'ip' column, filter and sorter was renamed to 'host'.
 
   Other changes:
-    * New TUI command 'interactive' takes a command that contains a placeholder
-      which is replaced with user input.
+    * New TUI command 'interactive' takes a command that contains one or more
+      placeholders which are replaced with user input before the command is
+      called.
     * New TUI command 'limit' applies a second filter to any list.
     * New default torrentlist/filelist/etc keybinding </> runs `interactive
       'limit %s' --per-change` which allows you to quickly reduce a long list by
@@ -28,7 +30,7 @@
       changed slightly (see `help filter`).
     * The completed time of a torrent now defaults to the time it was added if
       it was never downloaded (e.g. if you're the original uploader).
-    * The default filter in peer lists is now 'ip'.
+    * The default filter in peer lists is now 'host'.
 
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
