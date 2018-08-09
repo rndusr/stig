@@ -15,6 +15,15 @@ from ..ttypes import TorrentPeer
 from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 
+from .. import rdns
+def _cmp_host_or_ip(p, op, v):
+    hostname = rdns.gethostbyaddr_from_cache(p['ip'])
+    if hostname is None:
+        return op(p['ip'], v)
+    else:
+        return op(hostname, v)
+
+
 class SingleTorrentPeerFilter(Filter):
     DEFAULT_FILTER = 'ip'
 
@@ -60,7 +69,7 @@ class SingleTorrentPeerFilter(Filter):
             description='Match VALUE against peer country',
             value_type=TorrentPeer.TYPES['country']),
         'ip': CmpFilterSpec(
-            lambda p, op, v: op(p['ip'], v),
+            _cmp_host_or_ip,
             description='Match VALUE against peer IP address',
             value_type=TorrentPeer.TYPES['ip']),
         'port': CmpFilterSpec(

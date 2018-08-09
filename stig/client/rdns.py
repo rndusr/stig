@@ -31,6 +31,10 @@ def gethostbyaddr(ip):
     return hostname
 
 
+def gethostbyaddr_from_cache(ip):
+    return _cache.get(ip)
+
+
 def query(*ips, callback=None):
     def cb(fut):
         hostname = fut.result()
