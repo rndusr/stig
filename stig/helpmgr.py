@@ -22,13 +22,13 @@ from .utils import expandtabs
 from .utils.string import striplines
 from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
 
-MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filter', 'rcfile')
+MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filters', 'rcfile')
 
 ALIASES = {
-    'command': 'commands', 'cmds': 'commands', 'cmd': 'commands',
-    'setting': 'settings', 'config': 'settings', 'cfg': 'settings',
+    'cmds': 'commands',
+    'config': 'settings', 'cfg': 'settings',
     'keys': 'keymap', 'keybindings': 'keymap',
-    'filters': 'filter', 'filtering': 'filter',
+    'filtering': 'filters',
 }
 
 
@@ -329,7 +329,7 @@ class HelpManager():
         return finalize_lines(lines)
 
     @property
-    def filter(self):
+    def filters(self):
         """Provide help text for arguments to TorrentFilter"""
         lines = [
             'FILTERING TORRENTS, FILES, PEERS, ETC',
