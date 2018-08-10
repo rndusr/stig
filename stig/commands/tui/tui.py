@@ -194,8 +194,8 @@ class InteractiveCmd(metaclass=InitCommand):
     more_sections = {
         'HOW IT WORKS': (('For each occurence of "%s" in COMMAND, the user is '
                           'prompted for input and the result replaces the "%s".  '
-                          'When all placeholders are replaced (or if there aren\'t any), '
-                          'COMMAND is called.'),
+                          'COMMAND is called when all placeholders are replaced or, '
+                          'if --per-change is given, when the user input changes.'),
                          '',
                          'ACCEPT COMMAND is called after COMMAND.',
                          '',
