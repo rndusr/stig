@@ -266,10 +266,11 @@ SECTIONS = (
              human_readable=partial(_date_hr, 'time-activity'),
              machine_readable=partial(_date_mr, 'time-activity')),
 
-        Item('Seeding',
-             needed_keys=('timespan-seeding',),
-             human_readable=partial(_timespan_hr, 'timespan-seeding'),
-             machine_readable=partial(_timespan_mr, 'timespan-seeding')),
+        # Disabled because Transmission returns incorrect time span
+        # Item('Seeding',
+        #      needed_keys=('timespan-seeding',),
+        #      human_readable=partial(_timespan_hr, 'timespan-seeding'),
+        #      machine_readable=partial(_timespan_mr, 'timespan-seeding')),
         Item('Downloading',
              needed_keys=('timespan-downloading',),
              human_readable=partial(_timespan_hr, 'timespan-downloading'),
