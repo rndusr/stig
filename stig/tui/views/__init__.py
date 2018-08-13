@@ -426,7 +426,8 @@ class ListWidgetBase(urwid.WidgetWrap):
     @property
     def focused_widget(self):
         """Currently focused widget in list"""
-        return self._listbox.focus
+        if self.focusable_items:
+            return self._listbox.focus
 
     @property
     def focused_id(self):
