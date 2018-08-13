@@ -58,6 +58,8 @@ class TorrentListWidget(ListWidgetBase):
             keys.extend(self._sort.needed_keys)
         if hasattr(self._tfilter, 'needed_keys'):
             keys.extend(self._tfilter.needed_keys)
+        if self._secondary_filter is not None:
+            keys.extend(self._secondary_filter.needed_keys)
         for colname in self.columns:
             keys.extend(self.tuicolumns[colname].needed_keys)
 
@@ -119,6 +121,7 @@ class TorrentListWidget(ListWidgetBase):
         else:
             self._secondary_filter = TorrentFilter(torrent_filter)
         log.debug('Filtering %r torrents', self._secondary_filter)
+        self._register_request()
         self._invalidate()
 
     def _limit_items(self, torrent_widgets):
