@@ -106,7 +106,8 @@ class StatusAPI():
             self._session_stats_updated = False
 
     def on_update(self, callback, autoremove=True):
-        """Register `callback` to be called at intervals
+        """
+        Register `callback` to be called at intervals
 
         `callback` is passed the instance of this class.  If `autoremove` is
         True, `callback` is stored as a weakref and removed automatically when
