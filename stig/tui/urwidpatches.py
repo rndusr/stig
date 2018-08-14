@@ -57,6 +57,7 @@ urwid.command_map[Key('ctrl-w')]         = urwid.DELETE_WORD_RIGHT
 urwid.command_map[Key('enter')]          = urwid.ACTIVATE
 urwid.command_map[Key('escape')]         = urwid.CANCEL
 urwid.command_map[Key('ctrl-g')]         = urwid.CANCEL
+urwid.command_map[Key('ctrl-c')]         = urwid.CANCEL
 urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
 
 
