@@ -6,31 +6,32 @@
     * In peer lists, the 'ip' column, filter and sorter was renamed to 'host'.
 
   Other changes:
-    * New TUI command 'interactive' takes a command that contains one or more
-      placeholders which are replaced with user input before the command is
-      called.
-    * New TUI command 'limit' applies a second filter to any list.
-    * New default torrentlist/filelist/etc keybinding </> runs `interactive
-      'limit %s' --per-change` which allows you to quickly reduce a long list by
-      typing any filter expression.
-    * New TUI command 'find' highlights and jumps to a search phrase (currently
+    * The TUI commands 'interactive' and 'command' let the user edit a
+      predefined command interactively before executing it.
+    * The TUI command 'limit' applies a second filter to any list.
+    * The TUI command 'find' highlights and jumps to a search phrase (currently
       only help texts are supported).
+    * The command 'rename' allows renaming torrents and files or directories
+      within a torrent.
+    * New default torrentlist/filelist/etc keybinding </> lets you quickly
+      reduce a long list by typing a filter expression.
     * New default helptext keybindings </>, <n> and <N> add support for
       'less'-style(-ish) highlighting and searching in help texts.
     * New default keybinding <t m> interactively asks you where to move a
       torrent.
-    * New command 'rename' allows renaming torrents and files or directories
-      within a torrent.
     * New default key bindings <t n> in torrent lists and <n> in file lists
       rename torrents, files and directories interactively.
-    * Remove an unlimited number of torrents without confirmation with the
-      --force option or by setting 'remove.max-hits' to a negative number.
+    * New 'remove' option --force removes an unlimited number of torrents
+      without confirmation.
+    * New setting 'remove.max-hits' can be set to negative number to never ask
+      for confirmation when removing torrents.
     * All time-based filters now accept relative time deltas (e.g. "1h30m") and
       absolute time stamps (e.g. "2018-07-05").  Their behaviour has also
-      changed slightly (see `help filter`).
+      changed slightly (see `help filters`).
     * The completed time of a torrent now defaults to the time it was added if
       it was never downloaded (e.g. if you're the original uploader).
     * The default filter in peer lists is now 'host'.
+    * 'comment' was added as a torrent filter.
 
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
