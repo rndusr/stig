@@ -156,6 +156,152 @@ class UnbindCmd(metaclass=InitCommand):
             raise CmdError()
 
 
+class CommandCmd(mixin.make_request, metaclass=InitCommand):
+    name = 'command'
+    provides = {'tui'}
+    category = 'tui'
+    description = 'Open the command line and insert a command'
+    usage = ('command [--trailing-space] <COMMAND> <ARGUMENT> <ARGUMENT> ...',)
+    examples = (
+        'command --trailing-space tab ls',
+        '\tAsk the user for a filter before opening a new torrent list.',
+        '',
+        'command move {{path}}',
+        ('\tRename the focused torrent, file or directory, using the current '
+         'value as default.'),
+        '',
+        'command move id={{id}} {{path}}',
+        ('\tSame as above, but make sure to use the correct torrent in case '
+         'it is removed from the list while we type in the new path (e.g. if '
+         'we\'re listing active torrents and the focused torrent stops being active).'),
+    )
+    argspecs = (
+        { 'names': ('COMMAND',), 'nargs': '+',
+          'description': 'Command the can user edit before executing it (see PLACEHOLDERS)' },
+        { 'names': ('--trailing-space',), 'action': 'store_true',
+          'description': 'Append a space at the end of COMMAND' },
+    )
+    _key_maps = {
+        'torrent': {'id': 'id',
+                    'name': 'name',
+                    'path': 'path'},
+        'file': {'id': 'id',
+                 'name': 'name',
+                 'path': 'path-relative'},
+    }
+    more_sections = {
+        'PLACEHOLDERS': (('COMMAND or one of its ARGUMENTs can contain placeholders '
+                          'that are replaced with values from the currently focused '
+                          'list item before the command is inserted into the command '
+                          'line.'),
+                         '',
+                         'Placeholders are supported by torrent lists and file lists.',
+                         '',
+                         ('A placeholder has the format "{{NAME}}".  Valid values for '
+                          'NAME are: %s' % ', '.join(_key_maps['torrent']))),
+    }
+
+    tui = ExpectedResource
+    srvapi = ExpectedResource
+
+    _NOT_SUPPORTED_ERROR = 'Placeholders are not supported in the current tab'
+    _RESOLVE_ERROR = 'Unable to resolve placeholders: %s'
+
+    async def run(self, COMMAND, trailing_space):
+        log.debug('Unresolved command: %r', COMMAND)
+        args = await self._parse_placeholders(COMMAND)
+        log.debug('Command with resolved placeholders: %r', args)
+
+        if args:
+            cmdstr = ' '.join(shlex.quote(str(arg)) for arg in args)
+            if trailing_space:
+                cmdstr += ' '
+            self.tui.widgets.show('cli')
+            self.tui.widgets.cli.base_widget.set_edit_text(cmdstr)
+            self.tui.widgets.cli.base_widget.set_edit_pos(len(cmdstr))
+
+    import re
+    _placeholder_split_regex = re.compile(r'(?<!\\)(\{.+?\})')
+    async def _parse_placeholders(self, args):
+        parsed_args = []
+        for i,arg in enumerate(args):
+            next_arg = []
+            for part in self._placeholder_split_regex.split(arg):
+                if not part:
+                    continue
+                elif part.endswith('}'):
+                    if part.startswith('{'):
+                        next_arg.append(await self._resolve_placeholder(part[1:-1]))
+                    elif part.startswith('\{'):
+                        # Placeholder is escaped - remove the \ characters
+                        if part.endswith('\}'):
+                            # Escaping the closing curly bracket is optional
+                            next_arg.append(part[1:-2] + '}')
+                        else:
+                            next_arg.append(part[1:])
+                else:
+                    # Nothing to parse
+                    next_arg.append(part)
+            parsed_args.append(''.join(next_arg))
+        return parsed_args
+
+    async def _resolve_placeholder(self, key):
+        placeholders = await self._get_placeholder_map()
+        try:
+            return placeholders[key]
+        except KeyError:
+            raise CmdError('Unknown placeholder: %r' % key)
+
+    async def _get_placeholder_map(self):
+        if not hasattr(self, '_placeholders'):
+            from ...tui.views.torrent_list import TorrentListWidget
+            from ...tui.views.file_list import FileListWidget
+
+            focused_list = self.tui.tabs.focus
+            if focused_list is None:
+                raise CmdError(self._RESOLVE_ERROR % 'No tab opened')
+            elif not isinstance(focused_list, (TorrentListWidget, FileListWidget)):
+                raise CmdError(self._NOT_SUPPORTED_ERROR)
+            elif focused_list.focused_widget is None:
+                raise CmdError(self._RESOLVE_ERROR % 'Current tab is empty')
+            else:
+                focused_item = focused_list.focused_widget.base_widget
+                torrent_id = focused_item.torrent_id
+
+                if isinstance(focused_list, TorrentListWidget):
+                    key_map = self._key_maps['torrent']
+                    needed_keys = tuple(key_map.values())
+                    if all(key in focused_item.data for key in needed_keys):
+                        # Cached Torrent object has everything we need
+                        data = focused_item.data
+                    else:
+                        # Fetch data we need for placeholders
+                        data = await self._fetch_torrent_data(torrent_id, needed_keys)
+                elif isinstance(focused_list, FileListWidget):
+                    key_map = self._key_maps['file']
+                    # File list item data is always complete
+                    data = focused_item.data
+
+                else:
+                    raise CmdError(self._NOT_SUPPORTED_ERROR)
+
+                # Map placeholders to values
+                self._placeholders = {ph:str(data[key]) for ph,key in key_map.items()}
+                log.debug('Placeholders: %r', self._placeholders)
+        return self._placeholders
+
+    async def _fetch_torrent_data(self, torrent_id, keys):
+        log.debug('Fetching fresh Torrent #%d with keys: %r', torrent_id, keys)
+        # Request new torrent because we can't be sure the wanted key
+        # exists in widget.data
+        request = self.srvapi.torrent.torrents((torrent_id,), keys=keys)
+        response = await self.make_request(request, quiet=True)
+        if not response.success:
+            raise CmdError()
+        else:
+            return response.torrents[0]
+
+
 class InteractiveCmd(metaclass=InitCommand):
     name = 'interactive'
     provides = {'tui'}
