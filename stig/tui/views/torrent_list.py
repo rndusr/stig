@@ -52,7 +52,7 @@ class TorrentListWidget(ListWidgetBase):
         return id(self)
 
     def _register_request(self):
-        # Get keys needed for sort order, tfilter and columns
+        # Get keys needed for sort order, filters and columns
         keys = ['name']
         if self._sort is not None:
             keys.extend(self._sort.needed_keys)
