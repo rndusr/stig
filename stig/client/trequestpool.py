@@ -135,3 +135,11 @@ class TorrentRequestPool(RequestPoller):
     def has_subscribers(self):
         """Whether any subscribers are registered"""
         return bool(self._tfilters)
+
+    def requested_keys(self, sid):
+        """Return keys requested by subscriber"""
+        event = blinker.signal(sid)
+        try:
+            return self._keys[event]
+        except KeyError:
+            return ()

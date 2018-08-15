@@ -64,11 +64,16 @@ class TorrentListWidget(ListWidgetBase):
             keys.update(self.tuicolumns[colname].needed_keys)
 
         # Register new request in request pool
-        log.debug('Registering keys for %r: %s', self, keys)
-        self._srvapi.treqpool.register(self.id,
-                                       self._handle_torrents,
-                                       keys=keys, tfilter=self._tfilter)
-        self._srvapi.treqpool.poll()
+        existing_keys = self._srvapi.treqpool.requested_keys(self.id)
+        if keys != existing_keys:
+            log.debug('Registering keys for %r: %s', self, keys)
+            self._srvapi.treqpool.register(self.id,
+                                           self._handle_torrents,
+                                           keys=keys, tfilter=self._tfilter)
+            self._srvapi.treqpool.poll()
+        else:
+            log.debug('No need to register a new request')
+            self._invalidate()
 
     # # Enable this to measure rendering performance
     # def render(self, *args, **kwargs):
