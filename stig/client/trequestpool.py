@@ -46,7 +46,7 @@ class TorrentRequestPool(RequestPoller):
         log.debug('Registering subscriber: %s', sid)
         event = blinker.signal(sid)
         event.connect(callback)
-        self._keys[event] = tuple(keys)
+        self._keys[event] = set(keys)
         self._tfilters[event] = tfilter
 
         # It's possible that a currently ongoing request doesn't collect the
@@ -76,13 +76,14 @@ class TorrentRequestPool(RequestPoller):
             else:
                 kwargs['torrents'] = reduce(operator.__or__, all_filters)
 
-            kwargs['keys'] = reduce(operator.__add__, self._keys.values())
+            # Combine keys of all requests
+            kwargs['keys'] = reduce(lambda a,b: {*a,*b}, self._keys.values())
+
             # Filters also need certain keys
             for f in all_filters:
                 if f is not None:
-                    kwargs['keys'] += f.needed_keys
+                    kwargs['keys'].update(f.needed_keys)
 
-            kwargs['keys'] = tuple(set(kwargs['keys']))
             log.debug('Combined filters: %s', kwargs['torrents'])
             log.debug('Combined keys: %s', kwargs['keys'])
             self.set_request(self._api.torrents, **kwargs)

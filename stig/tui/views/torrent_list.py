@@ -53,15 +53,15 @@ class TorrentListWidget(ListWidgetBase):
 
     def _register_request(self):
         # Get keys needed for sort order, filters and columns
-        keys = ['name']
+        keys = {'name'}
         if self._sort is not None:
-            keys.extend(self._sort.needed_keys)
+            keys.update(self._sort.needed_keys)
         if hasattr(self._tfilter, 'needed_keys'):
-            keys.extend(self._tfilter.needed_keys)
+            keys.update(self._tfilter.needed_keys)
         if self._secondary_filter is not None:
-            keys.extend(self._secondary_filter.needed_keys)
+            keys.update(self._secondary_filter.needed_keys)
         for colname in self.columns:
-            keys.extend(self.tuicolumns[colname].needed_keys)
+            keys.update(self.tuicolumns[colname].needed_keys)
 
         # Register new request in request pool
         log.debug('Registering keys for %r: %s', self, keys)
