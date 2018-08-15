@@ -122,7 +122,6 @@ class TorrentListWidget(ListWidgetBase):
             self._secondary_filter = TorrentFilter(torrent_filter)
         log.debug('Filtering %r torrents', self._secondary_filter)
         self._register_request()
-        self._invalidate()
 
     def _limit_items(self, torrent_widgets):
         f = self._secondary_filter
