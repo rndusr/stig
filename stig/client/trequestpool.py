@@ -92,12 +92,12 @@ class TorrentRequestPool(RequestPoller):
         tlist = response.torrents if response is not None else ()
 
         dead_subscribers = []
-        def has_subscribers(event):
+        def send(event, tlist):
             if not bool(event.receivers):
                 dead_subscribers.append(event.name)
-                return False
             else:
-                return True
+                log.debug('Running callback: %r', event.name)
+                event.send(tlist)
 
         log.debug('Processing %d torrents for %d subscribers',
                   len(tlist), len(self._tfilters))
@@ -105,22 +105,18 @@ class TorrentRequestPool(RequestPoller):
             # If there's only one subscriber, there's no need to filter the
             # torrents again.
             event = next(iter(self._tfilters))
-            if has_subscribers(event):
-                log.debug('Running callback: %r', event.name)
-                event.send(tlist)
+            send(event, tlist)
         else:
             # More than 1 subscriber means we have to filter the torrents
             # again for each one.
             for event,filter in self._tfilters.items():
-                if has_subscribers(event):
-                    log.debug('Running callback: %r', event.name)
-                    if filter is None:
-                        # Subscriber wants all torrents
-                        this_tlist = tlist
-                    else:
-                        # Subscriber wants filtered torrents
-                        this_tlist = filter.apply(tlist)
-                    event.send(this_tlist)
+                if filter is None:
+                    # Subscriber wants all torrents
+                    this_tlist = tlist
+                else:
+                    # Subscriber wants filtered torrents
+                    this_tlist = filter.apply(tlist)
+                send(event, this_tlist)
 
         # Remove dead subscribers
         for eventname in dead_subscribers:
