@@ -123,14 +123,19 @@ class SearchableText(urwid.WidgetWrap):
             pile = self._w.base_widget
             full_canv = pile.render((size[0],), focus)
 
+            def row_matches(row):
+                for _,_,text in row:
+                    text_dec = text.decode()
+                    if case_sensitive and phrase in text_dec:
+                        return True
+                    elif not case_sensitive and phrase_cf in text_dec.casefold():
+                        return True
+                return False
+
             # Find indexes of matching rows in full Pile of rows
             for i,row in enumerate(full_canv.content()):
-                for attr,cs,text in row:
-                    text_dec = text.decode()
-                    if (case_sensitive and phrase in text_dec or
-                        phrase_cf in text_dec.casefold()):
-                        indexes.append(i)
-                        break
+                if row_matches(row):
+                    indexes.append(i)
 
         # Now we can render the actual canvas and throw away the full canvas
         return super().render(size, focus)
