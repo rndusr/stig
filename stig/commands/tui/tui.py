@@ -626,7 +626,7 @@ class LimitCmd(metaclass=InitCommand):
         if not hasattr(content, 'secondary_filter'):
             raise CmdError('This tab does not support limiting.')
         else:
-            if clear:
+            if clear or not FILTER:
                 content.secondary_filter = None
             else:
                 try:
