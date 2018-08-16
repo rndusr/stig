@@ -370,6 +370,7 @@ class InteractiveCmd(metaclass=InitCommand):
 
         if per_change:
             def accept_cb():
+                self._run_cmd_in_dialog()
                 self._run_cmd_or_open_dialog(self._accept_cmd)
 
             def cancel_cb():
