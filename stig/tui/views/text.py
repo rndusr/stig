@@ -47,12 +47,13 @@ class SearchableText(urwid.WidgetWrap):
             self._highlight_matches(phrase)
 
     def _clear_matches(self):
-        curpos = self._w.get_scrollpos()
+        scrollpos = self._w.get_scrollpos()
         self._search_phrase = None
         self._w = self._make_content([urwid.Text(line) for line in self._lines])
-        self._w.set_scrollpos(curpos)
+        self._w.set_scrollpos(scrollpos)
 
     def _highlight_matches(self, phrase):
+        scrollpos = self._w.get_scrollpos()
         self._search_phrase = phrase = str(phrase)
         phrase_cf = phrase.casefold()
         case_sensitive = phrase != phrase_cf
@@ -101,6 +102,9 @@ class SearchableText(urwid.WidgetWrap):
 
         # This calls _invalidate()
         self._w = self._make_content(texts)
+
+        # Restore scrolling position which was lost when content changed
+        self._w.set_scrollpos(scrollpos)
 
     def render(self, size, focus=False):
         phrase = self._search_phrase
