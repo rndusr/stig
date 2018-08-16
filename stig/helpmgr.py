@@ -32,11 +32,24 @@ ALIASES = {
 }
 
 
-def finalize_lines(lines):
-    return tuple(
-        striplines(line.format(__appname__=__appname__)
-                   for line in expandtabs.expand(lines, indent=2))
-    )
+import string
+class ForgivingFormatter(string.Formatter):
+    def get_value(self, key, args, kwargs):
+        if isinstance(key, str):
+            try:
+                return kwargs[key]
+            except KeyError:
+                return '{%s}' % key
+        else:
+            return super().get_value(key, args, kwargs)
+
+    def __call__(self, lines):
+        return tuple(
+            striplines(self.format(line, __appname__=__appname__)
+                       for line in expandtabs.expand(lines, indent=2))
+        )
+
+finalize_lines = ForgivingFormatter()
 
 
 class HelpManager():
