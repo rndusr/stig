@@ -27,7 +27,7 @@ class HelpCmd(base.HelpCmdbase):
     def display_help(self, topics, lines):
         import urwid
         from ...tui.scroll import ScrollBar
-        from ...tui.views.help import SearchableText
+        from ...tui.views.text import SearchableText
         from ...tui.main import keymap
 
         if hasattr(self, 'title'):
