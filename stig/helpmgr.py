@@ -436,7 +436,7 @@ class HelpManager():
             'RC FILES',
             ('\tAn rc file is a script that contains a list of arbitrary commands.  '
              'Commands can span multiple lines by escaping linebreaks with "\\".  '
-             'Lines starting with "#" (more precisely: "\s*#") are ignored.'),
+             'Lines starting with "#" (optionally preceded by spaces) are ignored.'),
             '',
             ('\tThe default rc file path is "$XDG_CONFIG_HOME/{__appname__}/rc", '
              'where XDG_CONFIG_HOME defaults to "~/.config" if it is not set.'),
