@@ -114,8 +114,8 @@ class SearchableText(urwid.WidgetWrap):
         if phrase is not None:
             # Case-insensitive matching if phrase is equal to casefolded phrase
             phrase_cf = phrase.casefold()
-            case_sensitive = phrase == phrase_cf
-            if case_sensitive:
+            case_sensitive = phrase != phrase_cf
+            if not case_sensitive:
                 phrase = phrase_cf
 
             # Render the full Pile of rows because extra long lines cause line
