@@ -299,7 +299,7 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 't a',       'action': 'announce'},
     {'context': 'torrent', 'key': 't d',       'action': 'delete'},
     {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files'},
-    {'context': 'torrent', 'key': 't m',       'action': 'command move id={id} {path}'},
+    {'context': 'torrent', 'key': 't m',       'action': 'command move id={id} {path}/'},
     {'context': 'torrent', 'key': 't n',       'action': 'command rename id={id} {name}'},
     {'context': 'torrent', 'key': 't p',       'action': 'tab peerlist'},
     {'context': 'torrent', 'key': 't t',       'action': 'tab trackerlist'},
