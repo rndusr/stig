@@ -80,6 +80,19 @@ def load_geoip_db():
 
 
 def _create_cli_widget():
+    # TODO: If it's 2019, remove the following block.
+    #
+    # DEFAULT_HISTORY_FILE was deprecated in v0.10.0 to allow multiple history
+    # files.  Silently move the old history file to its new destination.
+    from xdg.BaseDirectory import xdg_data_home  as XDG_DATA_HOME
+    from ..settings.defaults import DEFAULT_HISTORY_DIR
+    from .. import __appname__
+    old_history_file = os.path.join(XDG_DATA_HOME, __appname__, 'history')
+    if os.path.exists(old_history_file):
+        if not os.path.exists(DEFAULT_HISTORY_DIR):
+            os.makedirs(DEFAULT_HISTORY_DIR)
+        os.rename(old_history_file, os.path.join(DEFAULT_HISTORY_DIR, 'commands'))
+
     def on_cancel(widget):
         widget.set_edit_text('')
         widgets.hide('cli')
