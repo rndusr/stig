@@ -602,6 +602,7 @@ class FindCmd(metaclass=InitCommand):
         else:
             try:
                 content.search_phrase = ' '.join(PHRASE)
+                content.maybe_jump_to_next_match()
             except ValueError as e:
                 raise CmdError(e)
 
