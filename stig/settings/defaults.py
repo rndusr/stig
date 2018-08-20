@@ -24,10 +24,10 @@ from ..client.sorters.peer import TorrentPeerSorter
 from ..client.sorters.tracker import TorrentTrackerSorter
 from ..client.sorters.setting import SettingSorter
 
-DEFAULT_RCFILE       = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
-DEFAULT_HISTORY_FILE = os.path.join(XDG_DATA_HOME, __appname__, 'history')
-DEFAULT_GEOIP_DIR    = os.path.join(XDG_CACHE_HOME, __appname__)
-DEFAULT_THEME_FILE   = os.path.join(os.path.dirname(__file__), 'default.theme')
+DEFAULT_RCFILE      = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
+DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
+DEFAULT_GEOIP_DIR   = os.path.join(XDG_CACHE_HOME, __appname__)
+DEFAULT_THEME_FILE  = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 
 def init_defaults(localcfg):
@@ -153,14 +153,14 @@ def init_defaults(localcfg):
                  default=10,
                  description=('If the log is hidden, show it for this many seconds '
                               'for new log entries before hiding it again'))
-    localcfg.add('tui.cli.history-file',
+    localcfg.add('tui.cli.history-dir',
                  Path.partial(),
-                 default=DEFAULT_HISTORY_FILE,
-                 description='Path to TUI command line history file')
+                 default=DEFAULT_HISTORY_DIR,
+                 description='Directory where histories of user input are stored')
     localcfg.add('tui.cli.history-size',
                  Int.partial(min=0),
                  default=10000,
-                 description='Maximum number of lines in history file')
+                 description='Maximum number of lines to keep in history files')
     localcfg.add('tui.poll',
                  Float.partial(min=0.1),
                  default=5,

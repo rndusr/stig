@@ -13,6 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import urwid
+import os
 from . import urwidpatches
 from ..main import (aioloop, localcfg, cmdmgr, srvapi, geoip)
 
@@ -47,7 +48,6 @@ def load_theme(themeobj):
     If `themeobj` is a string, does not have a path and does not exist in the
     current working directory, try to load it from the same path as the rc file.
     """
-    import os
     if isinstance(themeobj, str) and \
        os.sep not in themeobj and not os.path.exists(themeobj):
         # Path is not given and file does not exist in working dir.
@@ -91,7 +91,8 @@ def _create_cli_widget():
 
     return CLIEditWidget(':',
                          on_accept=on_accept, on_cancel=on_cancel,
-                         history_file=localcfg['tui.cli.history-file'])
+                         history_file=os.path.join(localcfg['tui.cli.history-dir'], 'commands'))
+
 
 
 def _greedy_spacer():

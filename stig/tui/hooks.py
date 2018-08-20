@@ -13,6 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 from functools import partial
+import os
 
 from ..main import (localcfg, srvapi, aioloop)
 from . import main as tui
@@ -61,10 +62,9 @@ def _set_poll_interval(settings, name, value):
 localcfg.on_change(_set_poll_interval, name='tui.poll')
 
 
-def _set_cli_history_file(settings, name, value):
-    tui.cli.original_widget.history_file = value
-localcfg.on_change(_set_cli_history_file, name='tui.cli.history-file')
-
+def _set_cli_history_dir(settings, name, value):
+    tui.cli.original_widget.history_file = os.path.join(value, 'commands')
+localcfg.on_change(_set_cli_history_dir, name='tui.cli.history-dir')
 
 def _set_cli_history_size(settings, name, value):
     tui.cli.original_widget.history_size = value
