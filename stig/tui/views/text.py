@@ -23,7 +23,8 @@ class SearchableText(urwid.WidgetWrap):
     def __init__(self, lines):
         self._lines = lines
         self._search_phrase = None
-        self._match_indexes = []
+        self._match_indexes = None
+        self._render_action = None
         super().__init__(self._make_content([urwid.Text(line) for line in lines]))
 
     def _make_content(self, text_widgets):
@@ -40,23 +41,33 @@ class SearchableText(urwid.WidgetWrap):
 
     @search_phrase.setter
     def search_phrase(self, phrase):
+        phrase = str(phrase)
         prev_search_phrase = self._search_phrase
-        if (phrase is None or not str(phrase)) and prev_search_phrase:
+        self._match_indexes = None
+        if not phrase and prev_search_phrase:
+            self._search_phrase = None
+            self._case_sensitive = None
             self._clear_matches()
         elif phrase != prev_search_phrase:
-            self._highlight_matches(phrase)
+            # Case-insensitive matching if phrase is equal to casefolded phrase
+            phrase_cf = phrase.casefold()
+            case_sensitive = phrase != phrase_cf
+            if not case_sensitive:
+                # Do case-insensitive matching
+                phrase = phrase_cf
+            self._search_phrase = phrase
+            self._case_sensitive = case_sensitive
+            self._highlight_matches()
 
     def _clear_matches(self):
         scrollpos = self._w.get_scrollpos()
-        self._search_phrase = None
         self._w = self._make_content([urwid.Text(line) for line in self._lines])
         self._w.set_scrollpos(scrollpos)
 
-    def _highlight_matches(self, phrase):
+    def _highlight_matches(self):
         scrollpos = self._w.get_scrollpos()
-        self._search_phrase = phrase = str(phrase)
-        phrase_cf = phrase.casefold()
-        case_sensitive = phrase != phrase_cf
+        phrase = self._search_phrase
+        case_sensitive = self._case_sensitive
 
         def match_boundaries(line):
             """Yield (start, stop) tuple for each occurence of `phrase` in `line`"""
@@ -80,7 +91,7 @@ class SearchableText(urwid.WidgetWrap):
             if case_sensitive:
                 yield from positions_of(phrase, line)
             else:
-                yield from positions_of(phrase_cf, line.casefold())
+                yield from positions_of(phrase, line.casefold())
 
         texts = []
         palette_name = self.palette_name
@@ -106,56 +117,104 @@ class SearchableText(urwid.WidgetWrap):
         # Restore scrolling position which was lost when content changed
         self._w.set_scrollpos(scrollpos)
 
-    def render(self, size, focus=False):
-        phrase = self._search_phrase
-        indexes = self._match_indexes
-        indexes.clear()
-
-        if phrase is not None:
-            # Case-insensitive matching if phrase is equal to casefolded phrase
-            phrase_cf = phrase.casefold()
-            case_sensitive = phrase != phrase_cf
-            if not case_sensitive:
-                phrase = phrase_cf
-
-            # Render the full Pile of rows because extra long lines cause line
-            # breaks and so we can't just get indexes from self._lines.
-            pile = self._w.base_widget
-            full_canv = pile.render((size[0],), focus)
-
-            def row_matches(row):
-                for _,_,text in row:
-                    text_dec = text.decode()
-                    if case_sensitive and phrase in text_dec:
-                        return True
-                    elif not case_sensitive and phrase_cf in text_dec.casefold():
-                        return True
-                return False
-
-            # Find indexes of matching rows in full Pile of rows
-            for i,row in enumerate(full_canv.content()):
-                if row_matches(row):
-                    indexes.append(i)
-
-        # Now we can render the actual canvas and throw away the full canvas
-        return super().render(size, focus)
-
-    def jump_to_next_match(self):
-        self._assert_search_phrase_not_None()
-        curpos = self._w.get_scrollpos()
-        for i in self._match_indexes:
-            if i > curpos:
-                self._w.set_scrollpos(i)
-                break
-
-    def jump_to_prev_match(self):
-        self._assert_search_phrase_not_None()
-        curpos = self._w.get_scrollpos()
-        for i in reversed(self._match_indexes):
-            if i < curpos:
-                self._w.set_scrollpos(i)
-                break
+    _JUMP_TO_NEXT_MATCH = object()
+    _JUMP_TO_PREV_MATCH = object()
+    _MAYBE_JUMP_TO_NEXT_MATCH = object()
+    _MAYBE_JUMP_TO_PREV_MATCH = object()
 
     def _assert_search_phrase_not_None(self):
         if self._search_phrase is None:
             raise RuntimeError("Can't jump to next match with search_phrase set to None")
+
+    def jump_to_next_match(self):
+        self._assert_search_phrase_not_None()
+        self._render_action = self._JUMP_TO_NEXT_MATCH
+        self._invalidate()
+
+    def jump_to_prev_match(self):
+        self._assert_search_phrase_not_None()
+        self._render_action = self._JUMP_TO_PREV_MATCH
+        self._invalidate()
+
+    def maybe_jump_to_next_match(self):
+        """Jump to next match if nothing matches on the current page"""
+        if self._search_phrase:
+            self._assert_search_phrase_not_None()
+            self._render_action = self._MAYBE_JUMP_TO_NEXT_MATCH
+            self._invalidate()
+
+    def maybe_jump_to_prev_match(self):
+        """Jump to previous match if nothing matches on the current page"""
+        if self._search_phrase:
+            self._assert_search_phrase_not_None()
+            self._render_action = self._MAYBE_JUMP_TO_PREV_MATCH
+            self._invalidate()
+
+    def render(self, size, focus=False):
+        ra = self._render_action
+        if self._search_phrase is not None and ra is not None:
+            # Calculate indexes of matching rows on the canvas
+            if self._match_indexes is None:
+                self._find_match_indexes(size)
+
+            # Move next/previous match to the top of the canvas
+            if ra is self._JUMP_TO_NEXT_MATCH:
+                self._jump_to_next_match(size)
+            elif ra is self._JUMP_TO_PREV_MATCH:
+                self._jump_to_prev_match(size)
+
+            # Same as above, but only if there are no matches visible
+            elif ra is self._MAYBE_JUMP_TO_NEXT_MATCH:
+                if not self._any_matches_on_current_page(size):
+                    self._jump_to_next_match(size)
+            elif ra is self._MAYBE_JUMP_TO_PREV_MATCH:
+                if not self._any_matches_on_current_page(size):
+                    self._jump_to_prev_match(size)
+
+            self._render_action = None
+        return super().render(size, focus)
+
+    def _jump_to_next_match(self, size):
+        scrollpos = self._w.get_scrollpos()
+        for i in self._match_indexes:
+            if i > scrollpos:
+                self._w.set_scrollpos(i)
+                break
+
+    def _jump_to_prev_match(self, size):
+        scrollpos = self._w.get_scrollpos()
+        for i in reversed(self._match_indexes):
+            if i < scrollpos:
+                self._w.set_scrollpos(i)
+                break
+
+    def _any_matches_on_current_page(self, size):
+        viewport_min = self._w.get_scrollpos()
+        viewport_max = viewport_min + size[1] - 1
+        for i in self._match_indexes:
+            if viewport_min <= i <= viewport_max:
+                return True
+        return False
+
+    def _find_match_indexes(self, size):
+        phrase = self._search_phrase
+        case_sensitive = self._case_sensitive
+
+        def row_matches(row):
+            for _,_,text in row:
+                text_dec = text.decode()
+                if case_sensitive and phrase in text_dec:
+                    return True
+                elif not case_sensitive and phrase in text_dec.casefold():
+                    return True
+            return False
+
+        # Render the full Pile canvas because long lines can cause line breaks
+        # and so we can't just get indexes from self._lines.
+        full_canv = self._w.base_widget.render((size[0],), False)
+        indexes = []
+        for i,row in enumerate(full_canv.content()):
+            text = ''.join(p[2].decode() for p in row).strip()
+            if row_matches(row):
+                indexes.append(i)
+        self._match_indexes = indexes
