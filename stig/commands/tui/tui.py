@@ -20,6 +20,7 @@ from ._common import make_tab_title_widget
 
 import shlex
 from functools import partial
+import os
 
 
 # Import tui.main module only on demand
@@ -357,6 +358,7 @@ class InteractiveCmd(metaclass=InitCommand):
 
     tui = ExpectedResource
     cmdmgr = ExpectedResource
+    cfg = ExpectedResource
 
     def run(self, COMMAND, per_change, on_accept, on_cancel, on_close, ignore_errors):
         self._cmd = self._split_cmd_at_placeholders(COMMAND)
@@ -364,6 +366,11 @@ class InteractiveCmd(metaclass=InitCommand):
         self._cancel_cmd = self._split_cmd_at_placeholders(on_cancel) if on_cancel else None
         self._close_cmd = self._split_cmd_at_placeholders(on_close) if on_close else None
         self._ignore_errors = ignore_errors
+
+        # Derive history file name from command
+        import re
+        filename = re.sub('[/\n]', '__', ''.join(self._cmd))
+        self._history_file = os.path.join(self.cfg['tui.cli.history-dir'], filename)
 
         def close_cb():
             self._run_cmd_or_open_dialog(self._close_cmd)
@@ -438,7 +445,8 @@ class InteractiveCmd(metaclass=InitCommand):
 
         self._edit_widget = CLIEditWidget(on_change=change_cb,
                                           on_accept=accept_cb,
-                                          on_cancel=cancel_cb)
+                                          on_cancel=cancel_cb,
+                                          history_file=self._history_file)
         columns_widget = urwid.Columns([('pack', urwid.Text(':')),
                                         ('pack', self._before_edit_widget),
                                         (self._EDIT_WIDTH, urwid.AttrMap(self._edit_widget, 'prompt')),
