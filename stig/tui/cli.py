@@ -145,6 +145,8 @@ def _mkdir(path):
 
 
 def _test_access(path):
+    if path.startswith('/dev/null'):
+        return True
     try:
         with open(path, 'a'): pass
     except OSError as e:
