@@ -48,8 +48,17 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
     async def _set_limits(self, TORRENT_FILTER, directions, limit, adjust=False, quiet=False):
         if TORRENT_FILTER == ['global']:
-            await self._set_global_limit(directions, limit,
-                                         adjust=adjust, quiet=quiet)
+            await self._set_global_limits(directions, limit,
+                                          adjust=adjust, quiet=quiet)
         else:
-            await self._set_individual_limit(TORRENT_FILTER, directions, limit,
-                                             adjust=adjust, quiet=quiet)
+            await self._set_individual_limits(TORRENT_FILTER, directions, limit,
+                                              adjust=adjust, quiet=quiet)
+
+    async def _show_limits(self, TORRENT_FILTER, directions):
+        if TORRENT_FILTER == ['global']:
+            await self._show_global_limits(directions)
+        else:
+            await self._show_individual_limits(TORRENT_FILTER, directions)
+
+    def _output(self, msg):
+        self.info(msg)

@@ -289,7 +289,8 @@ class RateLimitCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'configuration'
     description = 'Limit transfer rates per torrent or globally'
-    usage = ('ratelimit <DIRECTION> <LIMIT>',
+    usage = ('ratelimit <DIRECTION>',
+             'ratelimit <DIRECTION> <LIMIT>',
              'ratelimit <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('ratelimit up 5Mb',
                 'ratelimit down,up 1M global',
@@ -298,8 +299,9 @@ class RateLimitCmdbase(metaclass=InitCommand):
         {'names': ('DIRECTION',),
          'description': 'Any combination of "up", "down" or "dn" separated by a comma'},
 
-        {'names': ('LIMIT',),
-         'description': ('Maximum allowed transfer rate; see `help srv.limit.rate.up` for the syntax')},
+        {'names': ('LIMIT',), 'nargs': '?',
+         'description': ('Maximum allowed transfer rate (see `help srv.limit.rate.up` '
+                         'for the syntax) or "show" to display the current limit')},
 
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*',
                            more_text=('"global" to set global limit (same as setting '
@@ -318,19 +320,46 @@ class RateLimitCmdbase(metaclass=InitCommand):
             if d not in ('up', 'down'):
                 raise CmdError('Invalid direction: %r' % (d,))
 
-        # Do we adjust current limits or set absolute limits?
-        limit = LIMIT.strip()
-        if limit[:2] == '+=' or limit[:2] == '-=':
-            adjust = True
-            limit = limit[0] + limit[2:]  # Remove '=' so it can be parsed as a number
+        # _show_limits() and _set_limits() are defined in cli.config and
+        # tui.config because the TUI can use the focused torrent while the CLI
+        # can't.
+        if not LIMIT or LIMIT == 'show':
+            await self._show_limits(TORRENT_FILTER, directions)
         else:
-            adjust = False
+            # Do we adjust current limits or set absolute limits?
+            limit = LIMIT.strip()
+            if limit[:2] == '+=' or limit[:2] == '-=':
+                adjust = True
+                limit = limit[0] + limit[2:]  # Remove '=' so it can be parsed as a number
+            else:
+                adjust = False
 
-        # _set_limits() is defined in cli.config and tui.config and behaves slightly differently
-        await self._set_limits(TORRENT_FILTER, directions, limit,
-                               adjust=adjust, quiet=quiet)
+            await self._set_limits(TORRENT_FILTER, directions, limit,
+                                   adjust=adjust, quiet=quiet)
 
-    async def _set_global_limit(self, directions, limit, quiet=False, adjust=False):
+    async def _show_global_limits(self, directions):
+        for d in directions:
+            get_method = getattr(self.srvapi.settings, 'get_limit_rate_' + d)
+            limit = await get_method()
+            self._output('Global %sload rate limit: %s' % (d, limit))
+
+    async def _show_individual_limits(self, TORRENT_FILTER, directions):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+        request = self.srvapi.torrent.torrents(
+            tfilter, keys=('name', 'limit-rate-up', 'limit-rate-down'))
+        response = await self.make_request(request, polling_frenzy=True, quiet=True)
+        if response.success:
+            for t in response.torrents:
+                for d in directions:
+                    self._output('%s %sload rate limit: %s' %
+                                 (t['name'], d, t['limit-rate-%s' % d]))
+
+    async def _set_global_limits(self, directions, limit, quiet=False, adjust=False):
         for d in directions:
             log.debug('Setting global %s rate limit: %r', d, limit)
             set_method = getattr(self.srvapi.settings,
@@ -347,7 +376,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
             except ClientError as e:
                 raise CmdError(e)
 
-    async def _set_individual_limit(self, TORRENT_FILTER, directions, limit, quiet=False, adjust=False):
+    async def _set_individual_limits(self, TORRENT_FILTER, directions, limit, quiet=False, adjust=False):
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=False,
