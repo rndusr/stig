@@ -859,15 +859,15 @@ class TorrentAPI():
         if not response.success:
             return Response(success=False, torrents=(), errors=response.errors)
         msgs = []
-        errors = []
+        errormsgs = []
         success = False
         for t in response.torrents:
             if t['id'] in errors:
-                errors.append('%s %sload rate: %s' % (t['name'], direction, errors[t['id']]))
+                errormsgs.append('%s %sload rate limit: %s' % (t['name'], direction, errors[t['id']]))
             else:
                 success = True
-                msgs.append('%s %sload rate: %s' % (t['name'], direction, t['limit-rate-'+direction]))
-        return Response(success=success, torrents=response.torrents, msgs=msgs, errors=errors)
+                msgs.append('%s %sload rate limit: %s' % (t['name'], direction, t['limit-rate-'+direction]))
+        return Response(success=success, torrents=response.torrents, msgs=msgs, errors=errormsgs)
 
     async def set_limit_rate_up(self, torrents, limit):
         """
