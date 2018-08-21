@@ -387,10 +387,12 @@ class RateLimitCmdbase(metaclass=InitCommand):
         log.debug('Setting %sload rate limit for %s torrents: %r',
                   '+'.join(directions), tfilter, limit)
 
+        success = True
         for d in directions:
             method = getattr(self.srvapi.torrent,
                              ('adjust' if adjust else 'set') + '_limit_rate_' + d)
             response = await self.make_request(method(tfilter, limit),
                                                polling_frenzy=True, quiet=quiet)
-            if not response.success:
-                raise CmdError()
+            success = success and response.success
+        if not success:
+            raise CmdError()
