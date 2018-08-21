@@ -14,17 +14,6 @@ questions and point out issues.
    3. Implement 'interactive' command (see below) and use it to add comparative
       filters to lists with more 'f ...' key chains.
 
-** TODO New command: interactive
-   Take an arbitrary amount of (option, prompt) pairs and any command.  The
-   command contains placeholders.  First, for each (option, prompt) pair, the
-   user has to supply a value.  Each placeholder is then replaced with its
-   value and the command is executed if all placeholders are filled.
-
-   Example: interactive dest:Destination -- mv {dest}
-
-   This is mostly useful for better keybindings in the TUI, but it may also
-   have benefits on the CLI.
-
 
 * tui
 
