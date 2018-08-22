@@ -99,13 +99,6 @@ class classproperty():
 
 
 def multitype(*constructors):
-    # Get constructors (Int.partial(...)) for making new values and and classes
-    # (Int) for isinstance() checking.
-    constructors = tuple(c if isinstance(c, _PartialConstructor) else c.partial()
-                         for c in constructors)
-    subclses = tuple(c.func for c in constructors)
-
-
     class MultitypeMeta(type):
         def __new__(mcls, name, bases, clsattrs):
             cls = type.__new__(mcls, name, bases, clsattrs)
@@ -127,8 +120,12 @@ def multitype(*constructors):
 
 
     class Multitype(StringableMixin, metaclass=MultitypeMeta):
-        _constructors = constructors
-        _subclses = subclses
+        # Get constructors (e.g. Int.partial(...)) for making new values
+        _constructors = tuple(c if isinstance(c, _PartialConstructor) else c.partial()
+                              for c in constructors)
+
+        # Get classes for instance checking (see MultitypeMeta)
+        _subclses = tuple(c.func for c in _constructors)
 
         def __new__(cls, *value, **kwargs):
             self = cls._get_instance(*value, **kwargs)
@@ -151,8 +148,7 @@ def multitype(*constructors):
 
         @classproperty
         def typename(cls):
-            return ' or '.join((s.typename for s in cls._subclses
-                                if s.typename))
+            return ' or '.join((s.typename for s in cls._subclses if s.typename))
 
         @classproperty
         def syntax(cls):
