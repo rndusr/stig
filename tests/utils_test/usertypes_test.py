@@ -73,7 +73,7 @@ class TestStringableMixin(_TestBase):
 
 class Test_multitype(_TestBase):
     def test_classname(self):
-        mt = multitype(Bool, Float, String)
+        mt = multitype(Bool, Float.partial(max=100), String)
         self.assertEqual(mt.__name__, 'BoolOrFloatOrString')
 
     def test_valid_value_behaves_like_subclass_instance(self):
@@ -90,7 +90,7 @@ class Test_multitype(_TestBase):
         with self.assert_raises(TypeError):
             x+5
 
-    def test_test_invalid_value(self):
+    def test_invalid_type(self):
         mt = multitype(Bool.partial(true=('yes',), false=('no',)),
                        Float,
                        Tuple.partial(options=('a', 'b', 'c')))
