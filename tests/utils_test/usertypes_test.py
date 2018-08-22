@@ -99,6 +99,14 @@ class Test_multitype(_TestBase):
         with self.assert_raises(ValueError, 'Not a boolean; Not a number; Invalid option: d'):
             mt('a', 'b', 'd')
 
+    def test_invalid_value(self):
+        mt = multitype(Option.partial(options=('foo', 'bar', 'baz')),
+                       Int.partial(min=10))
+        with self.assert_raises(ValueError, 'Not one of: foo, bar, baz; Not a number'):
+            mt('hi')
+        with self.assert_raises(ValueError, 'Not one of: foo, bar, baz; Too small (minimum is 10)'):
+            mt(9)
+
     def test_isinstance(self):
         mt = multitype(Int,
                        Tuple.partial(options=('foo', 'bar', 'baz')),
