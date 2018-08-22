@@ -263,6 +263,9 @@ class Bool(str, StringableMixin):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __hash__(self):
+        return hash(self._is_true)
+
 
 class Path(str, StringableMixin):
     """
