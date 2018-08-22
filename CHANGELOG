@@ -38,6 +38,7 @@
       it was never downloaded (e.g. if you're the original uploader).
     * The default filter in peer lists is now 'host'.
     * 'comment' was added as a torrent filter.
+    * 'ratelimit' command displays current limits if no new limit is given.
 
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
