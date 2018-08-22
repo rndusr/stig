@@ -285,7 +285,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
 
 class RateLimitCmdbase(metaclass=InitCommand):
     name = 'ratelimit'
-    aliases = ('rate',)
+    aliases = ('rate', 'rl')
     provides = set()
     category = 'configuration'
     description = 'Limit transfer rates per torrent or globally'
