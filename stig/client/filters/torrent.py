@@ -15,7 +15,8 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from . import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter, Filter, FilterChain)
-from . import (timestamp_or_timedelta, time_filter)
+from . import (timestamp_or_timedelta, time_filter, limit_rate_filter)
+from ..utils import (Bandwidth, BoolOrBandwidth, convert)
 
 
 from ..ttypes import TYPES as VALUETYPES
@@ -143,7 +144,8 @@ class SingleTorrentFilter(Filter):
                                              aliases=('%dn',)),
         'size'            : _make_cmp_filter('size-final',
                                              _desc('... combined size of all wanted files'),
-                                             aliases=('sz',)),
+                                             aliases=('sz',),
+                                             value_convert=convert.size),
         'peers'           : _make_cmp_filter('peers-connected',
                                              _desc('... number of connected peers'),
                                              aliases=('prs',)),
@@ -155,16 +157,28 @@ class SingleTorrentFilter(Filter):
                                              aliases=('rto',)),
         'rate-up'         : _make_cmp_filter('rate-up',
                                              _desc('... upload rate'),
-                                             aliases=('rup',)),
+                                             aliases=('rup',),
+                                             value_convert=Bandwidth),
         'rate-down'       : _make_cmp_filter('rate-down',
                                              _desc('... download rate'),
-                                             aliases=('rdn',)),
-        'limit-rate-up'   : _make_cmp_filter('limit-rate-up',
-                                             _desc('... upload rate limit'),
-                                             aliases=('lrup',)),
-        'limit-rate-down' : _make_cmp_filter('limit-rate-down',
-                                             _desc('... download rate limit'),
-                                             aliases=('lrdn',)),
+                                             aliases=('rdn',),
+                                             value_convert=Bandwidth),
+
+        'limit-rate-up': CmpFilterSpec(
+            lambda t, op, v: limit_rate_filter(t['limit-rate-up'], op, v),
+            aliases=('lrup',),
+            description=_desc('... upload rate limit'),
+            needed_keys=('limit-rate-up',),
+            value_type=BoolOrBandwidth,
+        ),
+
+        'limit-rate-down': CmpFilterSpec(
+            lambda t, op, v: limit_rate_filter(t['limit-rate-down'], op, v),
+            aliases=('lrdn',),
+            description=_desc('... download rate limit'),
+            needed_keys=('limit-rate-down',),
+            value_type=BoolOrBandwidth,
+        ),
 
         'tracker': CmpFilterSpec(
             lambda t, op, v: any(op(tracker['url-announce'].domain, v)
