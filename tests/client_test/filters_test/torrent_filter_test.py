@@ -1,6 +1,7 @@
 from stig.client.filters.torrent import (SingleTorrentFilter, TorrentFilter)
 from stig.client.base import TorrentBase
-from stig.client.ttypes import (Timedelta, Timestamp)
+from stig.client.ttypes import (Timedelta, Timestamp, const)
+from stig.utils import convert
 import unittest
 from unittest.mock import patch
 from datetime import datetime
@@ -444,6 +445,95 @@ class TestSingleTorrentFilter(unittest.TestCase):
             self.assertEqual(tids, ())
             tids = tuple(SingleTorrentFilter('completed>=3h').apply(tlist, key='name'))
             self.assertEqual(tids, ('0',))
+
+    def test_size_filter(self):
+        convert.size.unit = 'byte'
+        tlist = (MockTorrent({'name': '0', 'size-final': convert.size('1kB')}),
+                 MockTorrent({'name': '1', 'size-final': convert.size('1kb')}))
+        tids = tuple(SingleTorrentFilter('size=1k').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('size=1kB').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('size=1kb').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+        convert.size.unit = 'bit'
+        tlist = (MockTorrent({'name': '0', 'size-final': convert.size('1kB')}),
+                 MockTorrent({'name': '1', 'size-final': convert.size('1kb')}))
+        tids = tuple(SingleTorrentFilter('size=1k').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('size=1kB').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('size=1kb').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+    def test_rate_filter(self):
+        convert.bandwidth.unit = 'byte'
+        tlist = (MockTorrent({'name': '0', 'rate-up': convert.bandwidth('1kB')}),
+                 MockTorrent({'name': '1', 'rate-up': convert.bandwidth('1kb')}))
+        tids = tuple(SingleTorrentFilter('rate-up=1k').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('rate-up=1kB').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('rate-up=1kb').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+        convert.bandwidth.unit = 'bit'
+        tlist = (MockTorrent({'name': '0', 'rate-up': convert.bandwidth('1kB')}),
+                 MockTorrent({'name': '1', 'rate-up': convert.bandwidth('1kb')}))
+        tids = tuple(SingleTorrentFilter('rate-up=1k').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('rate-up=1kB').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('rate-up=1kb').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+    def test_rate_limit_filter(self):
+        convert.bandwidth.unit = 'byte'
+        tlist = (MockTorrent({'name': '0', 'limit-rate-up': convert.bandwidth('1kB')}),
+                 MockTorrent({'name': '1', 'limit-rate-up': convert.bandwidth('1kb')}))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=1k').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=1kB').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=1kb').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+        convert.bandwidth.unit = 'bit'
+        tlist = (MockTorrent({'name': '0', 'limit-rate-up': convert.bandwidth('1kB')}),
+                 MockTorrent({'name': '1', 'limit-rate-up': convert.bandwidth('1kb')}))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=1k').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=1kB').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=1kb').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+        tlist = (MockTorrent({'name': '0', 'limit-rate-up': convert.bandwidth('1kB')}),
+                 MockTorrent({'name': '1', 'limit-rate-up': const.UNLIMITED}))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=unlimited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up!=limited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up=limited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up!=unlimited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up<unlimited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up>unlimited').apply(tlist, key='name'))
+        self.assertEqual(tids, ())
+        tids = tuple(SingleTorrentFilter('limit-rate-up>=unlimited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+
+        tids = tuple(SingleTorrentFilter('limit-rate-up>limited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up>=limited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('1',))
+        tids = tuple(SingleTorrentFilter('limit-rate-up<limited').apply(tlist, key='name'))
+        self.assertEqual(tids, ())
+        tids = tuple(SingleTorrentFilter('limit-rate-up<=limited').apply(tlist, key='name'))
+        self.assertEqual(tids, ('0',))
 
 
 class TestTorrentFilter(unittest.TestCase):
