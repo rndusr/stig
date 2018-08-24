@@ -90,16 +90,17 @@ class CmpFilterSpec(BoolFilterSpec):
             return self.filter_function(obj, operator, value)
         return func
 
-def make_cmp_filter(types, key, description, aliases=()):
+def make_cmp_filter(types, key, description, aliases=(), value_convert=None):
     def filterfunc(obj, op, val, key=key):
         return op(obj[key], val)
 
-    kwargs = {'description' : description,
-              'needed_keys' : (key,),
-              'aliases'     : aliases,
-              'value_type'  : types[key]}
+    kwargs = {'description'   : description,
+              'needed_keys'   : (key,),
+              'aliases'       : aliases,
+              'value_type'    : types[key],
+              'value_convert' : value_convert}
 
-    if hasattr(kwargs['value_type'], 'from_string'):
+    if kwargs['value_convert'] is None and hasattr(kwargs['value_type'], 'from_string'):
         kwargs['value_convert'] = kwargs['value_type'].from_string
 
     return CmpFilterSpec(filterfunc, **kwargs)
