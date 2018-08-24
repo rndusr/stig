@@ -1,11 +1,11 @@
-from stig.utils._converter import DataCountConverter
+from stig.utils._converter import DataSizeConverter
 from stig.utils.usertypes import Float
 
 import unittest
 
-class TestDataCountConverter(unittest.TestCase):
+class TestDataSizeConverter(unittest.TestCase):
     def setUp(self):
-        self.conv = DataCountConverter()
+        self.conv = DataSizeConverter()
         self.orig_unit = self.conv.unit
         self.orig_prefix = self.conv.prefix
 

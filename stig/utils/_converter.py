@@ -15,7 +15,7 @@ log = make_logger(__name__)
 from .usertypes import (Float, Int)
 
 
-class DataCountConverter():
+class DataSizeConverter():
     """
     Convert bits to bytes or vice versa, ensuring a Int instance with a unit
     prefix that is common throughout the application
