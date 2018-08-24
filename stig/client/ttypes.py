@@ -32,17 +32,6 @@ import datetime
 from .utils import (URL, Float, Int, convert, const)
 
 
-def _limit_rate(limit):
-    return const.UNLIMITED if limit is None else convert.bandwidth(limit, unit='byte')
-
-
-def _calc_percent(a, b):
-    try:
-        return a / b * 100
-    except ZeroDivisionError:
-        return 0
-
-
 Percent = Float.partial(unit='%')
 
 
@@ -724,6 +713,25 @@ class TorrentTracker(abc.Mapping):
 
 
 
+def _rate(rate):
+    return convert.bandwidth(rate, unit='byte')
+
+
+def _rate_limit(limit):
+    return const.UNLIMITED if limit is None else convert.bandwidth(limit, unit='byte')
+
+
+def _data_size(size):
+    return convert.size(size, unit='byte')
+
+
+def _calc_percent(a, b):
+    try:
+        return a / b * 100
+    except ZeroDivisionError:
+        return 0
+
+
 TYPES = {
     'id'                           : int,
     'hash'                         : str,
@@ -758,20 +766,20 @@ TYPES = {
     'time-completed'               : Timestamp,
     'time-manual-announce-allowed' : Timestamp,
 
-    'rate-down'                    : lambda rate: convert.bandwidth(rate, unit='byte'),
-    'rate-up'                      : lambda rate: convert.bandwidth(rate, unit='byte'),
+    'rate-down'                    : _rate,
+    'rate-up'                      : _rate,
 
-    'limit-rate-down'              : _limit_rate,
-    'limit-rate-up'                : _limit_rate,
+    'limit-rate-down'              : _rate_limit,
+    'limit-rate-up'                : _rate_limit,
 
-    'size-final'                   : lambda size: convert.size(size, unit='byte'),
-    'size-total'                   : lambda size: convert.size(size, unit='byte'),
-    'size-downloaded'              : lambda size: convert.size(size, unit='byte'),
-    'size-uploaded'                : lambda size: convert.size(size, unit='byte'),
-    'size-available'               : lambda size: convert.size(size, unit='byte'),
-    'size-left'                    : lambda size: convert.size(size, unit='byte'),
-    'size-corrupt'                 : lambda size: convert.size(size, unit='byte'),
-    'size-piece'                   : lambda size: convert.size(size, unit='byte'),
+    'size-final'                   : _data_size,
+    'size-total'                   : _data_size,
+    'size-downloaded'              : _data_size,
+    'size-uploaded'                : _data_size,
+    'size-available'               : _data_size,
+    'size-left'                    : _data_size,
+    'size-corrupt'                 : _data_size,
+    'size-piece'                   : _data_size,
 
     'error'                        : str,
     'trackers'                     : tuple,
