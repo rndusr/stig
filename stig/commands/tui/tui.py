@@ -158,19 +158,20 @@ class UnbindCmd(metaclass=InitCommand):
 
 
 class CommandCmd(mixin.make_request, metaclass=InitCommand):
-    name = 'command'
+    name = 'setcommand'
+    aliases = ('setcmd',)
     provides = {'tui'}
     category = 'tui'
     description = 'Open the command line and insert a command'
-    usage = ('command [--trailing-space] <COMMAND> <ARGUMENT> <ARGUMENT> ...',)
+    usage = ('setcommand [--trailing-space] <COMMAND> <ARGUMENT> <ARGUMENT> ...',)
     examples = (
-        'command --trailing-space tab ls',
+        'setcommand --trailing-space tab ls',
         '\tAsk the user for a filter before opening a new torrent list.',
         '',
-        'command move {{path}}',
+        'setcommand move {{path}}',
         '\tMove the focused torrent, using the current path as default.',
         '',
-        'command move id={{id}} {{path}}',
+        'setcommand move id={{id}} {{path}}',
         ('\tSame as above, but make sure to use the correct torrent in case '
          'it is removed from the list while typing in the new path (e.g. if '
          'we\'re listing active torrents and the focused torrent stops being active).'),

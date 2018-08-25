@@ -299,8 +299,8 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 't a',       'action': 'announce'},
     {'context': 'torrent', 'key': 't d',       'action': 'delete'},
     {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files'},
-    {'context': 'torrent', 'key': 't m',       'action': 'command move id={id} {path}/'},
-    {'context': 'torrent', 'key': 't n',       'action': 'command rename id={id} {name}'},
+    {'context': 'torrent', 'key': 't m',       'action': 'setcommand move id={id} {path}/'},
+    {'context': 'torrent', 'key': 't n',       'action': 'setcommand rename id={id} {name}'},
     {'context': 'torrent', 'key': 't p',       'action': 'tab peerlist'},
     {'context': 'torrent', 'key': 't t',       'action': 'tab trackerlist'},
     {'context': 'torrent', 'key': 't s',       'action': 'start --toggle'},
@@ -340,7 +340,7 @@ DEFAULT_KEYMAP = (
                                                    "--on-cancel 'limit --clear' --ignore-errors")},
 
     # File actions
-    {'context': 'file', 'key': 'f n',       'action': 'command rename {name}'},
+    {'context': 'file', 'key': 'f n',       'action': 'setcommand rename {name}'},
     {'context': 'file', 'key': 'f +',       'action': 'priority high'},
     {'context': 'file', 'key': 'f =',       'action': 'priority normal'},
     {'context': 'file', 'key': 'f -',       'action': 'priority low'},
