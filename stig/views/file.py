@@ -45,7 +45,7 @@ class Size(ColumnBase):
     min_width = 6
 
     def get_value(self):
-        return _ensure_hide_unit(self.data['size-total'])
+        return self._from_cache(_ensure_hide_unit, self.data['size-total'])
 
     @classmethod
     def set_unit(cls, unit):
@@ -60,7 +60,7 @@ class Downloaded(ColumnBase):
     min_width = 6
 
     def get_value(self):
-        return _ensure_hide_unit(self.data['size-downloaded'])
+        return self._from_cache(_ensure_hide_unit, self.data['size-downloaded'])
 
     @classmethod
     def set_unit(cls, unit):
@@ -75,7 +75,7 @@ class PercentDownloaded(ColumnBase):
     min_width = 4
 
     def get_value(self):
-        return _ensure_hide_unit(self.data['%downloaded'])
+        return self._from_cache(_ensure_hide_unit, self.data['%downloaded'])
 
 COLUMNS['%downloaded'] = PercentDownloaded
 
