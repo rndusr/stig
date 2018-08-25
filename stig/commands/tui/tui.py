@@ -168,12 +168,11 @@ class CommandCmd(mixin.make_request, metaclass=InitCommand):
         '\tAsk the user for a filter before opening a new torrent list.',
         '',
         'command move {{path}}',
-        ('\tRename the focused torrent, file or directory, using the current '
-         'value as default.'),
+        '\tMove the focused torrent, using the current path as default.',
         '',
         'command move id={{id}} {{path}}',
         ('\tSame as above, but make sure to use the correct torrent in case '
-         'it is removed from the list while we type in the new path (e.g. if '
+         'it is removed from the list while typing in the new path (e.g. if '
          'we\'re listing active torrents and the focused torrent stops being active).'),
     )
     argspecs = (
