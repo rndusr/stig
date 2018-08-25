@@ -147,32 +147,6 @@ urwid.Text = Text_patched
 urwid.AsyncioEventLoop._idle_emulation_delay = 1/25
 
 
-# Raise UnicodeDecodeError properly
-# https://github.com/urwid/urwid/pull/92
-# https://github.com/urwid/urwid/pull/196
-class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
-    def _exception_handler(self, loop, context):
-        exc = context.get('exception')
-        if exc:
-            loop.stop()
-            if not isinstance(exc, urwid.ExitMainLoop):
-                self._exc_info = exc
-        else:
-            loop.default_exception_handler(context)
-
-    def run(self):
-        """
-        Start the event loop.  Exit the loop when any callback raises
-        an exception.  If ExitMainLoop is raised, exit cleanly.
-        """
-        self._loop.set_exception_handler(self._exception_handler)
-        self._loop.run_forever()
-        if self._exc_info:
-            raise self._exc_info
-
-urwid.AsyncioEventLoop = AsyncioEventLoop_patched
-
-
 class ListBox_patched(urwid.ListBox):
     # Add support for ScrollBar class (see stig.tui.scroll)
     def __init__(self, *args, **kwargs):
