@@ -35,8 +35,8 @@ from .group import Group
 from .tabs import (Tabs, TabBar)
 from .cli import CLIEditWidget
 from .logger import LogWidget
-from .infobar import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
-                      BandwidthStatusWidget, TorrentCountersWidget, MarkedItemsWidget)
+from .infobars import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
+                       BandwidthStatusWidget, TorrentCountersWidget, MarkedItemsWidget)
 from . import theme
 
 def load_theme(themeobj):
