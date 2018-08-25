@@ -511,7 +511,13 @@ class KeyMap():
         """
         Create Key or KeyChain instance from `string`
 
-        TODO: describe format
+        Valid values for `string`:
+          - A Key or KeyChain instance, which is simply returned.
+          - A string that contains spaces is split at those spaces and all
+            non-empty items of the resulting list are passed to KeyChain.
+          - A string with '+' in it is split at those '+' and the resulting list
+            is passed to KeyChain.
+          - Any other string is passed to Key.
         """
         if isinstance(string, (Key, KeyChain)):
             return string
