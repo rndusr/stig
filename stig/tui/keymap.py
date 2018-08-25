@@ -220,7 +220,8 @@ class Keymapped():
 
 
 class KeyMap():
-    """Bind keys to actions in different contexts
+    """
+    Bind keys to actions in different contexts
 
     To bind keys to widgets, a new class is created that accepts user input by
     adding the methods `keypress` and `selectable` to the original class:
@@ -272,7 +273,8 @@ class KeyMap():
             return True
 
     def bind(self, key, action, context=DEFAULT_CONTEXT):
-        """Bind `key` to `action` in `context`
+        """
+        Bind `key` to `action` in `context`
 
         key: a key string that is converted to Key or KeyChain with `mkkey`
         context: a descriptive string (or any other hashable object)
@@ -293,7 +295,8 @@ class KeyMap():
         self._bindunbind_callbacks.send(self)
 
     def unbind(self, key, context=DEFAULT_CONTEXT):
-        """Unbind `key` in `context`
+        """
+        Unbind `key` in `context`
 
         Key chains starting with `key` are also removed.
         """
@@ -319,7 +322,8 @@ class KeyMap():
         self._bindunbind_callbacks.send(self)
 
     def evaluate(self, key, context=DEFAULT_CONTEXT, callback=None, widget=None):
-        """Run action that is mapped to `key` in `context`
+        """
+        Run action that is mapped to `key` in `context`
 
         key: the pressed key
         context: the context `key` was pressed in
@@ -467,7 +471,8 @@ class KeyMap():
                                           keys_given=self.current_keychain)
 
     def on_keychain(self, callback):
-        """Register callback for keychain changes
+        """
+        Register callback for keychain changes
 
         `callback` is called when a keychain is advanced, finished or aborted
         with this KeyMap instances as a positional argument and the keyword
@@ -476,7 +481,8 @@ class KeyMap():
         self._keychain_callbacks.connect(callback, weak=True)
 
     def on_bind_unbind(self, callback):
-        """Register callback for bind/unbind events
+        """
+        Register callback for bind/unbind events
 
         `callback` is called when a key mapped or unmapped with this KeyMap
         instances as a positional argument.
@@ -484,7 +490,8 @@ class KeyMap():
         self._bindunbind_callbacks.connect(callback, weak=True)
 
     def wrap(self, cls, callback=None, context=DEFAULT_CONTEXT):
-        """Return widget class that passes keypress()es through `evaluate`
+        """
+        Return widget class that passes keypress()es through `evaluate`
 
         callback: Custom callable for this widget class; will be called with
                   the action mapped to the key and the widget instance.
@@ -501,7 +508,8 @@ class KeyMap():
 
     _KEY_SPLIT_SPACE = re.compile(r' +')
     def mkkey(self, string):
-        """Create Key or KeyChain instance from `string`
+        """
+        Create Key or KeyChain instance from `string`
 
         TODO: describe format
         """
@@ -516,7 +524,8 @@ class KeyMap():
             return Key(string)
 
     def keys(self, match_func=None, context=None):
-        """Yield all keys where `match_func(key, action)` evaluates to True
+        """
+        Yield all keys where `match_func(key, action)` evaluates to True
 
         If `context` is not None, yield only keys mapped in that context.
         """
