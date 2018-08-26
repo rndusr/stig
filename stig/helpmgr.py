@@ -29,6 +29,7 @@ ALIASES = {
     'config': 'settings', 'cfg': 'settings',
     'keys': 'keymap', 'keybindings': 'keymap',
     'filtering': 'filters',
+    'rcfiles': 'rcfile',
 }
 
 
