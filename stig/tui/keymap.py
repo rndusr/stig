@@ -246,6 +246,7 @@ class KeyMap():
     def __init__(self, callback=None):
         self._default_callback = callback
         self._actions = {self.DEFAULT_CONTEXT: {}}
+        self._descriptions = {}
 
         self._bindunbind_callbacks = blinker.Signal()
         self._keychain_callbacks = blinker.Signal()
@@ -272,7 +273,7 @@ class KeyMap():
         else:
             return True
 
-    def bind(self, key, action, context=DEFAULT_CONTEXT):
+    def bind(self, key, action, context=DEFAULT_CONTEXT, description=None):
         """
         Bind `key` to `action` in `context`
 
@@ -283,6 +284,7 @@ class KeyMap():
                 - a Key object (so you can bind <j> to <down> for example),
                 - any other object that is passed to the `callback` specified
                   in calls to `wrap` or when the KeyMap was instantiated.
+        description: a descriptive string
         """
         key = self.mkkey(key)
         if isinstance(action, Key) and key == action:
@@ -291,6 +293,7 @@ class KeyMap():
         if context not in self._actions:
             self._actions[context] = {}
         self._actions[context][key] = action
+        self._descriptions[(context, key)] = description or ''
         log.debug('%s: Mapped %r -> %r', context, key, action)
         self._bindunbind_callbacks.send(self)
 
@@ -320,6 +323,9 @@ class KeyMap():
             if not key_removed:
                 raise ValueError('Key not mapped in context %r: %s' % (context, key))
         self._bindunbind_callbacks.send(self)
+
+    def get_description(self, key, context=DEFAULT_CONTEXT):
+        return self._descriptions.get((context, key), '')
 
     def evaluate(self, key, context=DEFAULT_CONTEXT, callback=None, widget=None):
         """
