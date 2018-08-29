@@ -643,14 +643,9 @@ class TorrentAPI():
             # Prepend torrent name to path
             path = os.path.join(torrent['name'], os.path.normpath(path))
 
-            # Check if path is already named new_name
-            if os.path.basename(path) == new_name:
-                return Response(success=False, torrent=None,
-                                errors=('Already named %s: %s' % (new_name, path),))
-
             # Make a list of existing files and directories; make sure to
-            # include directories that contain no files, meaning
-            # os.path.dirname(filepath) doesn't work
+            # include directories that contain no files (that means we can't use
+            # os.path.dirname(filepath))
             existing_paths = set()
             for file in torrent['files'].files:
                 filepath = str(file['path-relative'])
@@ -664,6 +659,11 @@ class TorrentAPI():
             if path not in existing_paths:
                 return Response(success=False, torrent=None,
                                 errors=('No such path: %s' % path,))
+
+            # Check if path is already named new_name
+            if os.path.basename(path) == new_name:
+                return Response(success=False, torrent=None,
+                                errors=('Already named %s: %s' % (new_name, path),))
 
             # Check if new_name would overwrite a file or directory
             new_filepath = os.path.join(os.path.dirname(path), new_name)
