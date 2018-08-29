@@ -114,7 +114,7 @@ class TorrentFileDirectory(dict):
     def __init__(self, name, tree, filtered_count=0):
         tfiles = tuple(tree.files)
         self.update({
-            'id'              : tuple(tf['id'] for tf in tfiles),
+            'id'              : tree.id,
             'tid'             : tfiles[0]['tid'],
             'name'            : self.create_directory_name(name, filtered_count),
             'path-absolute'   : os.path.join(tree.location, tree.path),

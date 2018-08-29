@@ -100,7 +100,7 @@ class TorrentFileTreeBase(abc.Mapping):
 
     @property
     def id(self):
-        return tuple(f['id'] for f in self.files)
+        return ','.join(str(f['id']) for f in self.files)
 
     def __repr__(self):
         return '<%s %r>' % (type(self).__name__, self._items)

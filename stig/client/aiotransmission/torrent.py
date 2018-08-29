@@ -179,6 +179,54 @@ def _make_status(t):
     return statuses
 
 
+class TorrentFileID(tuple):
+    def __new__(cls, torrent_id, file_id):
+        return super().__new__(cls, (torrent_id, file_id))
+
+    @property
+    def torrent_id(self):
+        return self[0]
+
+    @property
+    def file_id(self):
+        return self[1]
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return str(self) == other
+        else:
+            return super().__eq__(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __contains__(self, other):
+        return other in str(self)
+
+    def __lt__(self, other): return super().__lt__(self._parse_other(other))
+    def __le__(self, other): return super().__le__(self._parse_other(other))
+    def __gt__(self, other): return super().__gt__(self._parse_other(other))
+    def __ge__(self, other): return super().__ge__(self._parse_other(other))
+
+    @staticmethod
+    def _parse_other(other):
+        if isinstance(other, str):
+            try:
+                return tuple(int(i) for i in other.split(':', maxsplit=1))
+            except (ValueError, TypeError):
+                return NotImplemented
+        else:
+            return other
+
+    def __hash__(self):
+        return super().__hash__()
+
+    def __str__(self):
+        return ':'.join(str(i) for i in self)
+
+    def __repr__(self):
+        return 'TorrentFileID(torrent_id=%d, file_id=%d)' % self
+
 import os
 class TorrentFileTree(base.TorrentFileTreeBase):
     @classmethod
@@ -187,13 +235,13 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         if len(fileStats) < 1:
             # filelist is empty if torrent was added by hash and metadata isn't
             # downloaded yet.
-            filelist = [{'tid': -1, 'id': (-1, -1), 'name': raw_torrent['name'], 'priority': 0,
-                         'length': 0, 'wanted': True, 'bytesCompleted': 0}]
+            filelist = [{'tid': -1, 'id': TorrentFileID(-1, -1), 'name': raw_torrent['name'],
+                         'priority': 0, 'length': 0, 'wanted': True, 'bytesCompleted': 0}]
         else:
             # Combine 'files' and 'fileStats' fields and add the 'id' key to each
             # file, which is a (torrent ID, file list index) tuple
             tid = raw_torrent['id']
-            filelist = ({'id': (tid, i), **f, **fS}
+            filelist = ({'id': TorrentFileID(tid, i+1), **f, **fS}
                         for i,(f,fS) in enumerate(zip(raw_torrent['files'], fileStats)))
         return cls(raw_torrent['id'], raw_torrent['downloadDir'], filelist, path=())
 
@@ -240,7 +288,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
                 if isinstance(entry, ttypes.TorrentFile):
                     # File ID is its index in the list provided by
                     # Transmission (see _create_TorrentFileTree)
-                    index = entry['id'][1]
+                    index = entry['id'].file_id - 1
                     fstats = fileStats[index]
                     entry.update({'size-downloaded': fstats['bytesCompleted'],
                                   'is-wanted': fstats['wanted'],
