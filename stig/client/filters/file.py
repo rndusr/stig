@@ -40,6 +40,8 @@ class SingleTorrentFileFilter(Filter):
         'name'        : _make_cmp_filter('name',
                                          'Match VALUE against file name',
                                          aliases=('n',)),
+        'id'          : _make_cmp_filter('id',
+                                         'Match VALUE against file ID'),
         'path'        : _make_cmp_filter('path-absolute',
                                          'Match VALUE against full file path',
                                          aliases=('dir',)),
