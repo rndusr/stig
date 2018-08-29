@@ -147,6 +147,32 @@ urwid.Text = Text_patched
 urwid.AsyncioEventLoop._idle_emulation_delay = 1/25
 
 
+# urwid uses sys.exc_info() to get `(type, value, traceback)`, which is needed
+# in python2 to re-raise exceptions.  However, sys.exc_info() can return `(None,
+# None, None)` which leaves us with nothing to re-raise. It's possible this
+# happens only with the asyncio event loop.
+#
+# This is easily solved for asyncio/python3 since we only need the exception
+# which is guaranteed by asyncio.
+class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
+    def _exception_handler(self, loop, context):
+        exc = context.get('exception')
+        if exc:
+            loop.stop()
+            if not isinstance(exc, urwid.ExitMainLoop):
+                self._exc_info = exc
+        else:
+            loop.default_exception_handler(context)
+
+    def run(self):
+        self._loop.set_exception_handler(self._exception_handler)
+        self._loop.run_forever()
+        if self._exc_info:
+            raise self._exc_info
+
+urwid.AsyncioEventLoop = AsyncioEventLoop_patched
+
+
 class ListBox_patched(urwid.ListBox):
     # Add support for ScrollBar class (see stig.tui.scroll)
     def __init__(self, *args, **kwargs):
