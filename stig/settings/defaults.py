@@ -389,9 +389,9 @@ DEFAULT_KEYMAP = (
     {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab filelist',
      'description': 'List selected or focused torrents\' files in a new tab'},
     {'context': 'torrent', 'key': 'space',     'action': 'mark --toggle --focus-next',
-     'description': 'Select or deselect focused torrent'},
+     'description': 'Mark or unmark focused torrent'},
     {'context': 'torrent', 'key': 'alt-space', 'action': 'mark --toggle --all',
-     'description': 'Select or deselect all torrents'},
+     'description': 'Mark or unmark all torrents'},
 
     # Peer list actions
     {'context': 'peerlist', 'key': 's c', 'action': 'sort --add country',
@@ -455,9 +455,9 @@ DEFAULT_KEYMAP = (
     {'context': 'file', 'key': 'f 0',       'action': 'priority off',
      'description': 'Don\'t download selected or focused file(s)'},
     {'context': 'file', 'key': 'space',     'action': 'mark --toggle --focus-next',
-     'description': 'Select or deselect focused file or directory'},
+     'description': 'Mark or unmark focused file or directory'},
     {'context': 'file', 'key': 'alt-space', 'action': 'mark --toggle --all',
-     'description': 'Select or deselect all files'},
+     'description': 'Mark or unmark all files'},
 
     # Tracker list actions
     {'context': 'trackerlist', 'key': 's n a', 'action': 'sort --add next-announce',
