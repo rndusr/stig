@@ -369,7 +369,7 @@ DEFAULT_KEYMAP = (
      'description': 'Remove torrent and keep any downloaded files'},
     {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files',
      'description': 'Remove torrent and all downloaded files'},
-    {'context': 'torrent', 'key': 't m',       'action': 'setcommand move id={id} {path}/',
+    {'context': 'torrent', 'key': 't m',       'action': 'setcommand move {path}/',
      'description': 'Move torrent'},
     {'context': 'torrent', 'key': 't n',       'action': 'setcommand rename id={id} {name}',
      'description': 'Rename torrent'},
