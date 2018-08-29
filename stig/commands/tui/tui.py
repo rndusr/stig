@@ -186,7 +186,7 @@ class CommandCmd(mixin.make_request, metaclass=InitCommand):
         'torrent': {'id': 'id',
                     'name': 'name',
                     'path': 'path'},
-        'file': {'id': 'id',
+        'file': {'id': 'tid',
                  'name': 'name',
                  'path': 'path-relative'},
     }
