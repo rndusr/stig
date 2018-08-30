@@ -89,10 +89,12 @@ log.debug                  yellow         on $log_bg
 log.dupecount              light cyan     on $log_bg
 
 $keychains_bg = black
-keychains            light gray   on $keychains_bg
-keychains.keys       light gray   on $keychains_bg
-keychains.keys.next  yellow       on $keychains_bg
-keychains.action     white        on $keychains_bg
+keychains              light gray   on $keychains_bg
+keychains.header       light gray   on dark gray
+keychains.keys         light gray   on $keychains_bg
+keychains.keys.next    yellow       on $keychains_bg
+keychains.action       white        on $keychains_bg
+keychains.description  white        on $keychains_bg
 
 
 

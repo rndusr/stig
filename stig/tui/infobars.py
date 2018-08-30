@@ -25,6 +25,7 @@ EMPTY_TEXT = ' '
 class KeyChainsWidget(urwid.WidgetWrap):
     _selectable = False
     _sizing = ['flow']
+    _headers = ('Key Chain', 'Command', 'Description')
 
     def __init__(self):
         self._pile = urwid.Pile([])
@@ -37,39 +38,60 @@ class KeyChainsWidget(urwid.WidgetWrap):
             return
 
         # Find widest key for each column (each key is in its own cell)
-        key_colnum = max(len(kc) for kc,action in active_keychains)
-        key_colwidths = [0] * key_colnum
+        key_col_num = max(len(kc) for kc,action in active_keychains)
+        key_col_widths = [0] * key_col_num
         for kc,action in active_keychains:
-            for colnum in range(key_colnum):
+            for colnum in range(key_col_num):
                 try:
                     width = len(kc[colnum])
                 except IndexError:
                     width = 0
-                key_colwidths[colnum] = max(key_colwidths[colnum], width)
+                key_col_widths[colnum] = max(key_col_widths[colnum], width)
+        # Total key chain column width is:
+        # max(len(key) for each key) + (1 for each space between keys)
+        key_col_width = sum(key_col_widths) + key_col_num-1
 
         # Create list of rows
-        rows = []
+        keychain_col_width = max(len(self._headers[0]), key_col_width)
+        spacer = ('pack' , urwid.Text('  '))
+        rows = [
+            urwid.AttrMap(urwid.Columns([
+                (keychain_col_width, urwid.Text(self._headers[0])),
+                spacer,
+                urwid.Text(self._headers[1]),
+                spacer,
+                urwid.Text(self._headers[2]),
+            ]), 'keychains.header')
+        ]
         index_next_key = len(keys_given)
         for kc,action in sorted(active_keychains, key=lambda k: str(k).lower()):
             row = []
-            for colnum in range(key_colnum):
-                colwidth = key_colwidths[colnum]
+            for colnum in range(key_col_num):
+                colwidth = key_col_widths[colnum]
                 try:
                     keytext = kc[colnum].ljust(colwidth)
                 except IndexError:
                     # This keychain is shorter than the longest one
-                    row.append(('pack', urwid.Text(('keychains', ''.ljust(colwidth)))))
+                    row.append(('pack', urwid.Text(('keychains.keys', ''.ljust(colwidth)))))
                 else:
                     # Highlight the key the user needs to press to advance keychain
                     attrs = ('keychains.keys.next' if colnum == index_next_key else 'keychains.keys')
                     row.append(('pack', urwid.Text((attrs, keytext))))
 
                 # Add space between this key cell and the next unless this is the last column
-                if colnum < key_colnum-1:
-                    row.append(('pack', urwid.Text(('keychains', ' '))))
+                if colnum < key_col_num-1:
+                    row.append(('pack', urwid.Text(('keychains.keys', ' '))))
 
-            row.append(('pack' , urwid.Text(('keychains', '  '))))      # Spacer
-            row.append(urwid.Text(('keychains.action', str(action))))   # Action
+            # Fill remaining space if 'Key Chain' header is longer than all key chains
+            remaining_width = keychain_col_width - key_col_width
+            row.append(('pack', urwid.Text(('keychains.keys', ''.ljust(remaining_width)))))
+
+            row.append(spacer)
+            row.append(urwid.AttrMap(urwid.Text(str(action)),
+                                     'keychains.action'))
+            row.append(spacer)
+            row.append(urwid.AttrMap(urwid.Text(keymap.get_description(kc, context)),
+                                     'keychains.description'))
             rows.append(urwid.Columns(row))
 
         for row in rows:
