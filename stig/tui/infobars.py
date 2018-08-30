@@ -30,7 +30,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
         self._pile = urwid.Pile([])
         super().__init__(urwid.AttrMap(self._pile, 'keychains'))
 
-    def update(self, keymap, active_keychains, keys_given):
+    def update(self, keymap, context, active_keychains, keys_given):
         active_keychains = list(active_keychains)
         self._pile.contents[:] = []
         if not active_keychains:

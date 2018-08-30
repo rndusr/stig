@@ -470,9 +470,10 @@ class KeyMap():
     def _run_keychain_callbacks(self):
         context = self._keychain_context
         if context is self.NO_CONTEXT:
-            self._keychain_callbacks.send(self, active_keychains=(), keys_given=())
+            self._keychain_callbacks.send(self, context=self.NO_CONTEXT, active_keychains=(), keys_given=())
         else:
             self._keychain_callbacks.send(self,
+                                          context=context,
                                           active_keychains=self._started_keychains(context),
                                           keys_given=self.current_keychain)
 

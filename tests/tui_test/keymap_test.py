@@ -322,7 +322,7 @@ class TestKeyMap_with_keychains(unittest.TestCase):
         self._action_counter += 1
         widget.set_edit_text('%s%d' % (str(action), self._action_counter))
 
-    def handle_keychain_changed(self, keymap, active_keychains, keys_given):
+    def handle_keychain_changed(self, keymap, context, active_keychains, keys_given):
         self.active_keychains = set(active_keychains)
 
     def assert_status(self, active_keychains=(), keys_given=(), widget_text=None):
@@ -567,7 +567,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.action_counter += 1
         self.action_widget = widget
 
-    def handle_keychain_changed(self, keymap, active_keychains, keys_given):
+    def handle_keychain_changed(self, keymap, context, active_keychains, keys_given):
         self.active_keychains = set(active_keychains)
 
     def press_key(self, key):
