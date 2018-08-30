@@ -159,7 +159,7 @@ class UnbindCmd(metaclass=InitCommand):
             raise CmdError()
 
 
-class CommandCmd(mixin.make_request, metaclass=InitCommand):
+class SetCommandCmd(mixin.make_request, metaclass=InitCommand):
     name = 'setcommand'
     aliases = ('setcmd',)
     provides = {'tui'}
