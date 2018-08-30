@@ -35,17 +35,19 @@ class BindCmd(metaclass=InitCommand):
     category = 'tui'
     description = 'Bind keys to commands or other keys'
     usage = ('bind [<OPTIONS>] <KEY> <ACTION>',)
-    examples = ('bind --context tabs alt-[ tab --focus left',
+    examples = ('bind ctrl-a tab ls active',
+                'bind --context tabs alt-[ tab --focus left',
                 'bind --context tabs alt-] tab --focus right',
                 'bind --context torrent alt-! start --force',
-                'bind ctrl-a tab ls active',
-                "bind 'd .' delete",
-                "bind 'd+!' delete --delete-files",
+                "bind --context torrent 'd .' rm",
+                "bind --context torrent 'd+!' rm --delete-files",
                 'bind u <up>',
                 'bind d <down>')
     argspecs = (
         { 'names': ('--context','-c'),
           'description': 'Where KEY is grabbed (see CONTEXTS section)' },
+        { 'names': ('--description','-d'),
+          'description': 'Explanation of what ACTION does' },
         { 'names': ('KEY',),
           'description': 'One or more keys or key combinations (see KEYS section)' },
         { 'names': ('ACTION',), 'nargs': 'REMAINDER',
@@ -93,7 +95,7 @@ class BindCmd(metaclass=InitCommand):
 
     tui = ExpectedResource
 
-    def run(self, context, KEY, ACTION):
+    def run(self, context, description, KEY, ACTION):
         keymap = self.tui.keymap
 
         key = KEY
@@ -109,7 +111,7 @@ class BindCmd(metaclass=InitCommand):
             raise CmdError('Invalid context: %r' % (context,))
 
         try:
-            keymap.bind(key, action, context=context)
+            keymap.bind(key, action, context=context, description=description)
         except ValueError as e:
             raise CmdError(e)
 
