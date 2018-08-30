@@ -141,8 +141,8 @@ widgets.add(name='topbar', widget=topbar, options='pack')
 widgets.add(name='main', widget=tabs)
 widgets.add(name='log', widget=logwidget, options='pack', visible=False)
 widgets.add(name='cli', widget=cli, options='pack', visible=False)
-widgets.add(name='bottombar', widget=bottombar, options='pack')
 widgets.add(name='keychains', widget=keychains, options='pack')
+widgets.add(name='bottombar', widget=bottombar, options='pack')
 
 
 def unhandled_input(key):
