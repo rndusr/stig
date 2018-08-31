@@ -92,10 +92,12 @@ class TorrentFileTreeBase(abc.Mapping):
 
     @property
     def location(self):
+        """Absolute path of the torrent; base directory"""
         return self._location
 
     @property
     def path(self):
+        """Relative path in the torrent"""
         return self._path
 
     @property
