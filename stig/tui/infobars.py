@@ -97,8 +97,6 @@ class KeyChainsWidget(urwid.WidgetWrap):
         for row in rows:
             self._pile.contents.append((row, self._pile.options('pack')))
 
-    def rows(self, size, focus=False):
-        return len(self._pile.contents)
 
 
 class QuickHelpWidget(urwid.Text):
