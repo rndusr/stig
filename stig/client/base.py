@@ -105,7 +105,7 @@ class TorrentFileTreeBase(abc.Mapping):
         return tuple(f['id'] for f in self.files)
 
     def __repr__(self):
-        return '<%s %r>' % (type(self).__name__, self._items)
+        return '<%s path=%r: %r>' % (type(self).__name__, self._path, self._items)
 
     def __getitem__(self, key):
         return self._items[key]
