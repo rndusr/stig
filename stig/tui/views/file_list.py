@@ -53,14 +53,14 @@ class FileTreeDecorator(ArrowTree):
 
         def create_tree(node, content):
             if content.nodetype == 'leaf':
-                # Torrent has a single file and no directories
+                # Process single file
                 if not self._file_is_filtered(content):
                     return (content, None)
                 else:
                     return None
 
             elif content.nodetype == 'parent':
-                # Torrent has at least one directory
+                # Recurse into directory entries (files and subdirectories)
                 tree = []
                 filtered_count = 0
                 for k,v in sorted(content.items(), key=lambda pair: pair[0].lower()):
@@ -83,12 +83,25 @@ class FileTreeDecorator(ArrowTree):
         forest = []  # Multiple trees as siblings
         for t in sorted(torrents, key=lambda t: t['name'].lower()):
             filetree = t['files']
-            # This works because t['files'] always has 1 item: the torrent's name
-            rootnodename = next(iter(filetree.keys()))
-            rootnode = TorrentFileDirectory(rootnodename, tree=filetree)
-            tree = create_tree(rootnode, filetree[rootnodename])
-            if tree is not None:
-                forest.append(tree)
+            filecount = len(tuple(filetree.files))
+            if filecount > 0:
+                nodetree = None
+                rootnodename = next(iter(filetree.keys()))
+                if filecount == 1:
+                    # Single-file torrent
+                    if not self._file_is_filtered(filetree):
+                        nodetree = (filetree[rootnodename], None)
+                else:
+                    # Torrent with directory structure
+                    # If we don't ignore the topmost node, the torrent itself is
+                    # displayed as a directory.
+                    content = filetree[rootnodename]
+                    rootnode = TorrentFileDirectory(rootnodename, tree=content)
+                    nodetree = create_tree(rootnode, content)
+
+                if nodetree is not None:
+                    forest.append(nodetree)
+
         self.filecount = fcount
         return forest
 
