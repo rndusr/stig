@@ -315,8 +315,8 @@ class RateLimitCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER, quiet):
-        directions = set('down' if d == 'dn' else d
-                         for d in map(str.lower, DIRECTION.split(',')))
+        directions = tuple('down' if d == 'dn' else d
+                           for d in map(str.lower, DIRECTION.split(',')))
         for d in directions:
             if d not in ('up', 'down'):
                 raise CmdError('Invalid direction: %r' % (d,))
