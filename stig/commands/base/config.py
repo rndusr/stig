@@ -289,14 +289,15 @@ class RateLimitCmdbase(metaclass=InitCommand):
     provides = set()
     category = 'configuration'
     description = 'Limit transfer rates per torrent or globally'
-    usage = ('ratelimit <DIRECTION>',
+    usage = ('ratelimit',
+             'ratelimit <DIRECTION>',
              'ratelimit <DIRECTION> <LIMIT>',
              'ratelimit <DIRECTION> <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('ratelimit up 5Mb',
                 'ratelimit down,up 1M global',
                 'ratelimit up,dn off "This torrent" size<100MB')
     argspecs = (
-        {'names': ('DIRECTION',),
+        {'names': ('DIRECTION',), 'nargs': '?', 'default': 'up,down',
          'description': 'Any combination of "up", "down" or "dn" separated by a comma'},
 
         {'names': ('LIMIT',), 'nargs': '?',
