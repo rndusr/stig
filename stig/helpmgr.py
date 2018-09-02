@@ -338,7 +338,11 @@ class HelpManager():
             from natsort import (natsort_keygen, natsorted, ns)
             get_cmd = natsort_keygen(key=lambda pair: pair[1], alg=ns.IGNORECASE)
             for key,action in natsorted(keymap, key=get_cmd):
-                lines.append('\t%s  \t%s' % (key, action))
+                if len(action) < 40:
+                    lines.append('\t%s  \t%s  \t%s' % (key, action, km.get_description(key, context)))
+                else:
+                    lines.append('\t%s  \t%s' % (key, action))
+                    lines.append('\t  \t%s' % (km.get_description(key, context),))
             lines.append('')
         return finalize_lines(lines)
 
