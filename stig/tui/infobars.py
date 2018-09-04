@@ -105,14 +105,17 @@ class QuickHelpWidget(urwid.Text):
 
     def update(self):
         def get_key(cmd, contexts):
-            """Return shortest key sequence that executes `cmd`"""
+            """
+            Return shortest key sequence that executes `cmd` in any context given in
+            `contexts`
+            """
             for context in contexts:
                 keys = tuple(tui.keymap.keys(lambda key,action: action.startswith(cmd), context))
                 if keys:
                     return sorted(keys, key=lambda k: len(k))[0]
 
         def get_first_key(cmd, contexts):
-            """Same as `get_key`, but return only first key if key sequence"""
+            """Same as `get_key`, but return only first key of key sequence"""
             key = get_key(cmd, contexts)
             if isinstance(key, tuple):  # key is a key sequence
                 return key[0]

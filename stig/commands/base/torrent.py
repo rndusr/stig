@@ -192,7 +192,7 @@ class RenameTorrentCmdbase(metaclass=InitCommand):
              'rename <CURRENT> <NEW>')
     examples = ('rename "A Better Name"',
                 'rename id=123 Foo',
-                'rename Foo/some/path new_path')
+                'rename id=123/some/file new_file_name')
     argspecs = (
         { 'names': ('CURRENT',), 'nargs': '?',
           'description': ('Torrent filter expression that matches exactly one torrent, '

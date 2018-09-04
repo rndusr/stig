@@ -594,7 +594,7 @@ class TorrentAPI():
 
         tid:      Torrent ID
         path:     Relative path in the torrent without the torrent's name or
-                  anything that evaluates to False to rename the torrent
+                  anything that evaluates to False to rename the torrent itself
         new_name: New file or directory name; must not contain any directory
                   separators (usually "/") or be "." or ".."
 
@@ -622,7 +622,7 @@ class TorrentAPI():
         else:
             torrent = response.torrents[0]
 
-        # If path is None, we rename the torrent itself
+        # If no path given, rename the torrent itself
         if not path:
             path = torrent['name']
 
@@ -643,7 +643,7 @@ class TorrentAPI():
             # Prepend torrent name to path
             path = os.path.join(torrent['name'], os.path.normpath(path))
 
-            # Make a list of existing files and directories; make sure to
+            # Create list of existing files and directories; make sure to
             # include directories that contain no files (that means we can't use
             # os.path.dirname(filepath))
             existing_paths = set()

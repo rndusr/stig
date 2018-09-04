@@ -70,7 +70,7 @@ class TorrentFileTreeBase(abc.Mapping):
 
     def __init__(self, location, path, *args, **kwargs):
         self._location = location  # Absolute download location
-        self._path = path          # Path within torrent relative to location
+        self._path = path          # Path relative to location
         self._items = NotImplemented
 
     @property
