@@ -14,7 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import ExpectedResource
+from .. import (ExpectedResource, CmdError)
 from .. import utils
 from ._common import make_tab_title_widget
 
@@ -308,3 +308,144 @@ class polling_frenzy():
                 srvapi.interval = orig_interval
                 log.debug('Interval restored to %s', srvapi.interval)
             self.aioloop.create_task(coro())
+
+
+import os
+import collections
+class placeholders(make_request):
+    srvapi = ExpectedResource
+    tui = ExpectedResource
+
+    class _Placeholder():
+        def __init__(self, name, needed_keys, description, modifier=None):
+            self.name = name
+            self.needed_keys = needed_keys
+            self.description = description
+            self.modifier = modifier
+
+        def evaluate(self, data):
+            if self.modifier:
+                return str(self.modifier(data))
+            else:
+                # assert len(self.needed_keys) == 1
+                return str(data[self.needed_keys[0]])
+
+    _placeholder_specs = {
+        # {location}/{name} is absolute path to torrent file/directory
+        'torrent': (_Placeholder('id', needed_keys=('id',),
+                                 description='Torrent ID'),
+                    _Placeholder('name', needed_keys=('name', 'comment'),
+                                 description='Torrent name'),
+                    _Placeholder('location', needed_keys=('path',),
+                                 description='Download path (absolute)')),
+
+        # {location}/{torrentname}/{path} is absolute path to file/directory
+        # inside a torrent
+        'file': (_Placeholder('id', needed_keys=('tid',),
+                              description='Torrent ID'),
+                 _Placeholder('filename', needed_keys=('name',),
+                              description='File name without path'),
+                 _Placeholder('location', needed_keys=('location',),
+                              description='Download path of the torrent (absolute)'),
+                 _Placeholder('torrentname', needed_keys=('path-relative',),
+                              description='Torrent name',
+                              modifier=lambda data: data['path-relative'].split('/', maxsplit=1)[0]),
+                 _Placeholder('path', needed_keys=('path-relative',),
+                              description='Path within the torrent (relative)',
+                              modifier=lambda data: os.sep.join(data['path-relative'].split('/')[1:])))
+    }
+
+    HELP = (('Placeholders are evaluated to values of the focused list item.  '
+             'Their format is "{{NAME}}" where valid values for NAME are as follows:'),
+            '',
+            '\tIn torrent lists:') \
+            + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['torrent']) \
+            + ('',
+             '\tIn file lists:') \
+            + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['file']) \
+            + ('',
+               'To get a real "{{", escape it with "\\".  "}}" doesn\'t need  to be escaped.')
+
+    _NOT_SUPPORTED_ERROR = 'Placeholders are not supported in the current tab'
+    _RESOLVE_ERROR = 'Unable to resolve placeholders: %s'
+
+    import re
+    _placeholder_split_regex = re.compile(r'(?<!\\)(\{.+?\})')
+    async def parse_placeholders(self, *args):
+        parsed_args = []
+        for i,arg in enumerate(args):
+            next_arg = []
+            for part in self._placeholder_split_regex.split(arg):
+                log.debug('part: %r', part)
+                if not part:
+                    continue
+                elif part.endswith('}'):
+                    if part.startswith('{'):
+                        next_arg.append(await self._resolve_placeholder(part[1:-1]))
+                    else:
+                        next_arg.append(part)
+                else:
+                    next_arg.append(part)
+
+                # Unescape escaped curly brackets
+                next_arg[-1] = next_arg[-1].replace('\\{', '{').replace('\\}', '}')
+
+            parsed_args.append(''.join(next_arg))
+        return parsed_args
+
+    async def _resolve_placeholder(self, key):
+        placeholders = await self._get_placeholder_map()
+        try:
+            return placeholders[key]
+        except KeyError:
+            raise CmdError('Unknown placeholder: %r' % key)
+
+    async def _get_placeholder_map(self):
+        if not hasattr(self, '_placeholders'):
+            from ...tui.views.torrent_list import TorrentListWidget
+            from ...tui.views.file_list import FileListWidget
+
+            focused_list = self.tui.tabs.focus
+            if focused_list is None:
+                raise CmdError(self._RESOLVE_ERROR % 'No tab opened')
+            elif not isinstance(focused_list, (TorrentListWidget, FileListWidget)):
+                raise CmdError(self._NOT_SUPPORTED_ERROR)
+            elif focused_list.focused_widget is None:
+                raise CmdError(self._RESOLVE_ERROR % 'Current tab is empty')
+            else:
+                focused_item = focused_list.focused_widget.base_widget
+                torrent_id = focused_item.torrent_id
+
+                if isinstance(focused_list, TorrentListWidget):
+                    phspecs = self._placeholder_specs['torrent']
+                    needed_keys = sum((phspec.needed_keys for phspec in phspecs), ())
+                    if all(key in focused_item.data for key in needed_keys):
+                        # Cached Torrent object has everything we need
+                        data = focused_item.data
+                    else:
+                        # Fetch data we need for placeholders
+                        data = await self._fetch_torrent_data(torrent_id, needed_keys)
+                elif isinstance(focused_list, FileListWidget):
+                    phspecs = self._placeholder_specs['file']
+                    # We don't need to fetch data because the file list item
+                    # already has everything
+                    data = focused_item.data
+
+                else:
+                    raise CmdError(self._NOT_SUPPORTED_ERROR)
+
+                self._placeholders = {phspec.name:phspec.evaluate(data)
+                                      for phspec in phspecs}
+                log.debug('Placeholders: %r', self._placeholders)
+        return self._placeholders
+
+    async def _fetch_torrent_data(self, torrent_id, keys):
+        log.debug('Fetching fresh Torrent #%d with keys: %r', torrent_id, keys)
+        # Request new torrent because we can't be sure the wanted key
+        # exists in widget.data
+        request = self.srvapi.torrent.torrents((torrent_id,), keys=keys)
+        response = await self.make_request(request, quiet=True)
+        if not response.success:
+            raise CmdError()
+        else:
+            return response.torrents[0]
