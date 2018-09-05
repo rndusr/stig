@@ -159,7 +159,7 @@ class UnbindCmd(metaclass=InitCommand):
             raise CmdError()
 
 
-class SetCommandCmd(mixin.make_request, metaclass=InitCommand):
+class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
     name = 'setcommand'
     aliases = ('setcmd',)
     provides = {'tui'}
@@ -170,13 +170,13 @@ class SetCommandCmd(mixin.make_request, metaclass=InitCommand):
         'setcommand --trailing-space tab ls',
         '\tAsk the user for a filter before opening a new torrent list.',
         '',
-        'setcommand move {{path}}',
+        'setcommand move {{location}}/',
         '\tMove the focused torrent, using the current path as default.',
         '',
-        'setcommand move id={{id}} {{path}}',
-        ('\tSame as above, but make sure to use the correct torrent in case '
-         'it is removed from the list while typing in the new path (e.g. if '
-         'we\'re listing active torrents and the focused torrent stops being active).'),
+        'setcommand move id={{id}} {{location}}/',
+        ('\tSame as above, but make sure to move the correct torrent in case '
+         'it is removed from the list while typing in the new path, e.g. if '
+         'we\'re listing active torrents and the focused torrent stops being active.'),
     )
     argspecs = (
         { 'names': ('COMMAND',), 'nargs': '+',
@@ -184,35 +184,15 @@ class SetCommandCmd(mixin.make_request, metaclass=InitCommand):
         { 'names': ('--trailing-space',), 'action': 'store_true',
           'description': 'Append a space at the end of COMMAND' },
     )
-    _key_maps = {
-        'torrent': {'id': 'id',
-                    'name': 'name',
-                    'path': 'path'},
-        'file': {'id': 'tid',
-                 'name': 'name',
-                 'path': 'path-relative'},
-    }
     more_sections = {
-        'PLACEHOLDERS': (('COMMAND or one of its ARGUMENTs can contain placeholders '
-                          'that are replaced with values from the currently focused '
-                          'list item before the command is inserted into the command '
-                          'line.'),
-                         '',
-                         'Placeholders are supported by torrent lists and file lists.',
-                         '',
-                         ('A placeholder has the format "{{NAME}}".  Valid values for '
-                          'NAME are: %s' % ', '.join(_key_maps['torrent']))),
+        'PLACEHOLDERS': mixin.placeholders.HELP,
     }
 
     tui = ExpectedResource
-    srvapi = ExpectedResource
-
-    _NOT_SUPPORTED_ERROR = 'Placeholders are not supported in the current tab'
-    _RESOLVE_ERROR = 'Unable to resolve placeholders: %s'
 
     async def run(self, COMMAND, trailing_space):
         log.debug('Unresolved command: %r', COMMAND)
-        args = await self._parse_placeholders(COMMAND)
+        args = await self.parse_placeholders(*COMMAND)
         log.debug('Command with resolved placeholders: %r', args)
 
         if args:
