@@ -369,7 +369,7 @@ DEFAULT_KEYMAP = (
      'description': 'Remove torrent and keep any downloaded files'},
     {'context': 'torrent', 'key': 't D',       'action': 'delete --delete-files',
      'description': 'Remove torrent and all downloaded files'},
-    {'context': 'torrent', 'key': 't m',       'action': 'setcommand move {path}/',
+    {'context': 'torrent', 'key': 't m',       'action': 'setcommand move {location}/',
      'description': 'Move torrent'},
     {'context': 'torrent', 'key': 't n',       'action': 'setcommand rename id={id} {name}',
      'description': 'Rename torrent'},
@@ -444,7 +444,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reduce listed files by applying more filters'},
 
     # File actions
-    {'context': 'file', 'key': 'f n',       'action': 'setcommand rename {name}',
+    {'context': 'file', 'key': 'f n',       'action': 'setcommand rename {filename}',
      'description': 'Rename file or directory'},
     {'context': 'file', 'key': 'f +',       'action': 'priority high',
      'description': 'Set selected or focused file\'s download priority to "high"'},
