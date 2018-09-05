@@ -119,6 +119,7 @@ class TorrentFileDirectory(dict):
             'name'            : self.create_directory_name(name, filtered_count),
             'path-absolute'   : os.path.join(tree.location, tree.path),
             'path-relative'   : tree.path,
+            'location'        : tree.location,
             'size-total'      : self._sum_size(tfiles, 'size-total'),
             'size-downloaded' : self._sum_size(tfiles, 'size-downloaded'),
             'is-wanted'       : True,
