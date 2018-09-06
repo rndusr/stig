@@ -181,23 +181,23 @@ class TestRateLimitCmd(CommandTestCase):
         self.patch(RateLimitCmd, _set_limits=_set_limits, _show_limits=_show_limits)
 
         await self.execute(RateLimitCmd, 'up', '1Mb', 'limit-rate-up<1k')
-        _set_limits.assert_awaited_once_with(['limit-rate-up<1k'], {'up'}, '1Mb', adjust=False, quiet=False)
+        _set_limits.assert_awaited_once_with(['limit-rate-up<1k'], ('up',), '1Mb', adjust=False, quiet=False)
         _show_limits.assert_not_awaited()
         _set_limits.reset_mock() ; _show_limits.reset_mock()
 
         await self.execute(RateLimitCmd, 'up', '1Mb')
-        _set_limits.assert_awaited_once_with([], {'up'}, '1Mb', adjust=False, quiet=False)
+        _set_limits.assert_awaited_once_with([], ('up',), '1Mb', adjust=False, quiet=False)
         _show_limits.assert_not_awaited()
         _set_limits.reset_mock() ; _show_limits.reset_mock()
 
         await self.execute(RateLimitCmd, 'up')
         _set_limits.assert_not_awaited()
-        _show_limits.assert_awaited_once_with([], {'up'})
+        _show_limits.assert_awaited_once_with([], ('up',))
         _set_limits.reset_mock() ; _show_limits.reset_mock()
 
         await self.execute(RateLimitCmd, 'up', 'show', 'limit-rate-up<1k')
         _set_limits.assert_not_awaited()
-        _show_limits.assert_awaited_once_with(['limit-rate-up<1k'], {'up'})
+        _show_limits.assert_awaited_once_with(['limit-rate-up<1k'], ('up',))
         _set_limits.reset_mock() ; _show_limits.reset_mock()
 
     async def test_setting_global_limits(self):
