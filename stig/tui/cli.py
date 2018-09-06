@@ -43,7 +43,7 @@ class CLIEditWidget(urwid.Edit):
             self._set_history_next()
             key = None
         elif cmd is urwid.ACTIVATE:
-            self._append_to_history(self.edit_text)
+            self.append_to_history()
             if self._on_accept is not None:
                 self._on_accept(self)
             self._history_pos = -1
@@ -85,13 +85,15 @@ class CLIEditWidget(urwid.Edit):
         if self._history_file:
             self._history = list(reversed(_read_lines(self._history_file)))
 
-    def _append_to_history(self, line):
+    def append_to_history(self):
+        """Add current `edit_text` to history"""
         # Don't add the same line twice in a row
-        if self._history and self._history[0] == line:
+        new_line = self.edit_text
+        if self._history and self._history[0] == new_line:
             return
-        self._history.insert(0, line)
+        self._history.insert(0, new_line)
         if self._history_file is not None:
-            _append_line(self._history_file, line)
+            _append_line(self._history_file, new_line)
         self._trim_history()
 
     def _trim_history(self):
