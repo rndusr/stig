@@ -444,7 +444,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reduce listed files by applying more filters'},
 
     # File actions
-    {'context': 'file', 'key': 'f n',       'action': 'setcommand rename {filename}',
+    {'context': 'file', 'key': 'f n',       'action': 'setcommand rename {name}',
      'description': 'Rename file or directory'},
     {'context': 'file', 'key': 'f +',       'action': 'priority high',
      'description': 'Set selected or focused file\'s download priority to "high"'},

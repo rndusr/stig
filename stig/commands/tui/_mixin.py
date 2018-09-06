@@ -343,8 +343,8 @@ class placeholders(make_request):
         # inside a torrent
         'file': (_Placeholder('id', needed_keys=('tid',),
                               description='Torrent ID'),
-                 _Placeholder('filename', needed_keys=('name',),
-                              description='File name without path'),
+                 _Placeholder('name', needed_keys=('name',),
+                              description='File or directory name without path'),
                  _Placeholder('location', needed_keys=('location',),
                               description='Download path of the torrent (absolute)'),
                  _Placeholder('torrentname', needed_keys=('path-relative',),
