@@ -346,12 +346,12 @@ class placeholders(make_request):
                  _Placeholder('name', needed_keys=('name',),
                               description='File or directory name without path'),
                  _Placeholder('location', needed_keys=('location',),
-                              description='Download path of the torrent (absolute)'),
+                              description='Torrent\'s absolute download path'),
                  _Placeholder('torrentname', needed_keys=('path-relative',),
                               description='Torrent name',
                               modifier=lambda data: data['path-relative'].split('/', maxsplit=1)[0]),
                  _Placeholder('path', needed_keys=('path-relative',),
-                              description='Path within the torrent (relative)',
+                              description='Relative path within the torrent, including name',
                               modifier=lambda data: os.sep.join(data['path-relative'].split('/')[1:])))
     }
 
