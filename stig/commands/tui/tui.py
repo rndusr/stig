@@ -204,137 +204,131 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
             self.tui.widgets.cli.base_widget.set_edit_pos(len(cmdstr))
 
 
-class InteractiveCmd(metaclass=InitCommand):
+class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
     name = 'interactive'
     provides = {'tui'}
     category = 'tui'
     description = 'Complete partial command with user input from a dialog'
     usage = ('interactive <COMMAND> [<OPTIONS>]',)
     examples = (
-        'interactive "move \'%s\'"',
+        'interactive "move \'[{location}/]\'"',
         '\tAsk for the destination directory when moving torrents.',
         '',
-        'tab ls & interactive "limit \'%s\'" --per-change --on-cancel "tab --close --focus left"',
-        ('\tOpen a new tab with all torrents and filter it as you type.  '
-         'Keep the tab open if the text entry field is accepted with <enter> '
+        'tab ls & interactive "limit \'[]\'" --per-change --on-cancel "tab --close --focus left"',
+        ('\tOpen a new tab with all torrents and filter them as you type.  '
+         'Keep the tab open if the user input field is accepted with <enter> '
          'or close the tab and focus the previous one if the dialog is aborted '
          'with <escape>.'),
         '',
-        'tab ls stopped & interactive \'limit "%s"\' -p -a "mark --all & start" -x "tab --close --focus left"',
+        'tab ls stopped & interactive \'limit "[]"\' -p -a "mark --all & start" -x "tab --close --focus left"',
         ('\tSearch for stopped torrents only.  When accepted, the matching torrents '
          'are started.  The new tab is always closed, whether the dialog is '
          'accepted or not.'),
     )
     argspecs = (
         { 'names': ('COMMAND',),
-          'description': 'Any command with "%s" as placeholder for user input' },
+          'description': ('Any command with "[PREFILLED TEXT]" as marker for '
+                          'user input field (see USER INPUT FIELDS) and '
+                          '"{{NAME}}" as placeholder for values of the currently '
+                          'focused list item (see PLACEHOLDERS)') },
         { 'names': ('--per-change', '-p'), 'action': 'store_true',
-          'description': 'Whether to run command every time the input is changed'},
+          'description': 'Whether to run COMMAND every time the input is changed'},
         { 'names': ('--on-accept', '-a'), 'metavar': 'ACCEPT COMMAND',
-          'description': 'Command to run when the dialog is accepted with <enter>' },
+          'description': 'Command to run when the dialog is accepted (with <enter>)' },
         { 'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
-          'description': 'Command to run when the dialog is aborted with <escape>' },
+          'description': 'Command to run when the dialog is aborted (with <escape>)' },
         { 'names': ('--on-close', '-x'), 'metavar': 'CLOSE COMMAND',
-          'description': 'Command to run after the dialog is closed in any way' },
+          'description': 'Command to run after the dialog is closed either way' },
         { 'names': ('--ignore-errors', '-i'), 'action': 'store_true',
           'description': 'Whether to ignore errors from COMMAND' },
     )
     more_sections = {
-        'HOW IT WORKS': (('For each occurence of "%s" in COMMAND, the user is '
-                          'prompted for input and the result replaces the "%s".  '
-                          'COMMAND is called when all placeholders are replaced or, '
-                          'if --per-change is given, when the user input changes.'),
-                         '',
-                         'ACCEPT COMMAND is called after COMMAND.',
-                         '',
-                         ('CANCEL COMMAND is called if the user aborts the replacement '
-                          'procedure at any point.'),
-                         '',
-                         'CLOSE COMMAND is always called after all other commands.',
-                         '',
-                         'ACCEPT, CANCEL and CLOSE COMMAND also support placeholders.',
-                         '',
-                         'To escape a literal "%s", use either "\\%s" or "%%s".'),
+        'COMMANDS': (('For each occurence of "[]" in any command, the user is '
+                      'prompted for input to insert at that point.  Any text between '
+                      '"[" and "]" is used as the initial user input.  "[" can be '
+                      'escaped with "\\" in which case the corresponding "]" is also '
+                      'interpreted literally.'),
+                     '',
+                     ('COMMAND is called if the user presses <enter> or, if --per-change '
+                      'is given, after any user input field is changed.'),
+                     '',
+                     ('COMMAND must contain at least one user input field.  Any of the '
+                      'commands described below are called without user interaction if '
+                      'they don\'t contain any user input fields.'),
+                     '',
+                     ('ACCEPT COMMAND is called after COMMAND if the user accepts the '
+                      'dialog by pressing <enter>.'),
+                     '',
+                     'CANCEL COMMAND is called if the user aborts the COMMAND dialog.',
+                     '',
+                     ('CLOSE COMMAND is always called when the dialog is closed either '
+                      'by accepting or by cancelling it.')),
+        'PLACEHOLDERS': mixin.placeholders.HELP,
     }
 
     tui = ExpectedResource
     cmdmgr = ExpectedResource
     cfg = ExpectedResource
 
-    def run(self, COMMAND, per_change, on_accept, on_cancel, on_close, ignore_errors):
-        self._cmd = self._split_cmd_at_placeholders(COMMAND)
-        self._accept_cmd = self._split_cmd_at_placeholders(on_accept) if on_accept else None
-        self._cancel_cmd = self._split_cmd_at_placeholders(on_cancel) if on_cancel else None
-        self._close_cmd = self._split_cmd_at_placeholders(on_close) if on_close else None
+    import re
+    _input_regex = re.compile(r'(?<!\\)(\[.*?\])')
+
+    async def run(self, COMMAND, per_change, on_accept, on_cancel, on_close, ignore_errors):
+        cmd = await self._parse_cmd(COMMAND)
+        accept_cmd = await self._parse_cmd(on_accept) if on_accept else None
+        cancel_cmd = await self._parse_cmd(on_cancel) if on_cancel else None
+        close_cmd = await self._parse_cmd(on_close) if on_close else None
         self._ignore_errors = ignore_errors
 
-        # Derive history file name from command
-        import re
-        filename = re.sub('[/\n]', '__', ''.join(self._cmd))
-        self._history_file = os.path.join(self.cfg['tui.cli.history-dir'], filename)
+        if len(cmd) == 1:
+            # There are no user input markers
+            raise CmdError('No user input fields ("[]"): %s' % COMMAND)
 
         def close_cb():
-            self._run_cmd_or_open_dialog(self._close_cmd)
+            self._run_cmd_or_open_dialog(close_cmd)
 
         if per_change:
             def accept_cb():
-                self._run_cmd_in_dialog()
-                self._run_cmd_or_open_dialog(self._accept_cmd)
+                self._run_cmd_from_dialog()
+                self._run_cmd_or_open_dialog(accept_cmd)
 
             def cancel_cb():
-                self._run_cmd_or_open_dialog(self._cancel_cmd)
+                self._run_cmd_or_open_dialog(cancel_cmd)
 
-            self._open_dialog(self._cmd,
-                              on_change=self._run_cmd_in_dialog,
+            self._open_dialog(cmd,
+                              on_change=self._run_cmd_from_dialog,
                               on_accept=accept_cb,
                               on_cancel=cancel_cb,
                               on_close=close_cb)
         else:
             def accept_cb():
-                self._run_cmd_in_dialog()
-                self._run_cmd_or_open_dialog(self._accept_cmd)
+                self._run_cmd_from_dialog()
+                self._run_cmd_or_open_dialog(accept_cmd)
 
             def cancel_cb():
-                self._run_cmd_or_open_dialog(self._cancel_cmd)
+                self._run_cmd_or_open_dialog(cancel_cmd)
 
-            self._open_dialog(self._cmd,
+            self._open_dialog(cmd,
                               on_accept=accept_cb,
                               on_cancel=cancel_cb,
                               on_close=close_cb)
 
     _WIDGET_NAME = 'interactive_prompt'
-    _EDIT_WIDTH = 23
-    def _open_dialog(self, cmd, index=0, on_change=None, on_accept=None, on_cancel=None, on_close=None):
+    _MIN_EDIT_WIDTH = 25
+    _MAX_EDIT_WIDTH = 50
+    def _open_dialog(self, cmd, on_change=None, on_accept=None, on_cancel=None, on_close=None):
         import urwid
         from ...tui.cli import CLIEditWidget
 
-        uncompleted_parts = cmd[index:]
-        if '%s' in uncompleted_parts:
-            index = index + uncompleted_parts.index('%s')
-        else:
-            # In case cmd never contained any %s in the beginning.
-            log.debug('Command is already complete: %r', cmd)
+        def accept_cb(widget):
+            # CLIEditWidget only automatically appends to history when it gets
+            # an <enter> key, but only one gets it if there are multiple user
+            # input fields.
+            for part in self._edit_widgets:
+                part.append_to_history()
+            self._close_dialog()
             if on_accept: on_accept()
             if on_close: on_close()
-            return
-
-        self._before_edit_widget = urwid.Text(''.join(cmd[:index]))
-        self._after_edit_widget = urwid.Text(''.join(cmd[index+1:]))
-
-        def accept_cb(widget):
-            self._close_dialog()
-            cmd[index] = self._edit_widget.edit_text
-
-            if '%s' in cmd[index+1:]:
-                log.debug('Opening another dialog for incomplete command: %r', cmd)
-                self._open_dialog(cmd, index=index+1, on_change=on_change,
-                                  on_accept=on_accept, on_cancel=on_cancel,
-                                  on_close=on_close)
-            else:
-                # All placeholders have been replaced
-                log.debug('Completed command: %r', cmd)
-                if on_accept: on_accept()
-                if on_close: on_close()
 
         def cancel_cb(widget):
             self._close_dialog()
@@ -344,20 +338,79 @@ class InteractiveCmd(metaclass=InitCommand):
         def change_cb(widget):
             if on_change: on_change()
 
-        self._edit_widget = CLIEditWidget(on_change=change_cb,
-                                          on_accept=accept_cb,
-                                          on_cancel=cancel_cb,
-                                          history_file=self._history_file)
-        columns_widget = urwid.Columns([('pack', urwid.Text(':')),
-                                        ('pack', self._before_edit_widget),
-                                        (self._EDIT_WIDTH, urwid.AttrMap(self._edit_widget, 'prompt')),
-                                        ('pack', self._after_edit_widget)])
+        # Derive history file name from command
+        import re
+        filename = re.sub('[/\n]', '__', ''.join(cmd))
+        history_file_base = os.path.join(self.cfg['tui.cli.history-dir'], filename)
+
+        columns_args = [('pack', urwid.Text(':'))]
+        self._cmd_parts = []
+        self._edit_widgets = []
+        edit_index = 0
+        for part in cmd:
+            if part[0] == '[' and part[-1] == ']':
+                edit_index += 1
+                history_file = history_file_base + '.input%d' % edit_index
+                log.debug('History file for edit #%d: %r', edit_index, history_file)
+                edit_widget = CLIEditWidget(on_change=change_cb,
+                                            on_accept=accept_cb,
+                                            on_cancel=cancel_cb,
+                                            history_file=history_file)
+                edit_widget.set_edit_text(part[1:-1])
+                edit_widget.set_edit_pos(len(part))
+                columns_args.append(urwid.AttrMap(edit_widget, 'prompt'))
+                self._cmd_parts.append(edit_widget)
+                self._edit_widgets.append(edit_widget)
+            else:
+                columns_args.append(('pack', urwid.Text(part)))
+                self._cmd_parts.append(part)
+
+        class MyColumns(urwid.Columns):
+            """Use <tab> and <shift-tab> to move focus between input fields"""
+            def keypress(self, size, key):
+                def move_right():
+                    if self.focus_position < len(self.contents)-1:
+                        self.focus_position += 1
+                    else:
+                        self.focus_position = 0
+
+                def move_left():
+                    if self.focus_position > 0:
+                        self.focus_position -= 1
+                    else:
+                        self.focus_position = len(self.contents)-1
+
+                if key == 'tab':
+                    move_right()
+                    while not isinstance(self.focus.base_widget, urwid.Edit):
+                        move_right()
+                elif key == 'shift-tab':
+                    move_left()
+                    while not isinstance(self.focus.base_widget, urwid.Edit):
+                        move_left()
+                else:
+                    log.debug('focus pos: %r', self.focus_position)
+                    return super().keypress(size, key)
+
+        columns_widget = MyColumns(columns_args)
+
+        # Close any previously opened dialog
+        if self.tui.widgets.exists(self._WIDGET_NAME):
+            self._close_dialog()
+
+        # Focus the first empty input widget if there are any
+        for i,(w,_) in enumerate(columns_widget.contents):
+            w = w.base_widget
+            log.debug('%02d: %r', i, w)
+            if hasattr(w, 'edit_text') and w.edit_text == '':
+                columns_widget.focus_position = i
+                break
+
         self.tui.widgets.add(name=self._WIDGET_NAME,
                              widget=urwid.AttrMap(columns_widget, 'cli'),
                              position=self.tui.widgets.get_position('cli'),
                              removable=True,
                              options='pack')
-
 
     def _close_dialog(self):
         self.tui.widgets.remove(self._WIDGET_NAME)
@@ -371,31 +424,49 @@ class InteractiveCmd(metaclass=InitCommand):
             self._run_cmd(cmd[0])
         else:
             log.debug('Running command in dialog: %r', cmd)
-            self._open_dialog(cmd, on_accept=self._run_cmd_in_dialog)
+            self._open_dialog(cmd, on_accept=self._run_cmd_from_dialog)
 
-    def _run_cmd_in_dialog(self):
-        cmd = ''.join((self._before_edit_widget.text,
-                       self._edit_widget.edit_text,
-                       self._after_edit_widget.text))
+    def _run_cmd_from_dialog(self):
+        cmd = []
+        for part in self._cmd_parts:
+            if hasattr(part, 'edit_text'):
+                cmd.append(part.edit_text)
+            else:
+                cmd.append(part)
+        cmd = ''.join(cmd)
         log.debug('Got command from current dialog: %r', cmd)
         self._run_cmd(cmd)
 
     def _run_cmd(self, cmd):
+        log.debug('Running cmd: %r', cmd)
         if self._ignore_errors:
-            # Overloads the error() method on the command's instance
+            # Overload the error() method on the command's instance
             self.cmdmgr.run_task(cmd, error=lambda msg: None)
         else:
             self.cmdmgr.run_task(cmd)
 
-    import re
-    _split_cmd_regex = re.compile(r'(?<!\\|%)(%s)')
-    def _split_cmd_at_placeholders(self, cmd):
-        if not cmd:
-            return None
-        else:
-            return [part.replace(r'\%s', '%s').replace('%%s', '%s')
-                    for part in self._split_cmd_regex.split(cmd)
-                    if part]
+    async def _parse_cmd(self, cmd):
+        assert isinstance(cmd, str)
+        args = await self.parse_placeholders(cmd)
+        return self._split_cmd_at_inputs(args[0])
+
+    def _split_cmd_at_inputs(self, cmd):
+        """
+        Split `cmd` so that each input marker ("[...]") is a single item
+
+        Example result:
+            ['somecmd --an-argument ', '[user input goes here]', ' some more arguments']
+        """
+
+        log.debug('Splitting %r', cmd)
+        parts = [part for part in self._input_regex.split(cmd) if part]
+        log.debug('Split: %r', parts)
+
+        for i in range(len(parts)):
+            parts[i] = parts[i].replace('\\[', '[')
+        log.debug('Unescaped: %r', parts)
+
+        return parts
 
 
 class MarkCmd(metaclass=InitCommand):
