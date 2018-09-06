@@ -358,7 +358,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reset to initial sort orders'},
     {'context': 'torrentlist', 'key': 's .', 'action': 'sort --none',
      'description': 'Remove all sort orders'},
-    {'context': 'torrentlist', 'key': '/',   'action': ("interactive 'limit \"%s\"' --per-change "
+    {'context': 'torrentlist', 'key': '/',   'action': ("interactive 'limit \"[]\"' --per-change "
                                                         "--on-cancel 'limit --clear' --ignore-errors"),
      'description': 'Reduce listed torrents by applying more filters'},
 
@@ -434,12 +434,12 @@ DEFAULT_KEYMAP = (
      'description': 'Reset to initial sort orders'},
     {'context': 'peerlist', 'key': 's .', 'action': 'sort --none',
      'description': 'Remove all sort orders'},
-    {'context': 'peerlist', 'key': '/',   'action': ("interactive 'limit \"%s\"' --per-change "
+    {'context': 'peerlist', 'key': '/',   'action': ("interactive 'limit \"[]\"' --per-change "
                                                      "--on-cancel 'limit --clear' --ignore-errors"),
      'description': 'Reduce listed peers by applying more filters'},
 
     # File list actions
-    {'context': 'filelist', 'key': '/', 'action': ("interactive 'limit \"%s\"' --per-change "
+    {'context': 'filelist', 'key': '/', 'action': ("interactive 'limit \"[]\"' --per-change "
                                                    "--on-cancel 'limit --clear' --ignore-errors"),
      'description': 'Reduce listed files by applying more filters'},
 
@@ -500,7 +500,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reset to initial sort orders'},
     {'context': 'trackerlist', 'key': 's .',   'action': 'sort --none',
      'description': 'Remove all sort orders'},
-    {'context': 'trackerlist', 'key': '/',     'action': ("interactive 'limit \"%s\"' --per-change "
+    {'context': 'trackerlist', 'key': '/',     'action': ("interactive 'limit \"[]\"' --per-change "
                                                           "--on-cancel 'limit --clear' --ignore-errors"),
      'description': 'Reduce listed trackers by applying more filters'},
 
@@ -531,7 +531,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reset to initial sort orders'},
     {'context': 'settinglist', 'key': 's .', 'action': 'sort --none',
      'description': 'Remove all sort orders'},
-    {'context': 'settinglist', 'key': '/',   'action': ("interactive 'limit \"%s\"' --per-change "
+    {'context': 'settinglist', 'key': '/',   'action': ("interactive 'limit \"[]\"' --per-change "
                                                         "--on-cancel 'limit --clear' --ignore-errors"),
      'description': 'Reduce listed settings by applying more filters'},
 
@@ -540,7 +540,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reset setting to its default value'},
 
     # Help actions
-    {'context': 'helptext', 'key': '/',      'action': ("interactive 'find \"%s\"' --per-change "
+    {'context': 'helptext', 'key': '/',      'action': ("interactive 'find \"[]\"' --per-change "
                                                         "--on-cancel 'find --clear' --ignore-errors"),
      'description': 'Search for string'},
     {'context': 'helptext', 'key': 'n',      'action': 'find --next',
