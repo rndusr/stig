@@ -137,8 +137,8 @@
    The following extras are available to enable optional features:
      - ~geoip~ :: Display peers' country codes
      - ~setproctitle~ :: Strip arguments from process title when running in tmux
-                         session (this requires Python headers; e.g. ~apt-get
-                         install libpython3-dev~)
+                         session (this requires Python headers; e.g.
+                         ~apt-get install libpython3-dev~)
 
    To install depdencies for an extra, append ~[<EXTRA1>,<EXTRA2>,...]~ to the
    installation source.
@@ -152,9 +152,9 @@
     may need to escape the ~#~ depending on your shell.)
 
 *** Developing
-    To make your code changes effective immediately, you can either run ~python3
-    -m stig <ARGUMENTS>~ in the project directory or use ~pip3~'s ~--editable~
-    option.
+    To make your code changes effective immediately, you can either run
+    ~python3 -m stig <ARGUMENTS>~ in the project directory or use ~pip3~'s
+    ~--editable~ option.
 
     To run the tests, simply run ~make test~ in the project directory.  This
     creates a virtual environment in ~./venv~, installs stig and its
@@ -162,10 +162,12 @@
 
     If you want to only run tests for a specific module or package:
 
-    1. Create a virtual environment: ~make venv~
-    2. Activate it: ~. venv/bin/activate~
-    3. Pass any path in the ~tests~ directory to pytest: ~venv/bin/pytest
-       tests/settings~
+    1. Create a virtual environment:
+       ~make venv~
+    2. Activate it:
+       ~. venv/bin/activate~
+    3. Pass any path in the ~tests~ directory to pytest:
+       ~venv/bin/pytest tests/settings~
 
 ** Requirements
    - Python >=3.5
