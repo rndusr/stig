@@ -1,4 +1,4 @@
-2018-??-?? 0.10.0a
+2018-09-07 0.10.0a
   Breaking changes:
     * The 'tui.cli.history-file' setting was removed (see 'tui.cli.history-dir'
       below)
@@ -17,21 +17,24 @@
       only help texts are supported).
     * The command 'rename' allows renaming torrents and files or directories
       within a torrent.
-    * New default torrentlist/filelist/etc keybinding </> lets you quickly
-      reduce a long list by typing a filter expression.
+    * Keybindings can now have descriptions which are displayed in the output of
+      `help keymap` and when completing key chains.
+    * New default torrentlist/filelist/etc keybinding </> quickly reduces long
+      lists.
     * New default helptext keybindings </>, <n> and <N> add support for
       'less'-style(-ish) highlighting and searching in help texts.
-    * New default keybinding <t m> interactively asks you where to move a
-      torrent.
-    * New default key bindings <t n> in torrent lists and <f n> in file lists
+    * New default keybindings <t n> in torrent lists and <f n> in file lists
       rename torrents, files and directories interactively.
+    * New default keybinding <t m> asks you where to move a torrent.
     * New 'remove' option --force removes an unlimited number of torrents
       without confirmation.
     * New setting 'remove.max-hits' can be set to a negative number to never ask
       for confirmation when removing torrents.
-    * New setting 'tui.cli.history-dir' specifies a history directory instead of
-      a file, which allows having a history for each interactive command.  The
-      old history file is automatically moved to its new location
+    * New setting 'tui.cli.history-dir' specifies a directory instead of a file,
+      which allows having a history for each interactive command (i.e. when
+      pressing </> you can recall previous inputs with <ctrl-p> and <ctrl-n>
+      like in 'less').
+      The old history file is automatically moved to its new location
       <tui.cli.history-dir>/commands.
     * All time-based filters now accept relative time deltas (e.g. "1h30m") and
       absolute time stamps (e.g. "2018-07-05").  Their behaviour has also
@@ -41,8 +44,6 @@
     * The default filter in peer lists is now 'host'.
     * 'comment' was added as a torrent filter.
     * 'ratelimit' command displays current limits if no new limit is given.
-    * Keybindings can now have descriptions which are displayed in the output of
-      `help keymap` and when completing key chains.
 
   Fixed bugs:
     * No longer crash with a KeyError when listing peers with an unknown country
