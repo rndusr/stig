@@ -364,7 +364,9 @@ class placeholders(make_request):
              '\tIn file lists:') \
             + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['file']) \
             + ('',
-               'To get a real "{{", escape it with "\\".  "}}" doesn\'t need  to be escaped.')
+               'To get a literal "{{", escape it with "\\".  "}}" doesn\'t need '
+               'to be escaped.  Note that you must escape the "\\" itself unless '
+               'it is quoted because it escapes arbitrary characters.')
 
     _NOT_SUPPORTED_ERROR = 'Placeholders are not supported in the current tab'
     _RESOLVE_ERROR = 'Unable to resolve placeholders: %s'
