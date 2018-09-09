@@ -173,8 +173,9 @@ class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
 urwid.AsyncioEventLoop = AsyncioEventLoop_patched
 
 
+# Add support for ScrollBar class (see stig.tui.scroll)
+# https://github.com/urwid/urwid/issues/226
 class ListBox_patched(urwid.ListBox):
-    # Add support for ScrollBar class (see stig.tui.scroll)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._rows_max = None
