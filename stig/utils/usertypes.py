@@ -418,10 +418,10 @@ class _NumberBase(StringableMixin):
     _prefixes_dct = {prefix.lower():size
                      for prefix,size in chain.from_iterable(zip(_prefixes_binary,
                                                                 _prefixes_metric))}
-    _regex = re.compile('^\s*([-+]?(?:\d+\.\d+|\d+|\.\d+|inf)) ?(' +
-                        '|'.join(p[0] for p in chain.from_iterable(zip(_prefixes_binary,
+    _regex = re.compile(r'^\s*([-+]?(?:\d+\.\d+|\d+|\.\d+|inf)) ?(' +
+                        r'|'.join(p[0] for p in chain.from_iterable(zip(_prefixes_binary,
                                                                        _prefixes_metric))) +
-                        '|)([^\s0-9]*?)\s*$',
+                        r'|)([^\s0-9]*?)\s*$',
                         flags=re.IGNORECASE)
 
     converters = {

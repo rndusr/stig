@@ -387,7 +387,7 @@ class FilterChain():
                 if expect is 'filter':
                     if part not in '&|':
                         # Remove backslashes from escaped operators
-                        part = part.replace('\&', '&').replace('\|', '|')
+                        part = part.replace(r'\&', '&').replace(r'\|', '|')
                         f = self.filterclass(part)
                         if f == nofilter:
                             # part is something like 'all' or '*' - this
