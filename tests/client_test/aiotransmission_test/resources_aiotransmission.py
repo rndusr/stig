@@ -111,7 +111,7 @@ class FakeTransmissionDaemon:
         self.host = 'localhost'
         self.port = unused_port()
         self.loop = loop
-        self.app = web.Application(loop=loop)
+        self.app = web.Application()
         self.app.router.add_route(method='POST',
                                   path='/{path:.*}',
                                   handler=self.handle_POST)
@@ -153,16 +153,13 @@ class FakeTransmissionDaemon:
             return web.Response(text=response)
 
     async def start(self):
-        self.handler = self.app.make_handler()
-        self.server = await self.loop.create_server(
-            self.handler, self.host, self.port)
+        self.runner = web.AppRunner(self.app)
+        await self.runner.setup()
+        site = web.TCPSite(self.runner, self.host, self.port)
+        await site.start()
 
     async def stop(self):
-        self.server.close()
-        await self.server.wait_closed()
-        await self.app.shutdown()
-        await self.handler.shutdown()
-        await self.app.cleanup()
+        await self.runner.cleanup()
 
 
 class FakeCallback():
