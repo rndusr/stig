@@ -104,3 +104,19 @@ class TestCLIEditWidget(unittest.TestCase):
                 hist_disk_must_be_smaller_than_hist_mem = True
             else:
                 hist_disk_must_be_smaller_than_hist_mem = False
+
+    def test_no_completer(self):
+        edit_text = self.w.edit_text
+        self.w.keypress((80,), 'tab')
+        self.assertEqual(self.w.edit_text, edit_text)
+
+    def test_completer(self):
+        def completer(line, curpos):
+            return 'foo', 1
+        self.w.completer = completer
+
+        self.assertNotEqual(self.w.edit_text, 'foo')
+        self.assertNotEqual(self.w.edit_pos, 1)
+        self.w.keypress((80,), 'tab')
+        self.assertEqual(self.w.edit_text, 'foo')
+        self.assertEqual(self.w.edit_pos, 1)

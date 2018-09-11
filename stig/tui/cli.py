@@ -20,7 +20,7 @@ class CLIEditWidget(urwid.Edit):
     """Edit widget with readline keybindings callbacks and a history"""
 
     def __init__(self, *args, on_change=None, on_accept=None, on_cancel=None,
-                 history_file=None, history_size=1000, **kwargs):
+                 history_file=None, history_size=1000, completer=None, **kwargs):
         kwargs['align'] = kwargs['align'] if 'align' in kwargs else 'left'
         kwargs['wrap'] = kwargs['wrap'] if 'wrap' in kwargs else 'clip'
         self._on_change = on_change
@@ -31,6 +31,7 @@ class CLIEditWidget(urwid.Edit):
         self._history_size = history_size
         self._history_pos = -1
         self.history_file = history_file
+        self._completer = completer
         return super().__init__(*args, **kwargs)
 
     def keypress(self, size, key):
@@ -53,6 +54,9 @@ class CLIEditWidget(urwid.Edit):
                 self._on_cancel(self)
             self._history_pos = -1
             key = None
+        elif cmd is urwid.COMPLETE and self._completer:
+            self.edit_text, self.edit_pos = self._completer(self.edit_text, self.edit_pos)
+            key = None
         elif key == 'space':
             return super().keypress(size, ' ')
         else:
@@ -62,6 +66,23 @@ class CLIEditWidget(urwid.Edit):
         if self._on_change is not None and text_before != text_after:
             self._on_change(self)
         return key
+
+    @property
+    def completer(self):
+        """
+        A callable that accepts the current edit text and the current cursor
+        position as positional arguments.  Its return value must be the new edit
+        text and the new cursor position.
+        """
+        if not callable(completer):
+            raise ValueError('Not a callable: %r' % completer)
+        self._completer = completer
+
+    @completer.setter
+    def completer(self, completer):
+        if not callable(completer):
+            raise ValueError('Not a callable: %r' % completer)
+        self._completer = completer
 
     def _set_history_prev(self):
         # Remember whatever is currently in line when user starts exploring history
