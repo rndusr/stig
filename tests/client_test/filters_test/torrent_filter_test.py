@@ -609,19 +609,19 @@ class TestTorrentFilter(unittest.TestCase):
                  MockTorrent({'name': 'foo||bar'}),
                  MockTorrent({'name': 'foo && bar'}),
                  MockTorrent({'name': 'foo | bar'}))
-        result = tuple(TorrentFilter('~\&').apply(tlist))
+        result = tuple(TorrentFilter(r'~\&').apply(tlist))
         self.assertEqual(get_names(result), ('foo&bar', 'foo && bar'))
-        result = tuple(TorrentFilter('~\&\&').apply(tlist))
+        result = tuple(TorrentFilter(r'~\&\&').apply(tlist))
         self.assertEqual(get_names(result), ('foo && bar',))
-        result = tuple(TorrentFilter('~\|').apply(tlist))
+        result = tuple(TorrentFilter(r'~\|').apply(tlist))
         self.assertEqual(get_names(result), ('foo||bar', 'foo | bar'))
-        result = tuple(TorrentFilter('!~\|').apply(tlist))
+        result = tuple(TorrentFilter(r'!~\|').apply(tlist))
         self.assertEqual(get_names(result), ('foo&bar', 'foo && bar'))
-        result = tuple(TorrentFilter('!~\|\|').apply(tlist))
+        result = tuple(TorrentFilter(r'!~\|\|').apply(tlist))
         self.assertEqual(get_names(result), ('foo&bar', 'foo && bar', 'foo | bar'))
-        result = tuple(TorrentFilter('~\|\||\&\&').apply(tlist))
+        result = tuple(TorrentFilter(r'~\|\||\&\&').apply(tlist))
         self.assertEqual(get_names(result), ('foo||bar', 'foo && bar'))
-        result = tuple(TorrentFilter('!~\|\|&!\&\&').apply(tlist))
+        result = tuple(TorrentFilter(r'!~\|\|&!\&\&').apply(tlist))
         self.assertEqual(get_names(result), ('foo&bar', 'foo | bar'))
 
     def test_equality(self):
