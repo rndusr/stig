@@ -1,3 +1,12 @@
+20??-??-?? ?.??.??
+  Breaking changes:
+
+  Other changes:
+
+  Fixed bugs:
+    * Fixed crash with "Filter can't end with operator".
+
+
 2018-09-07 0.10.0a
   Breaking changes:
     * The 'tui.cli.history-file' setting was removed (see 'tui.cli.history-dir'
