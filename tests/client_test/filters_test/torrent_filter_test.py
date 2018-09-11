@@ -537,17 +537,30 @@ class TestSingleTorrentFilter(unittest.TestCase):
 
 
 class TestTorrentFilter(unittest.TestCase):
-    def test_parser(self):
+    def test_first_char_is_operator(self):
         for s in ('&', '|', '&idle', '|idle'):
             with self.assertRaisesRegex(ValueError, "can't start with operator"):
                 TorrentFilter(s)
+
+    def test_last_char_is_operator(self):
         for s in ('idle&', 'idle|'):
             with self.assertRaisesRegex(ValueError, "can't end with operator"):
                 TorrentFilter(s)
+
+        # Prepending ~, =, !=, <, >, etc to & or | automatically escapes it
+        for escaper in SingleTorrentFilter._OPERATORS:
+            TorrentFilter('idle|%s&' % escaper)
+            TorrentFilter('idle|!%s&' % escaper)
+            TorrentFilter('idle&%s&' % escaper)
+            TorrentFilter('idle&!%s&' % escaper)
+
+    def test_consecutive_operators(self):
         for s in ('idle||private', 'idle&&private', 'idle&|private', 'idle|&private',
                   'idle||private&name~foo|name~bar', 'name~foo|name~bar&idle|&private|name~baz'):
             with self.assertRaisesRegex(ValueError, "Consecutive operators: 'idle[&|]{2}private'"):
                 TorrentFilter(s)
+
+    def test_no_arguments(self):
         TorrentFilter()
 
     def test_sequence_argument(self):

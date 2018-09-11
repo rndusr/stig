@@ -232,6 +232,9 @@ class Filter():
                 value = match.group('value')
                 value = _unquote(value.strip(' ')) if value else None
 
+        log.debug('Parsed filter %r: name=%r, invert=%r, op=%r, value=%r',
+                  filter_str, name, invert, op, value)
+
         # No operator but a value doesn't make any sense
         if op is None and value is not None:
             raise ValueError('Malformed filter expression: {!r}'.format(filter_str))
@@ -251,9 +254,6 @@ class Filter():
         # Make sure value has the correct type and operator is compatible
         if value is not None:
             value = self._check_value(name, value, op)
-
-        log.debug('Parsed filter %r: name=%r, invert=%r, op=%r, value=%r',
-                  filter_str, name, invert, op, value)
 
         # Filter that doesn't use value argument
         if name in self.BOOLEAN_FILTERS:
@@ -377,7 +377,15 @@ class FilterChain():
             if parts[0] in '&|':
                 raise ValueError('Filter can\'t start with operator: {!r}'.format(parts[0]))
             elif parts[-1] in '&|':
-                raise ValueError('Filter can\'t end with operator: {!r}'.format(parts[-1]))
+                # Comparison operators (=, ~, <, >, etc) automatically escape
+                # boolean operators (& and |)
+                if (parts[-2] == '\\' or
+                    parts[-2] in Filter._OPERATORS.keys() or
+                    parts[-2] in ('!'+op for op in Filter._OPERATORS.keys())):
+                    log.debug('joining %r and %r', parts[:-2], ''.join(parts[-2:]))
+                    parts = parts[:-2] + (''.join(parts[-2:]),)
+                else:
+                    raise ValueError('Filter can\'t end with operator: {!r}'.format(parts[-1]))
 
             filters = []
             ops = []
