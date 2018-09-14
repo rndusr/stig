@@ -29,7 +29,7 @@ class SetCmd(base.SetCmdbase,
 
     def make_setting_list(self, sort, columns):
         from ...views.setting import COLUMNS as SETTING_COLUMNS
-        from ...main import (localcfg, remotecfg)
+        from ...singletons import (localcfg, remotecfg)
 
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, SETTING_COLUMNS)

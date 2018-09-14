@@ -20,96 +20,19 @@ if 'TMUX' in os.environ:
         from . import __appname__
         setproctitle(__appname__)
 
-
 import sys
 import asyncio
-aioloop = asyncio.get_event_loop()
 
 
 from . import cliopts
 cliargs, clicmds = cliopts.parse()
 
-
 from . import logging
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
-log = logging.make_logger(__name__)
 
-
-from . import settings
-localcfg = settings.Settings()
-settings.init_defaults(localcfg)
-
-
-from .helpmgr import HelpManager
-helpmgr = HelpManager()
-helpmgr.localcfg = localcfg
-
-
-from .client import API
-srvapi = API(host=localcfg['connect.host'],
-             port=localcfg['connect.port'],
-             path=localcfg['connect.path'],
-             user=localcfg['connect.user'],
-             password=localcfg['connect.password'],
-             tls=localcfg['connect.tls'],
-             interval=localcfg['tui.poll'],
-             loop=aioloop)
-remotecfg = srvapi.settings
-helpmgr.remotecfg = remotecfg
-
-
-from .client import geoip
-if geoip.available:
-    geoip.cachedir = localcfg['geoip.dir']
-else:
-    localcfg['geoip'] = False
-geoip.enabled = localcfg['geoip']
-
-
-from .commands import CommandManager
-cmdmgr = CommandManager(loop=aioloop,
-                        info_handler=lambda msg: log.info(msg),
-                        error_handler=lambda msg: log.error(msg))
-cmdmgr.resources.update(aioloop=aioloop,
-                        srvapi=srvapi,
-                        cfg=localcfg,
-                        srvcfg=srvapi.settings,
-                        helpmgr=helpmgr)
-cmdmgr.load_cmds_from_module(
-    'stig.commands.cli', 'stig.commands.tui',
-)
-helpmgr.cmdmgr = cmdmgr
-
-
-def _pre_run_hook(cmdline):
-    # Change command before it is executed
-
-    # If there is '-h' or '--help' in the arguments, replace it with 'help
-    # <cmd>'.  This is dirty but easier than forcing argparse to ignore all
-    # other arguments without calling sys.exit().
-    if '-h' in cmdline or '--help' in cmdline:
-        cmdcls = cmdmgr.get_cmdcls(cmdline[0], interface='ANY')
-        if cmdcls is not None:
-            if cmdcls.name != 'tab':
-                return ['help', cmdcls.name]
-            else:
-                # 'tab ls -h' is a little trickier because both 'tab' and 'ls'
-                # can have arbitrary additional arguments which we must remove.
-                #
-                # Find first argument to 'tab' that is also a valid command
-                # name.  Preserve all arguments before that.
-                tab_args = []
-                for arg in cmdline[1:]:
-                    if cmdmgr.get_cmdcls(arg, interface='ANY') is not None:
-                        return ['tab'] + tab_args + ['help', arg]
-                    else:
-                        tab_args.append(arg)
-                return ['help', 'tab']
-    return cmdline
-cmdmgr.pre_run_hook = _pre_run_hook
-
-
+from .singletons import (aioloop, log, localcfg, remotecfg, srvapi, helpmgr,
+                         cmdmgr, geoip)
 
 def run():
     from .commands.guess_ui import (guess_ui, UIGuessError)

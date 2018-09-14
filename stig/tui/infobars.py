@@ -11,8 +11,7 @@
 
 import urwid
 
-from ..main import srvapi
-from ..main import localcfg
+from ..singletons import (srvapi, localcfg)
 from . import main as tui
 from ..client import constants as const
 

@@ -102,7 +102,7 @@ class get_peer_columns():
         """
         cols = self.cfg.validate('columns.peers', columns)
         if 'country' in cols:
-            from ...main import localcfg
+            from ...singletons import localcfg
             if not localcfg['geoip']:
                 cols = cols.copy(*(col for col in cols if col != 'country'))
         return cols

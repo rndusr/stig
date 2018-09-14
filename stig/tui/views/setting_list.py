@@ -16,7 +16,7 @@ import urwid
 
 from .setting import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase)
-from ...main import (localcfg, remotecfg, srvapi, aioloop)
+from ...singletons import (localcfg, remotecfg, srvapi, aioloop)
 from ...utils.usertypes import (Bool, Option)
 from ...client import SettingFilter
 

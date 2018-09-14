@@ -42,7 +42,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
             peerlist.extend(filter_peers(torrent['peers']))
 
         # Pre-lookup peers' IPs
-        from ...main import localcfg
+        from ...singletons import localcfg
         if 'host' in columns and localcfg['reverse-dns']:
             from ...client import rdns
             rdns.query(*(p['ip'] for p in peerlist))
