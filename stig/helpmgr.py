@@ -370,8 +370,8 @@ class HelpManager():
             '\tExample: "foo" is the same as "~foo" is the same as "name~foo".',
             '',
             ('\tSpaces at the start and the end of VALUE are always removed.  '
-             'If the result is enclosed by matching single or double quotes, they '
-             'are removed.  Any other quotes are not interpreted, i.e. they must '
+             'If the result starts and ends with matching single or double quotes, the '
+             'quotes are removed.  Any other quotes are not interpreted, i.e. they must '
              'not be escaped.'),
             '\tExample: "name = foo " matches "foo"; "name = \' foo \' " matches " foo "',
             '',
