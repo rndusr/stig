@@ -364,8 +364,8 @@ class HelpManager():
              'if the item\'s value contains VALUE.'),
             '\tExample: "name~foo" matches all torrents with "foo" in their name.',
             '',
-            ('\tIf FILTER NAME is omitted, it defaults to "name" for torrents and '
-             'files and "domain" for trackers.  Peers don\'t have a default filter.  '
+            ('\tIf FILTER NAME is omitted, it defaults to a comparative filter that '
+             'makes sense, e.g. "name" for torrents.  '
              'If OPERATOR is omitted, it defaults to "~".'),
             '\tExample: "foo" is the same as "~foo" is the same as "name~foo".',
             '',
@@ -423,14 +423,20 @@ class HelpManager():
                              ('PEER FILTERS', TorrentPeerFilter),
                              ('TRACKER FILTERS', TorrentTrackerFilter),
                              ('SETTING FILTERS', SettingFilter)):
+            lines += ['', '\t%s' % caption,
+                      '\t\tDEFAULT FILTER: %s' % filt.DEFAULT_FILTER,
+                      '']
 
-            lines += ['', '\t%s' % caption]
             lines.append('\t\tBOOLEAN FILTERS')
             for fname,f in sorted(filt.BOOLEAN_FILTERS.items()):
                 lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+
             lines += ['', '\t\tCOMPARATIVE FILTERS']
             for fname,f in sorted(filt.COMPARATIVE_FILTERS.items()):
-                lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+                if fname == filt.DEFAULT_FILTER:
+                    lines.append('\t\t\t{} \t{} (default)'.format(', '.join((fname,)+f.aliases), f.description))
+                else:
+                    lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
 
         return finalize_lines(lines)
 
