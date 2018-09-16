@@ -14,8 +14,8 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from . import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter, Filter, FilterChain)
-from . import (timestamp_or_timedelta, time_filter, limit_rate_filter)
+from .common import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter, Filter, FilterChain)
+from .utils import (timestamp_or_timedelta, time_filter, limit_rate_filter)
 from ..utils import (Bandwidth, BoolOrBandwidth, convert)
 
 

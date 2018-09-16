@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from ..ttypes import SmartCmpStr
-from . import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 
 class SingleSettingFilter(Filter):

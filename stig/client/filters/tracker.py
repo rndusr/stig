@@ -12,8 +12,8 @@
 """Filtering TrackerList items by various values"""
 
 from ..ttypes import TorrentTracker
-from . import (BoolFilterSpec, Filter, FilterChain, make_cmp_filter, CmpFilterSpec)
-from . import (timestamp_or_timedelta, time_filter)
+from .common import (BoolFilterSpec, Filter, FilterChain, make_cmp_filter, CmpFilterSpec)
+from .utils import (timestamp_or_timedelta, time_filter)
 
 
 def _make_cmp_filter(*args, **kwargs):
