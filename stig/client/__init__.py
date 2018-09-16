@@ -17,16 +17,13 @@ from .utils import (Response, URL)
 from .geoip import GeoIP
 geoip = GeoIP()
 
+from .filters import (TorrentFilter, TorrentFileFilter, TorrentPeerFilter,
+                      TorrentTrackerFilter, SettingFilter)
+
 from .sorters.torrent import TorrentSorter
 from .sorters.peer import TorrentPeerSorter
 from .sorters.tracker import TorrentTrackerSorter
 from .sorters.setting import SettingSorter
-
-from .filters.torrent import TorrentFilter
-from .filters.file import TorrentFileFilter
-from .filters.peer import TorrentPeerFilter
-from .filters.tracker import TorrentTrackerFilter
-from .filters.setting import SettingFilter
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
