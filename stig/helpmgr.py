@@ -415,15 +415,15 @@ class HelpManager():
             '\tExample: "name=foo\&bar" matches torrents with the name "foo&bar".',
         ]
 
-        from .client.filters.torrent import SingleTorrentFilter
-        from .client.filters.file import SingleTorrentFileFilter
-        from .client.filters.peer import SingleTorrentPeerFilter
-        from .client.filters.tracker import SingleTrackerFilter
+        from .client import (TorrentFilter, TorrentFileFilter,
+                             TorrentPeerFilter, TorrentTrackerFilter,
+                             SettingFilter)
+        for caption,filt in (('TORRENT FILTERS', TorrentFilter),
+                             ('FILE FILTERS', TorrentFileFilter),
+                             ('PEER FILTERS', TorrentPeerFilter),
+                             ('TRACKER FILTERS', TorrentTrackerFilter),
+                             ('SETTING FILTERS', SettingFilter)):
 
-        for caption,filt in (('TORRENT FILTERS', SingleTorrentFilter),
-                             ('FILE FILTERS', SingleTorrentFileFilter),
-                             ('PEER FILTERS', SingleTorrentPeerFilter),
-                             ('TRACKER FILTERS', SingleTrackerFilter)):
             lines += ['', '\t%s' % caption]
             lines.append('\t\tBOOLEAN FILTERS')
             for fname,f in sorted(filt.BOOLEAN_FILTERS.items()):
