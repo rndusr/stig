@@ -43,7 +43,7 @@ class HelpCmdbase(metaclass=InitCommand):
         existing_topics = []
 
         if len(topics) < 1:
-            lines = self.helpmgr.overview
+            lines = self.helpmgr.find('overview')
         else:
             for topic in topics:
                 try:

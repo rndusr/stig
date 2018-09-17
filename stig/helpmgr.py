@@ -22,14 +22,17 @@ from .utils import expandtabs
 from .utils.string import striplines
 from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
 
-MAIN_TOPICS = ('commands', 'settings', 'keymap', 'filters', 'rcfile')
 
 ALIASES = {
     'cmds': 'commands',
+    'cmdsman': 'commandsmanual',
+
+    'filtersman': 'filtersmanual',
+
     'config': 'settings', 'cfg': 'settings',
-    'keys': 'keymap', 'keybindings': 'keymap',
-    'filtering': 'filters',
-    'rcfiles': 'rcfile',
+    'configman': 'settingsmanual', 'cfgman': 'settingsmanual',
+
+    'keymap': 'keys', 'keybindings': 'keys',
 }
 
 
@@ -61,10 +64,12 @@ class HelpManager():
             topic = ALIASES[topic]
 
         if topic is None:
-            return self.overview
-        elif topic in MAIN_TOPICS:
-            return getattr(self, topic)
-        elif topic in self.cmdmgr:
+            return self.topic_overview
+        try:
+            return getattr(self, 'topic_' + topic)
+        except AttributeError:
+            pass
+        if topic in self.cmdmgr:
             return self.command(topic)
         elif topic in self.localcfg or topic[4:] in self.remotecfg:
             return self.setting(topic)
@@ -72,7 +77,7 @@ class HelpManager():
         raise ValueError('Unknown help topic: %r' % topic)
 
     @property
-    def overview(self):
+    def topic_overview(self):
         lines = [
             '{} {}'.format(__appname__, __version__),
             '',
@@ -87,34 +92,90 @@ class HelpManager():
                 lines.append('\t%s  \t%s' % (opts, desc))
             lines.append('')
 
-        lines.append('For more information run:')
-        for topic in MAIN_TOPICS:
-            lines.append('\thelp %s' % topic)
+        def topic_line(topic, description):
+            names = (topic,) + tuple(alias for alias,topic_ in ALIASES.items()
+                                     if topic_ == topic)
+            return '\t\t%s \t- \t%s' % (', '.join(names), description)
+
+        lines += ['HELP TOPICS',
+                  ('\tAll commands and settings are valid help topics.  Read '
+                   "them with 'stig help <TOPIC>' or 'stig -h <TOPIC>'.  "
+                   'Additionally, the following topics are available:'),
+                  topic_line('commandsmanual', 'Describes how to call and chain commands'),
+                  topic_line('commands',       'Lists commands'),
+                  topic_line('filtersmanual',  'Describes how to define and combine filters'),
+                  topic_line('filters',        'Lists filters for torrents, files, etc'),
+                  topic_line('settingsmanual', 'Describes how to change settings'),
+                  topic_line('settings',       'Lists configuration settings'),
+                  topic_line('keys',           'Lists TUI keybindings')]
+
         return finalize_lines(lines)
 
     @property
-    def settings(self):
+    def topic_settingsmanual(self):
+        lines = [
+            'SETTINGS',
+            ("\tSettings can be changed with the commands 'set' and 'reset' "
+             "(see 'help set' and 'help reset')."),
+            '',
+            ('\tLocal settings change the behaviour of {__appname__} while '
+             'remote settings change the behaviour of the connected daemon.'),
+            '',
+            ('\tChanges made to local settings are not permanent.  All '
+             'values are set back to their defaults once {__appname__} is '
+             'restarted (see RC FILES).'),
+            '',
+            ('\tChanges made to remote settings, on the other hand, are '
+             'permanent as the daemon has its own system which maintains '
+             'a configuration file.'),
+            '',
+            'RC FILES',
+            ('\tAn rc file contains a list of arbitrary commands.  '
+             r'Commands can span multiple lines by escaping linebreaks with "\".  '
+             'Lines starting with "#" (optionally preceded by spaces) are ignored.'),
+            '',
+            ('\tCommands in an rc file are called during startup before the '
+             'commands given on the command line.'),
+            '',
+            ('\tThe default rc file path is "$XDG_CONFIG_HOME/{__appname__}/rc", '
+             'where $XDG_CONFIG_HOME defaults to "~/.config" if it is not set.'),
+            '',
+            ('\tA different path can be provided with the "--rcfile" option.  '
+             'An existing rc file at the default path can be ignored with the '
+             '"--norcfile" option.'),
+            '',
+            '\tTo permanently change the default config file, create an alias:',
+            '',
+            '\t\t$ alias stig="command stig --rcfile ~/.stigrc"',
+            '',
+            ('\tTo load any additional rc files after the default one use the '
+             '"rc" command.  (Note that this will prevent the TUI from being '
+             'loaded unless you provide the "--tui" option.  See the GUESSING '
+             'THE USER INTERFACE section in the "commandsmanual" help for '
+             'more information).'),
+            '',
+            ('\tTUI commands (e.g. "tab" or "bind") in an rc file are ignored '
+             'in CLI mode.'),
+        ]
+
+        return finalize_lines(lines)
+
+    @property
+    def topic_settings(self):
         """Return help text for all settings"""
         localcfg = self.localcfg
         remotecfg = self.remotecfg
 
-        lines = [
-            'SETTINGS',
-            "\tSettings can be changed with the commands 'set' and 'reset'.",
-            '',
-            "\tUse an rc file (see 'help rcfile') to specify your custom defaults.",
-            '',
-        ]
-
-        lines.append('\tLOCAL SETTINGS')
+        lines = []
+        lines.append('LOCAL SETTINGS')
         for name in sorted(localcfg):
-            lines.append('\t\t' + name + '  \t' + localcfg.description(name))
+            lines.append('\t' + name + '  \t' + localcfg.description(name))
 
         lines += ['']
 
-        lines.append('\tREMOTE SETTINGS')
+        lines.append('REMOTE SETTINGS')
         for name in sorted(remotecfg):
-            lines.append('\t\tsrv.' + name + '  \t' + remotecfg.description(name))
+            lines.append('\tsrv.' + name + '  \t' + remotecfg.description(name))
         return finalize_lines(lines)
 
     def setting(self, name):
@@ -154,36 +215,35 @@ class HelpManager():
         return finalize_lines(lines)
 
     @property
-    def commands(self):
-        """Must be set to a CommandManager object; provides a help text"""
+    def topic_commandsmanual(self):
         from .commands import (OPS_AND, OPS_OR, OPS_SEQ)
         lines = [
             'COMMANDS',
-            '\tCommands can be called ',
+            '\tCommands can be called:',
             '\t\t- \tby providing them as command line arguments,',
-            "\t\t- \tvia the internal command line (hit ':' to open it),",
+            "\t\t- \tvia the command line in the TUI (press ':' to open it),",
             "\t\t- \tby binding them to keys (see 'help bind'),",
             ("\t\t- \tby listing them in an rc file (see 'help rcfile') "
              "and loading it with the '--rcfile' option or the 'rc' command."),
             '',
-            '\tCHAINING COMMANDS',
-            ("\t\tCombining commands with operators makes it possible to run "
+            'CHAINING COMMANDS',
+            ("\tCombining commands with operators makes it possible to run "
              "a command based on the previous command's success."),
             "",
-            "\t\tAvailable command operators are: ",
-            "\t\t\t%s \t- \tRun the next command if the previous command succeeded." % '/'.join(OPS_AND),
-            "\t\t\t%s \t- \tRun the next command if the previous command failed." % '/'.join(OPS_OR),
-            "\t\t\t%s \t- \tRun the next command in any case." % '/'.join(OPS_SEQ),
+            "\tAvailable command operators are: ",
+            "\t\t%s \t- \tRun the next command if the previous command succeeded." % '/'.join(OPS_AND),
+            "\t\t%s \t- \tRun the next command if the previous command failed." % '/'.join(OPS_OR),
+            "\t\t%s \t- \tRun the next command in any case." % '/'.join(OPS_SEQ),
             "",
-            "\t\tCommand operators must be enclosed by spaces.",
+            "\tCommand operators must be enclosed by spaces.",
             "",
-            ("\t\tFor example, 'ls foo & ls bar' would list all 'foo' torrents and, "
+            ("\tFor example, 'ls foo & ls bar' would list all 'foo' torrents and, "
              "if any where found, continue to list all 'bar' torrents.  "
              "However, 'ls foo | ls bar' would list 'bar' torrents only if there "
              "are no 'foo' torrents."),
             '',
-            '\tGUESSING THE USER INTERFACE (CLI/TUI)',
-            ("\t\tIf commands are given as command line arguments and neither "
+            'GUESSING THE USER INTERFACE (CLI/TUI)',
+            ("\tIf commands are given as command line arguments and neither "
              "'--tui' nor '--notui' are provided, {__appname__} tries to guess "
              "whether it makes sense to start the TUI or just run the commands "
              "and exit.  For example, if you run '{__appname__} stop foo', "
@@ -192,20 +252,24 @@ class HelpManager():
              "'{__appname__} set connect.host foo.bar', "
              "you probably expect the TUI to pop up."),
             '',
-            "\t\tThis is how this works basically:",
-            ("\t\t\t- \tWithout CLI commands, the TUI is loaded."),
-            ("\t\t\t- \tCommands in the TORRENT category (see below) prevent the TUI."),
-            ("\t\t\t- \tChanging TUI settings ('(re)set tui.*') enforces the TUI."),
-            ("\t\t\t- \tChanging remote settings ('set srv.*') prevents the TUI."),
-            ("\t\t\t- \tCommands that are exclusive to TUI or CLI "
-             "(e.g. 'tab') enforce their interface.  Providing both TUI- "
-             "and CLI-only commands produces an error."),
-            '',
+            "\tThis is how this works basically:",
+            ("\t\t- \tWithout CLI commands, the TUI is loaded and vice versa."),
+            ("\t\t- \tCommands in the torrent category (see 'help commands') prevent the TUI."),
+            ("\t\t- \tChanging TUI settings ('(re)set tui.*') enforces the TUI."),
+            ("\t\t- \tChanging remote settings ('set srv.*') prevents the TUI."),
+            ("\t\t- \tCommands that are exclusive to TUI or CLI (e.g. 'tab') enforce their "
+             "interface.  Providing both TUI- and CLI-only commands produces an error.  "
+             "Provide --tui or --notui in that case."),
         ]
+        return finalize_lines(lines)
 
+    @property
+    def topic_commands(self):
+        """Must be set to a CommandManager object; provides a help text"""
         cmdmgr = self.cmdmgr
+        lines = []
         for category in cmdmgr.categories:
-            lines.append('\t{} COMMANDS'.format(category.upper()))
+            lines.append('{} COMMANDS'.format(category.upper()))
 
             # To deduplicate commands with the same name that provide
             # different interfaces (but should have the same docs), map
@@ -216,8 +280,8 @@ class HelpManager():
                     cmds[cmd.name] = cmd
 
             for cmdname,cmd in sorted(cmds.items()):
-                lines.append('\t\t{}  \t{}'.format(', '.join((cmd.name,)+cmd.aliases),
-                                                   cmd.description))
+                lines.append('\t{}  \t{}'.format(', '.join((cmd.name,)+cmd.aliases),
+                                                 cmd.description))
             lines.append('')
         return finalize_lines(lines)
 
@@ -316,7 +380,7 @@ class HelpManager():
         return finalize_lines(lines)
 
     @property
-    def keymap(self):
+    def topic_keys(self):
         """Must be set to a KeyMap object; provides a help text"""
 
         from .tui import main as tui
@@ -347,8 +411,7 @@ class HelpManager():
         return finalize_lines(lines)
 
     @property
-    def filters(self):
-        """Provide help text for arguments to TorrentFilter"""
+    def topic_filtersmanual(self):
         lines = [
             'FILTERING TORRENTS, FILES, PEERS, ETC',
             ('\tCommands that accept FILTER arguments are applied to items '
@@ -365,7 +428,7 @@ class HelpManager():
             '\tExample: "name~foo" matches all torrents with "foo" in their name.',
             '',
             ('\tIf FILTER NAME is omitted, it defaults to a comparative filter that '
-             'makes sense, e.g. "name" for torrents.  '
+             "makes sense, e.g. \"name\" for torrents (see 'help filters').  "
              'If OPERATOR is omitted, it defaults to "~".'),
             '\tExample: "foo" is the same as "~foo" is the same as "name~foo".',
             '',
@@ -394,10 +457,11 @@ class HelpManager():
             ('\tTime stamps support a date in the format [[YYYY-]MM-]DD or YYYY[-MM] '
              'and a time in the format HH:MM[:SS].  Date and time can be combined by '
              'separating them with a space.'),
-            '\tExamples: \t"added=2015-05" matches torrents that were added in May 2015.',
-            '\t\t"completed>=01" matches torrents that finished downloading earlier this month.',
-            ('\t\t"activity<10-17 18:45" matches torrents that were last active before '
-             '18:45 (6:45 pm) on the 17th of October of this year.'),
+            '\tExamples: \t"added=2015-05" \tmatches torrents that were added in May 2015.',
+            ('\t\t"completed>=01" \tmatches torrents that finished downloading earlier this month '
+             '("01" being the first day of the current month).'),
+            ('\t\t"activity<10-17 18:45" \tmatches torrents that were last active before '
+             '18:45 (6:45 p.m.) on the 17th of October of this year.'),
             '',
             ('\tTime deltas use the format [in |+|-]AMOUNT[s|m|h|d|w|M|y][ ago].  '
              'The words "in" and "ago" are aliases for "+" and "-".  Negative time '
@@ -414,61 +478,34 @@ class HelpManager():
             ('\tOperators can be escaped with a preceding "\\" to remove their meaning.'),
             '\tExample: "name=foo\&bar" matches torrents with the name "foo&bar".',
         ]
+        return finalize_lines(lines)
 
+    @property
+    def topic_filters(self):
+        """Provide help text for arguments to TorrentFilter"""
         from .client import (TorrentFilter, TorrentFileFilter,
                              TorrentPeerFilter, TorrentTrackerFilter,
                              SettingFilter)
+        lines = []
         for caption,filt in (('TORRENT FILTERS', TorrentFilter),
                              ('FILE FILTERS', TorrentFileFilter),
                              ('PEER FILTERS', TorrentPeerFilter),
                              ('TRACKER FILTERS', TorrentTrackerFilter),
                              ('SETTING FILTERS', SettingFilter)):
-            lines += ['', '\t%s' % caption,
-                      '\t\tDEFAULT FILTER: %s' % filt.DEFAULT_FILTER,
+            lines += ['',
+                      '%s' % caption,
+                      '\tDEFAULT FILTER: %s' % filt.DEFAULT_FILTER,
                       '']
 
-            lines.append('\t\tBOOLEAN FILTERS')
+            lines.append('\tBOOLEAN FILTERS')
             for fname,f in sorted(filt.BOOLEAN_FILTERS.items()):
-                lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+                lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
 
-            lines += ['', '\t\tCOMPARATIVE FILTERS']
+            lines += ['', '\tCOMPARATIVE FILTERS']
             for fname,f in sorted(filt.COMPARATIVE_FILTERS.items()):
                 if fname == filt.DEFAULT_FILTER:
-                    lines.append('\t\t\t{} \t{} (default)'.format(', '.join((fname,)+f.aliases), f.description))
+                    lines.append('\t\t{} \t{} (default)'.format(', '.join((fname,)+f.aliases), f.description))
                 else:
-                    lines.append('\t\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+                    lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
 
-        return finalize_lines(lines)
-
-    @property
-    def rcfile(self):
-        """Provide help text for rc file"""
-        lines = [
-            'RC FILES',
-            ('\tAn rc file is a script that contains a list of arbitrary commands.  '
-             'Commands can span multiple lines by escaping linebreaks with "\\".  '
-             'Lines starting with "#" (optionally preceded by spaces) are ignored.'),
-            '',
-            ('\tThe default rc file path is "$XDG_CONFIG_HOME/{__appname__}/rc", '
-             'where XDG_CONFIG_HOME defaults to "~/.config" if it is not set.'),
-            '',
-            ('\tA different path can be provided with the "--rcfile" option.  '
-             'An existing rc file at the default path can be ignored with the '
-             '"--norcfile" option.'),
-            '',
-            '\tTo permanently change the default config file, create an alias:',
-            '',
-            '\t\t$ alias stig="command stig --rcfile ~/.stigrc"',
-            '',
-            ('\tTo load an additional rc file after the default one, use the '
-             '"rc" command.  (Note that this will prevent the TUI from being '
-             'loaded unless you provide the "--tui" option.  See the GUESSING '
-             'THE USER INTERFACE section in the "commands" help for more information.)'),
-            '',
-            ('\tCommands in an rc file are called during startup before the '
-             'commands given on the command line.'),
-            '',
-            ('\tTUI commands (e.g. "tab" or "bind") in an rc file are ignored '
-             'in CLI mode.'),
-        ]
         return finalize_lines(lines)
