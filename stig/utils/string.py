@@ -23,9 +23,9 @@ def normalize_unicode(string):
 def striplines(lines):
     """Remove empty strings from start and end of `lines` using `pop`"""
     lines = list(lines)
-    while lines and lines[0] == '':
+    while lines and lines[0].strip() == '':
         lines.pop(0)
-    while lines and lines[-1] == '':
+    while lines and lines[-1].strip() == '':
         lines.pop(-1)
     yield from lines
 
