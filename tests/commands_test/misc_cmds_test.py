@@ -11,7 +11,7 @@ class TestHelpCmd(CommandTestCase):
     async def test_no_topic(self):
         process = await self.execute(HelpCmd)
         self.assertEqual(process.success, True)
-        self.assert_stdout('Mock overview')
+        self.assert_stdout('Mock help for overview')
         self.assert_stderr()
 
     async def test_one_topic(self):

@@ -123,10 +123,6 @@ def mock_get_torrent_sorter(self, *args, **kwargs):
 
 
 class MockHelpManager():
-    @property
-    def overview(self):
-        return ['Mock overview']
-
     def find(self, topic):
         if topic == 'unknown':
             raise ValueError('Unknown topic: unknown')
