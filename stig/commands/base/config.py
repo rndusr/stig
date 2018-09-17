@@ -32,8 +32,8 @@ class RcCmdbase(metaclass=InitCommand):
     examples = ('rc rc.example   # Load $XDG_CONFIG_HOME/.config/{__appname__}/rc.example',)
     argspecs = (
         {'names': ('FILE',),
-         'description': ('Path to rc file; if FILE does not start with '
-                         "'.', '~' or '/', $XDG_CONFIG_HOME/.config/{__appname__}/ "
+         'description': ('Path to rc file; if FILE does not exist and does not start with '
+                         '"/", "./" or "~", "$XDG_CONFIG_HOME/.config/{__appname__}/" '
                          'is prepended')},
     )
     cmdmgr = ExpectedResource
@@ -43,16 +43,20 @@ class RcCmdbase(metaclass=InitCommand):
         from ...settings.defaults import DEFAULT_RCFILE
         import os
 
-        if not os.path.isabs(FILE) and not os.path.exists(FILE):
+        filepath = os.path.expanduser(FILE)
+        if not os.path.exists(filepath) and \
+           not os.path.isabs(filepath) and \
+           not filepath.startswith('./') and \
+           not filepath.startswith('~'):
             default_dir = os.path.dirname(DEFAULT_RCFILE)
-            FILE = os.path.join(default_dir, FILE)
+            filepath = os.path.join(default_dir, filepath)
 
         try:
-            lines = rcfile.read(FILE)
+            lines = rcfile.read(filepath)
         except rcfile.RcFileError as e:
             raise CmdError('Loading rc file failed: %s' % e)
         else:
-            log.debug('Running commands from rc file: %r', FILE)
+            log.debug('Running commands from rc file: %r', filepath)
             for cmdline in lines:
                 success = await self.cmdmgr.run_async(cmdline)
                 # False means failure, None means the command didn't run because
