@@ -111,6 +111,37 @@ class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
                     self.display_summary(torrent['id'])
 
 
+class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
+    name = 'magnet'
+    aliases = ('uri',)
+    provides = set()
+    category = 'torrent'
+    description = 'Display torrent(s) magnet URI'
+    usage = ('magnet',
+             'magnet <TORRENT FILTER>')
+    examples = ('magnet name~ubuntu',)
+    argspecs = (
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+    )
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT_FILTER):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True,
+                                           prefer_focused=False)
+        except ValueError as e:
+            raise CmdError(e)
+        else:
+            try:
+                uris = await self.srvapi.torrent.get_magnet_uris(tfilter)
+            except self.srvapi.ClientError as e:
+                raise CmdError(e)
+            else:
+                self.display_uris(uris)
+
+
 class AddTorrentsCmdbase(metaclass=InitCommand):
     name = 'add'
     aliases = ('download','get')

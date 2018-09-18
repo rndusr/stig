@@ -97,6 +97,15 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
                 print('%s\t%s' % (item.label.lower(), item.machine_readable(torrent)))
 
 
+class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
+                          mixin.select_torrents):
+    provides = {'cli'}
+
+    def display_uris(self, uris):
+        for uri in uris:
+            print(uri)
+
+
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.make_request):
     provides = {'cli'}

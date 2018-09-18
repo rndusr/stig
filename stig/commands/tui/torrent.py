@@ -57,6 +57,15 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
         summaryw.title_updater = set_tab_title
 
 
+class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
+                          mixin.select_torrents):
+    provides = {'tui'}
+
+    def display_uris(self, uris):
+        for uri in uris:
+            self.info(uri)
+
+
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.polling_frenzy, mixin.make_request):
     provides = {'tui'}
