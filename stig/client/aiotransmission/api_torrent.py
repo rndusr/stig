@@ -18,6 +18,7 @@ import os
 import base64
 
 from ..utils import (Response, URL)
+from ..base import TorrentAPIBase
 from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
 from ..filters.torrent import TorrentFilter
@@ -72,7 +73,7 @@ class _TorrentCache():
                                         tlist=tlist or '(empty)')
 
 
-class TorrentAPI():
+class TorrentAPI(TorrentAPIBase):
     """High-level abstraction of the Transmission RPC protocol"""
 
     def __init__(self, rpc):

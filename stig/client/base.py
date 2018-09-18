@@ -59,6 +59,10 @@ class TorrentBase(abc.Mapping):
         return hash(self['id'])
 
 
+class TorrentAPIBase():
+    pass
+
+
 from collections import abc
 import os
 class TorrentFileTreeBase(abc.Mapping):
