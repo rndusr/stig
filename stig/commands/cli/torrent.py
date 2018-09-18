@@ -82,7 +82,9 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
                           for section in SECTIONS
                           for item in section['items'])
 
-        for section in SECTIONS:
+        for i,section in enumerate(SECTIONS):
+            if i != 0:
+                print()  # Newline between sections
             print('\033[1m' + section['title'].upper() + '\033[0m')
             for item in section['items']:
                 print('  %s: %s' % (item.label.rjust(label_width), item.human_readable(torrent)))
