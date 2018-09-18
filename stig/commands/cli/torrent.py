@@ -51,7 +51,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
             raise CmdError()
 
 
-class TorrentsSummaryCmd(base.TorrentSummaryCmdbase,
+class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
                          mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
