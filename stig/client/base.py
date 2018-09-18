@@ -73,7 +73,7 @@ class TorrentAPIBase():
             parts = [f'xt=urn:btih:%s' % t['hash']]
             if name and t['name'] != t['hash']:
                 parts.append(f'dn=%s' % urlquote(t['name']))
-            if size:
+            if size and t['size-total'] > 0:
                 parts.append(f'xl=%r' % t['size-total'])
             if t['trackers']:
                 if tracker:
