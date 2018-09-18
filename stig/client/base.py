@@ -13,7 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 from collections import abc
-
+from . import ClientError
 
 class TorrentBase(abc.Mapping):
     """Information about a torrent as a mapping
@@ -59,8 +59,32 @@ class TorrentBase(abc.Mapping):
         return hash(self['id'])
 
 
+from urllib.parse import quote_plus as urlquote
 class TorrentAPIBase():
-    pass
+    async def get_magnet_uris(self, tfilter, tracker=False, trackers=True, name=True, size=True):
+        response = await self.torrents(tfilter, keys=('hash', 'name', 'size-total', 'trackers'))
+        if not response.success:
+            raise ClientError(response.errors[0])
+        else:
+            torrents = response.torrents
+
+        uris = []
+        for t in torrents:
+            parts = [f'xt=urn:btih:%s' % t['hash']]
+            if name and t['name'] != t['hash']:
+                parts.append(f'dn=%s' % urlquote(t['name']))
+            if size:
+                parts.append(f'xl=%r' % t['size-total'])
+            if t['trackers']:
+                if tracker:
+                    # Including only one tracker
+                    parts.append(f'tr=%s' % urlquote(str(t['trackers'][0]['url-announce'])))
+                elif trackers:
+                    # Including all trackers
+                    for tracker in t['trackers']:
+                        parts.append(f'tr=%s' % urlquote(str(tracker['url-announce'])))
+            uris.append('magnet:?' + '&'.join(parts))
+        return uris
 
 
 from collections import abc
