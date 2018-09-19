@@ -2,9 +2,12 @@
   Breaking changes:
 
   Other changes:
+    * The command 'magnet' creates magnet URIs for torrents.
+    * The help structure was changed so that lists are separated from manuals.
 
   Fixed bugs:
     * Fixed crash with "Filter can't end with operator".
+    * Setting filters are now documented (`help filters`)
 
 
 2018-09-07 0.10.0a
