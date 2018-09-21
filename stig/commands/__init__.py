@@ -103,6 +103,7 @@ def ExpectedResource(name):
 OPS_AND = ('&', 'and')
 OPS_OR  = ('|', 'or')
 OPS_SEQ = (';', 'also')
+OPS = OPS_AND + OPS_OR + OPS_SEQ
 
 def is_op(string):
     return any(string in ops for ops in (OPS_SEQ, OPS_AND, OPS_OR))
