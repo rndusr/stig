@@ -82,7 +82,7 @@ class TorrentSummaryWidget(urwid.WidgetWrap):
 
         super().__init__(urwid.AttrMap(
             ScrollBar(urwid.AttrMap(self._content, 'torrentsummary')),
-            'scrollbar'
+            'torrentsummary.scrollbar'
         ))
 
         # Register new request in request pool

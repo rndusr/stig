@@ -39,8 +39,6 @@
 #light_is_bold
 
 cli             black      on light gray
-scrollbar       light gray on dark gray
-helptext        light gray on black
 prompt          black,bold on yellow
 find.highlight  black on yellow
 
@@ -87,6 +85,7 @@ log.info                   light green    on $log_bg
 log.error                  light red,bold on $log_bg
 log.debug                  yellow         on $log_bg
 log.dupecount              light cyan     on $log_bg
+log.scrollbar              light gray     on dark gray
 
 $keychains_bg = black
 keychains              light gray   on $keychains_bg
@@ -98,11 +97,16 @@ keychains.description  white        on $keychains_bg
 
 
 
+helptext            light gray on black
+helptext.scrollbar  light gray on dark gray
+
+
 $tlist_bg.uf = black
 $tlist_bg.f  = dark gray
 torrentlist                                        default              on $tlist_bg.uf
 torrentlist.focused                                default              on $tlist_bg.f
 torrentlist.header                                 light gray,underline on $tlist_bg.uf
+torrentlist.scrollbar                              light gray           on dark gray
 
 $id_fg = white
 torrentlist.id.header                              $id_fg,underline on $tlist_bg.uf
@@ -385,8 +389,9 @@ torrentlist.name.discovering.complete.unfocused    $name.discovering_fg         
 torrentlist.name.discovering.complete.focused      $name.discovering_fg           on $tlist_bg.f
 
 
-torrentsummary       light gray on black
-torrentsummary.error light red  on black
+torrentsummary            light gray on black
+torrentsummary.error      light red  on black
+torrentsummary.scrollbar  light gray on dark gray
 
 
 $flist_bg.uf = black
@@ -394,6 +399,7 @@ $flist_bg.f  = dark gray
 filelist                                   default              on $flist_bg.uf
 filelist.focused                           default              on $flist_bg.f
 filelist.header                            light gray,underline on $flist_bg.uf
+filelist.scrollbar                         light gray           on dark gray
 
 $marked_fg = white
 filelist.marked.header                     $marked_fg,underline on $flist_bg.uf
@@ -446,6 +452,7 @@ $plist_bg = black
 peerlist                                   default              on $plist_bg
 peerlist.focused                           default              on $plist_bg
 peerlist.header                            light gray,underline on $plist_bg
+peerlist.scrollbar                         light gray           on dark gray
 
 $torrent_fg = light gray
 peerlist.torrent.header                    $torrent_fg,underline on $plist_bg
@@ -503,6 +510,7 @@ $trklist_bg.f  = dark gray
 trackerlist                                default              on $trklist_bg.uf
 trackerlist.focused                        default              on $trklist_bg.f
 trackerlist.header                         light gray,underline on $trklist_bg.uf
+trackerlist.scrollbar                      light gray           on dark gray
 
 $torrent_fg = light gray
 trackerlist.torrent.header                 $torrent_fg,underline on $trklist_bg.uf
@@ -590,6 +598,7 @@ $slist_bg.f  = dark gray
 settinglist                                default              on $slist_bg.uf
 settinglist.focused                        default              on $slist_bg.f
 settinglist.header                         light gray,underline on $slist_bg.uf
+settinglist.scrollbar                      light gray           on dark gray
 
 $name_fg = light blue
 settinglist.name.header                    $name_fg,underline on $slist_bg.uf

@@ -207,7 +207,7 @@ class ListWidgetBase(urwid.WidgetWrap):
 
         listbox_sb = urwid.AttrMap(
             ScrollBar(urwid.AttrMap(self._listbox, self.palette_name)),
-            'scrollbar'
+            self.palette_name + '.scrollbar'
         )
         pile = urwid.Pile([
             ('pack', urwid.AttrMap(self._table.headers, self.palette_name + '.header')),

@@ -44,7 +44,7 @@ class LogWidget(urwid.WidgetWrap):
         self._scrollable = Scrollable(self._pile)
         pile_sb = urwid.AttrMap(
             ScrollBar(urwid.AttrMap(self._scrollable, 'log')),
-            'scrollbar'
+            'log.scrollbar'
         )
         super().__init__(pile_sb)
 

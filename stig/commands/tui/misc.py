@@ -42,7 +42,7 @@ class HelpCmd(base.HelpCmdbase):
         helptext_widget_cls = keymap.wrap(SearchableText, context='helptext')
         helptext_widget = helptext_widget_cls(lines)
         textw = urwid.AttrMap(helptext_widget, 'helptext')
-        contentw = urwid.AttrMap(ScrollBar(textw), 'scrollbar')
+        contentw = urwid.AttrMap(ScrollBar(textw), 'helptext.scrollbar')
         self.tui.tabs.load(titlew, contentw)
 
 
