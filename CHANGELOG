@@ -1,3 +1,9 @@
+2018-09-25 0.10.1a
+  Fixed bugs:
+    * For torrents with exactly one directory that contains exactly one file,
+      listing its files in the TUI resulted in a crash: KeyError: 'is-wanted'
+
+
 2018-09-07 0.10.0a
   Breaking changes:
     * The 'tui.cli.history-file' setting was removed (see 'tui.cli.history-dir'
