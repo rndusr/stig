@@ -476,7 +476,7 @@ class HelpManager():
             '\tExample: "name=foo paused" is the same as "name=foo|paused".',
             '',
             ('\tOperators can be escaped with a preceding "\\" to remove their meaning.'),
-            '\tExample: "name=foo\&bar" matches torrents with the name "foo&bar".',
+            '\tExample: "name=foo\\&bar" matches torrents with the name "foo&bar".',
         ]
         return finalize_lines(lines)
 
