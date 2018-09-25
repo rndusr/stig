@@ -93,8 +93,9 @@ class KeyChainsWidget(urwid.WidgetWrap):
                                      'keychains.description'))
             rows.append(urwid.Columns(row))
 
+        options = self._pile.options('pack')
         for row in rows:
-            self._pile.contents.append((row, self._pile.options('pack')))
+            self._pile.contents.append((row, options))
 
 
 
