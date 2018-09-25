@@ -1,5 +1,14 @@
 20??-??-?? ?.??.??
   Breaking changes:
+    * The 'scrollbar' palette in themes was removed and the following palettes
+      were added:
+           torrentlist.scrollbar
+           filelist.scrollbar
+           peerlist.scrollbar
+           trackerlist.scrollbar
+           settinglist.scrollbar
+           log.scrollbar
+           helptext.scrollbar
 
   Other changes:
     * The command 'magnet' creates magnet URIs for torrents.
