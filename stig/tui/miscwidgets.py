@@ -22,9 +22,11 @@ EMPTY_TEXT = ' '
 
 
 class KeyChainsWidget(urwid.WidgetWrap):
-    _selectable = False
     _sizing = ['flow']
     _headers = ('Key Chain', 'Command', 'Description')
+
+    def selectable(self):
+        return False
 
     def __init__(self):
         self._pile = urwid.Pile([])
