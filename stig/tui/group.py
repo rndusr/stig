@@ -219,7 +219,7 @@ class Group(urwid.WidgetWrap):
         self.hide(name)  # Refresh content in self._main
         self.show(name)
 
-    def show(self, name):
+    def show(self, name, focus=True):
         """Show widget specified by `name` and focus it if selectable"""
         if not self.exists(name):
             raise ValueError('Unknown item name: {}'.format(name))
@@ -233,7 +233,7 @@ class Group(urwid.WidgetWrap):
             else:
                 contents[position] = content
 
-            if item['widget'].selectable():
+            if focus and item['widget'].selectable():
                 self.focus_name = item['name']
 
     def hide(self, name, free_space=True):
