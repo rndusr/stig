@@ -74,6 +74,8 @@ class CLIEditWidget(urwid.Edit):
     def keypress(self, size, key):
         text_before = self.edit_text
         curpos_before = self.edit_pos
+
+        callback = None
         cmd = self._command_map[key]
         if cmd is urwid.CURSOR_UP:
             self._set_history_prev()
@@ -84,19 +86,19 @@ class CLIEditWidget(urwid.Edit):
         elif cmd is urwid.ACTIVATE:
             self.append_to_history()
             if self._on_accept is not None:
-                self._on_accept(self)
+                callback = self._on_accept
             self._history_pos = -1
             key = None
         elif cmd is urwid.CANCEL:
             if self._on_cancel is not None:
-                self._on_cancel(self)
+                callback = self._on_cancel
             self._history_pos = -1
             key = None
         elif cmd is urwid.COMPLETE and self._on_complete:
             callback = self._on_complete
             key = None
         elif key == 'space':
-            return super().keypress(size, ' ')
+            key = super().keypress(size, ' ')
         else:
             key = super().keypress(size, key)
 
@@ -107,8 +109,13 @@ class CLIEditWidget(urwid.Edit):
         elif self._on_move is not None and curpos_before != curpos_after:
             self._on_move(self)
 
+        if callback:
+            callback(self)
+
         return key
 
+
+    # History
 
     def _set_history_prev(self):
         # Remember whatever is currently in line when user starts exploring history
