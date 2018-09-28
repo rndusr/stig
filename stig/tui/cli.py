@@ -19,23 +19,61 @@ import os
 class CLIEditWidget(urwid.Edit):
     """Edit widget with readline keybindings callbacks and a history"""
 
-    def __init__(self, *args, on_change=None, on_accept=None, on_cancel=None,
-                 history_file=None, history_size=1000, completer=None, **kwargs):
+    def __init__(self, *args, on_change=None, on_move=None, on_accept=None,
+                 on_cancel=None, on_complete=None, history_file=None,
+                 history_size=1000, **kwargs):
         kwargs['align'] = kwargs['align'] if 'align' in kwargs else 'left'
         kwargs['wrap'] = kwargs['wrap'] if 'wrap' in kwargs else 'clip'
         self._on_change = on_change
+        self._on_move = on_move
         self._on_accept = on_accept
         self._on_cancel = on_cancel
+        self._on_complete = on_complete
         self._edit_text_cache = ''
         self._history = []
         self._history_size = history_size
         self._history_pos = -1
         self.history_file = history_file
-        self._completer = completer
         return super().__init__(*args, **kwargs)
 
+    @property
+    def on_accept(self):
+        return self._on_accept
+    @on_accept.setter
+    def on_accept(self, callback):
+        self._on_accept = callback
+
+    @property
+    def on_cancel(self):
+        return self._on_cancel
+    @on_cancel.setter
+    def on_cancel(self, callback):
+        self._on_cancel = callback
+
+    @property
+    def on_complete(self):
+        return self._on_complete
+    @on_complete.setter
+    def on_complete(self, callback):
+        self._on_complete = callback
+
+    @property
+    def on_change(self):
+        return self._on_change
+    @on_change.setter
+    def on_change(self, callback):
+        self._on_change = callback
+
+    @property
+    def on_move(self):
+        return self._on_move
+    @on_move.setter
+    def on_move(self, callback):
+        self._on_move = callback
+
     def keypress(self, size, key):
-        text_before = self.get_edit_text()
+        text_before = self.edit_text
+        curpos_before = self.edit_pos
         cmd = self._command_map[key]
         if cmd is urwid.CURSOR_UP:
             self._set_history_prev()
@@ -54,35 +92,23 @@ class CLIEditWidget(urwid.Edit):
                 self._on_cancel(self)
             self._history_pos = -1
             key = None
-        elif cmd is urwid.COMPLETE and self._completer:
-            self.edit_text, self.edit_pos = self._completer(self.edit_text, self.edit_pos)
+        elif cmd is urwid.COMPLETE and self._on_complete:
+            callback = self._on_complete
             key = None
         elif key == 'space':
             return super().keypress(size, ' ')
         else:
             key = super().keypress(size, key)
 
-        text_after = self.get_edit_text()
+        text_after = self.edit_text
+        curpos_after = self.edit_pos
         if self._on_change is not None and text_before != text_after:
             self._on_change(self)
+        elif self._on_move is not None and curpos_before != curpos_after:
+            self._on_move(self)
+
         return key
 
-    @property
-    def completer(self):
-        """
-        A callable that accepts the current edit text and the current cursor
-        position as positional arguments.  Its return value must be the new edit
-        text and the new cursor position.
-        """
-        if not callable(completer):
-            raise ValueError('Not a callable: %r' % completer)
-        self._completer = completer
-
-    @completer.setter
-    def completer(self, completer):
-        if not callable(completer):
-            raise ValueError('Not a callable: %r' % completer)
-        self._completer = completer
 
     def _set_history_prev(self):
         # Remember whatever is currently in line when user starts exploring history
