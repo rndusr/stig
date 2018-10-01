@@ -200,8 +200,8 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
             if trailing_space:
                 cmdstr += ' '
             self.tui.widgets.show('cli')
-            self.tui.widgets.cli.base_widget.set_edit_text(cmdstr)
-            self.tui.widgets.cli.base_widget.set_edit_pos(len(cmdstr))
+            self.tui.widgets.cli.base_widget.edit_text = cmdstr
+            self.tui.widgets.cli.base_widget.edit_pos = len(cmdstr)
 
 
 class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
@@ -356,8 +356,8 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
                                             on_accept=accept_cb,
                                             on_cancel=cancel_cb,
                                             history_file=history_file)
-                edit_widget.set_edit_text(part[1:-1])
-                edit_widget.set_edit_pos(len(part))
+                edit_widget.edit_text = part[1:-1]
+                edit_widget.edit_pos = len(edit_widget.edit_text)
                 columns_args.append(urwid.AttrMap(edit_widget, 'prompt'))
                 self._cmd_parts.append(edit_widget)
                 self._edit_widgets.append(edit_widget)
