@@ -11,6 +11,7 @@
            helptext.scrollbar
 
   Other changes:
+    * Press <tab> in the built-in CLI to complete commands and arguments.
     * The command 'magnet' creates magnet URIs for torrents.
     * The help structure was changed so that lists are separated from manuals.
 
