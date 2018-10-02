@@ -195,6 +195,18 @@ def InitCommand(clsname, bases, attrs):
         argp.add_argument(*argnames, **argspec)
     attrs['_argparser'] = argp
 
+    # Provide candidates for tab completion
+    attrs['option_candidates'] = tuple(name
+                                       for argspec in attrs['argspecs']
+                                       for name in argspec['names']
+                                       if name.startswith('--'))
+    def completion_candidates(cls, args, focus):
+        cands = cls._completion_candidates(args, focus)
+        if '--' not in args[:focus]:
+            cands += cls.option_candidates
+        return cands
+    attrs['completion_candidates'] = classmethod(completion_candidates)
+
     # Command class must inherit from _CommandBase
     if _CommandBase not in bases:
         bases = (_CommandBase,) + bases

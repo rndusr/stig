@@ -101,11 +101,13 @@ def _create_cli_widget():
         cmdmgr.run_task(cli.edit_text, on_error=log.error)
         reset_cli(cli)
 
+    from ..completion import Completer
     history_file = os.path.join(localcfg['tui.cli.history-dir'], 'commands')
     return CLIEditWidget(prompt=':',
                          history_file=history_file,
                          on_cancel=reset_cli,
-                         on_accept=run_cmd)
+                         on_accept=run_cmd,
+                         completer_class=Completer)
 
 
 

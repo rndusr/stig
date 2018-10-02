@@ -17,6 +17,7 @@ from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 from ...utils.usertypes import Float
 from . import _mixin as mixin
+from ...completion import candidates
 
 import subprocess
 import operator
@@ -99,6 +100,10 @@ class ResetCmdbase(metaclass=InitCommand):
                 self.cfg.reset(name)
         if not success:
             raise CmdError()
+
+    @classmethod
+    def completion_candidates(cls, args, focus):
+        return candidates.settings()
 
 
 from ...client import ClientError
@@ -285,6 +290,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return ', '.join(str(item) for item in value)
         else:
             return str(value)
+
+    @classmethod
+    def _completion_candidates(cls, args, focus):
+        if focus == 1:
+            return candidates.settings()
+        else:
+            setting = args[1]
+            return candidates.values(setting, args, focus)
 
 
 class RateLimitCmdbase(metaclass=InitCommand):
