@@ -54,9 +54,6 @@ cmdmgr.resources.update(aioloop=aioloop,
                         cfg=localcfg,
                         srvcfg=remotecfg,
                         helpmgr=helpmgr)
-cmdmgr.load_cmds_from_module(
-    'stig.commands.cli', 'stig.commands.tui',
-)
 helpmgr.cmdmgr = cmdmgr
 
 def _pre_run_hook(cmdline):
