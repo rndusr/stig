@@ -93,18 +93,19 @@ def _create_cli_widget():
             os.makedirs(DEFAULT_HISTORY_DIR)
         os.rename(old_history_file, os.path.join(DEFAULT_HISTORY_DIR, 'commands'))
 
-    def on_cancel(widget):
-        widget.set_edit_text('')
+    def reset_cli(cli):
+        cli.reset()
         widgets.hide('cli')
 
-    def on_accept(widget):
-        cmd = widget.get_edit_text()
-        on_cancel(widget)
-        cmdmgr.run_task(cmd, on_error=log.error)
+    def run_cmd(cli):
+        cmdmgr.run_task(cli.edit_text, on_error=log.error)
+        reset_cli(cli)
 
-    return CLIEditWidget(':',
-                         on_accept=on_accept, on_cancel=on_cancel,
-                         history_file=os.path.join(localcfg['tui.cli.history-dir'], 'commands'))
+    history_file = os.path.join(localcfg['tui.cli.history-dir'], 'commands')
+    return CLIEditWidget(prompt=':',
+                         history_file=history_file,
+                         on_cancel=reset_cli,
+                         on_accept=run_cmd)
 
 
 

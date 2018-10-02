@@ -9,21 +9,20 @@ from . _handle_urwidpatches import (setUpModule, tearDownModule)
 
 class TestCLIEditWidget(unittest.TestCase):
     def setUp(self):
-        def on_cancel(w):
-            w.set_edit_text('')
         def on_accept(w):
-            on_cancel(w)
+            w.reset()
             self.accepted_line = w.edit_text
-        self.w = CLIEditWidget(on_cancel=on_cancel, on_accept=on_accept)
+        self.w = CLIEditWidget(on_accept=on_accept)
         fd, self.history_filepath = tempfile.mkstemp()
 
     def tearDown(self):
         os.remove(self.history_filepath)
 
-    def enter_line(self, line):
+    def enter_line(self, line, press_return=True):
         for char in str(line):
             self.w.keypress((80,), char)
-        self.w.keypress((80,), 'enter')
+        if press_return:
+            self.w.keypress((80,), 'enter')
 
     def get_history_on_disk(self):
         with open(self.history_filepath, 'r') as f:
@@ -106,17 +105,18 @@ class TestCLIEditWidget(unittest.TestCase):
                 hist_disk_must_be_smaller_than_hist_mem = False
 
     def test_no_completer(self):
-        edit_text = self.w.edit_text
+        self.w.edit_text = 'asdf'
         self.w.keypress((80,), 'tab')
-        self.assertEqual(self.w.edit_text, edit_text)
+        self.assertEqual(self.w.edit_text, 'asdf')
 
     def test_completer(self):
-        def completer(line, curpos):
-            return 'foo', 1
-        self.w.completer = completer
+        class MockCompleter():
+            def __init__(self, cmdline, curpos): pass
+            def complete(self): return ('foobar', 2)
+            candidates = ('foobar',)
+        self.w.completer_class = MockCompleter
 
-        self.assertNotEqual(self.w.edit_text, 'foo')
-        self.assertNotEqual(self.w.edit_pos, 1)
-        self.w.keypress((80,), 'tab')
+        self.enter_line('foo', press_return=False)
         self.assertEqual(self.w.edit_text, 'foo')
-        self.assertEqual(self.w.edit_pos, 1)
+        self.w.keypress((80,), 'tab')
+        self.assertEqual(self.w.edit_text, 'foobar')
