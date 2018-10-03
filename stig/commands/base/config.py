@@ -102,7 +102,7 @@ class ResetCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def completion_candidates(cls, args, focus):
+    def _completion_candidates(cls, args, focus):
         return candidates.settings()
 
 
