@@ -201,9 +201,13 @@ def InitCommand(clsname, bases, attrs):
                                        for name in argspec['names']
                                        if name.startswith('--'))
     def completion_candidates(cls, args, focus):
-        cands = cls._completion_candidates(args, focus)
-        if '--' not in args[:focus]:
-            cands += cls.option_candidates
+        if not hasattr(cls, '_completion_candidates'):
+            from ..completion.candidates import Candidates
+            return Candidates()
+        else:
+            cands = cls._completion_candidates(args, focus)
+            if '--' not in args[:focus]:
+                cands += cls.option_candidates
         return cands
     attrs['completion_candidates'] = classmethod(completion_candidates)
 
