@@ -14,7 +14,8 @@ log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError, ExpectedResource, utils)
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
-                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
+                      make_SORT_ORDERS_doc, make_SCRIPTING_doc,
+                      sort_orders)
 from ...utils.usertypes import Float
 from . import _mixin as mixin
 from ...completion import candidates
@@ -118,6 +119,8 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 'set connect.user jonny_sixpack',
                 'set connect.password:eval getpw --id transmission',
                 'set tui.log.height +=10')
+    from ...views.setting import COLUMNS
+    from ...client.sorters.setting import SettingSorter
     argspecs = (
         {'names': ('NAME',), 'nargs': '?',
          'description': "Name of setting; append ':eval' to turn VALUE into a shell command"},
@@ -126,15 +129,13 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
          'description': ('New value or shell command that prints the new value to stdout; '
                          "numerical values can be adjusted by prepending '+=' or '-='")},
 
-        { 'names': ('--sort', '-s'),
+        { 'names': ('--sort', '-s'), 'parameters': sort_orders(SettingSorter),
           'description': 'Comma-separated list of sort orders (see SORT ORDERS section)' },
 
-        { 'names': ('--columns', '-c'),
+        { 'names': ('--columns', '-c'), 'parameters': tuple(COLUMNS),
           'default_description': "current value of 'columns.settings' setting",
           'description': 'Comma-separated list of column names (see COLUMNS section)' },
     )
-    from ...views.setting import COLUMNS
-    from ...client.sorters.setting import SettingSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.settings'),
         'SORT ORDERS': make_SORT_ORDERS_doc(SettingSorter, '--sort', 'sort.settings'),
@@ -293,10 +294,20 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
 
     @classmethod
     def _completion_candidates(cls, args, focus):
-        if focus == 1:
-            return candidates.settings()
+        settings = candidates.settings()
+
+        # Find the setting we're completing values for
+        setting = None
+        for arg in args[:focus]:
+            if arg in settings:
+                setting = arg
+        if setting is None:
+            # Complete setting names
+            log.debug('Completing settings')
+            return settings
         else:
-            setting = args[1]
+            # Complete setting values
+            log.debug('Completing values for %r', setting)
             return candidates.values(setting, args, focus)
 
 
