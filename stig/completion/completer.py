@@ -40,7 +40,7 @@ class Completer():
         cmdcls = cmdmgr.get_cmdcls(cmdname)
         log.debug('Command class: %r', cmdcls)
         curarg = args[subcmd_focus] if subcmd_focus is not None else ''
-        log.debug('Current argument: %r', curarg)
+        log.debug('Current argument is at %d: %r', subcmd_focus, curarg)
 
         # Command completion command is not "finalized" by a trailing space
         if ' ' not in subcmd[:subcurpos].lstrip():
@@ -142,20 +142,21 @@ def _tokenize(cmdline, curpos):
     quoted = ''
     curtoken = []
     focused_token = None
+    log.debug('Tokenizing %r', cmdline)
     for i_char,char in enumerate(cmdline):
         if not escaped:
             if char == '\\':
-                log.debug('%s: Escaping next character', char)
+                log.debug('%03d / %s: Escaping next character', i_char, char)
                 escaped = True
                 continue
 
             elif char == '"' or char == "'":
                 if quoted == char:
-                    log.debug('%s: Closing quote', char)
+                    log.debug('%03d / %s: Closing quote', i_char, char)
                     quoted = ''
                     continue
                 elif not quoted:
-                    log.debug('%s: Opening quote', char)
+                    log.debug('%03d / %s: Opening quote', i_char, char)
                     quoted = char
                     continue
 
@@ -166,7 +167,7 @@ def _tokenize(cmdline, curpos):
                 log.debug('Appending new token: %r', token)
                 tokens.append(token)
             else:
-                log.debug('Skipping empty token')
+                log.debug('Ignoring space')
         else:
             log.debug('%s: Adding non-space or escaped character', char)
             curtoken.append(char)
@@ -181,6 +182,7 @@ def _tokenize(cmdline, curpos):
     tokens.append(token)
     if focused_token is None:
         focused_token = len(tokens) - 1
+        log.debug('Focusing the last token (%d): %r', focused_token, tokens[-1])
 
     return tokens, focused_token
 
