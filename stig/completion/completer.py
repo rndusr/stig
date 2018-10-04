@@ -140,7 +140,7 @@ def _tokenize(cmdline, curpos):
     tokens = []
     escaped = False
     quoted = ''
-    curtoken = []
+    nexttoken = []
     focused_token = None
     log.debug('Tokenizing %r', cmdline)
     for i_char,char in enumerate(cmdline):
@@ -161,25 +161,44 @@ def _tokenize(cmdline, curpos):
                     continue
 
         if char == ' ' and not escaped and not quoted:
-            if curtoken:
-                token = ''.join(curtoken)
-                curtoken = []
-                log.debug('Appending new token: %r', token)
-                tokens.append(token)
+            # Two consecutive spaces insert an empty token if the previous token
+            # isn't already empty
+            if nexttoken or (tokens and tokens[-1] != ''):
+                tokens.append(''.join(nexttoken))
+                nexttoken = []
+                log.debug('Appending new token: %r', tokens[-1])
             else:
                 log.debug('Ignoring space')
         else:
-            log.debug('%s: Adding non-space or escaped character', char)
-            curtoken.append(char)
-            if focused_token is None and i_char == curpos-1:
-                log.debug('Character #%d is on token #%d', i_char, len(tokens))
+            log.debug('%03d / %s: Adding non-space or escaped character', i_char, char)
+            nexttoken.append(char)
+
+        if focused_token is None and i_char == max(0, curpos-1):
+            # Focused token is the index of the previously parsed token if:
+            #   - the next token and the previously parsed token are both empty AND
+            #   - the next character to be parsed is empty.
+            # Otherwise, the focus is on the token we will parse next.
+            if not nexttoken and tokens and not tokens[-1] and \
+               (i_char >= len(cmdline)-1 or cmdline[i_char+1] == ' '):
+                focused_token = len(tokens) - 1
+            else:
                 focused_token = len(tokens)
+
+            log.debug('Found focused token: #%d is on token #%d', i_char, focused_token)
+            log.debug('  Cursor position: %r', curpos)
+            log.debug('  Tokens: %r', tokens)
+            log.debug('  Current token: %r', ''.join(nexttoken))
 
         escaped = False
 
-    token = ''.join(curtoken)
-    log.debug('Appending final token: %r', token)
-    tokens.append(token)
+    # Append final token if:
+    #   - it's not empty OR
+    #   - `tokens` is empty (we don't return an empty list so the cursor can be somewhere) OR
+    #   - `tokens[-1]` is not empty (to prevent multiple empty strings at the end).
+    if nexttoken or not tokens or tokens[-1]:
+        tokens.append(''.join(nexttoken))
+        log.debug('Appending final token: %r', tokens[-1])
+
     if focused_token is None:
         focused_token = len(tokens) - 1
         log.debug('Focusing the last token (%d): %r', focused_token, tokens[-1])

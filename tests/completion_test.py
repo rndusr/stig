@@ -44,23 +44,27 @@ class Test_tokenize(unittest.TestCase):
     def test_empty_string(self):
         self.do(('', 1), ([''], 0))
 
-    def test_trailing_space_after_command(self):
+    def test_focused_argument(self):
+        self.do(('foo bar baz', 0), (['foo', 'bar', 'baz'], 0))
+        self.do(('foo bar baz', 3), (['foo', 'bar', 'baz'], 0))
+        self.do(('foo bar baz', 4), (['foo', 'bar', 'baz'], 1))
+        self.do(('foo bar baz', 7), (['foo', 'bar', 'baz'], 1))
+        self.do(('foo bar baz', 8), (['foo', 'bar', 'baz'], 2))
+        self.do(('foo bar baz', 11), (['foo', 'bar', 'baz'], 2))
+
+    def test_trailing_space_at_the_end(self):
         self.do(('foo ', 4), (['foo', ''], 1))
         self.do(('foo  ', 5), (['foo', ''], 1))
         self.do(('foo   ', 6), (['foo', ''], 1))
 
-    def test_trailing_space_after_command_with_arguments_after_cursor(self):
+    def test_trailing_space_in_the_middle(self):
         self.do(('foo -x', 4), (['foo', '-x'], 1))
-        self.do(('foo  -x', 5), (['foo', '-x'], 1))
-        self.do(('foo   -x', 6), (['foo', '-x'], 1))
-
-    def test_trailing_space_after_options(self):
-        self.do(('foo -x ', 7), (['foo', '-x', ''], 2))
-        self.do(('foo -x  ', 8), (['foo', '-x', ''], 2))
-        self.do(('foo -x   ', 9), (['foo', '-x', ''], 2))
-
-    def test_unescaped_space(self):
-        self.do(('foo bar -x baz', 14), (['foo', 'bar', '-x', 'baz'], 3))
+        self.do(('foo  -x', 4), (['foo', '', '-x'], 1))
+        self.do(('foo  -x', 5), (['foo', '', '-x'], 2))
+        self.do(('foo   -x', 5), (['foo', '', '-x'], 1))
+        self.do(('foo   -x', 6), (['foo', '', '-x'], 2))
+        self.do(('foo   -x', 5), (['foo', '', '-x'], 1))
+        self.do(('foo   -x', 6), (['foo', '', '-x'], 2))
 
     def test_escaped_space(self):
         self.do((r'foo\ bar -x baz', 15), (['foo bar', '-x', 'baz'], 2))
