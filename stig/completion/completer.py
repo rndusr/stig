@@ -74,7 +74,7 @@ class Completer():
         """
         cmdline = self._cmdline
         curpos = self._curpos
-        if cmdline is None:
+        if any(x is None for x in (cmdline, curpos)):
             raise RuntimeError('You must call update() first')
         elif self._candidates:
             log.debug('Completing %r', cmdline[:curpos] + '|' + cmdline[curpos:])
