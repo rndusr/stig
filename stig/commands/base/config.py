@@ -156,8 +156,8 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 error = None
 
             # Show list of settings
-            sort = self.cfg['sort.settings'] if sort is None else sort
-            columns = self.cfg['columns.settings'] if columns is None else columns
+            sort = self.cfg['sort.settings'] if sort is None else self._parse_value(sort, listify=True)
+            columns = self.cfg['columns.settings'] if columns is None else self._parse_value(columns, listify=True)
             try:
                 sort = self.get_setting_sorter(sort)
                 columns = self.get_setting_columns(columns)
