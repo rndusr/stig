@@ -36,6 +36,49 @@ class CallbackDict(dict):
     update = _wrap(dict.update)
 
 
+
+from collections import abc
+class AliasDict(abc.MutableMapping):
+    """Use multiple keys to get the same value"""
+    def __init__(self, dct=None, **kwargs):
+        self._dct = dct if dct is not None else {}
+        self._dct.update(kwargs)
+        for key in self._dct:
+            assert self._is_valid_key(key)
+
+    def __getitem__(self, key):
+        for keys,value in self._dct.items():
+            if key in keys:
+                return value
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        for keys,value in self._dct.items():
+            if key in keys:
+                key = keys
+        if not self._is_valid_key(key):
+            key = (key,)
+        self._dct[key] = value
+
+    def __delitem__(self, key):
+        for keys,value in self._dct.items():
+            if key in keys:
+                del self._dct[keys]
+
+    @staticmethod
+    def _is_valid_key(key):
+        return isinstance(key, (tuple, frozenset))
+
+    def __iter__(self):
+        return iter(self._dct)
+
+    def __len__(self):
+        return len(self._dct)
+
+    def __repr__(self):
+        return repr(self._dct)
+
+
 from collections import abc
 def listify_args(args):
     """
