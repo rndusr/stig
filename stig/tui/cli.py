@@ -208,8 +208,9 @@ class CLIEditWidget(urwid.WidgetWrap):
 
     def _cb_move(self, _):
         # Candidates are based on where the cursor is in the command line
-        self._prev_key_was_tab = False
         self._update_completion_candidates()
+        self._prev_key_was_tab = False
+        self._save_cmdline()
         self._maybe_hide_or_show_menu()
 
     def _update_completion_candidates(self):
