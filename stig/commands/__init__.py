@@ -213,21 +213,52 @@ def InitCommand(clsname, bases, attrs):
         argp.add_argument(*argnames, **argspec)
     attrs['_argparser'] = argp
 
+
+    # Tab completion
+    # Commands can provide custom completion candidates by specifiying a
+    # _completion_candidates() class method
+    from ..completion.candidates import Candidates
+
+    def _get_argspec(cls, name):
+        for argspec in cls.argspecs:
+            if name in argspec['names']:
+                return argspec
+
+    def _is_option(cls, arg):
+        return arg in cls.long_options or arg in cls.short_options
+
+    def _option_wants_arg(cls, option, roffset):
+        argspec = _get_argspec(cls, option)
+        nargs = argspec.get('nargs', 1)
+        if nargs in ('+', '*', 'REMAINDER'):
+            return True
+        elif nargs == '?':
+            nargs = 1
+        if roffset < nargs:
+            return True
+        return False
+
     # Provide candidates for tab completion
-    attrs['option_candidates'] = tuple(name
-                                       for argspec in attrs['argspecs']
-                                       for name in argspec['names']
-                                       if name.startswith('--'))
     def completion_candidates(cls, args, focus):
-        if not hasattr(cls, '_completion_candidates'):
-            from ..completion.candidates import Candidates
-            return Candidates()
+        # Check if we're completing an option or a parameter for an option
+        if '--' not in args[:focus]: # '--' turns all remaining arguments into positionals
+            if args[focus].startswith('-'):
+                return Candidates(*cls.long_options)
+            else:
+                # Check if any argument on the left is an option that wants another argument
+                for i,arg in enumerate(reversed(args[:focus])):
+                    if _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i):
+                        params = cls.parameters.get(arg)
+                        if params is not None:
+                            log.debug('Completing parameter for %r: %r', arg, cls.parameters[arg])
+                            return Candidates(*cls.parameters[arg], delimiter=',')
+
+        if hasattr(cls, '_completion_candidates'):
+            return cls._completion_candidates(args, focus)
         else:
-            cands = cls._completion_candidates(args, focus)
-            if '--' not in args[:focus]:
-                cands += cls.option_candidates
-        return cands
+            return Candidates()
     attrs['completion_candidates'] = classmethod(completion_candidates)
+
 
     # Command class must inherit from _CommandBase
     if _CommandBase not in bases:
