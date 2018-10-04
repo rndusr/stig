@@ -25,15 +25,16 @@ class Candidates(tuple):
 
     All functions in this module should return an instance of this.
     """
-    def __new__(cls, *candidates, tail=' '):
+    def __new__(cls, *candidates, delimiter=' '):
+        assert len(delimiter) == 1
         obj = super().__new__(cls, candidates)
-        obj.tail = tail
+        obj.delimiter = delimiter
         return obj
 
     def __repr__(self):
-        return 'Canididates(%s, tail=%r)' % (
+        return 'Canididates(%s, delimiter=%r)' % (
             ', '.join(repr(c) for c in self),
-            self.tail)
+            self.delimiter)
 
 
 def commands():
@@ -66,7 +67,7 @@ def values(setting, args, focus):
     if isinstance(setting, usertypes.Option) and focus_on_first_value:
         return Candidates(*setting.options)
     elif isinstance(setting, usertypes.Tuple):
-        return Candidates(*setting.options)
+        return Candidates(*setting.options, delimiter=',')
     elif isinstance(setting, usertypes.Bool) and focus_on_first_value:
         return Candidates(*(
             value

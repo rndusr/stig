@@ -207,6 +207,13 @@ class TestCompleter(unittest.TestCase):
             cands.commands = lambda: Candidates('foo', 'bar', 'baz')
             self.do(('foo', 3), ('foo ', 4))
 
+    def test_custom_delimiter(self):
+        with patch('stig.completion.completer.candidates') as cands:
+            cands.commands = lambda: Candidates('foo', 'bar', 'baz', delimiter='/')
+            self.do(('foo', 3), ('foo/', 4))
+            self.do(('foo/bar', 7), ('foo/bar/', 8))
+            self.do(('foo/bar/b', 7), ('foo/bar/ba', 10))
+
 
 # TODO:
 # class Test_complete_arguments(CompletionTestBase):

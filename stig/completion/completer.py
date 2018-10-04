@@ -52,11 +52,18 @@ class Completer():
         else:
             cands = candidates.Candidates()
 
+        delim = getattr(cands, 'delimiter', ' ')
+        if delim != ' ':
+            # Parameters for options may be separated by non-space characters, e.g. ','
+            log.debug('Splitting current argument at custom delimiter: %r', delim)
+            curarg = curarg.split(delim)[-1]
+            log.debug('New current argument: %r', curarg)
+
         self._candidates = _reduce_candidates(cands, curarg)
-        self._tail = cands.tail if hasattr(cands, 'tail') else ' '
         self._cmdline = cmdline
         self._curpos = curpos
         self._current_argument = curarg
+        self._delim = delim
         log.debug('Candidates for %r: %r', curarg, self._candidates)
 
     def complete(self):
@@ -73,7 +80,6 @@ class Completer():
             log.debug('Completing %r', cmdline[:curpos] + '|' + cmdline[curpos:])
             curarg = self._current_argument
             cands = self._candidates
-            tail = self._tail
 
             # Get the longest common string all candidates start with
             common_prefix = _find_common_prefix(cands, curarg)
@@ -97,7 +103,7 @@ class Completer():
             # If there's only one candidate, finalize the completion (usually by
             # adding a space after the completed string)
             if len(cands) <= 1:
-                cmdline, curpos = _finalize_completion(cmdline, curpos, tail)
+                cmdline, curpos = _finalize_completion(cmdline, curpos, tail=self._delim)
 
         return cmdline, curpos
 
