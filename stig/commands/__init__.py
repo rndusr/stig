@@ -163,6 +163,16 @@ def InitCommand(clsname, bases, attrs):
     attrs['names'] = list(attrs['aliases'])
     attrs['names'].insert(0, attrs['name'])
 
+    # Options are arguments that start with '-'
+    attrs['long_options'] = tuple(name
+                                  for argspec in attrs['argspecs']
+                                  for name in argspec['names']
+                                  if name.startswith('--'))
+    attrs['short_options'] = tuple(name
+                                   for argspec in attrs['argspecs']
+                                   for name in argspec['names']
+                                   if name.startswith('-') and not name[1:].startswith('-'))
+
     # Create argument parser
     argp = StayAliveArgParser(prog=attrs['name'], add_help=False)
     for argspec in attrs['argspecs']:
