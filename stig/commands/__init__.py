@@ -90,7 +90,7 @@ import shlex
 from inspect import getmembers
 from importlib import import_module
 from collections import abc
-from .utils import CallbackDict
+from .utils import (CallbackDict, AliasDict)
 import sys
 
 
@@ -173,6 +173,9 @@ def InitCommand(clsname, bases, attrs):
                                    for name in argspec['names']
                                    if name.startswith('-') and not name[1:].startswith('-'))
 
+    # Parameters are arguments to options, e.g. --sort -->name<--(A parameter)
+    attrs['parameters'] = AliasDict()
+
     # Create argument parser
     argp = StayAliveArgParser(prog=attrs['name'], add_help=False)
     for argspec in attrs['argspecs']:
@@ -196,6 +199,11 @@ def InitCommand(clsname, bases, attrs):
         argnames = argspec.pop('names', None)
         if not isinstance(argnames, abc.Sequence):
             argnames = (argnames,)
+
+        # Map allowed parameters to all argnames
+        if 'parameters' in argspec and argnames[0].startswith('-'):
+            attrs['parameters'][argnames] = argspec['parameters']
+            del argspec['parameters']
 
         # Translate string to argparse constant
         if 'nargs' in argspec and argspec['nargs'] == 'REMAINDER':
