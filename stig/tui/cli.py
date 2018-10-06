@@ -23,8 +23,8 @@ from .scroll import ScrollBar
 class CLIEditWidget(urwid.WidgetWrap):
     """Readline Edit widget with history and completion"""
 
-    def __init__(self, prompt='', on_change=None, on_move=None, on_accept=None,
-                 on_cancel=None, on_complete=None, completer_class=None,
+    def __init__(self, prompt='', on_change=None, on_move=None, on_accept=None, on_cancel=None,
+                 on_complete_next=None, on_complete_prev=None, completer_class=None,
                  history_file=None, history_size=1000, **kwargs):
         # Widgets
         self._editw = urwid.Edit(prompt, wrap='clip')
@@ -39,7 +39,8 @@ class CLIEditWidget(urwid.WidgetWrap):
         self._on_move = blinker.Signal()
         self._on_accept = blinker.Signal()
         self._on_cancel = blinker.Signal()
-        self._on_complete = blinker.Signal()
+        self._on_complete_next = blinker.Signal()
+        self._on_complete_prev = blinker.Signal()
 
         # Completion
         self.completer_class = completer_class
@@ -56,17 +57,14 @@ class CLIEditWidget(urwid.WidgetWrap):
 
         # Internal callbacks
         self.on_cancel(lambda _: self.reset(), autoremove=False)
-        if self._completer_class is not None:
-            self.on_complete(self._cb_complete)
-            self.on_change(self._cb_change)
-            self.on_move(self._cb_move)
 
         # User callbacks
         if on_change is not None: self.on_change(on_change, autoremove=False)
         if on_move is not None: self.on_move(on_move, autoremove=False)
         if on_accept is not None: self.on_accept(on_accept, autoremove=False)
         if on_cancel is not None: self.on_cancel(on_cancel, autoremove=False)
-        if on_complete is not None: self.on_complete(on_complete, autoremove=False)
+        if on_complete_next is not None: self.on_complete_next(on_complete_next, autoremove=False)
+        if on_complete_prev is not None: self.on_complete_prev(on_complete_prev, autoremove=False)
 
     def on_accept(self, callback, autoremove=True):
         self._on_accept.connect(callback, weak=autoremove)
@@ -74,8 +72,11 @@ class CLIEditWidget(urwid.WidgetWrap):
     def on_cancel(self, callback, autoremove=True):
         self._on_cancel.connect(callback, weak=autoremove)
 
-    def on_complete(self, callback, autoremove=True):
-        self._on_complete.connect(callback, weak=autoremove)
+    def on_complete_next(self, callback, autoremove=True):
+        self._on_complete_next.connect(callback, weak=autoremove)
+
+    def on_complete_prev(self, callback, autoremove=True):
+        self._on_complete_prev.connect(callback, weak=autoremove)
 
     def on_change(self, callback, autoremove=True):
         self._on_change.connect(callback, weak=autoremove)
@@ -104,8 +105,11 @@ class CLIEditWidget(urwid.WidgetWrap):
             callbacks.append(self._on_cancel)
             self._history_pos = -1
             key = None
-        elif cmd is urwid.COMPLETE and self._on_complete:
-            callbacks.append(self._on_complete)
+        elif cmd is urwid.COMPLETE_NEXT:
+            callbacks.append(self._on_complete_next)
+            key = None
+        elif cmd is urwid.COMPLETE_PREV:
+            callbacks.append(self._on_complete_prev)
             key = None
         elif key == 'space':
             key = super().keypress(size, ' ')
@@ -160,25 +164,33 @@ class CLIEditWidget(urwid.WidgetWrap):
         if cls is not None:
             # Make sure our internal callbacks are connected
             def ensure_cb(signal, cb):
-                if cb not in (ref() for ref in self._on_complete.receivers.values()):
+                if cb not in (ref() for ref in signal.receivers.values()):
                     signal.connect(cb)
-            ensure_cb(self._on_complete, self._cb_complete)
+            ensure_cb(self._on_complete_next, self._cb_complete_next)
+            ensure_cb(self._on_complete_prev, self._cb_complete_prev)
             ensure_cb(self._on_change, self._cb_change)
             ensure_cb(self._on_move, self._cb_move)
         else:
             # Make sure our internal callbacks are disconnected
-            self._on_complete.disconnect(self._cb_complete)
+            self._on_complete_next.disconnect(self._cb_complete_next)
+            self._on_complete_prev.disconnect(self._cb_complete_prev)
             self._on_change.disconnect(self._cb_change)
             self._on_move.disconnect(self._cb_move)
 
-    def _cb_complete(self, _):
+    def _cb_complete_next(self, _):
+        self._complete('next')
+
+    def _cb_complete_prev(self, _):
+        self._complete('prev')
+
+    def _complete(self, direction):
         self._restore_cmdline()
 
         if self._completer is None:
             self._update_completion_candidates()
 
         if self._prev_key_was_tab:
-            self._candsw.cycle('next')
+            self._candsw.cycle(direction)
             self._fill_in_focused_candidate()
         else:
             # Complete what the user typed
