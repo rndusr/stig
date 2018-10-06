@@ -22,7 +22,8 @@ urwid.DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
 urwid.DELETE_WORD_LEFT         = 'delete word left'
 urwid.DELETE_WORD_RIGHT        = 'delete word right'
 urwid.CANCEL                   = 'cancel'
-urwid.COMPLETE                 = 'complete'
+urwid.COMPLETE_NEXT            = 'complete next'
+urwid.COMPLETE_PREV            = 'complete previous'
 
 # Remove urwid's default keybindings and create our own built-in command_map
 for key in tuple(urwid.command_map._command):
@@ -60,7 +61,8 @@ urwid.command_map[Key('escape')]         = urwid.CANCEL
 urwid.command_map[Key('ctrl-g')]         = urwid.CANCEL
 urwid.command_map[Key('ctrl-c')]         = urwid.CANCEL
 urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
-urwid.command_map[Key('tab')]            = urwid.COMPLETE
+urwid.command_map[Key('tab')]            = urwid.COMPLETE_NEXT
+urwid.command_map[Key('shift-tab')]      = urwid.COMPLETE_PREV
 
 
 import re
