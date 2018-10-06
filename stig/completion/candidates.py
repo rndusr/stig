@@ -16,7 +16,7 @@ from ..singletons import (localcfg, remotecfg)
 from ..singletons import cmdmgr
 from ..utils import usertypes
 
-from itertools import chain
+import itertools
 
 
 class Candidates(tuple):
@@ -42,7 +42,7 @@ def commands():
 
 
 def settings():
-    return Candidates(*(chain(
+    return Candidates(*(itertools.chain(
         localcfg,
         ('srv.' + name for name in remotecfg)
     )))
