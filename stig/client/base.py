@@ -70,7 +70,7 @@ class TorrentAPIBase():
 
         uris = []
         for t in torrents:
-            parts = [f'xt=urn:btih:%s' % t['hash']]
+            parts = ['xt=urn:btih:%s' % t['hash']]
             if name and t['name'] != t['hash']:
                 parts.append(f'dn=%s' % urlquote(t['name']))
             if size and t['size-total'] > 0:
