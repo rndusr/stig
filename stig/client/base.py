@@ -72,17 +72,17 @@ class TorrentAPIBase():
         for t in torrents:
             parts = ['xt=urn:btih:%s' % t['hash']]
             if name and t['name'] != t['hash']:
-                parts.append(f'dn=%s' % urlquote(t['name']))
+                parts.append('dn=%s' % urlquote(t['name']))
             if size and t['size-total'] > 0:
-                parts.append(f'xl=%r' % t['size-total'])
+                parts.append('xl=%r' % t['size-total'])
             if t['trackers']:
                 if tracker:
                     # Including only one tracker
-                    parts.append(f'tr=%s' % urlquote(str(t['trackers'][0]['url-announce'])))
+                    parts.append('tr=%s' % urlquote(str(t['trackers'][0]['url-announce'])))
                 elif trackers:
                     # Including all trackers
                     for tracker in t['trackers']:
-                        parts.append(f'tr=%s' % urlquote(str(tracker['url-announce'])))
+                        parts.append('tr=%s' % urlquote(str(tracker['url-announce'])))
             uris.append('magnet:?' + '&'.join(parts))
         return uris
 
