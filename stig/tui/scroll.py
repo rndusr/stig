@@ -335,14 +335,14 @@ class ScrollBar(urwid.WidgetDecoration):
         assert thumb_height + top_height + bottom_height == maxrow
 
         # Create scrollbar canvas
-        top = urwid.SolidCanvas(self._trough_char, sb_width, top_height)
-        thumb = urwid.SolidCanvas(self._thumb_char, sb_width, thumb_height)
-        bottom = urwid.SolidCanvas(self._trough_char, sb_width, bottom_height)
-        sb_canv = urwid.CanvasCombine([
-            (top, None, False),
-            (thumb, None, False),
-            (bottom, None, False),
-        ])
+        top = urwid.SolidCanvas(self._trough_char, sb_width, 1)
+        thumb = urwid.SolidCanvas(self._thumb_char, sb_width, 1)
+        bottom = urwid.SolidCanvas(self._trough_char, sb_width, 1)
+        sb_canv = urwid.CanvasCombine(
+            [(top, None, False)] * top_height +
+            [(thumb, None, False)] * thumb_height +
+            [(bottom, None, False)] * bottom_height,
+        )
 
         combinelist = [(ow_canv, None, True, ow_size[0]),
                        (sb_canv, None, False, sb_width)]
