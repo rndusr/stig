@@ -304,6 +304,9 @@ class ScrollBar(urwid.WidgetDecoration):
     def render(self, size, focus=False):
         maxcol, maxrow = size
 
+        sb_width = self._scrollbar_width
+        ow_size = (maxcol-sb_width, maxrow)
+
         ow = self._original_widget
         ow_base = self.scrolling_base_widget
         ow_rows_max = ow_base.rows_max(size, focus)
@@ -311,10 +314,10 @@ class ScrollBar(urwid.WidgetDecoration):
             # Canvas fits without scrolling - no scrollbar needed
             self._original_widget_size = size
             return ow.render(size, focus)
+        ow_rows_max = ow_base.rows_max(ow_size, focus)
 
-        sb_width = self._scrollbar_width
-        self._original_widget_size = ow_size = (maxcol-sb_width, maxrow)
         ow_canv = ow.render(ow_size, focus)
+        self._original_widget_size = ow_size
 
         pos = ow_base.get_scrollpos(ow_size, focus)
         posmax = ow_rows_max - maxrow
