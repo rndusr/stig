@@ -305,7 +305,8 @@ class ScrollBar(urwid.WidgetDecoration):
         maxcol, maxrow = size
 
         sb_width = self._scrollbar_width
-        ow_size = (maxcol-sb_width, maxrow)
+        ow_size = (max(0, maxcol - sb_width), maxrow)
+        sb_width = maxcol - ow_size[0]
 
         ow = self._original_widget
         ow_base = self.scrolling_base_widget
