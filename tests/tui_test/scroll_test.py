@@ -428,6 +428,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                                                       't4'.ljust(size[0]-1)   + '#',
                                                       't5'.ljust(size[0]-1)   + '#'))
 
+    # https://github.com/urwid/urwid/issues/226#issuecomment-437176837
     def test_shards_bug(self):
         scrl = Scrollable(
             urwid.Pile([urwid.Columns([urwid.Text("text")] * 3)] * 3)
@@ -443,6 +444,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
             'tetOOOO|||',
         ))
 
+    # https://github.com/urwid/urwid/issues/226#issuecomment-437176837
     def test_wrapping_bug(self):
         scrl = Scrollable(
             urwid.Pile([urwid.Columns([urwid.Text("long text")] * 2)] * 2)

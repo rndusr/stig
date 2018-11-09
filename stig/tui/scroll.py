@@ -339,6 +339,10 @@ class ScrollBar(urwid.WidgetDecoration):
         assert thumb_height + top_height + bottom_height == maxrow
 
         # Create scrollbar canvas
+        # Creating SolidCanvases of correct height may result in "cviews do not
+        # fill gaps in shard_tail!" or "cviews overflow gaps in shard_tail!"
+        # exceptions. Stacking the same SolidCanvas is a workaround.
+        # https://github.com/urwid/urwid/issues/226#issuecomment-437176837
         top = urwid.SolidCanvas(self._trough_char, sb_width, 1)
         thumb = urwid.SolidCanvas(self._thumb_char, sb_width, 1)
         bottom = urwid.SolidCanvas(self._trough_char, sb_width, 1)
