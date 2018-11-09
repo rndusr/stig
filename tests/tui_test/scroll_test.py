@@ -442,3 +442,19 @@ class TestScrollBarWithScrollable(unittest.TestCase):
             'xttOOOO###',
             'tetOOOO|||',
         ))
+
+    def test_wrapping_bug(self):
+        scrl = Scrollable(
+            urwid.Pile([urwid.Columns([urwid.Text("long text")] * 2)] * 2)
+        )
+        sb = ScrollBar(scrl, thumb_char='#', trough_char='|', width=3)
+        widget = urwid.Columns([urwid.Pile([urwid.LineBox(sb)])] * 2)
+
+        self.check(widget, (9, 6), cursor_pos=(), text=(
+            '┌───┐┌──┐',
+            '│###││##│',
+            '│###││##│',
+            '│###││##│',
+            '│###││##│',
+            '└───┘└──┘',
+        ))
