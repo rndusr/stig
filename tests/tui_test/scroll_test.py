@@ -427,3 +427,18 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                                                       'eYYY'.ljust(size[0]-1) + '#',
                                                       't4'.ljust(size[0]-1)   + '#',
                                                       't5'.ljust(size[0]-1)   + '#'))
+
+    def test_shards_bug(self):
+        scrl = Scrollable(
+            urwid.Pile([urwid.Columns([urwid.Text("text")] * 3)] * 3)
+        )
+        sb = ScrollBar(scrl, thumb_char='#', trough_char='|', width=3)
+        area = urwid.Overlay(urwid.SolidFill("O"), sb, "center", 4, "middle", 5)
+
+        self.check(area, (10, 5), cursor_pos=(), text=(
+            'tetOOOO###',
+            'xttOOOO###',
+            'tetOOOO###',
+            'xttOOOO###',
+            'tetOOOO|||',
+        ))
