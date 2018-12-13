@@ -53,7 +53,7 @@ class AliasDict(abc.MutableMapping):
         raise KeyError(key)
 
     def __setitem__(self, key, value):
-        for keys,value in self._dct.items():
+        for keys in self._dct:
             if key in keys:
                 key = keys
         if not self._is_valid_key(key):
