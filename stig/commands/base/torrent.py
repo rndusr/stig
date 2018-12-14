@@ -283,7 +283,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
     usage = ('remove [<OPTIONS>]',
              'remove [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
     examples = ('remove',
-                'remove "stupid torrent" silly\ torrent and_this_torrent',
+                r'remove "stupid torrent" silly\ torrent and_this_torrent',
                 'remove -d "unwanted torrent"')
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
