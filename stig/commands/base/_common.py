@@ -35,14 +35,6 @@ def make_SCRIPTING_doc(cmdname):
              "\t$ \tCOLUMNS=80 LINES=24 {{__appname__}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
 
 
-def sort_orders(sortercls):
-    def generator():
-        for sname,s in sortercls.SORTSPECS.items():
-            yield sname
-            yield from s.aliases
-    return tuple(generator())
-
-
 def make_SORT_ORDERS_doc(sortercls, option, setting, append=()):
     doc = [('The following sort orders can be specified with the {option} option '
             'or the "{setting}" setting:').format(option=option, setting=setting),
