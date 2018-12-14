@@ -1,6 +1,7 @@
 from stig.tui.cli import CLIEditWidget
 
 import unittest
+from unittest.mock import MagicMock
 import tempfile
 import os
 
@@ -110,13 +111,21 @@ class TestCLIEditWidget(unittest.TestCase):
         self.assertEqual(self.w.edit_text, 'asdf')
 
     def test_completer(self):
+        class MockCandidates(tuple):
+            def __new__(cls, *args, current_index=None, **kwargs):
+                obj = super().__new__(cls, *args, **kwargs)
+                obj.current_index = None
+                return obj
+
         class MockCompleter():
-            def __init__(self, cmdline, curpos): pass
-            def complete(self): return ('foobar', 2)
-            candidates = ('foobar',)
-        self.w.completer_class = MockCompleter
+            update = MagicMock()
+            complete_next = MagicMock()
+            candidates = MockCandidates(current_index=0)
+        self.w._completer = MockCompleter()
 
         self.enter_line('foo', press_return=False)
         self.assertEqual(self.w.edit_text, 'foo')
+        self.w._completer.complete_next.return_value = ('foobar', 3)
         self.w.keypress((80,), 'tab')
         self.assertEqual(self.w.edit_text, 'foobar')
+        self.assertEqual(self.w.edit_pos, 3)
