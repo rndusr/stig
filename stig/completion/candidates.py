@@ -79,7 +79,7 @@ def fs_path(path, base, include_hidden=True, directories_only=False):
 
         try:
             itr = os.scandir(path)
-        except (FileNotFoundError, NotADirectoryError):
+        except (FileNotFoundError, NotADirectoryError, PermissionError):
             cands = ()
         else:
             cands = (entry.name for entry in itr
