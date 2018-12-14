@@ -131,6 +131,13 @@ def iscmdcls(obj):
         issubclass(obj, _CommandBase)
 
 
+class Parameters(tuple):
+    def __new__(cls, params, sep):
+        obj = super().__new__(cls, params)
+        obj.sep = sep
+        return obj
+
+
 _MANDATORY_CMD_ATTRS = ('name', 'category', 'provides', 'description', 'run')
 _OPTIONAL_CMD_ATTRS = {
     'aliases': (), 'usage': (), 'examples': (), 'argspecs': (), 'more_sections': {}
@@ -215,17 +222,19 @@ def InitCommand(clsname, bases, attrs):
 
 
     # Tab completion
-    # Commands can provide custom completion candidates by specifiying a
-    # _completion_candidates() class method
-    from ..completion.candidates import Candidates
+
+    # Each command provides its own tab completion candidates via the class
+    # method completion_candidates().  The parent class takes care of options
+    # (anything starting with a '-') and parameters for options.  Derived
+    # classes need to implement _completion_candidates() if they accept
+    # positional arguments.
+    def _is_option(cls, arg):
+        return arg in cls.long_options or arg in cls.short_options
 
     def _get_argspec(cls, name):
         for argspec in cls.argspecs:
-            if name in argspec['names']:
+            if any(name == n for n in argspec['names']):
                 return argspec
-
-    def _is_option(cls, arg):
-        return arg in cls.long_options or arg in cls.short_options
 
     def _option_wants_arg(cls, option, roffset):
         argspec = _get_argspec(cls, option)
@@ -239,24 +248,26 @@ def InitCommand(clsname, bases, attrs):
         return False
 
     # Provide candidates for tab completion
-    def completion_candidates(cls, args, focus):
-        # Check if we're completing an option or a parameter for an option
-        if '--' not in args[:focus]: # '--' turns all remaining arguments into positionals
-            if args[focus].startswith('-'):
-                return Candidates(*cls.long_options)
-            else:
-                # Check if any argument on the left is an option that wants another argument
-                for i,arg in enumerate(reversed(args[:focus])):
-                    if _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i):
-                        params = cls.parameters.get(arg)
-                        if params is not None:
-                            log.debug('Completing parameter for %r: %r', arg, cls.parameters[arg])
-                            return Candidates(*cls.parameters[arg], delimiter=',')
+    def completion_candidates(cls, args, curarg_index, curarg_curpos):
+        # '--' turns all arguments after it into non-options
+        if '--' not in args[:curarg_index]:
+            if args[curarg_index].startswith('-'):
+                log.debug('Completing long options: %r', cls.long_options)
+                return cls.long_options
+
+            # Check if any argument left of the current argument is an option that
+            # wants another parameter
+            for i,arg in enumerate(reversed(args[:curarg_index])):
+                log.debug('Checking if %r is option that wants more parameters', arg)
+                if _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i):
+                    params = cls.parameters.get(arg)
+                    if params is not None:
+                        log.debug('Completing parameter for %r: %r', arg, params)
+                        args[curarg_index].sep = params.sep
+                        return params
 
         if hasattr(cls, '_completion_candidates'):
-            return cls._completion_candidates(args, focus)
-        else:
-            return Candidates()
+            return cls._completion_candidates(args, curarg_index, curarg_curpos)
     attrs['completion_candidates'] = classmethod(completion_candidates)
 
 

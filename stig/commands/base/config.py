@@ -12,16 +12,18 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource, utils)
+from .. import (InitCommand, Parameters, CmdError, ExpectedResource, utils)
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
-                      make_SORT_ORDERS_doc, make_SCRIPTING_doc,
-                      sort_orders)
+                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
+from ...singletons import localcfg
+from ...completion import candidates
+from ...settings import defaults
 from ...utils.usertypes import Float
 from . import _mixin as mixin
-from ...completion import candidates
 
 import subprocess
 import operator
+import os
 
 
 class RcCmdbase(metaclass=InitCommand):
@@ -42,15 +44,13 @@ class RcCmdbase(metaclass=InitCommand):
 
     async def run(self, FILE):
         from ...settings import rcfile
-        from ...settings.defaults import DEFAULT_RCFILE
-        import os
 
         filepath = os.path.expanduser(FILE)
         if not os.path.exists(filepath) and \
            not os.path.isabs(filepath) and \
            not filepath.startswith('./') and \
            not filepath.startswith('~'):
-            default_dir = os.path.dirname(DEFAULT_RCFILE)
+            default_dir = os.path.dirname(defaults.DEFAULT_RCFILE)
             filepath = os.path.join(default_dir, filepath)
 
         try:
@@ -65,6 +65,13 @@ class RcCmdbase(metaclass=InitCommand):
                 # the active interface doesn't support it
                 if success is False:
                     raise CmdError()
+
+    @classmethod
+    def _completion_candidates(cls, args, curarg_index, curarg_curpos):
+        # Command only takes one argument
+        if curarg_index == 1:
+            return candidates.fs_path(args[curarg_index],
+                                      base=os.path.dirname(defaults.DEFAULT_RCFILE))
 
 
 class ResetCmdbase(metaclass=InitCommand):
@@ -103,8 +110,9 @@ class ResetCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def _completion_candidates(cls, args, focus):
+    def _completion_candidates(cls, args, curarg_index, curarg_curpos):
         return candidates.settings()
+
 
 
 from ...client import ClientError
@@ -129,10 +137,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
          'description': ('New value or shell command that prints the new value to stdout; '
                          "numerical values can be adjusted by prepending '+=' or '-='")},
 
-        { 'names': ('--sort', '-s'), 'parameters': sort_orders(SettingSorter),
+        { 'names': ('--sort', '-s'),
+          'parameters': Parameters(localcfg['sort.settings'].options,
+                                   sep=localcfg['sort.settings'].sep.strip()),
           'description': 'Comma-separated list of sort orders (see SORT ORDERS section)' },
 
-        { 'names': ('--columns', '-c'), 'parameters': tuple(COLUMNS),
+        { 'names': ('--columns', '-c'),
+          'parameters': Parameters(localcfg['columns.settings'].options,
+                                   sep=localcfg['columns.settings'].sep.strip()),
           'default_description': "current value of 'columns.settings' setting",
           'description': 'Comma-separated list of column names (see COLUMNS section)' },
     )
@@ -293,22 +305,22 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return str(value)
 
     @classmethod
-    def _completion_candidates(cls, args, focus):
-        settings = candidates.settings()
-
-        # Find the setting we're completing values for
-        setting = None
-        for arg in args[:focus]:
-            if arg in settings:
-                setting = arg
+    def _completion_candidates(cls, args, curarg_index, curarg_curpos):
+        setting = cls._get_setting(args, curarg_index)
         if setting is None:
-            # Complete setting names
             log.debug('Completing settings')
-            return settings
+            return candidates.settings()
         else:
-            # Complete setting values
             log.debug('Completing values for %r', setting)
-            return candidates.values(setting, args, focus)
+            return candidates.values(setting, args, curarg_index)
+
+    @classmethod
+    def _get_setting(cls, args, curarg_index):
+        settings = candidates.settings()
+        for arg in args[:curarg_index]:
+            if arg in settings:
+                return arg
+        log.debug('No setting name found in %r', args[:curarg_index])
 
 
 class RateLimitCmdbase(metaclass=InitCommand):

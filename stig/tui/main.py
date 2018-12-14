@@ -101,13 +101,27 @@ def _create_cli_widget():
         cmdmgr.run_task(cli.edit_text, on_error=log.error)
         reset_cli(cli)
 
-    from ..completion import Completer
+    from .completion import Completer
+    from ..completion import candidates
+    class MyCompleter(Completer):
+        def get_candidates(self, args, curarg_index, curarg_curpos):
+            log.debug('Getting candidates for %r, %r, %r', args, curarg_index, curarg_curpos)
+            if curarg_index == 0:
+                log.debug('Completing command: %r', args[0])
+                return (cmdcls.name for cmdcls in cmdmgr.active_commands)
+            else:
+                cmdcls = cmdmgr.get_cmdcls(args[0])
+                if cmdcls is not None:
+                    log.debug('  Completing argument for %r', cmdcls.__name__)
+                    return cmdcls.completion_candidates(args, curarg_index, curarg_curpos)
+
     history_file = os.path.join(localcfg['tui.cli.history-dir'], 'commands')
+    from ..commands import OPS
     return CLIEditWidget(prompt=':',
                          history_file=history_file,
                          on_cancel=reset_cli,
                          on_accept=run_cmd,
-                         completer_class=Completer)
+                         completer=MyCompleter(operators=OPS))
 
 
 

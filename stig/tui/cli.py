@@ -24,7 +24,7 @@ class CLIEditWidget(urwid.WidgetWrap):
     """Readline Edit widget with history and completion"""
 
     def __init__(self, prompt='', on_change=None, on_move=None, on_accept=None, on_cancel=None,
-                 on_complete_next=None, on_complete_prev=None, completer_class=None,
+                 on_complete_next=None, on_complete_prev=None, completer=None,
                  history_file=None, history_size=1000, **kwargs):
         # Widgets
         self._editw = urwid.Edit(prompt, wrap='clip')
@@ -43,8 +43,11 @@ class CLIEditWidget(urwid.WidgetWrap):
         self._on_complete_prev = blinker.Signal()
 
         # Completion
-        self.completer_class = completer_class
-        self._completer = None
+        self._completer = completer
+        self._on_complete_next.connect(self._cb_complete_next)
+        self._on_complete_prev.connect(self._cb_complete_prev)
+        self._on_change.connect(self._cb_change)
+        self._on_move.connect(self._cb_move)
         self._user_input = None
         self._prev_key_was_tab = False
 
@@ -72,17 +75,17 @@ class CLIEditWidget(urwid.WidgetWrap):
     def on_cancel(self, callback, autoremove=True):
         self._on_cancel.connect(callback, weak=autoremove)
 
-    def on_complete_next(self, callback, autoremove=True):
-        self._on_complete_next.connect(callback, weak=autoremove)
-
-    def on_complete_prev(self, callback, autoremove=True):
-        self._on_complete_prev.connect(callback, weak=autoremove)
-
     def on_change(self, callback, autoremove=True):
         self._on_change.connect(callback, weak=autoremove)
 
     def on_move(self, callback, autoremove=True):
         self._on_move.connect(callback, weak=autoremove)
+
+    def on_complete_next(self, callback, autoremove=True):
+        self._on_complete_next.connect(callback, weak=autoremove)
+
+    def on_complete_prev(self, callback, autoremove=True):
+        self._on_complete_prev.connect(callback, weak=autoremove)
 
     def keypress(self, size, key):
         text_before = self._editw.edit_text
@@ -116,11 +119,9 @@ class CLIEditWidget(urwid.WidgetWrap):
         else:
             key = super().keypress(size, key)
 
-        text_after = self._editw.edit_text
-        curpos_after = self._editw.edit_pos
-        if text_before != text_after:
+        if text_before != self._editw.edit_text:
             callbacks.append(self._on_change)
-        elif curpos_before != curpos_after:
+        elif curpos_before != self._editw.edit_pos:
             callbacks.append(self._on_move)
 
         for cb in callbacks:
@@ -133,7 +134,9 @@ class CLIEditWidget(urwid.WidgetWrap):
         """Clear the command line and reset internal states"""
         self._editw.edit_text = ''
         self._groupw.hide('candidates')
-        self._candsw.reset()
+        if self._completer is not None:
+            self._completer.reset()
+            self._candsw.reset()
 
     @property
     def edit_text(self):
@@ -147,35 +150,12 @@ class CLIEditWidget(urwid.WidgetWrap):
     def edit_pos(self):
         """Current cursor position in the editable text"""
         return self._editw.edit_pos
-    @edit_text.setter
+    @edit_pos.setter
     def edit_pos(self, pos):
         self._editw.edit_pos = int(pos)
 
 
     # Completion
-
-    @property
-    def completer_class(self):
-        return self._completer_class
-    @completer_class.setter
-    def completer_class(self, cls):
-        self._completer_class = cls
-
-        if cls is not None:
-            # Make sure our internal callbacks are connected
-            def ensure_cb(signal, cb):
-                if cb not in (ref() for ref in signal.receivers.values()):
-                    signal.connect(cb)
-            ensure_cb(self._on_complete_next, self._cb_complete_next)
-            ensure_cb(self._on_complete_prev, self._cb_complete_prev)
-            ensure_cb(self._on_change, self._cb_change)
-            ensure_cb(self._on_move, self._cb_move)
-        else:
-            # Make sure our internal callbacks are disconnected
-            self._on_complete_next.disconnect(self._cb_complete_next)
-            self._on_complete_prev.disconnect(self._cb_complete_prev)
-            self._on_change.disconnect(self._cb_change)
-            self._on_move.disconnect(self._cb_move)
 
     def _cb_complete_next(self, _):
         self._complete('next')
@@ -184,101 +164,47 @@ class CLIEditWidget(urwid.WidgetWrap):
         self._complete('prev')
 
     def _complete(self, direction):
-        self._restore_cmdline()
-
-        if self._completer is None:
-            self._update_completion_candidates()
-
-        if self._prev_key_was_tab:
-            self._candsw.cycle(direction)
-            self._fill_in_focused_candidate()
-        else:
-            # Complete what the user typed
-            self._complete_edit_text()
-            completion_was_finalized = len(self._completer.candidates) == 1
-
-            # Display what is left after (partial) completion
-            self._update_completion_candidates()
-
-            if completion_was_finalized:
-                self._save_cmdline()
-                self._prev_key_was_tab = False
+        if self._completer is not None:
+            if direction == 'next':
+                self._editw.edit_text, self._editw.edit_pos = self._completer.complete_next()
+            elif direction == 'prev':
+                self._editw.edit_text, self._editw.edit_pos = self._completer.complete_prev()
             else:
-                # Insert first candidate in command line
-                self._fill_in_focused_candidate()
-                self._prev_key_was_tab = True
+                raise ValueError('direction must be "next" or "prev"')
 
-            # Display candidates if there are any or hide the menu
-            self._maybe_hide_or_show_menu()
+            log.debug('Completed: %r, %r', self._editw.edit_text, self._editw.edit_pos)
+            if self._completer.candidates.current_index is not None:
+                log.debug('Setting candidates focus: %r', self._completer.candidates.current_index)
+                self._candsw.focus_position = self._completer.candidates.current_index
 
     def _cb_change(self, _):
         # Update candidate list whenever edit text is changed
-        self._update_completion_candidates()
         self._prev_key_was_tab = False
-        self._save_cmdline()
-        self._maybe_hide_or_show_menu()
+        self._update_completion_candidates()
 
     def _cb_move(self, _):
         # Candidates are based on where the cursor is in the command line
-        self._update_completion_candidates()
         self._prev_key_was_tab = False
-        self._save_cmdline()
-        self._maybe_hide_or_show_menu()
+        self._update_completion_candidates()
 
     def _update_completion_candidates(self):
-        # Parse the current command line to get a list of candidates we can display
-        self._completer = self._completer_class(self._editw.edit_text, self._editw.edit_pos)
-        self._candsw.update(self._completer.candidates)
-
-
-
-    def _fill_in_focused_candidate(self):
-        # TODO: There must be a more efficient way to do this.
-        candidate = self._candsw.focused_candidate
-        if candidate is not None:
-            log.debug('Selecting focused candidate: %r', candidate)
-            cmdline = self._editw.edit_text
-            curpos = self._editw.edit_pos
-            before_cursor = cmdline[:curpos]
-            for i in reversed(range(len(candidate)+1)):
-                if before_cursor.endswith(candidate[:i]):
-                    self._editw.edit_text = ''.join((
-                        self._editw.edit_text[:self._editw.edit_pos],
-                        candidate[i:],
-                        self._editw.edit_text[self._editw.edit_pos:]
-                    ))
-                    self._editw.edit_pos += len(candidate[i:])
-                    break
-
-
-
-
-
+        if self._completer is not None:
+            log.debug('Updating completer: %r, %r', self._editw.edit_text, self._editw.edit_pos)
+            self._completer.update(self._editw.edit_text, self._editw.edit_pos)
+            # log.debug('New candidates: %r', self._completer.candidates)
+            self._candsw.update(self._completer.candidates)
+            self._maybe_hide_or_show_menu()
 
     def _maybe_hide_or_show_menu(self):
-        log.debug('%d candidates: %r', len(self._completer.candidates), self._completer.candidates)
-        candsw_visible = self._groupw.visible('candidates')
-        if len(self._completer.candidates) > 0:
-            self._candsw.update(self._completer.candidates)
-            if not candsw_visible:
+        if self._completer is not None:
+            # log.debug('%d candidates: %r', len(self._completer.candidates), self._completer.candidates)
+            candsw_visible = self._groupw.visible('candidates')
+            if self._completer.candidates and not candsw_visible:
                 log.debug('Showing completion menu')
                 self._groupw.show('candidates')
-        elif candsw_visible:
-            log.debug('Hiding completion menu')
-            self._groupw.hide('candidates')
-
-    def _complete_edit_text(self):
-        self._editw.edit_text, self._editw.edit_pos = self._completer.complete()
-        log.debug('Completed edit text: %r, %r', self._editw.edit_text, self._editw.edit_pos)
-
-    def _save_cmdline(self):
-        self._user_input = (self._editw.edit_text, self._editw.edit_pos)
-        log.debug('Saved command line: %r', self._user_input)
-
-    def _restore_cmdline(self):
-        if self._user_input is not None:
-            self._editw.edit_text, self._editw.edit_pos = self._user_input
-            log.debug('Restored command line: %r', (self._editw.edit_text, self._editw.edit_pos))
+            elif not self._completer.candidates and candsw_visible:
+                log.debug('Hiding completion menu')
+                self._groupw.hide('candidates')
 
 
     # History
@@ -361,8 +287,7 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         return False
 
     def __init__(self):
-        self._walker = urwid.SimpleFocusListWalker([])
-        self._listbox = urwid.ListBox(self._walker)
+        self._listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         super().__init__(
             urwid.AttrMap(ScrollBar(
                 urwid.AttrMap(self._listbox, 'completion')
@@ -373,51 +298,26 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         self.update(())
 
     def update(self, cands):
-        old_cands = tuple(widget.base_widget.text
-                          for widget in self._walker)
-        if old_cands != cands:
-            self._walker[:] = ()
-            for pos,cand in enumerate(sorted(cands, key=str.lower)):
-                self._walker.append(
-                    self._mk_widget(cand, selected=pos==0)
-                )
+        # log.debug('CompletionCandidatesWidget: Updating displayed candidates: %r', cands)
+        self._listbox.body[:] = tuple(self._mk_widget(cand) for cand in cands)
+        if self._listbox.body:
+            self._listbox.focus_position = cands.current_index
+            log.debug('CompletionCandidatesWidget: Focusing %r: %r', cands.current_index, cands.current)
 
-    def _mk_widget(self, cand, selected=False):
+    @staticmethod
+    def _mk_widget(cand):
         return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
                              'completion.item', 'completion.item.focused')
-
-    def cycle(self, direction):
-        if not self._walker:
-            pass  # Empty list
-        else:
-            lb = self._listbox
-            maxpos =  len(self._walker) - 1
-            if direction == 'next':
-                if lb.focus_position < maxpos:
-                    lb.focus_position += 1
-                else:
-                    lb.focus_position = 0
-                self._invalidate()
-            elif direction == 'prev':
-                if lb.focus_position > 0:
-                    lb.focus_position -= 1
-                else:
-                    lb.focus_position = maxpos
-                self._invalidate()
-            else:
-                raise RuntimeError('Invalid direction: %r', direction)
-
     @property
-    def focused_candidate(self):
-        if self._walker:
-            return self._listbox.focus.base_widget.text
-        else:
-            return None
+    def focus_position(self):
+        return self._listbox.focus_position
+    @focus_position.setter
+    def focus_position(self, pos):
+        self._listbox.focus_position = pos
 
     def render(self, size, focus=False):
         # Always render as focused to highlight the focused candidate
         return super().render(size, focus=True)
-
 
 
 def _mkdir(path):
