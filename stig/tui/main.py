@@ -104,8 +104,8 @@ def _create_cli_widget():
     from .completion import Completer
     from ..completion import candidates
     class MyCompleter(Completer):
-        def get_candidates(self, args, curarg_index, curarg_curpos):
-            log.debug('Getting candidates for %r, %r, %r', args, curarg_index, curarg_curpos)
+        def get_candidates(self, args, curarg_index):
+            log.debug('Getting candidates for %r, %r, %r', args, curarg_index)
             if curarg_index == 0:
                 log.debug('Completing command: %r', args[0])
                 return (cmdcls.name for cmdcls in cmdmgr.active_commands)
@@ -113,7 +113,7 @@ def _create_cli_widget():
                 cmdcls = cmdmgr.get_cmdcls(args[0])
                 if cmdcls is not None:
                     log.debug('  Completing argument for %r', cmdcls.__name__)
-                    return cmdcls.completion_candidates(args, curarg_index, curarg_curpos)
+                    return cmdcls.completion_candidates(args, curarg_index)
 
     history_file = os.path.join(localcfg['tui.cli.history-dir'], 'commands')
     from ..commands import OPS

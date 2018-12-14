@@ -67,7 +67,7 @@ class RcCmdbase(metaclass=InitCommand):
                     raise CmdError()
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index, curarg_curpos):
+    def _completion_candidates(cls, args, curarg_index):
         # Command only takes one argument
         if curarg_index == 1:
             return candidates.fs_path(args[curarg_index],
@@ -110,7 +110,7 @@ class ResetCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index, curarg_curpos):
+    def _completion_candidates(cls, args, curarg_index):
         return candidates.settings()
 
 
@@ -305,7 +305,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return str(value)
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index, curarg_curpos):
+    def _completion_candidates(cls, args, curarg_index):
         setting = cls._get_setting(args, curarg_index)
         if setting is None:
             log.debug('Completing settings')

@@ -23,7 +23,7 @@ class Completer():
     """
     Parse command line and provide completion candidates and methods
     """
-    def get_candidates(self, args, curarg_index, curarg_curpos):
+    def get_candidates(self, args, curarg_index):
         """
         Return completion candidates for given arguments and optionally a separator
         for the currently focused argument (e.g. "/" to split paths).
@@ -90,8 +90,7 @@ class Completer():
         curarg = curcmd_args[curcmd_curarg_index]
 
         # Get all possible completion candidates
-        # all_cands = self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index, curarg_curpos)
-        all_cands, arg_sep = self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index, curarg_curpos)
+        all_cands, arg_sep = self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
         if arg_sep is not None:
             curarg.sep = arg_sep
         log.debug('All Candidates: %r', all_cands)

@@ -248,7 +248,7 @@ def InitCommand(clsname, bases, attrs):
         return False
 
     # Provide candidates for tab completion
-    def completion_candidates(cls, args, curarg_index, curarg_curpos):
+    def completion_candidates(cls, args, curarg_index):
         # '--' turns all arguments after it into non-options
         if '--' not in args[:curarg_index]:
             if args[curarg_index].startswith('-'):
@@ -267,7 +267,7 @@ def InitCommand(clsname, bases, attrs):
                         return params
 
         if hasattr(cls, '_completion_candidates'):
-            return cls._completion_candidates(args, curarg_index, curarg_curpos)
+            return cls._completion_candidates(args, curarg_index)
     attrs['completion_candidates'] = classmethod(completion_candidates)
 
 
