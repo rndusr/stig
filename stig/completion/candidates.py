@@ -85,5 +85,4 @@ def fs_path(path, base, include_hidden=True, directories_only=False):
             cands = (entry.name for entry in itr
                      if ((include_hidden or not entry.name.startswith('.')) and
                          (not directories_only or entry.is_dir())))
-
-    return cands
+    return cands, '/'
