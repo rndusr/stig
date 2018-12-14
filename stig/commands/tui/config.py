@@ -16,6 +16,7 @@ from . import _mixin as mixin
 class RcCmd(base.RcCmdbase):
     provides = {'tui'}
 
+
 class ResetCmd(base.ResetCmdbase):
     provides = {'tui'}
 
