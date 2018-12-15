@@ -71,13 +71,13 @@ def _unquote(string):
 class Filter():
     """Match sequences of objects against a single filter"""
 
-    _OPERATORS = {
+    OPERATORS = {
         '=': operator.__eq__, '~': operator.__contains__,
         '>': operator.__gt__, '<': operator.__lt__,
         '>=': operator.__ge__, '<=': operator.__le__,
     }
-    _OP_CHARS = ''.join(_OPERATORS)
-    _OP_LIST = '(?:' + '|'.join(sorted(_OPERATORS, key=lambda op: len(op), reverse=True)) + ')'
+    _OP_CHARS = ''.join(OPERATORS)
+    _OP_LIST = '(?:' + '|'.join(sorted(OPERATORS, key=lambda op: len(op), reverse=True)) + ')'
     _INVERT_CHAR = '!'
     _FILTER_REGEX = re.compile(r'^'
                                r'(?P<invert1>' + _INVERT_CHAR + '?)'
@@ -114,7 +114,7 @@ class Filter():
 
         # Test if target_type supports operator
         try:
-            cls._OPERATORS[op](value, value)
+            cls.OPERATORS[op](value, value)
         except TypeError as e:
             raise ValueError('Invalid operator for filter {!r}: {}'.format(name, op))
 
@@ -134,7 +134,7 @@ class Filter():
     def __init__(self, filter_str=''):
         # name: Name of filter (user-readable string)
         # invert: Whether to invert filter (bool)
-        # op: Comparison operator as string (see _OPERATORS)
+        # op: Comparison operator as string (see OPERATORS)
         # value: User-given value as string (will be converted to proper type)
         name, invert, op, value = (None, False, None, None)
         filter_str = filter_str.strip()
@@ -189,12 +189,12 @@ class Filter():
                 # (e.g. 'peers-connected' matches torrents with peers-connected!=0)
                 self._filter_func = lambda obj, keys=f.needed_keys: all(bool(obj[key]) for key in keys)
             elif op is None:
-                ops = '[' + '|'.join(sorted(self._OPERATORS)) + ']'
+                ops = '[' + '|'.join(sorted(self.OPERATORS)) + ']'
                 raise ValueError('Missing operator and value: {} {} ...'.format(name, ops))
             elif value is None:
                 raise ValueError('Missing value: {} ...'.format(filter_str))
             else:
-                self._filter_func = f.make_filter_func(self._OPERATORS[op], value)
+                self._filter_func = f.make_filter_func(self.OPERATORS[op], value)
 
         elif value is op is None and self.DEFAULT_FILTER is not None:
             # `name` is no known filter - default to DEFAULT_FILTER with operator '~'.
@@ -206,7 +206,7 @@ class Filter():
                 self._filter_func = f.filter_function
             elif name in self.COMPARATIVE_FILTERS:
                 f = self.COMPARATIVE_FILTERS[name]
-                self._filter_func = f.make_filter_func(self._OPERATORS[op], value)
+                self._filter_func = f.make_filter_func(self.OPERATORS[op], value)
             else:
                 raise RuntimeError('Default filter {!r} does not exist: {!r}'
                                    .format(name, ', '.join(tuple(self.BOOLEAN_FILTERS) +
@@ -306,8 +306,8 @@ class FilterChain(metaclass=_copy_filter_spec):
                 # Comparison operators (=, ~, <, >, etc) automatically escape
                 # boolean operators (& and |)
                 if (parts[-2] == '\\' or
-                    parts[-2] in Filter._OPERATORS.keys() or
-                    parts[-2] in ('!'+op for op in Filter._OPERATORS.keys())):
+                    parts[-2] in Filter.OPERATORS.keys() or
+                    parts[-2] in ('!'+op for op in Filter.OPERATORS.keys())):
                     log.debug('joining %r and %r', parts[:-2], ''.join(parts[-2:]))
                     parts = parts[:-2] + (''.join(parts[-2:]),)
                 else:

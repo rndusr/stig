@@ -548,7 +548,7 @@ class TestTorrentFilter(unittest.TestCase):
                 TorrentFilter(s)
 
         # Prepending ~, =, !=, <, >, etc to & or | automatically escapes it
-        for escaper in SingleTorrentFilter._OPERATORS:
+        for escaper in SingleTorrentFilter.OPERATORS:
             TorrentFilter('idle|%s&' % escaper)
             TorrentFilter('idle|!%s&' % escaper)
             TorrentFilter('idle&%s&' % escaper)
