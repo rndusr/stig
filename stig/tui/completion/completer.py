@@ -34,29 +34,39 @@ class Completer():
     def _get_candidates_wrapper(self, *args, **kwargs):
         result = self.get_candidates(*args, **kwargs)
         if result is None:
-            return Candidates(), None
+            result = ()
+
+        # In case get_candidates() returns an iterator
         elif not isinstance(result, abc.Sequence):
             try:
                 result = tuple(result)
             except Exception:
-                raise RuntimeError('Not an iterable: %r', result)
+                raise RuntimeError('Not an iterable: %r' % (result,))
 
+        # Untangle return values
         if len(result) == 2:
             if isinstance(result[0], str):
-                # result is the candidates
-                cands = result
-                arg_sep = None
+                cands, arg_seps = result,  ()
             else:
-                # result[0] is the candidates, result[1] is the argument separator
-                cands, arg_sep = result
+                cands, arg_seps = result
         else:
-            cands, arg_sep = result, None
+            cands, arg_seps = result, ()
 
+        # Ensure proper type for candidates
         if cands is None:
             cands = Candidates()
         elif not isinstance(cands, Candidates):
             cands = Candidates(*cands)
-        return cands, arg_sep
+
+        # Ensure proper type for argument separators
+        if arg_seps is None:
+            arg_seps = ()
+        elif not isinstance(arg_seps, abc.Sequence):
+            raise RuntimeError('Not a sequence: %r' % (arg_seps,))
+        else:
+            arg_seps = tuple(arg_seps)
+
+        return cands, arg_seps
 
     def __init__(self, operators=()):
         self.operators = operators
@@ -90,9 +100,7 @@ class Completer():
         curarg = curcmd_args[curcmd_curarg_index]
 
         # Get all possible completion candidates
-        all_cands, arg_sep = self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
-        if arg_sep is not None:
-            curarg.sep = arg_sep
+        all_cands, curarg.separators = self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
         log.debug('All Candidates: %r', all_cands)
 
         # The candidate getter may have split the current argument, e.g. at each
@@ -123,10 +131,10 @@ class Completer():
         # Finally, we also split the current token like the candidate getter
         # previously told us to so we can insert candidates in
         # complete_next/prev() without replacing the whole argument.
-        curtok_delims = (curarg.sep,)
+        log.debug('Separator for current argument: %r', curarg.separators)
         curtok_parts, curpart_index, curpart_curpos = \
-            _utils.get_position(_utils.tokenize(tokens[curtok_index], curtok_delims),
-                                curtok_curpos, curtok_delims)
+            _utils.get_position(_utils.tokenize(tokens[curtok_index], curarg.separators),
+                                curtok_curpos, curarg.separators)
         log.debug('Separated current token: %r', curtok_parts)
         tokens[curtok_index:curtok_index+1] = curtok_parts
         curtok_index += curpart_index
@@ -140,7 +148,7 @@ class Completer():
         self._tokens = tokens
         self._curtok_index = curtok_index
         self._curtok_curpos = curtok_curpos
-        self._arg_sep = curarg.sep
+        self._arg_sep = curarg.separators
 
     def complete_next(self):
         """

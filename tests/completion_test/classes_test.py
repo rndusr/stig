@@ -56,13 +56,13 @@ class TestCandidates(unittest.TestCase):
         self.assertEqual(cands.reduce('b'), Candidates('bar', 'baz'))
 
     def test_reduce_preserves_separator(self):
-        cands = Candidates('foo', 'bar', 'baz', sep=':')
-        self.assertEqual(cands.reduce('f').sep, ':')
-        cands.sep = '/'
-        self.assertEqual(cands.reduce('f').sep, '/')
+        cands = Candidates('foo', 'bar', 'baz', separators=(':',))
+        self.assertEqual(cands.reduce('f').separators, (':',))
+        cands.separators = ('/',)
+        self.assertEqual(cands.reduce('f').separators, ('/',))
 
     def test_reduce_preserves_current_index_if_possible(self):
-        cands = Candidates('foo', 'bar', 'baz', 'far', sep=':')
+        cands = Candidates('foo', 'bar', 'baz', 'far', separators=(':',))
         def do(prefix, old_index, old_current, exp_index, exp_current):
             cands.current_index = old_index
             self.assertEqual((cands.current_index, cands.current), (old_index, Candidate(old_current)))
@@ -85,45 +85,45 @@ class TestCandidates(unittest.TestCase):
         self.assertEqual(cands.reduce('B', case_sensitive=False), Candidates('bar', 'Baz'))
 
     def test_copy_everything(self):
-        cands = Candidates('foo', 'bar', 'baz', sep='.', current_index=1)
+        cands = Candidates('foo', 'bar', 'baz', separators=('.',), current_index=1)
         cp = cands.copy()
         self.assertEqual(cp, ('foo', 'bar', 'baz'))
-        self.assertEqual(cp.sep, '.')
+        self.assertEqual(cp.separators, ('.',))
         self.assertEqual(cp.current_index, 1)
 
     def test_copy_with_updated_items_set_to_empty_sequence(self):
-        cands = Candidates('foo', 'bar', 'baz', sep='.', current_index=1)
+        cands = Candidates('foo', 'bar', 'baz', separators=('.',), current_index=1)
         cp = cands.copy(())
         self.assertEqual(cp, ())
-        self.assertEqual(cp.sep, '.')
+        self.assertEqual(cp.separators, ('.',))
         self.assertEqual(cp.current_index, None)
 
     def test_copy_with_updated_items_set_to_sequence_without_current_item(self):
-        cands = Candidates('foo', 'bar', 'baz', sep='.', current_index=1)
+        cands = Candidates('foo', 'bar', 'baz', separators=('.',), current_index=1)
         cp = cands.copy('boo', 'far', 'faz')
         self.assertEqual(cp, ('boo', 'far', 'faz'))
-        self.assertEqual(cp.sep, '.')
+        self.assertEqual(cp.separators, ('.',))
         self.assertEqual(cp.current_index, 0)
 
     def test_copy_with_updated_items_set_to_sequence_with_current_item(self):
-        cands = Candidates('foo', 'bar', 'baz', sep='.', current_index=1)
+        cands = Candidates('foo', 'bar', 'baz', separators=('.',), current_index=1)
         cp = cands.copy('baz', 'foo', 'bar')
         self.assertEqual(cp, ('baz', 'foo', 'bar'))
-        self.assertEqual(cp.sep, '.')
+        self.assertEqual(cp.separators, ('.',))
         self.assertEqual(cp.current_index, 2)
 
     def test_copy_with_updated_separator(self):
-        cands = Candidates('foo', 'bar', 'baz', sep='.', current_index=1)
-        cp = cands.copy(sep=':')
+        cands = Candidates('foo', 'bar', 'baz', separators=('.',), current_index=1)
+        cp = cands.copy(separators=(':',))
         self.assertEqual(cp, ('foo', 'bar', 'baz'))
-        self.assertEqual(cp.sep, ':')
+        self.assertEqual(cp.separators, (':',))
         self.assertEqual(cp.current_index, 1)
 
     def test_copy_with_updated_current_index(self):
-        cands = Candidates('foo', 'bar', 'baz', sep='.', current_index=1)
+        cands = Candidates('foo', 'bar', 'baz', separators=('.',), current_index=1)
         cp = cands.copy(current_index=2)
         self.assertEqual(cp, ('foo', 'bar', 'baz'))
-        self.assertEqual(cp.sep, '.')
+        self.assertEqual(cp.separators, ('.',))
         self.assertEqual(cp.current_index, 2)
 
     def test_sorted(self):

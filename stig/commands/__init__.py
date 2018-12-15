@@ -263,8 +263,7 @@ def InitCommand(clsname, bases, attrs):
                     params = cls.parameters.get(arg)
                     if params is not None:
                         log.debug('Completing parameter for %r: %r', arg, params)
-                        args[curarg_index].sep = params.sep
-                        return params
+                        return params, (params.sep,)
 
         if hasattr(cls, '_completion_candidates'):
             return cls._completion_candidates(args, curarg_index)

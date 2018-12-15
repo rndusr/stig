@@ -22,11 +22,11 @@ class Candidate(str):
 class Candidates(tuple):
     """Iterable of candidates"""
 
-    def __new__(cls, *candidates, sep=None, current_index=None):
+    def __new__(cls, *candidates, separators=(), current_index=None):
         # Remove duplicates while preserving order:
         # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
         obj = super().__new__(cls, (Candidate(c) for c in dict.fromkeys(candidates)))
-        obj.sep = sep
+        obj.separators = separators
         if current_index is not None:
             obj.current_index = current_index if len(obj) > 0 else None
         else:
@@ -77,7 +77,7 @@ class Candidates(tuple):
         elif len(candidates) == 1 and len(candidates[0]) == 0:
             candidates = ()
 
-        kwargs.setdefault('sep', self.sep)
+        kwargs.setdefault('separators', self.separators)
         try:
             kwargs.setdefault('current_index', candidates.index(self.current))
         except ValueError:
@@ -110,8 +110,8 @@ class Candidates(tuple):
 
     def __repr__(self):
         kwargs = {'current_index': self.current_index}
-        if self.sep is not None:
-            kwargs['sep'] = self.sep
+        if self.separators:
+            kwargs['separators'] = self.separators
         return '%s(%s, %s)' % (
             type(self).__name__,
             ', '.join(repr(c) for c in self) if self else (),

@@ -603,14 +603,14 @@ class TestArg(unittest.TestCase):
         self.assertEqual(utils.Arg('foo', curpos=3).before_cursor, 'foo')
 
     def test_splitting(self):
-        def do(arg, curpos, sep, exp_parts, exp_curpart, exp_curpart_index, exp_curpart_curpos):
+        def do(arg, curpos, seps, exp_parts, exp_curpart, exp_curpart_index, exp_curpart_curpos):
             arg = utils.Arg(arg, curpos)
-            arg.sep = sep
+            arg.separators = seps
             self.assertEqual(arg.parts, exp_parts)
             self.assertEqual(arg.curpart, exp_curpart)
             self.assertEqual(arg.curpart_index, exp_curpart_index)
             self.assertEqual(arg.curpart_curpos, exp_curpart_curpos)
-            self.assertEqual(arg.sep, sep)
+            self.assertEqual(arg.separators, seps)
             self.assertEqual(arg.curpos, curpos)
         do('foo/bar/baz',  0, '/', ('foo', 'bar', 'baz'), 'foo', 0, 0)
         do('foo/bar/baz',  1, '/', ('foo', 'bar', 'baz'), 'foo', 0, 1)
@@ -624,6 +624,23 @@ class TestArg(unittest.TestCase):
         do('foo/bar/baz',  9, '/', ('foo', 'bar', 'baz'), 'baz', 2, 1)
         do('foo/bar/baz', 10, '/', ('foo', 'bar', 'baz'), 'baz', 2, 2)
         do('foo/bar/baz', 11, '/', ('foo', 'bar', 'baz'), 'baz', 2, 3)
+
+    def test_unsplitting(self):
+        arg = utils.Arg('foo,bar,baz', 0)
+        arg.separators = (',',)
+        self.assertEqual(arg.parts, ('foo', 'bar', 'baz'))
+        arg.separators = ()
+        self.assertEqual(arg.parts, ('foo,bar,baz',))
+
+    def test_multiple_separators(self):
+        arg = utils.Arg('foo.bar:.baz!', 0)
+        arg.separators = ('.', ':', '!')
+        self.assertEqual(arg.parts, ('foo', 'bar', '', 'baz', ''))
+
+    def test_multichar_separators(self):
+        arg = utils.Arg('foo...bar.:!baz!', 0)
+        arg.separators = ('..', '.:!')
+        self.assertEqual(arg.parts, ('foo', '.bar', 'baz!'))
 
 
 class Test_as_args(unittest.TestCase):

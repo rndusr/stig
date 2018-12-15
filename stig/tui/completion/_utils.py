@@ -350,10 +350,10 @@ class Arg(str):
         obj = super().__new__(cls, arg)
         obj._curpos = curpos
         obj._parts = (str(obj),)
-        obj._curpart = str(obj)
+        obj._curpart = obj._parts[0]
         obj._curpart_index = 0
         obj._curpart_curpos = curpos
-        obj._sep = None
+        obj._separators = ()
         return obj
 
     @property
@@ -370,28 +370,35 @@ class Arg(str):
         return self._curpos
 
     @property
-    def sep(self):
+    def separators(self):
         """
-        Separator character that splits argument into multiple parts
+        Sequence of separator strings that split argument into multiple parts
 
         Setting this also changes `curpart` and `curpart_curpos`.
         """
-        return self._sep
-    @sep.setter
-    def sep(self, sep):
-        self._parts = tuple(self.split(sep))
-        curpart_curpos = self.curpos
-        for i,part in enumerate(self._parts):
-            len_part = len(part)
-            len_sep = len(sep)
-            if curpart_curpos > len_part:
-                curpart_curpos -= len_part + len_sep
-            else:
-                self._curpart = part
-                self._curpart_index = i
-                break
-        self._curpart_curpos = curpart_curpos
-        self._sep = sep
+        return self._separators
+    @separators.setter
+    def separators(self, separators):
+        if not separators:
+            self._parts = (str(self),)
+            self._curpart = self._parts[0]
+            self._curpart_index = 0
+            self._curpart_curpos = self.curpos
+        else:
+            split_regex = r'(?:' + '|'.join(re.escape(str(sep)) for sep in separators) + ')'
+            self._parts = tuple(re.split(split_regex, self))
+            curpart_curpos = self.curpos
+            for i,part in enumerate(self._parts):
+                len_part = len(part)
+                len_sep = len(separators)
+                if curpart_curpos > len_part:
+                    curpart_curpos -= len_part + len_sep
+                else:
+                    self._curpart = part
+                    self._curpart_index = i
+                    break
+            self._curpart_curpos = curpart_curpos
+        self._separators = separators
 
     @property
     def parts(self):
