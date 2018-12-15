@@ -193,18 +193,6 @@ def plaintext(string, curpos=None):
             log.debug('      Reducing %r by 1 because of %r', new_curpos, char)
             new_curpos -= 1
 
-
-    # if trailing_whitespace and literal:
-    #     if quoted or literal[-1] in ('"', "'"):
-    #         literal.extend(trailing_whitespace)
-    #         log.debug('    Appended all quoted trailing whitespace: %r', literal)
-    #     elif string_stripped[-1] == '\\':
-    #         literal.append(trailing_whitespace[0])
-    #         log.debug('    Appended one escaped trailing whitespace: %r', literal)
-    #     else:
-    #         log.debug('Discarding trailing whitespace: %r', trailing_whitespace)
-
-
     if new_curpos is None:
         return ''.join(literal)
     else:
