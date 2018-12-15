@@ -191,23 +191,8 @@ class Completer():
             else:
                 cand_clisafe, cand_curpos = _utils.quote(cand, curpos=cand.curpos)
             new_curpos = self._curpos - self._curtok_curpos + cand_curpos
-
-            # # If the cursor is on a delimiter, we can't just replace the current
-            # # candidate with the current token or we're concatenating arguments
-            # # by removing whitspace.
-            # if curtok.isspace():
-            #     spaces_before_cursor = curtok[:self._curtok_curpos]
-            #     spaces_after_cursor = curtok[self._curtok_curpos:]
-            #     log.debug('Replacing %r with %r', tokens[curtok_index],
-            #               (spaces_before_cursor, cand_clisafe, spaces_after_cursor))
-            #     tokens[curtok_index:curtok_index+1] = (spaces_before_cursor, cand_clisafe, spaces_after_cursor)
-            #     new_curpos += len(spaces_before_cursor)
-            # else:
-            #     log.debug('Replacing %r with %r', tokens[curtok_index], cand_clisafe)
-            #     tokens[curtok_index] = cand_clisafe
             log.debug('Replacing %r with %r', tokens[curtok_index], cand_clisafe)
             tokens[curtok_index] = cand_clisafe
-
             log.debug('Assembled: %r', ''.join(tokens[:new_curpos]) + '|' + ''.join(tokens[new_curpos:]))
             return ''.join(tokens), new_curpos
 
