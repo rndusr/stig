@@ -15,7 +15,7 @@ log = make_logger(__name__)
 import operator
 import re
 from collections import abc
-from itertools import zip_longest
+import itertools
 
 
 class BoolFilterSpec():
@@ -342,7 +342,7 @@ class FilterChain(metaclass=_copy_filter_spec):
 
             if filters:
                 fchain = [[]]
-                for filter,op in zip_longest(filters, ops):
+                for filter,op in itertools.zip_longest(filters, ops):
                     fchain[-1].append(filter)
                     if op is '|':
                         fchain.append([])
