@@ -272,58 +272,54 @@ class TorrentAPI(TorrentAPIBase):
         log.debug('Got %d cached torrents in %.3fms', len(tlist), (time()-start)*1e3)
         return Response(success=success, torrents=tlist, errors=errors)
 
-    async def _get_torrents_by_ids(self, keys, ids=None):
+    async def _get_torrents_by_ids(self, keys, ids=None, from_cache=False):
         """
         Return a Response object with 'torrents' set to a tuple of Torrents
 
-        keys: 'ALL' for all supported Torrent keys or a sequence of key
-              strings (see client.ttypes.TYPES for available keys)
-        ids:  None for all torrents or a sequence of wanted IDs
+        keys:       'ALL' for all supported Torrent keys or a sequence of key
+                    strings (see client.ttypes.TYPES for available keys)
+        ids:        None for all torrents or a sequence of wanted IDs
+        from_cache: Whether to try to get the torrents from a previous request
         """
         if keys == 'ALL':
             fields = TorrentFields(keys)
         else:
             fields = TorrentFields(*keys)
 
+        if from_cache:
+            response = self._get_torrents_from_cache(ids)
+
+            all_fields_available = True
+            for t in response.torrents:
+                for field in fields:
+                    if field not in t:
+                        log.debug('Torrent %r is missing field: %r', t, field)
+                        all_fields_available = False
+                        break
+            if all_fields_available:
+                log.debug('Returning torrents from cache')
+                return response
+            else:
+                log.debug('Some fields are missing from torrent - enforcing request')
+
         response = await self._request_torrents(fields, ids)
         if not response.success:
             return Response(success=False, torrents=(), errors=response.errors)
         else:
-            from time import time
-            start = time()
+            return self._get_torrents_from_cache(ids)
 
-            errors = []
-
-            # Get torrents from cache
-            if ids is None:
-                tlist = self._tcache.get()  # All torrents
-            elif not ids:
-                tlist = ()  # No torrents requested
-            else:
-                tlist = self._tcache.get(*ids)
-
-                # Provide error for requested IDs that don't exist
-                existing_ids = tuple(t['id'] for t in tlist)
-                for tid in ids:
-                    # Torrent objects are equal to an integer of the torrent's ID
-                    if tid not in existing_ids:
-                        errors.append('No torrent with ID: %d' % tid)
-
-            success = len(tlist) > 0 or not ids
-            log.debug('Found %d torrents in %.3fms', len(tlist), (time()-start)*1e3)
-        return Response(success=success, torrents=tlist, errors=errors)
-
-    async def _get_torrents_by_filter(self, keys, tfilter=None):
+    async def _get_torrents_by_filter(self, keys, tfilter=None, from_cache=False):
         """
         Return a Response object with 'torrents' set to a tuple of Torrents
 
-        keys:    See _get_torrents_by_ids
-        tfilter: A TorrentFilter instance or None to get all torrents
+        keys:       See _get_torrents_by_ids
+        tfilter:    A TorrentFilter instance or None to get all torrents
+        from_cache: Whether to try to get the torrents from a previous request
         """
         if tfilter is None:
             log.debug('Looking for all torrents with keys: %s', keys)
             # No filter specified - just return all torrents with the specified keys
-            return await self._get_torrents_by_ids(keys=keys)
+            return await self._get_torrents_by_ids(keys=keys, from_cache=from_cache)
         else:
             log.debug('Looking for %s torrents with keys: %s', tfilter, keys)
             if isinstance(tfilter, str):
@@ -333,7 +329,8 @@ class TorrentAPI(TorrentAPIBase):
 
             # Request all torrents with the keys needed to filter them
             log.debug('Requesting full list with filter keys: %s', tfilter.needed_keys)
-            response = await self._get_torrents_by_ids(keys=tfilter.needed_keys)
+            response = await self._get_torrents_by_ids(keys=tfilter.needed_keys,
+                                                       from_cache=from_cache)
             if not response.success:
                 return Response(success=False, torrents=(), errors=response.errors)
             else:
@@ -342,7 +339,8 @@ class TorrentAPI(TorrentAPIBase):
                 log.debug('Wanted IDs: %s', wanted_ids)
                 if len(wanted_ids) > 0:
                     # Get only wanted torrents with all wanted keys
-                    response = await self._get_torrents_by_ids(keys, wanted_ids)
+                    response = await self._get_torrents_by_ids(keys, wanted_ids,
+                                                               from_cache=from_cache)
                     if not response.success:
                         return Response(success=False, torrents=(), errors=response.errors)
                     else:
@@ -357,13 +355,14 @@ class TorrentAPI(TorrentAPIBase):
                         (len(tlist), tfilter, '' if len(tlist) == 1 else 's'),)
             return Response(success=success, torrents=tlist, msgs=msgs, errors=errors)
 
-    async def torrents(self, torrents=None, keys='ALL'):
+    async def torrents(self, torrents=None, keys='ALL', from_cache=False):
         """
         Get torrents
 
-        torrents: Iterator of torrent IDs, TorrentFilter object (or its string
-                  representation) or None for all torrents
-        keys: tuple of Torrent keys to fetch or 'ALL' for all torrents
+        torrents:   Iterator of torrent IDs, TorrentFilter object (or its string
+                    representation) or None for all torrents
+        keys:       tuple of Torrent keys to fetch or 'ALL' for all torrents
+        from_cache: Whether to try to get the torrents from a previous request
 
         Return Response with the following properties:
             torrents: Tuple of Torrent objects with requested torrents
@@ -372,12 +371,14 @@ class TorrentAPI(TorrentAPIBase):
             errors:   List of error messages
         """
         if torrents is None:
-            return await self._get_torrents_by_ids(keys)
+            return await self._get_torrents_by_ids(keys, from_cache=from_cache)
         elif isinstance(torrents, (str, TorrentFilter)):
-            return await self._get_torrents_by_filter(keys, tfilter=torrents)
+            return await self._get_torrents_by_filter(keys, tfilter=torrents,
+                                                      from_cache=from_cache)
         elif isinstance(torrents, abc.Sequence) and \
              all(isinstance(id, int) for id in torrents):
-            return await self._get_torrents_by_ids(keys, ids=torrents)
+            return await self._get_torrents_by_ids(keys, ids=torrents,
+                                                   from_cache=from_cache)
         else:
             raise ValueError("Invalid 'torrents' argument: %r" % (torrents,))
 
