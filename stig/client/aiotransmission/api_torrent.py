@@ -213,6 +213,9 @@ class TorrentAPI(TorrentAPIBase):
         Return a Response object with 'raw_torrents' set to a tuple of torrents
         according to the RPC spec.
         """
+        from time import time
+        start = time()
+
         if 'id' not in fields:
             fields = ('id',) + tuple(fields)
         try:
@@ -237,6 +240,7 @@ class TorrentAPI(TorrentAPIBase):
                 tids = tuple(t['id'] for t in raw_tlist)
                 self._tcache.purge(existing_tids=tids)
 
+            log.debug('Requested %d torrents in %.3fms', len(raw_tlist), (time()-start)*1e3)
             return Response(success=True, raw_torrents=raw_tlist)
 
     async def _get_torrents_by_ids(self, keys, ids=None):
