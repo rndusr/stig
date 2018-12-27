@@ -77,7 +77,7 @@ class Filter():
         '>=': operator.__ge__, '<=': operator.__le__,
     }
     _OP_CHARS = ''.join(OPERATORS)
-    _OP_LIST = '(?:' + '|'.join(sorted(OPERATORS, key=lambda op: len(op), reverse=True)) + ')'
+    _OP_LIST = '(?:' + '|'.join(sorted(OPERATORS, key=len, reverse=True)) + ')'
     _INVERT_CHAR = '!'
     _FILTER_REGEX = re.compile(r'^'
                                r'(?P<invert1>' + _INVERT_CHAR + '?)'
