@@ -243,6 +243,35 @@ class TorrentAPI(TorrentAPIBase):
             log.debug('Requested %d torrents in %.3fms', len(raw_tlist), (time()-start)*1e3)
             return Response(success=True, raw_torrents=raw_tlist)
 
+    def _get_torrents_from_cache(self, ids):
+        """
+        Get torrents from internal cache without making a request
+
+        Return the same Response object as `_request_torrents`
+        """
+        from time import time
+        start = time()
+        errors = []
+        if ids is None:
+            # All torrents requested
+            tlist = self._tcache.get()
+        elif not ids:
+            # No torrents requested
+            tlist = ()
+        else:
+            tlist = self._tcache.get(*ids)
+
+            # Provide error for requested IDs that don't exist
+            existing_ids = tuple(t['id'] for t in tlist)
+            for tid in ids:
+                if tid not in existing_ids:
+                    errors.append('No torrent with ID: %d' % tid)
+
+        # Success if we found any torrents or no torrents were requested
+        success = len(tlist) > 0 or not ids
+        log.debug('Got %d cached torrents in %.3fms', len(tlist), (time()-start)*1e3)
+        return Response(success=success, torrents=tlist, errors=errors)
+
     async def _get_torrents_by_ids(self, keys, ids=None):
         """
         Return a Response object with 'torrents' set to a tuple of Torrents
