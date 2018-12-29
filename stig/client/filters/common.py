@@ -76,18 +76,17 @@ class Filter():
         '>': operator.__gt__, '<': operator.__lt__,
         '>=': operator.__ge__, '<=': operator.__le__,
     }
+    INVERT_CHAR = '!'
     _OP_CHARS = ''.join(OPERATORS)
     _OP_LIST = '(?:' + '|'.join(sorted(OPERATORS, key=len, reverse=True)) + ')'
-    _INVERT_CHAR = '!'
     _FILTER_REGEX = re.compile(r'^'
-                               r'(?P<invert1>' + _INVERT_CHAR + '?)'
-                               r'(?P<name>[^' + _OP_CHARS+_INVERT_CHAR + ']*)'
-                               r'(?P<invert2>' + _INVERT_CHAR + '?)'
+                               r'(?P<invert1>' + INVERT_CHAR + '?)'
+                               r'(?P<name>[^' + _OP_CHARS+INVERT_CHAR + ']*)'
+                               r'(?P<invert2>' + INVERT_CHAR + '?)'
                                r'(?P<op>' + _OP_LIST + '|)'
                                r'(?P<value>.*)$')
 
     DEFAULT_FILTER = None
-
     BOOLEAN_FILTERS = {}
     COMPARATIVE_FILTERS = {}
 
