@@ -117,8 +117,9 @@ class TestCLIEditWidget(unittest.TestCase):
                 obj.current_index = None
                 return obj
 
+        import asynctest
         class MockCompleter():
-            update = MagicMock()
+            update = asynctest.CoroutineMock()
             complete_next = MagicMock()
             candidates = MockCandidates(current_index=0)
         self.w._completer = MockCompleter()
