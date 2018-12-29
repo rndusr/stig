@@ -13,7 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import urwid
-import collections
+from collections import abc
 
 from ..utils.string import strwidth
 
@@ -94,7 +94,7 @@ class Tabs(urwid.Widget):
         self._ids = []
         self._contents = urwid.MonitoredFocusList()
         for content in contents:
-            if not isinstance(content, collections.Mapping):
+            if not isinstance(content, abc.Mapping):
                 content = dict(zip(('title', 'widget', 'position', 'focus'),
                                    content))
             self.insert(**content)
