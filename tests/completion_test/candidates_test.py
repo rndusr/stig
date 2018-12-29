@@ -10,7 +10,7 @@ class Test_fs_path(unittest.TestCase):
     def do(self, *args, exp_cands, **kwargs):
         cands, argsep = candidates.fs_path(*args, **kwargs)
         self.assertEqual(tuple(cands), exp_cands)
-        self.assertEqual(argsep, '/')
+        self.assertEqual(argsep, ('/',))
 
     @patch('os.scandir')
     @patch('os.path.expanduser')

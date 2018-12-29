@@ -47,7 +47,7 @@ def values(setting, args, curarg_index):
         if isinstance(setting, usertypes.Option) and focus_on_first_value:
             return setting.options
         elif isinstance(setting, usertypes.Tuple):
-            return setting.options, setting.sep.strip()
+            return setting.options, (setting.sep.strip(),)
         elif isinstance(setting, usertypes.Bool) and focus_on_first_value:
             return (value
                     for values in zip(usertypes.Bool.defaults['true'],
@@ -65,7 +65,7 @@ def _get_setting(name):
 
 def fs_path(path, base, include_hidden=True, directories_only=False):
     """File system path entries"""
-    log.debug('Getting candidates for %r', path)
+    log.debug('Getting path candidates for %r', path)
     if path.startswith('~') and os.sep not in path:
         # Complete home dirs in "~<user>" style
         import pwd
@@ -85,4 +85,5 @@ def fs_path(path, base, include_hidden=True, directories_only=False):
             cands = (entry.name for entry in itr
                      if ((include_hidden or not entry.name.startswith('.')) and
                          (not directories_only or entry.is_dir())))
-    return cands, '/'
+
+    return cands, ('/',)
