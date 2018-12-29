@@ -189,15 +189,17 @@ class CLIEditWidget(urwid.WidgetWrap):
 
     def _update_completion_candidates(self):
         if self._completer is not None:
+            def callback(task):
+                log.debug('New candidates: %r', self._completer.candidates)
+                self._candsw.update(self._completer.candidates)
+                self._maybe_hide_or_show_menu()
+            from ..singletons import aioloop
             log.debug('Updating completer: %r, %r', self._editw.edit_text, self._editw.edit_pos)
-            self._completer.update(self._editw.edit_text, self._editw.edit_pos)
-            # log.debug('New candidates: %r', self._completer.candidates)
-            self._candsw.update(self._completer.candidates)
-            self._maybe_hide_or_show_menu()
+            task = aioloop.create_task(self._completer.update(self._editw.edit_text, self._editw.edit_pos))
+            task.add_done_callback(callback)
 
     def _maybe_hide_or_show_menu(self):
         if self._completer is not None:
-            # log.debug('%d candidates: %r', len(self._completer.candidates), self._completer.candidates)
             candsw_visible = self._groupw.visible('candidates')
             if self._completer.candidates and not candsw_visible:
                 log.debug('Showing completion menu')
