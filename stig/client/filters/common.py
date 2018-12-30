@@ -98,7 +98,9 @@ class Filter():
 
         Also ensure operator `op` is compatible with `value`.
 
-        Raises ValueError
+        Raise ValueError
+
+        Return propert value
         """
         if name not in cls.COMPARATIVE_FILTERS:
             return value
