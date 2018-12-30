@@ -37,6 +37,10 @@ def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):
 class TestSingleTorrentFilter(unittest.TestCase):
     def test_parser(self):
         self.assertEqual(str(SingleTorrentFilter()), 'all')
+        self.assertEqual(str(SingleTorrentFilter('=')), '=')
+        self.assertEqual(str(SingleTorrentFilter('>=')), '>=')
+        self.assertEqual(str(SingleTorrentFilter('comment!~')), 'comment!~')
+        self.assertEqual(str(SingleTorrentFilter('uploaded!<=')), 'uploaded!<=')
         self.assertEqual(str(SingleTorrentFilter('*')), 'all')
         self.assertEqual(str(SingleTorrentFilter('idle')), 'idle')
         self.assertEqual(str(SingleTorrentFilter(' !idle')), '!idle')
@@ -49,12 +53,6 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(str(SingleTorrentFilter('%downloaded >17.2')), '%downloaded>17.2%')
         self.assertEqual(str(SingleTorrentFilter('%downloaded> 17.2')), '%downloaded>17.2%')
 
-        with self.assertRaises(ValueError) as cm:
-            SingleTorrentFilter('=')
-        self.assertEqual(str(cm.exception), "Missing value: = ...")
-        with self.assertRaises(ValueError) as cm:
-            SingleTorrentFilter('%downloaded!>')
-        self.assertEqual(str(cm.exception), "Missing value: %downloaded!> ...")
         with self.assertRaises(ValueError) as cm:
             SingleTorrentFilter('name! =foo')
         self.assertEqual(str(cm.exception), "Malformed filter expression: 'name! =foo'")
@@ -155,6 +153,45 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(result, ('bar',))
         result = tuple(SingleTorrentFilter('!name!~foo').apply(tlist, key='name'))
         self.assertEqual(result, ('foo',))
+
+    def test_matching_empty_string(self):
+        tlist = (MockTorrent({'name': 'foo', 'comment': 'The Foo'}),
+                 MockTorrent({'name': 'bar', 'comment': ''}),
+                 MockTorrent({'name': 'baz', 'comment': ''}))
+        result = tuple(SingleTorrentFilter('comment=""').apply(tlist, key='name'))
+        self.assertEqual(result, ('bar', 'baz'))
+        result = tuple(SingleTorrentFilter("comment!=''").apply(tlist, key='name'))
+        self.assertEqual(result, ('foo',))
+
+    def test_no_value_with_string_filters(self):
+        tlist = (MockTorrent({'name': 'foo', 'comment': 'The Foo', 'path': '/the/foo'}),
+                 MockTorrent({'name': 'bar', 'comment': 'The Bar', 'path': '/the/bar'}),
+                 MockTorrent({'name': 'baz', 'comment': 'The Baz', 'path': '/the/baz'}))
+        for filtername in ('comment', 'path'):
+            for op in ('=', '!=', '~', '!~', '>', '!>', '<', '!<', '>=', '!>=', '<=', '!<='):
+                for filterstring in (filtername + op, filtername + ' ' + op):
+                    result = tuple(SingleTorrentFilter('%s%s' % (filtername, op)).apply(tlist, key='name'))
+                    self.assertEqual(result, ('foo', 'bar', 'baz'))
+
+    def test_no_value_with_numeric_filters(self):
+        tlist = (MockTorrent({'name': 'foo', 'rate-down': 0, 'uploaded': 123}),
+                 MockTorrent({'name': 'bar', 'rate-down': 500e3, 'uploaded': 0}),
+                 MockTorrent({'name': 'baz', 'rate-down': 1000e3, 'uploaded': 45993e9}))
+        for filtername in ('rate-down', 'uploaded'):
+            for op in ('=', '!=', '~', '!~', '>', '!>', '<', '!<', '>=', '!>=', '<=', '!<='):
+                for filterstring in (filtername + op, filtername + ' ' + op):
+                    result = tuple(SingleTorrentFilter('%s%s' % (filtername, op)).apply(tlist, key='name'))
+                    self.assertEqual(result, ('foo', 'bar', 'baz'))
+
+    def test_no_value_with_time_filters(self):
+        tlist = (MockTorrent({'name': 'foo', 'timespan-eta': 123, 'time-completed': 123}),
+                 MockTorrent({'name': 'bar', 'timespan-eta': 123, 'time-completed': 123}),
+                 MockTorrent({'name': 'baz', 'timespan-eta': 123, 'time-completed': 123}))
+        for filtername in ('eta', 'completed'):
+            for op in ('=', '!=', '~', '!~', '>', '!>', '<', '!<', '>=', '!>=', '<=', '!<='):
+                for filterstring in (filtername + op, filtername + ' ' + op):
+                    result = tuple(SingleTorrentFilter('%s%s' % (filtername, op)).apply(tlist, key='name'))
+                    self.assertEqual(result, ('foo', 'bar', 'baz'))
 
     def test_larger_operator_with_numbers(self):
         tlist = (MockTorrent({'name': 'foo', 'rate-down': 0}),

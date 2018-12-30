@@ -189,13 +189,10 @@ class Filter():
             if op is None and value is None:
                 # Abuse comparative filter as boolean filter
                 # (e.g. 'peers-connected' matches torrents with peers-connected!=0)
+                log.debug('Using comparative filter as boolean filter: %r', name)
                 self._filter_func = lambda obj, keys=f.needed_keys: all(bool(obj[key]) for key in keys)
-            elif op is None:
-                ops = '[' + '|'.join(sorted(self.OPERATORS)) + ']'
-                raise ValueError('Missing operator and value: {} {} ...'.format(name, ops))
-            elif value is None:
-                raise ValueError('Missing value: {} ...'.format(filter_str))
             else:
+                log.debug('Comparative filter: %r %r %r', name, op, value)
                 self._filter_func = f.make_filter_func(self.OPERATORS[op], value)
 
         elif value is op is None and self.DEFAULT_FILTER is not None:
@@ -223,28 +220,41 @@ class Filter():
 
     def apply(self, objs, invert=False, key=None):
         """Yield matching objects or `key` of each matching object"""
-        invert = self._invert ^ bool(invert)  # xor
-        wanted = self._filter_func
-        for obj in objs:
-            if wanted(obj) ^ invert:
+        if self._value is None and self._op is not None:
+            # No given value means all objects match
+            for obj in objs:
                 yield obj if key is None else obj[key]
+        else:
+            invert = self._invert ^ bool(invert)  # xor
+            wanted = self._filter_func
+            for obj in objs:
+                if wanted(obj) ^ invert:
+                    yield obj if key is None else obj[key]
 
     def match(self, obj):
         """Return True if `obj` matches, False otherwise"""
-        return self._filter_func(obj) ^ self._invert
+        if self._value is None and self._op is not None:
+            # No given value means all objects match
+            return True
+        else:
+            return self._filter_func(obj) ^ self._invert
 
     def __str__(self):
         if self._name is None:
             return 'all'
-        elif self._value is None:
+        elif self._op is None:
             return ('!' if self._invert else '') + self._name
         else:
             name = self._name if self._name != self.DEFAULT_FILTER else ''
             op = ('!' if self._invert else '') + self._op
-            val = str(self._value)
-            if val == '' or val[0] == ' ' or val[-1] == ' ':
-                val = repr(val)
-            return name + op + val
+            if self._value is None:
+                return name + op
+            else:
+                val = str(self._value)
+                if val == '' or val[0] == ' ' or val[-1] == ' ':
+                    # Quote value if there are spaces in it
+                    val = repr(val)
+                return name + op + val
 
     @property
     def needed_keys(self):
