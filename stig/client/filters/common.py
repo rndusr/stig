@@ -36,9 +36,10 @@ class CmpFilterSpec(BoolFilterSpec):
         self.value_convert = value_convert or value_type
 
     def make_filter_func(self, operator, value):
-        def func(obj):
-            return self.filter_function(obj, operator, value)
-        return func
+        def f(obj, filter_function=self.filter_function):
+            return filter_function(obj, operator, value)
+        return f
+
 
 def make_cmp_filter(types, key, description, aliases=(), value_convert=None):
     def filterfunc(obj, op, val, key=key):
