@@ -171,7 +171,7 @@ class Filter():
         if value is not None:
             value = self._check_value(name, value, op)
 
-        # Filter that doesn't use value argument
+        # Filter can't use an argument
         if name in self.BOOLEAN_FILTERS:
             if op or value:
                 raise ValueError('Boolean filter does not accept any values: {} '.format(filter_str))
@@ -179,7 +179,7 @@ class Filter():
             self._filter_func = f.filter_function
             self._needed_keys = f.needed_keys
 
-        # Filter that needs an argument
+        # Filter can use an argument
         elif name in self.COMPARATIVE_FILTERS:
             f = self.COMPARATIVE_FILTERS[name]
             self._needed_keys = f.needed_keys
