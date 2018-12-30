@@ -58,7 +58,7 @@ def make_cmp_filter(types, key, description, aliases=(), value_convert=None):
 
 
 def _unquote(string):
-    if len(string) <= 2:
+    if len(string) < 2:
         return string
 
     firstchar, lastchar = string[0], string[-1]
