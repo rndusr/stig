@@ -9,7 +9,8 @@ clean:
 
 venv:
 	python3 -m venv "$(VENV_PATH)"
-	"$(VENV_PATH)"/bin/pip install --upgrade wheel pytest asynctest maxminddb
+	"$(VENV_PATH)"/bin/pip install --upgrade wheel
+	"$(VENV_PATH)"/bin/pip install --upgrade pytest asynctest maxminddb
 	"$(VENV_PATH)"/bin/pip install --editable .
 
 test: venv
