@@ -63,8 +63,14 @@ def _get_setting(name):
     log.debug('No such setting: %r', name)
 
 
-def fs_path(path, base, include_hidden=True, directories_only=False):
-    """File system path entries"""
+def fs_path(path, base=os.environ['HOME'], directories_only=False):
+    """
+    File system path entries
+
+    path: Path to get entries from
+    base: Absolute path that is prepended to `path` if `path` is not absolute
+    directories_only: Whether to include only directories
+    """
     log.debug('Getting path candidates for %r', path)
     if path.startswith('~') and os.sep not in path:
         # Complete home dirs in "~<user>" style
@@ -72,13 +78,13 @@ def fs_path(path, base, include_hidden=True, directories_only=False):
         users = pwd.getpwall()
         cands = ('~%s' % (user.pw_name,) for user in users)
     else:
-        path = os.path.expanduser(path)
-        if not os.path.isabs(path):
-            path = os.path.join(base, path)
-        path = os.path.dirname(path)
-
+        include_hidden = os.path.basename(path).startswith('.')
+        dirpath = os.path.expanduser(path)
+        if not os.path.isabs(dirpath):
+            dirpath = os.path.join(base, dirpath)
+        dirpath = os.path.dirname(dirpath)
         try:
-            itr = os.scandir(path)
+            itr = os.scandir(dirpath)
         except (FileNotFoundError, NotADirectoryError, PermissionError):
             cands = ()
         else:

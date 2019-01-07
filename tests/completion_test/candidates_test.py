@@ -60,13 +60,22 @@ class Test_fs_path(unittest.TestCase):
 
     @patch('os.scandir')
     @patch('os.path.expanduser')
-    def test_include_hidden(self, expanduser, scandir):
+    def test_complete_hidden_files(self, expanduser, scandir):
         expanduser.side_effect = lambda path: path.replace('~', '/home/')
         scandir.return_value = [
             SimpleNamespace(name='.foo', is_dir=lambda *a, **k: True),
             SimpleNamespace(name='bar', is_dir=lambda *a, **k: False),
             SimpleNamespace(name='.baz', is_dir=lambda *a, **k: False)
         ]
-        self.do('~x/', base='/', include_hidden=True, exp_cands=('.foo', 'bar', '.baz'))
-        self.do('~x/x', base='/', include_hidden=True, exp_cands=('.foo', 'bar', '.baz'))
-        self.do('~x/xx', base='/', include_hidden=False, exp_cands=('bar',))
+        self.do('x', base='/', exp_cands=('bar',))
+        self.do('.', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('./', base='/', exp_cands=('bar',))
+        self.do('./.', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('/a/b/c/', base='/', exp_cands=('bar',))
+        self.do('/a/b/c/.', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('/a/b/c/.def', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('/a/b/c/def', base='/', exp_cands=('bar',))
+        self.do('~abc/', base='/', exp_cands=('bar',))
+        self.do('~abc/.', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('~abc/.def', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('~abc/def', base='/', exp_cands=('bar',))
