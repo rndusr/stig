@@ -373,11 +373,10 @@ def quote(string, curpos=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, q
             # No quotes were added
             return new_string, curpos
         elif curpos <= 0:
-            # If cursor was on the first character, put after the opening quote
+            # If cursor was on the first character, put it after the opening quote
             return new_string, len(quote)
         elif curpos >= len(string):
-            # If cursor was right of the last character, put it after the
-            # closing quote
+            # If cursor was right of the last character, put it after the closing quote
             return new_string, len(new_string)
         else:
             # Parse `string` up to its cursor position.  Every `quote` we find
