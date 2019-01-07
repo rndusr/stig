@@ -38,21 +38,11 @@ class Completer():
 
     async def _get_candidates_wrapper(self, *args, **kwargs):
         result = self.get_candidates(*args, **kwargs)
-        if result is None:
-            result = ()
-
         if inspect.isawaitable(result):
             result = await result
 
-        # In case get_candidates() returns an iterator
-        if not isinstance(result, abc.Sequence):
-            try:
-                result = tuple(result)
-            except Exception:
-                raise RuntimeError('Not an iterable: %r' % (result,))
-
-        # Untangle return values
-        if len(result) == 2:
+        # Untangle cands and curarg_seps
+        if isinstance(result, abc.Sequence) and len(result) == 2:
             if isinstance(result[0], str):
                 cands, curarg_seps = result, ()
             else:
@@ -60,23 +50,33 @@ class Completer():
         else:
             cands, curarg_seps = result, ()
 
-        if inspect.isawaitable(cands):
-            cands = await cands
+        def isiterable(obj):
+            try:
+                iter(obj)
+            except TypeError:
+                return False
+            else:
+                return True
 
-        # Ensure proper type for candidates
-        if cands is None:
-            cands = Candidates()
-        elif not isinstance(cands, Candidates):
-            cands = Candidates(*cands)
+        async def normalize(something):
+            if inspect.isawaitable(something):
+                something = await something
+            if something is None:
+                something = ()
+            if isinstance(something, str):
+                yield something
+            elif isiterable(something):
+                for thing in something:
+                    async for t in normalize(thing):
+                        yield t
+            else:
+                yield str(something)
 
-        # Ensure proper type for argument separators
-        if curarg_seps is None:
-            curarg_seps = ()
-        elif isinstance(curarg_seps, str) or not isinstance(curarg_seps, (abc.Iterable, abc.Sequence)):
-            raise RuntimeError('Not a sequence: %r' % (curarg_seps,))
-        else:
-            curarg_seps = tuple(curarg_seps)
-
+        # We can only exhaust the async generator by putting it in a list first.
+        # Putting the items in a tuple via a generator throws "TypeError:
+        # 'async_generator' object is not iterable"
+        cands = Candidates(*[x async for x in normalize(cands)])
+        curarg_seps = tuple([x async for x in normalize(curarg_seps)])
         return cands, curarg_seps
 
     def __init__(self, operators=()):

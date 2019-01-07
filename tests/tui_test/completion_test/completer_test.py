@@ -5,6 +5,177 @@ import unittest
 from unittest.mock import MagicMock, call
 
 
+class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
+    async def test_sync_func_returns_cands_tuple(self):
+        for test_cands in (('foo',),
+                           ('foo', 'bar'),
+                           ('foo', 'bar', 'baz')):
+            class MyCompleter(completion.Completer):
+                def get_candidates(self_, *args, **kwargs):
+                    return test_cands
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, ()))
+
+    async def test_sync_func_returns_cands_tuple_and_curarg_seps_tuple(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                def get_candidates(self_, *args, **kwargs):
+                    return test_cands, test_curarg_seps
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_sync_func_returns_cands_gen_and_curarg_seps_tuple(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                def get_candidates(self_, *args, **kwargs):
+                    return (c for c in test_cands), test_curarg_seps
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_sync_func_returns_cands_tuple_and_curarg_seps_gen(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                def get_candidates(self_, *args, **kwargs):
+                    return test_cands, (s for s in test_curarg_seps)
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_sync_func_returns_cands_gen_and_curarg_seps_gen(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                def get_candidates(self_, *args, **kwargs):
+                    return (c for c in test_cands), (s for s in test_curarg_seps)
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_sync_func_returns_multiple_cands_objects_and_single_curarg_seps_tuple(self):
+        class MyCompleter(completion.Completer):
+            def get_candidates(self_, *args, **kwargs):
+                tpl = ('foo', 'bar', 'baz')
+                gen = (x for x in ('one', 'two', 'three'))
+                async def coro():
+                    return ('abc', 'def')
+                async def coro_gen():
+                    return (x for x in ('ghi',))
+                return (tpl, gen, coro(), coro_gen()), ('.',)
+        exp_cands = ('foo', 'bar', 'baz', 'one', 'two', 'three', 'abc', 'def', 'ghi')
+        self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (exp_cands, ('.',)))
+
+    async def test_sync_func_returns_multiple_cands_objects_and_multiple_curarg_seps_objects(self):
+        class MyCompleter(completion.Completer):
+            def get_candidates(self_, *args, **kwargs):
+                tpl = ('foo', 'bar', 'baz')
+                gen = (x for x in ('one', 'two', 'three'))
+                async def coro():
+                    return ('abc', 'def')
+                async def coro_gen():
+                    return (x for x in ('abc', 'def'))
+                cands = (tpl, gen, coro(), coro_gen())
+
+                tpl = ('.', ':', '//')
+                gen = (x for x in ('!', ';;'))
+                async def coro():
+                    return ('|||', ';')
+                async def coro_gen():
+                    return (x for x in ('-',))
+                curarg_seps = (tpl, gen, coro(), coro_gen())
+                return cands, curarg_seps
+        exp_cands = ('foo', 'bar', 'baz', 'one', 'two', 'three', 'abc', 'def')
+        exp_curarg_seps = ('.', ':', '//', '!', ';;', '|||', ';', '-')
+        self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (exp_cands, exp_curarg_seps))
+
+    async def test_async_func_returns_cands_tuple(self):
+        for test_cands in (('foo',),
+                           ('foo', 'bar'),
+                           ('foo', 'bar', 'baz')):
+            class MyCompleter(completion.Completer):
+                async def get_candidates(self_, *args, **kwargs):
+                    return test_cands
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, ()))
+
+    async def test_async_func_returns_cands_tuple_and_curarg_seps_tuple(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                async def get_candidates(self_, *args, **kwargs):
+                    return test_cands, test_curarg_seps
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_async_func_returns_cands_gen_and_curarg_seps_tuple(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                async def get_candidates(self_, *args, **kwargs):
+                    return (c for c in test_cands), test_curarg_seps
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_async_func_returns_cands_tuple_and_curarg_seps_gen(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                async def get_candidates(self_, *args, **kwargs):
+                    return test_cands, (s for s in test_curarg_seps)
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_async_func_returns_cands_gen_and_curarg_seps_gen(self):
+        for test_cands,test_curarg_seps in ((('foo',), (':', '//')),
+                                            (('foo', 'bar'), (':', '//')),
+                                            (('foo', 'bar', 'baz'), (':', '//'))):
+            class MyCompleter(completion.Completer):
+                async def get_candidates(self_, *args, **kwargs):
+                    return (c for c in test_cands), (s for s in test_curarg_seps)
+            self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (test_cands, test_curarg_seps))
+
+    async def test_async_func_returns_multiple_cands_objects_and_single_curarg_seps_tuple(self):
+        class MyCompleter(completion.Completer):
+            async def get_candidates(self_, *args, **kwargs):
+                tpl = ('foo', 'bar', 'baz')
+                gen = (x for x in ('one', 'two', 'three'))
+                async def coro():
+                    return ('abc', 'def')
+                async def coro_gen():
+                    return (x for x in ('ghi',))
+                return (tpl, gen, coro(), coro_gen()), ('.',)
+        exp_cands = ('foo', 'bar', 'baz', 'one', 'two', 'three', 'abc', 'def', 'ghi')
+        self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (exp_cands, ('.',)))
+
+    async def test_async_func_returns_multiple_cands_objects_and_multiple_curarg_seps_objects(self):
+        class MyCompleter(completion.Completer):
+            async def get_candidates(self_, *args, **kwargs):
+                tpl = ('foo', 'bar', 'baz')
+                gen = (x for x in ('one', 'two', 'three'))
+                async def coro():
+                    return ('abc', 'def')
+                async def coro_gen():
+                    return (x for x in ('abc', 'def'))
+                cands = (tpl, gen, coro(), coro_gen())
+
+                tpl = ('.', ':', '//')
+                gen = (x for x in ('!', ';;'))
+                async def coro():
+                    return ('|||', ';')
+                async def coro_gen():
+                    return (x for x in ('-',))
+                curarg_seps = (tpl, gen, coro(), coro_gen())
+                return cands, curarg_seps
+        exp_cands = ('foo', 'bar', 'baz', 'one', 'two', 'three', 'abc', 'def')
+        exp_curarg_seps = ('.', ':', '//', '!', ';;', '|||', ';', '-')
+        self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (exp_cands, exp_curarg_seps))
+
+    async def test_non_string_candidates(self):
+        class MyCompleter(completion.Completer):
+            def get_candidates(self_, *args, **kwargs):
+                yield from (1, 2, 3)
+        exp_cands = ('1', '2', '3')
+        self.assertEqual(await MyCompleter()._get_candidates_wrapper(), (exp_cands, ()))
+
+
 class TestCompleter_update(asynctest.TestCase):
     def init(self, get_candidates):
         self.mock_get_candidates = MagicMock(side_effect=get_candidates)
