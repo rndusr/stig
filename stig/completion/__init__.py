@@ -22,11 +22,12 @@ class Candidate(str):
 class Candidates(tuple):
     """Iterable of candidates"""
 
-    def __new__(cls, *candidates, separators=(), current_index=None):
+    def __new__(cls, *candidates, curarg_seps=(), current_index=None):
         # Remove duplicates while preserving order:
         # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
-        obj = super().__new__(cls, (Candidate(c) for c in dict.fromkeys(candidates)))
-        obj.separators = separators
+        obj = super().__new__(cls, (Candidate(c)
+                                    for c in dict.fromkeys(candidates)))
+        obj._curarg_seps = curarg_seps
         if current_index is not None:
             obj.current_index = current_index if len(obj) > 0 else None
         else:
@@ -71,13 +72,21 @@ class Candidates(tuple):
         else:
             return self[self.current_index]
 
+    @property
+    def curarg_seps(self):
+        """
+        List of strings at which the current argument should be split before
+        applying a candidate
+        """
+        return self._curarg_seps
+
     def copy(self, *candidates, **kwargs):
         if not candidates:
             candidates = self
         elif len(candidates) == 1 and len(candidates[0]) == 0:
             candidates = ()
 
-        kwargs.setdefault('separators', self.separators)
+        kwargs.setdefault('curarg_seps', self.curarg_seps)
         try:
             kwargs.setdefault('current_index', candidates.index(self.current))
         except ValueError:
@@ -110,8 +119,8 @@ class Candidates(tuple):
 
     def __repr__(self):
         kwargs = {'current_index': self.current_index}
-        if self.separators:
-            kwargs['separators'] = self.separators
+        if self.curarg_seps:
+            kwargs['curarg_seps'] = self.curarg_seps
         return '%s(%s, %s)' % (
             type(self).__name__,
             ', '.join(repr(c) for c in self) if self else (),
