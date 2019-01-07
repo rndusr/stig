@@ -13,6 +13,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError, ExpectedResource)
+from ...completion import candidates
 from . import _mixin as mixin
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
@@ -177,6 +178,11 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
 
         if not success:
             raise CmdError()
+
+    @classmethod
+    def _completion_candidates(cls, args, curarg_index):
+        return candidates.fs_path(args[curarg_index].before_cursor,
+                                  regex=r'\.torrent$')
 
 
 class MoveTorrentsCmdbase(metaclass=InitCommand):
