@@ -21,6 +21,7 @@ from ..utils import usertypes
 
 import itertools
 import os
+import re
 
 
 _commands = tuple(cmdcls.name for cmdcls in cmdmgr.active_commands)
@@ -63,13 +64,14 @@ def _get_setting(name):
     log.debug('No such setting: %r', name)
 
 
-def fs_path(path, base=os.environ['HOME'], directories_only=False):
+def fs_path(path, base=os.environ['HOME'], directories_only=False, regex=None):
     """
     File system path entries
 
     path: Path to get entries from
     base: Absolute path that is prepended to `path` if `path` is not absolute
     directories_only: Whether to include only directories
+    regex: Regular expression that is matched against each name in `path`
     """
     log.debug('Getting path candidates for %r', path)
     if path.startswith('~') and os.sep not in path:
@@ -90,5 +92,6 @@ def fs_path(path, base=os.environ['HOME'], directories_only=False):
         else:
             cands = (entry.name for entry in itr
                      if ((include_hidden or not entry.name.startswith('.')) and
-                         (not directories_only or entry.is_dir())))
+                         (not directories_only or entry.is_dir()) and
+                         (regex is None or entry.is_dir() or re.search(regex, entry.name))))
     return cands, ('/',)
