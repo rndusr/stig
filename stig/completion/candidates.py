@@ -29,13 +29,13 @@ def commands():
     return _commands
 
 
-_settings = tuple(itertools.chain(localcfg, ('srv.' + name for name in remotecfg)))
-def settings():
+_setting_names = tuple(itertools.chain(localcfg, ('srv.' + name for name in remotecfg)))
+def setting_names():
     """Names of settings"""
-    return _settings
+    return _setting_names
 
 
-def values(setting, args, curarg_index):
+def setting_values(setting, args, curarg_index):
     """Values of settings"""
     setting = _get_setting(setting)
     if setting is not None:
@@ -91,5 +91,4 @@ def fs_path(path, base=os.environ['HOME'], directories_only=False):
             cands = (entry.name for entry in itr
                      if ((include_hidden or not entry.name.startswith('.')) and
                          (not directories_only or entry.is_dir())))
-
     return cands, ('/',)

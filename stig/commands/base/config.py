@@ -111,7 +111,7 @@ class ResetCmdbase(metaclass=InitCommand):
 
     @classmethod
     def _completion_candidates(cls, args, curarg_index):
-        return candidates.settings()
+        return candidates.setting_names()
 
 
 
@@ -309,14 +309,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         setting = cls._get_setting(args, curarg_index)
         if setting is None:
             log.debug('Completing settings')
-            return candidates.settings()
+            return candidates.setting_names()
         else:
             log.debug('Completing values for %r', setting)
-            return candidates.values(setting, args, curarg_index)
+            return candidates.setting_values(setting, args, curarg_index)
 
     @classmethod
     def _get_setting(cls, args, curarg_index):
-        settings = candidates.settings()
+        settings = candidates.setting_names()
         for arg in args[:curarg_index]:
             if arg in settings:
                 return arg
