@@ -35,6 +35,7 @@ class Candidates(tuple):
         return obj
 
     def next(self):
+        """Select the next candidate or return to the first one"""
         len_self = len(self)
         if len_self > 0:
             if self.current_index < len_self - 1:
@@ -44,6 +45,7 @@ class Candidates(tuple):
         return self.current_index
 
     def prev(self):
+        """Select the previous candidate or return to the last one"""
         len_self = len(self)
         if len_self > 0:
             if self.current_index > 0:
@@ -54,6 +56,7 @@ class Candidates(tuple):
 
     @property
     def current_index(self):
+        """Index of the currently selected candidate"""
         return self._current_index
     @current_index.setter
     def current_index(self, index):
@@ -67,6 +70,7 @@ class Candidates(tuple):
 
     @property
     def current(self):
+        """Currently selected candidate"""
         if self.current_index is None:
             return None
         else:
@@ -81,6 +85,7 @@ class Candidates(tuple):
         return self._curarg_seps
 
     def copy(self, *candidates, **kwargs):
+        """Create a copy with overloaded arguments"""
         if not candidates:
             candidates = self
         elif len(candidates) == 1 and len(candidates[0]) == 0:
@@ -108,6 +113,7 @@ class Candidates(tuple):
             return self.copy(())
 
     def sorted(self, key=None, preserve_current=True):
+        """Return sorted copy"""
         if self:
             new_cands = sorted(self, key=key)
             if preserve_current:
