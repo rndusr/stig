@@ -623,6 +623,10 @@ class Parts(tuple):
         obj.curpart_curpos = curpart_curpos
         return obj
 
+    @property
+    def curpart_before_cursor(self):
+        return self.curpart[:self.curpart_curpos]
+
     def __repr__(self):
         return '%s(%r, curpart=%r, curpart_index=%r, curpart_curpos=%r)' % (
             type(self).__name__,

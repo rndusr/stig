@@ -125,7 +125,7 @@ class Completer():
             curarg_parts = curarg.separate(curarg_seps, include_seps=True)
             log.debug('Current argument part: %r', curarg_parts)
             curarg_curpart = curarg_parts.curpart
-            common_prefix = curarg_parts.curpart[:curarg_parts.curpart_curpos]
+            common_prefix = curarg_parts.curpart_before_cursor
 
             # We must also split the current token so we can easily replace only
             # one part of an argument with different candidates.  We can't just
