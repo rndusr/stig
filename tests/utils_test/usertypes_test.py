@@ -252,6 +252,14 @@ class TestPath(_TestBase):
         p = Path(existing_path, mustexist=True)
         self.assertEqual(repr(p), repr(__file__))
 
+    def test_base(self):
+        import os
+        p = Path('bar/baz', base='~/foo')
+        self.assertEqual(p, 'bar/baz')
+        self.assertEqual(p.base, os.path.join(os.environ['HOME'], 'foo'))
+        self.assertEqual(p.full_path, os.path.join(os.environ['HOME'], 'foo/bar/baz'))
+        self.assertIsInstance(p.full_path, type(p))
+
 
 class TestTuple(_TestBase):
     def test_syntax(self):

@@ -273,11 +273,12 @@ class Path(str, StringableMixin):
 
     Options:
       mustexist: Whether the path must exist on the local file system
+      path:      Base path for relative path values
     """
     typename = 'path'
-    defaults = {'mustexist': False}
+    defaults = {'mustexist': False, 'base': ''}
 
-    def __new__(cls, value, *, mustexist=defaults['mustexist']):
+    def __new__(cls, value, *, base=defaults['base'], mustexist=defaults['mustexist']):
         # Convert
         value = os.path.expanduser(os.path.normpath(value))
         self = super().__new__(cls, value)
@@ -286,10 +287,11 @@ class Path(str, StringableMixin):
         if mustexist and not os.path.exists(self):
             raise ValueError('No such file or directory')
 
+        self._base = os.path.expanduser(base)
         return self
 
     @staticmethod
-    def _get_syntax(mustexist=defaults['mustexist']):
+    def _get_syntax(base=defaults['base'], mustexist=defaults['mustexist']):
         return 'file system path'
 
     @property
@@ -300,6 +302,13 @@ class Path(str, StringableMixin):
         else:
             return str(self)
 
+    @property
+    def base(self):
+        return self._base
+
+    @property
+    def full_path(self):
+        return type(self)(os.path.join(self._base, self))
 
 
 class Tuple(tuple, StringableMixin):
