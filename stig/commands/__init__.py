@@ -242,11 +242,14 @@ def InitCommand(clsname, bases, attrs):
 
     # Provide candidates for tab completion
     def completion_candidates(cls, args, curarg_index):
-        # '--' turns all arguments after it into non-options
+        # '--' turns all arguments after it positional arguments
         if '--' not in args[:curarg_index]:
             if args[curarg_index].startswith('-'):
                 log.debug('Completing long options: %r', cls.long_options)
-                return cls.long_options
+                # Remove any options that are already present
+                options = tuple(opt for opt in cls.long_options if opt not in args)
+                if options:
+                    return options
 
             # Check if any argument left of the current argument is an option that
             # wants another parameter
