@@ -292,7 +292,10 @@ class Path(str, StringableMixin):
 
     @staticmethod
     def _get_syntax(base=defaults['base'], mustexist=defaults['mustexist']):
-        return 'file system path'
+        if base:
+            return 'file system path relative to %s' % Path(base).prettified
+        else:
+            return 'file system path'
 
     @property
     def prettified(self):
