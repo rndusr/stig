@@ -83,7 +83,7 @@ localcfg.on_change(_set_log_height, name='tui.log.height')
 
 def _set_theme(settings, name, value):
     try:
-        tui.load_theme(value)
+        tui.theme.load(value.full_path, tui.urwidscreen)
     except tui.theme.ThemeError as e:
         raise ValueError(e)
 localcfg.on_change(_set_theme, name='tui.theme')

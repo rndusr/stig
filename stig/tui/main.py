@@ -39,27 +39,6 @@ from .miscwidgets import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidg
                           BandwidthStatusWidget, TorrentCountersWidget, MarkedItemsWidget)
 from . import theme
 
-def load_theme(themeobj):
-    """
-    Load theme from `themeobj`
-
-    themeobj: See `theme.load`
-
-    If `themeobj` is a string, does not have a path and does not exist in the
-    current working directory, try to load it from the same path as the rc file.
-    """
-    if isinstance(themeobj, str) and \
-       os.sep not in themeobj and not os.path.exists(themeobj):
-        # Path is not given and file does not exist in working dir.
-        from ..settings.defaults import DEFAULT_RCFILE
-        from ..main import cliargs
-        rcfilepath = cliargs['rcfile'] or DEFAULT_RCFILE
-        themefilepath = os.path.join(os.path.dirname(rcfilepath), themeobj)
-        if os.path.exists(themefilepath):
-            theme.load(themefilepath, urwidscreen)
-            return
-    theme.load(themeobj, urwidscreen)
-
 
 
 def load_geoip_db():
