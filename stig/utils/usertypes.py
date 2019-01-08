@@ -280,13 +280,16 @@ class Path(str, StringableMixin):
 
     def __new__(cls, value, *, base=defaults['base'], mustexist=defaults['mustexist']):
         # Convert
-        value = os.path.expanduser(os.path.normpath(value))
-        self = super().__new__(cls, value)
+        self = super().__new__(cls, os.path.expanduser(os.path.normpath(value)))
 
         # Validate
         if mustexist and not os.path.exists(self):
             raise ValueError('No such file or directory')
 
+        # Paths that start with './' or '../' are considered absolute
+        self._is_relative = (not os.path.isabs(value) and
+                             not str(value).startswith('.' + os.sep) and
+                             not str(value).startswith('..' + os.sep))
         self._base = os.path.expanduser(base)
         return self
 
@@ -311,7 +314,9 @@ class Path(str, StringableMixin):
 
     @property
     def full_path(self):
-        return type(self)(os.path.join(self._base, self))
+        if self._is_relative:
+            return type(self)(os.path.join(self._base, self))
+        return self
 
 
 class Tuple(tuple, StringableMixin):

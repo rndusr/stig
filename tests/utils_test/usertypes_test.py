@@ -252,12 +252,34 @@ class TestPath(_TestBase):
         p = Path(existing_path, mustexist=True)
         self.assertEqual(repr(p), repr(__file__))
 
-    def test_base(self):
+    def test_base_with_tilde(self):
         import os
         p = Path('bar/baz', base='~/foo')
         self.assertEqual(p, 'bar/baz')
         self.assertEqual(p.base, os.path.join(os.environ['HOME'], 'foo'))
         self.assertEqual(p.full_path, os.path.join(os.environ['HOME'], 'foo/bar/baz'))
+        self.assertIsInstance(p.full_path, type(p))
+
+    def test_path_with_current_directory_ignores_base(self):
+        import os
+        p = Path('./bar/baz', base='/foo')
+        self.assertEqual(p, 'bar/baz')
+        self.assertEqual(p.base, '/foo')
+        self.assertEqual(p.full_path, 'bar/baz')
+        self.assertIsInstance(p.full_path, type(p))
+
+    def test_path_with_upper_level_directory_ignores_base(self):
+        p = Path('../baz', base='/foo/bar')
+        self.assertEqual(p, '../baz')
+        self.assertEqual(p.base, '/foo/bar')
+        self.assertEqual(p.full_path, '../baz')
+        self.assertIsInstance(p.full_path, type(p))
+
+    def test_hidden_files_do_not_ignore_base(self):
+        p = Path('.baz', base='foo/bar')
+        self.assertEqual(p, '.baz')
+        self.assertEqual(p.base, 'foo/bar')
+        self.assertEqual(p.full_path, 'foo/bar/.baz')
         self.assertIsInstance(p.full_path, type(p))
 
 
