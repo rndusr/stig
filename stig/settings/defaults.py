@@ -108,7 +108,7 @@ def init_defaults(localcfg):
                  default=True,
                  description='Whether to lookup peers\' country codes')
     localcfg.add('geoip.dir',
-                 Path.partial(),
+                 Path.partial(base=os.path.expanduser('~')),
                  default=DEFAULT_GEOIP_DIR,
                  description='Where to cache the downloaded geolocation database')
 
@@ -141,7 +141,7 @@ def init_defaults(localcfg):
                  description='List of sort orders in setting lists')
 
     localcfg.add('tui.theme',
-                 Path.partial(),
+                 Path.partial(base=os.path.dirname(DEFAULT_RCFILE)),
                  default=DEFAULT_THEME_FILE,
                  description='Path to theme file'),
     localcfg.add('tui.log.height',
@@ -154,7 +154,7 @@ def init_defaults(localcfg):
                  description=('If the log is hidden, show it for this many seconds '
                               'for new log entries before hiding it again'))
     localcfg.add('tui.cli.history-dir',
-                 Path.partial(),
+                 Path.partial(base=os.path.expanduser('~')),
                  default=DEFAULT_HISTORY_DIR,
                  description='Directory where histories of user input are stored')
     localcfg.add('tui.cli.history-size',
