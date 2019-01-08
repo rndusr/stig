@@ -161,7 +161,8 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
           'description': 'Do not start downloading the added torrent(s)' },
 
         { 'names': ('--path','-p'),
-          'description': 'Custom download directory for added torrent(s)' },
+          'description': ('Custom download directory for added torrent(s) '
+                          'relative to "srv.path.complete" setting')},
     )
     srvapi = ExpectedResource
     srvcfg = ExpectedResource
