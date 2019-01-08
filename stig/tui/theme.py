@@ -66,7 +66,8 @@ class ValidationError(ThemeError): pass
 
 
 def init(palette, screen):
-    """Read `palette`, set it as default and apply it to `screen`
+    """
+    Read `palette`, set it as default and apply it to `screen`
 
     palette: Where to get the palette from:
              - any object with a `readlines` method (e.g. a file handle),
@@ -83,7 +84,8 @@ def init(palette, screen):
 
 
 def load(palette, screen):
-    """Same as `init`, but with validation
+    """
+    Same as `init`, but with validation
 
     The palette is passed to `validate` before `register`ing it.
     """
@@ -94,7 +96,8 @@ def load(palette, screen):
 
 
 def read(source):
-    """Read palette from `source`
+    """
+    Read palette from `source`
 
     source: file handle, file name or iterable of strings
 
@@ -134,7 +137,8 @@ def set_default(palette):
 
 
 def validate(palette):
-    """Validate palette (`set_default` must be called before)
+    """
+    Validate palette (`set_default` must be called before)
 
     Raise ValidationError if any attribute name in `palette` is not in
     `DEFAULT_NAMES`.
@@ -156,7 +160,8 @@ def reset(screen):
 
 
 class Palette(abc.Sequence):
-    """Read urwid palette as a list of strings
+    """
+    Read urwid palette as a list of strings
 
     Raises ParseError on errors during parsing (duh).
     """
