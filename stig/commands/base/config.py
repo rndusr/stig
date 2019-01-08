@@ -12,7 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, Parameters, CmdError, ExpectedResource, utils)
+from .. import (InitCommand, CmdError, ExpectedResource, utils)
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 from ...singletons import localcfg
@@ -67,7 +67,8 @@ class RcCmdbase(metaclass=InitCommand):
                     raise CmdError()
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
         # Command only takes one argument
         if curarg_index == 1:
             return candidates.fs_path(args[curarg_index],
@@ -110,9 +111,9 @@ class ResetCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
         return candidates.setting_names()
-
 
 
 from ...client import ClientError
@@ -138,13 +139,9 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                          "numerical values can be adjusted by prepending '+=' or '-='")},
 
         { 'names': ('--sort', '-s'),
-          'parameters': Parameters(localcfg['sort.settings'].options,
-                                   sep=localcfg['sort.settings'].sep.strip()),
           'description': 'Comma-separated list of sort orders (see SORT ORDERS section)' },
 
         { 'names': ('--columns', '-c'),
-          'parameters': Parameters(localcfg['columns.settings'].options,
-                                   sep=localcfg['columns.settings'].sep.strip()),
           'default_description': "current value of 'columns.settings' setting",
           'description': 'Comma-separated list of column names (see COLUMNS section)' },
     )
@@ -182,7 +179,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                     raise CmdError(error)
             return
 
-        # NAME might have ':eval' attached if VALUE is shell command
+        # NAME might have ':eval' attached if VALUE is shell command.
         # `name` is the user-facing name of the variable.
         # `key` is the lookup key in the config mapping.
         try:
@@ -305,22 +302,28 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return str(value)
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index):
-        setting = cls._get_setting(args, curarg_index)
-        if setting is None:
-            log.debug('Completing settings')
-            return candidates.setting_names()
-        else:
-            log.debug('Completing values for %r', setting)
-            return candidates.setting_values(setting, args, curarg_index)
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
+        # If --columns or --sort is given, we display options and don't set them
+        for arg in args:
+            if cls.long_option_name(arg) in ('--columns', '--sort'):
+                return
 
-    @classmethod
-    def _get_setting(cls, args, curarg_index):
         settings = candidates.setting_names()
         for arg in args[:curarg_index]:
             if arg in settings:
-                return arg
-        log.debug('No setting name found in %r', args[:curarg_index])
+                log.debug('Completing values for %r', arg)
+                return candidates.setting_values(arg, args, curarg_index)
+        log.debug('Completing settings')
+        return candidates.setting_names()
+
+    @classmethod
+    def completion_candidates_params(cls, option, args, curarg_index):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--sort':
+            return localcfg['sort.settings'].options, (localcfg['sort.settings'].sep.strip(),)
+        elif option == '--columns':
+            return localcfg['columns.settings'].options, (localcfg['columns.settings'].sep.strip(),)
 
 
 class RateLimitCmdbase(metaclass=InitCommand):

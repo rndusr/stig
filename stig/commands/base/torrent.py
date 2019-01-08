@@ -19,6 +19,7 @@ from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
 import asyncio
+import os
 
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
@@ -163,6 +164,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
           'description': 'Custom download directory for added torrent(s)' },
     )
     srvapi = ExpectedResource
+    srvcfg = ExpectedResource
 
     async def run(self, TORRENT, stopped, path):
         success = True
@@ -180,9 +182,20 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def _completion_candidates(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
         return candidates.fs_path(args[curarg_index].before_cursor,
                                   regex=r'\.torrent$')
+
+    @classmethod
+    def completion_candidates_params(cls, option, args, curarg_index):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--path':
+            curarg = args[curarg_index]
+            dirpath = os.path.dirname(curarg.before_cursor)
+            return candidates.fs_path(curarg.before_cursor,
+                                      base=cls.srvcfg['path.complete'],
+                                      directories_only=True)
 
 
 class MoveTorrentsCmdbase(metaclass=InitCommand):
