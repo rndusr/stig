@@ -18,8 +18,9 @@ from .defaults import DEFAULT_RCFILE
 
 
 def _tildify(p):
-    if p.startswith(os.environ['HOME']):
-        return '~' + p[len(os.environ['HOME']):]
+    homedir = os.path.expanduser('~')
+    if p.startswith(homedir):
+        return '~' + p[len(homedir):]
     return p
 
 

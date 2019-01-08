@@ -64,7 +64,7 @@ def _get_setting(name):
     log.debug('No such setting: %r', name)
 
 
-def fs_path(path, base=os.environ['HOME'], directories_only=False, regex=None):
+def fs_path(path, base=os.path.expanduser('~'), directories_only=False, regex=None):
     """
     File system path entries
 

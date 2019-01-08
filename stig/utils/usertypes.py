@@ -294,11 +294,12 @@ class Path(str, StringableMixin):
 
     @property
     def prettified(self):
-        home = os.environ['HOME']
+        home = os.path.expanduser('~')
         if self.startswith(home):
             return '~' + self[len(home):]
         else:
             return str(self)
+
 
 
 class Tuple(tuple, StringableMixin):
