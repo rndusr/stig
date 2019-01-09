@@ -162,6 +162,12 @@ class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
             else:
                 self.display_uris(uris)
 
+    @classmethod
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
+        if curarg_index == 1:
+            return candidates.torrent_filter(args[curarg_index])
+
 
 class AddTorrentsCmdbase(metaclass=InitCommand):
     name = 'add'
