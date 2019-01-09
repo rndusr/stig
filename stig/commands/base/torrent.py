@@ -243,6 +243,7 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                          'setting "srv.path.complete".  That means "." is the download path.')},
     )
     srvapi = ExpectedResource
+    srvcfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, PATH):
         try:
@@ -256,6 +257,41 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                                                polling_frenzy=True)
             if not response.success:
                 raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
+        def complete_path(curarg):
+            curarg = args[curarg_index]
+            dirpath = os.path.dirname(curarg.before_cursor)
+            return candidates.fs_path(curarg.before_cursor,
+                                      base=cls.srvcfg['path.complete'],
+                                      directories_only=True)
+
+        curarg = args[curarg_index]
+        if len(args) >= 3:
+            if curarg_index == 1:
+                return candidates.torrent_filter(curarg)
+            elif curarg_index == 2:
+                return complete_path(curarg)
+        elif len(args) == 2:
+            # Single argument may be a path or a filter
+            filter_cands, filter_curarg_seps = candidates.torrent_filter(curarg)
+            path_cands, path_curarg_seps = complete_path(curarg)
+
+            # Check for path separator in curarg
+            if any(sep in curarg for sep in path_curarg_seps):
+                return path_cands, path_curarg_seps
+
+            # Check if we can find a filter operator
+            parts = curarg.separate(filter_curarg_seps, include_seps=True)
+            if len(parts) >=2 and parts[1] in filter_curarg_seps:
+                return filter_cands, filter_curarg_seps
+
+            # Default to completing filters and paths
+            cands = (path_cands, filter_cands)
+            curarg_seps = (path_curarg_seps, filter_curarg_seps)
+            return cands, curarg_seps
 
 
 class RenameTorrentCmdbase(metaclass=InitCommand):
