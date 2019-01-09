@@ -125,6 +125,12 @@ class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
                 else:
                     self.display_summary(torrent['id'])
 
+    @classmethod
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
+        if curarg_index == 1:
+            return candidates.torrent_filter(args[curarg_index])
+
 
 class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
     name = 'magnet'
