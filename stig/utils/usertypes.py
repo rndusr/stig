@@ -309,7 +309,7 @@ class Path(str, StringableMixin):
             return str(self)
 
     @property
-    def base(self):
+    def base_path(self):
         return self._base
 
     @property
