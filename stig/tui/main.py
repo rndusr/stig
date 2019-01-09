@@ -84,7 +84,7 @@ def _create_cli_widget():
     from ..completion import candidates
     class MyCompleter(Completer):
         def get_candidates(self, args, curarg_index):
-            log.debug('Getting candidates for %r, %r, %r', args, curarg_index)
+            log.debug('Getting candidates for %r', args)
             if curarg_index == 0:
                 log.debug('Completing command: %r', args[0])
                 return (cmdcls.name for cmdcls in cmdmgr.active_commands)
