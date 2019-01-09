@@ -63,7 +63,7 @@ localcfg.on_change(_set_poll_interval, name='tui.poll')
 
 
 def _set_cli_history_dir(settings, name, value):
-    tui.cli.original_widget.history_file = os.path.join(value, 'commands')
+    tui.cli.original_widget.history_file = os.path.join(value.full_path, 'commands')
 localcfg.on_change(_set_cli_history_dir, name='tui.cli.history-dir')
 
 def _set_cli_history_size(settings, name, value):

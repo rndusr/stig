@@ -94,7 +94,7 @@ def _create_cli_widget():
                     log.debug('  Completing argument for %r', cmdcls.__name__)
                     return cmdcls.completion_candidates(args, curarg_index)
 
-    history_file = os.path.join(localcfg['tui.cli.history-dir'], 'commands')
+    history_file = os.path.join(localcfg['tui.cli.history-dir'].full_path, 'commands')
     from ..commands import OPS
     return CLIEditWidget(prompt=':',
                          history_file=history_file,

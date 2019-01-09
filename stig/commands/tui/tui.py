@@ -341,7 +341,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         # Derive history file name from command
         import re
         filename = re.sub('[/\n]', '__', ''.join(cmd))
-        history_file_base = os.path.join(self.cfg['tui.cli.history-dir'], filename)
+        history_file_base = os.path.join(self.cfg['tui.cli.history-dir'].full_path, filename)
 
         columns_args = [('pack', urwid.Text(':'))]
         self._cmd_parts = []
