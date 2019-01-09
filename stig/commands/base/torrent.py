@@ -78,6 +78,19 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
             else:
                 self.make_torrent_list(tfilter, sort, columns)
 
+    @classmethod
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """Complete positional arguments"""
+        return candidates.torrent_filter(args[curarg_index])
+
+    @classmethod
+    def completion_candidates_params(cls, option, args, curarg_index):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--sort':
+            return cls.cfg['sort.torrents'].options, (cls.cfg['sort.torrents'].sep.strip(),)
+        elif option == '--columns':
+            return cls.cfg['columns.torrents'].options, (cls.cfg['columns.torrents'].sep.strip(),)
+
 
 class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
     name = 'summary'
