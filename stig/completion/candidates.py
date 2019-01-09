@@ -35,33 +35,36 @@ def setting_names():
     """Names of settings"""
     return _setting_names
 
-
 def setting_values(setting, args, curarg_index):
     """Values of settings"""
-    setting = _get_setting(setting)
-    if setting is not None:
+    if setting in localcfg:
+        value = localcfg[setting]
+    elif setting.startswith('srv.') and setting[4:] in remotecfg:
+        value = remotecfg[setting[4:]]
+    else:
+        return
+
+    if value is not None:
+        curarg = args[curarg_index]
+
         # Some settings accept multiple values, others only one
         focus_on_first_value = curarg_index == 2
 
-        log.debug('Setting is a %s: %r', type(setting).__name__, setting)
+        log.debug('Setting is a %s: %r', type(value).__name__, value)
         # Get candidates depending on what kind of setting it is (bool, option, etc)
-        if isinstance(setting, usertypes.Option) and focus_on_first_value:
-            return setting.options
-        elif isinstance(setting, usertypes.Tuple):
-            return setting.options, (setting.sep.strip(),)
-        elif isinstance(setting, usertypes.Bool) and focus_on_first_value:
-            return (value
-                    for values in zip(usertypes.Bool.defaults['true'],
-                                      usertypes.Bool.defaults['false'])
-                    for value in values)
-
-def _get_setting(name):
-    # Get setting from localcfg or remotecfg
-    if name in localcfg:
-        return localcfg[name]
-    elif name.startswith('srv.') and name[4:] in remotecfg:
-        return remotecfg[name[4:]]
-    log.debug('No such setting: %r', name)
+        if isinstance(value, usertypes.Option) and focus_on_first_value:
+            return value.options
+        elif isinstance(value, usertypes.Tuple):
+            return value.options, (value.sep.strip(),)
+        elif isinstance(value, usertypes.Bool) and focus_on_first_value:
+            return (val
+                    for vals in zip(usertypes.Bool.defaults['true'],
+                                    usertypes.Bool.defaults['false'])
+                    for val in vals)
+        elif isinstance(value, usertypes.Path):
+            return fs_path(curarg.before_cursor,
+                           base=value.base_path,
+                           directories_only=os.path.isdir(value))
 
 
 def fs_path(path, base=os.path.expanduser('~'), directories_only=False, regex=None):
