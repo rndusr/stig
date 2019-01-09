@@ -98,3 +98,41 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, regex=No
                          (not directories_only or entry.is_dir()) and
                          (regex is None or entry.is_dir() or re.search(regex, entry.name))))
     return cands, ('/',)
+
+
+def torrent_filter(curarg):
+    """Torrent filter names or values"""
+    parts = curarg.separate(_possible_operators, include_seps=True)
+    if parts.curpart_index == 0:
+        log.debug('Completing torrent filtername of %r: %r', curarg, parts[0])
+        return _filter_names['torrent'], _possible_operators
+    elif parts.curpart_index == 2 and parts[0] in _filter_names['torrent']:
+        log.debug('Completing torrent filter value of %r: %r', curarg, parts.curpart)
+        return _filter_values('torrent', curarg.before_cursor), _possible_operators
+    else:
+        return (), ()
+
+from ..client import (TorrentFilter, TorrentFileFilter, TorrentPeerFilter,
+                      TorrentTrackerFilter, SettingFilter)
+_filter_names = {}
+for section,filter_class in (('torrent', TorrentFilter),
+                             ('file', TorrentFileFilter),
+                             ('peer', TorrentPeerFilter),
+                             ('tracker', TorrentTrackerFilter),
+                             ('setting', SettingFilter)):
+    _filter_names[section] = tuple(itertools.chain(filter_class.BOOLEAN_FILTERS,
+                                                   filter_class.COMPARATIVE_FILTERS))
+_possible_operators = tuple(o
+                            for op in TorrentFilter.OPERATORS
+                            for o in (op, TorrentFilter.INVERT_CHAR+op))
+
+async def _filter_values(section, filter_string):
+    from ..singletons import srvapi
+    try:
+        tfilter = TorrentFilter(filter_string)
+    except ValueError:
+        return
+    response = await srvapi.torrent.torrents(tfilter, from_cache=True)
+    key = tfilter.needed_keys[0]
+    return tuple(t[key] for t in response.torrents)
+
