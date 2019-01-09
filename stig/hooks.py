@@ -89,5 +89,5 @@ def _set_geoip(settings, name, value):
 localcfg.on_change(_set_geoip, name='geoip')
 
 def _set_geoip_dir(settings, name, value):
-    geoip.cachedir = value
+    geoip.cachedir = value.full_path
 localcfg.on_change(_set_geoip_dir, name='geoip.dir')
