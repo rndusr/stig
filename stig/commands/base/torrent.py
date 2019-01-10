@@ -301,36 +301,36 @@ class RenameTorrentCmdbase(metaclass=InitCommand):
     category = 'torrent'
     description = 'Rename a torrent or one of its files or directories'
     usage = ('rename <NEW>',
-             'rename <CURRENT> <NEW>')
+             'rename <TORRENT> <NEW>')
     examples = ('rename "A Better Name"',
                 'rename id=123 Foo',
                 'rename id=123/some/file new_file_name')
     argspecs = (
-        { 'names': ('CURRENT',), 'nargs': '?',
+        { 'names': ('TORRENT',), 'nargs': '?',
           'description': ('Torrent filter expression that matches exactly one torrent, '
                           'optionally followed by a "/" and the relative path to a '
                           'file or directory in the torrent'),
           'default_description': 'Focused torrent, file or directory in the TUI' },
 
         {'names': ('NEW',),
-         'description': ('New name of the torrent, file or directory specified by CURRENT '
+         'description': ('New name of the torrent, file or directory specified by TORRENT '
                          '(must not contain "/" or be "." or "..")')},
     )
     srvapi = ExpectedResource
 
-    async def run(self, CURRENT, NEW):
+    async def run(self, TORRENT, NEW):
         # Autodetect current path
-        if not CURRENT:
+        if not TORRENT:
             path = self.get_focused_path_in_torrent()
             if path:
                 # path is <torrent name>/<relative/path/to/file/in/torrent>
-                CURRENT = path
+                TORRENT = path
 
         # Split filter from current path
-        if CURRENT and '/' in CURRENT:
-            FILTER, PATH = CURRENT.split('/', maxsplit=1)
+        if TORRENT and '/' in TORRENT:
+            FILTER, PATH = TORRENT.split('/', maxsplit=1)
         else:
-            FILTER, PATH = CURRENT, None
+            FILTER, PATH = TORRENT, None
 
         try:
             tfilter = self.select_torrents(FILTER,
