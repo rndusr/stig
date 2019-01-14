@@ -68,6 +68,15 @@ class TestSingleTorrentFilter(unittest.TestCase):
         self.assertEqual(str(SingleTorrentFilter('\' "foo \' ')), "~' \"foo '")
         self.assertEqual(str(SingleTorrentFilter("'")), "~'")
 
+    def test_space_in_value_is_quoted_in_string_representatoin(self):
+        self.assertEqual(str(SingleTorrentFilter('name=the name')), "='the name'")
+
+    def test_matching_with_space_in_value(self):
+        tlist = (MockTorrent({'name': 'the name'}),
+                 MockTorrent({'name': 'the other name'}))
+        result = tuple(SingleTorrentFilter('name=the name').apply(tlist, key='name'))
+        self.assertEqual(result, ('the name',))
+
     def test_unknown_filter(self):
         with self.assertRaises(ValueError) as cm:
             SingleTorrentFilter('foo=bar')

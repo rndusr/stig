@@ -251,7 +251,7 @@ class Filter():
                 return name + op
             else:
                 val = str(self._value)
-                if val == '' or val[0] == ' ' or val[-1] == ' ':
+                if val == '' or ' ' in val:
                     # Quote value if there are spaces in it
                     val = repr(val)
                 return name + op + val

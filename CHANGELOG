@@ -18,6 +18,8 @@
   Fixed bugs:
     * Fixed crash with "Filter can't end with operator".
     * Setting filters are now documented (`help filters`)
+    * When 'remove.max-hits' triggered, the displayed list of torrents didn't
+      handle spaces correctly.
 
 
 2018-09-25 0.10.1a
