@@ -654,17 +654,18 @@ class Arg(str):
         """Cursor position in argument"""
         return self._curpos
 
-    def separate(self, seps, include_seps=True):
+    def separate(self, seps, maxseps=None, include_seps=True):
         """
         Split argument at any occurence of any string in `seps`
 
-        `include_seps`: Whether to include separators in the new list
+        maxseps: Maximum number of separations or None
+        include_seps: Whether to include separators in the new list
 
         Return a `Parts` object
         """
         seps = tuple(seps)
         log.debug('Splitting %r at separators: %r', str(self), seps)
-        parts = tokenize(self, seps)
+        parts = tokenize(self, delims=seps, maxdelims=maxseps)
         curpart_index, curpart_curpos = get_position(parts, self.curpos)
         if include_seps:
             log.debug('Moving away from separators')
