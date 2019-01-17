@@ -67,13 +67,14 @@ def setting_values(setting, args, curarg_index):
                            directories_only=os.path.isdir(value))
 
 
-def fs_path(path, base=os.path.expanduser('~'), directories_only=False, regex=None):
+def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=None, regex=None):
     """
     File system path entries
 
     path: Path to get entries from
     base: Absolute path that is prepended to `path` if `path` is not absolute
     directories_only: Whether to include only directories
+    glob: Unix shell pattern
     regex: Regular expression that is matched against each name in `path`
     """
     log.debug('Getting path candidates for %r', path)
@@ -96,8 +97,15 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, regex=No
             cands = (entry.name for entry in itr
                      if ((include_hidden or not entry.name.startswith('.')) and
                          (not directories_only or entry.is_dir()) and
-                         (regex is None or entry.is_dir() or re.search(regex, entry.name))))
-    return cands, ('/',)
+                         (regex is None or entry.is_dir() or re.search(regex, entry.name)) and
+                         (glob is None or entry.is_dir() or fnmatch(entry.name, glob))))
+            if directories_only:
+                label = 'Directories in %s' % (os.path.abspath(path),)
+            else:
+                label = '%s' % (os.path.abspath(path),)
+            if glob:
+                label += '/%s' % (glob,)
+    return Candidates(cands, label=label, curarg_seps=('/',))
 
 
 def torrent_filter(curarg):

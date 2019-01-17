@@ -90,3 +90,13 @@ class Test_fs_path(unittest.TestCase):
         self.do('x', base='/', regex=r'b', exp_cands=('bar', 'baz'))
         self.do('x', base='/', regex=r'oo$', exp_cands=('foo', 'baz'))
         self.do('x', base='/', regex=r'asdf', exp_cands=('baz',))
+
+    @patch('os.scandir')
+    def test_glob(self, scandir):
+        scandir.return_value = [
+            SimpleNamespace(name='foo', is_dir=lambda *a, **k: False),
+            SimpleNamespace(name='bar', is_dir=lambda *a, **k: False),
+            SimpleNamespace(name='baz', is_dir=lambda *a, **k: True)
+        ]
+        self.do('x', base='/', glob=r'f*', exp_cands=('foo', 'baz'))
+        self.do('x', base='/', glob=r'*r', exp_cands=('bar', 'baz'))
