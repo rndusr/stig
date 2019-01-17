@@ -619,7 +619,17 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=(' ',)):
 
 class Parts(tuple):
     def __new__(cls, parts, curpart, curpart_index, curpart_curpos):
-        obj = super().__new__(cls, parts)
+        # Make sure all parts are Arg instances
+        def gen():
+            for i,part in enumerate(parts):
+                if not isinstance(part, Arg):
+                    if i == curpart_index:
+                        yield Arg(part, curpos=curpart_curpos)
+                    else:
+                        yield Arg(part)
+                else:
+                    yield part
+        obj = super().__new__(cls, gen())
         obj.curpart = curpart
         obj.curpart_index = curpart_index
         obj.curpart_curpos = curpart_curpos
