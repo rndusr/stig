@@ -137,8 +137,6 @@ class Test_parse(unittest.TestCase):
     def do(self, string, *, exp, **kwargs):
         self.maxDiff = None
         chars = tuple(utils._parse(string, **kwargs))
-        for c in chars:
-            print(repr(c))
         self.assertEqual(chars, tuple(exp))
 
     def test_defaults__space(self):
@@ -392,7 +390,6 @@ class Test_quote(unittest.TestCase):
     def test_space(self):
         self.assertEqual(utils.quote('foo bar baz'), '"foo bar baz"')
         for i in range(11):
-            print(i)
             self.assertEqual(utils.quote('foo bar baz', curpos=i),  ('"foo bar baz"', i+1))
         self.assertEqual(utils.quote('foo bar baz', curpos=11), ('"foo bar baz"', 13))
 
