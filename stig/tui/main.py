@@ -81,18 +81,22 @@ def _create_cli_widget():
         reset_cli(cli)
 
     from .completion import Completer
-    from ..completion import candidates
-    class MyCompleter(Completer):
-        def get_candidates(self, args, curarg_index):
-            log.debug('Getting candidates for %r', args)
-            if curarg_index == 0:
-                log.debug('Completing command: %r', args[0])
-                return (cmdcls.name for cmdcls in cmdmgr.active_commands)
-            else:
-                cmdcls = cmdmgr.get_cmdcls(args[0])
-                if cmdcls is not None:
-                    log.debug('  Completing argument for %r', cmdcls.__name__)
-                    return cmdcls.completion_candidates(args, curarg_index)
+    from ..completion import (Candidates, candidates)
+    def get_candidates(args, curarg_index):
+        log.debug('Getting candidates for %r', args)
+        if curarg_index == 0:
+            log.debug('Completing command: %r', args[0])
+            return (Candidates((cmdcls.name for cmdcls in cmdmgr.active_commands),
+                               label='Commands'),
+                    Candidates(('foo', 'bar', 'baz'),
+                               label='Schnickschnack'),
+                    Candidates(('one', 'two', 'three'),
+                               label=''))
+        else:
+            cmdcls = cmdmgr.get_cmdcls(args[0])
+            if cmdcls is not None:
+                log.debug('  Completing argument for %r', cmdcls.__name__)
+                return cmdcls.completion_candidates(args, curarg_index)
 
     history_file = os.path.join(localcfg['tui.cli.history-dir'].full_path, 'commands')
     from ..commands import OPS
@@ -100,7 +104,7 @@ def _create_cli_widget():
                          history_file=history_file,
                          on_cancel=reset_cli,
                          on_accept=run_cmd,
-                         completer=MyCompleter(operators=OPS))
+                         completer=Completer(get_candidates, operators=OPS))
 
 
 

@@ -8,9 +8,9 @@ from types import SimpleNamespace
 
 class Test_fs_path(unittest.TestCase):
     def do(self, *args, exp_cands, **kwargs):
-        cands, argsep = candidates.fs_path(*args, **kwargs)
-        self.assertEqual(tuple(cands), exp_cands)
-        self.assertEqual(argsep, ('/',))
+        cands = candidates.fs_path(*args, **kwargs)
+        self.assertEqual(tuple(cands), tuple(sorted(exp_cands)))
+        self.assertEqual(cands.curarg_seps, ('/',))
 
     @patch('os.scandir')
     @patch('os.path.expanduser')

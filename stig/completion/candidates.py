@@ -15,9 +15,9 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 
-from ..singletons import (localcfg, remotecfg)
-from ..singletons import cmdmgr
+from ..singletons import (localcfg, remotecfg, cmdmgr, srvapi)
 from ..utils import usertypes
+from ..completion import Candidates
 
 import itertools
 import os
@@ -33,7 +33,8 @@ def commands():
 _setting_names = tuple(itertools.chain(localcfg, ('srv.' + name for name in remotecfg)))
 def setting_names():
     """Names of settings"""
-    return _setting_names
+    return Candidates(_setting_names, label='Settings')
+
 
 def setting_values(setting, args, curarg_index):
     """Values of settings"""
@@ -53,14 +54,16 @@ def setting_values(setting, args, curarg_index):
         log.debug('Setting is a %s: %r', type(value).__name__, value)
         # Get candidates depending on what kind of setting it is (bool, option, etc)
         if isinstance(value, usertypes.Option) and focus_on_first_value:
-            return value.options
+            return Candidates(value.options, label='%s options' % (setting,))
         elif isinstance(value, usertypes.Tuple):
-            return value.options, (value.sep.strip(),)
+            return Candidates(value.options, label='%s options' % (setting,),
+                              curarg_seps=(value.sep.strip(),))
         elif isinstance(value, usertypes.Bool) and focus_on_first_value:
-            return (val
-                    for vals in zip(usertypes.Bool.defaults['true'],
-                                    usertypes.Bool.defaults['false'])
-                    for val in vals)
+            options = (val
+                       for vals in zip(usertypes.Bool.defaults['true'],
+                                       usertypes.Bool.defaults['false'])
+                       for val in vals)
+            return Candidates(options, label='%s options' % (setting,))
         elif isinstance(value, usertypes.Path):
             return fs_path(curarg.before_cursor,
                            base=value.base_path,
@@ -83,6 +86,7 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
         import pwd
         users = pwd.getpwall()
         cands = ('~%s' % (user.pw_name,) for user in users)
+        label = 'Home directories'
     else:
         include_hidden = os.path.basename(path).startswith('.')
         dirpath = os.path.expanduser(path)
@@ -93,7 +97,9 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
             itr = os.scandir(dirpath)
         except (FileNotFoundError, NotADirectoryError, PermissionError):
             cands = ()
+            label = 'No matches'
         else:
+            from fnmatch import fnmatch
             cands = (entry.name for entry in itr
                      if ((include_hidden or not entry.name.startswith('.')) and
                          (not directories_only or entry.is_dir()) and
@@ -108,20 +114,27 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
     return Candidates(cands, label=label, curarg_seps=('/',))
 
 
-def torrent_filter(curarg):
+async def torrent_filter(curarg):
     """Torrent filter names or values"""
     parts = curarg.separate(_possible_operators, include_seps=True)
     if parts.curpart_index == 0:
         log.debug('Completing torrent filtername of %r: %r', curarg, parts[0])
-        return _filter_names['torrent'], _possible_operators
+        return (
+            Candidates(_filter_names['torrent'],
+                       label='Torrent Filters',
+                       curarg_seps=_possible_operators),
+            Candidates(await _filter_values('torrent', 'name~'),
+                       label='name~ torrents')
+        )
     elif parts.curpart_index == 2 and parts[0] in _filter_names['torrent']:
         log.debug('Completing torrent filter value of %r: %r', curarg, parts.curpart)
-        return _filter_values('torrent', curarg.before_cursor), _possible_operators
-    else:
-        return (), ()
+        return (Candidates(await _filter_values('torrent', parts[0]),
+                           label='%s torrents' % parts[0],
+                           curarg_seps=_possible_operators),)
 
 from ..client import (TorrentFilter, TorrentFileFilter, TorrentPeerFilter,
                       TorrentTrackerFilter, SettingFilter)
+
 _filter_names = {}
 for section,filter_class in (('torrent', TorrentFilter),
                              ('file', TorrentFileFilter),
@@ -134,13 +147,14 @@ _possible_operators = tuple(o
                             for op in TorrentFilter.OPERATORS
                             for o in (op, TorrentFilter.INVERT_CHAR+op))
 
-async def _filter_values(section, filter_string):
-    from ..singletons import srvapi
+async def _filter_values(section, filter_name):
     try:
-        tfilter = TorrentFilter(filter_string)
-    except ValueError:
-        return
-    response = await srvapi.torrent.torrents(tfilter, from_cache=True)
-    key = tfilter.needed_keys[0]
-    return tuple(t[key] for t in response.torrents)
-
+        filter = TorrentFilter(filter_name)
+    except ValueError as e:
+        pass
+    else:
+        response = await srvapi.torrent.torrents(filter, from_cache=True)
+        if response.success:
+            key = filter.needed_keys[0]
+            return tuple(t[key] for t in response.torrents)
+    return ()

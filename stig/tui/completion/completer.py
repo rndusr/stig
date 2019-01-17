@@ -14,78 +14,45 @@ log = make_logger(__name__)
 
 import re
 from collections import abc
+import asyncio
+import inspect
 
 from . import _utils
-from ...completion import (Candidates, Candidate)
-
-import inspect
+from ...completion import (Categories, Candidates, SingleCandidate)
 
 
 class Completer():
-    """
-    Parse command line and provide completion candidates and methods
-    """
-    def get_candidates(self, args, curarg_index):
-        """
-        Return completion candidates for given arguments and optionally a separator
-        for the currently focused argument (e.g. "/" to split paths).
+    """Parse command line and provide completion candidates and methods"""
 
-        Completion candidates can be `None` or any iteratable of strings.
-
-        Argument separators, if given, must None or an iterable.
-        """
-        raise NotImplementedError()
-
-    async def _get_candidates_wrapper(self, *args, **kwargs):
-        result = self.get_candidates(*args, **kwargs)
-        if inspect.isawaitable(result):
-            result = await result
-
-        # Untangle cands and curarg_seps
-        if isinstance(result, abc.Sequence) and len(result) == 2:
-            if isinstance(result[0], str):
-                cands, curarg_seps = result, ()
-            else:
-                cands, curarg_seps = result
-        else:
-            cands, curarg_seps = result, ()
-
-        def isiterable(obj):
-            try:
-                iter(obj)
-            except TypeError:
-                return False
-            else:
-                return True
-
-        async def normalize(something):
-            if inspect.isawaitable(something):
-                something = await something
-            if something is None:
-                something = ()
-            if isinstance(something, str):
-                yield something
-            elif isiterable(something):
-                for thing in something:
-                    async for t in normalize(thing):
-                        yield t
-            else:
-                yield str(something)
-
-        # We can only exhaust the async generator by putting it in a list first.
-        # Putting the items in a tuple via a generator throws "TypeError:
-        # 'async_generator' object is not iterable"
-        cands = Candidates(*[x async for x in normalize(cands)])
-        curarg_seps = tuple([x async for x in normalize(curarg_seps)])
-        return cands, curarg_seps
-
-    def __init__(self, operators=()):
-        self.operators = operators
+    def __init__(self, get_candidates, operators=()):
+        assert callable(get_candidates), 'Not callable: %r' % get_candidates
+        self._get_candidates = get_candidates
+        self._operators = operators
         self.reset()
+
+    async def _get_candidates_wrapper(self, args, curarg_index):
+        async def if_coro(x):
+            while inspect.isawaitable(x):
+                x = await x
+            return x
+
+        cands = await if_coro(self._get_candidates(args, curarg_index))
+        if cands is None:
+            cats = ()
+        elif isinstance(cands, Candidates):
+            cats = (cands,)
+        elif isinstance(cands, tuple) and all(isinstance(c, Candidates) for c in cands):
+            cats = cands
+        else:
+            raise RuntimeError('Not all Candidates objects: %r' % (cands,))
+
+        # Include current user input (this is filled in later when the current
+        # command line is parsed)
+        return Categories(SingleCandidate(''), *cats)
 
     def reset(self):
         self._tokens = ()
-        self._candidates = Candidates()
+        self._categories = Categories()  # Tuple of Candidates objects
         self._curpos = 0
         self._curtok_index = None
         self._curtok_curpos = None
@@ -102,72 +69,46 @@ class Completer():
         if curcmd_tokens is None:
             log.debug('No current command - no candidates')
             self.reset()
-            return
-
-        # The candidate getter gets unescaped/unquoted tokens with delimiting
-        # spaces removed (i.e. "arguments" or what would appear in sys.argv).
-        # The cursor position and the index of the current argument may need to
-        # be adjusted.
-        curcmd_args, curcmd_curarg_index, curarg_curpos = \
-            _utils.as_args(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
-        curarg = curcmd_args[curcmd_curarg_index]
-
-        # Get all possible completion candidates
-        all_cands, curarg_seps = await self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
-        log.debug('All Candidates: %r', all_cands)
-
-        # The candidate getter may have specified custom separators for the
-        # current argument to guide us when inserting a replacement, e.g. paths
-        # are separated at "/" and we don't want to complete the full path, just
-        # the part between two "/".
-        if curarg_seps:
-            log.debug('Separators for current argument: %r', curarg_seps)
-            curarg_parts = curarg.separate(curarg_seps, include_seps=True)
-            log.debug('Current argument part: %r', curarg_parts)
-            curarg_curpart = curarg_parts.curpart
-            common_prefix = curarg_parts.curpart_before_cursor
-
-            # We must also split the current token so we can easily replace only
-            # one part of an argument with different candidates.  We can't just
-            # use `curarg_parts` because that has all special characters
-            # removed, and we want to preserve them in `tokens`.
-            _curtok_parts = _utils.tokenize(tokens[curtok_index], curarg_seps)
-            _curpart_index, _curpart_curpos = _utils.get_position(_curtok_parts, curtok_curpos)
-            _curtok_parts, _curpart_index, _curpart_curpos = \
-                _utils.avoid_delims(_curtok_parts, _curpart_index, _curpart_curpos, curarg_seps)
-            log.debug('Separated current token: %r', _curtok_parts)
-            tokens[curtok_index:curtok_index+1] = _curtok_parts
-            curtok_index += _curpart_index
-            curtok_curpos = _curpart_curpos
-            log.debug('Tokens with separated argument: %r', tokens)
-            log.debug('New current token: %r: %r', curtok_index, tokens[curtok_index])
-            log.debug('New current token cursor position: %r', curtok_curpos)
-
         else:
-            curarg_curpart = curarg
-            common_prefix = curarg.before_cursor
-        log.debug('Common prefix: %r', common_prefix)
+            # The candidate getter gets unescaped/unquoted tokens with delimiting
+            # spaces removed (i.e. "arguments" or what would appear in sys.argv).
+            # The cursor position and the index of the current argument may need to
+            # be adjusted.
+            curcmd_args, curcmd_curarg_index, curarg_curpos = \
+                _utils.as_args(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
+            curarg = curcmd_args[curcmd_curarg_index]
 
-        # Filter out any candidates that don't match the current argument.
-        matching_cands = all_cands.reduce(common_prefix=common_prefix)
+            # Get all possible candidates and find matches
+            self._categories = await self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
+            self._curarg_parts = {}
+            log.debug('Reducing Candidates')
+            for cands in self._categories.all:
+                # The candidate getter may have specified custom separators for
+                # the current argument to guide us when inserting a replacement,
+                # e.g. paths are separated at "/" and we don't want to complete
+                # the full path, just the part between two "/".
+                if cands.curarg_seps:
+                    log.debug('  Separators for current argument: %r', cands.curarg_seps)
+                    curarg_parts = curarg.separate(cands.curarg_seps, include_seps=True)
+                    log.debug('  Current argument parts: %r', curarg_parts)
+                    common_prefix = curarg_parts.curpart_before_cursor
+                    self._curarg_parts[cands] = curarg_parts.curpart_before_cursor
+                else:
+                    common_prefix = curarg.before_cursor
+                    self._curarg_parts[cands] = curarg.before_cursor
+                log.debug('Common prefix: %r', common_prefix)
+                # Filter out any candidates that don't match the current argument
+                cands.reduce(r'(?i)^%s' % (re.escape(common_prefix),))
 
-        # If there are any matching candidates, include the current argument as
-        # a candidate so the user can cycle to their original input when
-        # selecting different candidates.
-        if matching_cands and curarg not in matching_cands:
-            curarg_cand = Candidate(curarg_curpart, curpos=curarg_curpos)
-            cands_with_current_user_input = (curarg_cand,) + matching_cands.sorted()
-            self._candidates = matching_cands.copy(*cands_with_current_user_input,
-                                                   current_index=0)
-        else:
-            self._candidates = matching_cands.sorted(preserve_current=False)
-        log.debug('Candidates: %r', self._candidates)
+            # Include current user input as the first candidate so the user can
+            # select it again after selecting other candidates
+            self._update_current_user_input()
 
-        # Preserve stuff we need for re-assembling the command line
-        self._curpos = curpos
-        self._tokens = tokens
-        self._curtok_index = curtok_index
-        self._curtok_curpos = curtok_curpos
+            # Preserve stuff we need for re-assembling the command line
+            self._curpos = curpos
+            self._tokens = tokens
+            self._curtok_index = curtok_index
+            self._curtok_curpos = curtok_curpos
 
     def complete_next(self):
         """
@@ -175,8 +116,8 @@ class Completer():
 
         Return new command line and cursor position
         """
-        self._candidates.next()
-        log.debug('Selected next candidate: %r', self._candidates.current)
+        self.categories.next()
+        self._update_current_user_input()
         return self._assemble_cmdline()
 
     def complete_prev(self):
@@ -185,45 +126,78 @@ class Completer():
 
         Return new command line and cursor position
         """
-        self._candidates.prev()
-        log.debug('Selected previous candidate: %r', self._candidates.current)
+        self.categories.prev()
+        self._update_current_user_input()
         return self._assemble_cmdline()
 
     def _assemble_cmdline(self):
         """
-        Apply currently selected candidte to command line
+        Apply currently selected candidate to command line
 
         Return new command line string and adjusted cursor position
         """
         log.debug('Assembling %r', self._tokens)
-        if self._candidates.current is None:
+        if not self.categories.current:
             # Return original, unmodified command line
             return ''.join(self._tokens), self._curpos
         else:
+            # Split the current token as specified by get_candidates() so we can
+            # replace part of an argument, e.g. a directory in a path.
+            curtok = self._tokens[self._curtok_index]
+            curarg_seps = self.categories.current.curarg_seps
+            curtok_parts = _utils.tokenize(curtok, delims=curarg_seps)
+            curpart_index, curpart_curpos = _utils.get_position(curtok_parts, self._curtok_curpos)
+            curtok_parts, curpart_index, curpart_curpos = \
+                _utils.avoid_delims(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
+            log.debug('Separated current token: %r', curtok_parts)
+            self._tokens[self._curtok_index:self._curtok_index+1] = curtok_parts
+            self._curtok_index += curpart_index
+            self._curtok_curpos = curpart_curpos
+            log.debug('Tokens with separated argument: %r', self._tokens)
+            log.debug('New current token: %r: %r', self._curtok_index, self._tokens[self._curtok_index])
+            log.debug('New current token cursor position: %r', self._curtok_curpos)
+
             # Copy user-typed tokens and insert current candidate
+            curcands = self.categories.current
+            curcand = curcands.current
             tokens = list(self._tokens)
-            curtok_index = self._curtok_index
-            curtok = tokens[curtok_index]
-            cand = self._candidates.current
+            curtok = self._tokens[self._curtok_index]
+
             if _utils.is_escaped(curtok):
-                cand_clisafe, cand_curpos = _utils.escape(cand, curpos=cand.curpos)
+                curcand_token = _utils.escape(curcand)
             else:
-                cand_clisafe, cand_curpos = _utils.quote(cand, curpos=cand.curpos)
-            new_curpos = self._curpos - self._curtok_curpos + cand_curpos
-            log.debug('Replacing %r with %r', tokens[curtok_index], cand_clisafe)
-            tokens[curtok_index] = cand_clisafe
-            log.debug('Assembled: %r', ''.join(tokens[:new_curpos]) + '|' + ''.join(tokens[new_curpos:]))
+                curcand_token = _utils.quote(curcand)
+            new_curpos = self._curpos - self._curtok_curpos + len(curcand_token)
+            log.debug('Replacing %r with %r', tokens[self._curtok_index], curcand_token)
+            tokens[self._curtok_index] = curcand_token
+            log.debug('New command line: %r',
+                      ''.join(tokens[:self._curtok_index]) +
+                      tokens[self._curtok_index][new_curpos:] + '|' + tokens[self._curtok_index][new_curpos:] +
+                      ''.join(tokens[self._curtok_index:]))
             return ''.join(tokens), new_curpos
 
-    @property
-    def candidates(self):
-        """Sequence of strings that are valid for the current argument"""
-        return self._candidates
+    def _update_current_user_input(self):
+        """ """
+        if self._categories:
+            user_input_cands = self._categories[0]
+            user_input_cands.set(self.current_user_input)
+            user_input_cands.curarg_seps = self._categories.current.curarg_seps
+            log.debug('Updated current user input candidate: %r', user_input_cands)
 
     @property
-    def operators(self):
-        """Sequence of strings that functions as delimiters between commands"""
-        return self._operators
-    @operators.setter
-    def operators(self, operators):
-        self._operators = tuple(operators)
+    def current_user_input(self):
+        """Portion of user input that is replaced with completion candidates"""
+        cats_len = len(self._categories)
+        if cats_len:
+            if cats_len == 2:
+                # There is current user input and one other category of candidates.
+                # Use the argument separator of the latter.
+                curcands = self._categories[1]
+            else:
+                curcands = self._categories.current
+            return self._curarg_parts[curcands]
+
+    @property
+    def categories(self):
+        """Tuple of Candidates objects for current command line"""
+        return self._categories

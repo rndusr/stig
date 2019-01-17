@@ -87,9 +87,11 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     def completion_candidates_params(cls, option, args, curarg_index):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
-            return cls.cfg['sort.torrents'].options, (cls.cfg['sort.torrents'].sep.strip(),)
+            return candidates.Candidates(cls.cfg['sort.torrents'].options,
+                                         curarg_seps=(cls.cfg['sort.torrents'].sep.strip(),))
         elif option == '--columns':
-            return cls.cfg['columns.torrents'].options, (cls.cfg['columns.torrents'].sep.strip(),)
+            return candidates.Candidates(cls.cfg['columns.torrents'].options,
+                                         curarg_seps=(cls.cfg['columns.torrents'].sep.strip(),))
 
 
 class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
@@ -211,7 +213,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
     def completion_candidates_posargs(cls, args, curarg_index):
         """Complete positional arguments"""
         return candidates.fs_path(args[curarg_index].before_cursor,
-                                  regex=r'\.torrent$')
+                                  glob=r'*.torrent')
 
     @classmethod
     def completion_candidates_params(cls, option, args, curarg_index):
@@ -259,7 +261,7 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 raise CmdError()
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    async def completion_candidates_posargs(cls, args, curarg_index):
         """Complete positional arguments"""
         def complete_path(curarg):
             curarg = args[curarg_index]
@@ -276,22 +278,9 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 return complete_path(curarg)
         elif len(args) == 2:
             # Single argument may be a path or a filter
-            filter_cands, filter_curarg_seps = candidates.torrent_filter(curarg)
-            path_cands, path_curarg_seps = complete_path(curarg)
-
-            # Check for path separator in curarg
-            if any(sep in curarg for sep in path_curarg_seps):
-                return path_cands, path_curarg_seps
-
-            # Check if we can find a filter operator
-            parts = curarg.separate(filter_curarg_seps, include_seps=True)
-            if len(parts) >=2 and parts[1] in filter_curarg_seps:
-                return filter_cands, filter_curarg_seps
-
-            # Default to completing filters and paths
-            cands = (path_cands, filter_cands)
-            curarg_seps = (path_curarg_seps, filter_curarg_seps)
-            return cands, curarg_seps
+            filter_cands = await candidates.torrent_filter(curarg) or ()
+            path_cands = complete_path(curarg) or ()
+            return (path_cands,) + filter_cands
 
 
 class RenameTorrentCmdbase(metaclass=InitCommand):

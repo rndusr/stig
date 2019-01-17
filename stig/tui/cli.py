@@ -15,9 +15,12 @@ log = make_logger(__name__)
 import urwid
 import os
 import blinker
+import asyncio
+import time
 
 from .group import Group
 from .scroll import ScrollBar
+from ..singletons import aioloop
 
 
 class CLIEditWidget(urwid.WidgetWrap):
@@ -28,7 +31,7 @@ class CLIEditWidget(urwid.WidgetWrap):
                  history_file=None, history_size=1000, **kwargs):
         # Widgets
         self._editw = urwid.Edit(prompt, wrap='clip')
-        self._candsw = CompletionCandidatesWidget()
+        self._candsw = CompletionCandidatesWidget(completer)
         self._groupw = Group(cls=urwid.Pile)
         self._groupw.add(name='candidates', widget=self._candsw, visible=False, options=10)
         self._groupw.add(name='cmdline', widget=self._editw, visible=True, options='pack')
@@ -49,7 +52,6 @@ class CLIEditWidget(urwid.WidgetWrap):
         self._on_change.connect(self._cb_change)
         self._on_move.connect(self._cb_move)
         self._user_input = None
-        self._prev_key_was_tab = False
 
         # History
         self._history = []
@@ -164,47 +166,63 @@ class CLIEditWidget(urwid.WidgetWrap):
         self._complete('prev')
 
     def _complete(self, direction):
-        if self._completer is not None:
+        compl = self._completer
+        if compl is not None:
+            # If self._completer.update() is currently running, wait for that to
+            # finish so we don't insert candidates that won't be listed
+            # milliseconds later.
+            old_task = getattr(self, '_completion_update_task', None)
+            if old_task is not None and not old_task.done():
+                log.debug('Waiting for new candidates')
+                return
+                # TODO: Instead of doing nothing, create a background task that
+                # waits for self._completion_update_task and calls this function
+                # again.
+
             if direction == 'next':
-                self._editw.edit_text, self._editw.edit_pos = self._completer.complete_next()
+                self._editw.edit_text, self._editw.edit_pos = compl.complete_next()
             elif direction == 'prev':
-                self._editw.edit_text, self._editw.edit_pos = self._completer.complete_prev()
+                self._editw.edit_text, self._editw.edit_pos = compl.complete_prev()
             else:
                 raise ValueError('direction must be "next" or "prev"')
-
             log.debug('Completed: %r, %r', self._editw.edit_text, self._editw.edit_pos)
-            if self._completer.candidates.current_index is not None:
-                log.debug('Setting candidates focus: %r', self._completer.candidates.current_index)
-                self._candsw.focus_position = self._completer.candidates.current_index
+            self._candsw.update_candidates()
 
     def _cb_change(self, _):
         # Update candidate list whenever edit text is changed
-        self._prev_key_was_tab = False
         self._update_completion_candidates()
 
     def _cb_move(self, _):
         # Candidates are based on where the cursor is in the command line
-        self._prev_key_was_tab = False
         self._update_completion_candidates()
 
     def _update_completion_candidates(self):
         if self._completer is not None:
+            old_task = getattr(self, '_completion_update_task', None)
+            if old_task is not None:
+                old_task.cancel()
+
             def callback(task):
-                log.debug('New candidates: %r', self._completer.candidates)
-                self._candsw.update(self._completer.candidates)
-                self._maybe_hide_or_show_menu()
-            from ..singletons import aioloop
-            log.debug('Updating completer: %r, %r', self._editw.edit_text, self._editw.edit_pos)
-            task = aioloop.create_task(self._completer.update(self._editw.edit_text, self._editw.edit_pos))
-            task.add_done_callback(callback)
+                try:
+                    task.result()
+                except asyncio.CancelledError:
+                    pass
+                else:
+                    self._candsw.update_candidates()
+                    self._maybe_hide_or_show_menu()
+
+            coro = self._completer.update(self._editw.edit_text, self._editw.edit_pos)
+            self._completion_update_task = aioloop.create_task(coro)
+            self._completion_update_task.add_done_callback(callback)
 
     def _maybe_hide_or_show_menu(self):
         if self._completer is not None:
             candsw_visible = self._groupw.visible('candidates')
-            if self._completer.candidates and not candsw_visible:
+            any_matches = len(self._completer.categories) > 1  # First is current user input
+            if any_matches and not candsw_visible:
                 log.debug('Showing completion menu')
                 self._groupw.show('candidates')
-            elif not self._completer.candidates and candsw_visible:
+            elif not any_matches and candsw_visible:
                 log.debug('Hiding completion menu')
                 self._groupw.hide('candidates')
 
@@ -288,7 +306,8 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
     def selectable(self):
         return False
 
-    def __init__(self):
+    def __init__(self, completer):
+        self._completer = completer
         self._listbox = urwid.ListBox(urwid.SimpleFocusListWalker([]))
         super().__init__(
             urwid.AttrMap(ScrollBar(
@@ -297,29 +316,48 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         )
 
     def reset(self):
-        self.update(())
-
-    def update(self, cands):
-        # log.debug('CompletionCandidatesWidget: Updating displayed candidates: %r', cands)
-        self._listbox.body[:] = tuple(self._mk_widget(cand) for cand in cands)
-        if self._listbox.body:
-            self._listbox.focus_position = cands.current_index
-            log.debug('CompletionCandidatesWidget: Focusing %r: %r', cands.current_index, cands.current)
-
-    @staticmethod
-    def _mk_widget(cand):
-        return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
-                             'completion.item', 'completion.item.focused')
-    @property
-    def focus_position(self):
-        return self._listbox.focus_position
-    @focus_position.setter
-    def focus_position(self, pos):
-        self._listbox.focus_position = pos
+        self._listbox.body[:] = ()
 
     def render(self, size, focus=False):
         # Always render as focused to highlight the focused candidate
         return super().render(size, focus=True)
+
+    def update_candidates(self):
+        if not self._completer.categories:
+            self.reset()
+        else:
+            def cand_widget(cand):
+                return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
+                                     'completion.item', 'completion.item.focused')
+            def cat_widget(cand):
+                return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
+                                     'completion.category', 'default')
+            widgets = []
+            for cands in self._completer.categories:
+                if cands.label:
+                    widgets.append(cat_widget(cands.label))
+                for cand in cands:
+                    widgets.append(cand_widget(cand))
+            self._listbox.body[:] = widgets
+
+            # Change focus position
+            # Candidates are rendered as a flat list, which means we have to
+            # calculate the focus_position, skipping category headers. Having
+            # each category in a separate ListBox would be nicer, but nested
+            # ListBoxes don't seem to work correctly: If the focused item is
+            # moved out of view, the view doesn't scroll to follow it.
+            cats = self._completer.categories
+            if cats.current:
+                pos = 0
+                if cats.current_index > 0:
+                    for cands in cats[:cats.current_index]:
+                        if cands.label:
+                            pos += 1
+                        pos += len(cands)
+                if cats.current.label:
+                    pos += 1
+                pos += cats.current.current_index
+                self._listbox.focus_position = pos
 
 
 def _mkdir(path):

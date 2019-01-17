@@ -1,14 +1,16 @@
 from stig.tui.cli import CLIEditWidget
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import tempfile
 import os
+import asynctest
+import asyncio
 
 from . _handle_urwidpatches import (setUpModule, tearDownModule)
 
 
-class TestCLIEditWidget(unittest.TestCase):
+class TestCLIEditWidget(asynctest.TestCase):
     def setUp(self):
         def on_accept(w):
             w.reset()
@@ -110,23 +112,18 @@ class TestCLIEditWidget(unittest.TestCase):
         self.w.keypress((80,), 'tab')
         self.assertEqual(self.w.edit_text, 'asdf')
 
-    def test_completer(self):
-        class MockCandidates(tuple):
-            def __new__(cls, *args, current_index=None, **kwargs):
-                obj = super().__new__(cls, *args, **kwargs)
-                obj.current_index = None
-                return obj
+    async def test_completer(self):
+        with patch('stig.tui.cli.aioloop', self.loop):
+            class MockCompleter():
+                update = asynctest.CoroutineMock()
+                complete_next = MagicMock()
+                categories = ()
+            self.w._completer = self.w._candsw._completer = MockCompleter()
 
-        import asynctest
-        class MockCompleter():
-            update = asynctest.CoroutineMock()
-            complete_next = MagicMock()
-            candidates = MockCandidates(current_index=0)
-        self.w._completer = MockCompleter()
-
-        self.enter_line('foo', press_return=False)
-        self.assertEqual(self.w.edit_text, 'foo')
-        self.w._completer.complete_next.return_value = ('foobar', 3)
-        self.w.keypress((80,), 'tab')
-        self.assertEqual(self.w.edit_text, 'foobar')
-        self.assertEqual(self.w.edit_pos, 3)
+            self.enter_line('foo', press_return=False)
+            self.assertEqual(self.w.edit_text, 'foo')
+            self.w._completer.complete_next.return_value = ('foobar', 3)
+            await asyncio.wait_for(self.w._completion_update_task, timeout=10, loop=self.loop)
+            self.w.keypress((80,), 'tab')
+            self.assertEqual(self.w.edit_text, 'foobar')
+            self.assertEqual(self.w.edit_pos, 3)

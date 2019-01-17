@@ -10,125 +10,213 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 
-class Candidate(str):
-    """A string with a cursor position"""
-
-    def __new__(cls, string, curpos=None):
-        obj = super().__new__(cls, string)
-        obj.curpos = curpos if curpos is not None else len(obj)
-        return obj
+from collections import abc
+import re
 
 
-class Candidates(tuple):
-    """Iterable of candidates"""
+class Categories(abc.Sequence):
+    """Iterable over non-empty Candidates objects with selection tracking"""
 
-    def __new__(cls, *candidates, curarg_seps=(), current_index=None):
-        # Remove duplicates while preserving order:
-        # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
-        obj = super().__new__(cls, (Candidate(c)
-                                    for c in dict.fromkeys(candidates)))
-        obj._curarg_seps = curarg_seps
-        if current_index is not None:
-            obj.current_index = current_index if len(obj) > 0 else None
-        else:
-            obj.current_index = 0 if len(obj) > 0 else None
-        return obj
+    def __init__(self, *categories):
+        self._categories = categories
+        self._current_index = 0 if categories else None
+
+    def __getitem__(self, key):
+        return tuple(self)[key]
+
+    def __iter__(self):
+        for cat in self._categories:
+            if len(cat) > 0:
+                yield cat
+
+    def __len__(self):
+        return len(tuple(iter(self)))
 
     def next(self):
-        """Select the next candidate or return to the first one"""
-        len_self = len(self)
-        if len_self > 0:
-            if self.current_index < len_self - 1:
+        """
+        Select next candidate in current Candidates or first candidate in next
+        Candidates or first candidate in first Candidates
+        """
+        cats = tuple(self)
+        if not cats:
+            self.current_index = None
+        else:
+            if self.current and self.current.current_index < len(self.current) - 1:
+                # Move to next candidate in current list
+                self.current.next()
+            elif self.current_index < len(cats) - 1:
+                # Move to first candidate in next list
                 self.current_index += 1
+                self.current.current_index = 0
             else:
-                self.current_index = 0
-        return self.current_index
+                # Wrap to first candidate in first list
+                self.current_index = self.current.current_index = 0
 
     def prev(self):
-        """Select the previous candidate or return to the last one"""
-        len_self = len(self)
-        if len_self > 0:
-            if self.current_index > 0:
+        """
+        Select previous candidate in current Candidates or last candidate in
+        previous Candidates or last candidate in last Candidates
+        """
+        cats = tuple(self)
+        if not cats:
+            self.current_index = None
+        else:
+            if self.current and self.current.current_index > 0:
+                # Move to previous candidate in current list
+                self.current.prev()
+            elif self.current_index > 0:
+                # Move to last candidate in previous list
                 self.current_index -= 1
+                self.current.current_index = len(self.current) - 1
             else:
-                self.current_index = len_self - 1
-        return self.current_index
+                # Wrap to last candidate in last list
+                self.current_index = len(cats)
+                self.current.current_index = len(self.current) - 1
+
+    @property
+    def all(self):
+        """All Candidates, including empty ones"""
+        return self._categories
 
     @property
     def current_index(self):
-        """Index of the currently selected candidate"""
+        """Index of currently selected Candidates object or None"""
+        # Make sure the current index is not pointing to an empty list
+        self.current_index = self._current_index
         return self._current_index
     @current_index.setter
     def current_index(self, index):
-        if len(self) == 0:
-            assert index is None, 'current_index can only be None with no candidates'
+        if not self:
             self._current_index = None
-        elif len(self) > index >= 0:
-            self._current_index = index
+        elif index is None and self:
+            self._current_index = 0
         else:
-            raise IndexError('Invalid current_index: %r' % (index,))
+            self._current_index = max(0, min(index, len(self)-1))
 
     @property
     def current(self):
-        """Currently selected candidate"""
-        if self.current_index is None:
-            return None
+        """Currently selected Candidates object or None"""
+        i = self.current_index
+        if i is not None:
+            return tuple(self)[i]
+
+    def __repr__(self):
+        return '%s(%s)' % (type(self).__name__,
+                           ', '.join(repr(cands) for cands in self._categories))
+
+
+class Candidates(abc.Sequence):
+    """Sequence of completion candidates"""
+
+    def __init__(self, candidates=(), label='', curarg_seps=()):
+        # Remove duplicates while preserving order:
+        # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
+        self._candidates = tuple(sorted((str(cand) for cand in dict.fromkeys(candidates)),
+                                        key=str.casefold))
+        self._matches = self._candidates
+        self._curarg_seps = tuple(curarg_seps)
+        self._label = str(label)
+        self._current_index = 0 if self._candidates else None
+
+    def __getitem__(self, key):
+        return self._matches[key]
+
+    def __len__(self):
+        return len(self._matches)
+
+    def next(self):
+        """Select next candidate or first one if last is selected"""
+        if not self:
+            self._current_index = None
+        elif self._current_index >= len(self) - 1:
+            self._current_index = 0
         else:
-            return self[self.current_index]
+            self._current_index += 1
+
+    def prev(self):
+        """Select previous candidate or last one if last is selected"""
+        if not self:
+            self._current_index = None
+        elif self._current_index <= 0:
+            self._current_index = len(self) - 1
+        else:
+            self._current_index -= 1
+
+    @property
+    def current_index(self):
+        """Index of currently selected candidate or None"""
+        return self._current_index
+    @current_index.setter
+    def current_index(self, index):
+        if not self._matches:
+            self._current_index = None
+        elif index is None and self._matches:
+            self._current_index = 0
+        else:
+            self._current_index = max(0, min(index, len(self._matches)-1))
+
+    @property
+    def current(self):
+        """Currently selected candidate or None"""
+        if self._current_index is not None:
+            return self[self._current_index]
+
+    def reduce(self, regex):
+        """Reduce the candidates to the ones that match `pattern`"""
+        if not isinstance(regex, re.Pattern):
+            regex = re.compile(regex)
+        # Remember current candidate so we can keep it selected if possible
+        curcand = self.current
+        self._matches = tuple(cand for cand in self._candidates
+                              if re.search(regex, cand))
+        if curcand in self._matches:
+            self.current_index = self._matches.index(curcand)
+        elif self._matches:
+            self.current_index = 0
+        else:
+            self.current_index = None
 
     @property
     def curarg_seps(self):
         """
         List of strings at which the current argument should be split before
-        applying a candidate
+        applying a candidate from this list
         """
         return self._curarg_seps
+    @curarg_seps.setter
+    def curarg_seps(self, seps):
+        self._curarg_seps = seps
 
-    def copy(self, *candidates, **kwargs):
-        """Create a copy with overloaded arguments"""
-        if not candidates:
-            candidates = self
-        elif len(candidates) == 1 and len(candidates[0]) == 0:
-            candidates = ()
-
-        kwargs.setdefault('curarg_seps', self.curarg_seps)
-        try:
-            kwargs.setdefault('current_index', candidates.index(self.current))
-        except ValueError:
-            pass
-        return type(self)(*candidates, **kwargs)
-
-    def reduce(self, common_prefix, case_sensitive=False):
-        """Return copy that contains only candidates that start with `common_prefix`"""
-        if case_sensitive:
-            matches = tuple(cand for cand in self
-                            if cand.startswith(common_prefix))
-        else:
-            matches = tuple(cand for cand in self
-                            if cand.casefold().startswith(common_prefix.casefold()))
-
-        if matches:
-            return self.copy(*matches)
-        else:
-            return self.copy(())
-
-    def sorted(self, key=None, preserve_current=True):
-        """Return sorted copy"""
-        if self:
-            new_cands = sorted(self, key=key)
-            if preserve_current:
-                return self.copy(*new_cands)
-            else:
-                return self.copy(*new_cands, current_index=None)
-        else:
-            return self.copy()
+    @property
+    def label(self):
+        """Category or short description"""
+        return self._label
 
     def __repr__(self):
-        kwargs = {'current_index': self.current_index}
-        if self.curarg_seps:
-            kwargs['curarg_seps'] = self.curarg_seps
-        return '%s(%s, %s)' % (
-            type(self).__name__,
-            ', '.join(repr(c) for c in self) if self else (),
-            ', '.join('%s=%r' % (k,v) for k,v in kwargs.items())
-        )
+        kwargs = {}
+        if self.curarg_seps: kwargs['curarg_seps'] = self.curarg_seps
+        if self.label: kwargs['label'] = self.label
+        if kwargs:
+            return '%s(%r, %s)' % (
+                type(self).__name__, self._candidates,
+                ', '.join('%s=%r' % (k,v) for k,v in kwargs.items())
+            )
+        else:
+            return '%s(%r)' % (type(self).__name__, self._candidates)
+
+
+class SingleCandidate(Candidates):
+    """
+    Dummy Candidates that contains only one replacable candidate
+
+    This is used to include current user input.
+    """
+
+    def __init__(self, string, curarg_seps=()):
+        super().__init__((string,), curarg_seps=curarg_seps)
+
+    def set(self, string):
+        self._candidates = self._matches = (string,)
+
+    def reduce(self, *args, **kwargs):
+        pass

@@ -238,10 +238,11 @@ def InitCommand(clsname, bases, attrs):
     # method completion_candidates().  The parent class takes care of options
     # (anything starting with a '-') and calls the child's classmethods
     # completion_candidates_posargs() for positional arguments and
-    # completion_candidates_params() for options parameters.
+    # completion_candidates_params() for parameters to options.
 
     # Provide candidates for tab completion
     def completion_candidates(cls, args, curarg_index):
+        from ..completion import Candidates
         # '--' turns all arguments after it positional arguments
         if '--' not in args[:curarg_index]:
             if args[curarg_index].startswith('-'):
@@ -249,7 +250,7 @@ def InitCommand(clsname, bases, attrs):
                 # Remove any options that are already present
                 options = tuple(opt for opt in cls.long_options if opt not in args)
                 if options:
-                    return options
+                    return Candidates(options, label='%s options' % cls.name)
 
             # Check if any argument left of the current argument is an option that
             # wants another parameter

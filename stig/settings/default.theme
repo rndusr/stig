@@ -97,6 +97,7 @@ keychains.description  white        on $keychains_bg
 
 $completion_bg = dark gray
 completion               light gray   on $completion_bg
+completion.category      light gray,bold,underline on $completion_bg
 completion.item          light gray   on $completion_bg
 completion.item.focused  black,bold   on yellow
 completion.scrollbar     light gray   on $completion_bg
