@@ -818,6 +818,13 @@ class Test_tokenize(unittest.TestCase):
         self.do('  ', [' ', ' '])
         self.do('   ', [' ', ' ', ' '])
 
+    def test_maxdelims(self):
+        self.do('a:b:c:d:e', ['a:b:c:d:e'], maxdelims=0, delims=(':',))
+        self.do('a:b:c:d:e', ['a', ':', 'b:c:d:e'], maxdelims=1, delims=(':',))
+        self.do('a:b:c:d:e', ['a', ':', 'b', ':', 'c:d:e'], maxdelims=2, delims=(':',))
+        self.do('a:b:c:d:e', ['a', ':', 'b', ':', 'c', ':', 'd:e'], maxdelims=3, delims=(':',))
+        self.do('a:b:c:d:e', ['a', ':', 'b', ':', 'c', ':', 'd', ':', 'e'], maxdelims=4, delims=(':',))
+
     def test_consecutive_multichar_delimiters(self):
         self.do('abc', ['abc'], delims=('abc',))
         self.do('abcabc', ['abc', 'abc'], delims=('abc',))

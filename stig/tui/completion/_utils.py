@@ -441,7 +441,7 @@ def plaintext(string, curpos=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPE
         return ''.join(literal), min(new_curpos, len(literal))
 
 
-def tokenize(cmdline, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAULT_QUOTES):
+def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAULT_QUOTES):
     """
     Split `cmdline` into list of tokens
 
@@ -453,6 +453,7 @@ def tokenize(cmdline, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEF
     token = []
     chars = tuple(_parse(cmdline, delims=delims, escapes=escapes, quotes=quotes))
     i_max = len(chars) - 1
+    maxdelims = float('inf') if maxdelims is None else maxdelims
 
     def get_token_and_delim_from_end(token_and_delim, delim):
         len_delim = len(delim)
@@ -464,7 +465,8 @@ def tokenize(cmdline, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEF
     for i,char in enumerate(chars):
         # log.debug('Char: %r', char)
 
-        if char.is_delim and char.is_special:
+        curdelims = int(len(tokens) / 2)
+        if char.is_delim and char.is_special and curdelims < maxdelims:
             # Character is part of a delimiter string that is not escaped or quoted
             prev_char = chars[i-1] if i > 0 else Char('')
             next_char = chars[i+1] if i < i_max else Char('')
