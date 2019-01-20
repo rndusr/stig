@@ -1,4 +1,4 @@
-from stig.completion import Categories, Candidates
+from stig.completion import Categories, Candidates, SingleCandidate
 
 import unittest
 
@@ -89,6 +89,11 @@ class TestCandidates(unittest.TestCase):
         self.assert_focus(cands, 1, 'baz')
         cands.next()
         self.assert_focus(cands, 0, 'bar')
+
+
+class TestSingleCandidate(unittest.TestCase):
+    def test_empty_string_is_included(self):
+        self.assertEqual(tuple(SingleCandidate('')), ('',))
 
 
 class TestCategories(unittest.TestCase):
