@@ -17,6 +17,12 @@ class TestCandidates(unittest.TestCase):
     def test_candidates_are_deduplicated(self):
         self.assertEqual(tuple(Candidates(('a', 'a', 'b'))), ('a', 'b'))
 
+    def test_empty_strings_are_excluded(self):
+        class Something():
+            def __str__(self): return ''
+        self.assertEqual(tuple(Candidates(('a', '', 'b', Something()))), ('a', 'b'))
+        self.assertEqual(tuple(Candidates(('',))), ())
+
     def test_no_candidates(self):
         self.assertEqual(Candidates(()).current_index, None)
         cands = Candidates(('a', 'b', 'c'))
