@@ -81,7 +81,6 @@ class Completer():
             # Get all possible candidates and find matches
             self._categories = await self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
             self._curarg_parts = {}
-            log.debug('Reducing Candidates')
             for cands in self._categories.all:
                 # The candidate getter may have specified custom separators for
                 # the current argument to guide us when inserting a replacement,
@@ -104,9 +103,9 @@ class Completer():
             # select it again after selecting other candidates
             self._update_current_user_input()
 
-            # Preserve stuff we need for re-assembling the command line
-            self._curpos = curpos
+            # Preserve some stuff we need for re-assembling the command line
             self._tokens = tokens
+            self._curpos = curpos
             self._curtok_index = curtok_index
             self._curtok_curpos = curtok_curpos
 
