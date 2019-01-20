@@ -118,7 +118,7 @@ class Candidates(abc.Sequence):
         cands_sorted = sorted(cands_noempty, key=str.casefold)
         self._candidates = tuple(cands_sorted)
         self._matches = self._candidates
-        self._curarg_seps = tuple(curarg_seps)
+        self._curarg_seps = tuple(sorted(curarg_seps))
         self._label = str(label)
         self._current_index = 0 if self._candidates else None
 
