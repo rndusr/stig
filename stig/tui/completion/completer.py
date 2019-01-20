@@ -187,15 +187,29 @@ class Completer():
     @property
     def current_user_input(self):
         """Portion of user input that is replaced with completion candidates"""
-        cats_len = len(self._categories)
-        if cats_len:
-            if cats_len == 2:
-                # There is current user input and one other category of candidates.
-                # Use the argument separator of the latter.
-                curcands = self._categories[1]
-            else:
-                curcands = self._categories.current
-            return self._curarg_parts[curcands]
+        # First category is always current user input
+        cats = self._categories[1:]
+        len_cats = len(cats)
+        if len_cats == 1:
+            # There is only one other category of candidates besides the current
+            # user input. Use the current argument separator of that other
+            # category.
+            # For example, if we are completing a path, the current user input
+            # is only the part between two "/", the part which we are
+            # completing, not the whole path.
+            curcands = cats[0]
+
+        elif len_cats > 1 and all(cats[0].curarg_seps == cat.curarg_seps for cat in cats):
+            # There are multiple categories but their curarg_seps are all equal,
+            # so we can use them like described above.
+            curcands = cats[0]
+
+        else:
+            # Default to whatever the special current user input instance has
+            # defined for curarg_seps (most likely an empty tuple).
+            curcands = self._categories[0]
+
+        return self._curarg_parts[curcands]
 
     @property
     def categories(self):
