@@ -111,8 +111,12 @@ class Candidates(abc.Sequence):
     def __init__(self, candidates=(), label='', curarg_seps=()):
         # Remove duplicates while preserving order:
         # https://www.peterbe.com/plog/fastest-way-to-uniquify-a-list-in-python-3.6
-        self._candidates = tuple(sorted((str(cand) for cand in dict.fromkeys(candidates)),
-                                        key=str.casefold))
+        cands_typed = (cand if isinstance(cand, Candidate) else Candidate(cand)
+                       for cand in candidates)
+        cands_deduped = (cand for cand in dict.fromkeys(cands_typed))
+        cands_noempty = (cand for cand in cands_deduped if cand != '')
+        cands_sorted = sorted(cands_noempty, key=str.casefold)
+        self._candidates = tuple(cands_sorted)
         self._matches = self._candidates
         self._curarg_seps = tuple(curarg_seps)
         self._label = str(label)
