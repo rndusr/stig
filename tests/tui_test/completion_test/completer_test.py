@@ -48,6 +48,54 @@ class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
         await self.do(get_cands, test_value)
 
 
+class TestCompleter_current_user_input(asynctest.TestCase):
+    async def do(self, categories, cmdline, curpos, exp_cur_user_input):
+        completer = Completer(lambda *args, **kwargs: categories)
+        await completer.update(cmdline, curpos)
+        self.assertEqual(completer.current_user_input, exp_cur_user_input)
+
+    async def test_no_candidates(self):
+        await self.do((), 'abc', 1, 'a')
+        await self.do((), 'abc', 2, 'ab')
+        await self.do((), 'abc', 3, 'abc')
+
+    async def test_no_matching_candidates(self):
+        cats = (Candidates(('foo', 'bar', 'baz')),)
+        await self.do(cats, 'abc', 1, 'a')
+        await self.do(cats, 'abc', 2, 'ab')
+        await self.do(cats, 'abc', 3, 'abc')
+
+    async def test_curpos_args_with_single_category(self):
+        cats = (Candidates(('foo', 'bar', 'baz'), curarg_seps=('/',)),)
+        await self.do(cats, 'foo/bar/', 3, 'foo')
+        await self.do(cats, 'foo/bar/', 4, '')
+        await self.do(cats, 'foo/bar/', 5, 'b')
+        await self.do(cats, 'foo/bar/', 6, 'ba')
+        await self.do(cats, 'foo/bar/', 7, 'bar')
+        await self.do(cats, 'foo/bar/abc', 11, 'foo/bar/abc')
+
+    async def test_curpos_args_with_multiple_categories_with_same_curarg_seps(self):
+        cats = (Candidates(('foo', 'bar'), curarg_seps=('/',)),
+                Candidates(('foo', 'bang'), curarg_seps=('/',)))
+        await self.do(cats, 'foo/bar', 3, 'foo')
+        await self.do(cats, 'foo/bar', 4, '')
+        await self.do(cats, 'foo/bar', 5, 'b')
+        await self.do(cats, 'foo/bar', 6, 'ba')
+        await self.do(cats, 'foo/bar', 7, 'bar')
+        await self.do(cats, 'foo/ban', 7, 'ban')
+        await self.do(cats, 'foo/bang/abc', 12, 'foo/bang/abc')
+
+    async def test_curpos_args_with_multiple_categories_with_different_curarg_seps(self):
+        cats = (Candidates(('foo', 'bar'), curarg_seps=('/',)),
+                Candidates(('foo', 'bang'), curarg_seps=('.',)))
+        await self.do(cats, 'foo/ba', 3, 'foo')
+        await self.do(cats, 'foo/ba', 4, '')
+        await self.do(cats, 'foo/ba', 5, 'b')
+        await self.do(cats, 'foo/ba', 6, 'ba')
+        await self.do(cats, 'foo/bang', 8, 'foo/bang')
+        await self.do(cats, 'foo.bang', 8, 'bang')
+
+
 class TestCompleter_update(asynctest.TestCase):
     def init(self, get_cands):
         self.mock_get_cands = MagicMock(side_effect=get_cands)
