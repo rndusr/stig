@@ -179,7 +179,7 @@ class Completer():
     def _update_current_user_input(self):
         """ """
         if self._categories:
-            user_input_cands = self._categories[0]
+            user_input_cands = self._categories.all[0]
             user_input_cands.set(self.current_user_input)
             user_input_cands.curarg_seps = self._categories.current.curarg_seps
             log.debug('Updated current user input candidate: %r', user_input_cands)
