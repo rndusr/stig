@@ -214,6 +214,9 @@ class SingleCandidate(Candidates):
 
     def __init__(self, string, curarg_seps=()):
         super().__init__((string,), curarg_seps=curarg_seps)
+        if not self._candidates:
+            self._candidates = self._matches = (Candidate(''),)
+            self._current_index = 0
 
     def set(self, string):
         self._candidates = self._matches = (string,)
