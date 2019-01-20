@@ -8,7 +8,7 @@ class TestCandidates(unittest.TestCase):
         self.assertEqual(cands.current, exp_current)
 
     def test_all_candidates_are_strings(self):
-        cands = Candidates(('foo', 5, (1, 2, 'three')))
+        cands = Candidates(('foo', 5, range(10)))
         self.assertTrue(all(isinstance(cand, str) for cand in cands))
 
     def test_candidates_are_sorted_case_insensitively(self):
