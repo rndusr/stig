@@ -63,7 +63,7 @@ def _unquote(string):
 
     firstchar, lastchar = string[0], string[-1]
     if (firstchar == "'" and lastchar == "'" or
-          firstchar == '"' and lastchar == '"'):
+        firstchar == '"' and lastchar == '"'):
         return string[1:-1]
 
     return string
