@@ -106,9 +106,9 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
                          (regex is None or entry.is_dir() or re.search(regex, entry.name)) and
                          (glob is None or entry.is_dir() or fnmatch(entry.name, glob))))
             if directories_only:
-                label = 'Directories in %s' % (os.path.abspath(path),)
+                label = 'Directories in %s' % (dirpath,)
             else:
-                label = '%s' % (os.path.abspath(path),)
+                label = '%s' % (dirpath,)
             if glob:
                 label += '/%s' % (glob,)
     return Candidates(cands, label=label, curarg_seps=('/',))
