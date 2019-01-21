@@ -618,7 +618,7 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=(' ',)):
 
 
 class Parts(tuple):
-    def __new__(cls, parts, curpart, curpart_index, curpart_curpos):
+    def __new__(cls, parts, curpart_index=None, curpart_curpos=None):
         # Make sure all parts are Arg instances
         def gen():
             for i,part in enumerate(parts):
@@ -630,14 +630,17 @@ class Parts(tuple):
                 else:
                     yield part
         obj = super().__new__(cls, gen())
-        obj.curpart = curpart
+        obj.curpart = obj[curpart_index] if curpart_index is not None else None
         obj.curpart_index = curpart_index
         obj.curpart_curpos = curpart_curpos
         return obj
 
     @property
     def curpart_before_cursor(self):
-        return self.curpart[:self.curpart_curpos]
+        if self.curpart_curpos is not None:
+            return self.curpart[:self.curpart_curpos]
+        else:
+            return str(self.curpart)
 
     def __repr__(self):
         return '%s(%r, curpart=%r, curpart_index=%r, curpart_curpos=%r)' % (
@@ -676,14 +679,24 @@ class Arg(str):
         seps = tuple(seps)
         log.debug('Splitting %r at separators: %r', str(self), seps)
         parts = tokenize(self, delims=seps, maxdelims=maxseps)
-        curpart_index, curpart_curpos = get_position(parts, self.curpos)
+
+        if self.curpos is not None:
+            curpart_index, curpart_curpos = get_position(parts, self.curpos)
+        else:
+            curpart_index, curpart_curpos = 0, 0
+
         if include_seps:
-            log.debug('Moving away from separators')
-            parts, curpart_index, curpart_curpos = avoid_delims(parts, curpart_index, curpart_curpos, seps)
+            if self.curpos is not None:
+                log.debug('Moving away from separators')
+                parts, curpart_index, curpart_curpos = avoid_delims(parts, curpart_index, curpart_curpos, seps)
         else:
             log.debug('Removing separators')
             parts, curpart_index, curpart_curpos = as_args(parts, curpart_index, curpart_curpos, seps)
-        return Parts(parts, parts[curpart_index], curpart_index, curpart_curpos)
+
+        if self.curpos is not None:
+            return Parts(parts, curpart_index, curpart_curpos)
+        else:
+            return Parts(parts)
 
     def __repr__(self):
         string = '%s(%r' % (type(self).__name__, str(self),)

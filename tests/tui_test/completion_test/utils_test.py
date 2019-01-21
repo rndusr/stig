@@ -1200,6 +1200,14 @@ class TestArg(unittest.TestCase):
         self.assertEqual(parts.curpart, exp_curpart)
         self.assertEqual(parts.curpart_index, exp_curpart_index)
         self.assertEqual(parts.curpart_curpos, exp_curpart_curpos)
+        self.assertTrue(all(type(part) is utils.Arg for part in parts))
+        self.assertTrue(type(parts.curpart) is utils.Arg or parts.curpart is None)
+
+    def test_no_curpos_with_seps_included(self):
+        self.do('foo/bar/baz',  None, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), None, None, None)
+
+    def test_no_curpos_with_seps_not_included(self):
+        self.do('foo/bar/baz',  None, ('/',), None, False, ('foo', 'bar', 'baz'), None, None, None)
 
     def test_separate_at_singlechar_separator_including_separators(self):
         self.do('foo/bar/baz',  0, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'foo', 0, 0)
