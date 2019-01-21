@@ -29,10 +29,7 @@ import re
 import time
 import datetime
 
-from .utils import (URL, Float, Int, convert, const)
-
-
-Percent = Float.partial(unit='%')
+from .utils import (URL, Float, Int, Percent, convert, const)
 
 
 class Ratio(Float):

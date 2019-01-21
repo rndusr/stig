@@ -641,3 +641,9 @@ class Int(_NumberBase, int):
 
     TODO: ...
     """
+
+class Percent(Float):
+    """Float with 'unit' argument defaulting to '%'"""
+
+    def __new__(cls, num, *, unit='%', **kwargs):
+        return super().__new__(cls, num, unit=unit, **kwargs)

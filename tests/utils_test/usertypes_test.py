@@ -1,6 +1,6 @@
 import unittest
 from stig.utils.usertypes import (String, Bool, Path, Tuple, Option, Float,
-                                  Int, StringableMixin, multitype)
+                                  Percent, Int, StringableMixin, multitype)
 
 
 from contextlib import contextmanager
@@ -573,3 +573,13 @@ class TestInt(_TestBase):
         self.assertEqual(Int(1.5), 2)
         self.assertEqual(Int('1.4'), 1)
         self.assertEqual(Int('1.5'), 2)
+
+class TestPercent(_TestBase):
+    def test_string(self):
+        self.assertEqual(str(Percent(0)), '0%')
+        self.assertEqual(str(Percent(0.129)), '0.13%')
+        self.assertEqual(str(Percent(1)), '1%')
+        self.assertEqual(str(Percent(9.3456)), '9.35%')
+        self.assertEqual(str(Percent(10.6543)), '10.7%')
+        self.assertEqual(str(Percent(100)), '100%')
+        self.assertEqual(str(Percent(100.6)), '101%')
