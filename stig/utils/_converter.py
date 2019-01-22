@@ -17,8 +17,8 @@ from .usertypes import (Float, Int)
 
 class DataSizeConverter():
     """
-    Convert bits to bytes or vice versa, ensuring a Int instance with a unit
-    prefix that is common throughout the application
+    Convert bits to bytes or vice versa, ensuring an Int instance with an
+    application-wide unit and unit prefix
     """
     _short = {'bit': 'b', 'byte': 'B'}
 
