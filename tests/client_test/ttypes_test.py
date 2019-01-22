@@ -28,6 +28,12 @@ def mock_datetime(year=0, month=1, day=1, hour=0, minute=0, second=0):
     return patch('datetime.datetime', mock_datetime_datetime)
 
 
+class TestTypes(unittest.TestCase):
+    def test_torrent_types(self):
+        for t in ttypes.TYPES.values():
+            self.assertTrue(isinstance(t, type) or t is None)
+
+
 class TestSmartCmpStr(unittest.TestCase):
     def test_eq_ne(self):
         self.assertTrue(ttypes.SmartCmpStr('foo') == 'foo')

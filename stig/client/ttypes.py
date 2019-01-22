@@ -11,11 +11,8 @@
 
 """Value types used in Torrent classes"""
 
-# The TYPES dictionary at the end of this file maps Torrent key names to
-# types.  Every Torrent key must have a type, even if it's just a no-op
-# (`lambda obj: obj`).
-#
-# A type is any callable that converts a single value to the appropriate object.
+# The TYPES dictionary at the end of this file maps Torrent key names to types.
+# Types must derive from `type` or be None.  Every Torrent key must have a type.
 #
 # Types are used to convert values from the server (e.g. `Float(1234567)`) and
 # for some types from the user as strings (e.g. `Float('1.3GB')`).
@@ -32,6 +29,21 @@ import datetime
 from .utils import (URL, Float, Int, Percent, convert, const)
 
 
+class SizeInBytes(Int):
+    def __new__(cls, value, **kwargs):
+        return convert.size(value, unit='byte')
+
+class BandwidthInBytes(Int):
+    def __new__(cls, value, **kwargs):
+        return convert.bandwidth(value, unit='byte')
+
+class BandwidthInBytesOrNone(BandwidthInBytes):
+    def __new__(cls, value, **kwargs):
+        if value is None:
+            return const.UNLIMITED
+        else:
+            return super().__new__(cls, value, **kwargs)
+
 class Ratio(Float):
     """A Torrent's upload/download ratio as a float"""
     INFINITE = float('inf')
@@ -44,12 +56,10 @@ class Ratio(Float):
         else:
             return super().without_unit
 
-
 class Count(Int):
     UNKNOWN = -1
     def __str__(self):
         return '?' if self == self.UNKNOWN else super().without_unit
-
 
 class Status(tuple):
     """A Torrent's status as a tuple of strings"""
@@ -79,8 +89,6 @@ class Status(tuple):
     def __ge__(self, other):
         return self.ORDER.index(self[0]) >= self.ORDER.index(other[0])
 
-
-
 import operator
 class SmartCmpStr(str):
     """
@@ -91,9 +99,6 @@ class SmartCmpStr(str):
     def __cmp(self, op, other):
         if not isinstance(other, str):
             return NotImplemented
-
-        # Do case-insensitive comparison if `other` consists solely of
-        # lower-case characters
         o = str(other)
         if o == o.casefold():
             s = self.casefold()
@@ -110,8 +115,8 @@ class SmartCmpStr(str):
     def __contains__(self, other): return self.__cmp(operator.contains, other)
 
     # Defining __eq__ mandates defining __hash__ to make instances hashable
-    def __hash__(self): return super().__hash__()
-
+    def __hash__(self):
+        return super().__hash__()
 
 class Path(SmartCmpStr):
     def __new__(cls, path):
@@ -120,8 +125,9 @@ class Path(SmartCmpStr):
     def __repr__(self):
         return '<{} {!r}>'.format(type(self).__name__, str(self))
 
-    def __hash__(self):
-        return super().__hash__()
+    # TODO: This shouldn't be needed since it's implemented in parent class?
+    # def __hash__(self):
+    #     return super().__hash__()
 
 
 
@@ -458,6 +464,11 @@ class TorrentFilePriority(str):
     def __hash__(self):
         return super().__hash__()
 
+def _calc_percent(a, b):
+    try:
+        return a / b * 100
+    except ZeroDivisionError:
+        return 0
 
 class TorrentFile(abc.Mapping):
     """Mapping that holds the values of a single file in a torrent"""
@@ -528,15 +539,6 @@ class TorrentFile(abc.Mapping):
     def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
-
-
-from . import base
-def _ensure_TorrentFileTree(obj):
-    if isinstance(obj, base.TorrentFileTreeBase):
-        return obj
-    else:
-        raise RuntimeError('Not a TorrentFileTreeBase: %r' % obj)
-
 
 
 
@@ -709,26 +711,6 @@ class TorrentTracker(abc.Mapping):
     def __len__(self): return len(self.TYPES)
 
 
-
-def _rate(rate):
-    return convert.bandwidth(rate, unit='byte')
-
-
-def _rate_limit(limit):
-    return const.UNLIMITED if limit is None else convert.bandwidth(limit, unit='byte')
-
-
-def _data_size(size):
-    return convert.size(size, unit='byte')
-
-
-def _calc_percent(a, b):
-    try:
-        return a / b * 100
-    except ZeroDivisionError:
-        return 0
-
-
 TYPES = {
     'id'                           : int,
     'hash'                         : str,
@@ -763,23 +745,21 @@ TYPES = {
     'time-completed'               : Timestamp,
     'time-manual-announce-allowed' : Timestamp,
 
-    'rate-down'                    : _rate,
-    'rate-up'                      : _rate,
-
-    'limit-rate-down'              : _rate_limit,
-    'limit-rate-up'                : _rate_limit,
-
-    'size-final'                   : _data_size,
-    'size-total'                   : _data_size,
-    'size-downloaded'              : _data_size,
-    'size-uploaded'                : _data_size,
-    'size-available'               : _data_size,
-    'size-left'                    : _data_size,
-    'size-corrupt'                 : _data_size,
-    'size-piece'                   : _data_size,
+    'rate-down'                    : BandwidthInBytes,
+    'rate-up'                      : BandwidthInBytes,
+    'limit-rate-down'              : BandwidthInBytesOrNone,
+    'limit-rate-up'                : BandwidthInBytesOrNone,
+    'size-final'                   : SizeInBytes,
+    'size-total'                   : SizeInBytes,
+    'size-downloaded'              : SizeInBytes,
+    'size-uploaded'                : SizeInBytes,
+    'size-available'               : SizeInBytes,
+    'size-left'                    : SizeInBytes,
+    'size-corrupt'                 : SizeInBytes,
+    'size-piece'                   : SizeInBytes,
 
     'error'                        : str,
     'trackers'                     : tuple,
     'peers'                        : tuple,
-    'files'                        : _ensure_TorrentFileTree,
+    'files'                        : None,
 }
