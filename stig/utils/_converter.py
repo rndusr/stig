@@ -20,8 +20,6 @@ class DataSizeConverter():
     Convert bits to bytes or vice versa, ensuring a Int instance with a unit
     prefix that is common throughout the application
     """
-    __slots__ = ('_unit', '_prefix')
-
     _short = {'bit': 'b', 'byte': 'B'}
 
     def __init__(self):
