@@ -209,6 +209,18 @@ class Candidates(abc.Sequence):
             return '%s(%r)' % (type(self).__name__, self._candidates)
 
 
+class Candidate(str):
+    """A string with some attributes"""
+
+    def __new__(cls, string, **kwargs):
+        return super().__new__(cls, string)
+
+    def __init__(self, string, description='', short_form='', default=''):
+        self.description = description
+        self.short_form = short_form
+        self.default = default
+
+
 class SingleCandidate(Candidates):
     """
     Dummy Candidates that contains only one replacable candidate
