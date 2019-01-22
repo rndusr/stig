@@ -507,17 +507,24 @@ class Torrent(base.TorrentBase):
 
     def __getitem__(self, key):
         cache = self._cache
-        if key not in cache:
-            raw = self._raw
-            if key in _MODIFY:
+        value = cache.get(key)
+        if value is None:
+            # Maybe modify the raw value or combine several values
+            modifier = _MODIFY.get(key)
+            if modifier is not None:
                 # Modifier gets the whole raw torrent
-                value = _MODIFY[key](raw)
+                value = modifier(self._raw)
             else:
                 # Copy raw value unmodified
                 fields = DEPENDENCIES[key]
-                value = raw[fields[0]]
-            cache[key] = ttypes.TYPES[key](value)
-        return cache[key]
+                value = self._raw[fields[0]]
+
+            # Maybe change the value's type
+            type = ttypes.TYPES.get(key)
+            if type is not None:
+                value = type(value)
+            cache[key] = value
+        return value
 
     def __contains__(self, key):
         deps = DEPENDENCIES
