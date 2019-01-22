@@ -134,7 +134,7 @@ def _find_error(t):
     return ''
 
 
-def _make_status(t):
+def _status(t):
     Status = ttypes.Status
     statuses = []
 
@@ -432,41 +432,6 @@ DEPENDENCIES = {
     'files'                        : ('files', 'fileStats', 'downloadDir'),
 }
 
-# Map our keys to callables that adjust the raw RPC values or create new
-# values from existing RPC values.
-_MODIFY = {
-    '%downloaded'                  : lambda raw: raw['percentDone'] * 100,
-    '%uploaded'                    : _percent_uploaded,
-    '%metadata'                    : lambda raw: raw['metadataPercentComplete'] * 100,
-    '%verified'                    : lambda raw: raw['recheckProgress'] * 100,
-    '%available'                   : _percent_available,
-    'status'                       : _make_status,
-    'peers-seeding'                : _count_seeds,
-    'ratio'                        : _modify_ratio,
-    'size-available'               : _bytes_available,
-
-    # Transmission provides rate limits in kilobytes - we want bytes
-    'limit-rate-down'              : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,
-    'limit-rate-up'                : lambda raw: None if not raw['uploadLimited']   else raw['uploadLimit']   * 1000,
-
-    'timespan-eta'                 : _modify_eta,
-    'time-created'                 : lambda raw: _modify_timestamp(raw, 'dateCreated',
-                                                                   zero_means=ttypes.Timestamp.UNKNOWN),
-    'time-added'                   : lambda raw: _modify_timestamp(raw, 'addedDate',
-                                                                   zero_means=ttypes.Timestamp.UNKNOWN),
-    'time-started'                 : lambda raw: _modify_timestamp(raw, 'startDate',
-                                                                   zero_means=ttypes.Timestamp.NOT_APPLICABLE),
-    'time-activity'                : lambda raw: _modify_timestamp(raw, 'activityDate',
-                                                                   zero_means=ttypes.Timestamp.NEVER),
-    'time-completed'               : lambda raw: _modify_timestamp_completed(raw),
-    'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime',
-                                                                   zero_means=ttypes.Timestamp.NEVER),
-
-    'error'                        : _find_error,
-    'trackers'                     : TrackerList,
-    'peers'                        : PeerList,
-    'files'                        : TorrentFileTree.create,
-}
 
 class Torrent(base.TorrentBase):
     """
@@ -474,6 +439,42 @@ class Torrent(base.TorrentBase):
 
     The available keys are specified in DEPENDENCIES and ttypes.TYPES.
     """
+
+    # Map our keys to callables that adjust the raw RPC values or create values
+    # from multiple RPC values
+    _MODIFIERS = {
+        '%downloaded'                  : lambda raw: raw['percentDone'] * 100,
+        '%uploaded'                    : _percent_uploaded,
+        '%metadata'                    : lambda raw: raw['metadataPercentComplete'] * 100,
+        '%verified'                    : lambda raw: raw['recheckProgress'] * 100,
+        '%available'                   : _percent_available,
+        'status'                       : _status,
+        'peers-seeding'                : _count_seeds,
+        'ratio'                        : _modify_ratio,
+        'size-available'               : _bytes_available,
+
+        # Transmission provides rate limits in kilobytes - we want bytes
+        'limit-rate-down'              : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,
+        'limit-rate-up'                : lambda raw: None if not raw['uploadLimited']   else raw['uploadLimit']   * 1000,
+
+        'timespan-eta'                 : _modify_eta,
+        'time-created'                 : lambda raw: _modify_timestamp(raw, 'dateCreated',
+                                                                       zero_means=ttypes.Timestamp.UNKNOWN),
+        'time-added'                   : lambda raw: _modify_timestamp(raw, 'addedDate',
+                                                                       zero_means=ttypes.Timestamp.UNKNOWN),
+        'time-started'                 : lambda raw: _modify_timestamp(raw, 'startDate',
+                                                                       zero_means=ttypes.Timestamp.NOT_APPLICABLE),
+        'time-activity'                : lambda raw: _modify_timestamp(raw, 'activityDate',
+                                                                       zero_means=ttypes.Timestamp.NEVER),
+        'time-completed'               : lambda raw: _modify_timestamp_completed(raw),
+        'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime',
+                                                                       zero_means=ttypes.Timestamp.NEVER),
+
+        'error'                        : _find_error,
+        'trackers'                     : TrackerList,
+        'peers'                        : PeerList,
+        'files'                        : TorrentFileTree.create,
+    }
 
     def __init__(self, raw_torrent):
         self._raw = raw_torrent
@@ -510,7 +511,7 @@ class Torrent(base.TorrentBase):
         value = cache.get(key)
         if value is None:
             # Maybe modify the raw value or combine several values
-            modifier = _MODIFY.get(key)
+            modifier = self._MODIFIERS.get(key)
             if modifier is not None:
                 # Modifier gets the whole raw torrent
                 value = modifier(self._raw)
