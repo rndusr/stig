@@ -19,7 +19,8 @@ def is_constant(obj):
 
 _constants_cache = {}
 def get_constant(name, repr=None, bases=(), init_value=None, attrs={}):
-    """Get constant/singleton defined by `name`
+    """
+    Get constant/singleton defined by `name`
 
     repr: Same as `name.upper()` unless specified otherwise
     bases: tuple of base classes; will be prepended to (ConstantBase, str)
