@@ -122,7 +122,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
     name = 'set'
     category = 'configuration'
     provides = set()
-    description = 'Change {__appname__} settings'
+    description = 'Change or list settings'
     usage = ('set [<NAME>[:eval]] [<VALUE>]',)
     examples = ('set connect.host my.server.example.org',
                 'set connect.user jonny_sixpack',
