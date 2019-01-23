@@ -99,7 +99,7 @@ class HelpManager():
 
         lines += ['HELP TOPICS',
                   ('\tAll commands and settings are valid help topics.  Read '
-                   "them with 'stig help <TOPIC>' or 'stig -h <TOPIC>'.  "
+                   "them with '{__appname__} help <TOPIC>' or '{__appname__} -h <TOPIC>'.  "
                    'Additionally, the following topics are available:'),
                   topic_line('commandsmanual', 'Describes how to call and chain commands'),
                   topic_line('commands',       'Lists commands'),
@@ -146,7 +146,7 @@ class HelpManager():
             '',
             '\tTo permanently change the default config file, create an alias:',
             '',
-            '\t\t$ alias stig="command stig --rcfile ~/.stigrc"',
+            '\t\t$ alias {__appname__}="command {__appname__} --rcfile ~/.{__appname__}rc"',
             '',
             ('\tTo load any additional rc files after the default one use the '
              '"rc" command.  (Note that this will prevent the TUI from being '
