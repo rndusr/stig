@@ -139,11 +139,13 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                          "numerical values can be adjusted by prepending '+=' or '-='")},
 
         { 'names': ('--sort', '-s'),
-          'description': 'Comma-separated list of sort orders (see SORT ORDERS section)' },
+          'description': ('Comma-separated list of sort orders when listing settings '
+                          '(see SORT ORDERS section)') },
 
         { 'names': ('--columns', '-c'),
           'default_description': "current value of 'columns.settings' setting",
-          'description': 'Comma-separated list of column names (see COLUMNS section)' },
+          'description': ('Comma-separated list of column names when listing settings '
+                          '(see COLUMNS section)') },
     )
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.settings'),
