@@ -30,8 +30,9 @@ class BoolFilterSpec():
 class CmpFilterSpec(BoolFilterSpec):
     """Comparative filter specification"""
 
-    def __init__(self, *args, value_type, value_convert=None, **kwargs):
+    def __init__(self, *args, value_getter=lambda t: 'DUMMY_UNTIL_FULLY_IMPLEMENTED', value_type, value_convert=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.value_getter = value_getter
         self.value_type = value_type
         self.value_convert = value_convert or value_type
 
@@ -48,6 +49,7 @@ def make_cmp_filter(types, key, description, aliases=(), value_convert=None):
     kwargs = {'description'   : description,
               'needed_keys'   : (key,),
               'aliases'       : aliases,
+              'value_getter'  : lambda torrent: torrent[key],
               'value_type'    : types[key],
               'value_convert' : value_convert}
 

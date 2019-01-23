@@ -170,6 +170,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... upload rate limit'),
             needed_keys=('limit-rate-up',),
             value_type=BoolOrBandwidth,
+            value_getter=lambda t: t['limit-rate-up'],
         ),
 
         'limit-rate-down': CmpFilterSpec(
@@ -178,6 +179,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... download rate limit'),
             needed_keys=('limit-rate-down',),
             value_type=BoolOrBandwidth,
+            value_getter=lambda t: t['limit-rate-down'],
         ),
 
         'tracker': CmpFilterSpec(
@@ -187,6 +189,7 @@ class SingleTorrentFilter(Filter):
             description=_desc('... domain of the announce URL of trackers'),
             needed_keys=('trackers',),
             value_type=str,
+            value_getter=lambda t: t['trackers'][0]['url-announce'] if t['trackers'] else '',
         ),
 
         'eta': CmpFilterSpec(
