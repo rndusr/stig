@@ -326,12 +326,18 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         if not self._completer.categories:
             self.reset()
         else:
-            def cand_widget(cand):
-                return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
-                                     'completion.item', 'completion.item.focused')
             def cat_widget(cand):
                 return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
                                      'completion.category', 'default')
+            def cand_widget(cand):
+                if cand.short_form:
+                    cols = [urwid.Text('%s (%s)' % (cand, cand.short_form))]
+                else:
+                    cols = [urwid.Text(cand)]
+                if cand.description:
+                    cols.append(urwid.Text(cand.description))
+                return urwid.AttrMap(urwid.Padding(urwid.Columns(cols)),
+                                     'completion.item', 'completion.item.focused')
             widgets = []
             for cands in self._completer.categories:
                 if cands.label:
