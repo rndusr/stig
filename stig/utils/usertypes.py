@@ -384,6 +384,10 @@ class Tuple(tuple, StringableMixin):
     def aliases(self):
         return self._config['aliases']
 
+    @property
+    def aliases_inverse(self):
+        return {option:alias for alias,option in self._config['aliases'].items()}
+
 
 class Option(str, StringableMixin):
     """
@@ -424,6 +428,10 @@ class Option(str, StringableMixin):
     @property
     def aliases(self):
         return self._config['aliases']
+
+    @property
+    def aliases_inverse(self):
+        return {option:alias for alias,option in self._config['aliases'].items()}
 
 
 class _NumberBase(StringableMixin):
