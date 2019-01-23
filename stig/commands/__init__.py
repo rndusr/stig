@@ -238,7 +238,7 @@ def InitCommand(clsname, bases, attrs):
 
     # Provide candidates for tab completion
     def completion_candidates(cls, args, curarg_index):
-        from ..completion import Candidates
+        from ..completion import (Candidates, Candidate)
         # '--' turns all arguments after it positional arguments
         if '--' not in args[:curarg_index]:
             if args[curarg_index].startswith('-'):
@@ -246,7 +246,9 @@ def InitCommand(clsname, bases, attrs):
                 # Remove any options that are already present
                 options = tuple(opt for opt in cls.long_options if opt not in args)
                 if options:
-                    return Candidates(options, label='%s options' % cls.name)
+                    cands = (Candidate(cand, short_form=', '.join(cls.long_options[cand]))
+                             for cand in options)
+                    return Candidates(cands, label='%s options' % cls.name)
 
             # Check if any argument left of the current argument is an option that
             # wants another parameter
