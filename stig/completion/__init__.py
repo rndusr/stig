@@ -235,7 +235,8 @@ class SingleCandidate(Candidates):
             self._current_index = 0
 
     def set(self, string):
-        self._candidates = self._matches = (string,)
+        self._candidates = self._matches = \
+            (Candidate(string) if not isinstance(string, Candidate) else string,)
 
     def reduce(self, *args, **kwargs):
         pass

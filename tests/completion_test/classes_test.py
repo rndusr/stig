@@ -1,4 +1,4 @@
-from stig.completion import Categories, Candidates, SingleCandidate
+from stig.completion import Categories, Candidates, Candidate, SingleCandidate
 
 import unittest
 
@@ -100,6 +100,17 @@ class TestCandidates(unittest.TestCase):
 class TestSingleCandidate(unittest.TestCase):
     def test_empty_string_is_included(self):
         self.assertEqual(tuple(SingleCandidate('')), ('',))
+
+    def test_string_is_Candidate_instance(self):
+        self.assertIsInstance(SingleCandidate('foo')[0], Candidate)
+
+    def test_string_is_Candidate_instance_after_set_was_called(self):
+        sc = SingleCandidate('foo')
+        sc.set('bar')
+        self.assertIsInstance(sc[0], Candidate)
+        sc.set(Candidate('bar', short_form='b'))
+        self.assertIsInstance(sc[0], Candidate)
+        self.assertEqual(sc[0].short_form, 'b')
 
 
 class TestCategories(unittest.TestCase):
