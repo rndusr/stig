@@ -164,14 +164,16 @@ def InitCommand(clsname, bases, attrs):
     attrs['names'].insert(0, attrs['name'])
 
     # Options are arguments that start with '-'
-    attrs['long_options'] = tuple(name
-                                  for argspec in attrs['argspecs']
-                                  for name in argspec['names']
-                                  if name.startswith('--'))
-    attrs['short_options'] = tuple(name
-                                   for argspec in attrs['argspecs']
-                                   for name in argspec['names']
-                                   if name.startswith('-') and not name[1:].startswith('-'))
+    # Map '--option' to ('-o', '-p', '-t')
+    attrs['long_options'] = {name:argspec['names'][1:]
+                             for argspec in attrs['argspecs']
+                             for name in argspec['names']
+                             if name.startswith('--')}
+    # Map '-o' to '--option'
+    attrs['short_options'] = {name:argspec['names'][0]
+                              for argspec in attrs['argspecs']
+                              for name in argspec['names']
+                              if name.startswith('-') and not name[1:].startswith('-')}
 
     def _is_option(cls, arg):
         return arg in cls.long_options or arg in cls.short_options
@@ -191,12 +193,6 @@ def InitCommand(clsname, bases, attrs):
         if roffset < nargs:
             return True
         return False
-
-    def long_option_name(cls, name):
-        argspec = _get_argspec(cls, name)
-        if argspec is not None:
-            return argspec['names'][0]
-    attrs['long_option_name'] = classmethod(long_option_name)
 
 
     # Create argument parser
@@ -257,7 +253,7 @@ def InitCommand(clsname, bases, attrs):
             for i,arg in enumerate(reversed(args[:curarg_index])):
                 if (hasattr(cls, 'completion_candidates_params') and
                     _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i)):
-                    option_name = cls.long_option_name(arg)
+                    option_name = cls.short_options.get(arg, arg)
                     log.debug('Completing parameters for %r', option_name)
                     return cls.completion_candidates_params(option_name, args, curarg_index)
 

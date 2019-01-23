@@ -308,7 +308,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         """Complete positional arguments"""
         # If --columns or --sort is given, we display options and don't set them
         for arg in args:
-            if cls.long_option_name(arg) in ('--columns', '--sort'):
+            if cls.short_options.get(arg, arg) in ('--columns', '--sort'):
                 return
 
         settings = candidates.setting_names()
