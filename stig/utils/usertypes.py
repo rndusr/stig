@@ -391,7 +391,7 @@ class Tuple(tuple, StringableMixin):
 
 class Option(str, StringableMixin):
     """
-    Single string that can only be one of a given set of string
+    Single string that can only be one of a given set of strings
 
     Options:
       options: Iterable of valid values; any other values raise ValueError
