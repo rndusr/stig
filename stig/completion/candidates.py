@@ -18,6 +18,7 @@ log = make_logger(__name__)
 from ..singletons import (localcfg, remotecfg, cmdmgr, srvapi)
 from ..utils import usertypes
 from ..completion import (Candidates, Candidate)
+from ..client import filters
 
 import itertools
 import os
@@ -130,45 +131,77 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
 
 async def torrent_filter(curarg):
     """Torrent filter names or values"""
-    parts = curarg.separate(_possible_operators, include_seps=True)
+    # Separate individual filters, e.g. 'seeding|comment=foo'
+    filters = curarg.separate(_filter_boolean_ops, include_seps=True)
+    # Separate filter name from filter value
+    parts = filters.curpart.separate(_filter_compare_ops, include_seps=True)
     if parts.curpart_index == 0:
-        log.debug('Completing torrent filtername of %r: %r', curarg, parts[0])
-        return (
-            Candidates(_filter_names['torrent'],
-                       label='Torrent Filters',
-                       curarg_seps=_possible_operators),
-            Candidates(await _filter_values('torrent', 'name~'),
-                       label='name~ torrents')
-        )
-    elif parts.curpart_index == 2 and parts[0] in _filter_names['torrent']:
-        log.debug('Completing torrent filter value of %r: %r', curarg, parts.curpart)
-        return (Candidates(await _filter_values('torrent', parts[0]),
-                           label='%s torrents' % parts[0],
-                           curarg_seps=_possible_operators),)
-
-from ..client import (TorrentFilter, TorrentFileFilter, TorrentPeerFilter,
-                      TorrentTrackerFilter, SettingFilter)
-
-_filter_names = {}
-for section,filter_class in (('torrent', TorrentFilter),
-                             ('file', TorrentFileFilter),
-                             ('peer', TorrentPeerFilter),
-                             ('tracker', TorrentTrackerFilter),
-                             ('setting', SettingFilter)):
-    _filter_names[section] = tuple(itertools.chain(filter_class.BOOLEAN_FILTERS,
-                                                   filter_class.COMPARATIVE_FILTERS))
-_possible_operators = tuple(o
-                            for op in TorrentFilter.OPERATORS
-                            for o in (op, TorrentFilter.INVERT_CHAR+op))
-
-async def _filter_values(section, filter_name):
-    try:
-        filter = TorrentFilter(filter_name)
-    except ValueError as e:
-        pass
+        # If focus is on filter name, complete filter names and torrent names
+        # (default torrent filter is 'name')
+        log.debug('Completing torrent filter names and torrent names: %r', parts[0])
+        return (_filter_names('TorrentFilter'), await _torrent_filter_values('name'))
+    elif parts.curpart_index == 2:
+        # parts is something like ('comment', '!=', 'foo')
+        log.debug('Completing %r torrent filter values', parts[0])
+        return (await _torrent_filter_values(parts[0]),)
     else:
-        response = await srvapi.torrent.torrents(filter, from_cache=True)
+        return ()
+
+# All filters use the same operators
+_filter_boolean_ops = ('&', '|')
+_filter_compare_ops = tuple(filters.TorrentFilter.OPERATORS)
+
+@functools.lru_cache(maxsize=None)
+def _filter_names(filter_cls_name):
+    filter_cls = _get_filter_cls(filter_cls_name)
+    cands = (Candidate(name,
+                       description=_get_filter_spec(filter_cls, name).description,
+                       short_form=','.join(_get_filter_spec(filter_cls, name).aliases))
+             for name in _get_filter_names(filter_cls))
+    curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
+    label = {'TorrentFilter': 'Torrent Filters',
+             'TorrentFileFilter': 'File Filters',
+             'TorrentPeerFilter': 'Peer Filters',
+             'TorrentTrackerFilter': 'Tracker Filters',
+             'SettingFilter': 'Setting Filters'}[filter_cls_name]
+    return Candidates(cands, label=label, curarg_seps=curarg_seps)
+
+async def _torrent_filter_values(filter_name):
+    filter_cls = _get_filter_cls('TorrentFilter')
+    cands = ()
+    if _filter_takes_completable_values(filter_cls, filter_name):
+        keys = filter_cls(filter_name).needed_keys
+        response = await srvapi.torrent.torrents(keys=keys, from_cache=True)
         if response.success:
-            key = filter.needed_keys[0]
-            return tuple(t[key] for t in response.torrents)
-    return ()
+            value_getter = _get_filter_spec(filter_cls, filter_name).value_getter
+            cands = tuple(value_getter(t) for t in response.torrents)
+    curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
+    return Candidates(cands,
+                      label='Torrent Filter Values: %s' % (filter_name,),
+                      curarg_seps=curarg_seps)
+
+@functools.lru_cache(maxsize=None)
+def _get_filter_names(filter_cls):
+    return itertools.chain(filter_cls.BOOLEAN_FILTERS,
+                           filter_cls.COMPARATIVE_FILTERS)
+
+@functools.lru_cache(maxsize=None)
+def _get_filter_cls(name):
+    try:
+        return getattr(filters, name)
+    except AttributeError:
+        raise ValueError('Not a filter class: %r' % name)
+
+@functools.lru_cache(maxsize=None)
+def _get_filter_spec(filter_cls, name):
+    try:
+        return filter_cls.BOOLEAN_FILTERS[name]
+    except KeyError:
+        return filter_cls.COMPARATIVE_FILTERS[name]
+
+@functools.lru_cache(maxsize=None)
+def _filter_takes_completable_values(filter_cls, name):
+    value_type = _get_filter_spec(filter_cls, name).value_type
+    log.debug('%r value type: %r', name, value_type)
+    return (name in filter_cls.COMPARATIVE_FILTERS and
+            issubclass(value_type, str))

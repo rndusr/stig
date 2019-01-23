@@ -278,8 +278,8 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 return complete_path(curarg)
         elif len(args) == 2:
             # Single argument may be a path or a filter
-            filter_cands = await candidates.torrent_filter(curarg) or ()
-            path_cands = complete_path(curarg) or ()
+            filter_cands = await candidates.torrent_filter(curarg)
+            path_cands = complete_path(curarg)
             return (path_cands,) + filter_cands
 
 
