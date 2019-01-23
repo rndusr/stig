@@ -55,29 +55,33 @@ def setting_values(setting, args, curarg_index):
     else:
         return
 
-    if value is not None:
+    # Some settings accept multiple values, others only one
+    focus_on_first_value = curarg_index == 2
+
+    log.debug('Setting is a %s: %r', type(value).__name__, value)
+    # Get candidates depending on what kind of setting it is (bool, option, etc)
+    if isinstance(value, usertypes.Option) and focus_on_first_value:
+        aliases = value.aliases_inverse
+        cands = (Candidate(opt, short_form=aliases.get(opt, ''))
+                 for opt in value.options)
+        return Candidates(cands, label='%s options' % (setting,))
+    elif isinstance(value, usertypes.Tuple):
+        aliases = value.aliases_inverse
+        cands = (Candidate(opt, short_form=aliases.get(opt, ''))
+                 for opt in value.options)
+        return Candidates(cands, label='%s options' % (setting,),
+                          curarg_seps=(value.sep.strip(),))
+    elif isinstance(value, usertypes.Bool) and focus_on_first_value:
+        options = (val
+                   for vals in zip(usertypes.Bool.defaults['true'],
+                                   usertypes.Bool.defaults['false'])
+                   for val in vals)
+        return Candidates(options, label='%s options' % (setting,))
+    elif isinstance(value, usertypes.Path):
         curarg = args[curarg_index]
-
-        # Some settings accept multiple values, others only one
-        focus_on_first_value = curarg_index == 2
-
-        log.debug('Setting is a %s: %r', type(value).__name__, value)
-        # Get candidates depending on what kind of setting it is (bool, option, etc)
-        if isinstance(value, usertypes.Option) and focus_on_first_value:
-            return Candidates(value.options, label='%s options' % (setting,))
-        elif isinstance(value, usertypes.Tuple):
-            return Candidates(value.options, label='%s options' % (setting,),
-                              curarg_seps=(value.sep.strip(),))
-        elif isinstance(value, usertypes.Bool) and focus_on_first_value:
-            options = (val
-                       for vals in zip(usertypes.Bool.defaults['true'],
-                                       usertypes.Bool.defaults['false'])
-                       for val in vals)
-            return Candidates(options, label='%s options' % (setting,))
-        elif isinstance(value, usertypes.Path):
-            return fs_path(curarg.before_cursor,
-                           base=value.base_path,
-                           directories_only=os.path.isdir(value))
+        return fs_path(curarg.before_cursor,
+                       base=value.base_path,
+                       directories_only=os.path.isdir(value))
 
 
 def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=None, regex=None):
