@@ -167,20 +167,20 @@ def init_defaults(localcfg):
                  description='Interval in seconds between TUI updates')
 
     localcfg.add('unit.bandwidth',
-                 Option.partial(options=('bit', 'byte')),
+                 Option.partial(options=('bit', 'byte'), aliases={'b': 'bit', 'B': 'byte'}),
                  default='byte',
                  description="Unit for bandwidth rates ('bit' or 'byte')")
     localcfg.add('unitprefix.bandwidth',
-                 Option.partial(options=('metric', 'binary')),
+                 Option.partial(options=('metric', 'binary'), aliases={'m': 'metric', 'b': 'binary'}),
                  default='metric',
                  description=("Unit prefix for bandwidth rates ('metric' or 'binary')"))
 
     localcfg.add('unit.size',
-                 Option.partial(options=('bit', 'byte')),
+                 Option.partial(options=('bit', 'byte'), aliases={'b': 'bit', 'B': 'byte'}),
                  default='byte',
                  description="Unit for file sizes ('bit' or 'byte')")
     localcfg.add('unitprefix.size',
-                 Option.partial(options=('metric', 'binary')),
+                 Option.partial(options=('metric', 'binary'), aliases={'m': 'metric', 'b': 'binary'}),
                  default='binary',
                  description=("Unit prefix for file sizes ('metric' or 'binary')"))
 
