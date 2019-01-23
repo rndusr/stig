@@ -225,7 +225,7 @@ class SingleCandidate(Candidates):
     """
     Dummy Candidates that contains only one replacable candidate
 
-    This is used to include current user input.
+    This is used to include current user input in its own category.
     """
 
     def __init__(self, string, curarg_seps=()):
