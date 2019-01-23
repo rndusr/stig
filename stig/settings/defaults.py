@@ -44,7 +44,6 @@ def init_defaults(localcfg):
         def __hash__(self):
             return super().__hash__()
 
-
     def partial_sort_order(sortercls):
         options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)
         return Tuple.partial(options=options, dedup=True)
