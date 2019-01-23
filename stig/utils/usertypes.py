@@ -9,9 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 from functools import partial
 from itertools import chain
 import re
@@ -109,7 +106,6 @@ def multitype(*constructors):
         @classmethod
         def __instancecheck__(mcls, inst):
             for subtype in mcls._subclses:
-                log.debug('Checking whether %r,%r is a %r', inst, type(inst), subtype)
                 if type(inst) is subtype:
                     return True
             return False
