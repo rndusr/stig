@@ -81,17 +81,16 @@ def _create_cli_widget():
         reset_cli(cli)
 
     from .completion import Completer
-    from ..completion import (Candidates, candidates)
+    from ..completion import (Candidates, Candidate, candidates)
     def get_candidates(args, curarg_index):
         log.debug('Getting candidates for %r', args)
         if curarg_index == 0:
             log.debug('Completing command: %r', args[0])
-            return (Candidates((cmdcls.name for cmdcls in cmdmgr.active_commands),
-                               label='Commands'),
-                    Candidates(('foo', 'bar', 'baz'),
-                               label='Schnickschnack'),
-                    Candidates(('one', 'two', 'three'),
-                               label=''))
+            cands = (Candidate(cmdcls.name,
+                               description=cmdcls.description,
+                               short_form='%s' % (', '.join(cmdcls.aliases),))
+                     for cmdcls in cmdmgr.active_commands)
+            return Candidates(cands, label='Commands')
         else:
             cmdcls = cmdmgr.get_cmdcls(args[0])
             if cmdcls is not None:
