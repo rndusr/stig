@@ -17,11 +17,12 @@ log = make_logger(__name__)
 
 from ..singletons import (localcfg, remotecfg, cmdmgr, srvapi)
 from ..utils import usertypes
-from ..completion import Candidates
+from ..completion import (Candidates, Candidate)
 
 import itertools
 import os
 import re
+import functools
 
 
 _commands = tuple(cmdcls.name for cmdcls in cmdmgr.active_commands)
@@ -30,10 +31,19 @@ def commands():
     return _commands
 
 
-_setting_names = tuple(itertools.chain(localcfg, ('srv.' + name for name in remotecfg)))
+@functools.lru_cache(maxsize=None)
 def setting_names():
     """Names of settings"""
-    return Candidates(_setting_names, label='Settings')
+    local_cands = (Candidate(name,
+                             description=getattr('description', name, ''),
+                             default=getattr('default', name, ''))
+                   for name in localcfg)
+    remote_cands = (Candidate('srv.' + name,
+                              description=getattr('description', name, ''),
+                              default=getattr('default', name, ''))
+                    for name in remotecfg)
+    return Candidates(itertools.chain(local_cands, remote_cands),
+                      label='Settings')
 
 
 def setting_values(setting, args, curarg_index):
