@@ -35,7 +35,10 @@ setup(
     install_requires = [
         'urwid>=2.0',
         'urwidtrees>=1.0.3dev0',
-        'aiohttp>=3',
+        # aiohttp>=3.5 doesn't seem to support python3.5
+        # https://github.com/rndusr/stig/issues/105
+        'aiohttp>=3,<3.5;python_version<="3.5"',
+        'aiohttp>=3,<4;python_version>"3.5"',
         'async_timeout',
         'pyxdg',
         'blinker',
