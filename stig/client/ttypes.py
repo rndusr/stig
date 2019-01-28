@@ -621,19 +621,21 @@ class TorrentPeer(abc.Mapping):
         self._cache = {}
 
     def __getitem__(self, key):
-        if key not in self._cache:
+        cache = self._cache
+        value = cache.get(key)
+        if value is None:
             if key in ('eta', 'rate-est'):
                 rate, eta = _guess_peer_rate_and_eta(self['id'], self['%downloaded'] / 100, self['tsize'])
-                self._cache['rate-est'] = self.TYPES['rate-est'](rate)
-                self._cache['eta'] = self.TYPES['eta'](eta)
-
+                cache['rate-est'] = self.TYPES['rate-est'](rate)
+                cache['eta'] = self.TYPES['eta'](eta)
             else:
-                if key in self._MODIFIERS:
-                    val = self._MODIFIERS[key](self._dct)
+                modifier = self._MODIFIERS.get(key)
+                if modifier is not None:
+                    val = modifier(self._dct)
                 else:
                     val = self._dct[key]
-                self._cache[key] = self.TYPES[key](val)
-        return self._cache[key]
+                cache[key] = self.TYPES[key](val)
+        return cache[key]
 
     def clearcache(self):
         self._cache.clear()
@@ -696,14 +698,14 @@ class TorrentTracker(abc.Mapping):
 
     def __getitem__(self, key):
         cache = self._cache
-        if key not in self._cache:
+        value = cache.get(key)
+        if value is None:
             modifier = self._MODIFIERS.get(key)
             if modifier is not None:
                 val = modifier(self)
             else:
                 val = self._dct[key]
             cache[key] = self.TYPES[key](val)
-
         return cache[key]
 
     def __repr__(self): return '<%s %s>' % (type(self).__name__, self['url-announce'])
