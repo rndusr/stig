@@ -89,7 +89,7 @@ class FileTreeDecorator(ArrowTree):
                 rootnodename = next(iter(filetree.keys()))
                 if len(tuple(filetree.directories)) == 0:
                     # Single-file torrent
-                    if not self._file_is_filtered(filetree):
+                    if not self._file_is_filtered(filetree[rootnodename]):
                         nodetree = (filetree[rootnodename], None)
                 else:
                     # Torrent with directory structure
