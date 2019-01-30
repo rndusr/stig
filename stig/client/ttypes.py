@@ -594,19 +594,19 @@ def _guess_peer_rate_and_eta(peer_id, peer_progress, torrent_size):
 from . import geoip
 class TorrentPeer(abc.Mapping):
     TYPES = {
-        'id'          : lambda val: val,
-        'tid'         : lambda val: val,
+        'id'          : None,
+        'tid'         : None,
         'tname'       : SmartCmpStr,
-        'tsize'       : lambda size: convert.size(size, unit='byte'),
+        'tsize'       : BandwidthInBytes,
         'ip'          : str,
         'port'        : int,
         'client'      : SmartCmpStr,
         'country'     : SmartCmpStr,
         '%downloaded' : Percent,
-        'rate-up'     : lambda rate: convert.bandwidth(rate, unit='byte'),
-        'rate-down'   : lambda rate: convert.bandwidth(rate, unit='byte'),
+        'rate-up'     : BandwidthInBytes,
+        'rate-down'   : BandwidthInBytes,
         'eta'         : Timedelta,
-        'rate-est'    : lambda rate: convert.bandwidth(rate, unit='byte'),
+        'rate-est'    : BandwidthInBytes,
     }
 
     _MODIFIERS = {
@@ -634,7 +634,11 @@ class TorrentPeer(abc.Mapping):
                     val = modifier(self._dct)
                 else:
                     val = self._dct[key]
-                cache[key] = self.TYPES[key](val)
+                typ = self.TYPES.get(key)
+                if typ is not None:
+                    cache[key] = typ(val)
+                else:
+                    cache[key] = val
         return cache[key]
 
     def clearcache(self):
