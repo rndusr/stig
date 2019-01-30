@@ -16,7 +16,7 @@ import socket
 import concurrent
 
 _cache = {}
-_lookup_pool = concurrent.futures.ThreadPoolExecutor(max_workers=100)
+_lookup_pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
 
 
 def gethostbyaddr(ip):
