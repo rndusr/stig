@@ -13,8 +13,6 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import re
-from collections import abc
-import asyncio
 import inspect
 
 from ..utils import cliparser
