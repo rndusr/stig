@@ -1,4 +1,4 @@
-from stig.tui.completion import Completer
+from stig.tui.completer import Completer
 from stig.completion import Categories, Candidates, SingleCandidate
 
 import asynctest

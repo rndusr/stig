@@ -80,8 +80,8 @@ def _create_cli_widget():
         cmdmgr.run_task(cli.edit_text, on_error=log.error)
         reset_cli(cli)
 
-    from .completion import Completer
-    from ..completion import (Candidates, Candidate, candidates)
+    from ..completion import (Candidates, Candidate)
+    from .completer import Completer
     def get_candidates(args, curarg_index):
         log.debug('Getting candidates for %r', args)
         if curarg_index == 0:

@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
+from ..logging import make_logger
 log = make_logger(__name__)
 
 import re
@@ -17,8 +17,8 @@ from collections import abc
 import asyncio
 import inspect
 
-from . import _utils
-from ...completion import (Categories, Candidates, SingleCandidate)
+from ..utils import cliparser
+from ..completion import (Categories, Candidates, SingleCandidate)
 
 
 class Completer():
@@ -59,11 +59,11 @@ class Completer():
 
     async def update(self, cmdline, curpos):
         log.debug('Parsing: %r', cmdline[:curpos] + '|' + cmdline[curpos:])
-        tokens = _utils.tokenize(cmdline)
-        curtok_index, curtok_curpos = _utils.get_position(tokens, curpos)
-        tokens, curtok_index, curtok_curpos = _utils.avoid_delims(tokens, curtok_index, curtok_curpos)
+        tokens = cliparser.tokenize(cmdline)
+        curtok_index, curtok_curpos = cliparser.get_position(tokens, curpos)
+        tokens, curtok_index, curtok_curpos = cliparser.avoid_delims(tokens, curtok_index, curtok_curpos)
         log.debug('Tokens: %r', tokens)
-        curcmd_tokens, curcmd_curtok_index = _utils.get_current_cmd(tokens, curtok_index, self._operators)
+        curcmd_tokens, curcmd_curtok_index = cliparser.get_current_cmd(tokens, curtok_index, self._operators)
         log.debug('Current command tokens: %r', curcmd_tokens)
         log.debug('Focused token: %r', curcmd_curtok_index)
         if curcmd_tokens is None:
@@ -75,7 +75,7 @@ class Completer():
             # The cursor position and the index of the current argument may need to
             # be adjusted.
             curcmd_args, curcmd_curarg_index, curarg_curpos = \
-                _utils.as_args(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
+                cliparser.as_args(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
             curarg = curcmd_args[curcmd_curarg_index]
 
             # Get all possible candidates and find matches
@@ -144,10 +144,10 @@ class Completer():
             # replace part of an argument, e.g. a directory in a path.
             curtok = self._tokens[self._curtok_index]
             curarg_seps = self.categories.current.curarg_seps
-            curtok_parts = _utils.tokenize(curtok, delims=curarg_seps)
-            curpart_index, curpart_curpos = _utils.get_position(curtok_parts, self._curtok_curpos)
+            curtok_parts = cliparser.tokenize(curtok, delims=curarg_seps)
+            curpart_index, curpart_curpos = cliparser.get_position(curtok_parts, self._curtok_curpos)
             curtok_parts, curpart_index, curpart_curpos = \
-                _utils.avoid_delims(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
+                cliparser.avoid_delims(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
             log.debug('Separated current token: %r', curtok_parts)
             self._tokens[self._curtok_index:self._curtok_index+1] = curtok_parts
             self._curtok_index += curpart_index
@@ -162,10 +162,10 @@ class Completer():
             tokens = list(self._tokens)
             curtok = self._tokens[self._curtok_index]
 
-            if _utils.is_escaped(curtok):
-                curcand_token = _utils.escape(curcand)
+            if cliparser.is_escaped(curtok):
+                curcand_token = cliparser.escape(curcand)
             else:
-                curcand_token = _utils.quote(curcand)
+                curcand_token = cliparser.quote(curcand)
             new_curpos = self._curpos - self._curtok_curpos + len(curcand_token)
             log.debug('Replacing %r with %r', tokens[self._curtok_index], curcand_token)
             tokens[self._curtok_index] = curcand_token
