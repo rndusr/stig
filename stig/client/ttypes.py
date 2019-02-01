@@ -597,7 +597,7 @@ class TorrentPeer(abc.Mapping):
         'id'          : None,
         'tid'         : None,
         'tname'       : SmartCmpStr,
-        'tsize'       : BandwidthInBytes,
+        'tsize'       : SizeInBytes,
         'ip'          : str,
         'port'        : int,
         'client'      : SmartCmpStr,
