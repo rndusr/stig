@@ -477,14 +477,14 @@ class TorrentFile(abc.Mapping):
     nodetype = 'leaf'
 
     TYPES = {
-        'id'              : lambda val: val,
-        'tid'             : lambda val: val,
+        'id'              : None,
+        'tid'             : None,
         'name'            : SmartCmpStr,
         'path-absolute'   : Path,
         'path-relative'   : Path,
         'location'        : Path,
-        'size-total'      : lambda size: convert.size(size, unit='byte'),
-        'size-downloaded' : lambda size: convert.size(size, unit='byte'),
+        'size-total'      : SizeInBytes,
+        'size-downloaded' : SizeInBytes,
         'is-wanted'       : bool,
         'priority'        : TorrentFilePriority,
         '%downloaded'     : Percent,
