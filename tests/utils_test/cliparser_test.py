@@ -872,6 +872,9 @@ class Test_tokenize(unittest.TestCase):
         self.do('...foo......bar..', ['...', 'foo', '...', '...', 'bar..'], delims=('...',))
         self.do('...foo......bar...', ['...', 'foo', '...', '...', 'bar', '...'], delims=('...',))
 
+    def test_unescaped_singlechar_delimiter_after_escaped_singlechar_delimiter(self):
+        self.do('foo!,,bar', ['foo!,', ',', 'bar'], delims=(',',), escapes=('!',))
+
     def test_escaping_singlechar_delimiters(self):
         self.do(r'foo!,bar', [r'foo!,bar'], delims=(',',), escapes=('!',))
         self.do(r'!,foo', [r'!,foo'], delims=(',',), escapes=('!',))

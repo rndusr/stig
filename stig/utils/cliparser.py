@@ -471,7 +471,7 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
             prev_char = chars[i-1] if i > 0 else Char('')
             next_char = chars[i+1] if i < i_max else Char('')
 
-            if not prev_char.is_delim:
+            if not prev_char.is_delim or not prev_char.is_special:
                 # This is the first character of a delimiter.  Append the
                 # current (non-delimiter) token first before starting a new
                 # delimiter token with this character.
