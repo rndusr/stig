@@ -248,10 +248,10 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
                     if next_is_delim or next_is_quote or next_is_escape:
                         # log.debug('    Enabling escape state')
                         state['escape'] = escape
-                    else:
-                        log.debug('    No need to escape escape next character')
+                #     else:
+                #         log.debug('    No need to escape escape next character')
                 # else:
-                #     log.debug('    Waiting for escape string to finish')
+                #     log.debug('    Waiting for escape string to end')
                 continue
 
             elif is_quote:
@@ -306,7 +306,7 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
             # After the first character of a multichar special string is
             # processed, we must keep the escape state alive until all
             # characters of that special string are processed.
-            # log.debug('        Disabling escape state')
+            # log.debug('    Disabling escape state')
             state['escape'] = ''
 
 
@@ -484,9 +484,10 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
             else:
                 # This is not the first character of a delimiter, i.e. the
                 # current token is a multi-character delimiter.
+                # log.debug('  Delimiter already started: %r (prev.is_delim=%r, prev.is_special=%r)',
+                #           prev_char.delim, prev_char.is_delim, prev_char.is_special)
                 token.append(char)
 
-            # log.debug('    len(%r) >= len(%r)', len(token), len(char.delim))
             if ''.join(token) == char.delim:
                 # This is the last character of a delimiter.  Append the current
                 # token (a delimiter) before starting a new empty token.
