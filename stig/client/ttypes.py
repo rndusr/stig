@@ -432,37 +432,36 @@ class Timestamp(float):
 
 
 class TorrentFilePriority(str):
-    INT2STR = {-2:'off', -1:'low', 0:'normal', 1:'high'}
-    STR2INT = {'off':-2, 'low':-1, 'normal':0, 'high':1}
+    _MAP = {-2: (-2, 'off'), -1: (-1, 'low'), 0: (0, 'normal'), 1: (1, 'high'),
+            'off': (-2, 'off'), 'low': (-1, 'low'), 'normal': (0, 'normal'), 'high': (1, 'high')}
 
     def __new__(cls, prio):
-        if isinstance(prio, int):
-            if prio not in cls.INT2STR:
-                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, prio))
-            obj = super().__new__(cls, cls.INT2STR[prio])
+        try:
+            number, string = cls._MAP[prio]
+        except KeyError:
+            raise ValueError('Invalid %s value: %r' % (cls.__name__, prio))
         else:
-            if prio not in cls.STR2INT:
-                raise ValueError('Invalid {} value: {!r}'.format(cls.__name__, prio))
-            obj = super().__new__(cls, prio)
-        return obj
-
-    def __lt__(self, other): return int(self) < int(other)
-    def __gt__(self, other): return int(self) > int(other)
-    def __le__(self, other): return int(self) <= int(other)
-    def __ge__(self, other): return int(self) >= int(other)
-    def __int__(self): return self.STR2INT[self]
-    def __repr__(self): return '<%s %r>' % (type(self).__name__, str(self))
+            obj = super().__new__(cls, string)
+            obj.as_int = number
+            return obj
 
     def __eq__(self, other):
-        if isinstance(other, int):
-            return super().__eq__(self.INT2STR.get(other))
-        return super().__eq__(other)
+        o_int, o_str = self._MAP.get(other, (None, None))
+        if isinstance(other, int) and o_int == self.as_int:
+            return True
+        elif isinstance(other, str) and o_str == str(self):
+            return True
+        else:
+            return False
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return super().__hash__()
+    def __ne__(self, other): return not self.__eq__(other)
+    def __lt__(self, other): return self.as_int < int(other)
+    def __gt__(self, other): return self.as_int > int(other)
+    def __le__(self, other): return self.as_int <= int(other)
+    def __ge__(self, other): return self.as_int >= int(other)
+    def __int__(self): return self.as_int
+    def __repr__(self): return '%s(%r)' % (type(self).__name__, str(self))
+    def __hash__(self): return super().__hash__()
 
 def _calc_percent(a, b):
     try:
