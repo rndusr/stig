@@ -649,15 +649,16 @@ class TorrentPeer(abc.Mapping):
 
 
 
-class TorrentTracker(abc.Mapping):
-    def _validate_tracker_status(string):
-        if string not in ('stopped', 'idle', 'queued', 'announcing', 'scraping'):
-            raise ValueError('Invalid tracker status: %r' % string)
+class TrackerStatus(SmartCmpStr):
+    def __new__(cls, status):
+        if status not in ('stopped', 'idle', 'queued', 'announcing', 'scraping'):
+            raise ValueError('Invalid tracker status: %r' % status)
         else:
-            return SmartCmpStr(string)
+            return super().__new__(cls, status)
 
+class TorrentTracker(abc.Mapping):
     TYPES = {
-        'id'                 : lambda val: val,
+        'id'                 : None,
         'tid'                : int,
         'tname'              : SmartCmpStr,
         'tier'               : int,
@@ -666,9 +667,9 @@ class TorrentTracker(abc.Mapping):
         'url-scrape'         : URL,
         'domain'             : SmartCmpStr,
 
-        'status-announce'    : _validate_tracker_status,
-        'status-scrape'      : _validate_tracker_status,
-        'status'             : _validate_tracker_status,
+        'status-announce'    : TrackerStatus,
+        'status-scrape'      : TrackerStatus,
+        'status'             : TrackerStatus,
 
         'error-announce'     : SmartCmpStr,
         'error-scrape'       : SmartCmpStr,
