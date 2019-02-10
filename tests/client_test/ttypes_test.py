@@ -29,8 +29,20 @@ def mock_datetime(year=0, month=1, day=1, hour=0, minute=0, second=0):
 
 
 class TestTypes(unittest.TestCase):
-    def test_torrent_types(self):
+    def test_Torrent_types(self):
         for t in ttypes.TYPES.values():
+            self.assertTrue(isinstance(t, type) or t is None)
+
+    def test_TorrentPeer_types(self):
+        for t in ttypes.TorrentPeer.TYPES.values():
+            self.assertTrue(isinstance(t, type) or t is None)
+
+    def test_TorrentFile_types(self):
+        for t in ttypes.TorrentFile.TYPES.values():
+            self.assertTrue(isinstance(t, type) or t is None)
+
+    def test_TorrentTracker_types(self):
+        for t in ttypes.TorrentTracker.TYPES.values():
             self.assertTrue(isinstance(t, type) or t is None)
 
 
