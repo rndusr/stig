@@ -427,7 +427,7 @@ class Timestamp(float):
         return bool(self) and self > time.time()
 
     def __repr__(self):
-        return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
+        return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.full)
 
 
 
