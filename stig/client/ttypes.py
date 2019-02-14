@@ -709,7 +709,11 @@ class TorrentTracker(abc.Mapping):
                 val = modifier(self)
             else:
                 val = self._dct[key]
-            cache[key] = self.TYPES[key](val)
+            typ = self.TYPES.get(key)
+            if typ is not None:
+                cache[key] = typ(val)
+            else:
+                cache[key] = val
         return cache[key]
 
     def __repr__(self): return '<%s %s>' % (type(self).__name__, self['url-announce'])
