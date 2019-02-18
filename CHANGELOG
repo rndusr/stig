@@ -9,6 +9,9 @@
            settinglist.scrollbar
            log.scrollbar
            helptext.scrollbar
+     * Some redundant torrent filters were removed:
+       - "incomplete" is the same as "!complete"
+       - "public" is the same as "!private"
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
