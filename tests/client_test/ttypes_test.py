@@ -5,30 +5,27 @@ from unittest.mock import patch
 import time
 from datetime import datetime
 
+import contextlib
 
-def mock_time(year=0, month=1, day=1, hour=0, minute=0, second=0):
+@contextlib.contextmanager
+def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):
     dt = datetime(year, month, day, hour, minute, second)
     print(f'mocking time: {dt.timestamp()} {dt}')
-    def mock_time():
-        return dt.timestamp()
-    def mock_localtime(secs=None):
-        if secs:
-            return datetime.fromtimestamp(secs).timetuple()
-        else:
-            return dt.timetuple()
-    return patch.multiple('time', time=mock_time, localtime=mock_localtime)
-
-
-def mock_datetime(year=0, month=1, day=1, hour=0, minute=0, second=0):
-    dt = datetime(year, month, day, hour, minute, second)
-    print(f'mocking time: {dt.timestamp()} {dt}')
-    class mock_datetime_datetime(datetime):
-        def now(*args, **kwargs):
+    class Mock_datetime(datetime):
+        @classmethod
+        def now(cls, *args, **kwargs):
             return dt
-    return patch('datetime.datetime', mock_datetime_datetime)
+    patchers = (patch('time.time', lambda *args, **kwargs: dt.timestamp()),
+                patch('time.localtime', lambda s: datetime.fromtimestamp(s).timetuple() if s else dt.timestamp()),
+                patch('datetime.datetime', Mock_datetime))
+    for p in patchers: p.start()
+    try:
+        yield
+    finally:
+        for p in patchers: p.stop()
 
 
-class TestTypes(unittest.TestCase):
+class TestValueTypes(unittest.TestCase):
     def test_Torrent_types(self):
         for t in ttypes.TYPES.values():
             self.assertTrue(isinstance(t, type) or t is None)
@@ -119,11 +116,18 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(sort, exp)
 
 
-MIN = 60
-HOUR = 60*MIN
-DAY = 24*HOUR
-YEAR = 365.25*DAY
-MONTH = YEAR / 12
+MIN = ttypes.SECONDS[5][1]
+HOUR = ttypes.SECONDS[4][1]
+DAY = ttypes.SECONDS[3][1]
+WEEK = ttypes.SECONDS[2][1]
+MONTH = ttypes.SECONDS[1][1]
+YEAR = ttypes.SECONDS[0][1]
+TIMEUNITS = tuple(x[0] for x in ttypes.SECONDS)
+
+def mktime(string):
+    tstruct = time.strptime(string, '%Y-%m-%d %H:%M:%S')
+    return time.mktime(tstruct)
+
 
 class TestTimedelta(unittest.TestCase):
     def test_from_string__no_unit(self):
@@ -208,89 +212,128 @@ class TestTimedelta(unittest.TestCase):
 
     def test_bool(self):
         import random
-        for td in (ttypes.Timedelta(random.randint(-1e10, 1e10) * MIN),
-                   ttypes.Timedelta(random.randint(-1e10, 1e10) * HOUR),
-                   ttypes.Timedelta(random.randint(-1e10, 1e10) * DAY)):
+        for td in (ttypes.Timedelta(random.randint(-1e5, 1e5) * MIN),
+                   ttypes.Timedelta(random.randint(-1e5, 1e5) * HOUR),
+                   ttypes.Timedelta(random.randint(-1e5, 1e5) * DAY)):
             self.assertEqual(bool(td), True)
 
         for td in (ttypes.Timedelta(ttypes.Timedelta.UNKNOWN),
                    ttypes.Timedelta(ttypes.Timedelta.NOT_APPLICABLE)):
             self.assertEqual(bool(td), False)
 
+    def test_inverse(self):
+        pos = ttypes.Timedelta.from_string('5y4M3d2h1m10s')
+        neg = ttypes.Timedelta.from_string('-5y4M3d2h1m10s')
+        self.assertEqual(pos.inverse, neg)
+        self.assertEqual(neg.inverse, pos)
+        self.assertTrue(neg.inverse._real_years > 0)
+        self.assertTrue(neg.inverse._real_months > 0)
+        self.assertTrue(pos.inverse._real_years < 0)
+        self.assertTrue(pos.inverse._real_months < 0)
+
+    def test_timestamp_conversion_with_years_and_months(self):
+        with mock_time(year=2001, month=1, day=1, hour=1, minute=1, second=1):
+            self.assertEqual(ttypes.Timedelta.from_string('5y4M3d2h1m10s').timestamp,
+                             ttypes.Timestamp.from_string('2006-05-04 03:02:11'))
+            self.assertEqual(ttypes.Timedelta.from_string('-10y7M5d3h1m10s').timestamp,
+                             ttypes.Timestamp.from_string('1990-05-26 21:59:51'))
+
+        with mock_time(year=2001, month=1, day=31, hour=10, minute=15, second=20):
+            self.assertEqual(ttypes.Timedelta.from_string('1M5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('2001-02-28 15:20:30'))
+            self.assertEqual(ttypes.Timedelta.from_string('1M1d5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('2001-03-01 15:20:30'))
+
+            self.assertEqual(ttypes.Timedelta.from_string('-2M5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('2000-11-30 05:10:10'))
+            self.assertEqual(ttypes.Timedelta.from_string('-2M40d5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('2000-10-21 05:10:10'))
+
+            self.assertEqual(ttypes.Timedelta.from_string('24M5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('2003-01-31 15:20:30'))
+            self.assertEqual(ttypes.Timedelta.from_string('24M59d5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('2003-03-31 15:20:30'))
+
+            self.assertEqual(ttypes.Timedelta.from_string('-24M5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('1999-01-31 05:10:10'))
+            self.assertEqual(ttypes.Timedelta.from_string('-24M62d5h5m10s').timestamp,
+                             ttypes.Timestamp.from_string('1998-11-30 05:10:10'))
+
+        # datetime can't handle large integers so we default to inaccurately
+        # adding seconds, but we have to make sure we don't get any exceptions.
+        ttypes.Timedelta.from_string('1000000000y').timestamp
+        ttypes.Timedelta.from_string('1000000000M').timestamp
+
 
 class TestTimestamp(unittest.TestCase):
-    def epoch(self, string):
-        tstruct = time.strptime(string, '%Y-%m-%d %H:%M:%S')
-        return time.mktime(tstruct)
-
     def test_string__year(self):
         ts = ttypes.Timestamp.from_string('2000')
-        self.assertEqual(int(ts), self.epoch('2000-01-01 00:00:00'))
+        self.assertEqual(int(ts), mktime('2000-01-01 00:00:00'))
         ts = ttypes.Timestamp.from_string('2001')
-        self.assertEqual(int(ts), self.epoch('2001-01-01 00:00:00'))
+        self.assertEqual(int(ts), mktime('2001-01-01 00:00:00'))
 
     def test_string__year_month(self):
         ts = ttypes.Timestamp.from_string('2000-01')
-        self.assertEqual(int(ts), self.epoch('2000-01-01 00:00:00'))
+        self.assertEqual(int(ts), mktime('2000-01-01 00:00:00'))
         ts = ttypes.Timestamp.from_string('2000-12')
-        self.assertEqual(int(ts), self.epoch('2000-12-01 00:00:00'))
+        self.assertEqual(int(ts), mktime('2000-12-01 00:00:00'))
 
     def test_string__year_month_day(self):
         ts = ttypes.Timestamp.from_string('2000-01-01')
-        self.assertEqual(int(ts), self.epoch('2000-01-01 00:00:00'))
+        self.assertEqual(int(ts), mktime('2000-01-01 00:00:00'))
         ts = ttypes.Timestamp.from_string('2000-12-31')
-        self.assertEqual(int(ts), self.epoch('2000-12-31 00:00:00'))
+        self.assertEqual(int(ts), mktime('2000-12-31 00:00:00'))
 
     def test_string__year_month_day_hour_minute(self):
         ts = ttypes.Timestamp.from_string('2000-01-01 12:03')
-        self.assertEqual(int(ts), self.epoch('2000-01-01 12:03:00'))
+        self.assertEqual(int(ts), mktime('2000-01-01 12:03:00'))
         ts = ttypes.Timestamp.from_string('1999-12-31 23:59')
-        self.assertEqual(int(ts), self.epoch('1999-12-31 23:59:00'))
+        self.assertEqual(int(ts), mktime('1999-12-31 23:59:00'))
 
     def test_string__year_month_day_hour_minute_second(self):
         ts = ttypes.Timestamp.from_string('1999-12-31 23:59:59')
-        self.assertEqual(int(ts), self.epoch('1999-12-31 23:59:59'))
+        self.assertEqual(int(ts), mktime('1999-12-31 23:59:59'))
         ts = ttypes.Timestamp.from_string('2000-01-01 23:59:59')
-        self.assertEqual(int(ts), self.epoch('2000-01-01 23:59:59'))
+        self.assertEqual(int(ts), mktime('2000-01-01 23:59:59'))
 
     def test_string__month_day(self):
-        with mock_datetime(2000, 10, 15, 12, 30, 45):
+        with mock_time(2000, 10, 15, 12, 30, 45):
             ts = ttypes.Timestamp.from_string('12-31')
-            self.assertEqual(int(ts), self.epoch('2000-12-31 00:00:00'))
-        with mock_datetime(2033, 5, 3, 3, 45, 12):
+            self.assertEqual(int(ts), mktime('2000-12-31 00:00:00'))
+        with mock_time(2033, 5, 3, 3, 45, 12):
             ts = ttypes.Timestamp.from_string('01-31')
-            self.assertEqual(int(ts), self.epoch('2033-01-31 00:00:00'))
+            self.assertEqual(int(ts), mktime('2033-01-31 00:00:00'))
 
     def test_string__month_day_hour_minute(self):
-        with mock_datetime(1973, 10, 15, 12, 30, 45):
+        with mock_time(1973, 10, 15, 12, 30, 45):
             ts = ttypes.Timestamp.from_string('03-15 17:39')
-            self.assertEqual(int(ts), self.epoch('1973-03-15 17:39:00'))
-        with mock_datetime(1904, 5, 3, 3, 45, 12):
+            self.assertEqual(int(ts), mktime('1973-03-15 17:39:00'))
+        with mock_time(1904, 5, 3, 3, 45, 12):
             ts = ttypes.Timestamp.from_string('09-21 06:45')
-            self.assertEqual(int(ts), self.epoch('1904-09-21 06:45:00'))
+            self.assertEqual(int(ts), mktime('1904-09-21 06:45:00'))
 
     def test_string__month_day_hour_minute_second(self):
-        with mock_datetime(1845, 5, 17, 3, 29, 4):
+        with mock_time(1845, 5, 17, 3, 29, 4):
             ts = ttypes.Timestamp.from_string('08-07 09:28:07')
-            self.assertEqual(int(ts), self.epoch('1845-08-07 09:28:07'))
-        with mock_datetime(2010, 4, 24, 18, 17, 57):
+            self.assertEqual(int(ts), mktime('1845-08-07 09:28:07'))
+        with mock_time(2010, 4, 24, 18, 17, 57):
             ts = ttypes.Timestamp.from_string('10-20 05:03:14')
-            self.assertEqual(int(ts), self.epoch('2010-10-20 05:03:14'))
+            self.assertEqual(int(ts), mktime('2010-10-20 05:03:14'))
 
     def test_string__hour_minute(self):
-        with mock_datetime(2034, 11, 30, 11, 31, 22):
+        with mock_time(2034, 11, 30, 11, 31, 22):
             ts = ttypes.Timestamp.from_string('12:32:23')
-            self.assertEqual(int(ts), self.epoch('2034-11-30 12:32:23'))
+            self.assertEqual(int(ts), mktime('2034-11-30 12:32:23'))
 
     def test_string__hour_minute(self):
-        with mock_datetime(1987, 6, 27, 22, 19, 13):
+        with mock_time(1987, 6, 27, 22, 19, 13):
             ts = ttypes.Timestamp.from_string('19:33')
-            self.assertEqual(int(ts), self.epoch('1987-06-27 19:33:00'))
+            self.assertEqual(int(ts), mktime('1987-06-27 19:33:00'))
 
     def test_string__year_hour_minute(self):
-        with mock_datetime(2538, 1, 5, 7, 33, 11):
+        with mock_time(2538, 1, 5, 7, 33, 11):
             ts = ttypes.Timestamp.from_string('2000 17:07')
-            self.assertEqual(int(ts), self.epoch('2000-01-01 17:07:00'))
+            self.assertEqual(int(ts), mktime('2000-01-01 17:07:00'))
 
     def test_string_representation(self):
         with mock_time(1993, 2, 14, 5, 38, 12):
@@ -304,158 +347,158 @@ class TestTimestamp(unittest.TestCase):
 
     def test_accuracy__year_eq(self):
         ts = ttypes.Timestamp.from_string('2005')
-        self.assertTrue(ts != self.epoch('2004-12-31 23:59:59'))
-        self.assertTrue(ts == self.epoch('2005-01-01 00:00:00'))
-        self.assertTrue(ts == self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts == self.epoch('2005-12-31 23:59:59'))
-        self.assertTrue(ts != self.epoch('2006-01-01 00:00:00'))
+        self.assertTrue(ts != mktime('2004-12-31 23:59:59'))
+        self.assertTrue(ts == mktime('2005-01-01 00:00:00'))
+        self.assertTrue(ts == mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts == mktime('2005-12-31 23:59:59'))
+        self.assertTrue(ts != mktime('2006-01-01 00:00:00'))
 
     def test_accuracy__year_gt(self):
         ts = ttypes.Timestamp.from_string('2005')
-        self.assertTrue(ts > self.epoch('2004-12-31 23:59:59'))
-        self.assertFalse(ts > self.epoch('2005-01-01 00:00:00'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:15'))
-        self.assertFalse(ts > self.epoch('2005-12-31 23:59:59'))
-        self.assertFalse(ts > self.epoch('2006-01-01 00:00:00'))
+        self.assertTrue(ts > mktime('2004-12-31 23:59:59'))
+        self.assertFalse(ts > mktime('2005-01-01 00:00:00'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:15'))
+        self.assertFalse(ts > mktime('2005-12-31 23:59:59'))
+        self.assertFalse(ts > mktime('2006-01-01 00:00:00'))
 
     def test_accuracy__year_ge(self):
         ts = ttypes.Timestamp.from_string('2005')
-        self.assertTrue(ts >= self.epoch('2004-12-31 23:59:59'))
-        self.assertTrue(ts >= self.epoch('2005-01-01 00:00:00'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts >= self.epoch('2005-12-31 23:59:59'))
-        self.assertFalse(ts >= self.epoch('2006-01-01 00:00:00'))
+        self.assertTrue(ts >= mktime('2004-12-31 23:59:59'))
+        self.assertTrue(ts >= mktime('2005-01-01 00:00:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts >= mktime('2005-12-31 23:59:59'))
+        self.assertFalse(ts >= mktime('2006-01-01 00:00:00'))
 
     def test_accuracy__year_lt(self):
         ts = ttypes.Timestamp.from_string('2005')
-        self.assertFalse(ts < self.epoch('2004-12-31 23:59:59'))
-        self.assertFalse(ts < self.epoch('2005-01-01 00:00:00'))
-        self.assertFalse(ts < self.epoch('2005-06-15 12:30:15'))
-        self.assertFalse(ts < self.epoch('2005-12-31 23:59:59'))
-        self.assertTrue(ts < self.epoch('2006-01-01 00:00:00'))
+        self.assertFalse(ts < mktime('2004-12-31 23:59:59'))
+        self.assertFalse(ts < mktime('2005-01-01 00:00:00'))
+        self.assertFalse(ts < mktime('2005-06-15 12:30:15'))
+        self.assertFalse(ts < mktime('2005-12-31 23:59:59'))
+        self.assertTrue(ts < mktime('2006-01-01 00:00:00'))
 
     def test_accuracy__year_le(self):
         ts = ttypes.Timestamp.from_string('2005')
-        self.assertFalse(ts <= self.epoch('2004-12-31 23:59:59'))
-        self.assertTrue(ts <= self.epoch('2005-01-01 00:00:00'))
-        self.assertTrue(ts <= self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts <= self.epoch('2005-12-31 23:59:59'))
-        self.assertTrue(ts <= self.epoch('2006-01-01 00:00:00'))
+        self.assertFalse(ts <= mktime('2004-12-31 23:59:59'))
+        self.assertTrue(ts <= mktime('2005-01-01 00:00:00'))
+        self.assertTrue(ts <= mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts <= mktime('2005-12-31 23:59:59'))
+        self.assertTrue(ts <= mktime('2006-01-01 00:00:00'))
 
     def test_accuracy__year_month_eq(self):
         ts = ttypes.Timestamp.from_string('2005-06')
-        self.assertTrue(ts != self.epoch('2005-05-31 23:59:59'))
-        self.assertTrue(ts == self.epoch('2005-06-01 00:00:00'))
-        self.assertTrue(ts == self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts == self.epoch('2005-06-30 23:59:59'))
-        self.assertTrue(ts != self.epoch('2005-07-01 00:00:00'))
+        self.assertTrue(ts != mktime('2005-05-31 23:59:59'))
+        self.assertTrue(ts == mktime('2005-06-01 00:00:00'))
+        self.assertTrue(ts == mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts == mktime('2005-06-30 23:59:59'))
+        self.assertTrue(ts != mktime('2005-07-01 00:00:00'))
 
     def test_accuracy__year_month_gt(self):
         ts = ttypes.Timestamp.from_string('2005-06')
-        self.assertTrue(ts > self.epoch('2005-05-31 23:59:59'))
-        self.assertFalse(ts > self.epoch('2005-06-01 00:00:00'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:15'))
-        self.assertFalse(ts > self.epoch('2005-06-30 23:59:59'))
-        self.assertFalse(ts > self.epoch('2005-07-01 00:00:00'))
+        self.assertTrue(ts > mktime('2005-05-31 23:59:59'))
+        self.assertFalse(ts > mktime('2005-06-01 00:00:00'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:15'))
+        self.assertFalse(ts > mktime('2005-06-30 23:59:59'))
+        self.assertFalse(ts > mktime('2005-07-01 00:00:00'))
 
     def test_accuracy__year_month_ge(self):
         ts = ttypes.Timestamp.from_string('2005-06')
-        self.assertTrue(ts >= self.epoch('2005-05-31 23:59:59'))
-        self.assertTrue(ts >= self.epoch('2005-06-01 00:00:00'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts >= self.epoch('2005-06-30 23:59:59'))
-        self.assertFalse(ts >= self.epoch('2005-07-01 00:00:00'))
+        self.assertTrue(ts >= mktime('2005-05-31 23:59:59'))
+        self.assertTrue(ts >= mktime('2005-06-01 00:00:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts >= mktime('2005-06-30 23:59:59'))
+        self.assertFalse(ts >= mktime('2005-07-01 00:00:00'))
 
     def test_accuracy__year_month_lt(self):
         ts = ttypes.Timestamp.from_string('2005-06')
-        self.assertFalse(ts < self.epoch('2005-05-31 23:59:59'))
-        self.assertFalse(ts < self.epoch('2005-06-01 00:00:00'))
-        self.assertFalse(ts < self.epoch('2005-06-15 12:30:15'))
-        self.assertFalse(ts < self.epoch('2005-06-30 23:59:59'))
-        self.assertTrue(ts < self.epoch('2005-07-01 00:00:00'))
+        self.assertFalse(ts < mktime('2005-05-31 23:59:59'))
+        self.assertFalse(ts < mktime('2005-06-01 00:00:00'))
+        self.assertFalse(ts < mktime('2005-06-15 12:30:15'))
+        self.assertFalse(ts < mktime('2005-06-30 23:59:59'))
+        self.assertTrue(ts < mktime('2005-07-01 00:00:00'))
 
     def test_accuracy__year_month_le(self):
         ts = ttypes.Timestamp.from_string('2005-06')
-        self.assertFalse(ts <= self.epoch('2005-05-31 23:59:59'))
-        self.assertTrue(ts <= self.epoch('2005-06-01 00:00:00'))
-        self.assertTrue(ts <= self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts <= self.epoch('2005-06-30 23:59:59'))
-        self.assertTrue(ts <= self.epoch('2005-07-01 00:00:00'))
+        self.assertFalse(ts <= mktime('2005-05-31 23:59:59'))
+        self.assertTrue(ts <= mktime('2005-06-01 00:00:00'))
+        self.assertTrue(ts <= mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts <= mktime('2005-06-30 23:59:59'))
+        self.assertTrue(ts <= mktime('2005-07-01 00:00:00'))
 
     def test_accuracy__year_month_day_eq(self):
         ts = ttypes.Timestamp.from_string('2005-06-15')
-        self.assertTrue(ts != self.epoch('2005-06-14 23:59:59'))
-        self.assertTrue(ts == self.epoch('2005-06-15 00:00:00'))
-        self.assertTrue(ts == self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts == self.epoch('2005-06-15 23:59:59'))
-        self.assertTrue(ts != self.epoch('2005-06-16 00:00:00'))
+        self.assertTrue(ts != mktime('2005-06-14 23:59:59'))
+        self.assertTrue(ts == mktime('2005-06-15 00:00:00'))
+        self.assertTrue(ts == mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts == mktime('2005-06-15 23:59:59'))
+        self.assertTrue(ts != mktime('2005-06-16 00:00:00'))
 
     def test_accuracy__year_month_day_gt(self):
         ts = ttypes.Timestamp.from_string('2005-06-15')
-        self.assertTrue(ts > self.epoch('2005-06-14 23:59:59'))
-        self.assertFalse(ts > self.epoch('2005-06-15 00:00:00'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:15'))
-        self.assertFalse(ts > self.epoch('2005-06-15 23:59:59'))
-        self.assertFalse(ts > self.epoch('2005-06-16 00:00:00'))
+        self.assertTrue(ts > mktime('2005-06-14 23:59:59'))
+        self.assertFalse(ts > mktime('2005-06-15 00:00:00'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:15'))
+        self.assertFalse(ts > mktime('2005-06-15 23:59:59'))
+        self.assertFalse(ts > mktime('2005-06-16 00:00:00'))
 
     def test_accuracy__year_month_day_ge(self):
         ts = ttypes.Timestamp.from_string('2005-06-15')
-        self.assertTrue(ts >= self.epoch('2005-06-14 23:59:59'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 00:00:00'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 23:59:59'))
-        self.assertFalse(ts >= self.epoch('2005-06-16 00:00:00'))
+        self.assertTrue(ts >= mktime('2005-06-14 23:59:59'))
+        self.assertTrue(ts >= mktime('2005-06-15 00:00:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts >= mktime('2005-06-15 23:59:59'))
+        self.assertFalse(ts >= mktime('2005-06-16 00:00:00'))
 
     def test_accuracy__year_month_day_lt(self):
         ts = ttypes.Timestamp.from_string('2005-06-15')
-        self.assertFalse(ts < self.epoch('2005-06-14 23:59:59'))
-        self.assertFalse(ts < self.epoch('2005-06-15 00:00:00'))
-        self.assertFalse(ts < self.epoch('2005-06-15 12:30:15'))
-        self.assertFalse(ts < self.epoch('2005-06-15 23:59:59'))
-        self.assertTrue(ts < self.epoch('2005-06-16 00:00:00'))
+        self.assertFalse(ts < mktime('2005-06-14 23:59:59'))
+        self.assertFalse(ts < mktime('2005-06-15 00:00:00'))
+        self.assertFalse(ts < mktime('2005-06-15 12:30:15'))
+        self.assertFalse(ts < mktime('2005-06-15 23:59:59'))
+        self.assertTrue(ts < mktime('2005-06-16 00:00:00'))
 
     def test_accuracy__year_month_day_le(self):
         ts = ttypes.Timestamp.from_string('2005-06-15')
-        self.assertFalse(ts <= self.epoch('2005-06-14 23:59:59'))
-        self.assertTrue(ts <= self.epoch('2005-06-15 00:00:00'))
-        self.assertTrue(ts <= self.epoch('2005-06-15 12:30:15'))
-        self.assertTrue(ts <= self.epoch('2005-06-15 23:59:59'))
-        self.assertTrue(ts <= self.epoch('2005-06-16 00:00:00'))
+        self.assertFalse(ts <= mktime('2005-06-14 23:59:59'))
+        self.assertTrue(ts <= mktime('2005-06-15 00:00:00'))
+        self.assertTrue(ts <= mktime('2005-06-15 12:30:15'))
+        self.assertTrue(ts <= mktime('2005-06-15 23:59:59'))
+        self.assertTrue(ts <= mktime('2005-06-16 00:00:00'))
 
     def test_accuracy__year_month_day_hour_minute_eq(self):
         ts = ttypes.Timestamp.from_string('2005-06-15 12:30')
-        self.assertTrue(ts != self.epoch('2005-06-15 12:29:59'))
-        self.assertTrue(ts == self.epoch('2005-06-15 12:30:00'))
-        self.assertTrue(ts == self.epoch('2005-06-15 12:30:59'))
-        self.assertTrue(ts != self.epoch('2005-06-15 12:31:00'))
+        self.assertTrue(ts != mktime('2005-06-15 12:29:59'))
+        self.assertTrue(ts == mktime('2005-06-15 12:30:00'))
+        self.assertTrue(ts == mktime('2005-06-15 12:30:59'))
+        self.assertTrue(ts != mktime('2005-06-15 12:31:00'))
 
     def test_accuracy__year_month_day_hour_minute_gt(self):
         ts = ttypes.Timestamp.from_string('2005-06-15 12:30')
-        self.assertTrue(ts > self.epoch('2005-06-15 12:29:59'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:00'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:59'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:31:00'))
+        self.assertTrue(ts > mktime('2005-06-15 12:29:59'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:00'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:59'))
+        self.assertFalse(ts > mktime('2005-06-15 12:31:00'))
 
     def test_accuracy__year_month_day_hour_minute_ge(self):
         ts = ttypes.Timestamp.from_string('2005-06-15 12:30')
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:29:59'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:00'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:59'))
-        self.assertFalse(ts >= self.epoch('2005-06-15 12:31:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:29:59'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:59'))
+        self.assertFalse(ts >= mktime('2005-06-15 12:31:00'))
 
     def test_accuracy__year_month_day_hour_minute_lt(self):
         ts = ttypes.Timestamp.from_string('2005-06-15 12:30')
-        self.assertTrue(ts > self.epoch('2005-06-15 12:29:59'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:00'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:30:59'))
-        self.assertFalse(ts > self.epoch('2005-06-15 12:31:00'))
+        self.assertTrue(ts > mktime('2005-06-15 12:29:59'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:00'))
+        self.assertFalse(ts > mktime('2005-06-15 12:30:59'))
+        self.assertFalse(ts > mktime('2005-06-15 12:31:00'))
 
     def test_accuracy__year_month_day_hour_minute_le(self):
         ts = ttypes.Timestamp.from_string('2005-06-15 12:30')
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:29:59'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:00'))
-        self.assertTrue(ts >= self.epoch('2005-06-15 12:30:59'))
-        self.assertFalse(ts >= self.epoch('2005-06-15 12:31:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:29:59'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:00'))
+        self.assertTrue(ts >= mktime('2005-06-15 12:30:59'))
+        self.assertFalse(ts >= mktime('2005-06-15 12:31:00'))
 
     def test_bool(self):
         import random
