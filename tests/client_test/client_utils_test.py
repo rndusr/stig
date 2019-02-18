@@ -88,7 +88,7 @@ class TestURL(unittest.TestCase):
 
     def test_repr(self):
         url = URL('https://foo:bar@localhost:123/foo/bar/baz')
-        self.assertEqual(repr(url), '<URL https://foo:bar@localhost:123/foo/bar/baz>')
+        self.assertEqual(repr(url), "URL('https://foo:bar@localhost:123/foo/bar/baz')")
 
     def test_mutability_and_cache(self):
         url = URL('https://foo.example.com:123/foo')

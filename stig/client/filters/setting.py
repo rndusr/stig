@@ -13,45 +13,38 @@ from ..ttypes import SmartCmpStr
 from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 
-class SingleSettingFilter(Filter):
+class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
-    # Filters without arguments
     BOOLEAN_FILTERS = {
-        'all': BoolFilterSpec(
-            lambda s: True,
-            aliases=('*',),
-            description='All settings'),
-        'changed': BoolFilterSpec(
-            lambda s: s['default'] != s['value'],
-            aliases=('ch',),
-            description='Settings with customized values'),
+        'all'     : BoolFilterSpec(None,
+                                   aliases=('*',),
+                                   description='All settings'),
+        'changed' : BoolFilterSpec(lambda s: s['default'] != s['value'],
+                                   aliases=('ch',),
+                                   description='Settings with customized values'),
     }
 
     COMPARATIVE_FILTERS = {
-        'name': CmpFilterSpec(
-            lambda s, op, v: op(SmartCmpStr(s['id']), v),
-            aliases=('n',),
-            description='Match VALUE against name of setting',
-            value_type=SmartCmpStr),
-        'value': CmpFilterSpec(
-            lambda s, op, v: op(SmartCmpStr(s['value']), v),
-            aliases=('v',),
-            description='Match VALUE against current value',
-            value_type=SmartCmpStr),
-        'default': CmpFilterSpec(
-            lambda s, op, v: op(SmartCmpStr(s['default']), v),
-            aliases=('def',),
-            description='Match VALUE against default value',
-            value_type=SmartCmpStr),
-        'description': CmpFilterSpec(
-            lambda s, op, v: op(SmartCmpStr(s['description']), v),
-            aliases=('desc',),
-            description='Match VALUE against description',
-            value_type=SmartCmpStr),
+        'name'        : CmpFilterSpec(value_getter=lambda s: s['id'],
+                                      value_type=SmartCmpStr,
+                                      aliases=('n',),
+                                      description='Match VALUE against setting name'),
+        'value'       : CmpFilterSpec(value_getter=lambda s: s['value'],
+                                      value_type=SmartCmpStr,
+                                      aliases=('v',),
+                                      description='Match VALUE against current value'),
+        'default'     : CmpFilterSpec(value_getter=lambda s: s['default'],
+                                      value_type=SmartCmpStr,
+                                      aliases=('def',),
+                                      description='Match VALUE against default value'),
+        'description' : CmpFilterSpec(value_getter=lambda s: s['description'],
+                                      value_type=SmartCmpStr,
+                                      aliases=('desc',),
+                                      description='Match VALUE against description'),
     }
 
 
 class SettingFilter(FilterChain):
     """One or more filters combined with & and | operators"""
-    filterclass = SingleSettingFilter
+    filterclass = _SingleFilter

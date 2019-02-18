@@ -12,259 +12,370 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from ...utils import cliparser
+
 import operator
 import re
 from collections import abc
 import itertools
 
+BOOLEAN = 'boolean'
+COMPARATIVE = 'comparative'
+
 
 class BoolFilterSpec():
     """Boolean filter specification"""
 
-    def __init__(self, func, needed_keys=(), aliases=(), description='No description'):
-        self.filter_function = func
+    type = BOOLEAN
+
+    def __init__(self, func, *, needed_keys=(), aliases=(), description='No description'):
+        if not func:
+            self.filter_function = None
+            needed_keys = ()
+        else:
+            self.filter_function = func
         self.needed_keys = needed_keys
         self.aliases = aliases
         self.description = description
 
-class CmpFilterSpec(BoolFilterSpec):
+
+class CmpFilterSpec():
     """Comparative filter specification"""
 
-    def __init__(self, *args, value_getter=lambda t: 'DUMMY_UNTIL_FULLY_IMPLEMENTED', value_type, value_convert=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.value_getter = value_getter
+    type = COMPARATIVE
+
+    def __init__(self, *, value_type, value_getter=None, value_matcher=None,
+                 value_convert=None, as_bool=None, needed_keys=(), aliases=(),
+                 description='No description'):
+        """
+        value_type    : Subclass of `type` (i.e. something that returns an instance when
+                        called and can be passed to `isinstance` as the second argument
+        value_getter  : Callable that takes an item and returns a value to match against
+        value_convert : Callable that takes an value and converts it to something else
+                        (e.g. "42" -> 42)
+        value_matcher : Callable that takes (item, operator, value) and returns True/False
+        as_bool       : Callable that takes an item and returns True/False
+        needed_keys   : Needed keys for this filter
+        aliases       : Alternative names of this filter
+        """
         self.value_type = value_type
-        self.value_convert = value_convert or value_type
+        self.needed_keys = needed_keys
+        self.aliases = aliases
+        self.description = description
+        self.value_convert = value_convert if value_convert is not None else value_type
 
-    def make_filter_func(self, operator, value):
-        def f(obj, filter_function=self.filter_function):
-            return filter_function(obj, operator, value)
-        return f
+        if value_getter is not None:
+            self.value_getter = value_getter
+        elif len(self.needed_keys) == 1:
+            self.value_getter = lambda dct, k=needed_keys[0]: dct[k]
+        else:
+            raise TypeError('Missing argument with needed_keys=%r: value_getter', self.needed_keys)
 
+        if value_matcher is None:
+            self.value_matcher = lambda item, op, v, vg=self.value_getter: op(vg(item), v)
+        else:
+            self.value_matcher = value_matcher
 
-def make_cmp_filter(types, key, description, aliases=(), value_convert=None):
-    def filterfunc(obj, op, val, key=key):
-        return op(obj[key], val)
+        if as_bool is None:
+            self.as_bool = lambda dct, vg=self.value_getter: bool(vg(dct))
+        else:
+            self.as_bool = as_bool
 
-    kwargs = {'description'   : description,
-              'needed_keys'   : (key,),
-              'aliases'       : aliases,
-              'value_getter'  : lambda torrent: torrent[key],
-              'value_type'    : types[key],
-              'value_convert' : value_convert}
-
-    if kwargs['value_convert'] is None and hasattr(kwargs['value_type'], 'from_string'):
-        kwargs['value_convert'] = kwargs['value_type'].from_string
-
-    return CmpFilterSpec(filterfunc, **kwargs)
-
-
-def _unquote(string):
-    if len(string) < 2:
-        return string
-
-    firstchar, lastchar = string[0], string[-1]
-    if (firstchar == "'" and lastchar == "'" or
-        firstchar == '"' and lastchar == '"'):
-        return string[1:-1]
-
-    return string
+    def make_filter(self, operator, user_value, invert):
+        if operator is None and user_value is None:
+            # Abuse comparative filter as boolean filter
+            # (e.g. 'peers-connected' matches torrents with peers-connected!=0)
+            return (self.as_bool, self.needed_keys, invert)
+        elif user_value is None:
+            # Operator with no value matches everything
+            return (None, (), False)
+        else:
+            def f(obj, vm=self.value_matcher, op=operator, val=user_value):
+                return vm(obj, op, val)
+            return (f, self.needed_keys, invert)
 
 
 class Filter():
     """Match sequences of objects against a single filter"""
 
     OPERATORS = {
-        '=': operator.__eq__, '~': operator.__contains__,
-        '>': operator.__gt__, '<': operator.__lt__,
-        '>=': operator.__ge__, '<=': operator.__le__,
+        '='  : operator.__eq__, '~'  : operator.__contains__,
+        '>'  : operator.__gt__, '<'  : operator.__lt__,
+        '>=' : operator.__ge__, '<=' : operator.__le__,
     }
     INVERT_CHAR = '!'
-    _OP_CHARS = ''.join(OPERATORS)
-    _OP_LIST = '(?:' + '|'.join(sorted(OPERATORS, key=len, reverse=True)) + ')'
-    _FILTER_REGEX = re.compile(r'^'
-                               r'(?P<invert1>' + INVERT_CHAR + '?)'
-                               r'(?P<name>[^' + _OP_CHARS+INVERT_CHAR + ']*)'
-                               r'(?P<invert2>' + INVERT_CHAR + '?)'
-                               r'(?P<op>' + _OP_LIST + '|)'
-                               r'(?P<value>.*)$')
-
     DEFAULT_FILTER = None
+    DEFAULT_OPERATOR = '~'
     BOOLEAN_FILTERS = {}
     COMPARATIVE_FILTERS = {}
 
     @classmethod
-    def _check_value(cls, name, value, op):
+    def _resolve_alias(cls, name):
         """
-        Convert `value` to correct type for comparative filter `name`
-
-        Also ensure operator `op` is compatible with `value`.
-
-        Raise ValueError
-
-        Return propert value
+        Return real filter name or `name` if it does not resolve
         """
-        if name not in cls.COMPARATIVE_FILTERS:
-            return value
+        if not hasattr(cls, '_aliases'):
+            aliases = {}
+            for fspecs in (cls.BOOLEAN_FILTERS, cls.COMPARATIVE_FILTERS):
+                for fname,f in fspecs.items():
+                    for a in f.aliases:
+                        if a in aliases:
+                            raise RuntimeError('Multiple aliases: %r' % (a,))
+                        else:
+                            aliases[a] = fname
+            cls._aliases = aliases
+        if name is None:
+            name = ''
+        return cls._aliases.get(name.strip(), name)
 
-        # Convert value to proper type
-        target_type = cls.COMPARATIVE_FILTERS[name].value_type
-        if type(value) is not target_type:
-            converter = cls.COMPARATIVE_FILTERS[name].value_convert
+    @classmethod
+    def _get_filter_spec(cls, name):
+        """
+        Get filter spec by `name`
+
+        Raise ValueError on error
+        """
+        fspec = cls.BOOLEAN_FILTERS.get(name)
+        if fspec is not None:
+            return fspec
+        fspec = cls.COMPARATIVE_FILTERS.get(name)
+        if fspec is not None:
+            return fspec
+        if name:
+            raise ValueError('Invalid filter name: %r' % (name,))
+        else:
+            raise ValueError('No filter expression given')
+
+    @classmethod
+    def _make_filter(cls, name, op, user_value, invert):
+        """
+        Return filter function, needed keys and invert
+
+        Filter function takes a value and returns whether it matches
+        `user_value`.
+
+        Filter function and needed keys are both `None` if everything is
+        matched.
+
+        Raise ValueError on error
+        """
+        # Ensure value is wanted by filter, compatible to operator and of proper type
+        user_value = cls._validate_user_value(name, op, user_value)
+        log.debug('  Validated user_value: %r', user_value)
+
+        fspec = cls._get_filter_spec(name)
+        if fspec.type is BOOLEAN:
+            return (fspec.filter_function, fspec.needed_keys, invert)
+        elif fspec.type is COMPARATIVE:
+            return fspec.make_filter(cls.OPERATORS.get(op), user_value, invert)
+
+    @classmethod
+    def _validate_user_value(cls, name, op, user_value):
+        """
+        Ensure that the `name`, `op`, and `user_value` make sense in conjunction
+
+        Return user value as correct type (e.g. `int`) for filter `name`
+
+        Raise ValueError if anything smells funky
+        """
+        log.debug('  Validating user value: name=%r, op=%r, user_value=%r',
+                  name, op, user_value)
+
+        if name in cls.BOOLEAN_FILTERS:
+            # log.debug('%r is a valid boolean filter: %r', name, cls.BOOLEAN_FILTERS[name])
+            if user_value:
+                raise ValueError('Boolean filter does not take a value: %s' % (name,))
+            elif op:
+                raise ValueError('Boolean filter does not take an operator: %s' % (name,))
+
+        if op is None or user_value is None:
+            # Filter `name` could still be (ab)used as boolean filter
+            return None
+
+        fspec = cls.COMPARATIVE_FILTERS.get(name)
+        if fspec is None:
+            if name:
+                raise ValueError('Invalid filter name: %r' % (name,))
+            else:
+                raise ValueError('No filter expression given')
+
+        # Convert user_value to proper type
+        if type(user_value) is not fspec.value_type:
+            log.debug('  Converting %r to %r', user_value, fspec.value_type)
             try:
-                value = converter(value)
+                user_value = fspec.value_convert(user_value)
             except ValueError:
-                raise ValueError('Invalid value for filter {!r}: {!r}'.format(name, value))
+                raise ValueError('Invalid value for filter %r: %r' % (name, user_value))
 
         # Test if target_type supports operator
         try:
-            cls.OPERATORS[op](value, value)
+            log.debug('Trying %r(%r [%r], %r [%r])',
+                      cls.OPERATORS[op], user_value, type(user_value), user_value, type(user_value))
+            cls.OPERATORS[op](user_value, user_value)
         except TypeError as e:
-            raise ValueError('Invalid operator for filter {!r}: {}'.format(name, op))
+            raise ValueError('Invalid operator for filter %r: %s' % (name, op))
 
-        return value
+        return user_value
 
     @classmethod
-    def _resolve_alias(cls, name):
-        if not hasattr(cls, '_aliases'):
-            aliases = {}
-            for fseq in (cls.BOOLEAN_FILTERS, cls.COMPARATIVE_FILTERS):
-                for fname,f in fseq.items():
-                    for a in f.aliases:
-                        aliases[a] = fname
-            cls._aliases = aliases
-        return cls._aliases.get(name, name)
+    def _parse_inverter(cls, string, invert):
+        if not string:
+            return string, invert
+
+        # Find INVERT_CHAR at start or end of string
+        parts = cliparser.tokenize(string.strip(), delims=(cls.INVERT_CHAR,), escapes=('\\',), quotes=())
+        if cls.INVERT_CHAR in parts:
+            if parts and parts[0] == cls.INVERT_CHAR:
+                parts.pop(0)
+                invert = not invert
+            if parts and parts[-1] == cls.INVERT_CHAR:
+                parts.pop(-1)
+                invert = not invert
+            return ''.join(parts), invert
+        else:
+            # Return string unchanged
+            return string, invert
 
     def __init__(self, filter_str=''):
         # name: Name of filter (user-readable string)
         # invert: Whether to invert filter (bool)
         # op: Comparison operator as string (see OPERATORS)
-        # value: User-given value as string (will be converted to proper type)
-        name, invert, op, value = (None, False, None, None)
-        filter_str = filter_str.strip()
-        if filter_str != '':
-            match = self._FILTER_REGEX.fullmatch(filter_str)
-            if match is None:
-                raise ValueError('Invalid filter: {!r}'.format(filter_str))
+        # user_value: User-given value that is matched against items
+        # The *_raw variables contain original quotes and backslashes.
+        name_raw, op_raw, user_value_raw, invert = (None, None, None, False)
+
+        log.debug('Parsing %r', filter_str)
+        parts = cliparser.tokenize(filter_str, maxdelims=1, delims=self.OPERATORS, escapes=('\\',))
+        log.debug('Parts: %r', parts)
+        if len(parts) == 3:
+            name_raw, op_raw, user_value_raw = parts
+        elif len(parts) == 2:
+            if parts[0] in self.OPERATORS:
+                op_raw, user_value_raw = parts
+                name_raw = self.DEFAULT_FILTER
+            elif parts[1] in self.OPERATORS:
+                name_raw, op_raw = parts
             else:
-                name = match.group('name')
-                op = match.group('op') or None
-                invert = bool(match.group('invert1')) ^ bool(match.group('invert2'))
-                value = match.group('value')
-                value = _unquote(value.strip(' ')) if value else None
-
-        log.debug('Parsed filter %r: name=%r, invert=%r, op=%r, value=%r',
-                  filter_str, name, invert, op, value)
-
-        # No operator but a value doesn't make any sense
-        if op is None and value is not None:
-            raise ValueError('Malformed filter expression: {!r}'.format(filter_str))
-
-        if name is not None:
-            name = name.strip()
-
-        if name is None:
-            # No filter_str provided
-            name = 'all'
-        elif name is '':
-            # No filter name is given, but a value and maybe an operator.
-            name = self.DEFAULT_FILTER
+                raise ValueError('Malformed filter expression: %r' % (filter_str,))
+        elif len(parts) == 1:
+            if parts[0] in self.OPERATORS:
+                op_raw = parts[0]
+            else:
+                name_raw = parts[0]
         else:
-            name = self._resolve_alias(name)
+            raise ValueError('Malformed filter expression: %r' % (filter_str,))
+        name_raw, invert = self._parse_inverter(name_raw, invert)
+        log.debug('Parsed %r into raw: name=%r, invert=%r, op=%r, user_value=%r',
+                  filter_str, name_raw, invert, op_raw, user_value_raw)
 
-        # Make sure value has the correct type and operator is compatible
-        if value is not None:
-            value = self._check_value(name, value, op)
+        # Remove all special characters (backslashes, quotes)
+        name, op, user_value = map(lambda x: None if x is None else cliparser.plaintext(x),
+                                   (name_raw, op_raw, user_value_raw))
+        log.debug('  Plaintext: name=%r, invert=%r, op=%r, user_value=%r',
+                  name, invert, op, user_value)
 
-        # Filter can't use an argument
-        if name in self.BOOLEAN_FILTERS:
-            if op or value:
-                raise ValueError('Boolean filter does not accept any values: {} '.format(filter_str))
-            f = self.BOOLEAN_FILTERS[name]
-            self._filter_func = f.filter_function
-            self._needed_keys = f.needed_keys
+        name = self._resolve_alias(name)
+        log.debug('  Resolved alias: name=%r, op=%r, user_value=%r', name, op, user_value)
 
-        # Filter can use an argument
-        elif name in self.COMPARATIVE_FILTERS:
-            f = self.COMPARATIVE_FILTERS[name]
-            self._needed_keys = f.needed_keys
-            if op is None and value is None:
-                # Abuse comparative filter as boolean filter
-                # (e.g. 'peers-connected' matches torrents with peers-connected!=0)
-                log.debug('Using comparative filter as boolean filter: %r', name)
-                self._filter_func = lambda obj, keys=f.needed_keys: all(bool(obj[key]) for key in keys)
-            else:
-                log.debug('Comparative filter: %r %r %r', name, op, value)
-                self._filter_func = f.make_filter_func(self.OPERATORS[op], value)
-
-        elif value is op is None and self.DEFAULT_FILTER is not None:
-            # `name` is no known filter - default to DEFAULT_FILTER with operator '~'.
-            value = _unquote(name)
-            op = '~'
+        if not name:
             name = self.DEFAULT_FILTER
-            if name in self.BOOLEAN_FILTERS:
-                f = self.BOOLEAN_FILTERS[name]
-                self._filter_func = f.filter_function
-            elif name in self.COMPARATIVE_FILTERS:
-                f = self.COMPARATIVE_FILTERS[name]
-                self._filter_func = f.make_filter_func(self.OPERATORS[op], value)
+            log.debug('  Falling back to default filter: %r', name)
+
+        try:
+            log.debug('  Getting filter spec: name=%r, op=%r, user_value=%r', name, op, user_value)
+            # Get filter spec by `name`
+            filter_func, needed_keys, invert = self._make_filter(name, op, user_value, invert)
+        except ValueError as e:
+            # Filter spec lookup failed
+            if self.DEFAULT_FILTER and user_value is op is None:
+                # No `user_value` or `op` given - use the first part of the
+                # filter expression (normally the filter name) as `user_value`
+                # for DEFAULT_FILTER.
+                name, op, user_value = self.DEFAULT_FILTER, self.DEFAULT_OPERATOR, name
+                log.debug('  Using name as value for default filter: name=%r, op=%r, user_value=%r',
+                          name, op, user_value)
+                filter_func, needed_keys, invert = self._make_filter(name, op, user_value, invert)
             else:
-                raise RuntimeError('Default filter {!r} does not exist: {!r}'
-                                   .format(name, ', '.join(tuple(self.BOOLEAN_FILTERS) +
-                                                           tuple(self.COMPARATIVE_FILTERS))))
-            self._needed_keys = f.needed_keys
+                # No DEFAULT_FILTER is set, so we can't default to it
+                raise
 
-        else:
-            raise ValueError('Invalid filter name: {!r}'.format(name))
-
-        self._name, self._invert, self._op, self._value = name, invert, op, value
-        self._hash = hash((name, invert, op, value))
+        log.debug('  Final filter: name=%r, invert=%r, op=%r, user_value=%r',
+                  name, invert, op, user_value)
+        self._filter_func = filter_func
+        self._needed_keys = needed_keys
+        self._name, self._invert, self._op, self._user_value = name, invert, op, user_value
+        self._hash = hash((name, invert, op, user_value))
 
     def apply(self, objs, invert=False, key=None):
         """Yield matching objects or `key` of each matching object"""
-        if self._value is None and self._op is not None:
-            # No given value means all objects match
-            for obj in objs:
-                yield obj if key is None else obj[key]
+        invert = self._invert ^ bool(invert)  # xor
+        is_wanted = self._filter_func
+        if is_wanted is None:
+            if invert:
+                # This filter matches nothing
+                yield from ()
+            else:
+                # This filter matches everything
+                if key is None:
+                    yield from objs
+                else:
+                    for obj in objs:
+                        yield obj[key]
         else:
-            invert = self._invert ^ bool(invert)  # xor
-            wanted = self._filter_func
-            for obj in objs:
-                if wanted(obj) ^ invert:
-                    yield obj if key is None else obj[key]
+            if key is None:
+                for obj in objs:
+                    if bool(is_wanted(obj)) ^ invert:
+                        yield obj
+            else:
+                for obj in objs:
+                    if bool(is_wanted(obj)) ^ invert:
+                        yield obj[key]
 
     def match(self, obj):
         """Return True if `obj` matches, False otherwise"""
-        if self._value is None and self._op is not None:
-            # No given value means all objects match
-            return True
+        is_wanted = self._filter_func
+        if is_wanted is None:
+            # This filter matches everything/nothing
+            return not self._invert
         else:
-            return self._filter_func(obj) ^ self._invert
+            return bool(is_wanted(obj)) ^ self._invert
 
     def __str__(self):
         if self._name is None:
-            return 'all'
+            return self.DEFAULT_FILTER or ''
         elif self._op is None:
             return ('!' if self._invert else '') + self._name
         else:
             name = self._name if self._name != self.DEFAULT_FILTER else ''
             op = ('!' if self._invert else '') + self._op
-            if self._value is None:
+            user_value = self._user_value
+            if user_value is None:
                 return name + op
             else:
-                val = str(self._value)
-                if val == '' or ' ' in val:
-                    # Quote value if there are spaces in it
-                    val = repr(val)
+                val = str(user_value)
+                if val == '':
+                    val = "''"
+                elif len(val) == 1:
+                    val = cliparser.escape(val, delims=(' ', '&', '|'), quotes=("'", '"'))
+                else:
+                    val = cliparser.quote(val, delims=(' ', '&', '|'), quotes=("'", '"'))
                 return name + op + val
 
     @property
     def needed_keys(self):
         return self._needed_keys
 
+    @property
+    def match_everything(self):
+        return not self._filter_func
+
+    @property
+    def inverted(self):
+        return self._invert
+
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            for attr in ('_name', '_value', '_invert', '_op'):
+            for attr in ('_name', '_user_value', '_invert', '_op'):
                 if getattr(self, attr) != getattr(other, attr):
                     return False
             return True
@@ -272,97 +383,88 @@ class Filter():
             return NotImplemented
 
     def __repr__(self):
-        return '<{} {}>'.format(type(self).__name__, str(self))
+        return '%s(%r)' % (type(self).__name__, str(self))
 
     def __hash__(self):
         return self._hash
 
 
-# The filter specs are specified on the Single...Filter classes, but we only
-# want to export the classes derived from FilterChain, so this metalcass grabs
-# attributes that are missing from FilterChain from it's 'filterclass'
+# The filter specs are specified on the Filter subclasses in each module, but we
+# only want to export the classes derived from FilterChain, so this metalcass
+# grabs attributes that are missing from FilterChain from it's 'filterclass'
 # attribute.
-class _copy_filter_spec(type):
+class _forward_attrs(type):
     def __getattr__(cls, name):
         attr = getattr(cls.filterclass, name)
         setattr(cls, name, attr)
         return attr
 
-class FilterChain(metaclass=_copy_filter_spec):
+
+class FilterChain(metaclass=_forward_attrs):
     """One or more filters combined with AND and OR operators"""
 
-    filterclass = None
-    _op_regex = re.compile(r'(?<!\\)([&|])')
+    filterclass = NotImplemented
 
     def __init__(self, filters=''):
         if not isinstance(self.filterclass, type) or not issubclass(self.filterclass, Filter):
-            raise RuntimeError('Attribute "filterclass" must be set to a Filter class, not {!r}'
-                               .format(self.filterclass))
+            raise RuntimeError('Attribute "filterclass" must be set to a Filter subclass')
 
         if isinstance(filters, str):  # Because str is also instance of abc.Sequence
             pass
         elif isinstance(filters, abc.Sequence) and all(isinstance(f, str) for f in filters):
             filters = '|'.join(filters)
+        elif isinstance(filters, (type(self), self.filterclass)):
+            filters = str(filters)
         elif not isinstance(filters, str):
-            raise TypeError('filters must be string or sequence of strings, not {}: {!r}'
-                            .format(type(filters).__name__, filters))
+            raise ValueError('Filters must be string or sequence of strings, not %s: %r'
+                             % (type(filters).__name__, filters))
 
-        # self._filterchains is a tuple of tuples.  Each inner tuple combines
-        # filters with AND.  The outer tuple combines the inner, AND-combined
-        # tuples with OR.
-        parts = tuple(part for part in self._op_regex.split(filters) if part is not '')
-        if len(parts) < 1:
-            self._filterchains = ()
-        else:
-            if parts[0] in '&|':
-                raise ValueError('Filter can\'t start with operator: {!r}'.format(parts[0]))
-            elif parts[-1] in '&|':
-                # Comparison operators (=, ~, <, >, etc) automatically escape
-                # boolean operators (& and |)
-                if (parts[-2] == '\\' or
-                    parts[-2] in Filter.OPERATORS.keys() or
-                    parts[-2] in ('!'+op for op in Filter.OPERATORS.keys())):
-                    log.debug('joining %r and %r', parts[:-2], ''.join(parts[-2:]))
-                    parts = parts[:-2] + (''.join(parts[-2:]),)
-                else:
-                    raise ValueError('Filter can\'t end with operator: {!r}'.format(parts[-1]))
+        self._filterchains = ()
 
+        # Split `filters` at boolean operators
+        parts = cliparser.tokenize(filters, delims=('&', '|'))
+        if len(parts) > 0 and parts[0]:
+            if parts[0] in ('&', '|'):
+                raise ValueError("Filter can't start with operator: %r" % (parts[0],))
+            elif parts[-1] in ('&', '|'):
+                raise ValueError("Filter can't end with operator: %r" % (parts[-1],))
+
+            # The filter chain is represented by a tuple of tuples.  Each inner
+            # tuple combines filters with AND.  The outer tuple combines the
+            # inner tuples with OR.
             filters = []
             ops = []
             expect = 'filter'
-            nofilter = self.filterclass()
             for i,part in enumerate(parts):
                 if expect is 'filter':
                     if part not in '&|':
-                        # Remove backslashes from escaped operators
-                        part = part.replace(r'\&', '&').replace(r'\|', '|')
                         f = self.filterclass(part)
-                        if f == nofilter:
-                            # part is something like 'all' or '*' - this
-                            # disables all other filters
-                            filters = []
-                            ops = []
+                        if f.match_everything:
+                            # One catch-all filter is the same as no filters
+                            filters = [f]
+                            ops.clear()
                             break
                         else:
                             filters.append(f)
                             expect = 'operator'
                             continue
-                elif expect is 'operator':
+                elif expect is 'operator' and part in '&|':
                     if part in '&|':
                         ops.append(part)
                         expect = 'filter'
                         continue
                 raise ValueError('Consecutive operators: {!r}'.format(''.join(parts[i-2:i+2])))
 
-            if filters:
-                fchain = [[]]
-                for filter,op in itertools.zip_longest(filters, ops):
-                    fchain[-1].append(filter)
-                    if op is '|':
-                        fchain.append([])
-                self._filterchains = tuple(tuple(x) for x in fchain)
-            else:
-                self._filterchains = ()
+            fchain = [[]]
+            for filter,op in itertools.zip_longest(filters, ops):
+                fchain[-1].append(filter)
+                if op == '|':
+                    fchain.append([])
+            log.debug('Chained %r and %r to %r', filters, ops, fchain)
+            self._filterchains = tuple(tuple(x) for x in fchain)
+
+    # TODO: Try to use apply() of chained filters, which should be more
+    # efficient.
 
     def apply(self, objects):
         """Yield matching objects from iterable `objects`"""
@@ -403,7 +505,7 @@ class FilterChain(metaclass=_copy_filter_spec):
 
     def __str__(self):
         if len(self._filterchains) < 1:
-            return 'all'
+            return ''
         else:
             OR_chains = []
             for AND_chain in self._filterchains:
@@ -411,7 +513,7 @@ class FilterChain(metaclass=_copy_filter_spec):
             return '|'.join(OR_chains)
 
     def __repr__(self):
-        return '<{} {}>'.format(type(self).__name__, str(self))
+        return '%s(%r)' % (type(self).__name__, str(self))
 
     def __and__(self, other):
         cls = type(self)

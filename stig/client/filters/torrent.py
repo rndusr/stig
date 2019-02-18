@@ -11,17 +11,11 @@
 
 """Filtering Torrents by their values"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from .common import (BoolFilterSpec, CmpFilterSpec, make_cmp_filter, Filter, FilterChain)
-from .utils import (timestamp_or_timedelta, time_filter, limit_rate_filter)
+from ..ttypes import TYPES as VALUETYPES
+from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta, limit_rate_filter)
 from ..utils import (Bandwidth, BoolOrBandwidth, convert)
 
-
-from ..ttypes import TYPES as VALUETYPES
-def _make_cmp_filter(*args, **kwargs):
-    return make_cmp_filter(VALUETYPES, *args, **kwargs)
 
 def _desc(text):
     if text.startswith('...'):
@@ -41,208 +35,219 @@ _STATUS_SEED      = Status.SEED
 _STATUS_IDLE      = Status.IDLE
 _STATUS_STOPPED   = Status.STOPPED
 
-class SingleTorrentFilter(Filter):
+
+class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
-    # Filters without arguments
     BOOLEAN_FILTERS = {
-        'all': BoolFilterSpec(
-            lambda t: True,
-            aliases=('*',),
-            description='All torrents',
-            needed_keys=()),
-        'complete': BoolFilterSpec(
-            lambda t: t['%downloaded'] >= 100,
-            aliases=('cmp',),
-            description='Torrents with all wanted files downloaded',
-            needed_keys=('%downloaded',)),
-        'incomplete': BoolFilterSpec(
-            lambda t: t['%downloaded'] < 100,
-            aliases=('inc',),
-            description='Torrents with some wanted files not fully downloaded',
-            needed_keys=('%downloaded',)),
-        'stopped': BoolFilterSpec(
-            lambda t: _STATUS_STOPPED in t['status'],
-            aliases=('stp',),
-            description='Torrents not allowed to up- or download',
-            needed_keys=('status',)),
-        'active': BoolFilterSpec(
-            lambda t: t['peers-connected'] > 0 or _STATUS_VERIFY in t['status'],
-            description='Torrents connected to peers or being verified',
-            needed_keys=('peers-connected', 'status')),
-        'uploading': BoolFilterSpec(
-            lambda t: t['rate-up'] > 0,
-            aliases=('upg',),
-            description='Torrents using upload bandwidth',
-            needed_keys=('rate-up',)),
-        'downloading': BoolFilterSpec(
-            lambda t: t['rate-down'] > 0,
-            aliases=('dng',),
-            description='Torrents using download bandwidth',
-            needed_keys=('rate-down',)),
-        'verifying': BoolFilterSpec(
-            lambda t: _STATUS_VERIFY in t['status'],
-            aliases=('vfg',),
-            description='Torrents being verified or queued for verification',
-            needed_keys=('status',)),
-        'leeching': BoolFilterSpec(
-            lambda t: t['%downloaded'] < 100 and _STATUS_STOPPED not in t['status'],
-            aliases=('lcg',),
-            description='Unstopped torrents downloading or waiting for seeds',
-            needed_keys=('%downloaded', 'status')),
-        'seeding': BoolFilterSpec(
-            lambda t: t['%downloaded'] >= 100 and _STATUS_STOPPED not in t['status'],
-            aliases=('sdg',),
-            description='Unstopped torrents with all wanted files downloaded',
-            needed_keys=('%downloaded', 'status')),
-        'idle': BoolFilterSpec(
-            lambda t: (_STATUS_IDLE in t['status'] and
-                       _STATUS_STOPPED not in t['status']),
-            description='Unstopped torrents not using any bandwidth',
-            needed_keys=('status',)),
-        'isolated': BoolFilterSpec(
-            lambda t: _STATUS_ISOLATED in t['status'],
-            aliases=('isl',),
-            description='Torrents that cannot discover new peers in any way',
-            needed_keys=('status',)),
-        'private': BoolFilterSpec(
-            lambda t: t['private'],
-            aliases=('prv',),
-            description='Torrents connectable through trackers only',
-            needed_keys=('private',)),
-        'public': BoolFilterSpec(
-            lambda t: not t['private'],
-            aliases=('pbl',),
-            description='Torrents connectable through DHT and/or PEX',
-            needed_keys=('private',)),
+        'all'         : BoolFilterSpec(None,
+                                       aliases=('*',),
+                                       description='All torrents'),
+        'complete'    : BoolFilterSpec(lambda t: t['%downloaded'] >= 100,
+                                       needed_keys=('%downloaded',),
+                                       aliases=('cmp',),
+                                       description='Torrents with all wanted files downloaded'),
+        'stopped'     : BoolFilterSpec(lambda t: _STATUS_STOPPED in t['status'],
+                                       needed_keys=('status',),
+                                       aliases=('stp',),
+                                       description='Torrents that are not allowed to up- or download'),
+        'active'      : BoolFilterSpec(lambda t: _STATUS_CONNECTED in t['status'] or _STATUS_VERIFY in t['status'],
+                                       needed_keys=('peers-connected', 'status'),
+                                       aliases=('act',),
+                                       description='Torrents connected to peers or being verified'),
+        'uploading'   : BoolFilterSpec(lambda t: t['rate-up'] > 0,
+                                       needed_keys=('rate-up',),
+                                       aliases=('upg',),
+                                       description='Torrents using upload bandwidth'),
+        'downloading' : BoolFilterSpec(lambda t: t['rate-down'] > 0,
+                                       needed_keys=('rate-down',),
+                                       aliases=('dng',),
+                                       description='Torrents using download bandwidth'),
+        'leeching'    : BoolFilterSpec(lambda t: t['%downloaded'] < 100 and _STATUS_STOPPED not in t['status'],
+                                       needed_keys=('%downloaded', 'status'),
+                                       aliases=('lcg',),
+                                       description='Unstopped torrents downloading or waiting for seeds'),
+        'seeding'     : BoolFilterSpec(lambda t: t['%downloaded'] >= 100 and _STATUS_STOPPED not in t['status'],
+                                       needed_keys=('%downloaded', 'status'),
+                                       aliases=('sdg',),
+                                       description='Unstopped torrents with all wanted files downloaded'),
+        'verifying'   : BoolFilterSpec(lambda t: _STATUS_VERIFY in t['status'],
+                                       needed_keys=('status',),
+                                       aliases=('vfg',),
+                                       description='Torrents being verified or queued for verification'),
+        'idle'        : BoolFilterSpec(lambda t: (_STATUS_IDLE in t['status'] and
+                                                  _STATUS_STOPPED not in t['status']),
+                                       needed_keys=('status',),
+                                       description="Unstopped torrents that don't do anything"),
+        'isolated'    : BoolFilterSpec(lambda t: _STATUS_ISOLATED in t['status'],
+                                       needed_keys=('status',),
+                                       aliases=('isl',),
+                                       description='Torrents that cannot discover new peers in any way'),
+        'private'     : BoolFilterSpec(lambda t: t['private'],
+                                       needed_keys=('private',),
+                                       aliases=('prv',),
+                                       description='Torrents connectable through trackers only (no DHT/PEX)'),
     }
 
-    # Filters with arguments
     COMPARATIVE_FILTERS = {
-        'id'              : _make_cmp_filter('id',
-                                             _desc('... ID')),
-        'name'            : _make_cmp_filter('name',
-                                             _desc('... name'),
-                                             aliases=('n',)),
-        'comment'         : _make_cmp_filter('comment',
-                                             _desc('... comment'),
-                                             aliases=('cmnt',)),
-        'path'            : _make_cmp_filter('path',
-                                             _desc('... full path to download directory'),
-                                             aliases=('dir',)),
-        'error'           : _make_cmp_filter('error',
-                                             _desc('... error message'),
-                                             aliases=('err',)),
-        'uploaded'        : _make_cmp_filter('size-uploaded',
-                                             _desc('... number of uploaded bytes'),
-                                             aliases=('up',)),
-        'downloaded'      : _make_cmp_filter('size-downloaded',
-                                             _desc('... number of downloaded bytes'),
-                                             aliases=('dn',)),
-        '%downloaded'     : _make_cmp_filter('%downloaded',
-                                             _desc('... percentage of downloaded bytes'),
-                                             aliases=('%dn',)),
-        'size'            : _make_cmp_filter('size-final',
-                                             _desc('... combined size of all wanted files'),
-                                             aliases=('sz',),
-                                             value_convert=convert.size),
-        'peers'           : _make_cmp_filter('peers-connected',
-                                             _desc('... number of connected peers'),
-                                             aliases=('prs',)),
-        'seeds'           : _make_cmp_filter('peers-seeding',
-                                             _desc('... largest number of seeds reported by any tracker'),
-                                             aliases=('sds',)),
-        'ratio'           : _make_cmp_filter('ratio',
-                                             _desc('... uploaded/downloaded ratio'),
-                                             aliases=('rto',)),
-        'rate-up'         : _make_cmp_filter('rate-up',
-                                             _desc('... upload rate'),
-                                             aliases=('rup',),
-                                             value_convert=Bandwidth),
-        'rate-down'       : _make_cmp_filter('rate-down',
-                                             _desc('... download rate'),
-                                             aliases=('rdn',),
-                                             value_convert=Bandwidth),
+        'id'              : CmpFilterSpec(value_getter=lambda t: t['id'],
+                                          value_type=VALUETYPES['id'],
+                                          needed_keys=('id',),
+                                          description=_desc('... upload rate limit')),
 
-        'limit-rate-up': CmpFilterSpec(
-            lambda t, op, v: limit_rate_filter(t['limit-rate-up'], op, v),
-            aliases=('lrup',),
-            description=_desc('... upload rate limit'),
-            needed_keys=('limit-rate-up',),
-            value_type=BoolOrBandwidth,
-            value_getter=lambda t: t['limit-rate-up'],
-        ),
+        'name'            : CmpFilterSpec(value_getter=lambda t: t['name'],
+                                          value_type=VALUETYPES['name'],
+                                          needed_keys=('name',),
+                                          aliases=('n',),
+                                          description=_desc('... name')),
 
-        'limit-rate-down': CmpFilterSpec(
-            lambda t, op, v: limit_rate_filter(t['limit-rate-down'], op, v),
-            aliases=('lrdn',),
-            description=_desc('... download rate limit'),
-            needed_keys=('limit-rate-down',),
-            value_type=BoolOrBandwidth,
-            value_getter=lambda t: t['limit-rate-down'],
-        ),
+        'comment'         : CmpFilterSpec(value_getter=lambda t: t['comment'],
+                                          value_type=VALUETYPES['comment'],
+                                          needed_keys=('comment',),
+                                          aliases=('cmnt',),
+                                          description=_desc('... comment')),
 
-        'tracker': CmpFilterSpec(
-            lambda t, op, v: any(op(tracker['url-announce'].domain, v)
-                                 for tracker in t['trackers']),
-            aliases=('trk',),
-            description=_desc('... domain of the announce URL of trackers'),
-            needed_keys=('trackers',),
-            value_type=str,
-            value_getter=lambda t: t['trackers'][0]['url-announce'] if t['trackers'] else '',
-        ),
+        'path'            : CmpFilterSpec(value_getter=lambda t: t['path'],
+                                          value_type=VALUETYPES['path'],
+                                          needed_keys=('path',),
+                                          description=_desc('... full path to download directory')),
 
-        'eta': CmpFilterSpec(
-            lambda t, op, v: time_filter(t['timespan-eta'], op, v),
-            description=_desc('... estimated time for torrent to finish'),
-            needed_keys=('timespan-eta',),
-            value_type=VALUETYPES['timespan-eta'],
-            value_convert=timestamp_or_timedelta,
-        ),
+        'error'           : CmpFilterSpec(value_getter=lambda t: t['error'],
+                                          value_type=VALUETYPES['error'],
+                                          needed_keys=('error',),
+                                          aliases=('err',),
+                                          description=_desc('... error message')),
 
-        'created': CmpFilterSpec(
-            lambda t, op, v: time_filter(t['time-created'], op, v),
-            aliases=('tcrt',),
-            description=_desc('... time torrent was created'),
-            needed_keys=('time-created',),
-            value_type=VALUETYPES['time-created'],
-            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
-        ),
-        'added': CmpFilterSpec(
-            lambda t, op, v: time_filter(t['time-added'], op, v),
-            aliases=('tadd',),
-            description=_desc('... time torrent was added'),
-            needed_keys=('time-added',),
-            value_type=VALUETYPES['time-added'],
-            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
-        ),
-        'started': CmpFilterSpec(
-            lambda t, op, v: time_filter(t['time-started'], op, v),
-            aliases=('tsta',),
-            description=_desc('... last time torrent was started'),
-            needed_keys=('time-started',),
-            value_type=VALUETYPES['time-started'],
-            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
-        ),
-        'activity': CmpFilterSpec(
-            lambda t, op, v: time_filter(t['time-activity'], op, v),
-            aliases=('tact',),
-            description=_desc('... last time torrent was active'),
-            needed_keys=('time-activity',),
-            value_type=VALUETYPES['time-activity'],
-            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
-        ),
-        'completed': CmpFilterSpec(
-            lambda t, op, v: time_filter(t['time-completed'], op, v),
-            aliases=('tcmp',),
-            description=_desc('... time all wanted files where downloaded'),
-            needed_keys=('time-completed',),
-            value_type=VALUETYPES['time-completed'],
-            value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
-        ),
+        'uploaded'        : CmpFilterSpec(value_getter=lambda t: t['size-uploaded'],
+                                          value_type=VALUETYPES['size-uploaded'],
+                                          needed_keys=('size-uploaded',),
+                                          aliases=('up',),
+                                          description=_desc('... number of uploaded bytes')),
+
+        'downloaded'      : CmpFilterSpec(value_getter=lambda t: t['size-downloaded'],
+                                          value_type=VALUETYPES['size-downloaded'],
+                                          needed_keys=('size-downloaded',),
+                                          aliases=('dn',),
+                                          description=_desc('... number of downloaded bytes')),
+
+        '%downloaded'     : CmpFilterSpec(value_getter=lambda t: t['%downloaded'],
+                                          value_type=VALUETYPES['%downloaded'],
+                                          needed_keys=('%downloaded',),
+                                          aliases=('%dn',),
+                                          description=_desc('... percentage of downloaded bytes')),
+
+        'size'            : CmpFilterSpec(value_getter=lambda t: t['size-final'],
+                                          value_type=VALUETYPES['size-final'],
+                                          value_convert=convert.size,
+                                          needed_keys=('size-final',),
+                                          aliases=('sz',),
+                                          description=_desc('... combined size of all wanted files')),
+
+        'peers'           : CmpFilterSpec(value_getter=lambda t: t['peers-connected'],
+                                          value_type=VALUETYPES['peers-connected'],
+                                          needed_keys=('peers-connected',),
+                                          aliases=('prs',),
+                                          description=_desc('... number of connected peers')),
+
+        'seeds'           : CmpFilterSpec(value_getter=lambda t: t['peers-seeding'],
+                                          value_type=VALUETYPES['peers-seeding'],
+                                          needed_keys=('peers-seeding',),
+                                          aliases=('sds',),
+                                          description=_desc('... largest number of seeds reported by any tracker')),
+
+        'ratio'           : CmpFilterSpec(value_getter=lambda t: t['ratio'],
+                                          value_type=VALUETYPES['ratio'],
+                                          needed_keys=('ratio',),
+                                          aliases=('rto',),
+                                          description=_desc('... uploaded/downloaded ratio')),
+
+        'rate-up'         : CmpFilterSpec(value_getter=lambda t: t['rate-up'],
+                                          value_type=VALUETYPES['rate-up'],
+                                          value_convert=Bandwidth,
+                                          needed_keys=('rate-up',),
+                                          aliases=('rup',),
+                                          description=_desc('... upload rate')),
+
+        'rate-down'       : CmpFilterSpec(value_getter=lambda t: t['rate-down'],
+                                          value_type=VALUETYPES['rate-down'],
+                                          value_convert=Bandwidth,
+                                          needed_keys=('rate-down',),
+                                          aliases=('rdn',),
+                                          description=_desc('... download rate')),
+
+        'limit-rate-up'   : CmpFilterSpec(value_getter=lambda t: t['limit-rate-up'],
+                                          value_matcher=lambda t, op, v: limit_rate_filter(t['limit-rate-up'], op, v),
+                                          value_type=BoolOrBandwidth,
+                                          as_bool=lambda t: t['limit-rate-up'] < float('inf'),
+                                          needed_keys=('limit-rate-up',),
+                                          aliases=('lrup',),
+                                          description=_desc('... upload rate limit')),
+
+        'limit-rate-down' : CmpFilterSpec(value_getter=lambda t: t['limit-rate-down'],
+                                          value_matcher=lambda t, op, v: limit_rate_filter(t['limit-rate-down'], op, v),
+                                          value_type=BoolOrBandwidth,
+                                          as_bool=lambda t: t['limit-rate-down'] < float('inf'),
+                                          needed_keys=('limit-rate-down',),
+                                          aliases=('lrdn',),
+                                          description=_desc('... download rate limit')),
+
+        'tracker'         : CmpFilterSpec(value_getter=lambda t: t['trackers'][0]['url-announce'] if t['trackers'] else '',
+                                          value_matcher=lambda t, op, v: any(op(tracker['url-announce'].domain, v)
+                                                                             for tracker in t['trackers']),
+                                          value_type=str,
+                                          needed_keys=('trackers',),
+                                          aliases=('trk',),
+                                          description=_desc('... domain of the announce URL of trackers')),
+
+        'eta'             : CmpFilterSpec(value_getter=lambda t: t['timespan-eta'],
+                                          value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['timespan-eta'], op, v),
+                                          value_type=VALUETYPES['timespan-eta'],
+                                          value_convert=timestamp_or_timedelta,
+                                          needed_keys=('timespan-eta',),
+                                          description=_desc('... estimated time to finish downloading')),
+
+        'created'         : CmpFilterSpec(value_getter=lambda t: t['time-created'],
+                                          value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-created'], op, v),
+                                          value_type=VALUETYPES['time-created'],
+                                          value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+                                          needed_keys=('time-created',),
+                                          aliases=('tcrt',),
+                                          description=_desc('... torrent creation time')),
+
+        'added'           : CmpFilterSpec(value_getter=lambda t: t['time-added'],
+                                          value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-added'], op, v),
+                                          value_type=VALUETYPES['time-added'],
+                                          value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+                                          needed_keys=('time-added',),
+                                          aliases=('tadd',),
+                                          description=_desc('... time torrent was added')),
+
+        'started'         : CmpFilterSpec(value_getter=lambda t: t['time-started'],
+                                          value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-started'], op, v),
+                                          value_type=VALUETYPES['time-started'],
+                                          value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+                                          needed_keys=('time-started',),
+                                          aliases=('tsta',),
+                                          description=_desc('... last time torrent was started')),
+
+        'activity'        : CmpFilterSpec(value_getter=lambda t: t['time-activity'],
+                                          value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-activity'], op, v),
+                                          value_type=VALUETYPES['time-activity'],
+                                          value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+                                          needed_keys=('time-activity',),
+                                          aliases=('tact',),
+                                          description=_desc('... time torrent was active')),
+
+        'completed'       : CmpFilterSpec(value_getter=lambda t: t['time-completed'],
+                                          value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-completed'], op, v),
+                                          value_type=VALUETYPES['time-completed'],
+                                          value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
+                                          needed_keys=('time-completed',),
+                                          aliases=('tcmp',),
+                                          description=_desc('... time all wanted files where/will be downloaded')),
     }
 
 
 class TorrentFilter(FilterChain):
     """One or more filters combined with & and | operators"""
-    filterclass = SingleTorrentFilter
+    filterclass = _SingleFilter

@@ -1,43 +1,93 @@
-from stig.client.filters.file import (TorrentFileFilter)
-from stig.client.ttypes import TorrentFile
+from stig.client.filters.file import _SingleFilter as FileFilter
 
 import unittest
+from helpers import HelpersMixin
 
 
-flist = (
-    TorrentFile(tid=1, path='', id=1, name='Foo',  is_wanted=True,  priority='normal',
-                location='/download/path', size_total=10e3, size_downloaded=10e3),
-    TorrentFile(tid=1, path='', id=2, name='Bar',  is_wanted=False, priority='normal',
-                location='/download/path', size_total=20e3, size_downloaded=10e3),
-    TorrentFile(tid=1, path='', id=3, name='Baz',  is_wanted=True,  priority='low',
-                location='/download/path', size_total=20e3, size_downloaded=20e3),
-    TorrentFile(tid=1, path='', id=4, name='Bang', is_wanted=True,  priority='high',
-                location='/download/path', size_total=30e3, size_downloaded=20e3),
-    TorrentFile(tid=1, path='', id=5, name='Flup', is_wanted=False, priority='high',
-                location='/download/path', size_total=30e3, size_downloaded=30e3),
-)
+class TestFileFilter(unittest.TestCase, HelpersMixin):
+    def test_default_filter(self):
+        self.assertEqual(FileFilter.DEFAULT_FILTER, 'name')
 
+    def test_all(self):
+        self.check_bool_filter(FileFilter,
+                               filter_names=('all', '*'),
+                               items=({'id': 1}, {'id': 2}, {'id': 3}),
+                               test_cases=(('{name}', (1, 2, 3)),
+                                           ('!{name}', ())))
 
-def f(filter_str):
-    return tuple(TorrentFileFilter(filter_str).apply(flist))
+    def test_wanted(self):
+        self.check_bool_filter(FileFilter,
+                               filter_names=('wanted',),
+                               items=({'id': 1, 'is-wanted': True},
+                                      {'id': 2, 'is-wanted': False},
+                                      {'id': 3, 'is-wanted': True}),
+                               test_cases=(('{name}', (1, 3)),
+                                           ('!{name}', (2,))))
 
+    def test_complete(self):
+        self.check_bool_filter(FileFilter,
+                               filter_names=('complete', 'cmp'),
+                               items=({'id': 1, '%downloaded': 0},
+                                      {'id': 2, '%downloaded': 99},
+                                      {'id': 3, '%downloaded': 100}),
+                               test_cases=(('{name}', (3,)),
+                                           ('!{name}', (1, 2))))
 
-class Test_FileFilter(unittest.TestCase):
-    def test_name_filter(self):
-        self.assertEqual(f('name=Foo'), (flist[0],))
-        self.assertEqual(f('name~F'), (flist[0], flist[4]))
-        self.assertEqual(f('name~Ba'), (flist[1], flist[2], flist[3]))
+    def test_name(self):
+        self.check_str_filter(FileFilter,
+                              filter_names=('name', 'n'),
+                              key='name')
 
-    def test_wanted_filter(self):
-        self.assertEqual(f('wanted'), (flist[0], flist[2], flist[3]))
-        self.assertEqual(f('!wanted'), (flist[1], flist[4]))
+    def test_path(self):
+        self.check_str_filter(FileFilter,
+                          filter_names=('path', 'dir'),
+                              key='path-absolute')
 
-    def test_priority_filter(self):
-        self.assertEqual(f('priority=low'), (flist[2],))
-        self.assertEqual(f('priority=normal'), (flist[0],))
-        self.assertEqual(f('priority=high'), (flist[3],))
-        self.assertEqual(f('priority=off'), (flist[1], flist[4]))
+    def test_size(self):
+        self.check_int_filter(FileFilter,
+                              filter_names=('size', 'sz'),
+                              key='size-total')
 
-        with self.assertRaises(ValueError) as cm:
-            f('priority=foo')
-        self.assertIn('foo', str(cm.exception))
+    def test_downloaded(self):
+        self.check_filter(FileFilter,
+                          filter_names=('downloaded', 'dn'),
+                          items=({'id': 1, 'size-downloaded': 0, '%downloaded': 0},
+                                 {'id': 2, 'size-downloaded': 100, '%downloaded': 42},
+                                 {'id': 3, 'size-downloaded': 3000, '%downloaded': 100}),
+                          test_cases=(('{name}', (3,)),
+                                      ('!{name}', (1, 2)),
+                                      ('{name}=100', (2,)),
+                                      ('{name}<100', (1,)),
+                                      ('{name}<=100', (1, 2)),
+                                      ('{name}>100', (3,)),
+                                      ('{name}>=100', (2, 3))))
+
+    def test_percent_downloaded(self):
+        self.check_filter(FileFilter,
+                          filter_names=('%downloaded', '%dn'),
+                          items=({'id': 1, '%downloaded': 0},
+                                 {'id': 2, '%downloaded': 50},
+                                 {'id': 3, '%downloaded': 100}),
+                          test_cases=(('{name}', (3,)),
+                                      ('!{name}', (1, 2)),
+                                      ('{name}=100', (3,)),
+                                      ('{name}<100', (1, 2)),
+                                      ('{name}<=100', (1, 2, 3)),
+                                      ('{name}>100', ()),
+                                      ('{name}>=100', (3,))))
+
+    def test_priority(self):
+        from stig.client.ttypes import TorrentFilePriority
+        self.check_filter(FileFilter,
+                          filter_names=('priority', 'prio'),
+                          items=({'id': 1, 'priority': TorrentFilePriority(-2)},  # off
+                                 {'id': 2, 'priority': TorrentFilePriority(-1)},  # low
+                                 {'id': 3, 'priority': TorrentFilePriority(0)},   # normal
+                                 {'id': 4, 'priority': TorrentFilePriority(1)}),  # high
+                          test_cases=(('{name}', (1, 2, 4)),
+                                      ('!{name}', (3,)),
+                                      ('{name}=low', (2,)),
+                                      ('{name}<low', (1,)),
+                                      ('{name}<=low', (1, 2)),
+                                      ('{name}>low', (3, 4)),
+                                      ('{name}>=low', (2, 3, 4))))

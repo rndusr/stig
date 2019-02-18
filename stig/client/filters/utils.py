@@ -14,6 +14,13 @@ from ..utils import const
 
 
 def timestamp_or_timedelta(string, default_sign=1):
+    """
+    Try to parse `string` as Timestamp or Timedelta
+
+    If `string` is parsed as Timedelta and the string does not indicate whether
+    the Timedelta should be positive (in the future) or negative (in the past),
+    multiply it by `default_sign`, which should be either 1 (default) or -1.
+    """
     try:
         return Timestamp.from_string(string)
     except ValueError:
@@ -23,54 +30,67 @@ def timestamp_or_timedelta(string, default_sign=1):
         if (not string.startswith('in') and
             not string.endswith('ago') and
             string[0] not in ('+', '-')):
-            delta = Timedelta(delta * default_sign)
+            delta = delta.inverse if default_sign < 0 else delta
         return delta
 
-def time_filter(torrent_value, op, user_value):
-    if not torrent_value.is_known:
+def cmp_timestamp_or_timdelta(item_value, op, user_value):
+    """Compare any combination of Timestamp and Timedelta objects"""
+    if not item_value.is_known:
         return False
 
-    type_torrent_value = type(torrent_value)
+    type_torrent_value = type(item_value)
     type_user_value = type(user_value)
 
     if type_torrent_value is Timestamp:
         if type_user_value is Timestamp:
-            return op(torrent_value, user_value)
+            return op(item_value, user_value)
         elif type_user_value is Timedelta:
-            return _compare_timedelta(torrent_value.timedelta, op,  user_value)
+            return op(item_value,  user_value.timestamp)
 
     elif type_torrent_value is Timedelta:
         if type_user_value is Timedelta:
-            return _compare_timedelta(torrent_value, op, user_value)
+            return _compare_timedelta(item_value, op, user_value,
+                                      either_past_or_future=True)
         elif type_user_value is Timestamp:
-            return _compare_timedelta(torrent_value, op, user_value.timedelta)
+            return _compare_timedelta(item_value, op, user_value.timedelta,
+                                      either_past_or_future=False)
 
-    raise RuntimeError('cannot compare {torrent_value!r} with {user_value!}')
+    raise RuntimeError('cannot compare %r with %r' % (item_value, user_value))
 
-def _compare_timedelta(delta_torrent, op, delta_user):
-    if delta_user <= 0:
-        # User's time delta is in the past - ignore future times
-        if delta_torrent > 0:
-            return False
-    elif delta_user > 0:
-        # User's time delta is in the future - ignore past times
-        if delta_torrent <= 0:
-            return False
-    return op(abs(delta_torrent), abs(delta_user))
+def _compare_timedelta(delta_torrent, op, delta_user, either_past_or_future=False):
+    """
+    Cleverly compare two Timedeltas
+
+    If `either_past_or_future` evaluates to True, don't match positive
+    Timedeltas if `user_value` is negative and vice versa.
+    """
+    if either_past_or_future:
+        if delta_user <= 0:
+            # User's time delta is in the past - ignore future times
+            if delta_torrent > 0:
+                return False
+        elif delta_user > 0:
+            # User's time delta is in the future - ignore past times
+            if delta_torrent < 0:
+                return False
+        return op(abs(delta_torrent), abs(delta_user))
+    else:
+        return op(delta_torrent, delta_user)
 
 
+# TODO: Add docstring
 def limit_rate_filter(limit, op, user_value):
     # `limit` may be a number or const.UNLIMITED.
     # `user_value` may be a number or a Bool (which is not a derivative of the
     # built-in `bool`).
     # If `user_value` is a Bool, True means 'limited' and False means
     # 'unlimited'.
-
     if isinstance(user_value, (int, float)):
         # This works because const.UNLIMITED behaves like `float('inf')`.
         return op(limit, user_value)
     else:
         if not user_value:
+            # `user_value` is 'unlimited'/'off'/etc
             return op(limit, const.UNLIMITED)
 
         # `user_value` is 'limited'.
