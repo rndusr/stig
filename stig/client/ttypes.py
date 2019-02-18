@@ -454,7 +454,7 @@ class Timestamp(float):
         elif self == self.NEVER:
             return 'never'
         else:
-            return time.strftime('%Y-%m-%d %H:%M', time.localtime(self))
+            return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self))
 
     def __bool__(self):
         """Whether timestamp known"""
