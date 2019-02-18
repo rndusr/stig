@@ -333,8 +333,9 @@ class Timestamp(float):
     @classmethod
     def from_string(cls, string):
         string = string.strip().replace('  ', ' ')
-        dt_now = datetime.datetime.now().replace(second=0, microsecond=0)
-        dt_default = datetime.datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        now = datetime.datetime.now()
+        dt_now = now.replace(second=0, microsecond=0)
+        dt_default = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
         def fill_in_missing_values(dt, given):
             names = ('year', 'month', 'day', 'hour', 'minute', 'second')
@@ -347,8 +348,8 @@ class Timestamp(float):
                     # If `name` is less significant than the most significant
                     # user-given value, fill in value from current time,
                     # otherwise fill in the lowest possible value from default.
-                    # Example: User gave month and day: Get year from t_now.
-                    #          Get hours, minutes and seconds from t_default.
+                    # Example: User gave month and day: Get year from dt_now.
+                    #          Get hours, minutes and seconds from dt_default.
                     if most_significant_given > names.index(name):
                         new_args[name] = getattr(dt_now, name)
                     else:
