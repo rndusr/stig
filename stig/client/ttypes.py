@@ -25,6 +25,7 @@ import os
 import re
 import time
 import datetime
+import calendar
 
 from .utils import (URL, Float, Int, Percent, convert, const)
 
@@ -169,22 +170,42 @@ class Timedelta(int):
                 raise exc
 
         secs_total = 0
-        for s in cls._SPLIT_REGEX.split(timespan):
-            if len(s) < 1:
+        kwargs = {}
+        for part in cls._SPLIT_REGEX.split(timespan):
+            if len(part) < 1:
                 continue
-            elif not cls._SPLIT_REGEX.match(s):
+            elif not cls._SPLIT_REGEX.match(part):
                 raise exc
-            elif s[-1].isdigit():
+            elif part[-1].isdigit():
                 # No unit specified - assume seconds
-                secs_total += float(s)
+                secs_total += float(part)
             else:
-                num, unit = s[:-1], s[-1]
+                num, unit = part[:-1], part[-1]
                 for unit_,secs in SECONDS:
                     if unit == unit_:
+                        log.debug('%s%s', num, unit_)
                         secs_total += float(num) * secs
+                        if unit == 'y':
+                            kwargs['_real_years'] = float(num) * sign
+                        elif unit == 'M':
+                            kwargs['_real_months'] = float(num) * sign
                         break
 
-        return cls(secs_total * sign)
+        return cls(secs_total * sign, **kwargs)
+
+    def __new__(cls, seconds, _real_years=None, _real_months=None):
+        obj = super().__new__(cls, seconds)
+        obj._real_years = _real_years
+        obj._real_months = _real_months
+        return obj
+
+    @property
+    def inverse(self):
+        """Return the same object with the sign switched"""
+        real_years, real_months = self._real_years, self._real_months
+        return type(self)(-int(self),
+                          _real_years=-real_years if real_years is not None else None,
+                          _real_months=-real_months if real_months is not None else None)
 
     def __str__(self):
         if self == self.UNKNOWN:
@@ -236,7 +257,46 @@ class Timedelta(int):
         elif self == self.NOT_APPLICABLE:
             return Timestamp(Timestamp.NOT_APPLICABLE)
         else:
-            return Timestamp(self + time.time())
+            ts = None
+            real_years, real_months = self._real_years, self._real_months
+            if real_years or real_months:
+                # Because we can't know the exact number of seconds in a
+                # year/month, we take the number of years/months provided by the
+                # parser and use datetime and timedelta to calculate the
+                # timestamp.
+                secs = int(self)
+                dt = datetime.datetime.now()
+                # datetime will throw OverflowError if numbers are too large
+                try:
+                    if real_years is not None:
+                        dt = dt.replace(year=int(dt.year + real_years))
+                        # Subtract the approximate number seconds in the number of years
+                        secs = secs % (real_years * SECONDS[0][1])
+
+                    if real_months is not None:
+                        # When adding/subtracting months, we may have to keep the
+                        # month between 1-12. We also may have to adjust the year
+                        # and/or day.
+                        # https://stackoverflow.com/a/4131114
+                        month = int(dt.month - 1 + real_months)
+                        year = int(dt.year + month // 12)  # Integer division
+                        month = int(month % 12 + 1)
+                        day = min(dt.day, calendar.monthrange(year, month)[1])  # Avoid day 30 in February
+                        dt = dt.replace(year=year, month=month, day=day)
+                        # Subtract the approximate number seconds in the number of months
+                        secs = secs % (real_months * SECONDS[1][1])
+                except (OverflowError, ValueError):
+                    pass
+                else:
+                    dt = dt + datetime.timedelta(seconds=secs)
+                    ts = Timestamp(dt.timestamp())
+
+            if ts is None:
+                # Without years or months given, we can simply add our delta to time.time()
+                ts = Timestamp(time.time() + self)
+
+            log.debug('Made timestamp from %r: %r', self, ts)
+            return ts
 
     def __repr__(self):
         return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
