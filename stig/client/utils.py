@@ -280,7 +280,7 @@ class URL():
                 del self._domain_cached
 
     def __repr__(self):
-        return '<%s %s>' % (type(self).__name__, str(self))
+        return '%s(%r)' % (type(self).__name__, str(self))
 
     def __hash__(self):
         return hash(str(self))
