@@ -123,7 +123,7 @@ class Path(SmartCmpStr):
         return super().__new__(cls, os.path.normpath(path))
 
     def __repr__(self):
-        return '<{} {!r}>'.format(type(self).__name__, str(self))
+        return '%s(%r)' % (type(self).__name__, self)
 
     # TODO: This shouldn't be needed since it's implemented in parent class?
     # def __hash__(self):
