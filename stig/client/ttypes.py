@@ -125,10 +125,6 @@ class Path(SmartCmpStr):
     def __repr__(self):
         return '%s(%r)' % (type(self).__name__, self)
 
-    # TODO: This shouldn't be needed since it's implemented in parent class?
-    # def __hash__(self):
-    #     return super().__hash__()
-
 
 
 SECONDS = (('y', 31557600),  # 365.25 days
