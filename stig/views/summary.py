@@ -244,7 +244,7 @@ SECTIONS = (
              needed_keys=('peers-downloading',)),
     )},
 
-    {'title': 'Dates and Times', 'width': 41, 'items': (
+    {'title': 'Dates and Times', 'width': 44, 'items': (
         Item('Created',
              needed_keys=('time-created',),
              human_readable=partial(_date_hr, 'time-created'),
