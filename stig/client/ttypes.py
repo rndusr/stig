@@ -294,8 +294,6 @@ class Timedelta(int):
             if ts is None:
                 # Without years or months given, we can simply add our delta to time.time()
                 ts = Timestamp(time.time() + self)
-
-            log.debug('Made timestamp from %r: %r', self, ts)
             return ts
 
     def __repr__(self):
