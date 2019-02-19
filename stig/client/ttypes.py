@@ -470,12 +470,11 @@ class Timestamp(float):
             return time.strftime('%H:%M:%S', time.localtime(self))
 
     def __bool__(self):
-        """Whether timestamp is known"""
-        return self not in self.CONSTANTS
+        return self not in (self.UNKNOWN, self.NOT_APPLICABLE, self.NEVER)
 
     @property
     def is_known(self):
-        return bool(self)
+        return self not in self.CONSTANTS
 
     @property
     def timedelta(self):
