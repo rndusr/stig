@@ -9,6 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ...logging import make_logger
+log = make_logger(__name__)
+
+
 from ..ttypes import (Timedelta, Timestamp)
 from ..utils import const
 
@@ -35,47 +39,74 @@ def timestamp_or_timedelta(string, default_sign=1):
 
 def cmp_timestamp_or_timdelta(item_value, op, user_value):
     """Compare any combination of Timestamp and Timedelta objects"""
-    if not item_value.is_known:
+    if not item_value:
         return False
 
     type_item_value = type(item_value)
     type_user_value = type(user_value)
 
-    if type_item_value is Timestamp:
-        if type_user_value is Timestamp:
+    if type_user_value is Timestamp:
+        if type_item_value is Timestamp:
+            # result = op(item_value, user_value)
+            # log.debug('1: %r %s %r = %r', item_value, op.__name__, user_value, result)
+            # return result
             return op(item_value, user_value)
-        elif type_user_value is Timedelta:
-            return op(item_value,  user_value.timestamp)
-
-    elif type_item_value is Timedelta:
-        if type_user_value is Timedelta:
-            return _compare_timedelta(item_value, op, user_value,
-                                      either_past_or_future=True)
-        elif type_user_value is Timestamp:
-            return _compare_timedelta(item_value, op, user_value.timedelta,
-                                      either_past_or_future=False)
+        elif type_item_value is Timedelta:
+            # result = op(item_value, user_value.timedelta)
+            # log.debug('2: %r %s %r (%r) = %r',
+            #           item_value, op.__name__, user_value, user_value.timedelta, result)
+            # return result
+            return op(item_value, user_value.timedelta)
+    elif type_user_value is Timedelta:
+        # If the filter is, e.g., 'less than 1y ago', future dates would match,
+        # but we interpret the filter as 'less than 1y ago up till now'.  Same
+        # thing for 'in less than 1y' - past dates technically match, but they
+        # shouldn't.
+        if not _either_past_or_future(item_value, user_value):
+            return False
+        elif type_item_value is Timedelta:
+            # result = op(abs(item_value), abs(user_value))
+            # log.debug('3: %r %s %r = %r', item_value, op.__name__, user_value, result)
+            # return result
+            return op(abs(item_value), abs(user_value))
+        elif type_item_value is Timestamp:
+            user_value_timestamp = user_value.timestamp
+            if user_value < 0:
+                if item_value in (Timestamp.NOW, Timestamp.SOON):
+                    return False
+                # result = op(user_value_timestamp, item_value)
+                # log.debug('4: %r (%r) %s %r = %r',
+                #           user_value, user_value_timestamp, op.__name__, item_value, result)
+                # return result
+                return op(user_value_timestamp, item_value)
+            else:
+                # result = op(item_value, user_value_timestamp)
+                # log.debug('5: %r %s %r (%r) = %r',
+                #           item_value, op.__name__, user_value, user_value_timestamp, result)
+                # return result
+                return op(item_value, user_value_timestamp)
 
     raise RuntimeError('cannot compare %r with %r' % (item_value, user_value))
 
-def _compare_timedelta(delta_item, op, delta_user, either_past_or_future=False):
+def _either_past_or_future(item_value, user_value):
     """
-    Cleverly compare two Timedeltas
+    Return True if `item_value` and `user_value` are equal, both in the past or
+    both in the future, False otherwise
+    """
+    type_item_value = type(item_value)
+    type_user_value = type(user_value)
 
-    If `either_past_or_future` evaluates to True, don't match positive
-    Timedeltas if `user_value` is negative and vice versa.
-    """
-    if either_past_or_future:
-        if delta_user <= 0:
-            # User's time delta is in the past - ignore future times
-            if delta_item > 0:
-                return False
-        elif delta_user > 0:
-            # User's time delta is in the future - ignore past times
-            if delta_item < 0:
-                return False
-        return op(abs(delta_item), abs(delta_user))
-    else:
-        return op(delta_item, delta_user)
+    if type_user_value is Timestamp:
+        user_value_in_future = user_value.in_future
+    elif type_user_value is Timedelta:
+        user_value_in_future = user_value > 0
+
+    if type_item_value is Timestamp:
+        item_value_in_future = item_value.in_future
+    elif type_item_value is Timedelta:
+        item_value_in_future = item_value > 0
+
+    return item_value_in_future == user_value_in_future
 
 
 # TODO: Add docstring
