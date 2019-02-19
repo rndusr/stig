@@ -442,18 +442,32 @@ class Timestamp(float):
 
     @property
     def full(self):
-        if self == self.UNKNOWN:
+        if self == self.NOW:
+            return 'now'
+        elif self == self.UNKNOWN:
             return 'unknown'
         elif self == self.NOT_APPLICABLE:
             return 'not applicable'
-        elif self == self.NOW:
-            return 'now'
-        elif self == self.SOON:
-            return 'soon'
         elif self == self.NEVER:
             return 'never'
+        elif self == self.SOON:
+            return 'soon'
         else:
             return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self))
+
+    @property
+    def date(self):
+        if self in self.CONSTANTS:
+            return self.full
+        else:
+            return time.strftime('%Y-%m-%d', time.localtime(self))
+
+    @property
+    def time(self):
+        if self in self.CONSTANTS:
+            return self.full
+        else:
+            return time.strftime('%H:%M:%S', time.localtime(self))
 
     def __bool__(self):
         """Whether timestamp is known"""
