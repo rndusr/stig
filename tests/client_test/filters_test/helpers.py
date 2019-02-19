@@ -143,7 +143,12 @@ class HelpersMixin():
         from stig.client.ttypes import Timestamp
         items = ({'id': 1, key: Timestamp.from_string('2001-01-01')},
                  {'id': 2, key: Timestamp.from_string('2002-01-01')},
-                 {'id': 3, key: Timestamp.from_string('2003-01-01')})
+                 {'id': 3, key: Timestamp.from_string('2003-01-01')},
+                 {'id': 4, key: Timestamp(Timestamp.NOW)},
+                 {'id': 5, key: Timestamp(Timestamp.UNKNOWN)},
+                 {'id': 6, key: Timestamp(Timestamp.NOT_APPLICABLE)},
+                 {'id': 7, key: Timestamp(Timestamp.NEVER)},
+                 {'id': 8, key: Timestamp(Timestamp.SOON)})
 
         for fn in filter_names:
             self._check_timestamp_as_bool(filter_cls, fn, key, items)
@@ -159,7 +164,7 @@ class HelpersMixin():
 
     def _check_timestamp_as_bool(self, filter_cls, filter_name, key, items):
         self.assertEqual(tuple(filter_cls('%s' % filter_name).apply(items, key='id')), (1, 2, 3))
-        self.assertEqual(tuple(filter_cls('!%s' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('!%s' % filter_name).apply(items, key='id')), (4, 5, 6, 7, 8))
 
     def _check_timestamp_with_absolute_times(self, filter_cls, filter_name, key, items):
         self.assertEqual(tuple(filter_cls('%s=2000' % filter_name).apply(items, key='id')), ())
