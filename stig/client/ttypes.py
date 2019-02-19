@@ -308,6 +308,7 @@ class Timestamp(float):
     UNKNOWN        = 1e10 + 0.123456789
     NOT_APPLICABLE = 1e11 + 0.123456789
     NEVER          = 1e12 + 0.123456789
+    CONSTANTS = (NOW, SOON, UNKNOWN, NOT_APPLICABLE, NEVER)
 
     _FORMATS_DATE = (('%Y',       ('year',)),
                      ('%Y-%m',    ('year', 'month')),
@@ -455,12 +456,12 @@ class Timestamp(float):
             return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self))
 
     def __bool__(self):
-        """Whether timestamp known"""
-        return self not in (self.UNKNOWN, self.NOT_APPLICABLE, self.NEVER)
+        """Whether timestamp is known"""
+        return self not in self.CONSTANTS
 
     @property
     def is_known(self):
-        return self not in (self.NOW, self.SOON, self.UNKNOWN, self.NOT_APPLICABLE, self.NEVER)
+        return bool(self)
 
     @property
     def timedelta(self):
