@@ -155,16 +155,16 @@ class HelpersMixin():
             self._check_timestamp_with_absolute_times(filter_cls, fn, key, items)
             self._check_timestamp_with_relative_times(filter_cls, fn, key, items)
 
-            if default_sign == -1:
-                self._check_timestamp_with_negative_default_sign(filter_cls, fn, key, items)
-            elif default_sign == 1:
+            if default_sign == 1:
                 self._check_timestamp_with_positive_default_sign(filter_cls, fn, key, items)
+            elif default_sign == -1:
+                self._check_timestamp_with_negative_default_sign(filter_cls, fn, key, items)
             else:
                 raise RuntimeError('Invalid default_sign: %r' % (default_sign,))
 
     def _check_timestamp_as_bool(self, filter_cls, filter_name, key, items):
-        self.assertEqual(tuple(filter_cls('%s' % filter_name).apply(items, key='id')), (1, 2, 3))
-        self.assertEqual(tuple(filter_cls('!%s' % filter_name).apply(items, key='id')), (4, 5, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 8))
+        self.assertEqual(tuple(filter_cls('!%s' % filter_name).apply(items, key='id')), (5, 6, 7))
 
     def _check_timestamp_with_absolute_times(self, filter_cls, filter_name, key, items):
         self.assertEqual(tuple(filter_cls('%s=2000' % filter_name).apply(items, key='id')), ())
@@ -173,15 +173,15 @@ class HelpersMixin():
         self.assertEqual(tuple(filter_cls('%s=2003' % filter_name).apply(items, key='id')), (3,))
         self.assertEqual(tuple(filter_cls('%s=2004' % filter_name).apply(items, key='id')), ())
 
-        self.assertEqual(tuple(filter_cls('%s<2001' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s<2002' % filter_name).apply(items, key='id')), (1,))
-        self.assertEqual(tuple(filter_cls('%s<2003' % filter_name).apply(items, key='id')), (1, 2))
-        self.assertEqual(tuple(filter_cls('%s<2004' % filter_name).apply(items, key='id')), (1, 2, 3))
+        self.assertEqual(tuple(filter_cls('%s<2001' % filter_name).apply(items, key='id')), (4, 8))
+        self.assertEqual(tuple(filter_cls('%s<2002' % filter_name).apply(items, key='id')), (1, 4, 8))
+        self.assertEqual(tuple(filter_cls('%s<2003' % filter_name).apply(items, key='id')), (1, 2, 4, 8))
+        self.assertEqual(tuple(filter_cls('%s<2004' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 8))
 
-        self.assertEqual(tuple(filter_cls('%s<=2000' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s<=2001' % filter_name).apply(items, key='id')), (1,))
-        self.assertEqual(tuple(filter_cls('%s<=2002' % filter_name).apply(items, key='id')), (1, 2))
-        self.assertEqual(tuple(filter_cls('%s<=2003' % filter_name).apply(items, key='id')), (1, 2, 3))
+        self.assertEqual(tuple(filter_cls('%s<=2000' % filter_name).apply(items, key='id')), (4, 8))
+        self.assertEqual(tuple(filter_cls('%s<=2001' % filter_name).apply(items, key='id')), (1, 4, 8))
+        self.assertEqual(tuple(filter_cls('%s<=2002' % filter_name).apply(items, key='id')), (1, 2, 4, 8))
+        self.assertEqual(tuple(filter_cls('%s<=2003' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 8))
 
         self.assertEqual(tuple(filter_cls('%s>2000' % filter_name).apply(items, key='id')), (1, 2, 3))
         self.assertEqual(tuple(filter_cls('%s>2001' % filter_name).apply(items, key='id')), (2, 3))
@@ -198,34 +198,71 @@ class HelpersMixin():
             self.assertEqual(tuple(filter_cls('%s=in 1y' % filter_name).apply(items, key='id')), (1,))
             self.assertEqual(tuple(filter_cls('%s>in 1y' % filter_name).apply(items, key='id')), (2, 3))
             self.assertEqual(tuple(filter_cls('%s>=in 1y' % filter_name).apply(items, key='id')), (1, 2, 3))
+            self.assertEqual(tuple(filter_cls('%s<in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=in 1y' % filter_name).apply(items, key='id')), (1,))
+
+            self.assertEqual(tuple(filter_cls('%s=1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>=1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<1y ago ' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=1y ago' % filter_name).apply(items, key='id')), ())
+
+        with mock_time(year=2001, month=1, day=1, hour=0, minute=0, second=0):
+            self.assertEqual(tuple(filter_cls('%s=in 1y' % filter_name).apply(items, key='id')), (2,))
+            self.assertEqual(tuple(filter_cls('%s>in 1y' % filter_name).apply(items, key='id')), (3,))
+            self.assertEqual(tuple(filter_cls('%s>=in 1y' % filter_name).apply(items, key='id')), (2, 3))
+            self.assertEqual(tuple(filter_cls('%s<in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=in 1y' % filter_name).apply(items, key='id')), (2,))
+
+            self.assertEqual(tuple(filter_cls('%s=1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>=1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<1y ago ' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s<=1y ago' % filter_name).apply(items, key='id')), (1,))
 
         with mock_time(year=2002, month=1, day=1, hour=0, minute=0, second=0):
             self.assertEqual(tuple(filter_cls('%s=in 1y' % filter_name).apply(items, key='id')), (3,))
-            self.assertEqual(tuple(filter_cls('%s<in 1y' % filter_name).apply(items, key='id')), (1, 2))
-            self.assertEqual(tuple(filter_cls('%s<=in 1y' % filter_name).apply(items, key='id')), (1, 2, 3))
+            self.assertEqual(tuple(filter_cls('%s>in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>=in 1y' % filter_name).apply(items, key='id')), (3,))
+            self.assertEqual(tuple(filter_cls('%s<in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=in 1y' % filter_name).apply(items, key='id')), (3,))
+
+            self.assertEqual(tuple(filter_cls('%s=1y ago' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s>1y ago' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>=1y ago' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s<1y ago ' % filter_name).apply(items, key='id')), (2,))
+            self.assertEqual(tuple(filter_cls('%s<=1y ago' % filter_name).apply(items, key='id')), (1, 2,))
 
         with mock_time(year=2003, month=1, day=1, hour=0, minute=0, second=0):
-            self.assertEqual(tuple(filter_cls('%s=1y ago' % filter_name).apply(items, key='id')), (2,))
-            self.assertEqual(tuple(filter_cls('%s>1y ago' % filter_name).apply(items, key='id')), (3,))
-            self.assertEqual(tuple(filter_cls('%s>=1y ago' % filter_name).apply(items, key='id')), (2, 3))
-            self.assertEqual(tuple(filter_cls('%s<1y ago ' % filter_name).apply(items, key='id')), (1,))
-            self.assertEqual(tuple(filter_cls('%s<=1y ago' % filter_name).apply(items, key='id')), (1, 2))
+            self.assertEqual(tuple(filter_cls('%s=in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>=in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<in 1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=in 1y' % filter_name).apply(items, key='id')), ())
 
-    def _check_timestamp_with_negative_default_sign(self, filter_cls, filter_name, key, items):
-        with mock_time(year=2002, month=1, day=1, hour=0, minute=0, second=0):
-            self.assertEqual(tuple(filter_cls('%s=1y' % filter_name).apply(items, key='id')), (1,))
-            self.assertEqual(tuple(filter_cls('%s>1y' % filter_name).apply(items, key='id')), (2, 3))
-            self.assertEqual(tuple(filter_cls('%s>=1y' % filter_name).apply(items, key='id')), (1, 2, 3))
-            self.assertEqual(tuple(filter_cls('%s<1y' % filter_name).apply(items, key='id')), ())
-            self.assertEqual(tuple(filter_cls('%s<=1y' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s=1y ago' % filter_name).apply(items, key='id')), (2,))
+            self.assertEqual(tuple(filter_cls('%s>1y ago' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s>=1y ago' % filter_name).apply(items, key='id')), (1, 2))
+            self.assertEqual(tuple(filter_cls('%s<1y ago ' % filter_name).apply(items, key='id')), (3,))
+            self.assertEqual(tuple(filter_cls('%s<=1y ago' % filter_name).apply(items, key='id')), (2, 3))
 
     def _check_timestamp_with_positive_default_sign(self, filter_cls, filter_name, key, items):
+        # '1y' should be the same as 'in 1y'
         with mock_time(year=2002, month=1, day=1, hour=0, minute=0, second=0):
             self.assertEqual(tuple(filter_cls('%s=1y' % filter_name).apply(items, key='id')), (3,))
             self.assertEqual(tuple(filter_cls('%s>1y' % filter_name).apply(items, key='id')), ())
             self.assertEqual(tuple(filter_cls('%s>=1y' % filter_name).apply(items, key='id')), (3,))
-            self.assertEqual(tuple(filter_cls('%s<1y' % filter_name).apply(items, key='id')), (1, 2))
-            self.assertEqual(tuple(filter_cls('%s<=1y' % filter_name).apply(items, key='id')), (1, 2, 3))
+            self.assertEqual(tuple(filter_cls('%s<1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=1y' % filter_name).apply(items, key='id')), (3,))
+
+    def _check_timestamp_with_negative_default_sign(self, filter_cls, filter_name, key, items):
+        # '1y' should be the same as '1y ago'
+        with mock_time(year=2002, month=1, day=1, hour=0, minute=0, second=0):
+            self.assertEqual(tuple(filter_cls('%s=1y' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s>1y' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s>=1y' % filter_name).apply(items, key='id')), (1,))
+            self.assertEqual(tuple(filter_cls('%s<1y' % filter_name).apply(items, key='id')), (2,))
+            self.assertEqual(tuple(filter_cls('%s<=1y' % filter_name).apply(items, key='id')), (1, 2))
 
     def check_timedelta_filter(self, filter_cls, filter_names, key, default_sign):
         from stig.client.ttypes import Timedelta
@@ -239,6 +276,7 @@ class HelpersMixin():
             self._check_timedelta_as_bool(filter_cls, fn, key, items)
             self._check_timedelta_with_absolute_times(filter_cls, fn, key, items)
             self._check_timedelta_with_relative_times(filter_cls, fn, key, items)
+
             if default_sign == 1:
                 self._check_timedelta_with_positive_default_sign(filter_cls, fn, key, items)
             elif default_sign == -1:
@@ -310,13 +348,13 @@ class HelpersMixin():
 
             self.assertEqual(tuple(filter_cls('%s<1h1s ago' % filter_name).apply(items, key='id')), (1, 2))
             self.assertEqual(tuple(filter_cls('%s<1h ago' % filter_name).apply(items, key='id')), (2,))
-            self.assertEqual(tuple(filter_cls('%s<in 1h' % filter_name).apply(items, key='id')), (2,))
-            self.assertEqual(tuple(filter_cls('%s<in 1h1s' % filter_name).apply(items, key='id')), (2, 3))
+            self.assertEqual(tuple(filter_cls('%s<in 1h' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<in 1h1s' % filter_name).apply(items, key='id')), (3,))
 
             self.assertEqual(tuple(filter_cls('%s<=1h ago' % filter_name).apply(items, key='id')), (1, 2))
             self.assertEqual(tuple(filter_cls('%s<=59m59s ago' % filter_name).apply(items, key='id')), (2,))
-            self.assertEqual(tuple(filter_cls('%s<=in 59m59s' % filter_name).apply(items, key='id')), (2,))
-            self.assertEqual(tuple(filter_cls('%s<=in 1h' % filter_name).apply(items, key='id')), (2, 3))
+            self.assertEqual(tuple(filter_cls('%s<=in 59m59s' % filter_name).apply(items, key='id')), ())
+            self.assertEqual(tuple(filter_cls('%s<=in 1h' % filter_name).apply(items, key='id')), (3,))
 
             self.assertEqual(tuple(filter_cls('%s>1h ago' % filter_name).apply(items, key='id')), ())
             self.assertEqual(tuple(filter_cls('%s>59m59s ago' % filter_name).apply(items, key='id')), (1,))
@@ -329,11 +367,18 @@ class HelpersMixin():
             self.assertEqual(tuple(filter_cls('%s>=in 1h1s' % filter_name).apply(items, key='id')), ())
 
     def _check_timedelta_with_positive_default_sign(self, filter_cls, filter_name, key, items):
+        # '1h' should be the same as 'in 1h'
         self.assertEqual(tuple(filter_cls('%s=1h' % filter_name).apply(items, key='id')), (3,))
         self.assertEqual(tuple(filter_cls('%s>1h' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s<1h' % filter_name).apply(items, key='id')), (2,))
         self.assertEqual(tuple(filter_cls('%s>=1h' % filter_name).apply(items, key='id')), (3,))
-        self.assertEqual(tuple(filter_cls('%s<=1h' % filter_name).apply(items, key='id')), (2, 3))
+        self.assertEqual(tuple(filter_cls('%s<1h' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s<=1h' % filter_name).apply(items, key='id')), (3,))
 
     def _check_timedelta_with_negative_default_sign(self, filter_cls, filter_name, key, items):
-        raise NotImplementedError('Write this part of the test if you encounter this message.')
+        # '1h' should be the same as '1h ago'
+        raise NotImplementedError('Please implement _check_timedelta_with_negative_default_sign()')
+        self.assertEqual(tuple(filter_cls('%s=1h' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s>1h' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s<1h' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s>=1h' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s<=1h' % filter_name).apply(items, key='id')), ())
