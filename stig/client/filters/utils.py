@@ -38,16 +38,16 @@ def cmp_timestamp_or_timdelta(item_value, op, user_value):
     if not item_value.is_known:
         return False
 
-    type_torrent_value = type(item_value)
+    type_item_value = type(item_value)
     type_user_value = type(user_value)
 
-    if type_torrent_value is Timestamp:
+    if type_item_value is Timestamp:
         if type_user_value is Timestamp:
             return op(item_value, user_value)
         elif type_user_value is Timedelta:
             return op(item_value,  user_value.timestamp)
 
-    elif type_torrent_value is Timedelta:
+    elif type_item_value is Timedelta:
         if type_user_value is Timedelta:
             return _compare_timedelta(item_value, op, user_value,
                                       either_past_or_future=True)
@@ -57,7 +57,7 @@ def cmp_timestamp_or_timdelta(item_value, op, user_value):
 
     raise RuntimeError('cannot compare %r with %r' % (item_value, user_value))
 
-def _compare_timedelta(delta_torrent, op, delta_user, either_past_or_future=False):
+def _compare_timedelta(delta_item, op, delta_user, either_past_or_future=False):
     """
     Cleverly compare two Timedeltas
 
@@ -67,15 +67,15 @@ def _compare_timedelta(delta_torrent, op, delta_user, either_past_or_future=Fals
     if either_past_or_future:
         if delta_user <= 0:
             # User's time delta is in the past - ignore future times
-            if delta_torrent > 0:
+            if delta_item > 0:
                 return False
         elif delta_user > 0:
             # User's time delta is in the future - ignore past times
-            if delta_torrent < 0:
+            if delta_item < 0:
                 return False
-        return op(abs(delta_torrent), abs(delta_user))
+        return op(abs(delta_item), abs(delta_user))
     else:
-        return op(delta_torrent, delta_user)
+        return op(delta_item, delta_user)
 
 
 # TODO: Add docstring
