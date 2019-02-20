@@ -183,7 +183,6 @@ class Timedelta(int):
                 num, unit = part[:-1], part[-1]
                 for unit_,secs in SECONDS:
                     if unit == unit_:
-                        log.debug('%s%s', num, unit_)
                         secs_total += float(num) * secs
                         if unit == 'y':
                             kwargs['_real_years'] = float(num) * sign
