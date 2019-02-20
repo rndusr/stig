@@ -23,7 +23,7 @@ from .aiotransmission.api_torrent import TorrentAPI
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
-from .utils import lazy_property
+from .utils import cached_property
 from . import errors
 
 
@@ -73,25 +73,25 @@ class API():
         """Whether property `prop` was created"""
         return hasattr(self, prop+'_created')
 
-    @lazy_property(after_creation=lambda self: setattr(self, 'torrent_created', True))
+    @cached_property(after_creation=lambda self: setattr(self, 'torrent_created', True))
     def torrent(self):
         """TorrentAPI singleton"""
         log.debug('Creating TorrentAPI singleton')
         return TorrentAPI(self.rpc)
 
-    @lazy_property(after_creation=lambda self: setattr(self, 'status_created', True))
+    @cached_property(after_creation=lambda self: setattr(self, 'status_created', True))
     def status(self):
         """StatusAPI singleton"""
         log.debug('Creating StatusAPI singleton')
         return StatusAPI(self, interval=self._interval)
 
-    @lazy_property(after_creation=lambda self: setattr(self, 'settings_created', True))
+    @cached_property(after_creation=lambda self: setattr(self, 'settings_created', True))
     def settings(self):
         """SettingsAPI singleton"""
         log.debug('Creating SettingsAPI singleton')
         return SettingsAPI(self, interval=self._interval)
 
-    @lazy_property(after_creation=lambda self: setattr(self, 'treqpool_created', True))
+    @cached_property(after_creation=lambda self: setattr(self, 'treqpool_created', True))
     def treqpool(self):
         """TorrentRequestPool singleton"""
         log.debug('Creating TorrentRequestPool singleton')

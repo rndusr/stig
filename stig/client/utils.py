@@ -124,29 +124,33 @@ class Response(SimpleNamespace):
                          **kwargs)
 
 
-def lazy_property(after_creation=None):
+def cached_property(fget=None, *, after_creation=None):
     """
-    Property that replaces itself with the requested object when accessed
+    Property that replaces itself with the requested value when accessed
 
-    `after_creation` is called with the instance of the property.
+    `after_creation` is called with the instance of the property when the
+    property is accessed for the first time.
     """
     # https://stackoverflow.com/a/6849299
-    class _lazy_property():
+    class _cached_property():
         def __init__(self, fget):
-            self.fget = fget
-            self.func_name = fget.__name__
-            self.after_creation = after_creation
+            self._fget = fget
+            self._property_name = fget.__name__
+            self._after_creation = after_creation
+            self._cache = {}
 
         def __get__(self, obj, cls):
-            if obj is None:
-                return None
-            value = self.fget(obj)
-            setattr(obj, self.func_name, value)
-            if self.after_creation is not None:
-                self.after_creation(obj)
+            value = self._fget(obj)
+            setattr(obj, self._property_name, value)
+            if self._after_creation is not None:
+                self._after_creation(obj)
             return value
 
-    return _lazy_property
+    if fget is None:
+        return _cached_property
+    else:
+        return _cached_property(fget)
+
 
 
 class LazyDict(dict):
