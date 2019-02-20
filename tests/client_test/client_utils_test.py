@@ -3,7 +3,6 @@ from stig.client.utils import URL
 import unittest
 
 
-# See also aiotransmission_test/url_test.py
 class TestURL(unittest.TestCase):
     def test_empty_string(self):
         url = URL('')
