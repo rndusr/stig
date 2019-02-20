@@ -107,7 +107,8 @@ class SleepUneasy():
 
 from types import SimpleNamespace
 class Response(SimpleNamespace):
-    """Response to an API call
+    """
+    Response to an API call
 
     All API implementations should use this class to provide return values to
     API calls.
@@ -124,7 +125,8 @@ class Response(SimpleNamespace):
 
 
 def lazy_property(after_creation=None):
-    """Property that replaces itself with the requested object when accessed
+    """
+    Property that replaces itself with the requested object when accessed
 
     `after_creation` is called with the instance of the property.
     """
