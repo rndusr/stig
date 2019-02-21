@@ -20,10 +20,8 @@ geoip = GeoIP()
 from .filters import (TorrentFilter, TorrentFileFilter, TorrentPeerFilter,
                       TorrentTrackerFilter, SettingFilter)
 
-from .sorters.torrent import TorrentSorter
-from .sorters.peer import TorrentPeerSorter
-from .sorters.tracker import TorrentTrackerSorter
-from .sorters.setting import SettingSorter
+from .sorters import (TorrentSorter, TorrentPeerSorter, TorrentTrackerSorter,
+                      SettingSorter)
 
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool

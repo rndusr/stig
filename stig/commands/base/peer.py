@@ -50,7 +50,7 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
     )
 
     from ...views.peer import COLUMNS
-    from ...client.sorters.peer import TorrentPeerSorter
+    from ...client.sorters import TorrentPeerSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.peers', append=(
             '',

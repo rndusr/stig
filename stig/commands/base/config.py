@@ -129,7 +129,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 'set connect.password:eval getpw --id transmission',
                 'set tui.log.height +=10')
     from ...views.setting import COLUMNS
-    from ...client.sorters.setting import SettingSorter
+    from ...client.sorters import SettingSorter
     argspecs = (
         {'names': ('NAME',), 'nargs': '?',
          'description': "Name of setting; append ':eval' to turn VALUE into a shell command"},
