@@ -9,10 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
+from .base import (SortSpecBase, SorterBase)
 
-from . import (SortSpecBase, SorterBase)
 
 class _SortSpec(SortSpecBase):
     def __init__(self, *args, description='', **kwargs):
