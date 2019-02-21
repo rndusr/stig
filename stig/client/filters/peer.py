@@ -69,6 +69,6 @@ class _SingleFilter(Filter):
     }
 
 
-class TorrentPeerFilter(FilterChain):
+class PeerFilter(FilterChain):
     """One or more filters combined with & and | operators"""
     filterclass = _SingleFilter

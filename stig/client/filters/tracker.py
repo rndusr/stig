@@ -92,6 +92,6 @@ class _SingleFilter(Filter):
     }
 
 
-class TorrentTrackerFilter(FilterChain):
+class TrackerFilter(FilterChain):
     """One or more filters combined with & and | operators"""
     filterclass = _SingleFilter

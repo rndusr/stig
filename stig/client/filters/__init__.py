@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from .torrent import TorrentFilter
-from .file import TorrentFileFilter
-from .peer import TorrentPeerFilter
-from .tracker import TorrentTrackerFilter
+from .file import FileFilter
+from .peer import PeerFilter
+from .tracker import TrackerFilter
 from .setting import SettingFilter

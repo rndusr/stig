@@ -483,14 +483,14 @@ class HelpManager():
     @property
     def topic_filters(self):
         """Provide help text for arguments to TorrentFilter"""
-        from .client import (TorrentFilter, TorrentFileFilter,
-                             TorrentPeerFilter, TorrentTrackerFilter,
+        from .client import (TorrentFilter, FileFilter,
+                             PeerFilter, TrackerFilter,
                              SettingFilter)
         lines = []
         for caption,filt in (('TORRENT FILTERS', TorrentFilter),
-                             ('FILE FILTERS', TorrentFileFilter),
-                             ('PEER FILTERS', TorrentPeerFilter),
-                             ('TRACKER FILTERS', TorrentTrackerFilter),
+                             ('FILE FILTERS', FileFilter),
+                             ('PEER FILTERS', PeerFilter),
+                             ('TRACKER FILTERS', TrackerFilter),
                              ('SETTING FILTERS', SettingFilter)):
             lines += ['',
                       '%s' % caption,

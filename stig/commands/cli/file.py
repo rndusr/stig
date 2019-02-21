@@ -56,7 +56,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
         Return list of rows for `print_table`
 
         `files` must be a nested mapping tree (i.e. TorrentFileTree).
-        `ffilter` must be a TorrentFileFilter instance or None.
+        `ffilter` must be a FileFilter instance or None.
         """
         if TERMSIZE.columns is None:
             def indent(node):

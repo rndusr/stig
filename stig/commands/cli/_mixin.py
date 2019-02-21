@@ -126,9 +126,9 @@ class select_files():
 
     def select_files(self, FILTER, allow_no_filter=True, discover_file=None):
         """
-        Get TorrentFileFilter instance or None
+        Get FileFilter instance or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and the
+        If `FILTER` evaluates to True, it is passed to FileFilter and the
         resulting object is returned.
 
         If `FILTER` evaluates to False, None is returned if allow_no_filter
@@ -138,8 +138,8 @@ class select_files():
         method (see ..tui.mixin.select_file).
         """
         if FILTER:
-            from ...client import TorrentFileFilter
-            return TorrentFileFilter(FILTER)
+            from ...client import FileFilter
+            return FileFilter(FILTER)
         else:
             if allow_no_filter:
                 return None

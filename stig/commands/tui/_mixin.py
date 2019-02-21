@@ -201,9 +201,9 @@ class select_files():
 
     def select_files(self, FILTER, allow_no_filter=True, discover_file=True):
         """
-        Get TorrentFileFilter instance, focused/marked file IDs or None
+        Get FileFilter instance, focused/marked file IDs or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentFileFilter and the
+        If `FILTER` evaluates to True, it is passed to FileFilter and the
         resulting object is returned.
 
         If `FILTER` evaluates to False and `discover_file` evaluates to True,
@@ -215,8 +215,8 @@ class select_files():
         tab's widget.
         """
         if FILTER:
-            from ...client import TorrentFileFilter
-            return TorrentFileFilter(FILTER)
+            from ...client import FileFilter
+            return FileFilter(FILTER)
         else:
             if discover_file:
                 fids = self._find_file_ids()

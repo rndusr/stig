@@ -19,7 +19,7 @@ import builtins
 
 from .file import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
-from ...client import TorrentFileFilter
+from ...client import FileFilter
 
 
 from ...views.file import TorrentFileDirectory
@@ -43,7 +43,7 @@ class FileTreeDecorator(ArrowTree):
             # ffilter is a collection of file IDs
             return not tfile['id'] in self._ffilter
         else:
-            # ffilter is a TorrentFileFilter instance
+            # ffilter is a FileFilter instance
             return not self._ffilter.match(tfile)
 
     def _create_file_forest(self, torrents):
@@ -238,7 +238,7 @@ class FileListWidget(ListWidgetBase):
         if file_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentFileFilter(file_filter)
+            self._secondary_filter = FileFilter(file_filter)
         self._create_filetree()
 
 

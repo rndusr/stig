@@ -21,8 +21,7 @@ from ..utils import (Response, URL)
 from ..base import TorrentAPIBase
 from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
-from ..filters.torrent import TorrentFilter
-from ..filters.file import TorrentFileFilter
+from ..filters import (TorrentFilter, FileFilter)
 from ..utils import (Bool, Bandwidth, BoolOrBandwidth)
 from ..ttypes import Path
 
@@ -732,7 +731,7 @@ class TorrentAPI(TorrentAPIBase):
         Change download priority of individual torrent files
 
         torrents: See `torrents` method
-        files:    TorrentFileFilter object (or its string representation), sequence
+        files:    FileFilter object (or its string representation), sequence
                   of (torrent ID, file ID) tuples or None for all files
         priority: One of the strings 'off', 'low', 'normal' or 'high'
 
@@ -748,13 +747,13 @@ class TorrentAPI(TorrentAPIBase):
             return Response(success=False, torrents=(), errors=response.errors)
         else:
             if isinstance(files, str):
-                files = TorrentFileFilter(files)
+                files = FileFilter(files)
 
             # Set filter_files to a lambda that takes a TorrentFileTree and
             # returns a list of TorrentFiles.
             if files is None:
                 filter_files = lambda ftree: tuple(ftree.files)
-            elif isinstance(files, TorrentFileFilter):
+            elif isinstance(files, FileFilter):
                 filter_files = lambda ftree: tuple(files.apply(ftree.files))
             elif isinstance(files, abc.Sequence):
                 filter_files = lambda ftree: tuple(f for f in ftree.files

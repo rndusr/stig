@@ -11,7 +11,7 @@
 
 from .peer import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
-from ...client import TorrentPeerFilter
+from ...client import PeerFilter
 
 
 class PeerItemWidget(ItemWidgetBase):
@@ -96,7 +96,7 @@ class PeerListWidget(ListWidgetBase):
         if peer_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentPeerFilter(peer_filter)
+            self._secondary_filter = PeerFilter(peer_filter)
         self._invalidate()
 
     def _limit_items(self, peer_widgets):

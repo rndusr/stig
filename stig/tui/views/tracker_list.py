@@ -11,7 +11,7 @@
 
 from .tracker import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
-from ...client import TorrentTrackerFilter
+from ...client import TrackerFilter
 
 from ...logging import make_logger
 log = make_logger(__name__)
@@ -106,7 +106,7 @@ class TrackerListWidget(ListWidgetBase):
         if tracker_filter is None:
             self._secondary_filter = None
         else:
-            self._secondary_filter = TorrentTrackerFilter(tracker_filter)
+            self._secondary_filter = TrackerFilter(tracker_filter)
         self._invalidate()
 
     def _limit_items(self, tracker_widgets):

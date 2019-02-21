@@ -160,9 +160,9 @@ def _filter_names(filter_cls_name):
              for name in _get_filter_names(filter_cls))
     curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
     label = {'TorrentFilter': 'Torrent Filters',
-             'TorrentFileFilter': 'File Filters',
-             'TorrentPeerFilter': 'Peer Filters',
-             'TorrentTrackerFilter': 'Tracker Filters',
+             'FileFilter': 'File Filters',
+             'PeerFilter': 'Peer Filters',
+             'TrackerFilter': 'Tracker Filters',
              'SettingFilter': 'Setting Filters'}[filter_cls_name]
     return Candidates(cands, label=label, curarg_seps=curarg_seps)
 

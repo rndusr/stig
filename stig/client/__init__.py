@@ -17,8 +17,8 @@ from .utils import (Response, URL)
 from .geoip import GeoIP
 geoip = GeoIP()
 
-from .filters import (TorrentFilter, TorrentFileFilter, TorrentPeerFilter,
-                      TorrentTrackerFilter, SettingFilter)
+from .filters import (TorrentFilter, FileFilter, PeerFilter, TrackerFilter,
+                      SettingFilter)
 
 from .sorters import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
 

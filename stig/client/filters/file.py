@@ -59,6 +59,6 @@ class _SingleFilter(Filter):
     }
 
 
-class TorrentFileFilter(FilterChain):
+class FileFilter(FilterChain):
     """One or more filters combined with & and | operators"""
     filterclass = _SingleFilter

@@ -82,16 +82,16 @@ class get_peer_sorter():
 class get_peer_filter():
     def get_peer_filter(self, FILTER):
         """
-        Return TorrentPeerFilter instance or None
+        Return PeerFilter instance or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentPeerFilter and the
+        If `FILTER` evaluates to True, it is passed to PeerFilter and the
         resulting object is returned.
 
         If `FILTER` evaluates to False, None is returned.
         """
         if FILTER:
-            from ...client import TorrentPeerFilter
-            return TorrentPeerFilter(FILTER)
+            from ...client import PeerFilter
+            return PeerFilter(FILTER)
 
 class get_peer_columns():
     def get_peer_columns(self, columns):
@@ -126,16 +126,16 @@ class get_tracker_sorter():
 class get_tracker_filter():
     def get_tracker_filter(self, FILTER):
         """
-        Return TorrentTrackerFilter instance or None
+        Return TrackerFilter instance or None
 
-        If `FILTER` evaluates to True, it is passed to TorrentTrackerFilter and
+        If `FILTER` evaluates to True, it is passed to TrackerFilter and
         the resulting object is returned.
 
         If `FILTER` evaluates to False, None is returned.
         """
         if FILTER:
-            from ...client import TorrentTrackerFilter
-            return TorrentTrackerFilter(FILTER)
+            from ...client import TrackerFilter
+            return TrackerFilter(FILTER)
 
 class get_tracker_columns():
     def get_tracker_columns(self, columns):
