@@ -25,7 +25,7 @@ def _get_hostname_or_ip(torrent):
     return ip if hostname is None else hostname
 
 
-class TorrentPeerSorter(SorterBase):
+class PeerSorter(SorterBase):
     SORTSPECS = {
         'torrent'     : _SortSpec(lambda t: t['tname'].lower(),
                                   description='torrent name'),

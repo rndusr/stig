@@ -19,8 +19,7 @@ from xdg.BaseDirectory import xdg_data_home  as XDG_DATA_HOME
 
 from .. import __appname__
 from ..views import (torrent, file, peer, tracker, setting)
-from ..client.sorters import (TorrentSorter, TorrentPeerSorter,
-                              TorrentTrackerSorter, SettingSorter)
+from ..client.sorters import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
 
 DEFAULT_RCFILE      = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
@@ -125,12 +124,12 @@ def init_defaults(localcfg):
                  default=TorrentSorter.DEFAULT_SORT,
                  description='List of sort orders in torrent lists')
     localcfg.add('sort.peers',
-                 partial_sort_order(TorrentPeerSorter),
-                 default=TorrentPeerSorter.DEFAULT_SORT,
+                 partial_sort_order(PeerSorter),
+                 default=PeerSorter.DEFAULT_SORT,
                  description='List of sort orders in peer lists')
     localcfg.add('sort.trackers',
-                 partial_sort_order(TorrentTrackerSorter),
-                 default=TorrentTrackerSorter.DEFAULT_SORT,
+                 partial_sort_order(TrackerSorter),
+                 default=TrackerSorter.DEFAULT_SORT,
                  description='List of sort orders in tracker lists')
     localcfg.add('sort.settings',
                  partial_sort_order(SettingSorter),

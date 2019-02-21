@@ -50,13 +50,13 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
     cfg = ExpectedResource
 
     from ...views.tracker import COLUMNS
-    from ...client.sorters import TorrentTrackerSorter
+    from ...client.sorters import TrackerSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.trackers', append=(
             '',
             'The "torrent" column is added automatically if multiple '
             'torrents could be listed potentially.')),
-        'SORT ORDERS': make_SORT_ORDERS_doc(TorrentTrackerSorter, '--sort', 'sort.trackers'),
+        'SORT ORDERS': make_SORT_ORDERS_doc(TrackerSorter, '--sort', 'sort.trackers'),
         'SCRIPTING': make_SCRIPTING_doc(name),
     }
 

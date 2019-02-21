@@ -18,7 +18,7 @@ class _SortSpec(SortSpecBase):
         super().__init__(*args, description=description, **kwargs)
 
 
-class TorrentTrackerSorter(SorterBase):
+class TrackerSorter(SorterBase):
     DEFAULT_SORT = 'domain'
     SORTSPECS = {
         'torrent':         _SortSpec(lambda t: t['tname'].lower(),

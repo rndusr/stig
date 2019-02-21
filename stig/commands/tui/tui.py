@@ -644,14 +644,13 @@ class SortCmd(metaclass=InitCommand):
             tuple('\t{}\t - \t{}'.format(', '.join((sname,) + s.aliases), s.description)
                   for sname,s in sorted(sortercls.SORTSPECS.items()))
 
-    from ...client import (TorrentSorter, TorrentPeerSorter,
-                           TorrentTrackerSorter, SettingSorter)
+    from ...client import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
     more_sections = {
         'SORT ORDERS': _list_sort_orders('TORRENT LISTS', TorrentSorter) +
                        ('',) +
-                       _list_sort_orders('PEER LISTS', TorrentPeerSorter) +
+                       _list_sort_orders('PEER LISTS', PeerSorter) +
                        ('',) +
-                       _list_sort_orders('TRACKER LISTS', TorrentTrackerSorter)
+                       _list_sort_orders('TRACKER LISTS', TrackerSorter)
     }
 
     tui = ExpectedResource
@@ -674,9 +673,9 @@ class SortCmd(metaclass=InitCommand):
             if isinstance(current_tab, TorrentListWidget):
                 sortcls = self.TorrentSorter
             elif isinstance(current_tab, PeerListWidget):
-                sortcls = self.TorrentPeerSorter
+                sortcls = self.PeerSorter
             elif isinstance(current_tab, TrackerListWidget):
-                sortcls = self.TorrentTrackerSorter
+                sortcls = self.TrackerSorter
             elif isinstance(current_tab, SettingListWidget):
                 sortcls = self.SettingSorter
             else:

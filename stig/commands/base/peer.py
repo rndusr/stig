@@ -50,13 +50,13 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
     )
 
     from ...views.peer import COLUMNS
-    from ...client.sorters import TorrentPeerSorter
+    from ...client.sorters import PeerSorter
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.peers', append=(
             '',
             'The "torrent" column is added automatically if multiple '
             'torrents could be listed potentially.')),
-        'SORT ORDERS': make_SORT_ORDERS_doc(TorrentPeerSorter, '--sort', 'sort.peers'),
+        'SORT ORDERS': make_SORT_ORDERS_doc(PeerSorter, '--sort', 'sort.peers'),
         'SCRIPTING': make_SCRIPTING_doc(name),
     }
 

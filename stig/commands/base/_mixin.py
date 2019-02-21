@@ -68,16 +68,16 @@ class get_file_columns():
 class get_peer_sorter():
     def get_peer_sorter(self, args):
         """
-        Return TorrentPeerSorter instance or None
+        Return PeerSorter instance or None
 
-        If `args` evaluates to True, it is passed to TorrentPeerSorter and the
-        result is returned.
+        If `args` evaluates to True, it is passed to PeerSorter and the result
+        is returned.
 
         If `args` evaluates to False, None is returned.
         """
         if args:
-            from ...client import TorrentPeerSorter
-            return TorrentPeerSorter(self.cfg.validate('sort.peers', args))
+            from ...client import PeerSorter
+            return PeerSorter(self.cfg.validate('sort.peers', args))
 
 class get_peer_filter():
     def get_peer_filter(self, FILTER):
@@ -112,16 +112,16 @@ class get_peer_columns():
 class get_tracker_sorter():
     def get_tracker_sorter(self, args):
         """
-        Return TorrentTrackerSorter instance or None
+        Return TrackerSorter instance or None
 
-        If `args` evaluates to True, it is passed to TorrentTrackerSorter and
+        If `args` evaluates to True, it is passed to TrackerSorter and
         the result is returned.
 
         If `args` evaluates to False, None is returned.
         """
         if args:
-            from ...client import TorrentTrackerSorter
-            return TorrentTrackerSorter(self.cfg.validate('sort.trackers', args))
+            from ...client import TrackerSorter
+            return TrackerSorter(self.cfg.validate('sort.trackers', args))
 
 class get_tracker_filter():
     def get_tracker_filter(self, FILTER):
