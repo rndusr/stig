@@ -463,13 +463,14 @@ class FilterChain(metaclass=_forward_attrs):
             log.debug('Chained %r and %r to %r', filters, ops, fchain)
             self._filterchains = tuple(tuple(x) for x in fchain)
 
-    # TODO: Try to use apply() of chained filters, which should be more
-    # efficient.
-
     def apply(self, objects):
         """Yield matching objects from iterable `objects`"""
-        if self._filterchains:
-            yield from filter(self.match, objects)
+        chains = self._filterchains
+        if chains:
+            for obj in objects:
+                if any(all(f.match(obj) for f in AND_chain)
+                       for AND_chain in chains):
+                    yield obj
         else:
             yield from objects
 
@@ -477,11 +478,12 @@ class FilterChain(metaclass=_forward_attrs):
         """Whether `obj` matches this filter chain"""
         # All filters in an AND_chain must match for the AND_chain to
         # match.  At least one AND_chain must match.
-        if len(self._filterchains) < 1:
+        chains = self._filterchains
+        if not chains:
             return True
         else:
             return any(all(f.match(obj) for f in AND_chain)
-                       for AND_chain in self._filterchains)
+                       for AND_chain in chains)
 
     @property
     def needed_keys(self):
