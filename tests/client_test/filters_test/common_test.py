@@ -357,6 +357,20 @@ class TestFilter_apply(unittest.TestCase):
         self.assertEqual(tuple(FooFilter('everything').apply(items, key='v')), ('', 'foo', 'bar'))
         self.assertEqual(tuple(FooFilter('all').apply(items, key='v')), ('', 'foo', 'bar'))
 
+    def test_match(self):
+        class FooFilter(Filter):
+            BOOLEAN_FILTERS = {'everything': BoolFilterSpec(None)}
+            COMPARATIVE_FILTERS = {'v': CmpFilterSpec(value_type=str, value_getter=lambda i: i['v'])}
+        items = ({'v': 'foo'}, {'v': 'bar'}, {'v': 'baz'})
+        for item in items:
+            self.assertTrue(FooFilter('everything').match(item))
+        for filter_str,results in (('v~f', (True, False, False)),
+                                   ('v~ba', (False, True, True)),
+                                   ('v!~f', (False, True, True)),
+                                   ('!v~ba', (True, False, False))):
+            for item,result in zip(items, results):
+                self.assertEqual(FooFilter(filter_str).match(item), result)
+
 
 class TestFilterChain_parser(unittest.TestCase):
     def setUp(self):
@@ -546,3 +560,12 @@ class TestFilterChain_apply(unittest.TestCase):
         self.do('mod3&mod2|positive&n_int>7', (-6, 0, 6, 8, 8.5, 9, 9.5, 10))
         self.do('positive&n_int>7|mod3&mod2', (-6, 0, 6, 8, 8.5, 9, 9.5, 10))
         self.do('!positive&mod2&n_abs<=4|positive&mod3&n_abs<=6', (-4, -2, 0, 3, 6))
+
+    def test_match(self):
+        for item in self.items:
+            self.assertEqual(self.f('mod2').match(item), item['v'] % 2 == 0)
+            self.assertEqual(self.f('!mod2').match(item), item['v'] % 2 != 0)
+            self.assertEqual(self.f('mod3').match(item), item['v'] % 3 == 0)
+            self.assertEqual(self.f('!mod3').match(item), item['v'] % 3 != 0)
+            self.assertEqual(self.f('n_abs>0').match(item), abs(item['v']) > 0)
+            self.assertEqual(self.f('n_abs!>0').match(item), abs(item['v']) <= 0)
