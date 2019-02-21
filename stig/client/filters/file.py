@@ -12,7 +12,7 @@
 """Filtering TorrentFiles by various values"""
 
 from ..ttypes import TorrentFile
-from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'

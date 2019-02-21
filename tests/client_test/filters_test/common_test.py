@@ -1,4 +1,4 @@
-from stig.client.filters.common import (Filter, FilterChain, BoolFilterSpec, CmpFilterSpec)
+from stig.client.filters.base import (Filter, FilterChain, BoolFilterSpec, CmpFilterSpec)
 
 import unittest
 

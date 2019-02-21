@@ -12,7 +12,7 @@
 """Filtering TrackerList items by various values"""
 
 from ..ttypes import TorrentTracker
-from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta)
 
 

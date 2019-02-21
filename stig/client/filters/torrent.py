@@ -12,7 +12,7 @@
 """Filtering Torrents by their values"""
 
 from ..ttypes import TYPES as VALUETYPES
-from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta, limit_rate_filter)
 from ..utils import (Bandwidth, BoolOrBandwidth, convert)
 

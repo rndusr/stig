@@ -12,7 +12,7 @@
 """Filtering PeerList items by various values"""
 
 from ..ttypes import TorrentPeer
-from .common import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
 
 
 from .. import rdns
