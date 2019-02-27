@@ -90,14 +90,15 @@ class SorterBase():
         self._sortfuncs = sortfuncs
 
     def apply(self, items, inplace=False, item_getter=lambda item: item):
-        """Sort sequence `items`
+        """
+        Sort sequence `items`
 
         item_getter: Callable that gets an item of `items` and returns an
                      object that can be sorted with any of the sorters
                      specified in the SORTSPECS variable. (This allows for
                      sorting of widgets as long as they can provide a sortable
                      object.)
-        inplace: Modify `items` if True, otherwise return a new list
+        inplace: Modify `items` if True, otherwise return a new, sorted list
         """
         import time
         start_time = time.monotonic()
