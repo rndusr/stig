@@ -98,7 +98,7 @@ def run():
         # Load geoip database
         if localcfg['geoip']:
             try:
-                aioloop.run_until_complete(geoip.load(loop=aioloop))
+                aioloop.run_until_complete(geoip.load())
             except geoip.GeoIPError as e:
                 log.error(e)
                 exit_code = 1

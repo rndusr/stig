@@ -53,7 +53,7 @@ def load_geoip_db():
             pass
         except geoip.GeoIPError as e:
             log.error(e)
-    task = aioloop.create_task(geoip.load(loop=aioloop))
+    task = aioloop.create_task(geoip.load())
     task.add_done_callback(_handle_geoip_load_result)
 
 
