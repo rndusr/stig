@@ -56,7 +56,7 @@ class SorterBase():
         sortfuncs = []
         strings = []   # String representations of sortspecs
 
-        # Go through items in reverse because to want to deduplicate sort orders
+        # Go through items in reverse because we want to deduplicate sort orders
         # while keeping the most recent one.
         for sortstring in reversed(sortstrings):
             if sortstring[0] in self.INVERT_CHARS:
