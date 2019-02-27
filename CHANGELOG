@@ -21,6 +21,7 @@
   Fixed bugs:
     * File filters caused a crash when applied to single-file torrents.
     * Fixed crash with "Filter can't end with operator".
+    * Fixed various crashes when geolocating IPs in peer lists.
     * Download priority in TUI file lists is now updated correctly.
     * Setting filters are now documented (`help filters`).
     * When 'remove.max-hits' triggered, the displayed list of torrents didn't
