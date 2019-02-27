@@ -15,7 +15,7 @@ log = make_logger(__name__)
 from functools import partial
 
 
-class SortSpecBase():
+class SortSpec():
     def __init__(self, *keyfuncs, description, aliases=()):
         self._keyfuncs = keyfuncs
         self.description = description

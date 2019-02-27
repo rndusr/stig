@@ -9,10 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .base import (SortSpecBase, SorterBase)
+from .base import (SorterBase, SortSpec)
 
 
-class _SortSpec(SortSpecBase):
+class _SortSpec(SortSpec):
     def __init__(self, *args, description='', **kwargs):
         description = 'Sort settings by %s' % description
         super().__init__(*args, description=description, **kwargs)
