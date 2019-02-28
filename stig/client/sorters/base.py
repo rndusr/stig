@@ -130,4 +130,4 @@ class SorterBase(metaclass=_SorterBaseMeta):
         return ','.join(self._strings)
 
     def __repr__(self):
-        return '<{} {}>'.format(type(self).__name__, str(self))
+        return '%s(%r)' % (type(self).__name__, self._strings)
