@@ -21,7 +21,7 @@ class _SortSpec(SortSpec):
 class TrackerSorter(SorterBase):
     DEFAULT_SORT = 'domain'
     SORTSPECS = {
-        'torrent':         _SortSpec(lambda t: t['tname'].lower(),
+        'torrent':         _SortSpec(lambda t: t['tname'].casefold(),
                                      description='torrent name'),
         'tier':            _SortSpec(lambda t: t['tier'],
                                      description='tier number'),

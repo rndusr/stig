@@ -27,7 +27,7 @@ def _get_hostname_or_ip(torrent):
 
 class PeerSorter(SorterBase):
     SORTSPECS = {
-        'torrent'     : _SortSpec(lambda t: t['tname'].lower(),
+        'torrent'     : _SortSpec(lambda t: t['tname'].casefold(),
                                   description='torrent name'),
         '%downloaded' : _SortSpec(lambda t: t['%downloaded'],
                                   aliases=('%dn',),
@@ -46,10 +46,10 @@ class PeerSorter(SorterBase):
                                   description='combined download and upload rate'),
         'eta'         : _SortSpec(lambda t: t['eta'],
                                   description="peer's estimated remaining download time"),
-        'client'      : _SortSpec(lambda t: t['client'].lower(),
+        'client'      : _SortSpec(lambda t: t['client'].casefold(),
                                   aliases=('cl',),
                                   description="peer's client name"),
-        'country'     : _SortSpec(lambda t: t['country'].lower(),
+        'country'     : _SortSpec(lambda t: t['country'].casefold(),
                                   aliases=('cn',),
                                   description="peer's country"),
         'host'        : _SortSpec(_get_hostname_or_ip,

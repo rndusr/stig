@@ -24,7 +24,7 @@ class TorrentSorter(SorterBase):
         'id':                _SortSpec(lambda t: t['id'],
                                        needed_keys=('id',),
                                        description='ID'),
-        'name':              _SortSpec(lambda t: t['name'].lower(),
+        'name':              _SortSpec(lambda t: t['name'].casefold(),
                                        aliases=('n',),
                                        needed_keys=('name',),
                                        description='name'),
