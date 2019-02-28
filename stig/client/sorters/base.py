@@ -37,19 +37,26 @@ class SortSpec():
         return items
 
 
-class SorterBase():
+class _SorterBaseMeta(type):
+    def __init__(cls, clsname, bases, attrs):
+        sortspecs = getattr(cls, 'SORTSPECS', None)
+        if sortspecs is None:
+            raise RuntimeError('%s: Missing SORTSPECS attribute' % (clsname,))
+        elif sortspecs is NotImplemented:
+            # No aliases for base class
+            cls._aliases = {}
+        else:
+            # Get list of aliases from sort specs and map each one to the real
+            # sorter name
+            cls._aliases = {alias:sorter_name
+                            for sorter_name,sortspec in sortspecs.items()
+                            for alias in sortspec.aliases}
+
+
+class SorterBase(metaclass=_SorterBaseMeta):
     INVERT_CHARS = ('!', '.')
     SORTSPECS = NotImplemented
     DEFAULT_SORT = None
-
-    def __new__(cls, *args, **kwargs):
-        obj = super().__new__(cls)
-
-        # Map aliases to their original name
-        obj._aliases = {alias:sname
-                        for sname,s in cls.SORTSPECS.items()
-                        for alias in s.aliases}
-        return obj
 
     def __init__(self, sortstrings=()):
         sortspecs = []
