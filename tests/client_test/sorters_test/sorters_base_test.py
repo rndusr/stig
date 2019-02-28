@@ -126,3 +126,39 @@ class TestSorterBase(unittest.TestCase):
             self.assertEqual(str(self.sortercls((fstr, '!'+fstr))), '!foo')
             self.assertEqual(str(self.sortercls(('!'+fstr, 'bar', fstr))), 'bar,foo')
             self.assertEqual(str(self.sortercls((fstr, 'bar', '!'+fstr))), 'bar,!foo')
+
+    def test_apply_inplace(self):
+        items = [{'id': 1, 'foo': 'a', 'bar': 'z'},
+                 {'id': 2, 'foo': 'b', 'bar': 'y'},
+                 {'id': 3, 'foo': 'c', 'bar': 'x'}]
+        random.shuffle(items)
+        self.sortercls(('foo',)).apply(items, inplace=True)
+        self.assertEqual(tuple(item['id'] for item in items), (1, 2, 3))
+        self.sortercls(('!foo',)).apply(items, inplace=True)
+        self.assertEqual(tuple(item['id'] for item in items), (3, 2, 1))
+        self.sortercls(('bar',)).apply(items, inplace=True)
+        self.assertEqual(tuple(item['id'] for item in items), (3, 2, 1))
+        self.sortercls(('!bar',)).apply(items, inplace=True)
+        self.assertEqual(tuple(item['id'] for item in items), (1, 2, 3))
+
+    def test_apply_item_getter(self):
+        from types import SimpleNamespace
+        items = [SimpleNamespace(id=1, values={'foo': 'a', 'bar': 'z'}),
+                 SimpleNamespace(id=2, values={'foo': 'b', 'bar': 'y'}),
+                 SimpleNamespace(id=3, values={'foo': 'c', 'bar': 'x'})]
+
+        def item_getter(obj):
+            print('getting item for %r' % (obj,))
+            return obj.values
+
+        srted = self.sortercls(('foo',)).apply(items, item_getter=item_getter)
+        self.assertEqual(tuple(obj.id for obj in srted), (1, 2, 3))
+
+        srted = self.sortercls(('!foo',)).apply(items, item_getter=item_getter)
+        self.assertEqual(tuple(obj.id for obj in srted), (3, 2, 1))
+
+        srted = self.sortercls(('bar',)).apply(items, item_getter=item_getter)
+        self.assertEqual(tuple(obj.id for obj in srted), (3, 2, 1))
+
+        srted = self.sortercls(('!bar',)).apply(items, item_getter=item_getter)
+        self.assertEqual(tuple(obj.id for obj in srted), (1, 2, 3))
