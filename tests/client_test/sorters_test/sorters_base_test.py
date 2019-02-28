@@ -15,24 +15,32 @@ class TestSorterBase(unittest.TestCase):
                                           description='Some other description')}
         self.sortercls = TestSorter
 
-    def assert_sorted(self, items, sortstrings=None, exp_id_order=None):
+    def assert_sorted(self, items, sortstrings, exp_id_order):
         items = sorted(items, key=lambda _: random.random())
-        if sortstrings:
-            items_sorted = self.sortercls(sortstrings).apply(items)
+        items_sorted = self.sortercls(sortstrings).apply(items)
+        if exp_id_order == 'unsorted':
+            self.assertEqual(tuple(i['id'] for i in items_sorted),
+                             tuple(i['id'] for i in items))
         else:
-            items_sorted = self.sortercls().apply(items)
-        if exp_id_order:
             self.assertEqual(tuple(i['id'] for i in items_sorted), exp_id_order)
-        else:
-            self.assertEqual(set(i['id'] for i in items),
-                             set(i['id'] for i in items_sorted))
 
-    def test_no_sorter(self):
+    def test_no_default_sorter(self):
         items = [{'id': 1, 'foo': 'a', 'bar': 'z'},
                  {'id': 2, 'foo': 'b', 'bar': 'y'},
                  {'id': 3, 'foo': 'c', 'bar': 'x'}]
-        self.assert_sorted(items)
-        self.assert_sorted(items)
+        random.shuffle(items)
+        self.sortercls.DEFAULT_SORT = None
+        self.assert_sorted(items, (), exp_id_order='unsorted')
+
+    def test_default_sorter(self):
+        items = [{'id': 1, 'foo': 'a', 'bar': 'z'},
+                 {'id': 2, 'foo': 'b', 'bar': 'y'},
+                 {'id': 3, 'foo': 'c', 'bar': 'x'}]
+        random.shuffle(items)
+        self.sortercls.DEFAULT_SORT = 'foo'
+        self.assert_sorted(items, (), (1, 2, 3))
+        self.sortercls.DEFAULT_SORT = 'bar'
+        self.assert_sorted(items, (), (3, 2, 1))
 
     def test_single_sorter(self):
         items = [{'id': 1, 'foo': 'a', 'bar': 'z'},
