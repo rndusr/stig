@@ -23,7 +23,7 @@ class SettingSorter(SorterBase):
         'name'        : _SortSpec(lambda s: s['id'],
                                   description='name'),
         # repr() because values have incompatible types
-        'value'       : _SortSpec(lambda s: repr(s['value']),
+        'value'       : _SortSpec(lambda s: repr(s['value']).casefold(),
                                   description='value'),
         'default'     : _SortSpec(lambda s: repr(s['default']),
                                   description='default'),
