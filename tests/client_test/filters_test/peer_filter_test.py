@@ -1,7 +1,7 @@
 from stig.client.filters.peer import _SingleFilter as PeerFilter
 
 import unittest
-from helpers import HelpersMixin
+from filter_helpers import HelpersMixin
 
 
 class TestPeerFilter(unittest.TestCase, HelpersMixin):

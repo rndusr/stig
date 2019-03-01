@@ -1,7 +1,7 @@
 from stig.client.filters.setting import _SingleFilter as SettingFilter
 
 import unittest
-from helpers import HelpersMixin
+from filter_helpers import HelpersMixin
 
 
 class TestSettingFilter(unittest.TestCase, HelpersMixin):

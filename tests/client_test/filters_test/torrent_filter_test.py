@@ -2,7 +2,7 @@ from stig.client.filters.torrent import _SingleFilter as TorrentFilter
 from stig.client.ttypes import Status
 
 import unittest
-from helpers import HelpersMixin
+from filter_helpers import HelpersMixin
 
 
 class TestTorrentFilter(unittest.TestCase, HelpersMixin):
