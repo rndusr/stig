@@ -19,6 +19,7 @@ class _SortSpec(SortSpec):
 
 
 class SettingSorter(SorterBase):
+    DEFAULT_SORT = 'name'
     SORTSPECS = {
         'name'        : _SortSpec(lambda s: s['id'],
                                   description='name'),
@@ -30,4 +31,3 @@ class SettingSorter(SorterBase):
         'description' : _SortSpec(lambda s: s['description'],
                                   description='description'),
     }
-    DEFAULT_SORT = 'name'
