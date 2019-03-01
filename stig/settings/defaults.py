@@ -42,8 +42,11 @@ def init_defaults(localcfg):
             return super().__hash__()
 
     def partial_sort_order(sortercls):
-        options = tuple(SortOrder(opt) for opt in sortercls.SORTSPECS)
-        return Tuple.partial(options=options, dedup=True)
+        options = []
+        for name,spec in sortercls.SORTSPECS.items():
+            options.append(SortOrder(name))
+            options.extend((SortOrder(alias) for alias in spec.aliases))
+        return Tuple.partial(options=tuple(options), dedup=True)
 
     localcfg.add('connect.host',
                  constructor=String.partial(),
