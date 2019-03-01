@@ -31,7 +31,7 @@ class TrackerSorter(SorterBase):
         'status':          _SortSpec(lambda t: t['status'],
                                      aliases=('st',),
                                      description='tracker status'),
-        'error':           _SortSpec(lambda t: t['error'],
+        'error':           _SortSpec(lambda t: t['error'].casefold(),
                                      aliases=('err',),
                                      description='error message'),
         'downloads':       _SortSpec(lambda t: t['count-downloads'],
