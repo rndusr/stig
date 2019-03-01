@@ -17,6 +17,7 @@ log = make_logger(__name__)
 from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
+from .. import utils
 
 import shlex
 from functools import partial
@@ -682,7 +683,7 @@ class SortCmd(metaclass=InitCommand):
                 raise CmdError('Current tab is not sortable.')
 
             try:
-                new_sort = sortcls(ORDER)
+                new_sort = sortcls(utils.listify_args(ORDER))
             except ValueError as e:
                 raise CmdError(e)
 
@@ -897,7 +898,7 @@ class TUICmd(metaclass=InitCommand):
         widgets = self.tui.widgets
         widget = None
         success = True
-        for element in ELEMENT:
+        for element in utils.listify_args(ELEMENT):
             # Resolve path
             path = element.split('.')
             target_name = path.pop(-1)

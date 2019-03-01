@@ -98,7 +98,7 @@ class ResetCmdbase(metaclass=InitCommand):
             raise CmdError('Missing NAME argument')
 
         success = True
-        for name in NAME:
+        for name in utils.listify_args(NAME):
             if name.startswith('srv.') and name[4:] in self.srvcfg:
                 self.error('Remote settings cannot be reset: %s' % name)
                 success = False
