@@ -34,7 +34,7 @@ class _SingleFilter(Filter):
                                          description='Match VALUE against tracker tier'),
         'domain'         : CmpFilterSpec(value_getter=lambda trk: trk['domain'],
                                          value_type=TorrentTracker.TYPES['domain'],
-                                         aliases=('dom',),
+                                         aliases=('dom', 'tracker'),
                                          description='Match VALUE against domain of announce URL'),
         'url-announce'   : CmpFilterSpec(value_getter=lambda trk: trk['url-announce'],
                                          value_type=TorrentTracker.TYPES['url-announce'],
