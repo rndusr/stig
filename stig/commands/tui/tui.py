@@ -182,7 +182,7 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
     argspecs = (
         { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
           'description': 'Command the can user edit before executing it (see PLACEHOLDERS)' },
-        { 'names': ('--trailing-space',), 'action': 'store_true',
+        { 'names': ('--trailing-space', '-s'), 'action': 'store_true',
           'description': 'Append a space at the end of COMMAND' },
     )
     more_sections = {
