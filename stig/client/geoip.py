@@ -66,7 +66,7 @@ else:
             self._db = None
             self._download_lock = asyncio.Lock()
             self._last_download_attempt = 0
-            self._download_attempt_delay = 10  # Will double on each failure
+            self._download_attempt_delay = 1  # Will double on each failure
             self._lookup_cache = {}
             self.filename = self.url.split('/')[-1]
             if self.filename[-3:] == '.gz':
