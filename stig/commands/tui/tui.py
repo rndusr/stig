@@ -180,7 +180,7 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
          'we\'re listing active torrents and the focused torrent stops being active.'),
     )
     argspecs = (
-        { 'names': ('COMMAND',), 'nargs': '+',
+        { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
           'description': 'Command the can user edit before executing it (see PLACEHOLDERS)' },
         { 'names': ('--trailing-space',), 'action': 'store_true',
           'description': 'Append a space at the end of COMMAND' },
