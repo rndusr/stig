@@ -181,16 +181,16 @@ async def _torrent_filter_values(filter_name):
                       curarg_seps=curarg_seps)
 
 @functools.lru_cache(maxsize=None)
-def _get_filter_names(filter_cls):
-    return itertools.chain(filter_cls.BOOLEAN_FILTERS,
-                           filter_cls.COMPARATIVE_FILTERS)
-
-@functools.lru_cache(maxsize=None)
 def _get_filter_cls(name):
     try:
         return getattr(filters, name)
     except AttributeError:
         raise ValueError('Not a filter class: %r' % name)
+
+@functools.lru_cache(maxsize=None)
+def _get_filter_names(filter_cls):
+    return itertools.chain(filter_cls.BOOLEAN_FILTERS,
+                           filter_cls.COMPARATIVE_FILTERS)
 
 @functools.lru_cache(maxsize=None)
 def _get_filter_spec(filter_cls, name):
