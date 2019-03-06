@@ -191,7 +191,7 @@ class _SingleFilter(Filter):
                                           aliases=('lrdn',),
                                           description=_desc('... download rate limit')),
 
-        'tracker'         : CmpFilterSpec(value_getter=lambda t: t['trackers'][0]['url-announce'] if t['trackers'] else '',
+        'tracker'         : CmpFilterSpec(value_getter=lambda t: (tracker['url-announce'].domain for tracker in t['trackers']),
                                           value_matcher=lambda t, op, v: any(op(tracker['url-announce'].domain, v)
                                                                              for tracker in t['trackers']),
                                           value_type=str,
