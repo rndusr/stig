@@ -50,9 +50,13 @@ class CmpFilterSpec():
         """
         value_type    : Subclass of `type` (i.e. something that returns an instance when
                         called and can be passed to `isinstance` as the second argument
-        value_getter  : Callable that takes an item and returns a value to match against
-        value_convert : Callable that takes an value and converts it to something else
-                        (e.g. "42" -> 42)
+        value_getter  : Callable that takes an item and returns one or more
+                        values to match against the user-provided value;
+                        Multiple values must be given as an iterator (list,
+                        tuple, generator, etc), and the item matches if any
+                        match
+        value_convert : Callable that takes a value and converts it to something else
+                        (e.g. "42" (str) -> 42 (int))
         value_matcher : Callable that takes (item, operator, value) and returns True/False
         as_bool       : Callable that takes an item and returns True/False
         needed_keys   : Needed keys for this filter
@@ -72,14 +76,22 @@ class CmpFilterSpec():
             raise TypeError('Missing argument with needed_keys=%r: value_getter', self.needed_keys)
 
         if value_matcher is None:
-            self.value_matcher = lambda item, op, v, vg=self.value_getter: op(vg(item), v)
-        else:
-            self.value_matcher = value_matcher
+            def value_matcher(item, op, user_value, vg=self.value_getter):
+                item_value = vg(item)
+                if isinstance(item_value, abc.Iterator):
+                    return any(op(ival, user_value) for ival in item_value)
+                else:
+                    return op(item_value, user_value)
+        self.value_matcher = value_matcher
 
         if as_bool is None:
-            self.as_bool = lambda dct, vg=self.value_getter: bool(vg(dct))
-        else:
-            self.as_bool = as_bool
+            def as_bool(item, vg=self.value_getter):
+                item_value = vg(item)
+                if isinstance(item_value, abc.Iterator):
+                    return any(item_value)
+                else:
+                    return bool(item_value)
+        self.as_bool = as_bool
 
     def make_filter(self, operator, user_value, invert):
         if operator is None and user_value is None:
