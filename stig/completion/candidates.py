@@ -24,7 +24,7 @@ import itertools
 import os
 import re
 import functools
-
+from collections import abc
 
 _commands = tuple(cmdcls.name for cmdcls in cmdmgr.active_commands)
 def commands():
@@ -174,7 +174,13 @@ async def _torrent_filter_values(filter_name):
         response = await srvapi.torrent.torrents(keys=keys, from_cache=True)
         if response.success:
             value_getter = _get_filter_spec(filter_cls, filter_name).value_getter
-            cands = tuple(value_getter(t) for t in response.torrents)
+            cands = []
+            for t in response.torrents:
+                value = value_getter(t)
+                if isinstance(value, abc.Iterator):
+                    cands.extend(value)
+                else:
+                    cands.append(value)
     curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
     return Candidates(cands,
                       label='Torrent Filter Values: %s' % (filter_name,),
