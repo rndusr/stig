@@ -212,20 +212,12 @@ class TestTorrentFilter(unittest.TestCase, HelpersMixin):
                 obj = super().__new__(cls, 'https://url.is.ignored.by.filter')
                 obj.domain = domain
                 return obj
-        trklist1 = []
-        trklist2 = [
-            {'url-announce': MockURL('example.org')}
-        ]
-        trklist3 = [
-            {'url-announce': MockURL('example.net')},
-            {'url-announce': MockURL('example.org')}
-        ]
-
         self.check_filter(TorrentFilter,
                           filter_names=('tracker', 'trk'),
-                          items=({'id': 1, 'trackers': trklist1},
-                                 {'id': 2, 'trackers': trklist2},
-                                 {'id': 3, 'trackers': trklist3}),
+                          items=({'id': 1, 'trackers': []},
+                                 {'id': 2, 'trackers': [{'url-announce': MockURL('example.org')}]},
+                                 {'id': 3, 'trackers': [{'url-announce': MockURL('example.net')},
+                                                        {'url-announce': MockURL('example.org')}]}),
                           test_cases=(('{name}', (2, 3)),
                                       ('!{name}', (1,)),
                                       ('{name}=example.org', (2, 3)),
