@@ -299,7 +299,7 @@ class Timedelta(int):
         return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
 
 
-class Timestamp(float):
+class Timestamp(int):
     # These constants get "random" fractions added to make it less likely that
     # any real-world value equals them.
     NOW            = -2 + 0.123456789
