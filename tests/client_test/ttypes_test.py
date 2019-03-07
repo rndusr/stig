@@ -350,6 +350,15 @@ class TestTimestamp(unittest.TestCase):
         self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE)), '')
         self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.NEVER)), 'never')
 
+    def test_full_property(self):
+        with mock_time(1993, 2, 14, 5, 38, 12):
+            self.assertEqual(ttypes.Timestamp(time.time()).full, '1993-02-14 05:38:12')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOW).full, 'now')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.SOON).full, 'soon')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.UNKNOWN).full, 'unknown')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE).full, 'not applicable')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NEVER).full, 'never')
+
     def test_accuracy__year_eq(self):
         ts = ttypes.Timestamp.from_string('2005')
         self.assertTrue(ts != mktime('2004-12-31 23:59:59'))
