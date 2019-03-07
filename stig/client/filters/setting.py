@@ -10,22 +10,22 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from ..ttypes import SmartCmpStr
-from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 
 
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
-    BOOLEAN_FILTERS = {
+    BOOLEAN_FILTERS = FilterSpecDict({
         'all'     : BoolFilterSpec(None,
                                    aliases=('*',),
                                    description='All settings'),
         'changed' : BoolFilterSpec(lambda s: s['default'] != s['value'],
                                    aliases=('ch',),
                                    description='Settings with customized values'),
-    }
+    })
 
-    COMPARATIVE_FILTERS = {
+    COMPARATIVE_FILTERS = FilterSpecDict({
         'name'        : CmpFilterSpec(value_getter=lambda s: s['id'],
                                       value_type=SmartCmpStr,
                                       aliases=('n',),
@@ -42,7 +42,7 @@ class _SingleFilter(Filter):
                                       value_type=SmartCmpStr,
                                       aliases=('desc',),
                                       description='Match VALUE against description'),
-    }
+    })
 
 
 class SettingFilter(FilterChain):

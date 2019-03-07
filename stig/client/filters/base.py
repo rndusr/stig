@@ -107,6 +107,32 @@ class CmpFilterSpec():
             return (f, self.needed_keys, invert)
 
 
+class FilterSpecDict(abc.Mapping):
+    """TODO"""
+    _NOT_FOUND = object()
+
+    def __init__(self, dct):
+        self._dct = dct
+
+    def __getitem__(self, key):
+        value = self._dct.get(key, self._NOT_FOUND)
+        if value is not self._NOT_FOUND:
+            return value
+        for value in self._dct.values():
+            if key in value.aliases:
+                return value
+        raise KeyError(key)
+
+    def __iter__(self):
+        return iter(self._dct)
+
+    def __len__(self):
+        return len(self._dct)
+
+    def __repr__(self):
+        return '%s(%r)' % (type(self).__name__, self._dct)
+
+
 class Filter():
     """Match sequences of objects against a single filter"""
 

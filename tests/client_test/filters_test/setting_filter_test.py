@@ -8,6 +8,9 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
     def test_default_filter(self):
         self.assertEqual(SettingFilter.DEFAULT_FILTER, 'name')
 
+    def test_getting_spec_by_alias(self):
+        self.check_getting_spec_by_alias(SettingFilter)
+
     def test_all(self):
         self.check_bool_filter(SettingFilter,
                                filter_names=('all', '*'),

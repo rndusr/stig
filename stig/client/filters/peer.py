@@ -12,7 +12,7 @@
 """Filtering PeerList items by various values"""
 
 from ..ttypes import TorrentPeer
-from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 
 
 from .. import rdns
@@ -27,7 +27,7 @@ def _cmp_host_or_ip(p, op, v):
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'host'
 
-    BOOLEAN_FILTERS = {
+    BOOLEAN_FILTERS = FilterSpecDict({
         'all'         : BoolFilterSpec(None,
                                        aliases=('*',),
                                        description='All peers'),
@@ -40,9 +40,9 @@ class _SingleFilter(Filter):
         'seeding'     : BoolFilterSpec(lambda p: p['%downloaded'] >= 100,
                                        aliases=('sdg',),
                                        description='Peers that have downloaded all data'),
-    }
+    })
 
-    COMPARATIVE_FILTERS = {
+    COMPARATIVE_FILTERS = FilterSpecDict({
         'downloaded'  : CmpFilterSpec(value_getter=lambda p: p['tsize'] * (p['%downloaded']/100),
                                       value_type=TorrentPeer.TYPES['tsize'],
                                       as_bool=lambda p: p['%downloaded'] >= 100,
@@ -66,7 +66,7 @@ class _SingleFilter(Filter):
         'port'        : CmpFilterSpec(value_getter=lambda p: p['port'],
                                       value_type=TorrentPeer.TYPES['port'],
                                       description='Match VALUE against peer port'),
-    }
+    })
 
 
 class PeerFilter(FilterChain):

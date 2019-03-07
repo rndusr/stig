@@ -12,7 +12,7 @@
 """Filtering Torrents by their values"""
 
 from ..ttypes import TYPES as VALUETYPES
-from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta, limit_rate_filter)
 from ..utils import (Bandwidth, BoolOrBandwidth, convert)
 
@@ -39,7 +39,7 @@ _STATUS_STOPPED   = Status.STOPPED
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
-    BOOLEAN_FILTERS = {
+    BOOLEAN_FILTERS = FilterSpecDict({
         'all'         : BoolFilterSpec(None,
                                        aliases=('*',),
                                        description='All torrents'),
@@ -87,9 +87,9 @@ class _SingleFilter(Filter):
                                        needed_keys=('private',),
                                        aliases=('prv',),
                                        description='Torrents connectable through trackers only (no DHT/PEX)'),
-    }
+    })
 
-    COMPARATIVE_FILTERS = {
+    COMPARATIVE_FILTERS = FilterSpecDict({
         'id'              : CmpFilterSpec(value_getter=lambda t: t['id'],
                                           value_type=VALUETYPES['id'],
                                           needed_keys=('id',),
@@ -245,7 +245,7 @@ class _SingleFilter(Filter):
                                           needed_keys=('time-completed',),
                                           aliases=('tcmp',),
                                           description=_desc('... time all wanted files where/will be downloaded')),
-    }
+    })
 
 
 class TorrentFilter(FilterChain):

@@ -12,22 +12,22 @@
 """Filtering TrackerList items by various values"""
 
 from ..ttypes import TorrentTracker
-from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta)
 
 
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'domain'
 
-    BOOLEAN_FILTERS = {
+    BOOLEAN_FILTERS = FilterSpecDict({
         'all'   : BoolFilterSpec(None,
                                  aliases=('*',),
                                  description='All trackers'),
         'alive' : BoolFilterSpec(lambda trk: trk['status'] != 'stopped',
                                  description='Trackers we are trying to connect to'),
-    }
+    })
 
-    COMPARATIVE_FILTERS = {
+    COMPARATIVE_FILTERS = FilterSpecDict({
         'tier'           : CmpFilterSpec(value_getter=lambda trk: trk['tier'],
                                          value_type=TorrentTracker.TYPES['tier'],
                                          as_bool=lambda trk: True,
@@ -89,7 +89,7 @@ class _SingleFilter(Filter):
                                          value_convert=lambda v: timestamp_or_timedelta(v, default_sign=1),
                                          aliases=('nsc',),
                                          description='Match VALUE against time of next scrape'),
-    }
+    })
 
 
 class TrackerFilter(FilterChain):

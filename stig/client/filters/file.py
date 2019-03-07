@@ -12,12 +12,12 @@
 """Filtering TorrentFiles by various values"""
 
 from ..ttypes import TorrentFile
-from .base import (BoolFilterSpec, CmpFilterSpec, Filter, FilterChain)
+from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
-    BOOLEAN_FILTERS = {
+    BOOLEAN_FILTERS = FilterSpecDict({
         'all'      : BoolFilterSpec(None,
                                     aliases=('*',),
                                     description='All files'),
@@ -26,9 +26,9 @@ class _SingleFilter(Filter):
         'complete' : BoolFilterSpec(lambda f: f['%downloaded'] >= 100,
                                     aliases=('cmp',),
                                     description='Fully downloaded files'),
-    }
+    })
 
-    COMPARATIVE_FILTERS = {
+    COMPARATIVE_FILTERS = FilterSpecDict({
         'name'        : CmpFilterSpec(value_getter=lambda f: f['name'],
                                       value_type=TorrentFile.TYPES['name'],
                                       aliases=('n',),
@@ -56,7 +56,7 @@ class _SingleFilter(Filter):
                                       as_bool=lambda f: f['priority'] != 0,  # Any non-normal priority
                                       aliases=('prio',),
                                       description='Match VALUE against download priority (off, low, normal, high)'),
-    }
+    })
 
 
 class FileFilter(FilterChain):

@@ -22,6 +22,12 @@ def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):
 
 
 class HelpersMixin():
+    def check_getting_spec_by_alias(self, filter_cls):
+        for specdict in (filter_cls.BOOLEAN_FILTERS, filter_cls.COMPARATIVE_FILTERS):
+            for name,spec in specdict.items():
+                for alias in spec.aliases:
+                    self.assertEqual(specdict[alias], specdict[name])
+
     def check_filter(self, filter_cls, items, filter_names, test_cases):
         print(items)
         assert all('id' in item for item in items), "All items must have an 'id' field: %r" % (items,)
