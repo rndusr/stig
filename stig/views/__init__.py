@@ -92,8 +92,10 @@ class ColumnBase():
 
     def get_raw_value(self):
         value = self.get_value()
-        if isinstance(value, (int, float)) and value < float('inf'):
-            return repr(value)
+        if isinstance(value, int):
+            return int(value)
+        elif isinstance(value, float):
+            return float(value)
         else:
             return value
 
