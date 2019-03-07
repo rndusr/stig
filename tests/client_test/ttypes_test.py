@@ -344,6 +344,11 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(str(ttypes.Timestamp(time.time() + 3*60*60)), '08:38')
             self.assertEqual(str(ttypes.Timestamp(time.time() - 7*24*60*60)), '1993-02-07')
             self.assertEqual(str(ttypes.Timestamp(time.time() + 7*24*60*60)), '1993-02-21')
+        self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.NOW)), 'now')
+        self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.SOON)), 'soon')
+        self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.UNKNOWN)), '?')
+        self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE)), '')
+        self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.NEVER)), 'never')
 
     def test_accuracy__year_eq(self):
         ts = ttypes.Timestamp.from_string('2005')
