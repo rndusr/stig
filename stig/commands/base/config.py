@@ -82,7 +82,7 @@ class ResetCmdbase(metaclass=InitCommand):
     usage = ('reset <NAME> <NAME> <NAME> ...',)
     examples = ('reset connect.port',)
     argspecs = (
-        {'names': ('NAME',), 'nargs': '*',
+        {'names': ('NAME',), 'nargs': '+',
          'description': 'Name of setting'},
     )
     more_sections = {
@@ -93,9 +93,6 @@ class ResetCmdbase(metaclass=InitCommand):
     srvcfg = ExpectedResource
 
     def run(self, NAME):
-        if not NAME:
-            raise CmdError('Missing NAME argument')
-
         success = True
         for name in utils.listify_args(NAME):
             if name.startswith('srv.') and name[4:] in self.srvcfg:
