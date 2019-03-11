@@ -171,9 +171,13 @@ class CommandTestCase(asynctest.TestCase):
         self.addCleanup(reset_stderr)
 
     def patch(self, *args, **kwargs):
-        patcher = patch.multiple(*args, **kwargs)
-        patcher.start()
+        if kwargs:
+            patcher = patch.multiple(*args, **kwargs)
+        else:
+            patcher = patch(*args)
+        mock_obj = patcher.start()
         self.addCleanup(patcher.stop)
+        return mock_obj
 
     async def execute(self, cmdcls, *params):
         process = cmdcls(params,
