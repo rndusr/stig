@@ -26,6 +26,7 @@ import operator
 import os
 
 
+from ...settings import rcfile
 class RcCmdbase(metaclass=InitCommand):
     name = 'rc'
     aliases = ('source',)
@@ -43,8 +44,6 @@ class RcCmdbase(metaclass=InitCommand):
     cmdmgr = ExpectedResource
 
     async def run(self, FILE):
-        from ...settings import rcfile
-
         filepath = os.path.expanduser(FILE)
         if not os.path.exists(filepath) and \
            not os.path.isabs(filepath) and \
