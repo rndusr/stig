@@ -158,6 +158,7 @@ class CommandTestCase(asynctest.TestCase):
                                    rpc=MockAPI(),
                                    settings=MockAPI())
         self.cfg = MockSettings()
+        self.srvcfg = MockSettings()
         self.helpmgr = MockHelpManager()
         self.cmdmgr = MagicMock()
         self.cmdmgr.run_async = CoroutineMock()
