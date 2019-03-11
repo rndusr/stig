@@ -1,6 +1,6 @@
 from resources_cmd import CommandTestCase
 
-from unittest.mock import call, patch
+from unittest.mock import call, patch, MagicMock
 import os
 
 
@@ -82,3 +82,54 @@ class TestRcCmd(CommandTestCase):
             mock_candidates.fs_path.return_value = ('foo', 'bar', 'baz')
             self.assertEqual(RcCmd.completion_candidates(['rc', 'hey', 'ho'], 2), None)
             mock_candidates.fs_path.assert_not_called()
+
+
+from stig.commands.cli import ResetCmd
+class TestResetCmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        self.patch('stig.commands.cli.ResetCmd',
+                   cfg=self.cfg,
+                   srvcfg=self.srvcfg)
+
+    async def test_unknown_setting(self):
+        process = await self.execute(ResetCmd, 'some.string', 'foo.bar')
+        self.assertEqual(process.success, False)
+        self.assert_stdout()
+        self.assert_stderr('reset: Unknown setting: some.string',
+                           'reset: Unknown setting: foo.bar')
+
+    async def test_remote_setting(self):
+        self.srvcfg['some.string'] = 'foo'
+        self.srvcfg['some.number'] = 12
+        process = await self.execute(ResetCmd, 'srv.some.string', 'srv.some.number')
+        self.assertEqual(process.success, False)
+        self.assert_stdout()
+        self.assert_stderr('reset: Remote settings cannot be reset: srv.some.string',
+                           'reset: Remote settings cannot be reset: srv.some.number')
+
+    async def test_space_separated_arguments(self):
+        self.cfg['some.string'] = 'foo'
+        self.cfg['some.number'] = 12
+        process = await self.execute(ResetCmd, 'some.string', 'some.number')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg.reset.mock_calls, [call('some.string'),
+                                                     call('some.number')])
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_comma_separated_arguments(self):
+        self.cfg['some.string'] = 'foo'
+        self.cfg['some.number'] = 12
+        process = await self.execute(ResetCmd, 'some.string,some.number')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg.reset.mock_calls, [call('some.string'),
+                                                     call('some.number')])
+        self.assert_stdout()
+        self.assert_stderr()
+
+    def test_completion_candidates(self):
+        with patch('stig.commands.base.config.candidates') as mock_candidates:
+            mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
+            self.assertEqual(ResetCmd.completion_candidates(['reset', 'hey', 'ho'], 2), ('foo', 'bar', 'baz'))
+            mock_candidates.setting_names.assert_called_once_with()

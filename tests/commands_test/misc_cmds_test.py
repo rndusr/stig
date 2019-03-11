@@ -41,29 +41,6 @@ class TestHelpCmd(CommandTestCase):
         self.assert_stderr('help: Unknown topic: unknown')
 
 
-from stig.commands.cli import ResetCmd
-class TestResetCmd(CommandTestCase):
-    def setUp(self):
-        super().setUp()
-        self.patch('stig.commands.cli.ResetCmd',
-                   cfg=self.cfg)
-
-    async def test_space_separated_arguments(self):
-        process = await self.execute(ResetCmd, 'some.string', 'some.number')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.string'], None)
-        self.assertEqual(self.cfg['some.number'], None)
-        self.assert_stdout()
-        self.assert_stderr()
-
-    async def test_unknown_setting(self):
-        process = await self.execute(ResetCmd, 'some.string', 'foo.bar')
-        self.assertEqual(process.success, False)
-        self.assertEqual(self.cfg['some.string'], None)
-        self.assert_stdout()
-        self.assert_stderr('reset: Unknown setting: foo.bar')
-
-
 from stig.commands.cli import SetCmd
 class TestSetCmd(CommandTestCase):
     def setUp(self):
