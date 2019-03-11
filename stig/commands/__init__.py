@@ -130,6 +130,97 @@ def iscmdcls(obj):
         obj is not _CommandBase and \
         issubclass(obj, _CommandBase)
 
+def _is_option(cls, arg):
+    return arg in cls.long_options or arg in cls.short_options
+
+def _get_argspec(cls, name):
+    for argspec in cls.argspecs:
+        if any(name == n for n in argspec['names']):
+            return argspec
+
+def _option_wants_arg(cls, option, roffset):
+    argspec = _get_argspec(cls, option)
+    nargs = argspec.get('nargs', 1)
+    if nargs in ('+', '*', 'REMAINDER'):
+        return True
+    elif nargs == '?':
+        nargs = 1
+    if roffset < nargs:
+        return True
+    return False
+
+
+from ..completion import (Candidates, Candidate)
+class _CompletionCandidatesMixin():
+    """
+    Mixin class that provides class methods for generating tab completion
+    candidates
+    """
+
+    @classmethod
+    def completion_candidates_opts(cls, args, curarg_index):
+        """
+        Return candidates for arguments that start with "-"
+
+        The default implementation should work for all commands and it shouldn't
+        be necessary for subclasses to override this method.
+        """
+        # '--' turns all arguments to the right into positional arguments
+        if '--' not in args[:curarg_index]:
+            if args[curarg_index].startswith('-'):
+                log.debug('Completing long options: %r', cls.long_options)
+                # Remove any options from candidates that are already in `args`
+                options = tuple(opt for opt in cls.long_options if opt not in args)
+                if options:
+                    cands = (Candidate(cand, short_form=', '.join(cls.long_options[cand]))
+                             for cand in options)
+                    return Candidates(cands, label='%s options' % cls.name)
+
+            # Check if any argument left of the current argument is an option that
+            # wants another parameter
+            for i,arg in enumerate(reversed(args[:curarg_index])):
+                if (hasattr(cls, 'completion_candidates_params') and
+                    _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i)):
+                    option_name = cls.short_options.get(arg, arg)
+                    log.debug('Completing parameters for %r', option_name)
+                    return cls.completion_candidates_params(option_name, args, curarg_index)
+
+    @classmethod
+    def completion_candidates_params(cls, option_name, args, curarg_index):
+        """
+        Return candidates for arguments to an option (e.g. --option parameter)
+
+        The default implementation returns None.
+        """
+        pass
+
+    @classmethod
+    def completion_candidates_posargs(cls, args, curarg_index):
+        """
+        Return candidates that are not options and not parameters
+
+        The default implementation returns None.
+        """
+        pass
+
+    @classmethod
+    def completion_candidates(cls, args, curarg_index):
+        """
+        Return appropriate completion candidates
+
+        The default implementation calls the methods described above and returns
+        the first return value that evaluates to True (i.e. non-empty and
+        non-None).
+        """
+        # completion_candidates_params() is called by completion_candidates_opts
+        # if appropriate.
+        cands = cls.completion_candidates_opts(args, curarg_index)
+        if cands:
+            return cands
+        cands = cls.completion_candidates_posargs(args, curarg_index)
+        if cands:
+            return cands
+
 
 _MANDATORY_CMD_ATTRS = ('name', 'category', 'provides', 'description', 'run')
 _OPTIONAL_CMD_ATTRS = {
@@ -175,26 +266,6 @@ def InitCommand(clsname, bases, attrs):
                               for name in argspec['names']
                               if name.startswith('-') and not name[1:].startswith('-')}
 
-    def _is_option(cls, arg):
-        return arg in cls.long_options or arg in cls.short_options
-
-    def _get_argspec(cls, name):
-        for argspec in cls.argspecs:
-            if any(name == n for n in argspec['names']):
-                return argspec
-
-    def _option_wants_arg(cls, option, roffset):
-        argspec = _get_argspec(cls, option)
-        nargs = argspec.get('nargs', 1)
-        if nargs in ('+', '*', 'REMAINDER'):
-            return True
-        elif nargs == '?':
-            nargs = 1
-        if roffset < nargs:
-            return True
-        return False
-
-
     # Create argument parser
     argp = StayAliveArgParser(prog=attrs['name'], add_help=False)
     for argspec in attrs['argspecs']:
@@ -227,46 +298,9 @@ def InitCommand(clsname, bases, attrs):
         argp.add_argument(*argnames, **argspec)
     attrs['_argparser'] = argp
 
-
-    # Tab completion
-
-    # Each command provides its own tab completion candidates via the class
-    # method completion_candidates().  The parent class takes care of options
-    # (anything starting with a '-') and calls the child's classmethods
-    # completion_candidates_posargs() for positional arguments and
-    # completion_candidates_params() for parameters to options.
-
-    # Provide candidates for tab completion
-    def completion_candidates(cls, args, curarg_index):
-        from ..completion import (Candidates, Candidate)
-        # '--' turns all arguments after it positional arguments
-        if '--' not in args[:curarg_index]:
-            if args[curarg_index].startswith('-'):
-                log.debug('Completing long options: %r', cls.long_options)
-                # Remove any options that are already present
-                options = tuple(opt for opt in cls.long_options if opt not in args)
-                if options:
-                    cands = (Candidate(cand, short_form=', '.join(cls.long_options[cand]))
-                             for cand in options)
-                    return Candidates(cands, label='%s options' % cls.name)
-
-            # Check if any argument left of the current argument is an option that
-            # wants another parameter
-            for i,arg in enumerate(reversed(args[:curarg_index])):
-                if (hasattr(cls, 'completion_candidates_params') and
-                    _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i)):
-                    option_name = cls.short_options.get(arg, arg)
-                    log.debug('Completing parameters for %r', option_name)
-                    return cls.completion_candidates_params(option_name, args, curarg_index)
-
-        if hasattr(cls, 'completion_candidates_posargs'):
-            return cls.completion_candidates_posargs(args, curarg_index)
-    attrs['completion_candidates'] = classmethod(completion_candidates)
-
-
     # Command class must inherit from _CommandBase
     if _CommandBase not in bases:
-        bases = (_CommandBase,) + bases
+        bases = (_CommandBase, _CompletionCandidatesMixin) + bases
 
     cls = type(clsname, bases, attrs)
     return cls
