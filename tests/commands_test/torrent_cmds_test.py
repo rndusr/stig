@@ -76,6 +76,8 @@ class TestListTorrentsCmd(CommandTestCase):
                    get_torrent_sorter=mock_get_torrent_sorter,
                    get_torrent_columns=lambda self, columns, interface=None: ('name',)
         )
+        self.cfg['sort.torrents'] = ('name',)
+        self.cfg['columns.torrents'] = ('name',)
 
         from types import SimpleNamespace
         from stig.commands.cli import torrent
@@ -87,6 +89,7 @@ class TestListTorrentsCmd(CommandTestCase):
             MockTorrent(id=2, name='Another Torrent')
         )
         self.api.torrent.response = Response(success=bool(errors), errors=(), msgs=(), torrents=tlist)
+
         process = await self.execute(ListTorrentsCmd, *args)
         expected_success = not errors
         self.assertEqual(process.success, expected_success)
@@ -141,6 +144,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                    cfg=self.cfg,
                    select_torrents=mock_select_torrents,
         )
+        self.cfg['remove.max-hits'] = 10
 
     async def do(self, args, tlist, success_exp, msgs=(), errors=(), delete=False, remove_called=True):
         self.api.torrent.response = Response(success=success_exp, torrents=tlist, msgs=msgs, errors=errors)
@@ -182,7 +186,6 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
-
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
@@ -200,7 +203,6 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
-
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
@@ -215,9 +217,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-
-        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         RemoveTorrentsCmd.cfg['remove.max-hits'] = -1
+        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         await self.do(['all'], tlist=tlist, remove_called=True, success_exp=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
         self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
@@ -227,10 +228,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
-
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         RemoveTorrentsCmd.ask_yes_no = CoroutineMock()
-
         await self.do(['all', '--force'], tlist=tlist, remove_called=True, success_exp=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
         self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
