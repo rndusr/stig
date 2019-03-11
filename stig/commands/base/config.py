@@ -197,7 +197,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         # VALUE might be shell command or have '+='/'-=' prepended
         try:
             value = self._parse_value(VALUE,
-                                      listify=isinstance(cfg[key], tuple),
+                                      listify=isinstance(cfg[key], (tuple, list)),
                                       is_cmd=NAME.endswith(':eval'))
         except ValueError as e:
             # Report potential stderr output if VALUE is a command
