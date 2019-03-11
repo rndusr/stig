@@ -132,20 +132,8 @@ class MockHelpManager():
 
 class MockSettings(dict):
     def __init__(self, *args, **kwargs):
-        self['some.number']  = 3.7
-        self['some.string']  = 'foo'
-        self['some.boolean'] = True
-        self['some.list']    = ('bob', 'alice')
-        self['some.integer'] = 10
-        self['some.option']  = 'blue'
-
-        # These are needed by torrent_cmds_test.py
-        self['sort.torrents']    = ('name',)
-        self['columns.torrents'] = ('name',)
-        self['remove.max-hits']  = 10
-
-    def reset(self, name):
-        self[name] = None
+        super().__init__(*args, **kwargs)
+        self.reset = MagicMock()
 
 
 from types import SimpleNamespace
