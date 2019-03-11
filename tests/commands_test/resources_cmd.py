@@ -150,7 +150,8 @@ class MockSettings(dict):
 
 from types import SimpleNamespace
 import sys, io
-from unittest.mock import patch
+from unittest.mock import (patch, MagicMock)
+from asynctest import CoroutineMock
 class CommandTestCase(asynctest.TestCase):
     def setUp(self):
         self.api = SimpleNamespace(torrent=MockAPI(),
@@ -158,6 +159,8 @@ class CommandTestCase(asynctest.TestCase):
                                    settings=MockAPI())
         self.cfg = MockSettings()
         self.helpmgr = MockHelpManager()
+        self.cmdmgr = MagicMock()
+        self.cmdmgr.run_async = CoroutineMock()
 
         self.stdout = sys.stdout = io.StringIO()
         def reset_stdout(): sys.stdout = sys.__stdout__
