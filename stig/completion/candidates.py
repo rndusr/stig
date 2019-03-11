@@ -129,6 +129,10 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
     return Candidates(cands, label=label, curarg_seps=('/',))
 
 
+# All filters use the same operators
+_filter_boolean_ops = ('&', '|')
+_filter_compare_ops = filters.TorrentFilter.POSSIBLE_OPERATORS
+
 async def torrent_filter(curarg):
     """Torrent filter names or values"""
     # Separate individual filters, e.g. 'seeding|comment=foo'
@@ -146,10 +150,6 @@ async def torrent_filter(curarg):
         return (await _torrent_filter_values(parts[0]),)
     else:
         return ()
-
-# All filters use the same operators
-_filter_boolean_ops = ('&', '|')
-_filter_compare_ops = tuple(filters.TorrentFilter.OPERATORS)
 
 @functools.lru_cache(maxsize=None)
 def _filter_names(filter_cls_name):

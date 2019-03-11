@@ -142,6 +142,8 @@ class Filter():
         '>=' : operator.__ge__, '<=' : operator.__le__,
     }
     INVERT_CHAR = '!'
+    POSSIBLE_OPERATORS = tuple(itertools.chain.from_iterable((op, '!'+op)
+                                                             for op in OPERATORS))
     DEFAULT_FILTER = None
     DEFAULT_OPERATOR = '~'
     BOOLEAN_FILTERS = {}
