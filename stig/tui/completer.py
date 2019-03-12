@@ -29,12 +29,12 @@ class Completer():
         self.reset()
 
     async def _get_candidates_wrapper(self, args, curarg_index):
-        async def if_coro(x):
+        async def maybe_await(x):
             while inspect.isawaitable(x):
                 x = await x
             return x
 
-        cands = await if_coro(self._get_candidates(args, curarg_index))
+        cands = await maybe_await(self._get_candidates(args, curarg_index))
         if cands is None:
             cats = ()
         elif isinstance(cands, Candidates):
