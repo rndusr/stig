@@ -28,13 +28,13 @@ class Completer():
         self._operators = operators
         self.reset()
 
-    async def _get_candidates_wrapper(self, args, curarg_index):
+    async def _get_candidates_wrapper(self, args, curarg_index, curarg_curpos):
         async def maybe_await(x):
             while inspect.isawaitable(x):
                 x = await x
             return x
 
-        cands = await maybe_await(self._get_candidates(cliparser.Args(args, curarg_index)))
+        cands = await maybe_await(self._get_candidates(cliparser.Args(args, curarg_index, curarg_curpos)))
         if cands is None:
             cats = ()
         elif isinstance(cands, Candidates):
@@ -77,7 +77,9 @@ class Completer():
             curarg = curcmd_args[curcmd_curarg_index]
 
             # Get all possible candidates and find matches
-            self._categories = await self._get_candidates_wrapper(curcmd_args, curcmd_curarg_index)
+            self._categories = await self._get_candidates_wrapper(curcmd_args,
+                                                                  curcmd_curarg_index,
+                                                                  curarg_curpos)
             self._curarg_parts = {}
             for cands in self._categories.all:
                 # The candidate getter may have specified custom separators for
