@@ -618,37 +618,6 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=(' ',)):
     return tokens, curtok_index, curtok_curpos
 
 
-class Parts(tuple):
-    def __new__(cls, parts, curpart_index=None, curpart_curpos=None):
-        # Make sure all parts are Arg instances
-        def gen():
-            for i,part in enumerate(parts):
-                if not isinstance(part, Arg):
-                    if i == curpart_index:
-                        yield Arg(part, curpos=curpart_curpos)
-                    else:
-                        yield Arg(part)
-                else:
-                    yield part
-        obj = super().__new__(cls, gen())
-        obj.curpart = obj[curpart_index] if curpart_index is not None else None
-        obj.curpart_index = curpart_index
-        obj.curpart_curpos = curpart_curpos
-        return obj
-
-    @property
-    def curpart_before_cursor(self):
-        if self.curpart_curpos is not None:
-            return self.curpart[:self.curpart_curpos]
-        else:
-            return str(self.curpart)
-
-    def __repr__(self):
-        return '%s(%r, curpart=%r, curpart_index=%r, curpart_curpos=%r)' % (
-            type(self).__name__,
-            tuple(self), self.curpart, self.curpart_index, self.curpart_curpos)
-
-
 class Arg(str):
     """Single argument"""
 
@@ -697,15 +666,113 @@ class Arg(str):
             parts, curpart_index, curpart_curpos = as_args(parts, curpart_index, curpart_curpos, seps)
 
         if self.curpos is not None:
-            return Parts(parts, curpart_index, curpart_curpos)
+            return Args(parts, curpart_index, curpart_curpos)
         else:
-            return Parts(parts)
+            return Args(parts)
 
     def __repr__(self):
         string = '%s(%r' % (type(self).__name__, str(self),)
         if self.curpos is not None:
             string += ', curpos=%d' % (self.curpos,)
         return string + ')'
+
+
+class Args(tuple):
+    """
+    Tuple of arguments (tokens without delimiters) with cursor position and
+    some convenience properties
+    """
+
+    @classmethod
+    def from_tokens(cls, tokens, curtok_index, curtok_curpos, delims=(' ',)):
+        args, curarg_index, curarg_curpos = as_args(tokens, curtok_index, curtok_curpos, delims)
+        return cls(args, curarg_index, curarg_curpos)
+
+    def __new__(cls, args, curarg_index=None, curarg_curpos=None):
+        # Make sure all args are Arg instances
+        def gen():
+            for i,arg in enumerate(args):
+                if not isinstance(arg, Arg):
+                    if i == curarg_index:
+                        yield Arg(arg, curpos=curarg_curpos)
+                    else:
+                        yield Arg(arg)
+                else:
+                    yield arg
+        obj = super().__new__(cls, gen())
+        obj._curarg_index = curarg_index
+        obj._curarg_curpos = curarg_curpos
+        return obj
+
+    @property
+    def curarg(self):
+        """Currently focused argument"""
+        curarg_index = self._curarg_index
+        if curarg_index is not None:
+            return self[curarg_index]
+
+    @property
+    def before_curarg(self):
+        """All arguments up to current argument"""
+        if self._curarg_index is None:
+            return self
+        else:
+            return Args(self[:self._curarg_index])
+
+    @property
+    def curarg_index(self):
+        """Index of currently focused argument"""
+        return self._curarg_index
+
+    @property
+    def curarg_curpos(self):
+        """Cursor position in currently focused argument"""
+        return self._curarg_curpos
+
+    @property
+    def without_options(self):
+        """
+        Copy without arguments that start with '-'
+
+        `curarg_index` and `curarg_curpos` are adjusted sensibly.
+        """
+        return Args(*remove_options(self, self._curarg_index, self._curarg_curpos))
+
+    def __repr__(self):
+        string = '%s(%s' % (type(self).__name__, tuple(str(arg) for arg in self))
+        if self._curarg_index is not None:
+            string += ', curarg_index=%d' % (self._curarg_index,)
+        if self._curarg_curpos is not None:
+            string += ', curarg_curpos=%d' % (self._curarg_curpos,)
+        return string + ')'
+
+
+def remove_options(args, curarg_index, curarg_curpos):
+    """
+    Remove arguments that start with "-" and adjust current argument and cursor
+    position if necessary
+
+    Return new arguments, index of current argument and cursor position in
+    current argument
+    """
+    if curarg_index is None:
+        return ([arg for arg in args if not arg.startswith('-')],
+                curarg_index, curarg_curpos)
+
+    # Reduce index of current argument if we remove options to the left of it
+    new_curarg_index = curarg_index
+    new_curarg_curpos = curarg_curpos
+    args_wo_opts = []
+    for i,arg in enumerate(args):
+        if not arg.startswith('-'):
+            args_wo_opts.append(arg)
+        elif i < curarg_index:
+            # Removing an argument before the current one
+            new_curarg_index -= 1
+        elif i == curarg_index:
+            # Removing the current argument sets the cursor position in it to 0
+            new_curarg_curpos = 0
+    return args_wo_opts, new_curarg_index, new_curarg_curpos
 
 
 def as_args(tokens, curtok_index, curtok_curpos, delims=(' ',)):

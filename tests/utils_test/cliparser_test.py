@@ -1200,17 +1200,17 @@ class TestArg(unittest.TestCase):
         self.assertEqual(arg.curpos, curpos)
         parts = arg.separate(seps, maxseps=maxseps, include_seps=include_seps)
         self.assertEqual(parts, exp_parts)
-        self.assertEqual(parts.curpart, exp_curpart)
-        self.assertEqual(parts.curpart_index, exp_curpart_index)
-        self.assertEqual(parts.curpart_curpos, exp_curpart_curpos)
+        self.assertEqual(parts.curarg, exp_curpart)
+        self.assertEqual(parts.curarg_index, exp_curpart_index)
+        self.assertEqual(parts.curarg_curpos, exp_curpart_curpos)
         self.assertTrue(all(type(part) is cliparser.Arg for part in parts))
-        self.assertTrue(type(parts.curpart) is cliparser.Arg or parts.curpart is None)
+        self.assertTrue(type(parts.curarg) is cliparser.Arg or parts.curarg is None)
 
     def test_no_curpos_with_seps_included(self):
-        self.do('foo/bar/baz',  None, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), None, None, None)
+        self.do('foo/bar/baz', None, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), None, None, None)
 
     def test_no_curpos_with_seps_not_included(self):
-        self.do('foo/bar/baz',  None, ('/',), None, False, ('foo', 'bar', 'baz'), None, None, None)
+        self.do('foo/bar/baz', None, ('/',), None, False, ('foo', 'bar', 'baz'), None, None, None)
 
     def test_separate_at_singlechar_separator_including_separators(self):
         self.do('foo/bar/baz',  0, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'foo', 0, 0)
@@ -1317,3 +1317,32 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz/bax', 13, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 5)
         self.do('foo/bar/baz/bax', 14, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 6)
         self.do('foo/bar/baz/bax', 15, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 7)
+
+
+class Test_remove_options(unittest.TestCase):
+    def do(self, input, output):
+        self.assertEqual(cliparser.remove_options(*input), output)
+
+    def test_no_cursor_position(self):
+        self.do((['foo', '--bar', 'baz'], None, None), (['foo', 'baz'], None, None))
+        self.do((['foo', 'baz', '--bar'], None, None), (['foo', 'baz'], None, None))
+        self.do((['foo', 'baz', '--bar', 'bam'], None, None), (['foo', 'baz', 'bam'], None, None))
+        self.do((['foo', 'baz', '--bar', '-bam'], None, None), (['foo', 'baz'], None, None))
+
+    def test_cursor_to_the_left_of_an_option(self):
+        self.do((['foo', 'baz', '--bar'], 1, 0), (['foo', 'baz'], 1, 0))
+        self.do((['foo', 'baz', '--bar'], 1, 1), (['foo', 'baz'], 1, 1))
+        self.do((['foo', 'baz', '--bar'], 1, 2), (['foo', 'baz'], 1, 2))
+        self.do((['foo', 'baz', '--bar'], 1, 3), (['foo', 'baz'], 1, 3))
+
+    def test_cursor_to_the_right_of_an_option(self):
+        self.do((['foo', '--bar', 'baz'], 2, 0), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 2, 1), (['foo', 'baz'], 1, 1))
+        self.do((['foo', '--bar', 'baz'], 2, 2), (['foo', 'baz'], 1, 2))
+        self.do((['foo', '--bar', 'baz'], 2, 3), (['foo', 'baz'], 1, 3))
+
+    def test_cursor_on_an_option(self):
+        self.do((['foo', '--bar', 'baz'], 1, 0), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 1), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 2), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 3), (['foo', 'baz'], 1, 0))
