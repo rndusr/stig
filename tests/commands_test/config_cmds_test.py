@@ -73,14 +73,14 @@ class TestRcCmd(CommandTestCase):
     def test_completion_candidates_on_first_argument(self):
         with patch('stig.commands.base.config.candidates') as mock_candidates:
             mock_candidates.fs_path.return_value = ('foo', 'bar', 'baz')
-            self.assertEqual(RcCmd.completion_candidates(['rc', 'hey', 'ho'], 1), ('foo', 'bar', 'baz'))
+            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 1, ('foo', 'bar', 'baz'))
             mock_candidates.fs_path.assert_called_once_with('hey', base=os.path.dirname(self.mock_default_rcfile))
-            self.assertEqual(RcCmd.completion_candidates(['rc', 'hey', 'ho'], 2), None)
+            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
 
     def test_completion_candidates_on_any_other_argument(self):
         with patch('stig.commands.base.config.candidates') as mock_candidates:
             mock_candidates.fs_path.return_value = ('foo', 'bar', 'baz')
-            self.assertEqual(RcCmd.completion_candidates(['rc', 'hey', 'ho'], 2), None)
+            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
             mock_candidates.fs_path.assert_not_called()
 
 
@@ -131,5 +131,5 @@ class TestResetCmd(CommandTestCase):
     def test_completion_candidates(self):
         with patch('stig.commands.base.config.candidates') as mock_candidates:
             mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
-            self.assertEqual(ResetCmd.completion_candidates(['reset', 'hey', 'ho'], 2), ('foo', 'bar', 'baz'))
+            self.assert_completion_candidates(ResetCmd, ['reset', 'hey', 'ho'], 2, ('foo', 'bar', 'baz'))
             mock_candidates.setting_names.assert_called_once_with()
