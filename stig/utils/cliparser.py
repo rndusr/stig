@@ -650,6 +650,8 @@ class Parts(tuple):
 
 
 class Arg(str):
+    """Single argument"""
+
     def __new__(cls, arg, curpos=None):
         obj = super().__new__(cls, arg)
         obj._curpos = curpos
