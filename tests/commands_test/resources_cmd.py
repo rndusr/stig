@@ -135,6 +135,12 @@ class MockSettings(dict):
         super().__init__(*args, **kwargs)
         self.reset = MagicMock()
 
+class MockRemoteSettings(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set = CoroutineMock()
+        self.update = CoroutineMock()
+
 
 from types import SimpleNamespace
 import sys, io
@@ -146,7 +152,7 @@ class CommandTestCase(asynctest.TestCase):
                                    rpc=MockAPI(),
                                    settings=MockAPI())
         self.cfg = MockSettings()
-        self.srvcfg = MockSettings()
+        self.srvcfg = MockRemoteSettings()
         self.helpmgr = MockHelpManager()
         self.cmdmgr = MagicMock()
         self.cmdmgr.run_async = CoroutineMock()

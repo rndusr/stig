@@ -133,3 +133,157 @@ class TestResetCmd(CommandTestCase):
             mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
             self.assert_completion_candidates(ResetCmd, ['reset', 'hey', 'ho'], 2, ('foo', 'bar', 'baz'))
             mock_candidates.setting_names.assert_called_once_with()
+
+
+from stig.commands.cli import SetCmd
+class TestSetCmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        self.patch('stig.commands.cli.SetCmd',
+                   cfg=self.cfg,
+                   srvcfg=self.srvcfg)
+
+    async def test_unknown_setting(self):
+        process = await self.execute(SetCmd, 'foo.bar', '27')
+        self.assertEqual(process.success, False)
+        self.assert_stdout()
+        self.assert_stderr('set: Unknown setting: foo.bar')
+
+    async def test_setting_string(self):
+        self.cfg['some.string'] = 'asdf'
+        process = await self.execute(SetCmd, 'some.string', 'bar', 'foo')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.string'], 'bar foo')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_integer(self):
+        self.cfg['some.integer'] = 42
+        process = await self.execute(SetCmd, 'some.integer', '39')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.integer'], '39')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_float(self):
+        self.cfg['some.number'] = 3.7
+        process = await self.execute(SetCmd, 'some.number', '39.2')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], '39.2')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_adjusting_number(self):
+        self.cfg['some.number'] = 20
+        process = await self.execute(SetCmd, 'some.number', '+=15')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], 35)
+        self.assert_stdout()
+        self.assert_stderr()
+
+        process = await self.execute(SetCmd, 'some.number', '-=45')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], -10)
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_bool(self):
+        self.cfg['some.boolean'] = 'no'
+        process = await self.execute(SetCmd, 'some.boolean', 'yes')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'], 'yes')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_option(self):
+        self.cfg['some.option'] = 'foo bar'
+        process = await self.execute(SetCmd, 'some.option', 'red', 'with', 'a', 'hint', 'of', 'yellow')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.option'], 'red with a hint of yellow')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_comma_separated_list(self):
+        self.cfg['some.list'] = ('foo', 'bar', 'baz')
+        process = await self.execute(SetCmd, 'some.list', 'alice,bob,bert')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.list'], ['alice', 'bob', 'bert'])
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_space_separated_list(self):
+        self.cfg['some.list'] = ('foo', 'bar', 'baz')
+        process = await self.execute(SetCmd, 'some.list', 'alice', 'bert')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.list'], ['alice', 'bert'])
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_with_eval(self):
+        self.cfg['some.boolean'] = 'false'
+        process = await self.execute(SetCmd, 'some.boolean:eval', 'echo', 'true')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'], 'true')
+        self.assert_stdout()
+        self.assert_stderr()
+
+        process = await self.execute(SetCmd, 'some.boolean:eval', 'echo false')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'], 'false')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_remote_setting(self):
+        self.cfg['something'] = 'foo'
+        self.srvcfg['something'] = 'bar'
+        process = await self.execute(SetCmd, 'srv.something', 'baz')
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['something'], 'foo')
+        self.srvcfg.update.assert_called_once_with()
+        self.srvcfg.set.assert_called_once_with('something', 'baz')
+        self.assert_stdout()
+        self.assert_stderr()
+
+    async def test_setting_raises_error(self):
+        class AngryDict(dict):
+            def __contains__(self, name):
+                return True
+            def __getitem__(self, name):
+                return 'Some bullshit value'
+            def __setitem__(self, name, value):
+                raise ValueError('I hate your values!')
+        SetCmd.cfg = AngryDict()
+        process = await self.execute(SetCmd, 'some.string', 'bar')
+        self.assert_stderr('set: some.string = bar: I hate your values!')
+
+    def test_no_completion_candidates_if_sort_or_columns_options_given(self):
+        for opt in ('--columns', '--sort'):
+            self.assert_completion_candidates(SetCmd, ['set', opt, 'name', '_', '_'], 3, None)
+            self.assert_completion_candidates(SetCmd, ['set', opt, 'name', '_', '_'], 4, None)
+            self.assert_completion_candidates(SetCmd, ['set', '_', opt, 'name', '_'], 1, None)
+            self.assert_completion_candidates(SetCmd, ['set', '_', opt, 'name', '_'], 4, None)
+            self.assert_completion_candidates(SetCmd, ['set', '_', '_', opt, 'name'], 1, None)
+            self.assert_completion_candidates(SetCmd, ['set', '_', '_', opt, 'name'], 2, None)
+
+    @patch('stig.commands.base.config.candidates')
+    def test_completion_candidates_when_completing_setting_names(self, mock_candidates):
+        mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
+        self.assert_completion_candidates(SetCmd, ['set', '_'], 1, ('foo', 'bar', 'baz'))
+        self.assert_completion_candidates(SetCmd, ['set', '_', '_'], 1, ('foo', 'bar', 'baz'))
+        self.assert_completion_candidates(SetCmd, ['set', '_', '_', 'z'], 1, ('foo', 'bar', 'baz'))
+
+    @patch('stig.commands.base.config.candidates')
+    def test_completion_candidates_when_completing_values(self, mock_candidates):
+        mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
+        mock_candidates.setting_values.return_value = ('a', 'b', 'c')
+        self.assert_completion_candidates(SetCmd, ['set', 'foo', '_'], 2, ('a', 'b', 'c'))
+        self.assert_completion_candidates(SetCmd, ['set', 'bar', '_'], 2, ('a', 'b', 'c'))
+        self.assert_completion_candidates(SetCmd, ['set', 'baz', '_'], 2, ('a', 'b', 'c'))
+
+    @patch('stig.commands.base.config.candidates')
+    def test_completion_candidates_when_completing_list_values(self, mock_candidates):
+        mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
+        mock_candidates.setting_values.return_value = ('a', 'b', 'c')
+        self.assert_completion_candidates(SetCmd, ['set', 'foo', '_', '_', '_'], 2, ('a', 'b', 'c'))
+        self.assert_completion_candidates(SetCmd, ['set', 'bar', '_', '_', '_'], 3, ('a', 'b', 'c'))
+        self.assert_completion_candidates(SetCmd, ['set', 'baz', '_', '_', '_'], 4, ('a', 'b', 'c'))
