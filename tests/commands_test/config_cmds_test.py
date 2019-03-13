@@ -1,6 +1,6 @@
 from resources_cmd import CommandTestCase
 
-from unittest.mock import call, patch, MagicMock
+from unittest.mock import call, patch
 import os
 
 
