@@ -79,12 +79,12 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                 self.make_torrent_list(tfilter, sort, columns)
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        return candidates.torrent_filter(args[curarg_index])
+        return candidates.torrent_filter(args.curarg)
 
     @classmethod
-    def completion_candidates_params(cls, option, args, curarg_index):
+    def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
             return candidates.Candidates(cls.cfg['sort.torrents'].options,
@@ -128,10 +128,10 @@ class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
                     self.display_summary(torrent['id'])
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        if curarg_index == 1:
-            return candidates.torrent_filter(args[curarg_index])
+        if args.curarg_index == 1:
+            return candidates.torrent_filter(args.curarg)
 
 
 class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
@@ -165,10 +165,10 @@ class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
                 self.display_uris(uris)
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        if curarg_index == 1:
-            return candidates.torrent_filter(args[curarg_index])
+        if args.curarg_index == 1:
+            return candidates.torrent_filter(args.curarg)
 
 
 class AddTorrentsCmdbase(metaclass=InitCommand):
@@ -210,18 +210,18 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        return candidates.fs_path(args[curarg_index].before_cursor,
+        return candidates.fs_path(args.curarg.before_cursor,
                                   glob=r'*.torrent')
 
     @classmethod
-    def completion_candidates_params(cls, option, args, curarg_index):
+    def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--path':
-            curarg = args[curarg_index]
-            dirpath = os.path.dirname(curarg.before_cursor)
-            return candidates.fs_path(curarg.before_cursor,
+            curarg_before_cursor = args.curarg.before_cursor
+            dirpath = os.path.dirname(curarg_before_cursor)
+            return candidates.fs_path(curarg_before_cursor,
                                       base=cls.srvcfg['path.complete'],
                                       directories_only=True)
 
@@ -261,20 +261,20 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 raise CmdError()
 
     @classmethod
-    async def completion_candidates_posargs(cls, args, curarg_index):
+    async def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         def complete_path(curarg):
-            curarg = args[curarg_index]
-            dirpath = os.path.dirname(curarg.before_cursor)
-            return candidates.fs_path(curarg.before_cursor,
+            curarg_before_cursor = args.curarg.before_cursor
+            dirpath = os.path.dirname(curarg_before_cursor)
+            return candidates.fs_path(curarg_before_cursor,
                                       base=cls.srvcfg['path.complete'],
                                       directories_only=True)
 
-        curarg = args[curarg_index]
+        curarg = args.curarg
         if len(args) >= 3:
-            if curarg_index == 1:
+            if args.curarg_index == 1:
                 return candidates.torrent_filter(curarg)
-            elif curarg_index == 2:
+            elif args.curarg_index == 2:
                 return complete_path(curarg)
         elif len(args) == 2:
             # Single argument may be a path or a filter

@@ -66,11 +66,11 @@ class RcCmdbase(metaclass=InitCommand):
                     raise CmdError()
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         # Command only takes one argument
-        if curarg_index == 1:
-            return candidates.fs_path(args[curarg_index],
+        if args.curarg_index == 1:
+            return candidates.fs_path(args.curarg,
                                       base=os.path.dirname(defaults.DEFAULT_RCFILE))
 
 
@@ -107,7 +107,7 @@ class ResetCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         return candidates.setting_names()
 
@@ -300,7 +300,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return str(value)
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         # If --columns or --sort is given, we display options and don't set them
         for arg in args:
@@ -308,15 +308,15 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 return
 
         settings = candidates.setting_names()
-        for arg in args[:curarg_index]:
+        for arg in args.before_curarg:
             if arg in settings:
                 log.debug('Completing values for %r', arg)
-                return candidates.setting_values(arg, args, curarg_index)
-        log.debug('Completing settings')
-        return candidates.setting_names()
+                return candidates.setting_values(arg, args)
+        log.debug('Completing setting names')
+        return settings
 
     @classmethod
-    def completion_candidates_params(cls, option, args, curarg_index):
+    def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
             return candidates.Candidates(

@@ -34,7 +34,7 @@ class Completer():
                 x = await x
             return x
 
-        cands = await maybe_await(self._get_candidates(args, curarg_index))
+        cands = await maybe_await(self._get_candidates(cliparser.Args(args, curarg_index)))
         if cands is None:
             cats = ()
         elif isinstance(cands, Candidates):
@@ -88,11 +88,11 @@ class Completer():
                     log.debug('  Separators for current argument: %r', cands.curarg_seps)
                     curarg_parts = curarg.separate(cands.curarg_seps, include_seps=True)
                     log.debug('  Current argument parts: %r', curarg_parts)
-                    common_prefix = curarg_parts.curpart_before_cursor
-                    self._curarg_parts[cands] = curarg_parts.curpart_before_cursor
+                    common_prefix = curarg_parts.curarg.before_cursor
                 else:
                     common_prefix = curarg.before_cursor
-                    self._curarg_parts[cands] = curarg.before_cursor
+                self._curarg_parts[cands] = common_prefix
+
                 log.debug('Common prefix: %r', common_prefix)
                 # Filter out any candidates that don't match the current argument
                 cands.reduce(r'(?i)^%s' % (re.escape(common_prefix),))

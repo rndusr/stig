@@ -47,7 +47,7 @@ def setting_names():
                       label='Settings')
 
 
-def setting_values(setting, args, curarg_index):
+def setting_values(setting, args):
     """Values of settings"""
     if setting in localcfg:
         value = localcfg[setting]
@@ -57,7 +57,7 @@ def setting_values(setting, args, curarg_index):
         return
 
     # Some settings accept multiple values, others only one
-    focus_on_first_value = curarg_index == 2
+    focus_on_first_value = args.curarg_index == 2
 
     log.debug('Setting is a %s: %r', type(value).__name__, value)
     # Get candidates depending on what kind of setting it is (bool, option, etc)
@@ -79,8 +79,7 @@ def setting_values(setting, args, curarg_index):
                    for val in vals)
         return Candidates(options, label='%s options' % (setting,))
     elif isinstance(value, usertypes.Path):
-        curarg = args[curarg_index]
-        return fs_path(curarg.before_cursor,
+        return fs_path(args.curarg.before_cursor,
                        base=value.base_path,
                        directories_only=os.path.isdir(value))
 
@@ -138,13 +137,13 @@ async def torrent_filter(curarg):
     # Separate individual filters, e.g. 'seeding|comment=foo'
     filters = curarg.separate(_filter_boolean_ops, include_seps=True)
     # Separate filter name from filter value
-    parts = filters.curpart.separate(_filter_compare_ops, include_seps=True)
-    if parts.curpart_index == 0:
+    parts = filters.curarg.separate(_filter_compare_ops, include_seps=True)
+    if parts.curarg_index == 0:
         # If focus is on filter name, complete filter names and torrent names
         # (default torrent filter is 'name')
         log.debug('Completing torrent filter names and torrent names: %r', parts[0])
         return (_filter_names('TorrentFilter'), await _torrent_filter_values('name'))
-    elif parts.curpart_index == 2:
+    elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
         return (await _torrent_filter_values(parts[0]),)

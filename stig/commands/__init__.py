@@ -158,7 +158,7 @@ class _CompletionCandidatesMixin():
     """
 
     @classmethod
-    def completion_candidates_opts(cls, args, curarg_index):
+    def completion_candidates_opts(cls, args):
         """
         Return candidates for arguments that start with "-"
 
@@ -166,8 +166,8 @@ class _CompletionCandidatesMixin():
         be necessary for subclasses to override this method.
         """
         # '--' turns all arguments to the right into positional arguments
-        if '--' not in args[:curarg_index]:
-            if args[curarg_index].startswith('-'):
+        if '--' not in args.before_curarg:
+            if args.curarg.startswith('-'):
                 log.debug('Completing long options: %r', cls.long_options)
                 # Remove any options from candidates that are already in `args`
                 options = tuple(opt for opt in cls.long_options if opt not in args)
@@ -178,15 +178,15 @@ class _CompletionCandidatesMixin():
 
             # Check if any argument left of the current argument is an option that
             # wants another parameter
-            for i,arg in enumerate(reversed(args[:curarg_index])):
+            for i,arg in enumerate(reversed(args.before_curarg)):
                 if (hasattr(cls, 'completion_candidates_params') and
                     _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i)):
                     option_name = cls.short_options.get(arg, arg)
                     log.debug('Completing parameters for %r', option_name)
-                    return cls.completion_candidates_params(option_name, args, curarg_index)
+                    return cls.completion_candidates_params(option_name, args)
 
     @classmethod
-    def completion_candidates_params(cls, option_name, args, curarg_index):
+    def completion_candidates_params(cls, option_name, args):
         """
         Return candidates for arguments to an option (e.g. --option parameter)
 
@@ -195,7 +195,7 @@ class _CompletionCandidatesMixin():
         pass
 
     @classmethod
-    def completion_candidates_posargs(cls, args, curarg_index):
+    def completion_candidates_posargs(cls, args):
         """
         Return candidates that are not options and not parameters
 
@@ -204,7 +204,7 @@ class _CompletionCandidatesMixin():
         pass
 
     @classmethod
-    def completion_candidates(cls, args, curarg_index):
+    def completion_candidates(cls, args):
         """
         Return appropriate completion candidates
 
@@ -214,10 +214,12 @@ class _CompletionCandidatesMixin():
         """
         # completion_candidates_params() is called by completion_candidates_opts
         # if appropriate.
-        cands = cls.completion_candidates_opts(args, curarg_index)
+        cands = cls.completion_candidates_opts(args)
+        log.debug('Completion candidates for options: %r', cands)
         if cands:
             return cands
-        cands = cls.completion_candidates_posargs(args, curarg_index)
+        cands = cls.completion_candidates_posargs(args)
+        log.debug('Completion candidates for positional arguments: %r', cands)
         if cands:
             return cands
 
