@@ -72,8 +72,8 @@ class TestRcCmd(CommandTestCase):
 
     def test_completion_candidates_on_first_argument(self):
         with patch('stig.commands.base.config.candidates') as mock_candidates:
-            mock_candidates.fs_path.return_value = ('foo', 'bar', 'baz')
-            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 1, ('foo', 'bar', 'baz'))
+            mock_candidates.fs_path.return_value = ('a', 'b', 'c')
+            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 1, ('a', 'b', 'c'))
             mock_candidates.fs_path.assert_called_once_with('hey', base=os.path.dirname(self.mock_default_rcfile))
             self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
 
@@ -130,8 +130,8 @@ class TestResetCmd(CommandTestCase):
 
     def test_completion_candidates(self):
         with patch('stig.commands.base.config.candidates') as mock_candidates:
-            mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
-            self.assert_completion_candidates(ResetCmd, ['reset', 'hey', 'ho'], 2, ('foo', 'bar', 'baz'))
+            mock_candidates.setting_names.return_value = ('a', 'b', 'c')
+            self.assert_completion_candidates(ResetCmd, ['reset', 'hey', 'ho'], 2, ('a', 'b', 'c'))
             mock_candidates.setting_names.assert_called_once_with()
 
 
@@ -267,10 +267,10 @@ class TestSetCmd(CommandTestCase):
 
     @patch('stig.commands.base.config.candidates')
     def test_completion_candidates_when_completing_setting_names(self, mock_candidates):
-        mock_candidates.setting_names.return_value = ('foo', 'bar', 'baz')
-        self.assert_completion_candidates(SetCmd, ['set', '_'], 1, ('foo', 'bar', 'baz'))
-        self.assert_completion_candidates(SetCmd, ['set', '_', '_'], 1, ('foo', 'bar', 'baz'))
-        self.assert_completion_candidates(SetCmd, ['set', '_', '_', 'z'], 1, ('foo', 'bar', 'baz'))
+        mock_candidates.setting_names.return_value = ('a', 'b', 'c')
+        self.assert_completion_candidates(SetCmd, ['set', '_'], 1, ('a', 'b', 'c'))
+        self.assert_completion_candidates(SetCmd, ['set', '_', '_'], 1, ('a', 'b', 'c'))
+        self.assert_completion_candidates(SetCmd, ['set', '_', '_', 'z'], 1, ('a', 'b', 'c'))
 
     @patch('stig.commands.base.config.candidates')
     def test_completion_candidates_when_completing_values(self, mock_candidates):

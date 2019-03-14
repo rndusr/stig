@@ -191,10 +191,16 @@ class CommandTestCase(asynctest.TestCase):
         self.stderr.seek(0)
         self._compare_lines(self.stderr.readlines(), lines_exp)
 
-    def assert_completion_candidates(self, cmdcls, args, curarg_index, exp_cands):
+    def assert_completion_candidates(self, cmdcls, args, curarg_index, exp_cands, exp_curarg_seps=None):
         from stig.utils.cliparser import Args
         args = Args(args, curarg_index)
-        self.assertEqual(cmdcls.completion_candidates(args), exp_cands)
+        cands = cmdcls.completion_candidates(args)
+        if cands is None:
+            self.assertIs(exp_cands, None)
+        else:
+            self.assertEqual(tuple(cands), tuple(sorted(exp_cands)))
+        if exp_curarg_seps is not None:
+            self.assertEqual(cands.curarg_seps, exp_curarg_seps)
 
     def _compare_lines(self, lines, lines_exp):
         from itertools import zip_longest
