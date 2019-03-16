@@ -3,8 +3,11 @@ from resources_cmd import (CommandTestCase, MockTorrent, mock_select_torrents,
 
 from stig.client.utils import Response
 from stig.client.errors import ClientError
+from stig.utils.cliparser import Args
+from stig.completion import Candidates
 
 from asynctest import CoroutineMock
+from unittest.mock import patch
 
 
 from stig.commands.cli import AddTorrentsCmd
@@ -12,7 +15,8 @@ class TestAddTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         self.patch('stig.commands.cli.AddTorrentsCmd',
-                   srvapi=self.api)
+                   srvapi=self.api,
+                   srvcfg=self.srvcfg)
 
     async def test_success(self):
         self.api.torrent.response = Response(
@@ -63,6 +67,28 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
+
+    @patch('stig.completion.candidates.fs_path')
+    def test_completion_candidates_for_positional_args(self, mock_fs_path):
+        mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
+        self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1), exp_cands=('a', 'b', 'c'))
+        self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'), curarg_index=2), exp_cands=('a', 'b', 'c'))
+
+    @patch('stig.completion.candidates.fs_path')
+    def test_completion_candidates_for_path_option(self, mock_fs_path):
+        mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
+        self.srvcfg['path.complete'] = '/bar/baz'
+        self.assert_completion_candidates(AddTorrentsCmd, Args(('add', '--path', 'foo', 'x.torrent'), curarg_index=2),
+                                          exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
+        mock_fs_path.reset_mock()
+        self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'x.torrent', '--path', 'foo'), curarg_index=3),
+                                          exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
+        mock_fs_path.reset_mock()
+        self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'x.torrent', 'y.torrent', '--path', 'foo'), curarg_index=4),
+                                          exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
 
 
 from stig.commands.cli import ListTorrentsCmd
