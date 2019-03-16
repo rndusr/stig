@@ -70,18 +70,18 @@ class TestRcCmd(CommandTestCase):
                                 'relative/path')
         await self.check_existing_path('relative/path', exp_path=exp_path)
 
-    def test_completion_candidates_on_first_argument(self):
-        with patch('stig.commands.base.config.candidates') as mock_candidates:
-            mock_candidates.fs_path.return_value = ('a', 'b', 'c')
-            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 1, ('a', 'b', 'c'))
-            mock_candidates.fs_path.assert_called_once_with('hey', base=os.path.dirname(self.mock_default_rcfile))
-            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
+    @patch('stig.commands.base.config.candidates')
+    def test_completion_candidates_on_first_argument(self, mock_candidates):
+        mock_candidates.fs_path.return_value = ('a', 'b', 'c')
+        self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 1, ('a', 'b', 'c'))
+        mock_candidates.fs_path.assert_called_once_with('hey', base=os.path.dirname(self.mock_default_rcfile))
+        self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
 
-    def test_completion_candidates_on_any_other_argument(self):
-        with patch('stig.commands.base.config.candidates') as mock_candidates:
-            mock_candidates.fs_path.return_value = ('foo', 'bar', 'baz')
-            self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
-            mock_candidates.fs_path.assert_not_called()
+    @patch('stig.commands.base.config.candidates')
+    def test_completion_candidates_on_any_other_argument(self, mock_candidates):
+        mock_candidates.fs_path.return_value = ('foo', 'bar', 'baz')
+        self.assert_completion_candidates(RcCmd, ['rc', 'hey', 'ho'], 2, None)
+        mock_candidates.fs_path.assert_not_called()
 
 
 from stig.commands.cli import ResetCmd
@@ -128,11 +128,11 @@ class TestResetCmd(CommandTestCase):
         self.assert_stdout()
         self.assert_stderr()
 
-    def test_completion_candidates(self):
-        with patch('stig.commands.base.config.candidates') as mock_candidates:
-            mock_candidates.setting_names.return_value = ('a', 'b', 'c')
-            self.assert_completion_candidates(ResetCmd, ['reset', 'hey', 'ho'], 2, ('a', 'b', 'c'))
-            mock_candidates.setting_names.assert_called_once_with()
+    @patch('stig.commands.base.config.candidates')
+    def test_completion_candidates(self, mock_candidates):
+        mock_candidates.setting_names.return_value = ('a', 'b', 'c')
+        self.assert_completion_candidates(ResetCmd, ['reset', 'hey', 'ho'], 2, ('a', 'b', 'c'))
+        mock_candidates.setting_names.assert_called_once_with()
 
 
 from stig.commands.cli import SetCmd
