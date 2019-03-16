@@ -219,9 +219,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
     def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--path':
-            curarg_before_cursor = args.curarg.before_cursor
-            dirpath = os.path.dirname(curarg_before_cursor)
-            return candidates.fs_path(curarg_before_cursor,
+            return candidates.fs_path(args.curarg.before_cursor,
                                       base=cls.srvcfg['path.complete'],
                                       directories_only=True)
 
