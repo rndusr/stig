@@ -159,7 +159,9 @@ else:
                     os.remove(cachefile)
                     os.rename(cachefile_old, cachefile)
                 else:
-                    log.debug('Wrote new geoip database: %s', self.cachefile)
+                    log.debug('Wrote new geoip DB: %s', self.cachefile)
+                    log.debug('Removing: %s', cachefile_old)
+                    os.remove(cachefile_old)
 
         def _validate_cachefile(self, filepath):
             try:
