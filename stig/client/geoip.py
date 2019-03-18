@@ -103,14 +103,12 @@ else:
                 log.debug('Cached database is not expired yet')
             elif time.time() - self._last_download_attempt < self._download_attempt_delay:
                 log.debug('%r more seconds before attempting to download again',
-                          time.time() - self._last_download_attempt)
+                          self._download_attempt_delay - (time.time() - self._last_download_attempt))
             elif self._download_lock.locked():
                 log.debug('Already downloading new DB: %r', self._download_lock)
             else:
                 async with self._download_lock:
                     self._last_download_attempt = time.time()
-                    self._download_attempt_delay = max(self._download_attempt_delay * 2, 3600)
-
                     log.debug('Fetching fresh geolocation database from %s', self.url)
                     import aiohttp
                     import gzip
@@ -119,8 +117,13 @@ else:
                             async with session.get(self.url, timeout=self.timeout) as response:
                                 data = await response.content.read()
                         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                            self._download_attempt_delay = max(self._download_attempt_delay * 2, 3600)
+                            log.debug('New minimum delay between downloads: %r seconds', self._download_attempt_delay)
                             raise GeoIPError('Failed to download geolocation database %s: %s'
                                              % (self.url, os.strerror(e.errno)))
+                        else:
+                            log.debug('Resetting minimum delay between downloads to 1 second')
+                            self._download_attempt_delay = 1
 
                     try:
                         data = gzip.decompress(data)
