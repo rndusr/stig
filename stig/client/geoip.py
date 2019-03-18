@@ -139,14 +139,17 @@ else:
             cachefile_old = self.cachefile + '.old'
             try:
                 if not os.path.exists(cachedir):
+                    log.debug('Creating cache directory: %r', cachedir)
                     os.makedirs(cachedir)
                 if os.path.exists(cachefile):
+                    log.debug('Temporarily renaming cache file: %r -> %r', cachefile, cachefile_old)
                     os.rename(cachefile, cachefile_old)
                 with open(cachefile, 'wb') as f:
                     f.write(data)
             except OSError as e:
                 for filepath in (cachefile, cachefile_old):
                     if os.path.exists(filepath):
+                        log.debug('Removing %r', filepath)
                         os.remove(filepath)
                 raise GeoIPError('Unable to write geolocation database %s: %s'
                                  % (cachefile, os.strerror(e.errno)))
