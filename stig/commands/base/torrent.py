@@ -187,7 +187,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                                          curarg_seps=(cls.cfg['columns.torrents'].sep.strip(),))
 
 
-class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
+class TorrentMagnetURICmdbase(metaclass=InitCommand):
     name = 'magnet'
     aliases = ('uri',)
     provides = set()
