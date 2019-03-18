@@ -22,7 +22,10 @@ class get_single_torrent():
 
         Return None if no match is found.
         """
-        request = self.srvapi.torrent.torrents(tfilter, keys=tuple(keys) + ('name',))
+        keys = tuple(keys)
+        if 'name' not in keys:
+            keys = keys + ('name',)
+        request = self.srvapi.torrent.torrents(tfilter, keys=keys)
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
             from ...client import TorrentSorter
