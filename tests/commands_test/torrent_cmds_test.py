@@ -7,7 +7,7 @@ from stig.utils.cliparser import Args
 from stig.completion import Candidates
 
 from asynctest import CoroutineMock
-from unittest.mock import patch
+from unittest.mock import (patch, MagicMock)
 from types import SimpleNamespace
 
 
@@ -93,6 +93,56 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'x.torrent', 'y.torrent', '--path', 'foo'), curarg_index=4),
                                           exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
+
+
+from stig.commands.cli import TorrentDetailsCmd
+class TestTorrentDetailsCmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        self.mock_display_details = MagicMock()
+        self.patch('stig.commands.cli.TorrentDetailsCmd',
+                   srvapi=self.api,
+                   select_torrents=mock_select_torrents,
+                   display_details=self.mock_display_details,
+        )
+
+    async def do(self, args, tlist, success_exp, msgs=(), errors=()):
+        self.api.torrent.response = Response(success=success_exp, torrents=tlist, errors=errors)
+
+        process = await self.execute(TorrentDetailsCmd, *args)
+        self.assertEqual(process.success, success_exp)
+
+        self.assert_stdout()
+        self.assert_stderr(*tuple('^%s: %s$' % (TorrentDetailsCmd.name, err) for err in errors))
+
+        self.api.torrent.assert_called(1, 'torrents', (process.mock_tfilter,), {'keys': ('id', 'name')})
+
+    async def test_no_match(self):
+        tlist = ()
+        await self.do(['mock filter'], tlist=tlist, success_exp=False, errors=('Mock error',))
+        self.mock_display_details.assert_not_called()
+
+    async def test_single_match(self):
+        tlist = (MockTorrent(id=1, name='Torrent A', seeds='50'),)
+        await self.do(['mock filter'], tlist=tlist, success_exp=True, errors=())
+        self.mock_display_details.assert_called_once_with(1)
+
+    async def test_multiple_matches_are_sorted_by_name(self):
+        tlist = (MockTorrent(id=1, name='Torrent B', seeds='51'),
+                 MockTorrent(id=2, name='Torrent A', seeds='50'))
+        await self.do(['mock filter'], tlist=tlist, success_exp=True, errors=())
+        self.mock_display_details.assert_called_once_with(2)
+
+    @patch('stig.completion.candidates.torrent_filter')
+    def test_completion_candidates_for_positional_args(self, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        self.assert_completion_candidates(TorrentDetailsCmd, Args(('details', 'foo'), curarg_index=1),
+                                          exp_cands=('a', 'b', 'c'))
+        mock_torrent_filter.assert_called_once_with('foo')
+        mock_torrent_filter.reset_mock()
+        self.assert_completion_candidates(TorrentDetailsCmd, Args(('details', 'foo', 'bar'), curarg_index=2),
+                                          exp_cands=None)
+        mock_torrent_filter.assert_not_called()
 
 
 from stig.commands.cli import ListTorrentsCmd
