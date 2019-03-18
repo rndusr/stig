@@ -18,37 +18,9 @@ from .. import (ExpectedResource, CmdError)
 from ._table import (print_table, TERMSIZE)
 
 
-class ListTorrentsCmd(base.ListTorrentsCmdbase,
-                      mixin.make_request, mixin.select_torrents,
-                      mixin.only_supported_columns):
+class AddTorrentsCmd(base.AddTorrentsCmdbase,
+                     mixin.make_request):
     provides = {'cli'}
-    srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
-
-    async def make_torrent_list(self, tfilter, sort, columns):
-        from ...views.torrent import COLUMNS as TORRENT_COLUMNS
-
-        # Remove columns that aren't supported by CLI interface (e.g. 'marked')
-        columns = self.only_supported_columns(columns, TORRENT_COLUMNS)
-
-        # Get needed keys
-        if tfilter is None:
-            keys = set(sort.needed_keys)
-        else:
-            keys = set(sort.needed_keys + tfilter.needed_keys)
-
-        # Get wanted torrents and sort them
-        for colname in columns:
-            keys.update(TORRENT_COLUMNS[colname].needed_keys)
-        response = await self.make_request(
-            self.srvapi.torrent.torrents(tfilter, keys=keys),
-            quiet=True)
-        torrents = sort.apply(response.torrents)
-
-        # Show table of found torrents
-        if torrents:
-            print_table(torrents, columns, TORRENT_COLUMNS)
-        else:
-            raise CmdError()
 
 
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
@@ -96,6 +68,39 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                 print('%s\t%s' % (item.label.lower(), item.machine_readable(torrent)))
 
 
+class ListTorrentsCmd(base.ListTorrentsCmdbase,
+                      mixin.make_request, mixin.select_torrents,
+                      mixin.only_supported_columns):
+    provides = {'cli'}
+    srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
+
+    async def make_torrent_list(self, tfilter, sort, columns):
+        from ...views.torrent import COLUMNS as TORRENT_COLUMNS
+
+        # Remove columns that aren't supported by CLI interface (e.g. 'marked')
+        columns = self.only_supported_columns(columns, TORRENT_COLUMNS)
+
+        # Get needed keys
+        if tfilter is None:
+            keys = set(sort.needed_keys)
+        else:
+            keys = set(sort.needed_keys + tfilter.needed_keys)
+
+        # Get wanted torrents and sort them
+        for colname in columns:
+            keys.update(TORRENT_COLUMNS[colname].needed_keys)
+        response = await self.make_request(
+            self.srvapi.torrent.torrents(tfilter, keys=keys),
+            quiet=True)
+        torrents = sort.apply(response.torrents)
+
+        # Show table of found torrents
+        if torrents:
+            print_table(torrents, columns, TORRENT_COLUMNS)
+        else:
+            raise CmdError()
+
+
 class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
                           mixin.select_torrents):
     provides = {'cli'}
@@ -105,18 +110,8 @@ class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
             print(uri)
 
 
-class AddTorrentsCmd(base.AddTorrentsCmdbase,
-                     mixin.make_request):
-    provides = {'cli'}
-
-
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):
-    provides = {'cli'}
-
-
-class RenameTorrentCmd(base.RenameTorrentCmdbase,
-                       mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'cli'}
 
 
@@ -133,6 +128,11 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
 
     def remove_list_of_hits(self):
         pass
+
+
+class RenameTorrentCmd(base.RenameTorrentCmdbase,
+                       mixin.make_request, mixin.select_torrents, mixin.select_files):
+    provides = {'cli'}
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,

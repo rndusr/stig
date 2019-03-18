@@ -17,16 +17,9 @@ from ._common import make_tab_title_widget
 from functools import partial
 
 
-class ListTorrentsCmd(base.ListTorrentsCmdbase,
-                      mixin.select_torrents,
-                      mixin.create_list_widget):
+class AddTorrentsCmd(base.AddTorrentsCmdbase,
+                     mixin.polling_frenzy, mixin.make_request):
     provides = {'tui'}
-
-    def make_torrent_list(self, tfilter, sort, columns):
-        from ...tui.views.torrent_list import TorrentListWidget
-        self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
-                                tfilter=tfilter, sort=sort, columns=columns,
-                                markable_items=True)
 
 
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
@@ -57,6 +50,18 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
         detailsw.title_updater = set_tab_title
 
 
+class ListTorrentsCmd(base.ListTorrentsCmdbase,
+                      mixin.select_torrents,
+                      mixin.create_list_widget):
+    provides = {'tui'}
+
+    def make_torrent_list(self, tfilter, sort, columns):
+        from ...tui.views.torrent_list import TorrentListWidget
+        self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
+                                tfilter=tfilter, sort=sort, columns=columns,
+                                markable_items=True)
+
+
 class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
                           mixin.select_torrents):
     provides = {'tui'}
@@ -66,18 +71,8 @@ class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
             self.info(uri)
 
 
-class AddTorrentsCmd(base.AddTorrentsCmdbase,
-                     mixin.polling_frenzy, mixin.make_request):
-    provides = {'tui'}
-
-
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
-    provides = {'tui'}
-
-
-class RenameTorrentCmd(base.RenameTorrentCmdbase,
-                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
 
 
@@ -95,6 +90,12 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
     async def remove_list_of_hits(self):
         cmd = 'tab --close %r --focus left' % self.CONFIRMATION_TAB_TITLE
         await self.cmdmgr.run_async(cmd)
+
+
+class RenameTorrentCmd(base.RenameTorrentCmdbase,
+                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
+    provides = {'tui'}
+
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):

@@ -22,6 +22,99 @@ import asyncio
 import os
 
 
+class AddTorrentsCmdbase(metaclass=InitCommand):
+    name = 'add'
+    aliases = ('download','get')
+    provides = set()
+    category = 'torrent'
+    description = 'Download torrents'
+    usage = ('add [<OPTIONS>] <TORRENT> <TORRENT> <TORRENT> ...',)
+    examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
+                'add --stopped http://example.org/something.torrent')
+    argspecs = (
+        { 'names': ('TORRENT',), 'nargs': '+',
+          'description': 'Link or path to torrent file, magnet link or info hash' },
+
+        { 'names': ('--stopped','-s'), 'action': 'store_true',
+          'description': 'Do not start downloading the added torrent(s)' },
+
+        { 'names': ('--path','-p'),
+          'description': ('Custom download directory for added torrent(s) '
+                          'relative to "srv.path.complete" setting')},
+    )
+    srvapi = ExpectedResource
+    srvcfg = ExpectedResource
+
+    async def run(self, TORRENT, stopped, path):
+        success = True
+        force_torrentlist_update = False
+        for source in TORRENT:
+            response = await self.make_request(self.srvapi.torrent.add(source, stopped=stopped, path=path))
+            success = success and response.success
+            force_torrentlist_update = force_torrentlist_update or success
+
+        # Update torrentlist AFTER all 'add' requests
+        if force_torrentlist_update and hasattr(self, 'polling_frenzy'):
+            self.polling_frenzy()
+
+        if not success:
+            raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.fs_path(args.curarg.before_cursor,
+                                  glob=r'*.torrent')
+
+    @classmethod
+    def completion_candidates_params(cls, option, args):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--path':
+            return candidates.fs_path(args.curarg.before_cursor,
+                                      base=cls.srvcfg['path.complete'],
+                                      directories_only=True)
+
+
+class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
+    name = 'details'
+    aliases = ('info',)
+    provides = set()
+    category = 'torrent'
+    description = 'Display detailed torrent information'
+    usage = ('details',
+             'details <TORRENT FILTER>')
+    examples = ('details id=71',)
+    argspecs = (
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+    )
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT_FILTER):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True,
+                                           prefer_focused=True)
+        except ValueError as e:
+            raise CmdError(e)
+        else:
+            torrent = await self.get_single_torrent(tfilter, keys=('id', 'name'))
+            if not torrent:
+                raise CmdError()
+            else:
+                log.debug('Showing details of torrent %r: %r', tfilter, torrent)
+                if asyncio.iscoroutinefunction(self.display_details):
+                    await self.display_details(torrent['id'])
+                else:
+                    self.display_details(torrent['id'])
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        if args.curarg_index == 1:
+            return candidates.torrent_filter(args.curarg)
+
+
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                           metaclass=InitCommand):
     name = 'list'
@@ -94,46 +187,6 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                                          curarg_seps=(cls.cfg['columns.torrents'].sep.strip(),))
 
 
-class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
-    name = 'details'
-    aliases = ('info',)
-    provides = set()
-    category = 'torrent'
-    description = 'Display detailed torrent information'
-    usage = ('details',
-             'details <TORRENT FILTER>')
-    examples = ('details id=71',)
-    argspecs = (
-        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
-    )
-    srvapi = ExpectedResource
-
-    async def run(self, TORRENT_FILTER):
-        try:
-            tfilter = self.select_torrents(TORRENT_FILTER,
-                                           allow_no_filter=False,
-                                           discover_torrent=True,
-                                           prefer_focused=True)
-        except ValueError as e:
-            raise CmdError(e)
-        else:
-            torrent = await self.get_single_torrent(tfilter, keys=('id', 'name'))
-            if not torrent:
-                raise CmdError()
-            else:
-                log.debug('Showing details of torrent %r: %r', tfilter, torrent)
-                if asyncio.iscoroutinefunction(self.display_details):
-                    await self.display_details(torrent['id'])
-                else:
-                    self.display_details(torrent['id'])
-
-    @classmethod
-    def completion_candidates_posargs(cls, args):
-        """Complete positional arguments"""
-        if args.curarg_index == 1:
-            return candidates.torrent_filter(args.curarg)
-
-
 class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
     name = 'magnet'
     aliases = ('uri',)
@@ -169,59 +222,6 @@ class TorrentMagnetURICmdbase(mixin.get_single_torrent, metaclass=InitCommand):
         """Complete positional arguments"""
         if args.curarg_index == 1:
             return candidates.torrent_filter(args.curarg)
-
-
-class AddTorrentsCmdbase(metaclass=InitCommand):
-    name = 'add'
-    aliases = ('download','get')
-    provides = set()
-    category = 'torrent'
-    description = 'Download torrents'
-    usage = ('add [<OPTIONS>] <TORRENT> <TORRENT> <TORRENT> ...',)
-    examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
-                'add --stopped http://example.org/something.torrent')
-    argspecs = (
-        { 'names': ('TORRENT',), 'nargs': '+',
-          'description': 'Link or path to torrent file, magnet link or info hash' },
-
-        { 'names': ('--stopped','-s'), 'action': 'store_true',
-          'description': 'Do not start downloading the added torrent(s)' },
-
-        { 'names': ('--path','-p'),
-          'description': ('Custom download directory for added torrent(s) '
-                          'relative to "srv.path.complete" setting')},
-    )
-    srvapi = ExpectedResource
-    srvcfg = ExpectedResource
-
-    async def run(self, TORRENT, stopped, path):
-        success = True
-        force_torrentlist_update = False
-        for source in TORRENT:
-            response = await self.make_request(self.srvapi.torrent.add(source, stopped=stopped, path=path))
-            success = success and response.success
-            force_torrentlist_update = force_torrentlist_update or success
-
-        # Update torrentlist AFTER all 'add' requests
-        if force_torrentlist_update and hasattr(self, 'polling_frenzy'):
-            self.polling_frenzy()
-
-        if not success:
-            raise CmdError()
-
-    @classmethod
-    def completion_candidates_posargs(cls, args):
-        """Complete positional arguments"""
-        return candidates.fs_path(args.curarg.before_cursor,
-                                  glob=r'*.torrent')
-
-    @classmethod
-    def completion_candidates_params(cls, option, args):
-        """Complete parameters (e.g. --option parameter1,parameter2)"""
-        if option == '--path':
-            return candidates.fs_path(args.curarg.before_cursor,
-                                      base=cls.srvcfg['path.complete'],
-                                      directories_only=True)
 
 
 class MoveTorrentsCmdbase(metaclass=InitCommand):
@@ -279,67 +279,6 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
             filter_cands = await candidates.torrent_filter(curarg)
             path_cands = complete_path(curarg)
             return (path_cands,) + filter_cands
-
-
-class RenameTorrentCmdbase(metaclass=InitCommand):
-    name = 'rename'
-    aliases = ('rn',)
-    provides = set()
-    category = 'torrent'
-    description = 'Rename a torrent or one of its files or directories'
-    usage = ('rename <NEW>',
-             'rename <TORRENT> <NEW>')
-    examples = ('rename "A Better Name"',
-                'rename id=123 Foo',
-                'rename id=123/some/file new_file_name')
-    argspecs = (
-        { 'names': ('TORRENT',), 'nargs': '?',
-          'description': ('Torrent filter expression that matches exactly one torrent, '
-                          'optionally followed by a "/" and the relative path to a '
-                          'file or directory in the torrent'),
-          'default_description': 'Focused torrent, file or directory in the TUI' },
-
-        {'names': ('NEW',),
-         'description': ('New name of the torrent, file or directory specified by TORRENT '
-                         '(must not contain "/" or be "." or "..")')},
-    )
-    srvapi = ExpectedResource
-
-    async def run(self, TORRENT, NEW):
-        # Autodetect current path
-        if not TORRENT:
-            path = self.get_focused_path_in_torrent()
-            if path:
-                # path is <torrent name>/<relative/path/to/file/in/torrent>
-                TORRENT = path
-
-        # Split filter from current path
-        if TORRENT and '/' in TORRENT:
-            FILTER, PATH = TORRENT.split('/', maxsplit=1)
-        else:
-            FILTER, PATH = TORRENT, None
-
-        try:
-            tfilter = self.select_torrents(FILTER,
-                                           allow_no_filter=False,
-                                           discover_torrent=True)
-        except ValueError as e:
-            raise CmdError(e)
-        else:
-            response = await self.make_request(
-                self.srvapi.torrent.torrents(tfilter, keys=('id',)),
-                quiet=True)
-            if not response.success:
-                raise CmdError()
-            elif len(response.torrents) > 1:
-                raise CmdError('%s matches more than one torrent' % tfilter)
-            else:
-                tid = response.torrents[0]['id']
-                response = await self.make_request(
-                    self.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
-                    polling_frenzy=True)
-                if not response.success:
-                    raise CmdError()
 
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
@@ -402,6 +341,67 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                     success = await self.ask_yes_no(question, yes=do_remove, no=do_keep,
                                                     after=self.remove_list_of_hits)
                 if not success:
+                    raise CmdError()
+
+
+class RenameTorrentCmdbase(metaclass=InitCommand):
+    name = 'rename'
+    aliases = ('rn',)
+    provides = set()
+    category = 'torrent'
+    description = 'Rename a torrent or one of its files or directories'
+    usage = ('rename <NEW>',
+             'rename <TORRENT> <NEW>')
+    examples = ('rename "A Better Name"',
+                'rename id=123 Foo',
+                'rename id=123/some/file new_file_name')
+    argspecs = (
+        { 'names': ('TORRENT',), 'nargs': '?',
+          'description': ('Torrent filter expression that matches exactly one torrent, '
+                          'optionally followed by a "/" and the relative path to a '
+                          'file or directory in the torrent'),
+          'default_description': 'Focused torrent, file or directory in the TUI' },
+
+        {'names': ('NEW',),
+         'description': ('New name of the torrent, file or directory specified by TORRENT '
+                         '(must not contain "/" or be "." or "..")')},
+    )
+    srvapi = ExpectedResource
+
+    async def run(self, TORRENT, NEW):
+        # Autodetect current path
+        if not TORRENT:
+            path = self.get_focused_path_in_torrent()
+            if path:
+                # path is <torrent name>/<relative/path/to/file/in/torrent>
+                TORRENT = path
+
+        # Split filter from current path
+        if TORRENT and '/' in TORRENT:
+            FILTER, PATH = TORRENT.split('/', maxsplit=1)
+        else:
+            FILTER, PATH = TORRENT, None
+
+        try:
+            tfilter = self.select_torrents(FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+        else:
+            response = await self.make_request(
+                self.srvapi.torrent.torrents(tfilter, keys=('id',)),
+                quiet=True)
+            if not response.success:
+                raise CmdError()
+            elif len(response.torrents) > 1:
+                raise CmdError('%s matches more than one torrent' % tfilter)
+            else:
+                tid = response.torrents[0]['id']
+                response = await self.make_request(
+                    self.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
+                    polling_frenzy=True)
+                if not response.success:
                     raise CmdError()
 
 
