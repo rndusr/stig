@@ -72,7 +72,10 @@ class TestAddTorrentsCmd(CommandTestCase):
     def test_completion_candidates_for_positional_args(self, mock_fs_path):
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
         self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1), exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('foo', glob='*.torrent')
+        mock_fs_path.reset_mock()
         self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'), curarg_index=2), exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('bar', glob='*.torrent')
 
     @patch('stig.completion.candidates.fs_path')
     def test_completion_candidates_for_path_option(self, mock_fs_path):
