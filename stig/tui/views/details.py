@@ -49,13 +49,13 @@ def mksection(title, width, items):
 
 
 _sections = []
-from ...views.summary import SECTIONS
+from ...views.details import SECTIONS
 for section in SECTIONS:
     sectionw = mksection(**section)
     _sections.append(sectionw)
 
 
-class TorrentSummaryWidget(urwid.WidgetWrap):
+class TorrentDetailsWidget(urwid.WidgetWrap):
     def __init__(self, srvapi, tid, title=None):
         self._title = title
         self._torrent = {}
@@ -81,8 +81,8 @@ class TorrentSummaryWidget(urwid.WidgetWrap):
         self._content = Scrollable(grid)
 
         super().__init__(urwid.AttrMap(
-            ScrollBar(urwid.AttrMap(self._content, 'torrentsummary')),
-            'torrentsummary.scrollbar'
+            ScrollBar(urwid.AttrMap(self._content, 'torrentdetails')),
+            'torrentdetails.scrollbar'
         ))
 
         # Register new request in request pool
@@ -106,7 +106,7 @@ class TorrentSummaryWidget(urwid.WidgetWrap):
 
     def _handle_error(self, *errors):
         self._torrent = {'name': None, 'id': None}
-        pile = urwid.Pile(urwid.Text(('torrentsummary.error', str(e))) for e in errors)
+        pile = urwid.Pile(urwid.Text(('torrentdetails.error', str(e))) for e in errors)
         self._content.original_widget = pile
 
     @property

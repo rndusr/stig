@@ -46,8 +46,8 @@ tabs.unfocused                white         on black
 tabs.focused                  black         on white
 tabs.torrentlist.unfocused    light cyan    on dark gray
 tabs.torrentlist.focused      black         on dark cyan
-tabs.torrentsummary.unfocused light blue    on dark gray
-tabs.torrentsummary.focused   black         on light blue
+tabs.torrentdetails.unfocused light blue    on dark gray
+tabs.torrentdetails.focused   black         on light blue
 tabs.filelist.unfocused       light magenta on dark gray
 tabs.filelist.focused         black         on dark magenta
 tabs.peerlist.unfocused       light green   on dark gray
@@ -395,9 +395,9 @@ torrentlist.name.discovering.complete.unfocused    $name.discovering_fg         
 torrentlist.name.discovering.complete.focused      $name.discovering_fg           on $tlist_bg.f
 
 
-torrentsummary            light gray on black
-torrentsummary.error      light red  on black
-torrentsummary.scrollbar  light gray on dark gray
+torrentdetails            light gray on black
+torrentdetails.error      light red  on black
+torrentdetails.scrollbar  light gray on dark gray
 
 
 $flist_bg.uf = black

@@ -94,15 +94,15 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                                          curarg_seps=(cls.cfg['columns.torrents'].sep.strip(),))
 
 
-class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
-    name = 'summary'
-    aliases = ('info', 'details')
+class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
+    name = 'details'
+    aliases = ('info',)
     provides = set()
     category = 'torrent'
     description = 'Display detailed torrent information'
-    usage = ('summary',
-             'summary <TORRENT FILTER>')
-    examples = ('summary id=71',)
+    usage = ('details',
+             'details <TORRENT FILTER>')
+    examples = ('details id=71',)
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
     )
@@ -121,11 +121,11 @@ class TorrentSummaryCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
             if not torrent:
                 raise CmdError()
             else:
-                log.debug('Showing summary of torrent %r: %r', tfilter, torrent)
-                if asyncio.iscoroutinefunction(self.display_summary):
-                    await self.display_summary(torrent['id'])
+                log.debug('Showing details of torrent %r: %r', tfilter, torrent)
+                if asyncio.iscoroutinefunction(self.display_details):
+                    await self.display_details(torrent['id'])
                 else:
-                    self.display_summary(torrent['id'])
+                    self.display_details(torrent['id'])
 
     @classmethod
     def completion_candidates_posargs(cls, args):

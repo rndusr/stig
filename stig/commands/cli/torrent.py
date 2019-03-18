@@ -51,12 +51,12 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
             raise CmdError()
 
 
-class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
-                         mixin.make_request, mixin.select_torrents):
+class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
+                        mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
-    async def display_summary(self, torrent_id):
-        from ...views.summary import SECTIONS
+    async def display_details(self, torrent_id):
+        from ...views.details import SECTIONS
         needed_keys = set(('name',))
         for _section in SECTIONS:
             for _item in _section['items']:
@@ -76,7 +76,7 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
             self._human_readable(torrent)
 
     def _human_readable(self, torrent):
-        from ...views.summary import SECTIONS
+        from ...views.details import SECTIONS
 
         label_width = max(len(item.label)
                           for section in SECTIONS
@@ -90,8 +90,7 @@ class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
                 print('  %s: %s' % (item.label.rjust(label_width), item.human_readable(torrent)))
 
     def _machine_readable(self, torrent):
-        from ...views.summary import SECTIONS
-
+        from ...views.details import SECTIONS
         for section in SECTIONS:
             for item in section['items']:
                 print('%s\t%s' % (item.label.lower(), item.machine_readable(torrent)))

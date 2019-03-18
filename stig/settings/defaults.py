@@ -385,7 +385,7 @@ DEFAULT_KEYMAP = (
     #  'description': ''},
     {'context': 'torrent', 'key': 't v',       'action': 'verify',
      'description': 'Verify selected or focused torrents\' downloaded files'},
-    {'context': 'torrent', 'key': 'enter',     'action': 'tab summary',
+    {'context': 'torrent', 'key': 'enter',     'action': 'tab details',
      'description': 'Show details about focused torrent in a new tab'},
     {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab filelist',
      'description': 'List selected or focused torrents\' files in a new tab'},
@@ -510,7 +510,7 @@ DEFAULT_KEYMAP = (
      'description': 'Reduce listed trackers by applying more filters'},
 
     # Tracker actions
-    {'context': 'torrent', 'key': 'enter', 'action': 'tab summary',
+    {'context': 'torrent', 'key': 'enter', 'action': 'tab details',
      'description': 'Show details about torrent of focused tracker in new tab'},
     {'context': 'torrent', 'key': 'alt-enter', 'action': 'tab filelist',
      'description': 'List files of torrent of focused tracker in a new tab'},

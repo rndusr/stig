@@ -29,32 +29,32 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
                                 markable_items=True)
 
 
-class TorrentSummaryCmd(base.TorrentSummaryCmdbase,
+class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                         mixin.select_torrents, mixin.make_request):
     provides = {'tui'}
     tui = ExpectedResource
 
-    async def display_summary(self, torrent_id):
+    async def display_details(self, torrent_id):
         make_titlew = partial(make_tab_title_widget,
-                              attr_unfocused='tabs.torrentsummary.unfocused',
-                              attr_focused='tabs.torrentsummary.focused')
+                              attr_unfocused='tabs.torrentdetails.unfocused',
+                              attr_focused='tabs.torrentdetails.focused')
 
-        from ...tui.views.summary import TorrentSummaryWidget
-        TorrentSummaryWidget_keymapped = self.tui.keymap.wrap(TorrentSummaryWidget,
+        from ...tui.views.details import TorrentDetailsWidget
+        TorrentDetailsWidget_keymapped = self.tui.keymap.wrap(TorrentDetailsWidget,
                                                               context='torrent')
         title_str = self.title if hasattr(self, 'title') else None
-        summaryw = TorrentSummaryWidget_keymapped(self.srvapi, torrent_id, title=title_str)
-        tabid = self.tui.tabs.load(make_titlew(summaryw.title), summaryw)
+        detailsw = TorrentDetailsWidget_keymapped(self.srvapi, torrent_id, title=title_str)
+        tabid = self.tui.tabs.load(make_titlew(detailsw.title), detailsw)
 
         def set_tab_title(text):
             # set_title() throws IndexError if the tab was removed, which may
-            # have happened while TorrentSummaryWidget was waiting for a
+            # have happened while TorrentDetailsWidget was waiting for a
             # response.
             try:
                 self.tui.tabs.set_title(make_titlew(text), position=tabid)
             except IndexError:
                 pass
-        summaryw.title_updater = set_tab_title
+        detailsw.title_updater = set_tab_title
 
 
 class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
