@@ -99,6 +99,9 @@ class MockTorrent(TorrentBase):
     def __getitem__(self, item):
         return self._d[item]
 
+    def __iter__(self):
+        return iter(self._d)
+
 
 class MockTorrentFilter():
     def __init__(self, *args, **kwargs):
