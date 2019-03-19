@@ -241,6 +241,17 @@ class TestListTorrentsCmd(CommandTestCase):
                                           exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
 
 
+from stig.commands.cli import TorrentMagnetURICmd
+class TestTorrentMagnetURICmd(CommandTestCase):
+    @patch('stig.completion.candidates.torrent_filter')
+    def test_completion_candidates_for_positional_args(self, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        self.assert_completion_candidates(TorrentMagnetURICmd, Args(('magnet', 'foo'), curarg_index=1),
+                                          exp_cands=('a', 'b', 'c'))
+        self.assert_completion_candidates(TorrentMagnetURICmd, Args(('magnet', 'foo', 'bar'), curarg_index=2),
+                                          exp_cands=None)
+
+
 from stig.commands.cli import RemoveTorrentsCmd
 class TestRemoveTorrentsCmd(CommandTestCase):
     def setUp(self):
