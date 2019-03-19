@@ -635,26 +635,6 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
             self.assertEqual(self.false_cb.calls, false_calls)
             self.assertEqual(self.error_handler.args, list(errors))
 
-        ### These are the old tests cases where None was returned by inactive
-        ### commands. I'm trying to get everything working with them returning
-        ### True instead.
-
-        # self.cmdmgr.active_interface = 'T'
-        # do_test('true ; false', None, true_calls=1, false_calls=0)
-        # do_test('false ; true', True, true_calls=1, false_calls=0)
-        # do_test('true & false', None, true_calls=1, false_calls=0)
-        # do_test('false & true', None, true_calls=0, false_calls=0)
-        # do_test('true | false', True, true_calls=1, false_calls=0)
-        # do_test('false | true', True, true_calls=1, false_calls=0)
-
-        # self.cmdmgr.active_interface = 'F'
-        # do_test('true ; false', False, true_calls=0, false_calls=1)
-        # do_test('false ; true', None, true_calls=0, false_calls=1)
-        # do_test('true & false', None, true_calls=0, false_calls=0)
-        # do_test('false & true', False, true_calls=0, false_calls=1)
-        # do_test('true | false', False, true_calls=0, false_calls=1)
-        # do_test('false | true', None, true_calls=0, false_calls=1)
-
         # Calls to 'false' are ignored and evaluate to True in the command chain
         self.cmdmgr.active_interface = 'T'
         testcases = (
