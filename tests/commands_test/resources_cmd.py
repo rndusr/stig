@@ -4,6 +4,7 @@ from stig.client.utils import Response
 from stig.client.base import TorrentBase
 from stig.commands import (InitCommand, _CommandBase, CmdError)
 
+import asyncio
 
 def make_cmdcls(defaults=True, **clsattrs):
     assert isinstance(defaults, bool)
@@ -200,8 +201,11 @@ class CommandTestCase(asynctest.TestCase):
             line = line.rstrip('\n')
             self.assertRegex(line, line_exp)
 
-    def assert_completion_candidates(self, cmdcls, args, exp_cands, exp_curarg_seps=()):
+    async def assert_completion_candidates(self, cmdcls, args, exp_cands, exp_curarg_seps=()):
         cands = cmdcls.completion_candidates(args)
+        if asyncio.iscoroutine(cands):
+            cands = await cands
+
         if cands is None:
             self.assertIs(exp_cands, None)
         else:
