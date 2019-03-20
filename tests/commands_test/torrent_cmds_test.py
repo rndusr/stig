@@ -257,6 +257,80 @@ class TestTorrentMagnetURICmd(CommandTestCase):
                                           exp_cands=None)
 
 
+class TestMoveTorrentsCLICmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        self.patch('stig.commands.cli.MoveTorrentsCmd',
+                   srvcfg=self.srvcfg)
+
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.fs_path')
+    async def test_CLI_completion_candidates_for_posargs_with_first_arg(self, mock_fs_path, mock_torrent_filter):
+        from stig.commands.cli import MoveTorrentsCmd
+        mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
+
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=1))
+        mock_torrent_filter.assert_called_once_with('foo')
+        mock_fs_path.assert_not_called()
+        self.assertEqual(cands, (Candidates(('a', 'b', 'c')),))
+
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.fs_path')
+    async def test_CLI_completion_candidates_for_posargs_with_second_arg(self, mock_fs_path, mock_torrent_filter):
+        from stig.commands.cli import MoveTorrentsCmd
+        mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
+        mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
+        self.srvcfg['path.complete'] = '/some/path/'
+
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2))
+        mock_torrent_filter.assert_not_called()
+        mock_fs_path.assert_called_once_with('bar', base=self.srvcfg['path.complete'], directories_only=True)
+        self.assertEqual(cands, Candidates(('d', 'e', 'f')))
+
+class TestMoveTorrentsTUICmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        self.patch('stig.commands.tui.MoveTorrentsCmd',
+                   srvcfg=self.srvcfg)
+
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.fs_path')
+    async def test_TUI_completion_candidates_for_posargs_with_one_arg(self, mock_fs_path, mock_torrent_filter):
+        from stig.commands.tui import MoveTorrentsCmd
+        mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
+        mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
+        self.srvcfg['path.complete'] = '/some/path/'
+
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo'), curarg_index=1))
+        mock_torrent_filter.assert_called_once_with('foo')
+        mock_fs_path.assert_called_once_with('foo', base=self.srvcfg['path.complete'], directories_only=True)
+        self.assertEqual(cands, (Candidates(('d', 'e', 'f')),
+                                 Candidates(('a', 'b', 'c'))))
+
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.fs_path')
+    async def test_TUI_completion_candidates_for_posargs_with_two_args_on_first_arg(self, mock_fs_path, mock_torrent_filter):
+        from stig.commands.tui import MoveTorrentsCmd
+        mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
+
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=1))
+        mock_torrent_filter.assert_called_once_with('foo')
+        mock_fs_path.assert_not_called()
+        self.assertEqual(cands, (Candidates(('a', 'b', 'c')),))
+
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.fs_path')
+    async def test_TUI_completion_candidates_for_posargs_with_two_args_on_second_arg(self, mock_fs_path, mock_torrent_filter):
+        from stig.commands.tui import MoveTorrentsCmd
+        mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
+        self.srvcfg['path.complete'] = '/some/path/'
+
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2))
+        mock_torrent_filter.assert_not_called()
+        mock_fs_path.assert_called_once_with('bar', base=self.srvcfg['path.complete'], directories_only=True)
+        self.assertEqual(cands, Candidates(('d', 'e', 'f')))
+
+
 from stig.commands.cli import RemoveTorrentsCmd
 class TestRemoveTorrentsCmd(CommandTestCase):
     def setUp(self):
