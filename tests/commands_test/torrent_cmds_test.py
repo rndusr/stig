@@ -431,6 +431,20 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
         self.assertFalse(RemoveTorrentsCmd.ask_yes_no.called)
 
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.fs_path')
+    async def test_completion_candidates_for_posargs(self, mock_fs_path, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        cands = await RemoveTorrentsCmd.completion_candidates(Args(('remove', 'foo'), curarg_index=1))
+        mock_torrent_filter.assert_called_once_with('foo')
+        self.assertEqual(cands, Candidates(('a', 'b', 'c')))
+
+        mock_torrent_filter.reset_mock()
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        cands = await RemoveTorrentsCmd.completion_candidates(Args(('remove', 'foo', 'bar'), curarg_index=2))
+        mock_torrent_filter.assert_called_once_with('bar')
+        self.assertEqual(cands, Candidates(('a', 'b', 'c')))
+
 
 from stig.commands.cli import StartTorrentsCmd
 class TestStartTorrentsCmd(CommandTestCase):
