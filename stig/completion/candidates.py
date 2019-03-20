@@ -133,16 +133,21 @@ _filter_boolean_ops = ('&', '|')
 _filter_compare_ops = filters.TorrentFilter.POSSIBLE_OPERATORS
 
 async def torrent_filter(curarg):
-    """Torrent filter names or values"""
+    """
+    Torrent filter names and maybe values for default filter
+
+    The return value is a tuple with 0, 1 or 2 items.
+    """
     # Separate individual filters, e.g. 'seeding|comment=foo'
-    filters = curarg.separate(_filter_boolean_ops, include_seps=True)
+    filter_strings = curarg.separate(_filter_boolean_ops, include_seps=True)
     # Separate filter name from filter value
-    parts = filters.curarg.separate(_filter_compare_ops, include_seps=True)
+    parts = filter_strings.curarg.separate(_filter_compare_ops, include_seps=True)
     if parts.curarg_index == 0:
         # If focus is on filter name, complete filter names and torrent names
         # (default torrent filter is 'name')
         log.debug('Completing torrent filter names and torrent names: %r', parts[0])
-        return (_filter_names('TorrentFilter'), await _torrent_filter_values('name'))
+        return (_filter_names('TorrentFilter'),
+                await _torrent_filter_values(filters.TorrentFilter.DEFAULT_FILTER))
     elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
