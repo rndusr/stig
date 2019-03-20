@@ -248,3 +248,6 @@ class SingleCandidate(Candidates):
 
     def reduce(self, *args, **kwargs):
         pass
+
+    def __hash__(self):
+        return hash(id(self))
