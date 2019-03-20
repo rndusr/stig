@@ -196,6 +196,14 @@ class Candidates(abc.Sequence):
         """Category or short description"""
         return self._label
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self._candidates == other._candidates
+
+    def __hash__(self):
+        return hash(self._candidates)
+
     def __repr__(self):
         kwargs = {}
         if self.curarg_seps: kwargs['curarg_seps'] = self.curarg_seps
