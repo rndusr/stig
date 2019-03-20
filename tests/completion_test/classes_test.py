@@ -122,6 +122,12 @@ class TestSingleCandidate(unittest.TestCase):
         self.assertIsInstance(sc[0], Candidate)
         self.assertEqual(sc[0].short_form, 'b')
 
+    def test_hash_does_not_change_after_set_was_called(self):
+        sc = SingleCandidate('foo')
+        hash1 = hash(sc)
+        sc.set('bar')
+        self.assertEqual(hash1, hash(sc))
+
 
 class TestCategories(unittest.TestCase):
     def assert_focus(self, cats, current_index, cand):
