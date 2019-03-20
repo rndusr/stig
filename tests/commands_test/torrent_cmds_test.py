@@ -70,7 +70,7 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_stderr()
 
     @patch('stig.completion.candidates.fs_path')
-    async def test_completion_candidates_for_positional_args(self, mock_fs_path):
+    async def test_completion_candidates_for_posargs(self, mock_fs_path):
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))
@@ -137,7 +137,7 @@ class TestTorrentDetailsCmd(CommandTestCase):
         self.mock_display_details.assert_called_once_with(2)
 
     @patch('stig.completion.candidates.torrent_filter')
-    async def test_completion_candidates_for_positional_args(self, mock_torrent_filter):
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
         mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(TorrentDetailsCmd, Args(('details', 'foo'), curarg_index=1),
                                           exp_cands=('a', 'b', 'c'))
@@ -217,7 +217,7 @@ class TestListTorrentsCmd(CommandTestCase):
         await self.do(['-s', 'foo'], errors=('%s: Nope!' % ListTorrentsCmd.name,))
 
     @patch('stig.completion.candidates.torrent_filter')
-    async def test_completion_candidates_for_positional_args(self, mock_torrent_filter):
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
         mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))
@@ -249,7 +249,7 @@ class TestListTorrentsCmd(CommandTestCase):
 from stig.commands.cli import TorrentMagnetURICmd
 class TestTorrentMagnetURICmd(CommandTestCase):
     @patch('stig.completion.candidates.torrent_filter')
-    async def test_completion_candidates_for_positional_args(self, mock_torrent_filter):
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
         mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(TorrentMagnetURICmd, Args(('magnet', 'foo'), curarg_index=1),
                                           exp_cands=('a', 'b', 'c'))
