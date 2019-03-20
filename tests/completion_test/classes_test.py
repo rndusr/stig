@@ -96,6 +96,16 @@ class TestCandidates(unittest.TestCase):
         cands.next()
         self.assert_focus(cands, 0, 'bar')
 
+    def test_equality(self):
+        a = Candidates(('foo', 'bar', 'baz'))
+        b = Candidates(('bar', 'baz', 'foo'))
+
+        self.assertEqual(a, b)
+
+        a.reduce('^ba')
+        self.assertEqual(a, b)
+        self.assertNotEqual(tuple(a), tuple(b))
+
 
 class TestSingleCandidate(unittest.TestCase):
     def test_empty_string_is_included(self):
