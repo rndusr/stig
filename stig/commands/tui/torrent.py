@@ -13,6 +13,7 @@ from ..base import torrent as base
 from . import _mixin as mixin
 from .. import ExpectedResource
 from ._common import make_tab_title_widget
+from ...completion import candidates
 
 from functools import partial
 
@@ -74,6 +75,26 @@ class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
+
+    @classmethod
+    async def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        def dest_path_candidates(curarg):
+            return candidates.fs_path(curarg.before_cursor,
+                                      base=cls.srvcfg['path.complete'],
+                                      directories_only=True)
+
+        curarg = args.curarg
+        if len(args) >= 3:
+            if args.curarg_index == 1:
+                return await candidates.torrent_filter(curarg)
+            elif args.curarg_index == 2:
+                return dest_path_candidates(curarg)
+        elif len(args) == 2:
+            # Single argument may be a path or a filter
+            filter_cands = await candidates.torrent_filter(curarg)
+            path_cands = dest_path_candidates(curarg)
+            return (path_cands,) + filter_cands
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,

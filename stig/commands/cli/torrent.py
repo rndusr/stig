@@ -16,6 +16,7 @@ from ..base import torrent as base
 from . import _mixin as mixin
 from .. import (ExpectedResource, CmdError)
 from ._table import (print_table, TERMSIZE)
+from ...completion import candidates
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -113,6 +114,17 @@ class TorrentMagnetURICmd(base.TorrentMagnetURICmdbase,
 class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
+
+    @classmethod
+    async def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        if args.curarg_index == 1:
+            log.debug('Getting torrent filter candidates from %r', candidates.torrent_filter)
+            return await candidates.torrent_filter(args.curarg)
+        elif args.curarg_index == 2:
+            return candidates.fs_path(args.curarg.before_cursor,
+                                      base=cls.srvcfg['path.complete'],
+                                      directories_only=True)
 
 
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,

@@ -258,28 +258,6 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
             if not response.success:
                 raise CmdError()
 
-    @classmethod
-    async def completion_candidates_posargs(cls, args):
-        """Complete positional arguments"""
-        def complete_path(curarg):
-            curarg_before_cursor = args.curarg.before_cursor
-            dirpath = os.path.dirname(curarg_before_cursor)
-            return candidates.fs_path(curarg_before_cursor,
-                                      base=cls.srvcfg['path.complete'],
-                                      directories_only=True)
-
-        curarg = args.curarg
-        if len(args) >= 3:
-            if args.curarg_index == 1:
-                return candidates.torrent_filter(curarg)
-            elif args.curarg_index == 2:
-                return complete_path(curarg)
-        elif len(args) == 2:
-            # Single argument may be a path or a filter
-            filter_cands = await candidates.torrent_filter(curarg)
-            path_cands = complete_path(curarg)
-            return (path_cands,) + filter_cands
-
 
 class RemoveTorrentsCmdbase(metaclass=InitCommand):
     name = 'remove'
