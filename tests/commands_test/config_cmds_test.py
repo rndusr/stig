@@ -2,7 +2,7 @@ from resources_cmd import CommandTestCase
 from stig.utils.cliparser import Args
 from stig.completion import Candidates
 
-from unittest.mock import call, patch
+from asynctest.mock import call, patch
 import os
 
 
@@ -73,19 +73,19 @@ class TestRcCmd(CommandTestCase):
         await self.check_existing_path('relative/path', exp_path=exp_path)
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates_on_first_argument(self, mock_candidates):
+    async def test_completion_candidates_on_first_argument(self, mock_candidates):
         mock_candidates.fs_path.return_value = Candidates(('a', 'b', 'c'))
-        self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=1),
-                                          exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=1),
+                                                exp_cands=('a', 'b', 'c'))
         mock_candidates.fs_path.assert_called_once_with('hey', base=os.path.dirname(self.mock_default_rcfile))
-        self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=2),
-                                          exp_cands=None)
+        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=2),
+                                                exp_cands=None)
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates_on_any_other_argument(self, mock_candidates):
+    async def test_completion_candidates_on_any_other_argument(self, mock_candidates):
         mock_candidates.fs_path.return_value = Candidates(('foo', 'bar', 'baz'))
-        self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=2),
-                                          exp_cands=None)
+        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=2),
+                                                exp_cands=None)
         mock_candidates.fs_path.assert_not_called()
 
 
@@ -134,10 +134,10 @@ class TestResetCmd(CommandTestCase):
         self.assert_stderr()
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates(self, mock_candidates):
+    async def test_completion_candidates(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('a', 'b', 'c'))
-        self.assert_completion_candidates(ResetCmd, Args(('reset', 'hey', 'ho'), curarg_index=2),
-                                          exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(ResetCmd, Args(('reset', 'hey', 'ho'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
         mock_candidates.setting_names.assert_called_once_with()
 
 
@@ -262,35 +262,35 @@ class TestSetCmd(CommandTestCase):
         process = await self.execute(SetCmd, 'some.string', 'bar')
         self.assert_stderr('set: some.string = bar: I hate your values!')
 
-    def test_no_completion_candidates_if_sort_or_columns_options_given(self):
+    async def test_no_completion_candidates_if_sort_or_columns_options_given(self):
         for opt in ('--columns', '--sort'):
-            self.assert_completion_candidates(SetCmd, Args(('set', opt, 'name', '_', '_'), curarg_index=3), exp_cands=None)
-            self.assert_completion_candidates(SetCmd, Args(('set', opt, 'name', '_', '_'), curarg_index=4), exp_cands=None)
-            self.assert_completion_candidates(SetCmd, Args(('set', '_', opt, 'name', '_'), curarg_index=1), exp_cands=None)
-            self.assert_completion_candidates(SetCmd, Args(('set', '_', opt, 'name', '_'), curarg_index=4), exp_cands=None)
-            self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', opt, 'name'), curarg_index=1), exp_cands=None)
-            self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', opt, 'name'), curarg_index=2), exp_cands=None)
+            await self.assert_completion_candidates(SetCmd, Args(('set', opt, 'name', '_', '_'), curarg_index=3), exp_cands=None)
+            await self.assert_completion_candidates(SetCmd, Args(('set', opt, 'name', '_', '_'), curarg_index=4), exp_cands=None)
+            await self.assert_completion_candidates(SetCmd, Args(('set', '_', opt, 'name', '_'), curarg_index=1), exp_cands=None)
+            await self.assert_completion_candidates(SetCmd, Args(('set', '_', opt, 'name', '_'), curarg_index=4), exp_cands=None)
+            await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', opt, 'name'), curarg_index=1), exp_cands=None)
+            await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', opt, 'name'), curarg_index=2), exp_cands=None)
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates_when_completing_setting_names(self, mock_candidates):
+    async def test_completion_candidates_when_completing_setting_names(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', '_', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=1), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=1), exp_cands=('a', 'b', 'c'))
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates_when_completing_values(self, mock_candidates):
+    async def test_completion_candidates_when_completing_values(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('foo', 'bar'))
         mock_candidates.setting_values.return_value = Candidates(('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', 'bar', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'bar', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates_when_completing_list_values(self, mock_candidates):
+    async def test_completion_candidates_when_completing_list_values(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('foo', 'bar'))
         mock_candidates.setting_values.return_value = Candidates(('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '_', '_', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(SetCmd, Args(('set', 'bar', '_', '_', '_'), curarg_index=3), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '_', '_', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'bar', '_', '_', '_'), curarg_index=3), exp_cands=('a', 'b', 'c'))
 
 
 from stig.commands.cli import RateLimitCmd
@@ -364,35 +364,35 @@ class TestRateLimitCmd(CommandTestCase):
             self.assert_stderr("ratelimit: bad value: 'fooo'")
             self.clear_stdout(); self.clear_stderr()
 
-    def test_completion_candidates_directions(self):
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', ''), curarg_index=1),
+    async def test_completion_candidates_directions(self):
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', ''), curarg_index=1),
                                           exp_cands=('up', 'down'), exp_curarg_seps=(',',))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up,'), curarg_index=1),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up,'), curarg_index=1),
                                           exp_cands=('down',), exp_curarg_seps=(',',))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'down,'), curarg_index=1),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'down,'), curarg_index=1),
                                           exp_cands=('up',), exp_curarg_seps=(',',))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'dn,'), curarg_index=1),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'dn,'), curarg_index=1),
                                           exp_cands=('up',), exp_curarg_seps=(',',))
 
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', ''), curarg_index=1),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', ''), curarg_index=1),
                                           exp_cands=('up', 'down'), exp_curarg_seps=(',',))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '', '--quiet'), curarg_index=1),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '', '--quiet'), curarg_index=1),
                                           exp_cands=('up', 'down'), exp_curarg_seps=(',',))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '--quiet', ''), curarg_index=2),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '--quiet', ''), curarg_index=2),
                                           exp_cands=('up', 'down'), exp_curarg_seps=(',',))
 
     @patch('stig.commands.base.config.candidates')
-    def test_completion_candidates_torrent_filter(self, mock_candidates):
+    async def test_completion_candidates_torrent_filter(self, mock_candidates):
         mock_candidates.torrent_filter.return_value = Candidates(('a', 'b', 'c'))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_'), curarg_index=3),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_'), curarg_index=3),
                                           exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_', '_'), curarg_index=4),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_', '_'), curarg_index=4),
                                           exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_', '_'), curarg_index=3),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_', '_'), curarg_index=3),
                                           exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '-q', 'up', '10MB', '_', '_'), curarg_index=4),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '-q', 'up', '10MB', '_', '_'), curarg_index=4),
                                           exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '-q', '10MB', '_', '_'), curarg_index=5),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '-q', '10MB', '_', '_'), curarg_index=5),
                                           exp_cands=('a', 'b', 'c'))
-        self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '-q', '_', '_'), curarg_index=4),
+        await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '-q', '_', '_'), curarg_index=4),
                                           exp_cands=('a', 'b', 'c'))
