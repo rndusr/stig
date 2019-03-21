@@ -359,7 +359,7 @@ class RenameCmdbase(metaclass=InitCommand):
                 # path is <torrent ID>/<relative/path/to/file/in/torrent
                 TORRENT = unique_path
 
-        # Split filter from current path
+        # Split torrent filter from relative path in torrent
         if TORRENT and '/' in TORRENT:
             FILTER, PATH = TORRENT.split('/', maxsplit=1)
         else:
