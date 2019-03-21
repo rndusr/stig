@@ -352,12 +352,12 @@ class RenameTorrentCmdbase(metaclass=InitCommand):
     srvapi = ExpectedResource
 
     async def run(self, TORRENT, NEW):
-        # Autodetect current path
         if not TORRENT:
-            path = self.get_focused_path_in_torrent()
-            if path:
-                # path is <torrent name>/<relative/path/to/file/in/torrent>
-                TORRENT = path
+            # Autodetect current path
+            unique_path = self.get_relative_path_from_focused()
+            if unique_path:
+                # path is <torrent ID>/<relative/path/to/file/in/torrent
+                TORRENT = unique_path
 
         # Split filter from current path
         if TORRENT and '/' in TORRENT:

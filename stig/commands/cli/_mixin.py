@@ -120,7 +120,7 @@ class select_torrents():
 
 
 class select_files():
-    def get_focused_path_in_torrent(self):
+    def get_relative_path_from_focused(self):
         """Return relative path in torrent of focused file or directory"""
         pass
 
