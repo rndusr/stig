@@ -124,7 +124,7 @@ class Path(SmartCmpStr):
         return super().__new__(cls, os.path.normpath(path))
 
     def __repr__(self):
-        return '%s(%r)' % (type(self).__name__, self)
+        return '%s(%r)' % (type(self).__name__, str(self))
 
 
 
