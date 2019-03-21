@@ -197,7 +197,13 @@ class select_files():
         focused_widget = self.tui.tabs.focus
         if hasattr(focused_widget, 'focused_file_ids'):
             widget = focused_widget.focused_widget
-            return widget.data['path-relative']
+            tid = widget.data['tid']
+            path = widget.data['path-relative']
+            first_slash = path.find('/')
+            if first_slash > -1:
+                return 'id=%d%s' % (tid, path[first_slash:])
+            else:
+                return path
 
     def select_files(self, FILTER, allow_no_filter=True, discover_file=True):
         """
