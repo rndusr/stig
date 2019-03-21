@@ -327,7 +327,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
         return candidates.torrent_filter(args.curarg)
 
 
-class RenameTorrentCmdbase(metaclass=InitCommand):
+class RenameCmdbase(metaclass=InitCommand):
     name = 'rename'
     aliases = ('rn',)
     provides = set()

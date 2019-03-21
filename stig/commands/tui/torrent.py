@@ -113,8 +113,8 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
         await self.cmdmgr.run_async(cmd)
 
 
-class RenameTorrentCmd(base.RenameTorrentCmdbase,
-                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
+class RenameCmd(base.RenameCmdbase,
+                mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
 
 

@@ -142,8 +142,8 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
         pass
 
 
-class RenameTorrentCmd(base.RenameTorrentCmdbase,
-                       mixin.make_request, mixin.select_torrents, mixin.select_files):
+class RenameCmd(base.RenameCmdbase,
+                mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'cli'}
 
 
