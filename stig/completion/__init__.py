@@ -12,6 +12,7 @@
 
 from collections import abc
 import re
+from typing import Pattern
 
 
 class Categories(abc.Sequence):
@@ -167,7 +168,7 @@ class Candidates(abc.Sequence):
 
     def reduce(self, regex):
         """Reduce the candidates to the ones that match `pattern`"""
-        if not isinstance(regex, re.Pattern):
+        if not isinstance(regex, Pattern):
             regex = re.compile(regex)
         # Remember current candidate so we can keep it selected if possible
         curcand = self.current
