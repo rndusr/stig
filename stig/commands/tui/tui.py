@@ -755,16 +755,6 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         # COMMAND may get additional hidden arguments as instance attributes
         cmd_attrs = {}
 
-        # The command we're running might be interested in the items the user
-        # had selected in the previously focused tab, e.g. if the user selects
-        # multiple torrents and runs "tab filelist", the new tab should list the
-        # files of the selected torrnets.  So we provide the ID of the
-        # previously focused tab as a command attribute.  The command can then
-        # use that to look up the relevant torrents (usually via the
-        # select_torrents() mixin class).
-        if tabid_old is not None:
-            cmd_attrs['previous_tab_id'] = tabid_old
-
         # Apply close/focus operations
         if focus is not None:
             log.debug('Focusing tab %r', tabid_focus)
