@@ -73,6 +73,7 @@ class Tabs(urwid.Widget):
     """Organize multiple widgets in tabs"""
 
     _sizing = frozenset([urwid.FLOW, urwid.BOX])
+    _max_focus_history_size = 100
 
     def __init__(self, *contents, tabbar=None):
         """
@@ -93,7 +94,9 @@ class Tabs(urwid.Widget):
             self._tabbar = tabbar
 
         self._ids = []
+        self._focus_history = []
         self._contents = urwid.MonitoredFocusList()
+        self._contents.set_focus_changed_callback(self._focus_changed_callback)
         for content in contents:
             if not isinstance(content, abc.Mapping):
                 content = dict(zip(('title', 'widget', 'position', 'focus'),
@@ -252,10 +255,14 @@ class Tabs(urwid.Widget):
 
         Raises IndexError if tab can't be found.
         """
-        i = self.get_index(position)
-        del self._ids[i]
-        del self._contents[i]
-        del self._tabbar.base_widget[i]
+        index = self.get_index(position)
+        tabid = self.get_id(position)
+        del self._ids[index]
+        del self._contents[index]
+        del self._tabbar.base_widget[index]
+        fh = self._focus_history
+        while tabid in fh:
+            fh.remove(tabid)
 
     def clear(self):
         """Remove all tabs"""
@@ -308,6 +315,12 @@ class Tabs(urwid.Widget):
         i = self.get_index(position)
         self._contents[i] = widget
 
+    def _focus_changed_callback(self, pos):
+        tab_id = self.get_id(pos)
+        self._focus_history.append(tab_id)
+        while len(self._focus_history) > self._max_focus_history_size:
+            self._focus_history.pop(0)
+
     @property
     def focus(self):
         """Content widget of currently focused tab or None if no tabs exist"""
@@ -315,6 +328,18 @@ class Tabs(urwid.Widget):
         if position is not None:
             return self._contents[position]
         return None
+
+    @property
+    def prev_focus(self):
+        """Content widget of previously focused tab or None"""
+        fh = self._focus_history
+        if len(fh) >= 2:
+            # fh[-1] is the currently focused tab ID
+            prev_id = fh[-2]
+            try:
+                return self.get_content(prev_id)
+            except IndexError:
+                pass
 
     @property
     def focus_position(self):
@@ -328,6 +353,18 @@ class Tabs(urwid.Widget):
             self._contents.focus = position
         else:
             raise IndexError('No tab at position: {!r}'.format(position))
+
+    @property
+    def prev_focus_position(self):
+        """Index of previously focused tab or None"""
+        fh = self._focus_history
+        if len(fh) >= 2:
+            # fh[-1] is the currently focused tab ID
+            prev_id = fh[-2]
+            try:
+                return self.get_index(prev_id)
+            except IndexError:
+                pass
 
     @property
     def focus_id(self):
@@ -344,6 +381,13 @@ class Tabs(urwid.Widget):
             self._contents.focus = i
         else:
             raise IndexError('No tab with ID: {}'.format(tabid))
+
+    @property
+    def prev_focus_id(self):
+        """TabID of previously focused tab or None"""
+        fh = self._focus_history
+        if len(fh) >= 2:
+            return fh[-2]
 
     @property
     def contents(self):

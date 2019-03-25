@@ -140,6 +140,41 @@ class TestTabs(unittest.TestCase):
         self.tabs.focus_position = 1
         self.assertEqual(self.tabs.focus.text, 'Tab two')
 
+    def test_prev_focus_position_property(self):
+        self.assertEqual(self.tabs.focus_position, 1)
+        self.assertEqual(self.tabs.prev_focus_position, None)
+        self.tabs.focus_position = 0
+        self.assertEqual(self.tabs.prev_focus_position, 1)
+        self.tabs.insert(urwid.Text('Tab 3'), urwid.Text('Tab three'))
+        self.assertEqual(self.tabs.prev_focus_position, 0)
+        self.tabs.focus_position = 1
+        self.assertEqual(self.tabs.prev_focus_position, 2)
+        self.tabs.remove(1)
+        self.assertEqual(self.tabs.prev_focus_position, 0)
+
+    def test_prev_focus_id_property(self):
+        self.tabs.insert(urwid.Text('Tab 3'), urwid.Text('Tab three'))
+        ids = (self.tabs.get_id(0), self.tabs.get_id(1), self.tabs.get_id(2))
+        self.assertEqual(self.tabs.focus_id, ids[2])
+        self.assertEqual(self.tabs.prev_focus_id, ids[1])
+        self.tabs.focus_id = ids[0]
+        self.assertEqual(self.tabs.prev_focus_id, ids[2])
+        self.tabs.focus_id = ids[2]
+        self.assertEqual(self.tabs.prev_focus_id, ids[0])
+        self.tabs.remove(ids[2])
+        self.assertEqual(self.tabs.prev_focus_id, ids[0])
+
+    def test_prev_focus(self):
+        self.tabs.insert(urwid.Text('Tab 3'), urwid.Text('Tab three'))
+        self.assertEqual(self.tabs.focus.text, 'Tab three')
+        self.assertEqual(self.tabs.prev_focus.text, 'Tab two')
+        self.tabs.focus_position = 0
+        self.assertEqual(self.tabs.prev_focus.text, 'Tab three')
+        self.tabs.focus_position = 2
+        self.assertEqual(self.tabs.prev_focus.text, 'Tab one')
+        self.tabs.remove(1)
+        self.assertEqual(self.tabs.prev_focus.text, 'Tab three')
+
     def test_contents_property(self):
         self.assertEqual(tuple(w.text for w in self.tabs.contents),
                          ('Tab one', 'Tab two'))
