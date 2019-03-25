@@ -14,6 +14,7 @@ log = make_logger(__name__)
 
 import re
 import inspect
+from collections import abc
 
 from ..utils import cliparser
 from ..completion import (Categories, Candidates, SingleCandidate)
@@ -39,7 +40,7 @@ class Completer():
             cats = ()
         elif isinstance(cands, Candidates):
             cats = (cands,)
-        elif isinstance(cands, tuple) and all(isinstance(c, Candidates) for c in cands):
+        elif isinstance(cands, abc.Sequence) and all(isinstance(c, Candidates) for c in cands):
             cats = cands
         else:
             raise RuntimeError('Not all Candidates objects: %r' % (cands,))
