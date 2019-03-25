@@ -75,7 +75,8 @@ class Tabs(urwid.Widget):
     _sizing = frozenset([urwid.FLOW, urwid.BOX])
 
     def __init__(self, *contents, tabbar=None):
-        """Create new Tabs widget
+        """
+        Create new Tabs widget
 
         contents: Iterable of dictionaries or iterables that match the arguments
                   of the `insert` method
@@ -131,7 +132,8 @@ class Tabs(urwid.Widget):
         return urwid.CanvasCombine(combinelist)
 
     def get_index(self, position=None):
-        """Return tab index at `position` or None if there are no tabs
+        """
+        Return tab index at `position` or None if there are no tabs
 
         position: Index (int), ID (TabID) or None (focused tab)
 
@@ -158,7 +160,8 @@ class Tabs(urwid.Widget):
                 raise IndexError('No tab at position: {}'.format(position))
 
     def get_id(self, position=None):
-        """Return unique TabID of tab at `position` or None if there are no tabs
+        """
+        Return unique TabID of tab at `position` or None if there are no tabs
 
         position: Index (int), ID (TabID) or None (focused tab)
 
@@ -168,7 +171,8 @@ class Tabs(urwid.Widget):
         return self._ids[i] if i is not None else None
 
     def load(self, title, widget=None, position=None, focus=True):
-        """Set content at `position`, in focused tab or in new tab
+        """
+        Set content at `position`, in focused tab or in new tab
 
         If `position` is not None, it is forwarded to `set_title`/`set_content`
         together with `title`/`widget`.
@@ -203,7 +207,8 @@ class Tabs(urwid.Widget):
             return self.get_id()
 
     def insert(self, title, widget=None, position=-1, focus=True):
-        """Insert new tab
+        """
+        Insert new tab
 
         title: Any flow or fixed widget to use as the tab's title
         widget: Widget to show when this tab is selected or None
@@ -240,7 +245,8 @@ class Tabs(urwid.Widget):
         return this_id
 
     def remove(self, position=None):
-        """Remove tab `position`
+        """
+        Remove tab `position`
 
         position: Index (int), ID (TabID) or None (focused tab)
 
@@ -257,7 +263,8 @@ class Tabs(urwid.Widget):
             self.remove(0)  # Remove tab at index 0
 
     def get_title(self, position=None):
-        """Return tab title widget at `position`
+        """
+        Return tab title widget at `position`
 
         position: Index (int), ID (TabID) or None (focused tab)
 
@@ -267,7 +274,8 @@ class Tabs(urwid.Widget):
         return self._tabbar.base_widget[i]
 
     def set_title(self, title, position=None):
-        """Change the title widget of a tab
+        """
+        Change the title widget of a tab
 
         title: New title widget; should be a Text object optionally wrapped by
                AttrMap
@@ -279,7 +287,8 @@ class Tabs(urwid.Widget):
         self._tabbar.base_widget[i] = title
 
     def get_content(self, position=None):
-        """Return tab content widget at `position`
+        """
+        Return tab content widget at `position`
 
         position: Index (int), ID (TabID) or None (focused tab)
 
@@ -289,7 +298,8 @@ class Tabs(urwid.Widget):
         return self._contents[i]
 
     def set_content(self, widget=None, position=None):
-        """Set content of tab at `position` to `widget`
+        """
+        Set content of tab at `position` to `widget`
 
         position: Index (int), ID (TabID) or None (focused tab)
 
