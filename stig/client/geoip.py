@@ -117,7 +117,8 @@ else:
                             async with session.get(self.url, timeout=self.timeout) as response:
                                 data = await response.content.read()
                         except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                            self._download_attempt_delay = max(self._download_attempt_delay * 2, 3600)
+                            log.debug('Calculating minimum delay between downloads: min(%r * 2, 3600)', self._download_attempt_delay)
+                            self._download_attempt_delay = min(self._download_attempt_delay * 2, 3600)
                             log.debug('New minimum delay between downloads: %r seconds', self._download_attempt_delay)
                             raise GeoIPError('Failed to download geolocation database %s: %s'
                                              % (self.url, os.strerror(e.errno)))
