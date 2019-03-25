@@ -358,7 +358,7 @@ class TorrentAPI(TorrentAPIBase):
         """
         Get torrents
 
-        torrents:   Iterator of torrent IDs, TorrentFilter object (or its string
+        torrents:   Sequence of torrent IDs, TorrentFilter object (or its string
                     representation) or None for all torrents
         keys:       tuple of Torrent keys to fetch or 'ALL' for all torrents
         from_cache: Whether to try to get the torrents from a previous request
