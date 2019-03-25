@@ -148,7 +148,7 @@ class TestGeoIP_load(asynctest.TestCase):
     def tearDown(self):
         mock.patch.stopall()
 
-    async def test_download_db_is_always_called(self):
+    async def test_force_update_option(self):
         await self.geoip.load()
         self.mock_download_db.assert_called_once_with(force=False)
         self.mock_download_db.reset_mock()
@@ -245,22 +245,22 @@ class Test_country_code(asynctest.TestCase):
         self.mock_maxminddb.get.side_effect = maxminddb.InvalidDatabaseError()
         self.assertEqual(self.geoip.country_code('1.2.3.4'), None)
         self.mock_maxminddb.get.assert_called_once_with('1.2.3.4')
-        self.mock_load.assert_called_once_with(force_update=True)
+        self.mock_load.assert_called_once_with(force_update=True, ignore_errors=True)
 
     def test_maxminddb_raises_UnicodeDecodeError(self):
         self.mock_maxminddb.get.side_effect = UnicodeDecodeError('mockcodec', b'', 0, 0, 'Oh no!')
         self.assertEqual(self.geoip.country_code('1.2.3.4'), None)
         self.mock_maxminddb.get.assert_called_once_with('1.2.3.4')
-        self.mock_load.assert_called_once_with(force_update=True)
+        self.mock_load.assert_called_once_with(force_update=True, ignore_errors=True)
 
     def test_maxminddb_returns_non_dictinary(self):
         self.mock_maxminddb.get.return_value = 'not a dict'
         self.assertEqual(self.geoip.country_code('1.2.3.4'), None)
         self.mock_maxminddb.get.assert_called_once_with('1.2.3.4')
-        self.mock_load.assert_called_once_with(force_update=True)
+        self.mock_load.assert_called_once_with(force_update=True, ignore_errors=True)
 
     def test_country_key_maps_to_non_dictionary(self):
         self.mock_maxminddb.get.return_value = {'country': 'not a dict'}
         self.assertEqual(self.geoip.country_code('1.2.3.4'), None)
         self.mock_maxminddb.get.assert_called_once_with('1.2.3.4')
-        self.mock_load.assert_called_once_with(force_update=True)
+        self.mock_load.assert_called_once_with(force_update=True, ignore_errors=True)
