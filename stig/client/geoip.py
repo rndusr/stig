@@ -181,25 +181,35 @@ else:
             else:
                 return True
 
-        async def load(self, force_update=False):
+        async def load(self, force_update=False, ignore_errors=False):
             """
             Load DB from `cachefile` unless it is already loaded
 
             If `cachefile` doesn't exist or has expired, attempt to download it
             first.  If `force_update` evaluates to True, ignore `max_cache_age`.
 
-            Raise GeoIPError on failure.
+            Raise GeoIPError on failure unless `ignore_errors` evaluates to
+            True.
             """
             if self._db is None or force_update:
-                await self._download_db(force=force_update)
+                try:
+                    await self._download_db(force=force_update)
+                except GeoIPError:
+                    if not ignore_errors:
+                        raise
+
                 try:
                     self._db = maxminddb.open_database(self.cachefile)
                 except maxminddb.InvalidDatabaseError as e:
-                    raise GeoIPError('Unable to read geolocation database: %s: Invalid format'
-                                     % (self.cachefile,))
+                    if not ignore_errors:
+                        raise GeoIPError('Unable to read geolocation database: %s: Invalid format'
+                                         % (self.cachefile,))
                 except OSError as e:
-                    raise GeoIPError('Unable to read geolocation database: %s: %s'
-                                     % (self.cachefile, os.strerror(e.errno)))
+                    if not ignore_errors:
+                        errmsg = 'Unable to read geolocation database: %s' % (self.cachefile,)
+                        if e.errno is not None:
+                            errmsg += ': %s' % (os.strerror(e.errno),)
+                        raise GeoIPError(errmsg)
                 else:
                     self._lookup_cache.clear()
 
