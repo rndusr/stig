@@ -235,10 +235,10 @@ else:
                     info = db.get(addr)
                 except maxminddb.InvalidDatabaseError as e:
                     log.debug('Invalid database: %r', e)
-                    asyncio.ensure_future(self.load(force_update=True))
+                    asyncio.ensure_future(self.load(force_update=True, ignore_errors=True))
                 except UnicodeDecodeError as e:
                     log.debug('Caught UnicodeDecodeError with address %r: %r', addr, e)
-                    asyncio.ensure_future(self.load(force_update=True))
+                    asyncio.ensure_future(self.load(force_update=True, ignore_errors=True))
                 else:
                     if isinstance(info, dict):
                         country = info.get('country')
@@ -248,13 +248,13 @@ else:
                             return iso_code
                         else:
                             log.debug('"country" key maps to non-dict: %r', country)
-                            asyncio.ensure_future(self.load(force_update=True))
+                            asyncio.ensure_future(self.load(force_update=True, ignore_errors=True))
                     else:
                         log.debug('maxminddb.get(%r) returned non-dict: %r', addr, info)
-                        asyncio.ensure_future(self.load(force_update=True))
+                        asyncio.ensure_future(self.load(force_update=True, ignore_errors=True))
             else:
                 log.debug('Database is not loaded')
-                asyncio.ensure_future(self.load())
+                asyncio.ensure_future(self.load(ignore_errors=True))
 
         def _prune_lookup_cache(self):
             cache = self._lookup_cache
