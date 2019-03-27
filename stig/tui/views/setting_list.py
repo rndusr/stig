@@ -16,7 +16,7 @@ import urwid
 
 from .setting import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase)
-from ...singletons import (localcfg, remotecfg, srvapi, aioloop)
+from ... import objects
 from ...utils.usertypes import (Bool, Option)
 from ...client import SettingFilter
 
@@ -24,25 +24,25 @@ from ...client import SettingFilter
 def _change_setting(name, new_value, on_success=None):
     remote_name = name[4:]  # Remove 'srv.'
 
-    if name in localcfg:
+    if name in objects.localcfg:
         try:
-            localcfg[name] = new_value
+            objects.localcfg[name] = new_value
         except ValueError as e:
             log.error('Cannot set %s = %r: %s', name, new_value, e)
         else:
             if on_success is not None:
                 on_success()
 
-    elif remote_name in remotecfg:
+    elif remote_name in objects.remotecfg:
         async def setter():
             try:
-                await remotecfg.set(remote_name, new_value)
-            except (ValueError, srvapi.ClientError) as e:
+                await objects.remotecfg.set(remote_name, new_value)
+            except (ValueError, objects.srvapi.ClientError) as e:
                 log.error('Cannot set %s = %r: %s', name, new_value, e)
             else:
                 if on_success is not None:
                     on_success()
-        aioloop.create_task(setter())
+        objects.aioloop.create_task(setter())
 
     else:
         raise RuntimeError('Not a setting name: %r' % name)
@@ -169,27 +169,27 @@ class SettingListWidget(ListWidgetBase):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)
         self._sort = sort
         self._secondary_filter = None
-        localcfg.on_change(self._handle_update)
-        remotecfg.on_update(self._handle_update)
+        objects.localcfg.on_change(self._handle_update)
+        objects.remotecfg.on_update(self._handle_update)
         self.refresh()
 
     def _handle_update(self, *_, **__):
         self._data_dict = {
             **{k: {'id': k,
                    'value': v,
-                   'default': localcfg.default(k),
-                   'description': localcfg.description(k)}
-               for k,v in localcfg.items()},
+                   'default': objects.localcfg.default(k),
+                   'description': objects.localcfg.description(k)}
+               for k,v in objects.localcfg.items()},
             **{'srv.'+k: {'id': 'srv.'+k,
                           'value': v,
                           'default': '',
-                          'description': remotecfg.description(k)}
-               for k,v in remotecfg.items()},
+                          'description': objects.remotecfg.description(k)}
+               for k,v in objects.remotecfg.items()},
         }
         self._invalidate()
 
     def refresh(self):
-        remotecfg.poll()
+        objects.remotecfg.poll()
 
     @property
     def sort(self):

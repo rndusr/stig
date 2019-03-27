@@ -15,7 +15,7 @@ log = make_logger(__name__)
 import urwid
 import os
 from . import urwidpatches
-from ..singletons import (aioloop, localcfg, cmdmgr, srvapi, geoip)
+from ..objects import (aioloop, localcfg, cmdmgr, srvapi, geoip)
 
 
 # Keybindings

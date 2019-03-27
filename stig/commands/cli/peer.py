@@ -15,6 +15,7 @@ log = make_logger(__name__)
 from ..base import peer as base
 from . import _mixin as mixin
 from .. import (ExpectedResource, CmdError)
+from ... import objects
 from ._table import print_table
 
 
@@ -42,8 +43,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
             peerlist.extend(filter_peers(torrent['peers']))
 
         # Pre-lookup peers' IPs
-        from ...singletons import localcfg
-        if 'host' in columns and localcfg['reverse-dns']:
+        if 'host' in columns and objects.localcfg['reverse-dns']:
             from ...client import rdns
             rdns.query(*(p['ip'] for p in peerlist))
 

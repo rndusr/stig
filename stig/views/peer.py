@@ -73,7 +73,7 @@ class Host(ColumnBase):
         return self.data['ip']
 
     def get_cli_value(self):
-        from ..singletons import localcfg
+        from ..objects import localcfg
         if localcfg['reverse-dns']:
             from ..client import rdns
             return rdns.gethostbyaddr(self.data['ip'])

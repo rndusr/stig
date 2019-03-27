@@ -20,7 +20,7 @@ import time
 
 from .group import Group
 from .scroll import ScrollBar
-from ..singletons import aioloop
+from ..objects import aioloop
 
 
 class CLIEditWidget(urwid.WidgetWrap):

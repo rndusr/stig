@@ -14,7 +14,7 @@
 from .logging import make_logger
 log = make_logger(__name__)
 
-from .singletons import (localcfg, srvapi, geoip)
+from .objects import (localcfg, srvapi, geoip)
 from .utils import convert
 from .views.torrent import COLUMNS as TORRENT_COLUMNS
 from .views.file import COLUMNS as FILE_COLUMNS

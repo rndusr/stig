@@ -14,7 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ... import singletons
+from ... import objects
 from .. import (ExpectedResource, CmdError)
 from .. import utils
 from ._common import make_tab_title_widget
@@ -275,7 +275,7 @@ class create_list_widget():
 
         # Create list widget
         log.debug('Creating %s(%s, %s)', list_cls.__name__, args, kwargs)
-        listw = list_cls(self.srvapi, self.tui.keymap, *args, **kwargs)
+        listw = list_cls(objects.srvapi, self.tui.keymap, *args, **kwargs)
 
         # Add list to tabs
         tabid = self.tui.tabs.load(make_titlew(listw.title), listw)
@@ -303,28 +303,24 @@ class create_list_widget():
 
 
 class polling_frenzy():
-    aioloop = ExpectedResource
-    srvapi  = ExpectedResource
-
-    def polling_frenzy(self, duration=2, short_interval=0.5):
+    @classmethod
+    def polling_frenzy(cls, duration=2, short_interval=0.5):
         """Reduce polling interval to `short_interval` for `duration` seconds"""
-        srvapi = self.srvapi
-        if srvapi.interval > 1:
-            import asyncio
+        if objects.srvapi.interval > 1:
             async def coro():
                 log.debug('Setting poll interval to %s for %s seconds', short_interval, duration)
-                orig_interval = srvapi.interval
-                srvapi.interval = short_interval
-                await asyncio.sleep(duration, loop=self.aioloop)
-                srvapi.interval = orig_interval
-                log.debug('Interval restored to %s', srvapi.interval)
-            self.aioloop.create_task(coro())
+                orig_interval = objects.srvapi.interval
+                objects.srvapi.interval = short_interval
+                import asyncio
+                await asyncio.sleep(duration, loop=aioloop)
+                objects.srvapi.interval = orig_interval
+                log.debug('Interval restored to %s', objects.srvapi.interval)
+            objects.aioloop.create_task(coro())
 
 
 import os
 import collections
 class placeholders(make_request):
-    srvapi = ExpectedResource
     tui = ExpectedResource
 
     class _Placeholder():
@@ -456,7 +452,7 @@ class placeholders(make_request):
         log.debug('Fetching fresh Torrent #%d with keys: %r', torrent_id, keys)
         # Request new torrent because we can't be sure the wanted key
         # exists in widget.data
-        request = self.srvapi.torrent.torrents((torrent_id,), keys=keys)
+        request = objects.srvapi.torrent.torrents((torrent_id,), keys=keys)
         response = await self.make_request(request, quiet=True)
         if not response.success:
             raise CmdError()

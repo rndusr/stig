@@ -11,7 +11,7 @@
 
 """Mixin classes that are common between TUI and CLI commands"""
 
-from ... import singletons
+from ... import objects
 
 
 class get_single_torrent():
@@ -29,7 +29,7 @@ class get_single_torrent():
         keys = tuple(keys)
         if 'name' not in keys:
             keys = keys + ('name',)
-        request = singletons.srvapi.torrent.torrents(tfilter, keys=keys)
+        request = objects.srvapi.torrent.torrents(tfilter, keys=keys)
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
             if len(response.torrents) == 1 or not one_or_none:
@@ -110,8 +110,7 @@ class get_peer_columns():
         """
         cols = self.cfg.validate('columns.peers', columns)
         if 'country' in cols:
-            from ...singletons import localcfg
-            if not localcfg['geoip']:
+            if not objects.localcfg['geoip']:
                 cols = cols.copy(*(col for col in cols if col != 'country'))
         return cols
 

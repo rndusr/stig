@@ -15,7 +15,7 @@ log = make_logger(__name__)
 from functools import partial
 import os
 
-from ..singletons import (localcfg, srvapi, aioloop)
+from .. objects import (localcfg, srvapi)
 from . import main as tui
 
 from .views.torrent_list import TorrentListWidget

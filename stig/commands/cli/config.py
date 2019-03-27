@@ -11,6 +11,7 @@
 
 from ..base import config as base
 from . import _mixin as mixin
+from ... import objects
 from ._table import print_table
 
 from itertools import chain
@@ -29,7 +30,6 @@ class SetCmd(base.SetCmdbase,
 
     def make_setting_list(self, sort, columns):
         from ...views.setting import COLUMNS as SETTING_COLUMNS
-        from ...singletons import (localcfg, remotecfg)
 
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, SETTING_COLUMNS)
@@ -37,14 +37,14 @@ class SetCmd(base.SetCmdbase,
         settings = sort.apply(
             chain(({'id': k,
                     'value': v,
-                    'default': localcfg.default(k),
-                    'description': localcfg.description(k)}
-                   for k,v in localcfg.items()),
+                    'default': objects.localcfg.default(k),
+                    'description': objects.localcfg.description(k)}
+                   for k,v in objects.localcfg.items()),
                   ({'id': 'srv.'+k,
                     'value': v,
                     'default': '',
-                    'description': remotecfg.description(k)}
-                   for k,v in remotecfg.items()))
+                    'description': objects.remotecfg.description(k)}
+                   for k,v in objects.remotecfg.items()))
         )
 
         print_table(settings, columns, SETTING_COLUMNS)

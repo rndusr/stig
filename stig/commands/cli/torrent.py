@@ -17,7 +17,7 @@ from . import _mixin as mixin
 from .. import CmdError
 from ._table import (print_table, TERMSIZE)
 from ...completion import candidates
-from ... import singletons
+from ... import objects
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -37,7 +37,7 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                 needed_keys.update(_item.needed_keys)
 
         response = await self.make_request(
-            singletons.srvapi.torrent.torrents((torrent_id,), keys=needed_keys),
+            objects.srvapi.torrent.torrents((torrent_id,), keys=needed_keys),
             quiet=True)
         if not response.torrents:
             raise CmdError()
@@ -91,7 +91,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         for colname in columns:
             keys.update(TORRENT_COLUMNS[colname].needed_keys)
         response = await self.make_request(
-            singletons.srvapi.torrent.torrents(tfilter, keys=keys),
+            objects.srvapi.torrent.torrents(tfilter, keys=keys),
             quiet=True)
         torrents = sort.apply(response.torrents)
 
@@ -135,7 +135,7 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
         import sys
         if sys.stdout.isatty():
             cmd = 'ls --sort name %s' % tfilter
-            await singletons.cmdmgr.run_async(cmd)
+            await objects.cmdmgr.run_async(cmd)
 
     def remove_list_of_hits(self):
         pass

@@ -11,7 +11,7 @@
 
 import urwid
 
-from ..singletons import (srvapi, localcfg)
+from .. import objects
 from . import main as tui
 from ..client import constants as const
 
@@ -144,10 +144,10 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
         self._text = urwid.Text('Not connected')
         self._attrmap = urwid.AttrMap(self._text, 'topbar.host.disconnected')
         super().__init__(self._attrmap)
-        srvapi.rpc.on('connecting', self._handle_connecting)
-        srvapi.rpc.on('connected', self._handle_connected)
-        srvapi.rpc.on('disconnected', self._handle_disconnected)
-        srvapi.rpc.on('error', self._handle_error)
+        objects.srvapi.rpc.on('connecting', self._handle_connecting)
+        objects.srvapi.rpc.on('connected', self._handle_connected)
+        objects.srvapi.rpc.on('disconnected', self._handle_disconnected)
+        objects.srvapi.rpc.on('error', self._handle_error)
 
     @staticmethod
     def _connection_string(rpc):
@@ -201,8 +201,8 @@ class BandwidthStatusWidget(urwid.Widget):
         self._dn_limit_width = 0
         self._connected = False
 
-        srvapi.status.on_update(self._update_current_rates)
-        srvapi.settings.on_update(self._update_rate_limits)
+        objects.srvapi.status.on_update(self._update_current_rates)
+        objects.srvapi.settings.on_update(self._update_rate_limits)
 
     def _update_current_rates(self, status):
         up = status.rate_up
@@ -234,7 +234,7 @@ class BandwidthStatusWidget(urwid.Widget):
         self._invalidate()
 
     def _mk_tail_canv(self, direction, icon):
-        unit = {'bit': 'b', 'byte': 'B'}[localcfg['unit.bandwidth']]
+        unit = {'bit': 'b', 'byte': 'B'}[objects.localcfg['unit.bandwidth']]
         text = urwid.Text('%s/s%s' % (unit, icon))
         attr_text = urwid.AttrMap(text, 'bottombar.bandwidth.%s' % direction)
         return attr_text.render((self._TAIL_WIDTH,))
@@ -286,7 +286,7 @@ class TorrentCountersWidget(urwid.WidgetWrap):
     def __init__(self):
         self._text = urwid.Text(EMPTY_TEXT)
         super().__init__(urwid.AttrMap(self._text, 'bottombar'))
-        tui.srvapi.status.on_update(self._update_counters)
+        objects.srvapi.status.on_update(self._update_counters)
 
     def _update_counters(self, status):
         counters = status.count

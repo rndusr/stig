@@ -15,7 +15,6 @@ log = make_logger(__name__)
 from .. import (InitCommand, CmdError, ExpectedResource, utils)
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
-from ...singletons import localcfg
 from ...completion import candidates
 from ...settings import defaults
 from ...utils.usertypes import Float

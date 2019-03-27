@@ -62,7 +62,7 @@ class Host(_COLUMNS['host'], CellWidgetBase):
         super().update(data)
 
         # Lookup hostname once per instance
-        from ...singletons import localcfg
+        from ...objects import localcfg
         if localcfg['reverse-dns']:
             def set_hostname(hostname):
                 if self.text.text != hostname:
