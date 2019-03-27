@@ -22,13 +22,11 @@ from ._common import make_tab_title_widget
 
 class HelpCmd(base.HelpCmdbase):
     provides = {'tui'}
-    tui = ExpectedResource
 
     def display_help(self, topics, lines):
-        import urwid
         from ...tui.scroll import ScrollBar
         from ...tui.views.text import SearchableText
-        from ...tui.tuiobjects import keymap
+        from ...tui import tuiobjects
 
         if hasattr(self, 'title'):
             titlew = make_tab_title_widget(str(self.title),
@@ -39,11 +37,11 @@ class HelpCmd(base.HelpCmdbase):
                                            attr_unfocused='tabs.help.unfocused',
                                            attr_focused='tabs.help.focused')
 
-        helptext_widget_cls = keymap.wrap(SearchableText, context='helptext')
+        helptext_widget_cls = tuiobjects.keymap.wrap(SearchableText, context='helptext')
         helptext_widget = helptext_widget_cls(lines)
-        textw = urwid.AttrMap(helptext_widget, 'helptext')
-        contentw = urwid.AttrMap(ScrollBar(textw), 'helptext.scrollbar')
-        self.tui.tabs.load(titlew, contentw)
+        textw = tuiobjects.urwid.AttrMap(helptext_widget, 'helptext')
+        contentw = tuiobjects.urwid.AttrMap(ScrollBar(textw), 'helptext.scrollbar')
+        tuiobjects.tabs.load(titlew, contentw)
 
 
 class VersionCmd(base.VersionCmdbase):
@@ -52,10 +50,9 @@ class VersionCmd(base.VersionCmdbase):
 
 class LogCmd(base.LogCmdbase):
     provides = {'tui'}
-    tui = ExpectedResource
 
     def _do(self, action, *args):
-        logwidget = self.tui.logwidget
+        from ...tui.tuiobjects import logwidget
         if action == 'clear':
             if len(tuple(logwidget.entries)) < 1:
                 raise CmdError()

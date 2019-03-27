@@ -13,7 +13,7 @@ import urwid
 import collections
 
 from ..table import ColumnHeaderWidget
-from ..main import bottombar
+from ..tuiobjects import bottombar
 
 
 class Style():

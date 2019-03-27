@@ -13,140 +13,6 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import urwid
-import os
-from . import urwidpatches
-from ..objects import (aioloop, localcfg, cmdmgr, srvapi, geoip)
-from .tuiobjects import keymap
-
-
-# Widgets
-MAX_TAB_TITLE_WIDTH = 50
-
-from .group import Group
-from .tabs import (Tabs, TabBar)
-from .cli import CLIEditWidget
-from .logger import LogWidget
-from .miscwidgets import (KeyChainsWidget, QuickHelpWidget, ConnectionStatusWidget,
-                          BandwidthStatusWidget, TorrentCountersWidget, MarkedItemsWidget)
-from . import theme
-
-
-
-def load_geoip_db():
-    """
-    Load geolocation database in a background task
-    """
-    def _handle_geoip_load_result(task):
-        import asyncio
-        try:
-            task.result()
-        except asyncio.CancelledError:
-            pass
-        except geoip.GeoIPError as e:
-            log.error(e)
-    task = aioloop.create_task(geoip.load())
-    task.add_done_callback(_handle_geoip_load_result)
-
-
-
-def _create_cli_widget():
-    # TODO: If it's 2019, remove the following block.
-    #
-    # DEFAULT_HISTORY_FILE was deprecated in v0.10.0 to allow multiple history
-    # files.  Silently move the old history file to its new destination.
-    from xdg.BaseDirectory import xdg_data_home  as XDG_DATA_HOME
-    from ..settings.defaults import DEFAULT_HISTORY_DIR
-    from .. import __appname__
-    old_history_file = os.path.join(XDG_DATA_HOME, __appname__, 'history')
-    if os.path.exists(old_history_file):
-        if not os.path.exists(DEFAULT_HISTORY_DIR):
-            os.makedirs(DEFAULT_HISTORY_DIR)
-        os.rename(old_history_file, os.path.join(DEFAULT_HISTORY_DIR, 'commands'))
-
-    def reset_cli(cli):
-        cli.reset()
-        widgets.hide('cli')
-
-    def run_cmd(cli):
-        cmdmgr.run_task(cli.edit_text, on_error=log.error)
-        reset_cli(cli)
-
-    from ..completion import (Candidates, Candidate)
-    from .completer import Completer
-    def get_candidates(args):
-        log.debug('Getting candidates for %r', args)
-        if args.curarg_index == 0:
-            log.debug('Completing command: %r', args[0])
-            cands = (Candidate(cmdcls.name,
-                               description=cmdcls.description,
-                               short_form='%s' % (', '.join(cmdcls.aliases),))
-                     for cmdcls in cmdmgr.active_commands)
-            return Candidates(cands, label='Commands')
-        else:
-            cmdcls = cmdmgr.get_cmdcls(args[0])
-            if cmdcls is not None:
-                log.debug('  Completing argument for %r', cmdcls.__name__)
-                return cmdcls.completion_candidates(args)
-
-    history_file = os.path.join(localcfg['tui.cli.history-dir'].full_path, 'commands')
-    from ..commands import OPS
-    return CLIEditWidget(prompt=':',
-                         history_file=history_file,
-                         on_cancel=reset_cli,
-                         on_accept=run_cmd,
-                         completer=Completer(get_candidates, operators=OPS))
-
-
-
-def _greedy_spacer():
-    return urwid.Padding(urwid.Text(''))
-
-
-topbar = Group(cls=urwid.Columns)
-topbar.add(name='host',   widget=ConnectionStatusWidget(), options='pack')
-topbar.add(name='spacer', widget=urwid.AttrMap(_greedy_spacer(), 'topbar'))
-topbar.add(name='help',   widget=QuickHelpWidget(), options='pack')
-
-tabs = keymap.wrap(Tabs, context='tabs')(
-    tabbar=urwid.AttrMap(TabBar(), 'tabs.unfocused')
-)
-
-bottombar = Group(cls=urwid.Columns)
-bottombar.add(name='counters', widget=TorrentCountersWidget(), options='pack')
-bottombar.add(name='spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
-bottombar.add(name='marked', widget=MarkedItemsWidget(), options='pack')
-bottombar.add(name='spacer2', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
-bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
-
-cli = urwid.AttrMap(_create_cli_widget(), 'cli')
-
-logwidget = LogWidget(height=int(localcfg['tui.log.height']),
-                      autohide_delay=localcfg['tui.log.autohide'])
-
-keychains = KeyChainsWidget()
-keymap.on_keychain(keychains.update)
-
-widgets = keymap.wrap(Group, context='main')(cls=urwid.Pile)
-widgets.add(name='topbar', widget=topbar, options='pack')
-widgets.add(name='main', widget=tabs)
-widgets.add(name='log', widget=logwidget, options='pack', visible=False)
-widgets.add(name='cli', widget=cli, options='pack', visible=False)
-widgets.add(name='keychains', widget=keychains, options='pack')
-widgets.add(name='bottombar', widget=bottombar, options='pack')
-
-
-def unhandled_input(key):
-    key = keymap.evaluate(key)
-    if key is not None:
-        log.debug('Unhandled key: %s', key)
-
-urwidscreen = urwid.raw_display.Screen()
-urwidloop = urwid.MainLoop(widgets,
-                           screen=urwidscreen,
-                           event_loop=urwid.AsyncioEventLoop(loop=aioloop),
-                           unhandled_input=unhandled_input,
-                           handle_mouse=False)
-
 
 def run(command_runner):
     """
@@ -154,9 +20,12 @@ def run(command_runner):
 
     Return False if any of the commands failed, True otherwise.
     """
+    from .. import objects
+    from .import tuiobjects
+
     # Don't catch theme.ParserError - a broken default theme should make us
     # croak obviously and horribly
-    theme.init(localcfg.default('tui.theme'), urwidscreen)
+    tuiobjects.theme.init(objects.localcfg.default('tui.theme'), tuiobjects.urwidscreen)
 
     # Load tui-specific hooks before commands run (commands may trigger hooks)
     from . import hooks
@@ -169,16 +38,16 @@ def run(command_runner):
         return True
 
     # Load/Download GeoIP database
-    if geoip.available and localcfg['geoip']:
-        load_geoip_db()
+    if objects.geoip.available and objects.localcfg['geoip']:
+        tuiobjects.load_geoip_db()
 
     # Start logging to TUI widget instead of stdout/stderr
-    logwidget.enable()
+    tuiobjects.logwidget.enable()
 
-    topbar.help.update()
+    tuiobjects.topbar.help.update()
 
     # If no tab has been opened by cli or rc file, open default tabs
-    if len(tabs) <= 0:
+    if len(tuiobjects.tabs) <= 0:
         for cmd in ('tab ls -c seeds,status,ratio,path,name,tracker',
                     'tab ls active|incomplete',
                     'tab ls downloading -c size,downloaded,%downloaded,rate-down,completed,eta,path,name',
@@ -186,18 +55,18 @@ def run(command_runner):
                     'tab -t peers lsp -s torrent',
                     'tab ls stopped -s ratio,path -c size,%downloaded,seeds,ratio,activity,path,name',
                     'tab ls isolated -c error,tracker,path,name -s tracker'):
-            cmdmgr.run_sync(cmd, on_error=log.error)
-        tabs.focus_position = 1
+            objects.cmdmgr.run_sync(cmd, on_error=log.error)
+        tuiobjects.tabs.focus_position = 1
 
     try:
         # Start polling torrent lists, counters, bandwidth usage, etc.
-        aioloop.run_until_complete(srvapi.start_polling())
-        old = urwidscreen.tty_signal_keys('undefined','undefined',
-                                          'undefined','undefined','undefined')
-        urwidloop.run()
+        objects.aioloop.run_until_complete(objects.srvapi.start_polling())
+        old = tuiobjects.urwidscreen.tty_signal_keys('undefined','undefined',
+                                                     'undefined','undefined','undefined')
+        tuiobjects.urwidloop.run()
     finally:
-        urwidscreen.tty_signal_keys(*old)
-        logwidget.disable()
-        aioloop.run_until_complete(srvapi.stop_polling())
+        tuiobjects.urwidscreen.tty_signal_keys(*old)
+        tuiobjects.logwidget.disable()
+        objects.aioloop.run_until_complete(objects.srvapi.stop_polling())
 
     return True

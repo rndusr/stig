@@ -111,8 +111,9 @@ class QuickHelpWidget(urwid.Text):
             Return shortest key sequence that executes `cmd` in any context given in
             `contexts`
             """
+            from .tuiobjects import keymap
             for context in contexts:
-                keys = tuple(tui.keymap.keys(lambda key,action: action.startswith(cmd), context))
+                keys = tuple(keymap.keys(lambda key,action: action.startswith(cmd), context))
                 if keys:
                     return sorted(keys, key=lambda k: len(k))[0]
 

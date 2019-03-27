@@ -14,7 +14,6 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from ...tui import tuiobjects
 from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
@@ -27,7 +26,8 @@ import os
 
 # Import tui.main module only on demand
 def _get_keymap_contexts():
-    return tuple(tuiobjects.keymap.contexts)
+    from ...tui.tuiobjects import keymap
+    return tuple(keymap.contexts)
 
 
 class BindCmd(metaclass=InitCommand):
@@ -94,11 +94,8 @@ class BindCmd(metaclass=InitCommand):
         )
     }
 
-    tui = ExpectedResource
-
     def run(self, context, description, KEY, ACTION):
-        keymap = self.tui.keymap
-
+        from ...tui.tuiobjects import keymap
         key = KEY
         if len(ACTION) == 1 and ACTION[0][0] == '<' and ACTION[0][-1] == '>':
             # ACTION is another key (e.g. 'j' -> 'down')
@@ -134,14 +131,10 @@ class UnbindCmd(metaclass=InitCommand):
           'description': 'Keys or key combinations (see "bind" command)' },
     )
 
-    tui = ExpectedResource
-
     def run(self, context, all, KEY):
-        keymap = self.tui.keymap
-
+        from ...tui.tuiobjects import keymap
         if all:
             keymap.clear()
-
         if context is None:
             context = keymap.DEFAULT_CONTEXT
         elif context not in _get_keymap_contexts():
@@ -189,8 +182,6 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
         'PLACEHOLDERS': mixin.placeholders.HELP,
     }
 
-    tui = ExpectedResource
-
     async def run(self, COMMAND, trailing_space):
         log.debug('Unresolved command: %r', COMMAND)
         args = await self.parse_placeholders(*COMMAND)
@@ -200,9 +191,10 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
             cmdstr = ' '.join(shlex.quote(str(arg)) for arg in args)
             if trailing_space:
                 cmdstr += ' '
-            self.tui.widgets.show('cli')
-            self.tui.widgets.cli.base_widget.edit_text = cmdstr
-            self.tui.widgets.cli.base_widget.edit_pos = len(cmdstr)
+            from ...tui.tuiobjects import widgets
+            widgets.show('cli')
+            widgets.cli.base_widget.edit_text = cmdstr
+            widgets.cli.base_widget.edit_pos = len(cmdstr)
 
 
 class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
@@ -267,7 +259,6 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         'PLACEHOLDERS': mixin.placeholders.HELP,
     }
 
-    tui = ExpectedResource
     cmdmgr = ExpectedResource
     cfg = ExpectedResource
 
@@ -396,7 +387,8 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         columns_widget = MyColumns(columns_args)
 
         # Close any previously opened dialog
-        if self.tui.widgets.exists(self._WIDGET_NAME):
+        from ...tui.tuiobjects import widgets
+        if widgets.exists(self._WIDGET_NAME):
             self._close_dialog()
 
         # Focus the first empty input widget if there are any
@@ -407,15 +399,16 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
                 columns_widget.focus_position = i
                 break
 
-        self.tui.widgets.add(name=self._WIDGET_NAME,
-                             widget=urwid.AttrMap(columns_widget, 'cli'),
-                             position=self.tui.widgets.get_position('cli'),
-                             removable=True,
-                             options='pack')
+        widgets.add(name=self._WIDGET_NAME,
+                    widget=urwid.AttrMap(columns_widget, 'cli'),
+                    position=widgets.get_position('cli'),
+                    removable=True,
+                    options='pack')
 
     def _close_dialog(self):
-        self.tui.widgets.remove(self._WIDGET_NAME)
-        self.tui.widgets.focus_name = 'main'
+        from ...tui.tuiobjects import widgets
+        widgets.remove(self._WIDGET_NAME)
+        widgets.focus_name = 'main'
 
     def _run_cmd_or_open_dialog(self, cmd):
         if not cmd:
@@ -492,10 +485,9 @@ class MarkCmd(metaclass=InitCommand):
                    'specified by the settings "tui.marked.on" and "tui.marked.off".')),
     }
 
-    tui = ExpectedResource
-
     def run(self, focus_next, toggle, all):
-        widget = self.tui.tabs.focus
+        from ...tui.tuiobjects import tabs
+        widget = tabs.focus
         if not widget.has_marked_column:
             raise CmdError('Nothing to mark here.')
         else:
@@ -520,10 +512,9 @@ class UnmarkCmd(metaclass=InitCommand):
     )
     more_sections = MarkCmd.more_sections
 
-    tui = ExpectedResource
-
     def run(self, focus_next, toggle, all):
-        widget = self.tui.tabs.focus
+        from ...tui.tuiobjects import tabs
+        widget = tabs.focus
         if not widget.has_marked_column:
             raise CmdError('Nothing to unmark here.')
         else:
@@ -560,10 +551,10 @@ class FindCmd(metaclass=InitCommand):
         { 'names': ('PHRASE',), 'nargs': '*',
           'description': 'Search phrase' },
     )
-    tui = ExpectedResource
 
     def run(self, clear, next, previous, PHRASE):
-        content = self.tui.tabs.focus.base_widget
+        from ...tui.tuiobjects import tabs
+        content = tabs.focus.base_widget
         if not hasattr(content, 'search_phrase'):
             raise CmdError('This tab does not support finding.')
         elif next and previous:
@@ -601,10 +592,10 @@ class LimitCmd(metaclass=InitCommand):
         { 'names': ('FILTER',), 'nargs': '?',
           'description': 'Filter expression (see `help filter`)' },
     )
-    tui = ExpectedResource
 
     def run(self, clear, FILTER):
-        content = self.tui.tabs.focus.base_widget
+        from ...tui.tuiobjects import tabs
+        content = tabs.focus.base_widget
         if not hasattr(content, 'secondary_filter'):
             raise CmdError('This tab does not support limiting.')
         else:
@@ -654,10 +645,9 @@ class SortCmd(metaclass=InitCommand):
                        _list_sort_orders('TRACKER LISTS', TrackerSorter)
     }
 
-    tui = ExpectedResource
-
     async def run(self, add, reset, none, ORDER):
-        current_tab = self.tui.tabs.focus
+        from ...tui.tuiobjects import tabs
+        current_tab = tabs.focus
 
         if reset:
             current_tab.sort = 'RESET'
@@ -735,11 +725,10 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         ),
     }
 
-    tui = ExpectedResource
     cmdmgr = ExpectedResource
 
     async def run(self, close, close_all, focus, background, title, COMMAND):
-        tabs = self.tui.tabs
+        from ...tui.tuiobjects import tabs
 
         # Find relevant tab IDs and fail immediately if unsuccessful
         tabid_old = tabs.get_id()
@@ -796,7 +785,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         return success
 
     def _get_tab_id(self, pos):
-        tabs = self.tui.tabs
+        from ...tui.tuiobjects import tabs
         if len(tabs) == 0:
             return None
 
@@ -882,10 +871,8 @@ class TUICmd(metaclass=InitCommand):
                 ', '.join(str(e) for e in sorted(widgets.names_recursive)),)
     more_sections = { 'ELEMENT NAMES': __create_element_names }
 
-    tui = ExpectedResource
-
     def run(self, ACTION, ELEMENT):
-        widgets = self.tui.widgets
+        from ...tui.tuiobjects import widgets
         widget = None
         success = True
         for element in utils.listify_args(ELEMENT):

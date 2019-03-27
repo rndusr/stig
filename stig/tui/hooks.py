@@ -16,7 +16,7 @@ from functools import partial
 import os
 
 from .. objects import (localcfg, srvapi)
-from . import main as tui
+from . import tuiobjects
 
 from .views.torrent_list import TorrentListWidget
 from .views.file_list import FileListWidget
@@ -39,13 +39,13 @@ localcfg.on_change(_reconnect, name='connect.tls')
 
 
 def _update_pollers(rpc):
-    tui.srvapi.poll()
+    srvapi.poll()
 srvapi.rpc.on('connected', _update_pollers)
 srvapi.rpc.on('disconnected', _update_pollers)
 
 
 def _refresh_lists(settings, name, value):
-    for widget in tui.tabs:
+    for widget in tuiobjects.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
             widget.clear()
             widget.refresh()
@@ -58,33 +58,33 @@ localcfg.on_change(_refresh_lists, name='geoip')
 
 
 def _set_poll_interval(settings, name, value):
-    tui.srvapi.interval = value
+    srvapi.interval = value
 localcfg.on_change(_set_poll_interval, name='tui.poll')
 
 
 def _set_cli_history_dir(settings, name, value):
-    tui.cli.original_widget.history_file = os.path.join(value.full_path, 'commands')
+    tuiobjects.cli.original_widget.history_file = os.path.join(value.full_path, 'commands')
 localcfg.on_change(_set_cli_history_dir, name='tui.cli.history-dir')
 
 def _set_cli_history_size(settings, name, value):
-    tui.cli.original_widget.history_size = value
+    tuiobjects.cli.original_widget.history_size = value
 localcfg.on_change(_set_cli_history_size, name='tui.cli.history-size')
 
 
 def _set_autohide_delay(settings, name, value):
-    tui.logwidget.autohide_delay = value
+    tuiobjects.logwidget.autohide_delay = value
 localcfg.on_change(_set_autohide_delay, name='tui.log.autohide')
 
 
 def _set_log_height(settings, name, value):
-    tui.logwidget.height = int(value)
+    tuiobjects.logwidget.height = int(value)
 localcfg.on_change(_set_log_height, name='tui.log.height')
 
 
 def _set_theme(settings, name, value):
     try:
-        tui.theme.load(value.full_path, tui.urwidscreen)
-    except tui.theme.ThemeError as e:
+        tuiobjects.theme.load(value.full_path, tuiobjects.urwidscreen)
+    except tuiobjects.theme.ThemeError as e:
         raise ValueError(e)
 localcfg.on_change(_set_theme, name='tui.theme')
 
@@ -92,7 +92,7 @@ localcfg.on_change(_set_theme, name='tui.theme')
 def _set_tui_marked_char(methodname, settings, name, value):
     getattr(TORRENT_COLUMNS['marked'], methodname)(value)
     getattr(FILE_COLUMNS['marked'], methodname)(value)
-    for widget in tui.tabs:
+    for widget in tuiobjects.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget)):
             widget.refresh_marks()
 localcfg.on_change(partial(_set_tui_marked_char, 'set_marked_char'), name='tui.marked.on', autoremove=False)
@@ -102,11 +102,11 @@ _set_tui_marked_char('set_unmarked_char', localcfg, name='tui.marked.off', value
 
 
 def _update_quickhelp(keymap):
-    tui.topbar.help.update()
-tui.keymap.on_bind_unbind(_update_quickhelp)
+    tuiobjects.topbar.help.update()
+tuiobjects.keymap.on_bind_unbind(_update_quickhelp)
 
 
 def _set_geoip(settings, name, value):
     if value:
-        tui.load_geoip_db()
+        tuiobjects.load_geoip_db()
 localcfg.on_change(_set_geoip, name='geoip')

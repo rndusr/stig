@@ -56,8 +56,7 @@ class ask_yes_no():
         coroutines. They don't get any arguments and their return value is
         ignored.
         """
-        tui = self.tui
-
+        from ...tui import tuiobjects
         import asyncio
         def run_func_or_coro(func_or_coro):
             if asyncio.iscoroutinefunction(func_or_coro):
@@ -67,12 +66,12 @@ class ask_yes_no():
             elif func_or_coro is not None:
                 func_or_coro()
 
-        class YesNoEditWidget(tui.urwid.Edit):
+        class YesNoEditWidget(tuiobjects.urwid.Edit):
             def keypress(slf, size, key):
                 answer = self.ANSWERS.get(key, None)
                 if answer is not None:
-                    tui.widgets.remove('yesnoprompt')
-                    tui.widgets.focus_name = focus_name
+                    tuiobjects.widgets.remove('yesnoprompt')
+                    tuiobjects.widgets.focus_name = focus_name
                     if answer:
                         run_func_or_coro(yes)
                     else:
@@ -81,12 +80,12 @@ class ask_yes_no():
                 return None
 
         # Remember focused widget
-        focus_name = tui.widgets.focus_name
+        focus_name = tuiobjects.widgets.focus_name
 
-        widget = tui.urwid.AttrMap(YesNoEditWidget(question + ' [y|n] '), 'prompt')
-        pos = tui.widgets.get_position('main') + 1
-        tui.widgets.add(widget=widget, name='yesnoprompt', removable=True,
-                        options='pack', position=pos)
+        widget = tuiobjects.urwid.AttrMap(YesNoEditWidget(question + ' [y|n] '), 'prompt')
+        pos = tuiobjects.widgets.get_position('main') + 1
+        tuiobjects.widgets.add(widget=widget, name='yesnoprompt', removable=True,
+                               options='pack', position=pos)
 
 
 class select_torrents():
@@ -159,31 +158,29 @@ class select_torrents():
             if tids:
                 return set(tids)
 
-    def get_focused_torrent_id(self):
+    @classmethod
+    def get_focused_torrent_id(cls):
         """
         Return torrent ID of focused item in the current or previous tab
 
-        This relies on the widget having a `focused_torrent_id` attribute.
+        This relies on the current widget having a `focused_torrent_id`
+        attribute.
         """
-        widget = self._get_current_or_previous_tab()
+        widget = cls._get_current_or_previous_tab()
         if hasattr(widget, 'focused_torrent_id'):
             tid = widget.focused_torrent_id
             if tid is not None:
                 return tid
 
-    def _get_current_or_previous_tab(self):
-        """Return currently focused tab content if not empty, or the previous one"""
-        widget = self.tui.tabs.focus
+    @classmethod
+    def _get_current_or_previous_tab(cls):
+        """Return currently focused tab content if not empty, the previous one or None"""
+        from ...tui.tuiobjects import tabs
+        widget = tabs.focus
         if widget is not None:
             return widget
-
-        if hasattr(self, 'previous_tab_id'):
-            try:
-                widget = self.tui.tabs.get_content(self.previous_tab_id)
-            except IndexError:
-                pass
-            else:
-                return widget
+        else:
+            return tabs.prev_focus
 
     @staticmethod
     def ids2tfilter(ids):
@@ -196,11 +193,10 @@ class select_torrents():
 
 
 class select_files():
-    tui = ExpectedResource
-
     def get_relative_path_from_focused(self):
         """Return relative path of focused file or directory in file lists"""
-        focused_widget = self.tui.tabs.focus
+        from ...tui.tuiobjects import tabs
+        focused_widget = tabs.focus
         if hasattr(focused_widget, 'focused_file_ids'):
             widget = focused_widget.focused_widget
             tid = widget.data['tid']
@@ -241,7 +237,8 @@ class select_files():
                 raise ValueError('No torrent file specified')
 
     def _find_file_ids(self):
-        focused_widget = self.tui.tabs.focus
+        from ...tui.tuiobjects import tabs
+        focused_widget = tabs.focus
         # Get marked file IDs
         if hasattr(focused_widget, 'marked'):
             fids = tuple(fwidget.id for fwidget in focused_widget.marked)
@@ -260,8 +257,6 @@ class select_files():
 
 
 class create_list_widget():
-    tui    = ExpectedResource
-
     def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
         # Helper function that creates a tab title widget
         from functools import partial
@@ -275,10 +270,12 @@ class create_list_widget():
 
         # Create list widget
         log.debug('Creating %s(%s, %s)', list_cls.__name__, args, kwargs)
-        listw = list_cls(objects.srvapi, self.tui.keymap, *args, **kwargs)
+        from ...tui.tuiobjects import keymap
+        listw = list_cls(objects.srvapi, keymap, *args, **kwargs)
 
         # Add list to tabs
-        tabid = self.tui.tabs.load(make_titlew(listw.title), listw)
+        from ...tui.tuiobjects import tabs
+        tabid = tabs.load(make_titlew(listw.title), listw)
 
         # If list items are markable, automatically add the 'marked' column
         if markable_items:
@@ -292,14 +289,14 @@ class create_list_widget():
             # setting a new title for a tab that has already been removed, which
             # raises an IndexError here.
             try:
-                self.tui.tabs.set_title(make_titlew(text, count), position=tabid)
+                tabs.set_title(make_titlew(text, count), position=tabid)
             except IndexError:
                 pass
         listw.title_updater = set_tab_title
 
         # Set a temporary title until the tab has finished loading its content
         # and the title_updater is called with the actual title
-        self.tui.tabs.set_title(make_titlew('Loading...', ''), position=tabid)
+        tabs.set_title(make_titlew('Loading...', ''), position=tabid)
 
 
 class polling_frenzy():
@@ -312,7 +309,7 @@ class polling_frenzy():
                 orig_interval = objects.srvapi.interval
                 objects.srvapi.interval = short_interval
                 import asyncio
-                await asyncio.sleep(duration, loop=aioloop)
+                await asyncio.sleep(duration, loop=objects.aioloop)
                 objects.srvapi.interval = orig_interval
                 log.debug('Interval restored to %s', objects.srvapi.interval)
             objects.aioloop.create_task(coro())
@@ -413,8 +410,8 @@ class placeholders(make_request):
         if not hasattr(self, '_placeholders'):
             from ...tui.views.torrent_list import TorrentListWidget
             from ...tui.views.file_list import FileListWidget
-
-            focused_list = self.tui.tabs.focus
+            from ...tui.tuiobjects import tabs
+            focused_list = tabs.focus
             if focused_list is None:
                 raise CmdError(self._RESOLVE_ERROR % 'No tab opened')
             elif not isinstance(focused_list, (TorrentListWidget, FileListWidget)):

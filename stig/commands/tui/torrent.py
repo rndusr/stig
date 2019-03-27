@@ -26,7 +26,6 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                         mixin.select_torrents, mixin.make_request):
     provides = {'tui'}
-    tui = ExpectedResource
 
     async def display_details(self, torrent_id):
         make_titlew = partial(make_tab_title_widget,
@@ -34,18 +33,19 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                               attr_focused='tabs.torrentdetails.focused')
 
         from ...tui.views.details import TorrentDetailsWidget
-        TorrentDetailsWidget_keymapped = self.tui.keymap.wrap(TorrentDetailsWidget,
-                                                              context='torrent')
+        from ...tui.tuiobjects import (keymap, tabs)
+        TorrentDetailsWidget_keymapped = keymap.wrap(TorrentDetailsWidget,
+                                                     context='torrent')
         title_str = self.title if hasattr(self, 'title') else None
         detailsw = TorrentDetailsWidget_keymapped(self.srvapi, torrent_id, title=title_str)
-        tabid = self.tui.tabs.load(make_titlew(detailsw.title), detailsw)
+        tabid = tabs.load(make_titlew(detailsw.title), detailsw)
 
         def set_tab_title(text):
             # set_title() throws IndexError if the tab was removed, which may
             # have happened while TorrentDetailsWidget was waiting for a
             # response.
             try:
-                self.tui.tabs.set_title(make_titlew(text), position=tabid)
+                tabs.set_title(make_titlew(text), position=tabid)
             except IndexError:
                 pass
         detailsw.title_updater = set_tab_title

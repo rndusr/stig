@@ -117,7 +117,7 @@ class LogWidget(urwid.WidgetWrap):
     # TODO: The autohide functionality shouldn't be in this widget.
     def _maybe_show_temporarily(self):
         """Show log widget if hidden and hide it again after delay"""
-        from .main import widgets
+        from .tuiobjects import widgets
         if self.autohide_delay > 0 and \
            (not widgets.visible('log') or self._autohide_handle is not None):
             if self._autohide_handle is not None:
