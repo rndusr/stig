@@ -103,9 +103,10 @@ from stig.commands.cli import TorrentDetailsCmd
 class TestTorrentDetailsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
+        self.patch('stig.singletons',
+                   srvapi=self.api)
         self.mock_display_details = MagicMock()
         self.patch('stig.commands.cli.TorrentDetailsCmd',
-                   srvapi=self.api,
                    select_torrents=mock_select_torrents,
                    display_details=self.mock_display_details,
         )
@@ -153,8 +154,10 @@ from stig.commands.cli import ListTorrentsCmd
 class TestListTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
+        self.patch('stig.singletons',
+                   srvapi=self.api)
+
         self.patch('stig.commands.cli.ListTorrentsCmd',
-                   srvapi=self.api,
                    cfg=self.cfg,
                    select_torrents=mock_select_torrents,
                    get_torrent_sorter=mock_get_torrent_sorter,
