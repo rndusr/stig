@@ -11,6 +11,8 @@
 
 """Mixin classes that are common between TUI and CLI commands"""
 
+from ... import singletons
+
 
 class get_single_torrent():
     async def get_single_torrent(self, tfilter, keys=()):
@@ -25,7 +27,7 @@ class get_single_torrent():
         keys = tuple(keys)
         if 'name' not in keys:
             keys = keys + ('name',)
-        request = self.srvapi.torrent.torrents(tfilter, keys=keys)
+        request = singletons.srvapi.torrent.torrents(tfilter, keys=keys)
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
             from ...client import TorrentSorter
