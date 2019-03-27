@@ -16,16 +16,7 @@ import urwid
 import os
 from . import urwidpatches
 from ..objects import (aioloop, localcfg, cmdmgr, srvapi, geoip)
-
-
-# Keybindings
-from ..settings.defaults import DEFAULT_KEYMAP
-from .keymap import KeyMap
-keymap = KeyMap(callback=lambda cmd,widget: cmdmgr.run_task(cmd, on_error=log.error))
-for args in DEFAULT_KEYMAP:
-    if args['action'][0] == '<' and args['action'][-1] == '>':
-        args['action'] = keymap.mkkey(args['action'])
-    keymap.bind(**args)
+from .tuiobjects import keymap
 
 
 # Widgets

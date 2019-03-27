@@ -28,7 +28,7 @@ class HelpCmd(base.HelpCmdbase):
         import urwid
         from ...tui.scroll import ScrollBar
         from ...tui.views.text import SearchableText
-        from ...tui.main import keymap
+        from ...tui.tuiobjects import keymap
 
         if hasattr(self, 'title'):
             titlew = make_tab_title_widget(str(self.title),

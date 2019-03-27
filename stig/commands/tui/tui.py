@@ -14,6 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from ...tui import tuiobjects
 from .. import (InitCommand, CmdError, ExpectedResource)
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
@@ -26,8 +27,7 @@ import os
 
 # Import tui.main module only on demand
 def _get_keymap_contexts():
-    from ...tui.main import keymap
-    return tuple(keymap.contexts)
+    return tuple(tuiobjects.keymap.contexts)
 
 
 class BindCmd(metaclass=InitCommand):
