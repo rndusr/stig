@@ -2,7 +2,7 @@ import unittest
 import asynctest
 import asyncio
 
-from stig.commands import (CommandManager, _CommandBase, ExpectedResource,
+from stig.commands import (CommandManager, _CommandBase,
                            CmdError, CmdArgError, CmdNotFoundError)
 from resources_cmd import (make_cmdcls, assertIsException, Callback)
 
@@ -59,28 +59,6 @@ class TestCommand(asynctest.TestCase):
 
         with self.assertRaises(CmdArgError):
             cmdcls._argparser.parse_args(['foo', 'bar', 'baz'])
-
-    def test_expected_resource_available_in_run_method(self):
-        argspecs = ({'names': ('A',), 'description': 'First number'},
-                    {'names': ('B',), 'description': 'Second number'})
-        result = None
-        def run(self, A, B):
-            nonlocal result
-            result = self.template.format(number=int(int(A)/int(B)))
-
-        cmdcls = make_cmdcls(run=run, argspecs=argspecs,
-                             template=ExpectedResource)
-        cmdcls.template = 'Result: {number}'
-        process = cmdcls(['100', '50'])
-        self.assertEqual(process.success, True)
-        self.assertEqual(result, 'Result: 2')
-
-    def test_missing_expected_resource_error(self):
-        cmdcls = make_cmdcls(api=ExpectedResource)
-        with self.assertRaises(AttributeError) as cm:
-            cmdcls().api
-        self.assertIn('api', str(cm.exception))
-        self.assertIn('resource', str(cm.exception).lower())
 
     def test_names_and_aliases(self):
         cmdcls = make_cmdcls(name='foo', aliases=('bar', 'baz'))
@@ -710,41 +688,3 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
               'errors': [('true: Unrecognized arguments: -x',)]}),
         )
         await self.run_testcases(testcases, do_test)
-
-
-class TestCommandManagerResources(TestCommandManagerCallsBase):
-    def test_adding_resources_to_commands_that_are_already_registered(self):
-        self.cmdmgr.register(make_cmdcls(name='foo', numbers=ExpectedResource))
-        resource = tuple(range(10))
-        self.cmdmgr.resources['numbers'] = resource
-        cmdcls = self.cmdmgr.get_cmdcls('foo', interface='ANY')
-        self.assertEqual(cmdcls.numbers, resource)
-
-    def test_adding_resources_commands_to_new_commands(self):
-        resource = tuple(range(10))
-        self.cmdmgr.resources['numbers'] = resource
-        self.cmdmgr.register(make_cmdcls(name='foo', numbers=ExpectedResource))
-        foo = self.cmdmgr.get_cmdcls('foo', interface='ANY')
-        self.assertEqual(foo.numbers, resource)
-
-    def test_commands_get_only_expected_resources(self):
-        resource = [50, 93, -11]
-        self.cmdmgr.resources['numberwang'] = resource
-        div_sync = self.cmdmgr.get_cmdcls('div', interface='sync')
-        div_async = self.cmdmgr.get_cmdcls('div', interface='sync')
-        self.assertFalse(hasattr(div_sync, 'numberwang'))
-        self.assertFalse(hasattr(div_async, 'numberwang'))
-
-        self.cmdmgr.register(make_cmdcls(name='foo', numberwang=ExpectedResource))
-        foo = self.cmdmgr.get_cmdcls('foo', interface='ANY')
-        self.assertTrue(hasattr(foo, 'numberwang'))
-        self.assertEqual(foo().numberwang, resource)
-
-    def test_unknown_resources_raise_AttributeError(self):
-        resource = [50, 93, -11]
-        self.cmdmgr.resources['numberwang'] = resource
-        self.cmdmgr.register(make_cmdcls(name='foo', badgerwang=ExpectedResource))
-        foo = self.cmdmgr.get_cmdcls('foo', interface='ANY')
-        with self.assertRaises(AttributeError) as cm:
-            foo().badgerwang
-        self.assertEqual(str(cm.exception), 'FooCommand misses expected resource: badgerwang')
