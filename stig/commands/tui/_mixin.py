@@ -14,6 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+from ... import singletons
 from .. import (ExpectedResource, CmdError)
 from .. import utils
 from ._common import make_tab_title_widget
@@ -21,7 +22,14 @@ from ._common import make_tab_title_widget
 
 class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
-        """Awaits request coroutine and logs messages; returns response"""
+        """
+        Awaits `request_coro` and optionally logs messages to `process`
+
+        If `polling_frenzy` evaluates to True and the request succeeded, the
+        `polling_frenzy` method is called.
+
+        Return the response object returned by `request_coro`.
+        """
         response = await request_coro
         utils.log_msgs(self, response, quiet)
         if response.success and polling_frenzy:
@@ -255,7 +263,6 @@ class select_files():
 
 class create_list_widget():
     tui    = ExpectedResource
-    srvapi = ExpectedResource
 
     def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
         # Helper function that creates a tab title widget
