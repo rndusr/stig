@@ -15,14 +15,16 @@ from ... import singletons
 
 
 class get_single_torrent():
-    async def get_single_torrent(self, tfilter, keys=()):
+    async def get_single_torrent(self, tfilter, keys=(), one_or_none=False):
         """
         Get a single torrent that matches TorrentFilter `tfilter`
 
-        If there are multple matches, they are sorted by name and the first
-        match is returned.
+        A single Torrent instance is returned if there is only one match or if
+        one_or_none evaluates to False, in which case all torrents are sorted by
+        name and the first one is returned.
 
-        Return None if no match is found.
+        Return None if no match is found or if there are multiple matches and
+        `one_or_none` evaluates to True.
         """
         keys = tuple(keys)
         if 'name' not in keys:
@@ -30,9 +32,10 @@ class get_single_torrent():
         request = singletons.srvapi.torrent.torrents(tfilter, keys=keys)
         response = await self.make_request(request, polling_frenzy=False, quiet=True)
         if response.success:
-            from ...client import TorrentSorter
-            torrents = TorrentSorter(('name',)).apply(response.torrents)
-            return torrents[0]
+            if len(response.torrents) == 1 or not one_or_none:
+                from ...client import TorrentSorter
+                torrents = TorrentSorter(('name',)).apply(response.torrents)
+                return torrents[0]
 
 class get_torrent_sorter():
     def get_torrent_sorter(self, args):
