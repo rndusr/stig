@@ -12,8 +12,9 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource)
+from .. import (InitCommand, CmdError)
 from . import _mixin as mixin
+from ... import objects
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
@@ -60,11 +61,9 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
         'SCRIPTING': make_SCRIPTING_doc(name),
     }
 
-    cfg = ExpectedResource
-
     async def run(self, TORRENT_FILTER, PEER_FILTER, sort, columns):
-        columns = self.cfg['columns.peers'] if columns is None else columns
-        sort = self.cfg['sort.peers'] if sort is None else sort
+        columns = objects.localcfg['columns.peers'] if columns is None else columns
+        sort = objects.localcfg['sort.peers'] if sort is None else sort
         try:
             tfilter = self.select_torrents(TORRENT_FILTER,
                                            allow_no_filter=True,

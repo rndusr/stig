@@ -14,18 +14,18 @@ log = make_logger(__name__)
 
 from ..base import tracker as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, CmdError)
+from .. import CmdError
+from ... import objects
 from ._table import print_table
 
 
 class ListTrackersCmd(base.ListTrackersCmdbase,
                       mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
-    srvapi = ExpectedResource
 
     async def make_tracker_list(self, torfilter, trkfilter, sort, columns):
         response = await self.make_request(
-            self.srvapi.torrent.torrents(torfilter, keys=('name', 'trackers')),
+            objects.srvapi.torrent.torrents(torfilter, keys=('name', 'trackers')),
             quiet=True)
         torrents = response.torrents
 

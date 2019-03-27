@@ -12,8 +12,9 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource)
+from .. import (InitCommand, CmdError)
 from . import _mixin as mixin
+from ... import objects
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc, make_SCRIPTING_doc)
 
 import asyncio
@@ -46,10 +47,8 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
         'SCRIPTING': make_SCRIPTING_doc(name),
     }
 
-    cfg = ExpectedResource
-
     async def run(self, TORRENT_FILTER, FILE_FILTER, columns):
-        columns = self.cfg['columns.files'] if columns is None else columns
+        columns = objects.localcfg['columns.files'] if columns is None else columns
         try:
             columns = self.get_file_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
@@ -94,7 +93,6 @@ class PriorityCmdbase(metaclass=InitCommand):
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('FILE', or_focused=True, nargs='?'),
     )
-    srvapi = ExpectedResource
 
     async def run(self, PRIORITY, TORRENT_FILTER, FILE_FILTER):
         priority = None
@@ -135,7 +133,7 @@ class PriorityCmdbase(metaclass=InitCommand):
         log.debug('Setting file download priority to %s for %s files of %s torrents',
                   priority, ffilter, tfilter)
         response = await self.make_request(
-            self.srvapi.torrent.file_priority(tfilter, ffilter, priority),
+            objects.srvapi.torrent.file_priority(tfilter, ffilter, priority),
             polling_frenzy=True, quiet=quiet)
         if not response.success:
             raise CmdError()

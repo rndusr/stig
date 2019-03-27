@@ -12,13 +12,14 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource, utils)
+from .. import (InitCommand, CmdError, utils)
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 from ...completion import candidates
 from ...settings import defaults
 from ...utils.usertypes import Float
 from . import _mixin as mixin
+from ... import objects
 
 import subprocess
 import operator
@@ -40,7 +41,6 @@ class RcCmdbase(metaclass=InitCommand):
                          '"/", "./" or "~", "$XDG_CONFIG_HOME/.config/{__appname__}/" '
                          'is prepended')},
     )
-    cmdmgr = ExpectedResource
 
     async def run(self, FILE):
         filepath = os.path.expanduser(FILE)
@@ -58,7 +58,7 @@ class RcCmdbase(metaclass=InitCommand):
         else:
             log.debug('Running commands from rc file: %r', filepath)
             for cmdline in lines:
-                success = await self.cmdmgr.run_async(cmdline)
+                success = await objects.cmdmgr.run_async(cmdline)
                 # False means failure, None means the command didn't run because
                 # the active interface doesn't support it
                 if success is False:
@@ -88,20 +88,18 @@ class ResetCmdbase(metaclass=InitCommand):
         'SEE ALSO': ('Run `help settings` for a list of all available settings.',
                      'Note that remote settings (srv.*) cannot be reset.'),
     }
-    cfg = ExpectedResource
-    srvcfg = ExpectedResource
 
     def run(self, NAME):
         success = True
         for name in utils.listify_args(NAME):
-            if name.startswith('srv.') and name[4:] in self.srvcfg:
+            if name.startswith('srv.') and name[4:] in objects.remotecfg:
                 self.error('Remote settings cannot be reset: %s' % name)
                 success = False
-            elif name not in self.cfg:
+            elif name not in objects.localcfg:
                 self.error('Unknown setting: %s' % name)
                 success = False
             else:
-                self.cfg.reset(name)
+                objects.localcfg.reset(name)
         if not success:
             raise CmdError()
 
@@ -149,22 +147,20 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         'SEE ALSO': (('Run `help settings` or run `set` without commands '
                       'for a list of available local and remote settings.'),),
     }
-    cfg = ExpectedResource
-    srvcfg = ExpectedResource
 
     async def run(self, NAME, VALUE, sort, columns):
         if not NAME and not VALUE:
             # Get remote setting values
             try:
-                await self.srvcfg.update()
+                await objects.remotecfg.update()
             except ClientError as e:
                 error = e
             else:
                 error = None
 
             # Show list of settings
-            sort = self.cfg['sort.settings'] if sort is None else self._parse_value(sort, listify=True)
-            columns = self.cfg['columns.settings'] if columns is None else self._parse_value(columns, listify=True)
+            sort = objects.localcfg['sort.settings'] if sort is None else self._parse_value(sort, listify=True)
+            columns = objects.localcfg['columns.settings'] if columns is None else self._parse_value(columns, listify=True)
             try:
                 sort = self.get_setting_sorter(sort)
                 columns = self.get_setting_columns(columns)
@@ -184,7 +180,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         except ValueError as e:
             raise CmdError(e)
 
-        cfg = self.cfg if is_local_setting else self.srvcfg
+        cfg = objects.localcfg if is_local_setting else objects.remotecfg
 
         # Get current value in case we want to adjust it
         if not is_local_setting:
@@ -237,9 +233,9 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         # Return (name, key, is_local_setting)
         if name.endswith(':eval'):
             name = name[:-5]
-        if name in self.cfg:
+        if name in objects.localcfg:
             return name, name, True
-        elif name.startswith('srv.') and name[4:] in self.srvcfg:
+        elif name.startswith('srv.') and name[4:] in objects.remotecfg:
             return name, name[4:], False
         else:
             raise ValueError('Unknown setting: %s' % name)
@@ -319,14 +315,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
             return candidates.Candidates(
-                cls.cfg['sort.settings'].options,
+                objects.localcfg['sort.settings'].options,
                 label='--sort parameters',
-                curarg_seps=(cls.cfg['sort.settings'].sep.strip(),))
+                curarg_seps=(objects.localcfg['sort.settings'].sep.strip(),))
         elif option == '--columns':
             return candidates.Candidates(
-                cls.cfg['columns.settings'].options,
+                objects.localcfg['columns.settings'].options,
                 label='--columns parameters',
-                curarg_seps=(cls.cfg['columns.settings'].sep.strip(),))
+                curarg_seps=(objects.localcfg['columns.settings'].sep.strip(),))
 
 
 class RateLimitCmdbase(metaclass=InitCommand):
@@ -358,7 +354,6 @@ class RateLimitCmdbase(metaclass=InitCommand):
         { 'names': ('--quiet','-q'), 'action': 'store_true',
           'description': 'Do not show new bandwidth rate(s)' },
     )
-    srvapi = ExpectedResource
 
     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER, quiet):
         directions = tuple('down' if d == 'dn' else d
@@ -386,7 +381,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
 
     async def _show_global_limits(self, directions):
         for d in directions:
-            get_method = getattr(self.srvapi.settings, 'get_limit_rate_' + d)
+            get_method = getattr(objects.srvapi.settings, 'get_limit_rate_' + d)
             limit = await get_method()
             self._output('Global %sload rate limit: %s' % (d, limit))
 
@@ -397,7 +392,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
                                            discover_torrent=True)
         except ValueError as e:
             raise CmdError(e)
-        request = self.srvapi.torrent.torrents(
+        request = objects.srvapi.torrent.torrents(
             tfilter, keys=('name', 'limit-rate-up', 'limit-rate-down'))
         response = await self.make_request(request, polling_frenzy=True, quiet=True)
         if response.success:
@@ -409,9 +404,9 @@ class RateLimitCmdbase(metaclass=InitCommand):
     async def _set_global_limits(self, directions, limit, quiet=False, adjust=False):
         for d in directions:
             log.debug('Setting global %s rate limit: %r', d, limit)
-            set_method = getattr(self.srvapi.settings,
+            set_method = getattr(objects.srvapi.settings,
                                  ('adjust' if adjust else 'set') + '_limit_rate_' + d)
-            get_method = getattr(self.srvapi.settings, 'get_limit_rate_' + d)
+            get_method = getattr(objects.srvapi.settings, 'get_limit_rate_' + d)
             try:
                 try:
                     await set_method(limit)
@@ -436,7 +431,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
 
         success = True
         for d in directions:
-            method = getattr(self.srvapi.torrent,
+            method = getattr(objects.srvapi.torrent,
                              ('adjust' if adjust else 'set') + '_limit_rate_' + d)
             response = await self.make_request(method(tfilter, limit),
                                                polling_frenzy=True, quiet=quiet)

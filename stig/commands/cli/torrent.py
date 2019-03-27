@@ -14,10 +14,10 @@ log = make_logger(__name__)
 
 from ..base import torrent as base
 from . import _mixin as mixin
+from ... import objects
 from .. import CmdError
 from ._table import (print_table, TERMSIZE)
 from ...completion import candidates
-from ... import objects
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -123,7 +123,7 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
             return await candidates.torrent_filter(args.curarg)
         elif args.curarg_index == 2:
             return candidates.fs_path(args.curarg.before_cursor,
-                                      base=cls.srvcfg['path.complete'],
+                                      base=objects.remotecfg['path.complete'],
                                       directories_only=True)
 
 

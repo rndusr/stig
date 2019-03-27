@@ -14,7 +14,7 @@ log = make_logger(__name__)
 
 from ..base import peer as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, CmdError)
+from .. import CmdError
 from ... import objects
 from ._table import print_table
 
@@ -22,11 +22,10 @@ from ._table import print_table
 class ListPeersCmd(base.ListPeersCmdbase,
                    mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
-    srvapi = ExpectedResource
 
     async def make_peer_list(self, tfilter, pfilter, sort, columns):
         response = await self.make_request(
-            self.srvapi.torrent.torrents(tfilter, keys=('name', 'peers')),
+            objects.srvapi.torrent.torrents(tfilter, keys=('name', 'peers')),
             quiet=True)
         torrents = response.torrents
 

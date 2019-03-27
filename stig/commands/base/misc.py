@@ -14,7 +14,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource)
+from .. import (InitCommand, CmdError)
 from ... import (__appname__, __version__)
 
 
@@ -32,7 +32,6 @@ class HelpCmdbase(metaclass=InitCommand):
         { 'names': ('TOPIC',), 'nargs': '*',
           'description': 'Name of command, setting or category' },
     )
-    helpmgr = ExpectedResource
 
     TOPIC_DELIMITER = ['', '-  '*20, '']
 
@@ -43,11 +42,11 @@ class HelpCmdbase(metaclass=InitCommand):
         existing_topics = []
 
         if len(topics) < 1:
-            lines = self.helpmgr.find('overview')
+            lines = objects.helpmgr.find('overview')
         else:
             for topic in topics:
                 try:
-                    l = self.helpmgr.find(topic)
+                    l = objects.helpmgr.find(topic)
                 except ValueError as e:
                     self.error(e)
                     success = False

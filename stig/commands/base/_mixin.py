@@ -49,7 +49,7 @@ class get_torrent_sorter():
         """
         if args:
             from ...client import TorrentSorter
-            return TorrentSorter(self.cfg.validate('sort.torrents', args))
+            return TorrentSorter(objects.localcfg.validate('sort.torrents', args))
 
 class get_torrent_columns():
     def get_torrent_columns(self, columns):
@@ -58,7 +58,7 @@ class get_torrent_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return self.cfg.validate('columns.torrents', columns)
+        return objects.localcfg.validate('columns.torrents', columns)
 
 
 
@@ -69,7 +69,7 @@ class get_file_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return self.cfg.validate('columns.files', columns)
+        return objects.localcfg.validate('columns.files', columns)
 
 
 
@@ -85,7 +85,7 @@ class get_peer_sorter():
         """
         if args:
             from ...client import PeerSorter
-            return PeerSorter(self.cfg.validate('sort.peers', args))
+            return PeerSorter(objects.localcfg.validate('sort.peers', args))
 
 class get_peer_filter():
     def get_peer_filter(self, FILTER):
@@ -108,7 +108,7 @@ class get_peer_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        cols = self.cfg.validate('columns.peers', columns)
+        cols = objects.localcfg.validate('columns.peers', columns)
         if 'country' in cols:
             if not objects.localcfg['geoip']:
                 cols = cols.copy(*(col for col in cols if col != 'country'))
@@ -128,7 +128,7 @@ class get_tracker_sorter():
         """
         if args:
             from ...client import TrackerSorter
-            return TrackerSorter(self.cfg.validate('sort.trackers', args))
+            return TrackerSorter(objects.localcfg.validate('sort.trackers', args))
 
 class get_tracker_filter():
     def get_tracker_filter(self, FILTER):
@@ -151,7 +151,7 @@ class get_tracker_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return self.cfg.validate('columns.trackers', columns)
+        return objects.localcfg.validate('columns.trackers', columns)
 
 
 
@@ -167,7 +167,7 @@ class get_setting_sorter():
         """
         if args:
             from ...client import SettingSorter
-            return SettingSorter(self.cfg.validate('sort.settings', args))
+            return SettingSorter(objects.localcfg.validate('sort.settings', args))
 
 class get_setting_columns():
     def get_setting_columns(self, columns):
@@ -176,4 +176,4 @@ class get_setting_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        return self.cfg.validate('columns.settings', columns)
+        return objects.localcfg.validate('columns.settings', columns)

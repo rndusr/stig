@@ -14,9 +14,10 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource)
+from .. import (InitCommand, CmdError)
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
+from ... import objects
 from .. import utils
 
 import shlex
@@ -259,9 +260,6 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         'PLACEHOLDERS': mixin.placeholders.HELP,
     }
 
-    cmdmgr = ExpectedResource
-    cfg = ExpectedResource
-
     import re
     _input_regex = re.compile(r'(?<!\\)(\[.*?\])')
 
@@ -333,7 +331,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         # Derive history file name from command
         import re
         filename = re.sub('[/\n]', '__', ''.join(cmd))
-        history_file_base = os.path.join(self.cfg['tui.cli.history-dir'].full_path, filename)
+        history_file_base = os.path.join(objects.localcfg['tui.cli.history-dir'].full_path, filename)
 
         columns_args = [('pack', urwid.Text(':'))]
         self._cmd_parts = []
@@ -435,9 +433,9 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         log.debug('Running cmd: %r', cmd)
         if self._ignore_errors:
             # Overload the error() method on the command's instance
-            self.cmdmgr.run_task(cmd, error=lambda msg: None)
+            objects.cmdmgr.run_task(cmd, error=lambda msg: None)
         else:
-            self.cmdmgr.run_task(cmd)
+            objects.cmdmgr.run_task(cmd)
 
     async def _parse_cmd(self, cmd):
         assert isinstance(cmd, str)
@@ -725,8 +723,6 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         ),
     }
 
-    cmdmgr = ExpectedResource
-
     async def run(self, close, close_all, focus, background, title, COMMAND):
         from ...tui.tuiobjects import tabs
 
@@ -775,7 +771,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
                       ', '.join('%s=%r' % (k,v) for k,v in cmd_attrs.items()),
                       cmd_str)
 
-            success = await self.cmdmgr.run_async(cmd_str, **cmd_attrs)
+            success = await objects.cmdmgr.run_async(cmd_str, **cmd_attrs)
         else:
             success = True
 

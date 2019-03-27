@@ -16,7 +16,7 @@ log = make_logger(__name__)
 
 
 from ..base import misc as base
-from .. import (ExpectedResource, CmdError)
+from .. import CmdError
 from ._common import make_tab_title_widget
 
 

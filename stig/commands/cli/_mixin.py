@@ -14,10 +14,9 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import ExpectedResource
 from .. import utils
 from ._common import clear_line
-
+from ... import objects
 
 class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
@@ -28,8 +27,6 @@ class make_request():
 
 
 class ask_yes_no():
-    aioloop = ExpectedResource
-
     ANSWERS = {'y': True, 'n': False,
                'Y': True, 'N': False,
                '\x03': False,  # ctrl-c
@@ -89,7 +86,7 @@ class ask_yes_no():
         answer = None
         while answer is None:
             print(question, end=' [y|n] ', flush=True)
-            key = await aiogetch(self.aioloop)
+            key = await aiogetch(objects.aioloop)
             clear_line()
             answer = self.ANSWERS.get(key, None)
         return answer

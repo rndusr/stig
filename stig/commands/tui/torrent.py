@@ -11,7 +11,7 @@
 
 from ..base import torrent as base
 from . import _mixin as mixin
-from .. import ExpectedResource
+from ... import objects
 from ._common import make_tab_title_widget
 from ...completion import candidates
 
@@ -37,7 +37,7 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
         TorrentDetailsWidget_keymapped = keymap.wrap(TorrentDetailsWidget,
                                                      context='torrent')
         title_str = self.title if hasattr(self, 'title') else None
-        detailsw = TorrentDetailsWidget_keymapped(self.srvapi, torrent_id, title=title_str)
+        detailsw = TorrentDetailsWidget_keymapped(objects.srvapi, torrent_id, title=title_str)
         tabid = tabs.load(make_titlew(detailsw.title), detailsw)
 
         def set_tab_title(text):
@@ -81,7 +81,7 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
         """Complete positional arguments"""
         def dest_path_candidates(curarg):
             return candidates.fs_path(curarg.before_cursor,
-                                      base=cls.srvcfg['path.complete'],
+                                      base=objects.remotecfg['path.complete'],
                                       directories_only=True)
 
         curarg = args.curarg
@@ -101,16 +101,17 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.polling_frenzy, mixin.make_request, mixin.select_torrents,
                         mixin.ask_yes_no):
     provides = {'tui'}
-    cmdmgr = ExpectedResource
     CONFIRMATION_TAB_TITLE = 'Removal Confirmation'
 
     async def show_list_of_hits(self, tfilter):
+        from ...objects import cmdmgr
         cmd = 'tab --title %r ls --sort name %s' % (self.CONFIRMATION_TAB_TITLE, tfilter)
-        await self.cmdmgr.run_async(cmd)
+        await cmdmgr.run_async(cmd)
 
     async def remove_list_of_hits(self):
+        from ...objects import cmdmgr
         cmd = 'tab --close %r --focus left' % self.CONFIRMATION_TAB_TITLE
-        await self.cmdmgr.run_async(cmd)
+        await cmdmgr.run_async(cmd)
 
 
 class RenameCmd(base.RenameCmdbase,

@@ -12,9 +12,10 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError, ExpectedResource)
+from .. import InitCommand, CmdError
 from ...completion import candidates
 from . import _mixin as mixin
+from ... import objects
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
@@ -42,14 +43,12 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
           'description': ('Custom download directory for added torrent(s) '
                           'relative to "srv.path.complete" setting')},
     )
-    srvapi = ExpectedResource
-    srvcfg = ExpectedResource
 
     async def run(self, TORRENT, stopped, path):
         success = True
         force_torrentlist_update = False
         for source in TORRENT:
-            response = await self.make_request(self.srvapi.torrent.add(source, stopped=stopped, path=path))
+            response = await self.make_request(objects.srvapi.torrent.add(source, stopped=stopped, path=path))
             success = success and response.success
             force_torrentlist_update = force_torrentlist_update or success
 
@@ -71,7 +70,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--path':
             return candidates.fs_path(args.curarg.before_cursor,
-                                      base=cls.srvcfg['path.complete'],
+                                      base=objects.remotecfg['path.complete'],
                                       directories_only=True)
 
 
@@ -87,7 +86,6 @@ class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
     )
-    srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER):
         try:
@@ -151,11 +149,9 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
         'SCRIPTING': make_SCRIPTING_doc(name),
     }
 
-    cfg = ExpectedResource
-
     async def run(self, TORRENT_FILTER, sort, columns):
-        sort = self.cfg['sort.torrents'] if sort is None else sort
-        columns = self.cfg['columns.torrents'] if columns is None else columns
+        sort = objects.localcfg['sort.torrents'] if sort is None else sort
+        columns = objects.localcfg['columns.torrents'] if columns is None else columns
         try:
             columns = self.get_torrent_columns(columns)
             tfilter = self.select_torrents(TORRENT_FILTER,
@@ -180,11 +176,11 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
-            return candidates.Candidates(cls.cfg['sort.torrents'].options,
-                                         curarg_seps=(cls.cfg['sort.torrents'].sep.strip(),))
+            return candidates.Candidates(objects.localcfg['sort.torrents'].options,
+                                         curarg_seps=(objects.localcfg['sort.torrents'].sep.strip(),))
         elif option == '--columns':
-            return candidates.Candidates(cls.cfg['columns.torrents'].options,
-                                         curarg_seps=(cls.cfg['columns.torrents'].sep.strip(),))
+            return candidates.Candidates(objects.localcfg['columns.torrents'].options,
+                                         curarg_seps=(objects.localcfg['columns.torrents'].sep.strip(),))
 
 
 class TorrentMagnetURICmdbase(metaclass=InitCommand):
@@ -199,7 +195,6 @@ class TorrentMagnetURICmdbase(metaclass=InitCommand):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
     )
-    srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER):
         try:
@@ -211,8 +206,8 @@ class TorrentMagnetURICmdbase(metaclass=InitCommand):
             raise CmdError(e)
         else:
             try:
-                uris = await self.srvapi.torrent.get_magnet_uris(tfilter)
-            except self.srvapi.ClientError as e:
+                uris = await objects.srvapi.torrent.get_magnet_uris(tfilter)
+            except objects.srvapi.ClientError as e:
                 raise CmdError(e)
             else:
                 self.display_uris(uris)
@@ -242,8 +237,6 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                          '(i.e. does not start with "/"), it is relative to the value of the '
                          'setting "srv.path.complete".  That means "." is the download path.')},
     )
-    srvapi = ExpectedResource
-    srvcfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, PATH):
         try:
@@ -253,7 +246,7 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
         except ValueError as e:
             raise CmdError(e)
         else:
-            response = await self.make_request(self.srvapi.torrent.move(tfilter, PATH),
+            response = await self.make_request(objects.srvapi.torrent.move(tfilter, PATH),
                                                polling_frenzy=True)
             if not response.success:
                 raise CmdError()
@@ -281,8 +274,6 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                           'matching torrents instead of asking for confirmation '
                           'if the number of matches exceeds remove.max-hits')},
     )
-    srvapi = ExpectedResource
-    cfg = ExpectedResource
 
     async def run(self, TORRENT_FILTER, delete_files, force):
         try:
@@ -294,7 +285,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
         else:
             async def do_remove(tfilter=tfilter, delete_files=delete_files):
                 response = await self.make_request(
-                    self.srvapi.torrent.remove(tfilter, delete=delete_files),
+                    objects.srvapi.torrent.remove(tfilter, delete=delete_files),
                     polling_frenzy=True)
                 if not response.success:
                     raise CmdError()
@@ -303,10 +294,10 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
                 self.error(('Keeping %s torrents: Too many hits ' % tfilter) +
                            '(use --force or increase remove.max-hits setting)')
 
-            response = await self.srvapi.torrent.torrents(tfilter, keys=('id',))
+            response = await objects.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
             success = hits > 0
-            if force or self.cfg['remove.max-hits'] < 0 or hits < self.cfg['remove.max-hits']:
+            if force or objects.localcfg['remove.max-hits'] < 0 or hits < objects.localcfg['remove.max-hits']:
                 return await do_remove()
             else:
                 await self.show_list_of_hits(tfilter)
@@ -349,7 +340,6 @@ class RenameCmdbase(metaclass=InitCommand):
          'description': ('New name of the torrent, file or directory specified by TORRENT '
                          '(must not contain "/" or be "." or "..")')},
     )
-    srvapi = ExpectedResource
 
     async def run(self, TORRENT, NEW):
         if not TORRENT:
@@ -373,7 +363,7 @@ class RenameCmdbase(metaclass=InitCommand):
             raise CmdError(e)
         else:
             response = await self.make_request(
-                self.srvapi.torrent.torrents(tfilter, keys=('id',)),
+                objects.srvapi.torrent.torrents(tfilter, keys=('id',)),
                 quiet=True)
             if not response.success:
                 raise CmdError()
@@ -382,7 +372,7 @@ class RenameCmdbase(metaclass=InitCommand):
             else:
                 tid = response.torrents[0]['id']
                 response = await self.make_request(
-                    self.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
+                    objects.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
                     polling_frenzy=True)
                 if not response.success:
                     raise CmdError()
@@ -413,7 +403,6 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
 
         ARGSPEC_TOGGLE,
     )
-    srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER, toggle, force):
         try:
@@ -425,11 +414,11 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
         else:
             if toggle:
                 response = await self.make_request(
-                    self.srvapi.torrent.toggle_stopped(tfilter, force=force),
+                    objects.srvapi.torrent.toggle_stopped(tfilter, force=force),
                     polling_frenzy=True)
             else:
                 response = await self.make_request(
-                    self.srvapi.torrent.start(tfilter, force=force),
+                    objects.srvapi.torrent.start(tfilter, force=force),
                     polling_frenzy=True)
             if not response.success:
                 raise CmdError()
@@ -450,7 +439,6 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
         ARGSPEC_TOGGLE,
     )
-    srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER, toggle):
         try:
@@ -462,11 +450,11 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
         else:
             if toggle:
                 response = await self.make_request(
-                    self.srvapi.torrent.toggle_stopped(tfilter),
+                    objects.srvapi.torrent.toggle_stopped(tfilter),
                     polling_frenzy=True)
             else:
                 response = await self.make_request(
-                    self.srvapi.torrent.stop(tfilter),
+                    objects.srvapi.torrent.stop(tfilter),
                     polling_frenzy=True)
             if not response.success:
                 raise CmdError()
@@ -485,7 +473,6 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
     )
-    srvapi = ExpectedResource
 
     async def run(self, TORRENT_FILTER):
         try:
@@ -495,7 +482,7 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
         except ValueError as e:
             raise CmdError(e)
         else:
-            response = await self.make_request(self.srvapi.torrent.verify(tfilter),
+            response = await self.make_request(objects.srvapi.torrent.verify(tfilter),
                                                polling_frenzy=False)
             if not response.success:
                 raise CmdError()

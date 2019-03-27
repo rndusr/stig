@@ -14,7 +14,8 @@ log = make_logger(__name__)
 
 from ..base import file as base
 from . import _mixin as mixin
-from .. import (CmdError, ExpectedResource)
+from .. import CmdError
+from ... import objects
 from ._table import (print_table, TERMSIZE)
 
 import os
@@ -24,11 +25,10 @@ class ListFilesCmd(base.ListFilesCmdbase,
                    mixin.make_request, mixin.select_torrents, mixin.select_files,
                    mixin.only_supported_columns):
     provides = {'cli'}
-    srvapi = ExpectedResource
 
     async def make_file_list(self, tfilter, ffilter, columns):
         response = await self.make_request(
-            self.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
+            objects.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
             quiet=True)
         torrents = response.torrents
 

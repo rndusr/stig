@@ -15,11 +15,12 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from ..base import misc as base
-from .. import (ExpectedResource, CmdError)
+from .. import CmdError
+from ... import objects
+
 
 class HelpCmd(base.HelpCmdbase):
     provides = {'cli'}
-    srvapi = ExpectedResource
 
     async def run(self, TOPIC):
         # If TOPIC is a setting and it is managed by the server, we must fetch
@@ -27,8 +28,8 @@ class HelpCmd(base.HelpCmdbase):
         for topic in TOPIC:
             if topic.startswith('srv.'):
                 try:
-                    await self.srvapi.settings.update()
-                except self.srvapi.ClientError as e:
+                    await objects.srvapi.settings.update()
+                except objects.srvapi.ClientError as e:
                     self.error(e)
                 finally:
                     break
