@@ -73,12 +73,6 @@ Resources
 Resources are objects that are provided to the CommandManager instance as
 key-value pairs which sets them as attributes for command classes that want
 them.  For example, the global client API instance 'srvapi' is a resource.
-
-Command classes can request resources by setting a class attribute to
-ExpectedResource.  If the CommandManager instance has a resource by this name,
-it will be replaced by InitCommand and commands can use it like any regular
-class attribute.  If the resource does not exist, accessing it raises an
-AttributeError.
 """
 
 from ..logging import make_logger
@@ -92,12 +86,6 @@ from importlib import import_module
 from collections import abc
 from .utils import CallbackDict
 import sys
-
-
-def ExpectedResource(name):
-    def _raise(self):
-        raise AttributeError('{} misses expected resource: {}'.format(type(self).__name__, name))
-    return property(fget=_raise)
 
 
 OPS_AND = ('&', 'and')
@@ -245,12 +233,6 @@ def InitCommand(clsname, bases, attrs):
     for k,v in _OPTIONAL_CMD_ATTRS.items():
         if k not in attrs:
             attrs[k] = v
-
-    # Turn ExpectedResource into a property that raises an exception if not
-    # provided by CommandManager
-    for k,v in attrs.items():
-        if v is ExpectedResource:
-            attrs[k] = ExpectedResource(k)
 
     # 'names' attribute
     attrs['names'] = list(attrs['aliases'])
