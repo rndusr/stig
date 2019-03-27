@@ -1194,6 +1194,8 @@ class TestArg(unittest.TestCase):
         self.assertEqual(cliparser.Arg('foo', curpos=1).before_cursor, 'f')
         self.assertEqual(cliparser.Arg('foo', curpos=2).before_cursor, 'fo')
         self.assertEqual(cliparser.Arg('foo', curpos=3).before_cursor, 'foo')
+        self.assertIsInstance(cliparser.Arg('foo', curpos=2).before_cursor, cliparser.Arg)
+        self.assertEqual(cliparser.Arg('foo', curpos=2).before_cursor.curpos, 2)
 
     def do(self, arg, curpos, seps, maxseps, include_seps, exp_parts, exp_curpart, exp_curpart_index, exp_curpart_curpos):
         arg = cliparser.Arg(arg, curpos)
