@@ -16,34 +16,34 @@ from stig.commands.cli import AddTorrentsCmd
 class TestAddTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.AddTorrentsCmd',
-                   srvapi=self.api,
-                   srvcfg=self.srvcfg)
+        self.patch('stig.objects',
+                   srvapi=self.srvapi,
+                   remotecfg=self.remotecfg)
 
     async def test_success(self):
-        self.api.torrent.response = Response(
+        self.srvapi.torrent.response = Response(
             success=True,
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent')
-        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
 
     async def test_failure(self):
-        self.api.torrent.response = Response(
+        self.srvapi.torrent.response = Response(
             success=False,
             errors=('Bogus torrent',),
             torrent=None)
         process = await self.execute(AddTorrentsCmd, 'some.torrent')
-        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, False)
         self.assert_stdout()
         self.assert_stderr('add: Bogus torrent')
 
     async def test_multiple_torrents(self):
-        self.api.torrent.response = [
+        self.srvapi.torrent.response = [
             Response(success=True,
                      msgs=['Added Some Torrent'],
                      torrent=MockTorrent(id=1, name='Some Torrent')),
@@ -52,7 +52,7 @@ class TestAddTorrentsCmd(CommandTestCase):
                      torrent=None),
         ]
         process = await self.execute(AddTorrentsCmd, 'some.torrent', 'another.torrent')
-        self.api.torrent.assert_called(2, 'add',
+        self.srvapi.torrent.assert_called(2, 'add',
                                        ('some.torrent',), {'stopped': False, 'path': None},
                                        ('another.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, False)
@@ -60,12 +60,12 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_stderr('add: Something went wrong')
 
     async def test_option_stopped(self):
-        self.api.torrent.response = Response(
+        self.srvapi.torrent.response = Response(
             success=True,
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent', '--stopped')
-        self.api.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
@@ -84,7 +84,7 @@ class TestAddTorrentsCmd(CommandTestCase):
     @patch('stig.completion.candidates.fs_path')
     async def test_completion_candidates_for_path_option(self, mock_fs_path):
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
-        self.srvcfg['path.complete'] = '/bar/baz'
+        self.remotecfg['path.complete'] = '/bar/baz'
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', '--path', 'foo', 'x.torrent'), curarg_index=2),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
@@ -104,15 +104,14 @@ class TestTorrentDetailsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         self.patch('stig.objects',
-                   srvapi=self.api)
+                   srvapi=self.srvapi)
         self.mock_display_details = MagicMock()
         self.patch('stig.commands.cli.TorrentDetailsCmd',
                    select_torrents=mock_select_torrents,
-                   display_details=self.mock_display_details,
-        )
+                   display_details=self.mock_display_details)
 
     async def do(self, args, tlist, success_exp, msgs=(), errors=()):
-        self.api.torrent.response = Response(success=success_exp, torrents=tlist, errors=errors)
+        self.srvapi.torrent.response = Response(success=success_exp, torrents=tlist, errors=errors)
 
         process = await self.execute(TorrentDetailsCmd, *args)
         self.assertEqual(process.success, success_exp)
@@ -120,7 +119,7 @@ class TestTorrentDetailsCmd(CommandTestCase):
         self.assert_stdout()
         self.assert_stderr(*tuple('^%s: %s$' % (TorrentDetailsCmd.name, err) for err in errors))
 
-        self.api.torrent.assert_called(1, 'torrents', (process.mock_tfilter,), {'keys': ('id', 'name')})
+        self.srvapi.torrent.assert_called(1, 'torrents', (process.mock_tfilter,), {'keys': ('id', 'name')})
 
     async def test_no_match(self):
         tlist = ()
@@ -155,16 +154,15 @@ class TestListTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         self.patch('stig.objects',
-                   srvapi=self.api)
+                   srvapi=self.srvapi,
+                   localcfg=self.localcfg)
+        self.localcfg['sort.torrents'] = ('name',)
+        self.localcfg['columns.torrents'] = ('name',)
 
         self.patch('stig.commands.cli.ListTorrentsCmd',
-                   cfg=self.cfg,
                    select_torrents=mock_select_torrents,
                    get_torrent_sorter=mock_get_torrent_sorter,
-                   get_torrent_columns=lambda self, columns, interface=None: ('name',)
-        )
-        self.cfg['sort.torrents'] = ('name',)
-        self.cfg['columns.torrents'] = ('name',)
+                   get_torrent_columns=lambda self, columns, interface=None: ('name',))
 
         from stig.commands.cli import torrent
         torrent.TERMSIZE = SimpleNamespace(columns=None, lines=None)
@@ -174,7 +172,7 @@ class TestListTorrentsCmd(CommandTestCase):
             MockTorrent(id=1, name='Some Torrent'),
             MockTorrent(id=2, name='Another Torrent')
         )
-        self.api.torrent.response = Response(success=bool(errors), errors=(), msgs=(), torrents=tlist)
+        self.srvapi.torrent.response = Response(success=bool(errors), errors=(), msgs=(), torrents=tlist)
 
         process = await self.execute(ListTorrentsCmd, *args)
         expected_success = not errors
@@ -189,7 +187,7 @@ class TestListTorrentsCmd(CommandTestCase):
             keys_exp = set(process.mock_tsorter.needed_keys +
                            process.mock_tfilter.needed_keys +
                            ('name',))  # columns
-            self.api.torrent.assert_called(1, 'torrents', (process.mock_tfilter,),
+            self.srvapi.torrent.assert_called(1, 'torrents', (process.mock_tfilter,),
                                            {'keys': keys_exp})
             self.assertEqual(process.mock_tsorter.applied, tlist)
 
@@ -232,7 +230,7 @@ class TestListTorrentsCmd(CommandTestCase):
         mock_torrent_filter.assert_called_once_with('bar')
 
     async def test_completion_candidates_for_sort_option(self):
-        self.cfg['sort.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ')
+        self.localcfg['sort.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ')
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--sort', 'foo'), curarg_index=2),
                                           exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--sort', 'foo', 'bar'), curarg_index=2),
@@ -241,7 +239,7 @@ class TestListTorrentsCmd(CommandTestCase):
                                           exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
 
     async def test_completion_candidates_for_columns_option(self):
-        self.cfg['columns.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ')
+        self.localcfg['columns.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ')
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--columns', 'foo'), curarg_index=2),
                                           exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--columns', 'foo', 'bar'), curarg_index=2),
@@ -264,8 +262,8 @@ class TestTorrentMagnetURICmd(CommandTestCase):
 class TestMoveTorrentsCLICmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.MoveTorrentsCmd',
-                   srvcfg=self.srvcfg)
+        self.patch('stig.objects',
+                   remotecfg=self.remotecfg)
 
     @patch('stig.completion.candidates.torrent_filter')
     @patch('stig.completion.candidates.fs_path')
@@ -284,19 +282,19 @@ class TestMoveTorrentsCLICmd(CommandTestCase):
         from stig.commands.cli import MoveTorrentsCmd
         mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
-        self.srvcfg['path.complete'] = '/some/path/'
+        self.remotecfg['path.complete'] = '/some/path/'
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2))
         mock_torrent_filter.assert_not_called()
-        mock_fs_path.assert_called_once_with('bar', base=self.srvcfg['path.complete'], directories_only=True)
+        mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
 
 
 class TestMoveTorrentsTUICmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.tui.MoveTorrentsCmd',
-                   srvcfg=self.srvcfg)
+        self.patch('stig.objects',
+                   remotecfg=self.remotecfg)
 
     @patch('stig.completion.candidates.torrent_filter')
     @patch('stig.completion.candidates.fs_path')
@@ -304,11 +302,11 @@ class TestMoveTorrentsTUICmd(CommandTestCase):
         from stig.commands.tui import MoveTorrentsCmd
         mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
-        self.srvcfg['path.complete'] = '/some/path/'
+        self.remotecfg['path.complete'] = '/some/path/'
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo'), curarg_index=1))
         mock_torrent_filter.assert_called_once_with('foo')
-        mock_fs_path.assert_called_once_with('foo', base=self.srvcfg['path.complete'], directories_only=True)
+        mock_fs_path.assert_called_once_with('foo', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, (Candidates(('d', 'e', 'f')),
                                  Candidates(('a', 'b', 'c'))))
 
@@ -328,11 +326,11 @@ class TestMoveTorrentsTUICmd(CommandTestCase):
     async def test_TUI_completion_candidates_for_posargs_with_two_args_on_second_arg(self, mock_fs_path, mock_torrent_filter):
         from stig.commands.tui import MoveTorrentsCmd
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
-        self.srvcfg['path.complete'] = '/some/path/'
+        self.remotecfg['path.complete'] = '/some/path/'
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2))
         mock_torrent_filter.assert_not_called()
-        mock_fs_path.assert_called_once_with('bar', base=self.srvcfg['path.complete'], directories_only=True)
+        mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
 
 
@@ -340,15 +338,15 @@ from stig.commands.cli import RemoveTorrentsCmd
 class TestRemoveTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
+        self.patch('stig.objects',
+                   srvapi=self.srvapi,
+                   localcfg=self.localcfg)
+        self.localcfg['remove.max-hits'] = 10
         self.patch('stig.commands.cli.RemoveTorrentsCmd',
-                   srvapi=self.api,
-                   cfg=self.cfg,
-                   select_torrents=mock_select_torrents,
-        )
-        self.cfg['remove.max-hits'] = 10
+                   select_torrents=mock_select_torrents)
 
     async def do(self, args, tlist, success_exp, msgs=(), errors=(), delete=False, remove_called=True):
-        self.api.torrent.response = Response(success=success_exp, torrents=tlist, msgs=msgs, errors=errors)
+        self.srvapi.torrent.response = Response(success=success_exp, torrents=tlist, msgs=msgs, errors=errors)
 
         process = await self.execute(RemoveTorrentsCmd, *args)
         self.assertEqual(process.success, success_exp)
@@ -359,9 +357,9 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         self.assert_stderr(*errors_exp)
 
         if remove_called:
-            self.api.torrent.assert_called(1, 'remove', (process.mock_tfilter,), {'delete': delete})
+            self.srvapi.torrent.assert_called(1, 'remove', (process.mock_tfilter,), {'delete': delete})
         else:
-            self.api.torrent.assert_called(0, 'remove')
+            self.srvapi.torrent.assert_called(0, 'remove')
 
     async def test_remove(self):
         tlist = (MockTorrent(id=1, name='Some Torrent', seeds='51'),)
@@ -386,7 +384,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
+        from stig import objects
+        objects.localcfg['remove.max-hits'] = 2
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
@@ -403,7 +402,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
+        from stig import objects
+        objects.localcfg['remove.max-hits'] = 2
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
@@ -418,7 +418,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        RemoveTorrentsCmd.cfg['remove.max-hits'] = -1
+        from stig import objects
+        objects.localcfg['remove.max-hits'] = -1
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         await self.do(['all'], tlist=tlist, remove_called=True, success_exp=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
@@ -428,7 +429,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        RemoveTorrentsCmd.cfg['remove.max-hits'] = 2
+        from stig import objects
+        objects.localcfg['remove.max-hits'] = 2
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         RemoveTorrentsCmd.ask_yes_no = CoroutineMock()
         await self.do(['all', '--force'], tlist=tlist, remove_called=True, success_exp=True,
@@ -460,11 +462,11 @@ class TestRenameCmd(CommandTestCase):
         self.mock_srvapi = MagicMock()
         self.mock_srvapi.torrent.torrents = CoroutineMock()
         self.mock_srvapi.torrent.rename = CoroutineMock()
+        self.patch('stig.objects',
+                   srvapi=self.mock_srvapi)
         self.patch('stig.commands.cli.RenameCmd',
-                   srvapi=self.mock_srvapi,
                    select_torrents=self.mock_select_torrents,
-                   get_relative_path_from_focused=self.mock_get_relative_path_from_focused,
-        )
+                   get_relative_path_from_focused=self.mock_get_relative_path_from_focused)
 
     async def test_discovering_focused_torrent(self):
         self.mock_get_relative_path_from_focused.return_value = None
@@ -561,13 +563,13 @@ from stig.commands.cli import StartTorrentsCmd
 class TestStartTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
+        self.patch('stig.objects',
+                   srvapi=self.srvapi)
         self.patch('stig.commands.cli.StartTorrentsCmd',
-                   srvapi=self.api,
-                   select_torrents=mock_select_torrents,
-        )
+                   select_torrents=mock_select_torrents)
 
     async def do(self, args, success_exp, msgs=(), errors=(), force=False, toggle=False):
-        self.api.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
+        self.srvapi.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
 
         process = await self.execute(StartTorrentsCmd, *args)
         self.assertEqual(process.success, success_exp)
@@ -578,9 +580,9 @@ class TestStartTorrentsCmd(CommandTestCase):
         self.assert_stderr(*errors_exp)
 
         if toggle:
-            self.api.torrent.assert_called(1, 'toggle_stopped', (process.mock_tfilter,), {'force': force})
+            self.srvapi.torrent.assert_called(1, 'toggle_stopped', (process.mock_tfilter,), {'force': force})
         else:
-            self.api.torrent.assert_called(1, 'start', (process.mock_tfilter,), {'force': force})
+            self.srvapi.torrent.assert_called(1, 'start', (process.mock_tfilter,), {'force': force})
 
     async def test_start(self):
         await self.do(['paused'], force=False, success_exp=True,
@@ -616,13 +618,13 @@ from stig.commands.cli import StopTorrentsCmd
 class TestStopTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
+        self.patch('stig.objects',
+                   srvapi=self.srvapi)
         self.patch('stig.commands.cli.StopTorrentsCmd',
-                   srvapi=self.api,
-                   select_torrents=mock_select_torrents,
-        )
+                   select_torrents=mock_select_torrents)
 
     async def do(self, args, success_exp, msgs=(), errors=(), toggle=False):
-        self.api.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
+        self.srvapi.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
 
 
         process = await self.execute(StopTorrentsCmd, *args)
@@ -634,9 +636,9 @@ class TestStopTorrentsCmd(CommandTestCase):
         self.assert_stderr(*errors_exp)
 
         if toggle:
-            self.api.torrent.assert_called(1, 'toggle_stopped', (process.mock_tfilter,), {})
+            self.srvapi.torrent.assert_called(1, 'toggle_stopped', (process.mock_tfilter,), {})
         else:
-            self.api.torrent.assert_called(1, 'stop', (process.mock_tfilter,), {})
+            self.srvapi.torrent.assert_called(1, 'stop', (process.mock_tfilter,), {})
 
     async def test_stop(self):
         await self.do(['uploading'], success_exp=True,
@@ -662,14 +664,13 @@ from stig.commands.cli import VerifyTorrentsCmd
 class TestVerifyTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-
+        self.patch('stig.objects',
+                   srvapi=self.srvapi)
         self.patch('stig.commands.cli.VerifyTorrentsCmd',
-                   srvapi=self.api,
-                   select_torrents=mock_select_torrents,
-        )
+                   select_torrents=mock_select_torrents)
 
     async def do(self, args, success_exp, msgs=(), errors=()):
-        self.api.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
+        self.srvapi.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
 
         process = await self.execute(VerifyTorrentsCmd, *args)
         self.assertEqual(process.success, success_exp)
@@ -679,7 +680,7 @@ class TestVerifyTorrentsCmd(CommandTestCase):
         self.assert_stdout(*msgs_exp)
         self.assert_stderr(*errors_exp)
 
-        self.api.torrent.assert_called(1, 'verify', (process.mock_tfilter,), {})
+        self.srvapi.torrent.assert_called(1, 'verify', (process.mock_tfilter,), {})
 
     async def test_verify(self):
         await self.do(['idle'], success_exp=False,

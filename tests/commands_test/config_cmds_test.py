@@ -10,7 +10,7 @@ from stig.commands.cli import RcCmd
 class TestRcCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.RcCmd',
+        self.patch('stig.objects',
                    cmdmgr=self.cmdmgr)
         self.mock_path_exists = self.patch('os.path.exists')
         self.mock_rcfile = self.patch('stig.commands.base.config.rcfile')
@@ -93,9 +93,9 @@ from stig.commands.cli import ResetCmd
 class TestResetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.ResetCmd',
-                   cfg=self.cfg,
-                   srvcfg=self.srvcfg)
+        self.patch('stig.objects',
+                   localcfg=self.localcfg,
+                   remotecfg=self.remotecfg)
 
     async def test_unknown_setting(self):
         process = await self.execute(ResetCmd, 'some.string', 'foo.bar')
@@ -105,8 +105,8 @@ class TestResetCmd(CommandTestCase):
                            'reset: Unknown setting: foo.bar')
 
     async def test_remote_setting(self):
-        self.srvcfg['some.string'] = 'foo'
-        self.srvcfg['some.number'] = 12
+        self.remotecfg['some.string'] = 'foo'
+        self.remotecfg['some.number'] = 12
         process = await self.execute(ResetCmd, 'srv.some.string', 'srv.some.number')
         self.assertEqual(process.success, False)
         self.assert_stdout()
@@ -114,21 +114,21 @@ class TestResetCmd(CommandTestCase):
                            'reset: Remote settings cannot be reset: srv.some.number')
 
     async def test_space_separated_arguments(self):
-        self.cfg['some.string'] = 'foo'
-        self.cfg['some.number'] = 12
+        self.localcfg['some.string'] = 'foo'
+        self.localcfg['some.number'] = 12
         process = await self.execute(ResetCmd, 'some.string', 'some.number')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg.reset.mock_calls, [call('some.string'),
+        self.assertEqual(self.localcfg.reset.mock_calls, [call('some.string'),
                                                      call('some.number')])
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_comma_separated_arguments(self):
-        self.cfg['some.string'] = 'foo'
-        self.cfg['some.number'] = 12
+        self.localcfg['some.string'] = 'foo'
+        self.localcfg['some.number'] = 12
         process = await self.execute(ResetCmd, 'some.string,some.number')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg.reset.mock_calls, [call('some.string'),
+        self.assertEqual(self.localcfg.reset.mock_calls, [call('some.string'),
                                                      call('some.number')])
         self.assert_stdout()
         self.assert_stderr()
@@ -145,9 +145,9 @@ from stig.commands.cli import SetCmd
 class TestSetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.SetCmd',
-                   cfg=self.cfg,
-                   srvcfg=self.srvcfg)
+        self.patch('stig.objects',
+                   localcfg=self.localcfg,
+                   remotecfg=self.remotecfg)
 
     async def test_unknown_setting(self):
         process = await self.execute(SetCmd, 'foo.bar', '27')
@@ -156,97 +156,97 @@ class TestSetCmd(CommandTestCase):
         self.assert_stderr('set: Unknown setting: foo.bar')
 
     async def test_setting_string(self):
-        self.cfg['some.string'] = 'asdf'
+        self.localcfg['some.string'] = 'asdf'
         process = await self.execute(SetCmd, 'some.string', 'bar', 'foo')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.string'], 'bar foo')
+        self.assertEqual(self.localcfg['some.string'], 'bar foo')
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_integer(self):
-        self.cfg['some.integer'] = 42
+        self.localcfg['some.integer'] = 42
         process = await self.execute(SetCmd, 'some.integer', '39')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.integer'], '39')
+        self.assertEqual(self.localcfg['some.integer'], '39')
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_float(self):
-        self.cfg['some.number'] = 3.7
+        self.localcfg['some.number'] = 3.7
         process = await self.execute(SetCmd, 'some.number', '39.2')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.number'], '39.2')
+        self.assertEqual(self.localcfg['some.number'], '39.2')
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_adjusting_number(self):
-        self.cfg['some.number'] = 20
+        self.localcfg['some.number'] = 20
         process = await self.execute(SetCmd, 'some.number', '+=15')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.number'], 35)
+        self.assertEqual(self.localcfg['some.number'], 35)
         self.assert_stdout()
         self.assert_stderr()
 
         process = await self.execute(SetCmd, 'some.number', '-=45')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.number'], -10)
+        self.assertEqual(self.localcfg['some.number'], -10)
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_bool(self):
-        self.cfg['some.boolean'] = 'no'
+        self.localcfg['some.boolean'] = 'no'
         process = await self.execute(SetCmd, 'some.boolean', 'yes')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.boolean'], 'yes')
+        self.assertEqual(self.localcfg['some.boolean'], 'yes')
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_option(self):
-        self.cfg['some.option'] = 'foo bar'
+        self.localcfg['some.option'] = 'foo bar'
         process = await self.execute(SetCmd, 'some.option', 'red', 'with', 'a', 'hint', 'of', 'yellow')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.option'], 'red with a hint of yellow')
+        self.assertEqual(self.localcfg['some.option'], 'red with a hint of yellow')
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_comma_separated_list(self):
-        self.cfg['some.list'] = ('foo', 'bar', 'baz')
+        self.localcfg['some.list'] = ('foo', 'bar', 'baz')
         process = await self.execute(SetCmd, 'some.list', 'alice,bob,bert')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.list'], ['alice', 'bob', 'bert'])
+        self.assertEqual(self.localcfg['some.list'], ['alice', 'bob', 'bert'])
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_space_separated_list(self):
-        self.cfg['some.list'] = ('foo', 'bar', 'baz')
+        self.localcfg['some.list'] = ('foo', 'bar', 'baz')
         process = await self.execute(SetCmd, 'some.list', 'alice', 'bert')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.list'], ['alice', 'bert'])
+        self.assertEqual(self.localcfg['some.list'], ['alice', 'bert'])
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_setting_with_eval(self):
-        self.cfg['some.boolean'] = 'false'
+        self.localcfg['some.boolean'] = 'false'
         process = await self.execute(SetCmd, 'some.boolean:eval', 'echo', 'true')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.boolean'], 'true')
+        self.assertEqual(self.localcfg['some.boolean'], 'true')
         self.assert_stdout()
         self.assert_stderr()
 
         process = await self.execute(SetCmd, 'some.boolean:eval', 'echo false')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['some.boolean'], 'false')
+        self.assertEqual(self.localcfg['some.boolean'], 'false')
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_remote_setting(self):
-        self.cfg['something'] = 'foo'
-        self.srvcfg['something'] = 'bar'
+        self.localcfg['something'] = 'foo'
+        self.remotecfg['something'] = 'bar'
         process = await self.execute(SetCmd, 'srv.something', 'baz')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.cfg['something'], 'foo')
-        self.srvcfg.update.assert_called_once_with()
-        self.srvcfg.set.assert_called_once_with('something', 'baz')
+        self.assertEqual(self.localcfg['something'], 'foo')
+        self.remotecfg.update.assert_called_once_with()
+        self.remotecfg.set.assert_called_once_with('something', 'baz')
         self.assert_stdout()
         self.assert_stderr()
 
@@ -258,9 +258,9 @@ class TestSetCmd(CommandTestCase):
                 return 'Some bullshit value'
             def __setitem__(self, name, value):
                 raise ValueError('I hate your values!')
-        SetCmd.cfg = AngryDict()
-        process = await self.execute(SetCmd, 'some.string', 'bar')
-        self.assert_stderr('set: some.string = bar: I hate your values!')
+        with patch('stig.objects.localcfg', AngryDict()):
+            process = await self.execute(SetCmd, 'some.string', 'bar')
+            self.assert_stderr('set: some.string = bar: I hate your values!')
 
     async def test_no_completion_candidates_if_sort_or_columns_options_given(self):
         for opt in ('--columns', '--sort'):
@@ -298,8 +298,8 @@ from asynctest import CoroutineMock
 class TestRateLimitCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.RateLimitCmd',
-                   srvapi=self.api)
+        self.patch('stig.objects',
+                   srvapi=self.srvapi)
 
     async def test_call_syntaxes(self):
         _set_limits = CoroutineMock()
@@ -332,32 +332,32 @@ class TestRateLimitCmd(CommandTestCase):
             set_method = 'set_limit_rate_' + real_dir
             adjust_method = 'adjust_limit_rate_' + real_dir
 
-            self.api.settings.forget_calls()
+            self.srvapi.settings.forget_calls()
             process = await self.execute(RateLimitCmd, direction, '1Mb', 'global')
             self.assertEqual(process.success, True)
-            self.api.settings.assert_called(1, set_method, ('1Mb',), {})
+            self.srvapi.settings.assert_called(1, set_method, ('1Mb',), {})
             self.assert_stdout('ratelimit: Global %sload rate limit: None' % real_dir)
             self.assert_stderr()
             self.clear_stdout(); self.clear_stderr()
 
-            self.api.settings.forget_calls()
+            self.srvapi.settings.forget_calls()
             process = await self.execute(RateLimitCmd, direction, '+=2MB', 'global')
             self.assertEqual(process.success, True)
-            self.api.settings.assert_called(1, adjust_method, ('+2MB',), {})
+            self.srvapi.settings.assert_called(1, adjust_method, ('+2MB',), {})
             self.assert_stdout('ratelimit: Global %sload rate limit: None' % real_dir)
             self.assert_stderr()
             self.clear_stdout(); self.clear_stderr()
 
-            self.api.settings.forget_calls()
+            self.srvapi.settings.forget_calls()
             process = await self.execute(RateLimitCmd, direction, '--', '-=10Mb', 'global')
             self.assertEqual(process.success, True)
-            self.api.settings.assert_called(1, adjust_method, ('-10Mb',), {})
+            self.srvapi.settings.assert_called(1, adjust_method, ('-10Mb',), {})
             self.assert_stdout('ratelimit: Global %sload rate limit: None' % real_dir)
             self.assert_stderr()
             self.clear_stdout(); self.clear_stderr()
 
-            self.api.settings.forget_calls()
-            self.api.settings.raises = ValueError('bad value')
+            self.srvapi.settings.forget_calls()
+            self.srvapi.settings.raises = ValueError('bad value')
             process = await self.execute(RateLimitCmd, direction, 'fooo', 'global')
             self.assertEqual(process.success, False)
             self.assert_stdout()

@@ -5,7 +5,7 @@ from stig.commands.cli import HelpCmd
 class TestHelpCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.commands.cli.HelpCmd',
+        self.patch('stig.objects',
                    helpmgr=self.helpmgr)
 
     async def test_no_topic(self):

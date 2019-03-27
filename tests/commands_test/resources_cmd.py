@@ -152,11 +152,11 @@ from unittest.mock import (patch, MagicMock)
 from asynctest import CoroutineMock
 class CommandTestCase(asynctest.TestCase):
     def setUp(self):
-        self.api = SimpleNamespace(torrent=MockAPI(),
-                                   rpc=MockAPI(),
-                                   settings=MockAPI())
-        self.cfg = MockSettings()
-        self.srvcfg = MockRemoteSettings()
+        self.srvapi = SimpleNamespace(torrent=MockAPI(),
+                                      rpc=MockAPI(),
+                                      settings=MockAPI())
+        self.localcfg = MockSettings()
+        self.remotecfg = MockRemoteSettings()
         self.helpmgr = MockHelpManager()
         self.cmdmgr = MagicMock()
         self.cmdmgr.run_async = CoroutineMock()
