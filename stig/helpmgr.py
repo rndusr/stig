@@ -382,31 +382,29 @@ class HelpManager():
     @property
     def topic_keys(self):
         """Must be set to a KeyMap object; provides a help text"""
-
-        from .tui import main as tui
-        km = tui.keymap
-        lines = []
+        from .tui.tuiobjects import keymap
 
         def stringify(s):
             return ' '.join(s) if not isinstance(s, str) else s
 
-        for context in sorted(km.contexts, key=lambda c: '' if c is None else c):
+        lines = []
+        for context in sorted(keymap.contexts, key=lambda c: '' if c is None else c):
             if context is None:
                 lines.append('GENERAL KEYBINDINGS')
             else:
                 lines.append('{} KEYBINDINGS'.format(context.upper()))
 
-            keymap = ((key, stringify(action)) for key,action in km.map(context))
+            km = ((key, stringify(action)) for key,action in keymap.map(context))
 
             # Sort by command
             from natsort import (natsort_keygen, natsorted, ns)
             get_cmd = natsort_keygen(key=lambda pair: pair[1], alg=ns.IGNORECASE)
-            for key,action in natsorted(keymap, key=get_cmd):
+            for key,action in natsorted(km, key=get_cmd):
                 if len(action) < 40:
-                    lines.append('\t%s  \t%s  \t%s' % (key, action, km.get_description(key, context)))
+                    lines.append('\t%s  \t%s  \t%s' % (key, action, keymap.get_description(key, context)))
                 else:
                     lines.append('\t%s  \t%s' % (key, action))
-                    lines.append('\t  \t%s' % (km.get_description(key, context),))
+                    lines.append('\t  \t%s' % (keymap.get_description(key, context),))
             lines.append('')
         return finalize_lines(lines)
 
