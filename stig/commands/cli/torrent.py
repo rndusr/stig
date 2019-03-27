@@ -14,9 +14,10 @@ log = make_logger(__name__)
 
 from ..base import torrent as base
 from . import _mixin as mixin
-from .. import (ExpectedResource, CmdError)
+from .. import CmdError
 from ._table import (print_table, TERMSIZE)
 from ...completion import candidates
+from ... import singletons
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
@@ -36,7 +37,7 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                 needed_keys.update(_item.needed_keys)
 
         response = await self.make_request(
-            self.srvapi.torrent.torrents((torrent_id,), keys=needed_keys),
+            singletons.srvapi.torrent.torrents((torrent_id,), keys=needed_keys),
             quiet=True)
         if not response.torrents:
             raise CmdError()
@@ -73,7 +74,6 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents,
                       mixin.only_supported_columns):
     provides = {'cli'}
-    srvapi = ExpectedResource  # TUI version of 'list' doesn't need srvapi
 
     async def make_torrent_list(self, tfilter, sort, columns):
         from ...views.torrent import COLUMNS as TORRENT_COLUMNS
@@ -91,7 +91,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
         for colname in columns:
             keys.update(TORRENT_COLUMNS[colname].needed_keys)
         response = await self.make_request(
-            self.srvapi.torrent.torrents(tfilter, keys=keys),
+            singletons.srvapi.torrent.torrents(tfilter, keys=keys),
             quiet=True)
         torrents = sort.apply(response.torrents)
 
@@ -130,13 +130,12 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
 class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
                         mixin.make_request, mixin.select_torrents, mixin.ask_yes_no):
     provides = {'cli'}
-    cmdmgr = ExpectedResource
 
     async def show_list_of_hits(self, tfilter):
         import sys
         if sys.stdout.isatty():
             cmd = 'ls --sort name %s' % tfilter
-            await self.cmdmgr.run_async(cmd)
+            await singletons.cmdmgr.run_async(cmd)
 
     def remove_list_of_hits(self):
         pass
