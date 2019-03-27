@@ -630,9 +630,9 @@ class Arg(str):
     def before_cursor(self):
         """Return the part before the cursor or the whole argument if `curpos` is None"""
         if self.curpos is not None:
-            return self[:self.curpos]
+            return Arg(self[:self.curpos], curpos=self.curpos)
         else:
-            return str(self)
+            return self
 
     @property
     def curpos(self):
