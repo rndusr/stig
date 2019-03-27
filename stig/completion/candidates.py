@@ -15,7 +15,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 
-from ..singletons import (localcfg, remotecfg, cmdmgr, srvapi)
+from .. import singletons
 from ..utils import usertypes
 from ..completion import (Candidates, Candidate)
 from ..client import filters
@@ -26,7 +26,7 @@ import re
 import functools
 from collections import abc
 
-_commands = tuple(cmdcls.name for cmdcls in cmdmgr.active_commands)
+_commands = tuple(cmdcls.name for cmdcls in singletons.cmdmgr.active_commands)
 def commands():
     """Names of commands"""
     return _commands
@@ -38,21 +38,21 @@ def setting_names():
     local_cands = (Candidate(name,
                              description=getattr('description', name, ''),
                              default=getattr('default', name, ''))
-                   for name in localcfg)
+                   for name in singletons.localcfg)
     remote_cands = (Candidate('srv.' + name,
                               description=getattr('description', name, ''),
                               default=getattr('default', name, ''))
-                    for name in remotecfg)
+                    for name in singletons.remotecfg)
     return Candidates(itertools.chain(local_cands, remote_cands),
                       label='Settings')
 
 
 def setting_values(setting, args):
     """Values of settings"""
-    if setting in localcfg:
-        value = localcfg[setting]
-    elif setting.startswith('srv.') and setting[4:] in remotecfg:
-        value = remotecfg[setting[4:]]
+    if setting in singletons.localcfg:
+        value = singletons.localcfg[setting]
+    elif setting.startswith('srv.') and setting[4:] in singletons.remotecfg:
+        value = singletons.remotecfg[setting[4:]]
     else:
         return
 
@@ -175,7 +175,7 @@ async def _torrent_filter_values(filter_name):
     cands = ()
     if _filter_takes_completable_values(filter_cls, filter_name):
         keys = filter_cls(filter_name).needed_keys
-        response = await srvapi.torrent.torrents(keys=keys, from_cache=True)
+        response = await singletons.srvapi.torrent.torrents(keys=keys, from_cache=True)
         if response.success:
             value_getter = _get_filter_spec(filter_cls, filter_name).value_getter
             cands = []
