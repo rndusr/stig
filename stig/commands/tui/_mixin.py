@@ -113,10 +113,8 @@ class select_torrents():
                 tids = self.discover_torrent_ids(prefer_focused=prefer_focused)
                 if tids is not None:
                     return self.ids2tfilter(tids)
-
             if allow_no_filter:
                 return None
-
             else:
                 raise ValueError('No torrent specified')
 
