@@ -15,7 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from ... import objects
-from .. import (ExpectedResource, CmdError)
+from .. import CmdError
 from .. import utils
 from ._common import make_tab_title_widget
 
@@ -38,9 +38,6 @@ class make_request():
 
 
 class ask_yes_no():
-    tui     = ExpectedResource
-    aioloop = ExpectedResource
-
     ANSWERS = {'y': True, 'n': False,
                'Y': True, 'N': False}
 
@@ -60,9 +57,9 @@ class ask_yes_no():
         import asyncio
         def run_func_or_coro(func_or_coro):
             if asyncio.iscoroutinefunction(func_or_coro):
-                self.aioloop.create_task(func_or_coro())
+                objects.aioloop.create_task(func_or_coro())
             elif asyncio.iscoroutine(func_or_coro):
-                self.aioloop.create_task(func_or_coro)
+                objects.aioloop.create_task(func_or_coro)
             elif func_or_coro is not None:
                 func_or_coro()
 
@@ -89,8 +86,6 @@ class ask_yes_no():
 
 
 class select_torrents():
-    tui = ExpectedResource
-
     def select_torrents(self, FILTER, allow_no_filter=True, discover_torrent=True, prefer_focused=False):
         """
         Get TorrentFilter instance or None
@@ -318,8 +313,6 @@ class polling_frenzy():
 import os
 import collections
 class placeholders(make_request):
-    tui = ExpectedResource
-
     class _Placeholder():
         def __init__(self, name, needed_keys, description, modifier=None):
             self.name = name
