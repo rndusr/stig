@@ -66,12 +66,15 @@ def listify_args(args):
 
 def log_msgs(process, response, quiet=False):
     """
-    Log messages to `logger`
+    Get messages for the user from `response` and report it to the user
 
-    `msgs` is an iterable of strings or exceptions.  Strings are logged to
-    level INFO, exceptions are logged to level ERROR.
+    `process` must be an object with `info` and `error` methods (i.e. a command
+    instance) that take a single string and report it to the user.
 
-    If `quiet` evaluates to True, INFO messages are not logged.
+    `response` must be an object with the attributes `msgs` and `errors` (i.e. a
+    Reponse instance).
+
+    If `quiet` evaluates to True, only errors are reported.
     """
     if not quiet:
         for msg in response.msgs:
