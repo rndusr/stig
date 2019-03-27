@@ -15,7 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError)
-from ... import (__appname__, __version__)
+from ... import (objects, __appname__, __version__)
 
 
 class HelpCmdbase(metaclass=InitCommand):
