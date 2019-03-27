@@ -224,7 +224,7 @@ DEFAULT_KEYMAP = (
      'description': 'Open help for commands in a new tab'},
     {'context': 'main', 'key': 'F1+s', 'action': 'tab help settings',
      'description': 'Open help for settings in a new tab'},
-    {'context': 'main', 'key': 'F1+k', 'action': 'tab help keymap',
+    {'context': 'main', 'key': 'F1+k', 'action': 'tab help keybindings',
      'description': 'Open help for keybindings in a new tab'},
     {'context': 'main', 'key': 'F1+f', 'action': 'tab help filters',
      'description': 'Open help for filters in a new tab'},
