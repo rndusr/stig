@@ -326,22 +326,22 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         if not self._completer.categories:
             self.reset()
         else:
-            def cat_widget(cand):
-                return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
-                                     'completion.category', 'default')
+            def cat_widget(cands):
+                cols = urwid.Columns([urwid.Text(cands.label), urwid.Text('Default'), urwid.Text('Description')])
+                return urwid.AttrMap(urwid.Padding(cols), 'completion.category', 'default')
             def cand_widget(cand):
                 if cand.in_parens:
                     cols = [urwid.Text('%s (%s)' % (cand, cand.in_parens))]
                 else:
                     cols = [urwid.Text(cand)]
-                if cand.description:
-                    cols.append(urwid.Text(cand.description))
+                cols.append(urwid.Text(cand.default))
+                cols.append(urwid.Text(cand.description))
                 return urwid.AttrMap(urwid.Padding(urwid.Columns(cols)),
                                      'completion.item', 'completion.item.focused')
             widgets = []
             for cands in self._completer.categories:
                 if cands.label:
-                    widgets.append(cat_widget(cands.label))
+                    widgets.append(cat_widget(cands))
                 for cand in cands:
                     widgets.append(cand_widget(cand))
             self._listbox.body[:] = widgets

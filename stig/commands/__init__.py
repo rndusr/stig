@@ -208,8 +208,7 @@ class _CompletionCandidatesMixin():
             return cands
         cands = cls.completion_candidates_posargs(args)
         log.debug('Completion candidates for positional arguments: %r', cands)
-        if cands:
-            return cands
+        return cands
 
 
 _MANDATORY_CMD_ATTRS = ('name', 'category', 'provides', 'description', 'run')
