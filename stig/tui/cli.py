@@ -326,20 +326,48 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         if not self._completer.categories:
             self.reset()
         else:
+            cats = self._completer.categories
+
+            show_default_col = show_desc_col = False
+            for cands in cats:
+                for cand in cands:
+                    if cand.default:
+                        show_default_col = True
+                    if cand.description:
+                        show_desc_col = True
+                    if show_default_col and show_desc_col:
+                        break
+
+            if show_default_col and show_desc_col:
+                def cat_widget_cols(cands):
+                    return urwid.Columns((urwid.Text(cands.label), urwid.Text('Default'), urwid.Text('Description')))
+            elif show_default_col:
+                def cat_widget_cols(cands):
+                    return urwid.Columns((urwid.Text(cands.label), urwid.Text('Default')))
+            elif show_desc_col:
+                def cat_widget_cols(cands):
+                    return urwid.Columns((urwid.Text(cands.label), urwid.Text('Description')))
+            else:
+                def cat_widget_cols(cands):
+                    return urwid.Columns((urwid.Text(cands.label),))
+
             def cat_widget(cands):
-                cols = urwid.Columns([urwid.Text(cands.label), urwid.Text('Default'), urwid.Text('Description')])
-                return urwid.AttrMap(urwid.Padding(cols), 'completion.category', 'default')
+                return urwid.AttrMap(urwid.Padding(cat_widget_cols(cands)), 'completion.category', 'default')
+
             def cand_widget(cand):
                 if cand.in_parens:
                     cols = [urwid.Text('%s (%s)' % (cand, cand.in_parens))]
                 else:
                     cols = [urwid.Text(cand)]
-                cols.append(urwid.Text(cand.default))
-                cols.append(urwid.Text(cand.description))
+                if show_default_col:
+                    cols.append(urwid.Text(cand.default))
+                if show_desc_col:
+                    cols.append(urwid.Text(cand.description))
                 return urwid.AttrMap(urwid.Padding(urwid.Columns(cols)),
                                      'completion.item', 'completion.item.focused')
+
             widgets = []
-            for cands in self._completer.categories:
+            for cands in cats:
                 if cands.label:
                     widgets.append(cat_widget(cands))
                 for cand in cands:
