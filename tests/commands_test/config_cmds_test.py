@@ -277,6 +277,7 @@ class TestSetCmd(CommandTestCase):
         await self.assert_completion_candidates(SetCmd, Args(('set', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=1), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=2), exp_cands=None)
 
     @patch('stig.commands.base.config.candidates')
     async def test_completion_candidates_when_completing_values(self, mock_candidates):

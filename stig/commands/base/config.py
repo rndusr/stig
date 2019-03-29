@@ -297,18 +297,20 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        # If --columns or --sort is given, we display options and don't set them
+        # If --columns or --sort is anywhere, we only display options
         for arg in args:
             if cls.short_options.get(arg, arg) in ('--columns', '--sort'):
                 return
 
         settings = candidates.setting_names()
-        for arg in args.before_curarg:
-            if arg in settings:
-                log.debug('Completing values for %r', arg)
-                return candidates.setting_values(arg, args)
-        log.debug('Completing setting names')
-        return settings
+        if args.curarg_index == 1:
+            log.debug('Returning setting names: %r', settings)
+            return settings
+        else:
+            for arg in args.before_curarg:
+                if arg in settings:
+                    log.debug('Completing values for %r', arg)
+                    return candidates.setting_values(arg, args)
 
     @classmethod
     def completion_candidates_params(cls, option, args):
