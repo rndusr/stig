@@ -160,7 +160,7 @@ class _CompletionCandidatesMixin():
                 # Remove any options from candidates that are already in `args`
                 options = tuple(opt for opt in cls.long_options if opt not in args)
                 if options:
-                    cands = (Candidate(cand, short_form=', '.join(cls.long_options[cand]))
+                    cands = (Candidate(cand, in_parens=', '.join(cls.long_options[cand]))
                              for cand in options)
                     return Candidates(cands, label='%s options' % cls.name)
 

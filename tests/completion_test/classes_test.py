@@ -118,9 +118,9 @@ class TestSingleCandidate(unittest.TestCase):
         sc = SingleCandidate('foo')
         sc.set('bar')
         self.assertIsInstance(sc[0], Candidate)
-        sc.set(Candidate('bar', short_form='b'))
+        sc.set(Candidate('bar', in_parens='b'))
         self.assertIsInstance(sc[0], Candidate)
-        self.assertEqual(sc[0].short_form, 'b')
+        self.assertEqual(sc[0].in_parens, 'b')
 
     def test_hash_does_not_change_after_set_was_called(self):
         sc = SingleCandidate('foo')

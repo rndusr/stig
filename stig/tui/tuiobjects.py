@@ -69,7 +69,7 @@ def _create_cli_widget():
             log.debug('Completing command: %r', args[0])
             cands = (Candidate(cmdcls.name,
                                description=cmdcls.description,
-                               short_form='%s' % (', '.join(cmdcls.aliases),))
+                               in_parens='%s' % (', '.join(cmdcls.aliases),))
                      for cmdcls in objects.cmdmgr.active_commands)
             return Candidates(cands, label='Commands')
         else:

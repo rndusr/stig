@@ -330,8 +330,8 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
                 return urwid.AttrMap(urwid.Padding(urwid.Text(cand)),
                                      'completion.category', 'default')
             def cand_widget(cand):
-                if cand.short_form:
-                    cols = [urwid.Text('%s (%s)' % (cand, cand.short_form))]
+                if cand.in_parens:
+                    cols = [urwid.Text('%s (%s)' % (cand, cand.in_parens))]
                 else:
                     cols = [urwid.Text(cand)]
                 if cand.description:

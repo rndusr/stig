@@ -224,9 +224,11 @@ class Candidate(str):
     def __new__(cls, string, **kwargs):
         return super().__new__(cls, string)
 
-    def __init__(self, string, description='', short_form='', default=''):
+    def __init__(self, string, description='', in_parens='', default=''):
+        # `description` and `default are displayed in a separate columns.
+        # `in_parens` is displayed in parentheses after `string`.
         self.description = description
-        self.short_form = short_form
+        self.in_parens = in_parens
         self.default = default
 
 

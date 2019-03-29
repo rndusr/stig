@@ -63,12 +63,12 @@ def setting_values(setting, args):
     # Get candidates depending on what kind of setting it is (bool, option, etc)
     if isinstance(value, usertypes.Option) and focus_on_first_value:
         aliases = value.aliases_inverse
-        cands = (Candidate(opt, short_form=aliases.get(opt, ''))
+        cands = (Candidate(opt, in_parens=aliases.get(opt, ''))
                  for opt in value.options)
         return Candidates(cands, label='%s options' % (setting,))
     elif isinstance(value, usertypes.Tuple):
         aliases = value.aliases_inverse
-        cands = (Candidate(opt, short_form=aliases.get(opt, ''))
+        cands = (Candidate(opt, in_parens=aliases.get(opt, ''))
                  for opt in value.options)
         return Candidates(cands, label='%s options' % (setting,),
                           curarg_seps=(value.sep.strip(),))
@@ -160,7 +160,7 @@ def _filter_names(filter_cls_name):
     filter_cls = _get_filter_cls(filter_cls_name)
     cands = (Candidate(name,
                        description=_get_filter_spec(filter_cls, name).description,
-                       short_form=','.join(_get_filter_spec(filter_cls, name).aliases))
+                       in_parens=','.join(_get_filter_spec(filter_cls, name).aliases))
              for name in _get_filter_names(filter_cls))
     curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
     label = {'TorrentFilter': 'Torrent Filters',
