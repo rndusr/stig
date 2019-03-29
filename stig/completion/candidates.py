@@ -36,12 +36,12 @@ def commands():
 def setting_names():
     """Names of settings"""
     local_cands = (Candidate(name,
-                             description=getattr('description', name, ''),
-                             default=getattr('default', name, ''))
+                             description=objects.localcfg.description(name),
+                             default=str(objects.localcfg.default(name)))
                    for name in objects.localcfg)
     remote_cands = (Candidate('srv.' + name,
-                              description=getattr('description', name, ''),
-                              default=getattr('default', name, ''))
+                              description=objects.remotecfg.description(name),
+                              default=str(objects.remotecfg.default(name)))
                     for name in objects.remotecfg)
     return Candidates(itertools.chain(local_cands, remote_cands),
                       label='Settings')
