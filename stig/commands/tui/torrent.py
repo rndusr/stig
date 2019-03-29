@@ -37,7 +37,7 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
         TorrentDetailsWidget_keymapped = keymap.wrap(TorrentDetailsWidget,
                                                      context='torrent')
         title_str = self.title if hasattr(self, 'title') else None
-        detailsw = TorrentDetailsWidget_keymapped(objects.srvapi, torrent_id, title=title_str)
+        detailsw = TorrentDetailsWidget_keymapped(torrent_id, title=title_str)
         tabid = tabs.load(make_titlew(detailsw.title), detailsw)
 
         def set_tab_title(text):

@@ -14,6 +14,7 @@ log = make_logger(__name__)
 
 import urwid
 from ..scroll import (ScrollBar, Scrollable)
+from ... import objects
 
 
 def mksection(title, width, items):
@@ -56,7 +57,7 @@ for section in SECTIONS:
 
 
 class TorrentDetailsWidget(urwid.WidgetWrap):
-    def __init__(self, srvapi, tid, title=None):
+    def __init__(self, tid, title=None):
         self._title = title
         self._torrent = {}
 
@@ -87,7 +88,7 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
 
         # Register new request in request pool
         keys = set(('name',)).union(key for w in sections for key in w.needed_keys)
-        self._poller = srvapi.create_poller(srvapi.torrent.torrents, (tid,), keys=keys)
+        self._poller = objects.srvapi.create_poller(objects.srvapi.torrent.torrents, (tid,), keys=keys)
         self._poller.on_response(self._handle_response)
         self._poller.on_error(self._handle_error)
 
