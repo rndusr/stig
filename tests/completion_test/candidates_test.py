@@ -1,9 +1,65 @@
-from stig.completion import candidates
+from stig.completion import (candidates, Candidates)
+from stig.utils.cliparser import Args
 
 import unittest
 from unittest.mock import patch, call
 
 from types import SimpleNamespace
+
+
+class Test_setting_names(unittest.TestCase):
+    def setUp(self):
+        # Because setting_names is an lru_cache
+        candidates.setting_names.cache_clear()
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_remote_and_local_settings_are_combined(self, mock_rcfg, mock_lcfg):
+        mock_lcfg.__iter__.return_value = ('foo', 'bar', 'baz')
+        mock_rcfg.__iter__.return_value = ('Foo', 'Bar', 'Baz')
+        self.assertEqual(candidates.setting_names(),
+                         Candidates(('bar', 'baz', 'foo', 'srv.Bar', 'srv.Baz', 'srv.Foo'), label='Settings'))
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_description(self, mock_rcfg, mock_lcfg):
+        mock_lcfg.__iter__.return_value = ('foo', 'bar')
+        mock_rcfg.__iter__.return_value = ('Foo', 'Bar')
+        mock_lcfg.description.side_effect = lambda name: 'mock description for local setting %s' % name
+        mock_rcfg.description.side_effect = lambda name: 'mock description for remote setting %s' % name
+        settings = candidates.setting_names()
+        self.assertEqual(settings[0].description, 'mock description for local setting bar')
+        self.assertEqual(settings[1].description, 'mock description for local setting foo')
+        self.assertEqual(settings[2].description, 'mock description for remote setting Bar')
+        self.assertEqual(settings[3].description, 'mock description for remote setting Foo')
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_default(self, mock_rcfg, mock_lcfg):
+        mock_lcfg.__iter__.return_value = ('foo', 'bar')
+        mock_rcfg.__iter__.return_value = ('Foo', 'Bar')
+        mock_lcfg.default.side_effect = lambda name: list(name)
+        mock_rcfg.default.side_effect = lambda name: (name,) * 2
+        cands = candidates.setting_names()
+        self.assertEqual(cands[0].default, "['b', 'a', 'r']")
+        self.assertEqual(cands[1].default, "['f', 'o', 'o']")
+        self.assertEqual(cands[2].default, "('Bar', 'Bar')")
+        self.assertEqual(cands[3].default, "('Foo', 'Foo')")
+
+
+class Test_setting_values(unittest.TestCase):
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_unknown_setting(self, mock_rcfg, mock_lcfg):
+        mock_lcfg.__iter__.return_value = ('foo', 'bar', 'baz')
+        mock_rcfg.__iter__.return_value = ('Foo', 'Bar', 'Baz')
+        for args in (('foo', 'bar', 'baz'),
+                     ('foo', 'bar', 'baz'),
+                     ('foo', 'bar', 'baz')):
+            for curarg_index in (0, 1, 2):
+                for curarg_curpos in (0, 1, 2, 3):
+                    cmdline = Args(args, curarg_index=curarg_index, curarg_curpos=curarg_curpos)
+                    self.assertEqual(candidates.setting_values(cmdline), None)
 
 
 class Test_fs_path(unittest.TestCase):
