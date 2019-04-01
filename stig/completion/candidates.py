@@ -161,7 +161,7 @@ async def torrent_filter(curarg):
     elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
-        return (await _torrent_filter_values(parts[0]),)
+        return (await _torrent_filter_values(parts[0].strip()),)
     else:
         return ()
 
