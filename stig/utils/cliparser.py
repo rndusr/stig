@@ -749,6 +749,21 @@ class Args(tuple):
         """
         return Args(*remove_options(self, self._curarg_index, self._curarg_curpos))
 
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            subargs = super().__getitem__(item)
+            if item.step is not None:
+                raise RuntimeError('Slicing with steps is not implemented yet')
+            if ((item.start is None or item.start <= self.curarg_index) and
+                (item.stop is None or item.stop > self.curarg_index)):
+                curarg_index = self.curarg_index - (item.start or 0)
+                curarg_curpos = self.curarg_curpos
+            else:
+                curarg_index = curarg_curpos = None
+            return Args(subargs, curarg_index=curarg_index, curarg_curpos=curarg_curpos)
+        else:
+            return super().__getitem__(item)
+
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
