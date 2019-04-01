@@ -749,6 +749,16 @@ class Args(tuple):
         """
         return Args(*remove_options(self, self._curarg_index, self._curarg_curpos))
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (super().__eq__(other) and
+                self._curarg_index == other._curarg_index and
+                self._curarg_curpos == other._curarg_curpos)
+
+    def __hash__(self):
+        return super().__hash__()
+
     def __repr__(self):
         string = '%s(%s' % (type(self).__name__, tuple(str(arg) for arg in self))
         if self._curarg_index is not None:

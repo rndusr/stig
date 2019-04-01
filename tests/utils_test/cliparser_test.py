@@ -1326,6 +1326,24 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz/bax', 15, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 7)
 
 
+class TestArgs(unittest.TestCase):
+    def test_equality(self):
+        self.assertEqual(cliparser.Args(('a', 'b', 'c')),
+                         cliparser.Args(('a', 'b', 'c')))
+        for curarg_index in (0, 1, 2):
+            for curarg_curpos in (0, 1, 2, 3):
+                self.assertEqual(cliparser.Args(('a', 'b', 'c'), curarg_index=curarg_index, curarg_curpos=curarg_curpos),
+                                 cliparser.Args(('a', 'b', 'c'), curarg_index=curarg_index, curarg_curpos=curarg_curpos))
+
+    def test_inequality(self):
+        self.assertNotEqual(cliparser.Args(('a', 'b', 'c'), curarg_index=1, curarg_curpos=0),
+                            cliparser.Args(('a', 'b', 'd'), curarg_index=1, curarg_curpos=0))
+        self.assertNotEqual(cliparser.Args(('a', 'b', 'c'), curarg_index=1, curarg_curpos=0),
+                            cliparser.Args(('a', 'b', 'c'), curarg_index=2, curarg_curpos=0))
+        self.assertNotEqual(cliparser.Args(('a', 'b', 'c'), curarg_index=1, curarg_curpos=0),
+                            cliparser.Args(('a', 'b', 'c'), curarg_index=1, curarg_curpos=1))
+
+
 class Test_remove_options(unittest.TestCase):
     def do(self, input, output):
         self.assertEqual(cliparser.remove_options(*input), output)
