@@ -670,6 +670,23 @@ class Arg(str):
         else:
             return Args(parts)
 
+    def __getitem__(self, item):
+        if isinstance(item, slice):
+            subarg = super().__getitem__(item)
+            if item.step is not None:
+                raise RuntimeError('Slicing with steps is not implemented yet')
+            elif self.curpos is None:
+                return Arg(subarg)
+            elif ((item.start is None or item.start <= self.curpos) and
+                  (item.stop is None or item.stop > self.curpos)):
+                curpos = self.curpos - (item.start or 0)
+            else:
+                curpos = None
+            return Arg(subarg, curpos=curpos)
+        else:
+            curpos = 0 if item == self.curpos else None
+            return Arg(super().__getitem__(item), curpos=curpos)
+
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented

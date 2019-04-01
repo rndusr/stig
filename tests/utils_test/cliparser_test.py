@@ -1194,6 +1194,49 @@ class TestArg(unittest.TestCase):
         self.assertNotEqual(cliparser.Arg('foo', curpos=0), cliparser.Arg('fo', curpos=0))
         self.assertNotEqual(cliparser.Arg('foo', curpos=0), cliparser.Arg('foo', curpos=1))
 
+    def test_getitem_with_index(self):
+        arg = cliparser.Arg('bar', curpos=0)
+        self.assertEqual(arg[0], cliparser.Arg('b', curpos=0))
+        self.assertEqual(arg[1], cliparser.Arg('a'))
+        self.assertEqual(arg[2], cliparser.Arg('r'))
+        arg = cliparser.Arg('bar', curpos=1)
+        self.assertEqual(arg[0], cliparser.Arg('b'))
+        self.assertEqual(arg[1], cliparser.Arg('a', curpos=0))
+        self.assertEqual(arg[2], cliparser.Arg('r'))
+        arg = cliparser.Arg('bar', curpos=2)
+        self.assertEqual(arg[0], cliparser.Arg('b'))
+        self.assertEqual(arg[1], cliparser.Arg('a'))
+        self.assertEqual(arg[2], cliparser.Arg('r', curpos=0))
+        with self.assertRaises(IndexError):
+            arg[3]
+
+    def test_getitem_with_slice(self):
+        arg = cliparser.Arg('bar', curpos=0)
+        self.assertEqual(arg[0:], cliparser.Arg('bar', curpos=0))
+        self.assertEqual(arg[1:], cliparser.Arg('ar'))
+        self.assertEqual(arg[2:], cliparser.Arg('r'))
+        arg = cliparser.Arg('bar', curpos=1)
+        self.assertEqual(arg[0:], cliparser.Arg('bar', curpos=1))
+        self.assertEqual(arg[1:], cliparser.Arg('ar', curpos=0))
+        self.assertEqual(arg[2:], cliparser.Arg('r'))
+        arg = cliparser.Arg('bar', curpos=2)
+        self.assertEqual(arg[0:], cliparser.Arg('bar', curpos=2))
+        self.assertEqual(arg[1:], cliparser.Arg('ar', curpos=1))
+        self.assertEqual(arg[2:], cliparser.Arg('r', curpos=0))
+
+        arg = cliparser.Arg('bar', curpos=0)
+        self.assertEqual(arg[:1], cliparser.Arg('b', curpos=0))
+        self.assertEqual(arg[:2], cliparser.Arg('ba', curpos=0))
+        self.assertEqual(arg[:3], cliparser.Arg('bar', curpos=0))
+        arg = cliparser.Arg('bar', curpos=1)
+        self.assertEqual(arg[:1], cliparser.Arg('b'))
+        self.assertEqual(arg[:2], cliparser.Arg('ba', curpos=1))
+        self.assertEqual(arg[:3], cliparser.Arg('bar', curpos=1))
+        arg = cliparser.Arg('bar', curpos=2)
+        self.assertEqual(arg[:1], cliparser.Arg('b'))
+        self.assertEqual(arg[:2], cliparser.Arg('ba'))
+        self.assertEqual(arg[:3], cliparser.Arg('bar', curpos=2))
+
     def test_before_cursor(self):
         self.assertEqual(cliparser.Arg('foo', curpos=0).before_cursor, '')
         self.assertEqual(cliparser.Arg('foo', curpos=1).before_cursor, 'f')
