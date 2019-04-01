@@ -306,12 +306,10 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         if args.curarg_index == 1:
             log.debug('Returning setting names: %r', settings)
             return settings
-        else:
-            for arg in args.before_curarg:
-                if arg in settings:
-                    log.debug('Completing values for %r', arg)
-                    # Remove command name from command line
-                    return candidates.setting_values(args[1:])
+        elif args.curarg_index >= 2:
+            log.debug('Completing values for %r', args[1])
+            # Remove command name from command line
+            return candidates.setting_values(args[1:])
 
     @classmethod
     def completion_candidates_params(cls, option, args):
