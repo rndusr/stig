@@ -243,6 +243,10 @@ class Candidate(str):
     def __hash__(self):
         return hash((str(self), self.description, self.in_parens))
 
+    def __repr__(self):
+        return '%s(%s, description=%r, in_parens=%r, default=%r)' % (
+            type(self).__name__, str(self), self.description, self.in_parens, self.default)
+
 
 class SingleCandidate(Candidates):
     """
