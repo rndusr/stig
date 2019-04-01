@@ -17,8 +17,9 @@ class Test_setting_names(unittest.TestCase):
     def test_remote_and_local_settings_are_combined(self, mock_rcfg, mock_lcfg):
         mock_lcfg.__iter__.return_value = ('foo', 'bar', 'baz')
         mock_rcfg.__iter__.return_value = ('Foo', 'Bar', 'Baz')
-        self.assertEqual(candidates.setting_names(),
-                         Candidates(('bar', 'baz', 'foo', 'srv.Bar', 'srv.Baz', 'srv.Foo'), label='Settings'))
+        cands = candidates.setting_names()
+        self.assertEqual(tuple(cands), ('bar', 'baz', 'foo', 'srv.Bar', 'srv.Baz', 'srv.Foo'))
+        self.assertEqual(cands.label, 'Settings')
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
