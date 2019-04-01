@@ -233,6 +233,16 @@ class Candidate(str):
         self.in_parens = str(in_parens)
         self.default = str(default)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return (super().__eq__(other) and
+                self.description == other.description and
+                self.in_parens == other.in_parens)
+
+    def __hash__(self):
+        return hash((str(self), self.description, self.in_parens))
+
 
 class SingleCandidate(Candidates):
     """
