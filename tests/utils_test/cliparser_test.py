@@ -1189,6 +1189,11 @@ class Test_as_args(unittest.TestCase):
 
 
 class TestArg(unittest.TestCase):
+    def test_equality(self):
+        self.assertEqual(cliparser.Arg('foo', curpos=0), cliparser.Arg('foo', curpos=0))
+        self.assertNotEqual(cliparser.Arg('foo', curpos=0), cliparser.Arg('fo', curpos=0))
+        self.assertNotEqual(cliparser.Arg('foo', curpos=0), cliparser.Arg('foo', curpos=1))
+
     def test_before_cursor(self):
         self.assertEqual(cliparser.Arg('foo', curpos=0).before_cursor, '')
         self.assertEqual(cliparser.Arg('foo', curpos=1).before_cursor, 'f')

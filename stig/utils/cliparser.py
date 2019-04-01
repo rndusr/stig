@@ -670,6 +670,17 @@ class Arg(str):
         else:
             return Args(parts)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return super().__eq__(other) and self.curpos == other.curpos
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return super().__hash__()
+
     def __repr__(self):
         string = '%s(%r' % (type(self).__name__, str(self),)
         if self.curpos is not None:
