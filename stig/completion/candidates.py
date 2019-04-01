@@ -47,8 +47,15 @@ def setting_names():
                       label='Settings')
 
 
-def setting_values(setting, args):
-    """Values of settings"""
+def setting_values(args):
+    """
+    Values of settings
+
+    `args` must be a `stig.utils.cliparser.Args` instance in which the first
+    argument is the name of a setting.
+    """
+    setting = args[0]
+
     if setting in objects.localcfg:
         value = objects.localcfg[setting]
     elif setting.startswith('srv.') and setting[4:] in objects.remotecfg:
@@ -57,7 +64,7 @@ def setting_values(setting, args):
         return
 
     # Some settings accept multiple values, others only one
-    focus_on_first_value = args.curarg_index == 2
+    focus_on_first_value = args.curarg_index == 1
 
     log.debug('Setting is a %s: %r', type(value).__name__, value)
     # Get candidates depending on what kind of setting it is (bool, option, etc)

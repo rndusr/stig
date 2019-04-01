@@ -310,7 +310,8 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             for arg in args.before_curarg:
                 if arg in settings:
                     log.debug('Completing values for %r', arg)
-                    return candidates.setting_values(arg, args)
+                    # Remove command name from command line
+                    return candidates.setting_values(args[1:])
 
     @classmethod
     def completion_candidates_params(cls, option, args):
