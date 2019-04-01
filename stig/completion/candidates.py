@@ -145,6 +145,9 @@ async def torrent_filter(curarg):
 
     The return value is a tuple with 0, 1 or 2 items.
     """
+    if curarg.startswith(_get_filter_cls('TorrentFilter').INVERT_CHAR):
+        curarg = curarg[1:]
+
     # Separate individual filters, e.g. 'seeding|comment=foo'
     filter_strings = curarg.separate(_filter_boolean_ops, include_seps=True)
     # Separate filter name from filter value
@@ -165,17 +168,21 @@ async def torrent_filter(curarg):
 @functools.lru_cache(maxsize=None)
 def _filter_names(filter_cls_name):
     filter_cls = _get_filter_cls(filter_cls_name)
-    cands = (Candidate(name,
-                       description=_get_filter_spec(filter_cls, name).description,
-                       in_parens=','.join(_get_filter_spec(filter_cls, name).aliases))
-             for name in _get_filter_names(filter_cls))
-    curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
-    label = {'TorrentFilter': 'Torrent Filters',
-             'FileFilter': 'File Filters',
-             'PeerFilter': 'Peer Filters',
-             'TrackerFilter': 'Tracker Filters',
-             'SettingFilter': 'Setting Filters'}[filter_cls_name]
-    return Candidates(cands, label=label, curarg_seps=curarg_seps)
+
+    def get_names(filter_cls):
+        for name in _get_filter_names(filter_cls):
+            filter_spec = _get_filter_spec(filter_cls, name)
+            desc = filter_spec.description
+            alias_str = ','.join(filter_spec.aliases)
+            yield Candidate(name, description=desc, in_parens=alias_str)
+
+    curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops, (filter_cls.INVERT_CHAR,))
+    label = {'TorrentFilter' : 'Torrent Filters',
+             'FileFilter'    : 'File Filters',
+             'PeerFilter'    : 'Peer Filters',
+             'TrackerFilter' : 'Tracker Filters',
+             'SettingFilter' : 'Setting Filters'}[filter_cls_name]
+    return Candidates(get_names(filter_cls), label=label, curarg_seps=curarg_seps)
 
 async def _torrent_filter_values(filter_name):
     filter_cls = _get_filter_cls('TorrentFilter')
