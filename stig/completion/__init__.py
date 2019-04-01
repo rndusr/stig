@@ -200,7 +200,9 @@ class Candidates(abc.Sequence):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
-        return self._candidates == other._candidates
+        return (self._candidates == other._candidates and
+                self._label == other._label and
+                self._curarg_seps == other._curarg_seps)
 
     def __hash__(self):
         return hash(self._candidates)
