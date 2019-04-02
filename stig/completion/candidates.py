@@ -18,7 +18,7 @@ log = make_logger(__name__)
 from .. import objects
 from ..utils import usertypes
 from ..completion import (Candidates, Candidate)
-from ..client import filters
+from ..client import filters as filter_clses
 
 import itertools
 import os
@@ -136,7 +136,7 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
 
 # All filters use the same operators
 _filter_boolean_ops = ('&', '|')
-_filter_compare_ops = filters.TorrentFilter.POSSIBLE_OPERATORS
+_filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
 
 async def torrent_filter(curarg):
     """
@@ -156,7 +156,7 @@ async def torrent_filter(curarg):
         # (default torrent filter is 'name')
         log.debug('Completing torrent filter names and torrent names: %r', parts[0])
         return (_filter_names('TorrentFilter'),
-                await _torrent_filter_values(filters.TorrentFilter.DEFAULT_FILTER))
+                await _torrent_filter_values(filter_clses.TorrentFilter.DEFAULT_FILTER))
     elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
@@ -206,7 +206,7 @@ async def _torrent_filter_values(filter_name):
 @functools.lru_cache(maxsize=None)
 def _get_filter_cls(name):
     try:
-        return getattr(filters, name)
+        return getattr(filter_clses, name)
     except AttributeError:
         raise ValueError('Not a filter class: %r' % name)
 
