@@ -227,7 +227,11 @@ def _get_filter_spec(filter_cls, name):
 
 @functools.lru_cache(maxsize=None)
 def _filter_takes_completable_values(filter_cls, name):
-    value_type = _get_filter_spec(filter_cls, name).value_type
-    log.debug('%r value type: %r', name, value_type)
-    return (name in filter_cls.COMPARATIVE_FILTERS and
-            issubclass(value_type, str))
+    try:
+        filter_spec = _get_filter_spec(filter_cls, name)
+    except ValueError:
+        return False
+    else:
+        return (name in filter_cls.COMPARATIVE_FILTERS and
+                filter_spec is not None and
+                issubclass(filter_spec.value_type, str))
