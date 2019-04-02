@@ -3,8 +3,7 @@ from stig.utils.cliparser import Args
 from stig.utils import usertypes
 
 import unittest
-from unittest.mock import patch, call
-
+from unittest.mock import patch, MagicMock, call
 from types import SimpleNamespace
 
 
@@ -219,3 +218,36 @@ class Test_fs_path(unittest.TestCase):
         ]
         self.do('x', base='/', glob=r'f*', exp_cands=('foo', 'baz'))
         self.do('x', base='/', glob=r'*r', exp_cands=('bar', 'baz'))
+
+
+class Test_filter_helper_functions(unittest.TestCase):
+    @patch('stig.completion.candidates.filter_clses', MagicMock(spec_set=('FooFilter',)))
+    def test_get_filter_cls(self):
+        candidates._get_filter_cls('FooFilter')
+        with self.assertRaises(ValueError):
+            candidates._get_filter_cls('BarFilter')
+
+    def test_get_filter_names(self):
+        mock_filter_cls = MagicMock()
+        mock_filter_cls.BOOLEAN_FILTERS = {'foo': None, 'bar': None}
+        mock_filter_cls.COMPARATIVE_FILTERS = {'baz': None}
+        self.assertEqual(tuple(candidates._get_filter_names(mock_filter_cls)),
+                         ('foo', 'bar', 'baz'))
+
+    def test_get_filter_spec(self):
+        mock_filter_cls = MagicMock()
+        mock_filter_cls.BOOLEAN_FILTERS = {'foo': 'mock foo spec', 'bar': 'mock bar spec'}
+        mock_filter_cls.COMPARATIVE_FILTERS = {'baz': 'mock baz spec'}
+        self.assertEqual(candidates._get_filter_spec(mock_filter_cls, 'foo'), 'mock foo spec')
+        self.assertEqual(candidates._get_filter_spec(mock_filter_cls, 'bar'), 'mock bar spec')
+        self.assertEqual(candidates._get_filter_spec(mock_filter_cls, 'baz'), 'mock baz spec')
+
+    def test_filter_takes_completable_values(self):
+        mock_filter_cls = MagicMock()
+        mock_filter_cls.BOOLEAN_FILTERS = {'foo': None}
+        mock_filter_cls.COMPARATIVE_FILTERS = {'bar': SimpleNamespace(value_type=str),
+                                               'baz': SimpleNamespace(value_type=int)}
+        self.assertEqual(candidates._filter_takes_completable_values(mock_filter_cls, 'bar'), True)
+        self.assertEqual(candidates._filter_takes_completable_values(mock_filter_cls, 'baz'), False)
+        self.assertEqual(candidates._filter_takes_completable_values(mock_filter_cls, 'foo'), False)
+        self.assertEqual(candidates._filter_takes_completable_values(mock_filter_cls, 'asdf'), False)
