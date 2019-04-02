@@ -226,6 +226,11 @@ class TestBool(_TestBase):
         self.assertNotEqual(B('x'), None)
         self.assertNotEqual(B(2), None)
 
+    def test_truths_and_falsities(self):
+        b = Bool('x', true=('x','y','z'), false=(1, 2, 3))
+        self.assertEqual(b.truths, ('x', 'y', 'z'))
+        self.assertEqual(b.falsities, (1, 2, 3))
+
 
 class TestPath(_TestBase):
     def test_syntax(self):

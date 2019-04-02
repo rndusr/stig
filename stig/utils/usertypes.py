@@ -263,6 +263,14 @@ class Bool(str, UsertypeMixin):
     def __hash__(self):
         return hash(self._is_true)
 
+    @property
+    def truths(self):
+        return self._config['true']
+
+    @property
+    def falsities(self):
+        return self._config['false']
+
 
 class Path(str, UsertypeMixin):
     """
