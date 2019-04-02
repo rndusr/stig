@@ -66,7 +66,7 @@ def setting_values(args):
     # Some settings accept multiple values, others only one
     focus_on_first_value = args.curarg_index == 1
 
-    log.debug('Setting is a %s: %r', type(value).__name__, value)
+    log.debug('Setting %r is a %s: %r', setting, type(value).__name__, value)
     # Get candidates depending on what kind of setting it is (bool, option, etc)
     if isinstance(value, usertypes.Option) and focus_on_first_value:
         aliases = value.aliases_inverse
