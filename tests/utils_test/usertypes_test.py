@@ -1,6 +1,6 @@
 import unittest
 from stig.utils.usertypes import (String, Bool, Path, Tuple, Option, Float,
-                                  Percent, Int, StringableMixin, multitype)
+                                  Percent, Int, UsertypeMixin, multitype)
 
 
 from contextlib import contextmanager
@@ -13,9 +13,9 @@ class _TestBase(unittest.TestCase):
             self.assertEqual(str(cm.exception), msg)
 
 
-class TestStringableMixin(_TestBase):
+class TestUsertypeMixin(_TestBase):
     def test_partial(self):
-        class X(int, StringableMixin):
+        class X(int, UsertypeMixin):
             defaults = {'min': 0, 'max': 10}
             def __new__(cls, i, min=defaults['min'], max=defaults['max']):
                 self = super().__new__(cls, i)
@@ -35,7 +35,7 @@ class TestStringableMixin(_TestBase):
             self.assertEqual(x.max, exp['max'])
 
     def test_partial_syntax(self):
-        class X(int, StringableMixin):
+        class X(int, UsertypeMixin):
             defaults = {'min': 0, 'max': 10}
             def __new__(cls, i, min=defaults['min'], max=defaults['max']):
                 return super().__new__(cls, i)
@@ -49,7 +49,7 @@ class TestStringableMixin(_TestBase):
                              X.partial(**kwargs).syntax)
 
     def test_copy(self):
-        class X(int, StringableMixin):
+        class X(int, UsertypeMixin):
             defaults = {'a': 1, 'b': 2, 'c': 3}
             def __new__(cls, i, a=defaults['a'], b=defaults['b'], c=defaults['c']):
                 inst = super().__new__(cls, i)

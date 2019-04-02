@@ -66,7 +66,7 @@ class _PartialConstructor(partial):
         return self.__repr
 
 
-class StringableMixin():
+class UsertypeMixin():
     @classmethod
     def partial(cls, **kwargs):
         return _PartialConstructor(cls, **kwargs)
@@ -115,7 +115,7 @@ def multitype(*constructors):
             return cls in mcls._subclses[1:]
 
 
-    class Multitype(StringableMixin, metaclass=MultitypeMeta):
+    class Multitype(UsertypeMixin, metaclass=MultitypeMeta):
         # Get constructors (e.g. Int.partial(...)) for making new values
         _constructors = tuple(c if isinstance(c, _PartialConstructor) else c.partial()
                               for c in constructors)
@@ -157,7 +157,7 @@ def multitype(*constructors):
     return Multitype
 
 
-class String(str, StringableMixin):
+class String(str, UsertypeMixin):
     """
     String
 
@@ -201,7 +201,7 @@ class String(str, StringableMixin):
         return text
 
 
-class Bool(str, StringableMixin):
+class Bool(str, UsertypeMixin):
     """
     Boolean
 
@@ -263,7 +263,7 @@ class Bool(str, StringableMixin):
         return hash(self._is_true)
 
 
-class Path(str, StringableMixin):
+class Path(str, UsertypeMixin):
     """
     File system path
 
@@ -315,7 +315,7 @@ class Path(str, StringableMixin):
         return self
 
 
-class Tuple(tuple, StringableMixin):
+class Tuple(tuple, UsertypeMixin):
     """
     Immutable list
 
@@ -389,7 +389,7 @@ class Tuple(tuple, StringableMixin):
         return {option:alias for alias,option in self._config['aliases'].items()}
 
 
-class Option(str, StringableMixin):
+class Option(str, UsertypeMixin):
     """
     Single string that can only be one of a given set of strings
 
@@ -434,7 +434,7 @@ class Option(str, StringableMixin):
         return {option:alias for alias,option in self._config['aliases'].items()}
 
 
-class _NumberBase(StringableMixin):
+class _NumberBase(UsertypeMixin):
     _prefixes_binary = (('Ti', 1024**4), ('Gi', 1024**3), ('Mi', 1024**2), ('Ki', 1024))
     _prefixes_metric = (('T', 1000**4), ('G', 1000**3), ('M', 1000**2), ('k', 1000))
     _prefixes_dct = {prefix.lower():size
