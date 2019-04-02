@@ -206,7 +206,8 @@ class Bool(str, UsertypeMixin):
     Boolean
 
     Options:
-    TODO: ...
+      true: Sequence of truthy values
+      false: Sequence of falsy values
     """
     typename = 'boolean'
     defaults = {'true'  : ('enabled', 'yes', 'on', 'true', '1'),
