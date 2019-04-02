@@ -244,6 +244,18 @@ class Candidate(str):
         return hash((str(self), self.description, self.in_parens))
 
     def __repr__(self):
+        kwargs = {}
+        if self.description: kwargs['description'] = self.description
+        if self.default: kwargs['default'] = self.default
+        if self.in_parens: kwargs['in_parens'] = self.in_parens
+        if kwargs:
+            return '%s(%r, %s)' % (
+                type(self).__name__, str(self),
+                ', '.join('%s=%r' % (k,v) for k,v in kwargs.items())
+            )
+        else:
+            return '%s(%r)' % (type(self).__name__, str(self))
+
         return '%s(%s, description=%r, in_parens=%r, default=%r)' % (
             type(self).__name__, str(self), self.description, self.in_parens, self.default)
 
