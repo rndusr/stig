@@ -135,7 +135,7 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
 
 
 # All filters use the same operators
-_filter_boolean_ops = ('&', '|')
+_filter_combine_ops = ('&', '|')
 _filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
 
 async def torrent_filter(curarg):
@@ -148,7 +148,7 @@ async def torrent_filter(curarg):
         curarg = curarg[1:]
 
     # Separate individual filters, e.g. 'seeding|comment=foo'
-    filter_strings = curarg.separate(_filter_boolean_ops, include_seps=True)
+    filter_strings = curarg.separate(_filter_combine_ops, include_seps=True)
     # Separate filter name from filter value
     parts = filter_strings.curarg.separate(_filter_compare_ops, include_seps=True)
     if parts.curarg_index == 0:
@@ -175,7 +175,7 @@ def _filter_names(filter_cls_name):
             alias_str = ','.join(filter_spec.aliases)
             yield Candidate(name, description=desc, in_parens=alias_str)
 
-    curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops, (filter_cls.INVERT_CHAR,))
+    curarg_seps = itertools.chain(_filter_compare_ops, _filter_combine_ops, (filter_cls.INVERT_CHAR,))
     label = {'TorrentFilter' : 'Torrent Filters',
              'FileFilter'    : 'File Filters',
              'PeerFilter'    : 'Peer Filters',
@@ -198,7 +198,7 @@ async def _torrent_filter_values(filter_name):
                     cands.extend(value)
                 else:
                     cands.append(value)
-    curarg_seps = itertools.chain(_filter_compare_ops, _filter_boolean_ops)
+    curarg_seps = itertools.chain(_filter_compare_ops, _filter_combine_ops)
     return Candidates(cands,
                       label='Torrent Filter Values: %s' % (filter_name,),
                       curarg_seps=curarg_seps)
