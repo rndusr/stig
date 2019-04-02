@@ -1,5 +1,6 @@
 from stig.completion import (candidates, Candidates)
 from stig.utils.cliparser import Args
+from stig.utils import usertypes
 
 import unittest
 from unittest.mock import patch, call
@@ -61,6 +62,67 @@ class Test_setting_values(unittest.TestCase):
                 for curarg_curpos in (0, 1, 2, 3):
                     cmdline = Args(args, curarg_index=curarg_index, curarg_curpos=curarg_curpos)
                     self.assertEqual(candidates.setting_values(cmdline), None)
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_setting_is_an_Option(self, mock_rcfg, mock_lcfg):
+        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
+                                      (mock_rcfg, 'srv.foo')):
+            mock_cfg.__iter__.return_value = (setting_name,)
+            mock_cfg.__contains__.return_value = True
+            mock_cfg.__getitem__.return_value = usertypes.Option('b', options=('a', 'b', 'c'))
+            cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
+            self.assertEqual(candidates.setting_values(cmdline), Candidates(('a', 'b', 'c'),
+                                                                            label='%s options' % setting_name))
+            cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
+            self.assertEqual(candidates.setting_values(cmdline), None)
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_setting_is_a_Tuple(self, mock_rcfg, mock_lcfg):
+        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
+                                      (mock_rcfg, 'srv.foo')):
+            mock_cfg.__iter__.return_value = (setting_name,)
+            mock_cfg.__contains__.return_value = True
+            mock_cfg.__getitem__.return_value = usertypes.Tuple('a', 'b', options=('a', 'b', 'c'))
+            for i in (1, 2, 3):
+                cmdline = Args((setting_name, '_', '_', '_'), curarg_index=i, curarg_curpos=0)
+                cands = candidates.setting_values(cmdline)
+                exp_cands = Candidates(('a', 'b', 'c'), label='%s options' % setting_name, curarg_seps=(',',))
+                self.assertEqual(cands, exp_cands)
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    def test_setting_is_a_Bool(self, mock_rcfg, mock_lcfg):
+        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
+                                      (mock_rcfg, 'srv.foo')):
+            mock_cfg.__iter__.return_value = (setting_name,)
+            mock_cfg.__contains__.return_value = True
+            mock_cfg.__getitem__.return_value = usertypes.Bool('1', true=('1',), false=('0',))
+            cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
+            cands = candidates.setting_values(cmdline)
+            exp_cands = Candidates(('1', '0'), label='%s options' % setting_name)
+            self.assertEqual(cands, exp_cands)
+            cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
+            self.assertEqual(candidates.setting_values(cmdline), None)
+
+    @patch('stig.objects.localcfg')
+    @patch('stig.objects.remotecfg')
+    @patch('os.path.isdir')
+    @patch('stig.completion.candidates.fs_path')
+    def test_setting_is_a_Path(self, mock_fs_path, mock_isdir, mock_rcfg, mock_lcfg):
+        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
+                                      (mock_rcfg, 'srv.foo')):
+            for mocking_directory in (True, False):
+                mock_isdir.return_value = mocking_directory
+                mock_cfg.__iter__.return_value = (setting_name,)
+                mock_cfg.__contains__.return_value = True
+                mock_cfg.__getitem__.return_value = usertypes.Path('mock/path', base='/mockbase/')
+                cmdline = Args((setting_name, 'abcdef'), curarg_index=1, curarg_curpos=3)
+                candidates.setting_values(cmdline)
+                mock_isdir.assert_called_with('mock/path')
+                mock_fs_path.assert_called_with('abc', base='/mockbase/',
+                                                directories_only=mocking_directory)
 
 
 class Test_fs_path(unittest.TestCase):
