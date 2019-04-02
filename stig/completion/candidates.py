@@ -220,7 +220,10 @@ def _get_filter_spec(filter_cls, name):
     try:
         return filter_cls.BOOLEAN_FILTERS[name]
     except KeyError:
-        return filter_cls.COMPARATIVE_FILTERS[name]
+        try:
+            return filter_cls.COMPARATIVE_FILTERS[name]
+        except KeyError:
+            raise ValueError('No such filter: %r' % (name,))
 
 @functools.lru_cache(maxsize=None)
 def _filter_takes_completable_values(filter_cls, name):
