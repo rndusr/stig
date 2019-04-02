@@ -81,8 +81,7 @@ def setting_values(args):
                           curarg_seps=(value.sep.strip(),))
     elif isinstance(value, usertypes.Bool) and focus_on_first_value:
         options = (val
-                   for vals in zip(usertypes.Bool.defaults['true'],
-                                   usertypes.Bool.defaults['false'])
+                   for vals in zip(value.truths, value.falsities)
                    for val in vals)
         return Candidates(options, label='%s options' % (setting,))
     elif isinstance(value, usertypes.Path):
