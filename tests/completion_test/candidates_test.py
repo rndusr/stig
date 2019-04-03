@@ -221,9 +221,11 @@ class Test_fs_path(unittest.TestCase):
 
 
 class Test_filter_helper_functions(unittest.TestCase):
-    @patch('stig.completion.candidates.filter_clses', MagicMock(spec_set=('FooFilter',)))
-    def test_get_filter_cls(self):
-        candidates._get_filter_cls('FooFilter')
+    @patch('stig.completion.candidates.filter_clses')
+    def test_get_filter_cls(self, mock_filter_clses):
+        mock_filter_clses.mock_add_spec(('FooFilter',), spec_set=True)
+        mock_filter_clses.FooFilter = 'mock filter'
+        self.assertEqual(candidates._get_filter_cls('FooFilter'), 'mock filter')
         with self.assertRaises(ValueError):
             candidates._get_filter_cls('BarFilter')
 
