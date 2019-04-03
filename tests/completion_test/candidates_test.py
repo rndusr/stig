@@ -348,3 +348,63 @@ class Test_torrent_filter_values(asynctest.TestCase):
                                curarg_seps=('|', '&', '=', '!='),
                                label='Torrent Filter Values: mockfilter')
         self.assertEqual(cands, exp_cands)
+
+
+class Test_torrent_filter(asynctest.TestCase):
+    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._torrent_filter_values')
+    @asynctest.patch('stig.completion.candidates._get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._filter_names')
+    @asynctest.patch('stig.completion.candidates.filter_clses')
+    async def test_focusing_filter_name(self, mock_filter_clses, mock_filter_names,
+                                        mock_get_filter_cls, mock_torrent_filter_values):
+        mock_filter_clses.TorrentFilter.DEFAULT_FILTER = 'mock default filter'
+        mock_get_filter_cls.return_value.INVERT_CHAR = '!'
+        mock_filter_names.return_value = Candidates(('foo', 'bar', 'baz'),
+                                                    curarg_seps=('.', ':'),
+                                                    label='Mock Filter Names')
+        mock_torrent_filter_values.return_value = 'mock torrent values'
+        cands = await candidates.torrent_filter(Arg('bar=asdf', curpos=2))
+        mock_torrent_filter_values.assert_called_once_with('mock default filter')
+        exp_cands = (
+            Candidates(('foo', 'bar', 'baz'), curarg_seps=('.', ':'), label='Mock Filter Names'),
+            'mock torrent values'
+        )
+        self.assertEqual(cands, exp_cands)
+
+    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._torrent_filter_values')
+    @asynctest.patch('stig.completion.candidates._get_filter_cls')
+    async def test_focusing_filter_value(self, mock_get_filter_cls, mock_torrent_filter_values):
+        mock_get_filter_cls.return_value.INVERT_CHAR = '!'
+        mock_torrent_filter_values.return_value = 'mock torrent values'
+        cands = await candidates.torrent_filter(Arg('bar=asdf', curpos=4))
+        mock_torrent_filter_values.assert_called_once_with('bar')
+        exp_cands = ('mock torrent values',)
+        self.assertEqual(cands, exp_cands)
+
+    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._torrent_filter_values')
+    @asynctest.patch('stig.completion.candidates._get_filter_cls')
+    async def test_invert_char_is_first_char(self, mock_get_filter_cls, mock_torrent_filter_values):
+        mock_get_filter_cls.return_value.INVERT_CHAR = '!'
+        mock_torrent_filter_values.return_value = 'mock torrent values'
+        cands = await candidates.torrent_filter(Arg('!bar=asdf', curpos=5))
+        mock_torrent_filter_values.assert_called_once_with('bar')
+        exp_cands = ('mock torrent values',)
+        self.assertEqual(cands, exp_cands)
+
+    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._torrent_filter_values')
+    @asynctest.patch('stig.completion.candidates._get_filter_cls')
+    async def test_invert_char_in_operator(self, mock_get_filter_cls, mock_torrent_filter_values):
+        mock_get_filter_cls.return_value.INVERT_CHAR = '!'
+        mock_torrent_filter_values.return_value = 'mock torrent values'
+        cands = await candidates.torrent_filter(Arg('bar!=asdf', curpos=5))
+        mock_torrent_filter_values.assert_called_once_with('bar')
+        exp_cands = ('mock torrent values',)
+        self.assertEqual(cands, exp_cands)
