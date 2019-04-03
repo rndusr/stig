@@ -196,7 +196,7 @@ async def _torrent_filter_values(filter_name):
             cands = []
             for t in response.torrents:
                 value = value_getter(t)
-                if isinstance(value, abc.Iterator):
+                if not isinstance(value, str) and isinstance(value, (abc.Iterable, abc.Iterator)):
                     cands.extend(value)
                 else:
                     cands.append(value)
