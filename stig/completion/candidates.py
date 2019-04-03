@@ -137,6 +137,11 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
 # All filters use the same operators
 _filter_combine_ops = ('&', '|')
 _filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
+_filter_labels = {'TorrentFilter' : 'Torrent Filters',
+                  'FileFilter'    : 'File Filters',
+                  'PeerFilter'    : 'Peer Filters',
+                  'TrackerFilter' : 'Tracker Filters',
+                  'SettingFilter' : 'Setting Filters'}
 
 async def torrent_filter(curarg):
     """
@@ -166,8 +171,7 @@ async def torrent_filter(curarg):
 
 @functools.lru_cache(maxsize=None)
 def _filter_names(filter_cls_name):
-    filter_cls = _get_filter_cls(filter_cls_name)
-
+    """Filter names as Candidate instances with description and aliases"""
     def get_names(filter_cls):
         for name in _get_filter_names(filter_cls):
             filter_spec = _get_filter_spec(filter_cls, name)
@@ -175,13 +179,11 @@ def _filter_names(filter_cls_name):
             alias_str = ','.join(filter_spec.aliases)
             yield Candidate(name, description=desc, in_parens=alias_str)
 
+    filter_cls = _get_filter_cls(filter_cls_name)
     curarg_seps = itertools.chain(_filter_compare_ops, _filter_combine_ops, (filter_cls.INVERT_CHAR,))
-    label = {'TorrentFilter' : 'Torrent Filters',
-             'FileFilter'    : 'File Filters',
-             'PeerFilter'    : 'Peer Filters',
-             'TrackerFilter' : 'Tracker Filters',
-             'SettingFilter' : 'Setting Filters'}[filter_cls_name]
-    return Candidates(get_names(filter_cls), label=label, curarg_seps=curarg_seps)
+    return Candidates(get_names(filter_cls),
+                      curarg_seps=curarg_seps,
+                      label=_filter_labels[filter_cls_name])
 
 async def _torrent_filter_values(filter_name):
     filter_cls = _get_filter_cls('TorrentFilter')
