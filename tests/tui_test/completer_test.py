@@ -101,8 +101,7 @@ class TestCompleter_update(asynctest.TestCase):
         self.mock_get_cands = MagicMock(side_effect=get_cands)
         def get_cands(args):
             return self.mock_get_cands(args)
-        self.completer = Completer(get_cands,
-                                   operators=('&', 'and', '|', 'or'))
+        self.completer = Completer(get_cands, operators=('&', 'and', '|', 'or'))
 
     async def update(self, cmdline, curpos, exp_get_cands_args,
                      exp_curarg_index, exp_curarg_curpos, exp_cands, exp_curcand):
