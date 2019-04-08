@@ -135,8 +135,8 @@ def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=Non
 
 
 # All filters use the same operators
-_filter_combine_ops = ('&', '|')
 _filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
+_filter_combine_ops = ('&', '|')
 _filter_labels = {'TorrentFilter' : 'Torrent Filters',
                   'FileFilter'    : 'File Filters',
                   'PeerFilter'    : 'Peer Filters',
