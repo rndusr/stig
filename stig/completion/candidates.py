@@ -149,7 +149,8 @@ async def torrent_filter(curarg):
 
     The return value is a tuple with 0, 1 or 2 items.
     """
-    if curarg.startswith(_get_filter_cls('TorrentFilter').INVERT_CHAR):
+    filter_cls = _get_filter_cls('TorrentFilter')
+    if curarg.startswith(filter_cls.INVERT_CHAR):
         curarg = curarg[1:]
 
     # Separate individual filters, e.g. 'seeding|comment=foo'
@@ -161,7 +162,7 @@ async def torrent_filter(curarg):
         # (default torrent filter is 'name')
         log.debug('Completing torrent filter names and torrent names: %r', parts[0])
         return (_filter_names('TorrentFilter'),
-                await _torrent_filter_values(filter_clses.TorrentFilter.DEFAULT_FILTER))
+                await _torrent_filter_values(filter_cls.DEFAULT_FILTER))
     elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
