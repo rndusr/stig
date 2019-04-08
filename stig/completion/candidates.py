@@ -143,11 +143,15 @@ _filter_labels = {'TorrentFilter' : 'Torrent Filters',
                   'TrackerFilter' : 'Tracker Filters',
                   'SettingFilter' : 'Setting Filters'}
 
-async def torrent_filter(curarg):
+async def torrent_filter(curarg, filter_names=True):
     """
-    Torrent filter names and maybe values for default filter
+    Values and/or names for torrent filters
 
-    The return value is a tuple with 0, 1 or 2 items.
+    If `filter_names` evaluates to False, filter names are never included in the
+    returned list.
+
+    The return value is either an empty tuple, a 1-tuple (filter values) or a
+    2-tuple (filter names and filter values).
     """
     filter_cls = _get_filter_cls('TorrentFilter')
     if curarg.startswith(filter_cls.INVERT_CHAR):
@@ -155,14 +159,19 @@ async def torrent_filter(curarg):
 
     # Separate individual filters, e.g. 'seeding|comment=foo'
     filter_strings = curarg.separate(_filter_combine_ops, include_seps=True)
+
     # Separate filter name from filter value
     parts = filter_strings.curarg.separate(_filter_compare_ops, include_seps=True)
     if parts.curarg_index == 0:
         # If focus is on filter name, complete filter names and torrent names
         # (default torrent filter is 'name')
-        log.debug('Completing torrent filter names and torrent names: %r', parts[0])
-        return (_filter_names('TorrentFilter'),
-                await _torrent_filter_values(filter_cls.DEFAULT_FILTER))
+        if filter_names:
+            log.debug('Completing torrent filter names and torrent names: %r', parts[0])
+            return (_filter_names('TorrentFilter'),
+                    await _torrent_filter_values(filter_cls.DEFAULT_FILTER))
+        else:
+            log.debug('Completing only torrent names: %r', parts[0])
+            return (await _torrent_filter_values(filter_cls.DEFAULT_FILTER),)
     elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
