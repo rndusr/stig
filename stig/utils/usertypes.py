@@ -331,7 +331,7 @@ class Tuple(tuple, UsertypeMixin):
     Options:
       sep:     Separator between list items when parsing string
       options: Iterable of valid values; any other values raise ValueError
-      aliases: <alias> -> <value> mapping: any occurence of <alias> is replaced
+      aliases: <alias> -> <value> mapping: any occurrence of <alias> is replaced
                with <value>
       dedup:   Whether to remove duplicate items
     """
@@ -404,7 +404,7 @@ class Option(str, UsertypeMixin):
 
     Options:
       options: Iterable of valid values; any other values raise ValueError
-      aliases: <alias> -> <value> mapping; any occurence of <alias> is replaced
+      aliases: <alias> -> <value> mapping; any occurrence of <alias> is replaced
                with <value>
     """
     typename = 'option'

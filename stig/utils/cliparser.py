@@ -188,9 +188,9 @@ def _on_any_substr(string, pos, substrs):
                 first_substr_pos += 1
                 break
 
-        # From the first occurence of `substr`, move as many `substr` lengths
+        # From the first occurrence of `substr`, move as many `substr` lengths
         # forward as do fully fit into the difference between the position where
-        # we found `substr` and its first occurence.
+        # we found `substr` and its first occurrence.
         diff = pos - first_substr_pos
         len_found_substr = len(found_substr)
         substr_pos = first_substr_pos + (int(diff / len_found_substr) * len_found_substr)
@@ -641,7 +641,7 @@ class Arg(str):
 
     def separate(self, seps, maxseps=None, include_seps=True):
         """
-        Split argument at any occurence of any string in `seps`
+        Split argument at any occurrence of any string in `seps`
 
         maxseps: Maximum number of separations or None
         include_seps: Whether to include separators in the new list

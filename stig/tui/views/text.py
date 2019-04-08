@@ -70,7 +70,7 @@ class SearchableText(urwid.WidgetWrap):
         case_sensitive = self._case_sensitive
 
         def match_boundaries(line):
-            """Yield (start, stop) tuple for each occurence of `phrase` in `line`"""
+            """Yield (start, stop) tuple for each occurrence of `phrase` in `line`"""
             start = stop = -1
             if not phrase:
                 yield (start, stop)

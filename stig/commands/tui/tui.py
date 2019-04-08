@@ -237,7 +237,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
           'description': 'Whether to ignore errors from COMMAND' },
     )
     more_sections = {
-        'COMMANDS': (('For each occurence of "[]" in any command, the user is '
+        'COMMANDS': (('For each occurrence of "[]" in any command, the user is '
                       'prompted for input to insert at that point.  Any text between '
                       '"[" and "]" is used as the initial user input.  "[" can be '
                       'escaped with "\\" in which case the corresponding "]" is also '

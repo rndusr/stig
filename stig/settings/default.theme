@@ -31,7 +31,7 @@
 #
 #     $<VARIABLE> = <VALUE>
 #
-# Any occurence of '$<VARIABLE>' after this declaration is replaced by
+# Any occurrence of '$<VARIABLE>' after this declaration is replaced by
 # '<VALUE>'.  Variable names consist of one or more printable, non-whitespace
 # characters.
 
