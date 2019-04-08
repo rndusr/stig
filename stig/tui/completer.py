@@ -98,7 +98,7 @@ class Completer():
 
                 log.debug('Common prefix: %r', common_prefix)
                 # Filter out any candidates that don't match the current argument
-                cands.reduce(r'(?i)^%s' % (re.escape(common_prefix),))
+                cands.reduce(r'(?i)%s' % (re.escape(common_prefix),))
 
             # Include current user input as the first candidate so the user can
             # select it again after selecting other candidates

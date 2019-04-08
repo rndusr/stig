@@ -144,10 +144,10 @@ class TestCompleter_update(asynctest.TestCase):
         def get_cands(args):
             return Candidates(('foo', 'bar', 'baz'))
         self.init(get_cands)
-        await self.update('afoo', 1, call(('afoo',)), 0, 1, (('a',),), 0)
-        await self.update('abar', 2, call(('abar',)), 0, 2, (('ab',),), 0)
-        await self.update('abaz', 3, call(('abaz',)), 0, 3, (('aba',),), 0)
-        await self.update('abaz', 4, call(('abaz',)), 0, 4, (('abaz',),), 0)
+        await self.update('xxxx', 1, call(('xxxx',)), 0, 1, (('x',),), 0)
+        await self.update('xxxx', 2, call(('xxxx',)), 0, 2, (('xx',),), 0)
+        await self.update('xxxx', 3, call(('xxxx',)), 0, 3, (('xxx',),), 0)
+        await self.update('xxxx', 4, call(('xxxx',)), 0, 4, (('xxxx',),), 0)
 
     async def test_only_characters_before_cursor_are_relevant(self):
         def get_cands(args):
