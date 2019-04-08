@@ -172,6 +172,13 @@ async def torrent_filter(curarg, filter_names=True):
         else:
             log.debug('Completing only torrent names: %r', parts[0])
             return (await _torrent_filter_values(filter_cls.DEFAULT_FILTER),)
+
+    elif parts.curarg_index == 1 and parts[0] in _filter_compare_ops:
+        # User gave a comparison operator but not a filter name, e.g. ('=', 'foo')
+        filter_name = filter_cls.DEFAULT_FILTER
+        log.debug('Completing %r (default) torrent filter values', filter_name)
+        return (await _torrent_filter_values(filter_name),)
+
     elif parts.curarg_index == 2:
         # parts is something like ('comment', '!=', 'foo')
         log.debug('Completing %r torrent filter values', parts[0])
