@@ -638,6 +638,9 @@ class Arg(str):
     def curpos(self):
         """Cursor position in argument"""
         return self._curpos
+    @curpos.setter
+    def curpos(self, curpos):
+        self._curpos = int(curpos)
 
     def separate(self, seps, maxseps=None, include_seps=True):
         """
