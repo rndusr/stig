@@ -61,7 +61,7 @@ class Test_setting_values(unittest.TestCase):
             for curarg_index in (0, 1, 2):
                 for curarg_curpos in (0, 1, 2, 3):
                     cmdline = Args(args, curarg_index=curarg_index, curarg_curpos=curarg_curpos)
-                    self.assertEqual(candidates.setting_values(cmdline), None)
+                    self.assertFalse(candidates.setting_values(cmdline))
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
@@ -75,7 +75,7 @@ class Test_setting_values(unittest.TestCase):
             self.assertEqual(candidates.setting_values(cmdline), Candidates(('a', 'b', 'c'),
                                                                             label='%s options' % setting_name))
             cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
-            self.assertEqual(candidates.setting_values(cmdline), None)
+            self.assertFalse(candidates.setting_values(cmdline))
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
@@ -104,7 +104,7 @@ class Test_setting_values(unittest.TestCase):
             exp_cands = Candidates(('1', '0'), label='%s options' % setting_name)
             self.assertEqual(cands, exp_cands)
             cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
-            self.assertEqual(candidates.setting_values(cmdline), None)
+            self.assertFalse(candidates.setting_values(cmdline))
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
