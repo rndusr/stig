@@ -19,6 +19,8 @@ from collections import abc
 from ..utils import cliparser
 from ..completion import (Categories, Candidates, SingleCandidate)
 
+from collections import abc
+
 
 class Completer():
     """Parse command line and provide completion candidates and methods"""
@@ -40,10 +42,18 @@ class Completer():
             cats = ()
         elif isinstance(cands, Candidates):
             cats = (cands,)
-        elif isinstance(cands, abc.Sequence) and all(isinstance(c, Candidates) for c in cands):
-            cats = cands
+        elif isinstance(cands, (abc.Iterable, abc.Iterator)):
+            def flatten(iters):
+                for item in iters:
+                    if isinstance(item, Candidates):
+                        yield item
+                    elif isinstance(item, abc.Iterable) and not isinstance(item, str):
+                        yield from flatten(item)
+                    else:
+                        raise RuntimeError('Not a Candidates object or iterable of Candidates objects: %r' % (item,))
+            cats = tuple(flatten(cands))
         else:
-            raise RuntimeError('Not all Candidates objects: %r' % (cands,))
+            raise RuntimeError('Invalid candidates: %r' % (item,))
 
         # Include current user input (this is filled in later when the current
         # command line is parsed)
