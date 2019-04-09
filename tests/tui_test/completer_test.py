@@ -14,9 +14,10 @@ class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
     async def do(self, get_cands, exp_cats):
         completer = Completer(get_cands)
         result = await completer._get_candidates_wrapper(('',), 0, 0)
-        self.assertEqual(isinstance(result, Categories), True)
-        self.assertEqual(all(isinstance(c, Candidates) for c in result), True)
-        self.assertEqual(isinstance(result[0], SingleCandidate), True)
+        self.assertIsInstance(result, Categories)
+        for c in result:
+            self.assertIsInstance(c, Candidates)
+        self.assertIsInstance(result[0], SingleCandidate)
         self.assertEqual(tupleize(result[1:]), tupleize(exp_cats))
 
     async def test_get_candidates_returns_None(self):
