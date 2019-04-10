@@ -630,7 +630,7 @@ class TorrentAPI(TorrentAPIBase):
         path:     Relative path in the torrent without the torrent's name or
                   anything that evaluates to False to rename the torrent itself
         new_name: New file or directory name; must not contain any directory
-                  separators (usually "/") or be "." or ".."
+                  separators ("/") or be "." or ".."
 
         Return Response with the following properties:
             torrent: Torrent object with the keys 'id', 'name' and 'files' or
