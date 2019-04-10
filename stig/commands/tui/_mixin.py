@@ -188,21 +188,29 @@ class select_torrents():
 
 
 class select_files():
-    def get_relative_path_from_focused(self):
+    def get_relative_path_from_focused(self, unique=False):
         """
-        When focusing a file list, return relative path of focused file or directory.
+        When viewing a file list, return '<TORRENT NAME>/<RELATIVE PATH>' of the
+        focused file or directory, or None when viewing anything else
 
-        Return None in all other contexts.
+        If `unique` evaluates to True, '<TORRENT NAME>' is replaced with
+        'id=<TORRENT ID>' to make this path unique to this torrent even if there
+        are multiple torrents with the same name.
         """
         from ...tui.tuiobjects import tabs
         focused_widget = tabs.focus
         if hasattr(focused_widget, 'focused_file_ids'):
-            widget = focused_widget.focused_widget
-            tid = widget.data['tid']
-            path = widget.data['path-relative']
-            first_slash = path.find('/')
-            if first_slash > -1:
-                return 'id=%d%s' % (tid, path[first_slash:])
+            data = focused_widget.focused_widget.data
+            path = data['path-relative']
+            if unique:
+                # Remove torrent name from path
+                first_slash = path.find('/')
+                if first_slash > -1:
+                    # Multi-file torrent
+                    return 'id=%d/%s' % (data['tid'], path[first_slash:].strip('/'))
+                else:
+                    # Single-file torrent
+                    return 'id=%d' % (data['tid'],)
             else:
                 return path
 
