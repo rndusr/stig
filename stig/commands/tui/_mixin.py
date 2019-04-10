@@ -189,7 +189,11 @@ class select_torrents():
 
 class select_files():
     def get_relative_path_from_focused(self):
-        """Return relative path of focused file or directory in file lists"""
+        """
+        When focusing a file list, return relative path of focused file or directory.
+
+        Return None in all other contexts.
+        """
         from ...tui.tuiobjects import tabs
         focused_widget = tabs.focus
         if hasattr(focused_widget, 'focused_file_ids'):
