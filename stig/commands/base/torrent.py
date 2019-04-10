@@ -232,10 +232,10 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
 
-        {'names': ('PATH',),
-         'description': ('Move the specified torrent(s) to this directory.  If PATH is relative '
-                         '(i.e. does not start with "/"), it is relative to the value of the '
-                         'setting "srv.path.complete".  That means "." is the download path.')},
+        { 'names': ('PATH',),
+          'description': ('Move the specified torrent(s) to this directory.  If PATH is relative '
+                          '(i.e. does not start with "/"), it is relative to the value of the '
+                          'setting "srv.path.complete".  That means "." is the download path.') },
     )
 
     async def run(self, TORRENT_FILTER, PATH):
@@ -336,9 +336,9 @@ class RenameCmdbase(metaclass=InitCommand):
                           'file or directory in the torrent'),
           'default_description': 'Focused torrent, file or directory in the TUI' },
 
-        {'names': ('NEW',),
-         'description': ('New name of the torrent, file or directory specified by TORRENT '
-                         '(must not contain "/" or be "." or "..")')},
+        { 'names': ('NEW',),
+          'description': ('New name of the torrent, file or directory specified by TORRENT '
+                          '(must not contain "/" or be "." or "..")') },
     )
 
     async def run(self, TORRENT, NEW):
