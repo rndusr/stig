@@ -331,29 +331,35 @@ class RenameCmdbase(metaclass=InitCommand):
                 'rename id=123/some/file new_file_name')
     argspecs = (
         { 'names': ('TORRENT',), 'nargs': '?',
-          'description': ('Torrent filter expression that matches exactly one torrent, '
-                          'optionally followed by a "/" and the relative path to a '
-                          'file or directory in the torrent'),
+          'description': ('Torrent filter expression, optionally followed by a "/" and '
+                          'the relative path to a file or directory in the torrent'),
           'default_description': 'Focused torrent, file or directory in the TUI' },
 
         { 'names': ('NEW',),
           'description': ('New name of the torrent, file or directory specified by TORRENT '
                           '(must not contain "/" or be "." or "..")') },
+
+        { 'names': ('--unique', '-u'), 'action': 'store_true',
+          'description': ('Ensure the torrent filter expression in TORRENT matches exactly '
+                          'one torrent; if not given, all matching files in all matching '
+                          'torrents are renamed'),
+          'default_description': 'Enabled automatically when renaming torrents' },
     )
 
-    async def run(self, TORRENT, NEW):
+    async def run(self, TORRENT, NEW, unique):
         if not TORRENT:
-            # Autodetect current path
-            unique_path = self.get_relative_path_from_focused()
-            if unique_path:
-                # path is <torrent ID>/<relative/path/to/file/in/torrent
-                TORRENT = unique_path
+            # Autodetect path
+            path = self.get_relative_path_from_focused(unique=unique)
+            if path:
+                # path is <TORRENT IDENTIFIER>/relative/path/to/file/in/torrent
+                TORRENT = path
 
         # Split torrent filter from relative path in torrent
         if TORRENT and '/' in TORRENT:
             FILTER, PATH = TORRENT.split('/', maxsplit=1)
         else:
             FILTER, PATH = TORRENT, None
+            unique = True
 
         try:
             tfilter = self.select_torrents(FILTER,
@@ -367,14 +373,22 @@ class RenameCmdbase(metaclass=InitCommand):
                 quiet=True)
             if not response.success:
                 raise CmdError()
-            elif len(response.torrents) > 1:
+            elif unique and len(response.torrents) > 1:
+                # When renaming a torrent or the user said so, tfilter must
+                # match exactly one torrent.  If it matches zero torrents,
+                # make_request() below with produce the appropriate error
+                # message.
                 raise CmdError('%s matches more than one torrent' % tfilter)
             else:
-                tid = response.torrents[0]['id']
-                response = await self.make_request(
-                    objects.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
-                    polling_frenzy=True)
-                if not response.success:
+                success = True
+                for torrent in response.torrents:
+                    tid = torrent['id']
+                    response = await self.make_request(
+                        objects.srvapi.torrent.rename(tid, path=PATH, new_name=NEW),
+                        polling_frenzy=True)
+                    if not response.success:
+                        success = False
+                if not success:
                     raise CmdError()
 
 
