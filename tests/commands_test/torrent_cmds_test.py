@@ -8,7 +8,7 @@ from stig.utils.cliparser import Args
 from stig.completion import Candidates
 
 from asynctest import CoroutineMock
-from asynctest.mock import (patch, MagicMock)
+from asynctest.mock import (patch, MagicMock, call)
 from types import SimpleNamespace
 
 
@@ -453,7 +453,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         self.assertEqual(cands, Candidates(('a', 'b', 'c')))
 
 
-class TestRenameCLICmd(CommandTestCase):
+class TestRenameCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         self.mock_get_relative_path_from_focused = MagicMock()
@@ -482,7 +482,7 @@ class TestRenameCLICmd(CommandTestCase):
         info_cb.assert_not_called()
         err_cb.assert_not_called()
 
-        self.mock_get_relative_path_from_focused.assert_called_once()
+        self.mock_get_relative_path_from_focused.assert_called_once_with(unique=False)
         self.mock_select_torrents.assert_called_once_with(None, allow_no_filter=False, discover_torrent=True)
         self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
         self.mock_srvapi.torrent.rename.assert_called_once_with(1234, path=None, new_name='New Name')
@@ -502,7 +502,7 @@ class TestRenameCLICmd(CommandTestCase):
         info_cb.assert_not_called()
         err_cb.assert_not_called()
 
-        self.mock_get_relative_path_from_focused.assert_called_once()
+        self.mock_get_relative_path_from_focused.assert_called_once_with(unique=False)
         self.mock_select_torrents.assert_called_once_with('id=1234', allow_no_filter=False, discover_torrent=True)
         self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
         self.mock_srvapi.torrent.rename.assert_called_once_with(1234, path='mock/path/to/file', new_name='file2')
@@ -545,6 +545,112 @@ class TestRenameCLICmd(CommandTestCase):
         self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
         self.mock_srvapi.torrent.rename.assert_called_once_with(1234, path='mock/path/to/file', new_name='file2')
 
+    async def test_renaming_multiple_torrents_fails(self):
+        from stig.commands.cli import RenameCmd
+        self.mock_select_torrents.return_value = 'mock filter'
+        self.mock_srvapi.torrent.torrents.return_value = Response(
+            success=True,
+            torrents=(MockTorrent(id=1234, name='Some Torrent'),
+                      MockTorrent(id=1235, name='Some Torrent')))
+
+        info_cb, err_cb = MagicMock(), MagicMock()
+        process = RenameCmd(['Some Torrent', 'Renamed Torrent'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        await process.wait_async()
+        self.assertEqual(process.success, False)
+        info_cb.assert_not_called()
+        err_cb.assert_called_once_with('rename: mock filter matches more than one torrent')
+
+        self.mock_get_relative_path_from_focused.assert_not_called()
+        self.mock_select_torrents.assert_called_once_with('Some Torrent', allow_no_filter=False, discover_torrent=True)
+        self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
+        self.mock_srvapi.torrent.rename.assert_not_called()
+
+    async def test_renaming_files_of_multiple_torrents_succeeds(self):
+        from stig.commands.cli import RenameCmd
+        self.mock_select_torrents.return_value = 'mock filter'
+        self.mock_srvapi.torrent.torrents.return_value = Response(
+            success=True,
+            torrents=(MockTorrent(id=1234, name='Some Torrent'),
+                      MockTorrent(id=1235, name='Some Torrent')))
+
+        info_cb, err_cb = MagicMock(), MagicMock()
+        process = RenameCmd(['Some Torrent/mock/path/to/file', 'file2'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        await process.wait_async()
+        self.assertEqual(process.success, True)
+        info_cb.assert_not_called()
+        err_cb.assert_not_called()
+
+        self.mock_get_relative_path_from_focused.assert_not_called()
+        self.mock_select_torrents.assert_called_once_with('Some Torrent', allow_no_filter=False, discover_torrent=True)
+        self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
+        self.assertEqual(self.mock_srvapi.torrent.rename.call_args_list,
+                         [call(1234, path='mock/path/to/file', new_name='file2'),
+                          call(1235, path='mock/path/to/file', new_name='file2')])
+
+    async def test_TUI_renaming_files_of_multiple_torrents_disabled(self):
+        from stig.commands.cli import RenameCmd
+        self.mock_get_relative_path_from_focused.return_value = 'id=1235/focused/file'
+        self.mock_select_torrents.return_value = 'mock filter'
+        self.mock_srvapi.torrent.torrents.return_value = Response(
+            success=True,
+            torrents=(MockTorrent(id=1235, name='Some Torrent'),))
+
+        info_cb, err_cb = MagicMock(), MagicMock()
+        process = RenameCmd(['--unique', 'file2'],
+                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        await process.wait_async()
+        self.assertEqual(process.success, True)
+        info_cb.assert_not_called()
+        err_cb.assert_not_called()
+
+        self.mock_get_relative_path_from_focused.assert_called_once_with(unique=True)
+        self.mock_select_torrents.assert_called_once_with('id=1235', allow_no_filter=False, discover_torrent=True)
+        self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
+        self.assertEqual(self.mock_srvapi.torrent.rename.call_args_list,
+                         [call(1235, path='focused/file', new_name='file2')])
+
+    async def test_CLI_renaming_files_of_multiple_torrents_disabled_succeeds(self):
+        from stig.commands.cli import RenameCmd
+        self.mock_select_torrents.return_value = 'mock filter'
+        self.mock_srvapi.torrent.torrents.return_value = Response(
+            success=True,
+            torrents=(MockTorrent(id=1235, name='Some Torrent'),))
+
+        info_cb, err_cb = MagicMock(), MagicMock()
+        process = RenameCmd(['--unique', 'id=1235/path/to/file', 'file2'],
+                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        await process.wait_async()
+        self.assertEqual(process.success, True)
+        info_cb.assert_not_called()
+        err_cb.assert_not_called()
+
+        self.mock_get_relative_path_from_focused.assert_not_called()
+        self.mock_select_torrents.assert_called_once_with('id=1235', allow_no_filter=False, discover_torrent=True)
+        self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
+        self.assertEqual(self.mock_srvapi.torrent.rename.call_args_list,
+                         [call(1235, path='path/to/file', new_name='file2')])
+
+    async def test_CLI_renaming_files_of_multiple_torrents_disabled_fails(self):
+        from stig.commands.cli import RenameCmd
+        self.mock_select_torrents.return_value = 'mock filter'
+        self.mock_srvapi.torrent.torrents.return_value = Response(
+            success=True,
+            torrents=(MockTorrent(id=1234, name='Some Torrent'),
+                      MockTorrent(id=1235, name='Some Torrent')))
+
+        info_cb, err_cb = MagicMock(), MagicMock()
+        process = RenameCmd(['--unique', 'Some Torrent/path/to/file', 'file2'],
+                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        await process.wait_async()
+        self.assertEqual(process.success, False)
+        info_cb.assert_not_called()
+        err_cb.assert_called_once_with('rename: mock filter matches more than one torrent')
+
+        self.mock_get_relative_path_from_focused.assert_not_called()
+        self.mock_select_torrents.assert_called_once_with('Some Torrent', allow_no_filter=False, discover_torrent=True)
+        self.mock_srvapi.torrent.torrents.assert_called_once_with('mock filter', keys=('id',))
+        self.assertEqual(self.mock_srvapi.torrent.rename.call_args_list, [])
+
     async def test_discovering_fails(self):
         from stig.commands.cli import RenameCmd
         self.mock_get_relative_path_from_focused.return_value = None
@@ -557,7 +663,7 @@ class TestRenameCLICmd(CommandTestCase):
         info_cb.assert_not_called()
         err_cb.assert_called_once_with('rename: No torrent given')
 
-        self.mock_get_relative_path_from_focused.assert_called_once()
+        self.mock_get_relative_path_from_focused.assert_called_once_with(unique=False)
         self.mock_select_torrents.assert_called_once_with(None, allow_no_filter=False, discover_torrent=True)
         self.mock_srvapi.torrent.torrents.assert_not_called()
         self.mock_srvapi.torrent.rename.assert_not_called()
