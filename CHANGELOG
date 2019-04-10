@@ -13,6 +13,10 @@
        - "incomplete" is the same as "!complete"
        - "public" is the same as "!private"
      * The "summary" command was renamed to "details".
+     * When renaming files, the "rename" command now attempts to rename files in
+       all matching torrents.  When renaming torrents or if the new --unique
+       option is given, the torrent filter expression must always match one
+       torrent.  This also works when renaming the focused file in the TUI.
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
