@@ -29,7 +29,8 @@ method.
 
 If a command executes multiple actions (e.g. pausing two torrents) and any of
 those actions fails, it should be a failure (e.g. first torrent was paused,
-second torrent does not exist -> return False).
+second torrent does not exist, third torrent was paused -> return False because
+of second torrent).
 
 Every command class must have the following class attributes:
 
