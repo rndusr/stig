@@ -447,7 +447,7 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
 
     All special characters are included: ''.join(tokenize(cmd)) == string
 
-    Delimiters are separate tokens.
+    Delimiters are included as separate tokens.
     """
     tokens = []
     token = []
