@@ -537,12 +537,12 @@ def get_position(tokens, curpos):
 
 def avoid_delims(tokens, curtok_index, curtok_curpos, delims=(' ',)):
     """
-    If the cursor is on the first character of a delimiter, move behind the last
-    character of the previous token.  If the cursor is after the last character
-    of a delimiter, move on the first character of the next token.  This moves
-    the cursor to the closest point of interest without actually changing its
-    position (cursor position is still the same when the tokens are
-    concatenated).
+    If the cursor is on the first character of a delimiter, move it behind the
+    last character of the previous token.  If the cursor is behind the last
+    character of a delimiter, move it on the first character of the next token.
+    This moves the cursor to the closest non-delimiter token without actually
+    changing its position, i.e. the cursor position is still the same when the
+    tokens are concatenated.
 
     If the cursor is at the beginning or end of the command line or if there's a
     delimiter both before and under the cursor, an empty token is inserted at
