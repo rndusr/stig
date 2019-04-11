@@ -1306,7 +1306,7 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz', 10, ('/',), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 2)
         self.do('foo/bar/baz', 11, ('/',), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 3)
 
-    def test_delimit_at_multichar_separator(self):
+    def test_separate_at_multichar_separator_removing_separators(self):
         self.do('foo//bar/.baz',  0, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 0)
         self.do('foo./bar//baz',  1, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 1)
         self.do('foo/.bar./baz',  2, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 2)
