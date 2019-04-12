@@ -100,6 +100,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         # TransmissionRPC requests 'session-get' to test the connection and
         # set version properties.
         self.daemon.response = rsrc.SESSION_GET_RESPONSE
+        self.daemon.auth = {'user': 'foo', 'password': 'bar'}
 
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
         await self.client.connect()

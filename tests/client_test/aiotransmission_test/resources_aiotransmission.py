@@ -1,3 +1,5 @@
+from base64 import b64decode
+
 from stig.client.aiotransmission.rpc import (CSRF_ERROR_CODE, CSRF_HEADER, AUTH_ERROR_CODE)
 from aiohttp import web
 from aiohttp.test_utils import unused_port
@@ -119,8 +121,28 @@ class FakeTransmissionDaemon:
         self.server = None
         self.response = None
         self.requests = []
+        self.auth = None
 
     async def handle_POST(self, request):
+        def valid_auth():
+            def extract_credentials(basic_auth_str):
+                try:
+                    creds_b64 = basic_auth_str.split(' ')[1]
+                    creds_str = b64decode(creds_b64).decode()
+                    user, password = creds_str.split(':')
+                    return user, password
+                except:
+                    raise ValueError(f"Wrong 'Authorization' header format: {basic_auth_str}")
+
+            if not self.auth:
+                return True
+            elif 'Authorization' not in request.headers:
+                return False
+            else:
+                auth_header = request.headers['Authorization']
+                user, password = extract_credentials(auth_header)
+                return user == self.auth['user'] and password == self.auth['password']
+
         self.requests.append(await request.json())
 
         if CSRF_HEADER not in request.headers:
@@ -129,6 +151,8 @@ class FakeTransmissionDaemon:
         elif request.headers[CSRF_HEADER] != SESSION_ID:
             raise RuntimeError('Attempt to connect with wrong session id: {}'
                                .format(request.headers[CSRF_HEADER]))
+        elif not valid_auth():
+            resp = web.Response(status=AUTH_ERROR_CODE)
         elif isinstance(self.response, web.Response):
             resp = self.response
         else:
