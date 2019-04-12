@@ -272,7 +272,7 @@ class TransmissionRPC():
 
             import aiohttp
             session_args = {'loop': self.loop}
-            if self.user and self.password:
+            if self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')
             self._session = aiohttp.ClientSession(**session_args)
