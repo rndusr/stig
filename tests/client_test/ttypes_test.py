@@ -313,9 +313,9 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(int(ts), mktime('1904-09-21 06:45:00'))
 
     def test_string__month_day_hour_minute_second(self):
-        with mock_time(1845, 5, 17, 3, 29, 4):
+        with mock_time(1945, 5, 17, 3, 29, 4):
             ts = ttypes.Timestamp.from_string('08-07 09:28:07')
-            self.assertEqual(int(ts), mktime('1845-08-07 09:28:07'))
+            self.assertEqual(int(ts), mktime('1945-08-07 09:28:07'))
         with mock_time(2010, 4, 24, 18, 17, 57):
             ts = ttypes.Timestamp.from_string('10-20 05:03:14')
             self.assertEqual(int(ts), mktime('2010-10-20 05:03:14'))
