@@ -137,6 +137,28 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
         self.assert_cb_error_called(calls=0)
 
+    async def test_authentication_with_good_url_empty_password(self):
+        self.client.user = 'foo'
+        self.client.password = ''
+
+        # TransmissionRPC requests 'session-get' to test the connection and
+        # set version properties.
+        self.daemon.response = rsrc.SESSION_GET_RESPONSE
+        self.daemon.auth = {'user': 'foo', 'password': ''}
+
+        self.assert_not_connected_to(self.daemon.host, self.daemon.port)
+        await self.client.connect()
+        self.assert_connected_to(self.daemon.host, self.daemon.port)
+        self.assert_cb_connected_called(calls=1, args=[(self.client,)])
+        self.assert_cb_disconnected_called(calls=0)
+        self.assert_cb_error_called(calls=0)
+
+        await self.client.disconnect()
+        self.assert_not_connected_to(self.daemon.host, self.daemon.port)
+        self.assert_cb_connected_called(calls=1, args=[(self.client,)])
+        self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
+        self.assert_cb_error_called(calls=0)
+
     async def test_connect_to_bad_url(self):
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
 
