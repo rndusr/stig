@@ -151,10 +151,10 @@ class FakeTransmissionDaemon:
         elif request.headers[CSRF_HEADER] != SESSION_ID:
             raise RuntimeError('Attempt to connect with wrong session id: {}'
                                .format(request.headers[CSRF_HEADER]))
-        elif not valid_auth():
-            resp = web.Response(status=AUTH_ERROR_CODE)
         elif isinstance(self.response, web.Response):
             resp = self.response
+        elif not valid_auth():
+            resp = web.Response(status=AUTH_ERROR_CODE)
         else:
             resp = await self._make_response(request, self.response)
         return resp
