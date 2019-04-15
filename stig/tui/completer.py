@@ -67,17 +67,17 @@ class Completer():
         self._curtok_curpos = None
 
     async def update(self, cmdline, curpos):
-        log.debug('Parsing: %r', cmdline[:curpos] + '|' + cmdline[curpos:])
+        # log.debug('Parsing: %r', cmdline[:curpos] + '|' + cmdline[curpos:])
         tokens = cliparser.tokenize(cmdline)
         curtok_index, curtok_curpos = cliparser.get_position(tokens, curpos)
         tokens, curtok_index, curtok_curpos = cliparser.maybe_insert_empty_token(tokens, curtok_index, curtok_curpos)
         tokens, curtok_index, curtok_curpos = cliparser.avoid_delims(tokens, curtok_index, curtok_curpos)
-        log.debug('Tokens: %r', tokens)
+        # log.debug('Tokens: %r', tokens)
         curcmd_tokens, curcmd_curtok_index = cliparser.get_current_cmd(tokens, curtok_index, self._operators)
-        log.debug('Current command tokens: %r', curcmd_tokens)
-        log.debug('Focused token: %r', curcmd_curtok_index)
+        # log.debug('Current command tokens: %r', curcmd_tokens)
+        # log.debug('Focused token: %r', curcmd_curtok_index)
         if curcmd_tokens is None:
-            log.debug('No current command - no candidates')
+            # log.debug('No current command - no candidates')
             self.reset()
         else:
             # The candidate getter gets unescaped/unquoted tokens with delimiting
@@ -95,15 +95,15 @@ class Completer():
                 # e.g. paths are separated at "/" and we don't want to complete
                 # the full path, just the part between two "/".
                 if cands.curarg_seps:
-                    log.debug('  Separators for current argument: %r', cands.curarg_seps)
+                    # log.debug('  Separators for current argument: %r', cands.curarg_seps)
                     curarg_parts = args.curarg.separate(cands.curarg_seps, include_seps=True)
-                    log.debug('  Current argument parts: %r', curarg_parts)
+                    # log.debug('  Current argument parts: %r', curarg_parts)
                     common_prefix = curarg_parts.curarg.before_cursor
                 else:
                     common_prefix = args.curarg.before_cursor
                 self._curarg_parts[cands] = common_prefix
 
-                log.debug('Common prefix: %r', common_prefix)
+                # log.debug('Common prefix: %r', common_prefix)
                 # Filter out any candidates that don't match the current argument
                 cands.reduce(r'(?i)%s' % (re.escape(common_prefix),))
 
@@ -143,7 +143,7 @@ class Completer():
 
         Return new command line string and adjusted cursor position
         """
-        log.debug('Assembling %r', self._tokens)
+        # log.debug('Assembling %r', self._tokens)
         if not self.categories.current:
             # Return original, unmodified command line
             return ''.join(self._tokens), self._curpos
@@ -159,13 +159,13 @@ class Completer():
                 cliparser.maybe_insert_empty_token(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
             curtok_parts, curpart_index, curpart_curpos = \
                 cliparser.avoid_delims(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
-            log.debug('Separated current token: %r', curtok_parts)
+            # log.debug('Separated current token: %r', curtok_parts)
             self._tokens[self._curtok_index:self._curtok_index+1] = curtok_parts
             self._curtok_index += curpart_index
             self._curtok_curpos = curpart_curpos
-            log.debug('Tokens with separated argument: %r', self._tokens)
-            log.debug('New current token: %r: %r', self._curtok_index, self._tokens[self._curtok_index])
-            log.debug('New current token cursor position: %r', self._curtok_curpos)
+            # log.debug('Tokens with separated argument: %r', self._tokens)
+            # log.debug('New current token: %r: %r', self._curtok_index, self._tokens[self._curtok_index])
+            # log.debug('New current token cursor position: %r', self._curtok_curpos)
 
             # Copy user-typed tokens and insert current candidate
             curcands = self.categories.current
@@ -178,12 +178,12 @@ class Completer():
             else:
                 curcand_token = cliparser.quote(curcand)
             new_curpos = self._curpos - self._curtok_curpos + len(curcand_token)
-            log.debug('Replacing %r with %r', tokens[self._curtok_index], curcand_token)
+            # log.debug('Replacing %r with %r', tokens[self._curtok_index], curcand_token)
             tokens[self._curtok_index] = curcand_token
-            log.debug('New command line: %r',
-                      ''.join(tokens[:self._curtok_index]) +
-                      tokens[self._curtok_index][new_curpos:] + '|' + tokens[self._curtok_index][new_curpos:] +
-                      ''.join(tokens[self._curtok_index:]))
+            # log.debug('New command line: %r',
+            #           ''.join(tokens[:self._curtok_index]) +
+            #           tokens[self._curtok_index][new_curpos:] + '|' + tokens[self._curtok_index][new_curpos:] +
+            #           ''.join(tokens[self._curtok_index:]))
             return ''.join(tokens), new_curpos
 
     def _update_current_user_input(self):
@@ -192,7 +192,7 @@ class Completer():
             user_input_cands = self._categories.all[0]
             user_input_cands.set(self.current_user_input)
             user_input_cands.curarg_seps = self._categories.current.curarg_seps
-            log.debug('Updated current user input candidate: %r', user_input_cands)
+            # log.debug('Updated current user input candidate: %r', user_input_cands)
 
     @property
     def current_user_input(self):
