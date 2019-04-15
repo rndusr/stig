@@ -581,6 +581,34 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=(' ',)):
     return tokens, curtok_index, curtok_curpos
 
 
+def remove_options(args, curarg_index, curarg_curpos):
+    """
+    Remove arguments that start with "-" and adjust current argument and cursor
+    position if necessary
+
+    Return new arguments, index of current argument and cursor position in
+    current argument
+    """
+    if curarg_index is None:
+        return ([arg for arg in args if not arg.startswith('-')],
+                curarg_index, curarg_curpos)
+
+    # Reduce index of current argument if we remove options to the left of it
+    new_curarg_index = curarg_index
+    new_curarg_curpos = curarg_curpos
+    args_wo_opts = []
+    for i,arg in enumerate(args):
+        if not arg.startswith('-'):
+            args_wo_opts.append(arg)
+        elif i < curarg_index:
+            # Removing an argument before the current one
+            new_curarg_index -= 1
+        elif i == curarg_index:
+            # Removing the current argument sets the cursor position in it to 0
+            new_curarg_curpos = 0
+    return args_wo_opts, new_curarg_index, new_curarg_curpos
+
+
 def get_current_cmd(tokens, curtok_index, ops):
     """
     Extract tokens before and after the currently focused token up to any
@@ -799,34 +827,6 @@ class Args(tuple):
         if self._curarg_curpos is not None:
             string += ', curarg_curpos=%d' % (self._curarg_curpos,)
         return string + ')'
-
-
-def remove_options(args, curarg_index, curarg_curpos):
-    """
-    Remove arguments that start with "-" and adjust current argument and cursor
-    position if necessary
-
-    Return new arguments, index of current argument and cursor position in
-    current argument
-    """
-    if curarg_index is None:
-        return ([arg for arg in args if not arg.startswith('-')],
-                curarg_index, curarg_curpos)
-
-    # Reduce index of current argument if we remove options to the left of it
-    new_curarg_index = curarg_index
-    new_curarg_curpos = curarg_curpos
-    args_wo_opts = []
-    for i,arg in enumerate(args):
-        if not arg.startswith('-'):
-            args_wo_opts.append(arg)
-        elif i < curarg_index:
-            # Removing an argument before the current one
-            new_curarg_index -= 1
-        elif i == curarg_index:
-            # Removing the current argument sets the cursor position in it to 0
-            new_curarg_curpos = 0
-    return args_wo_opts, new_curarg_index, new_curarg_curpos
 
 
 def as_args(tokens, curtok_index, curtok_curpos, delims=(' ',)):
