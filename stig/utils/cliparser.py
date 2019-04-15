@@ -12,8 +12,6 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
-import re
-
 DEFAULT_DELIMS = (' ',)
 DEFAULT_ESCAPES = ('\\',)
 DEFAULT_QUOTES = ('"', "'")
