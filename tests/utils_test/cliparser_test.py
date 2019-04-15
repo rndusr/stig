@@ -3,56 +3,6 @@ from stig.utils import cliparser
 import unittest
 
 
-class Test_get_current_cmd(unittest.TestCase):
-    ops = ('&', 'and', '|', 'or')
-
-    def do(self, input, output):
-        input += (self.ops,)
-        self.assertEqual(cliparser.get_current_cmd(*input), output)
-
-    def test_empty_string(self):
-        self.do(([''], 0), ([''], 0))
-
-    def test_no_operators(self):
-        self.do((['foo', ' ' , 'bar', ' ', 'baz'], 0), (['foo', ' ', 'bar', ' ', 'baz'], 0))
-        self.do((['foo', ' ', 'bar', ' ', 'baz'], 1), (['foo', ' ', 'bar', ' ', 'baz'], 1))
-        self.do((['foo', ' ', 'bar', ' ', 'baz'], 2), (['foo', ' ', 'bar', ' ', 'baz'], 2))
-        self.do((['foo', ' ', 'bar', ' ', 'baz'], 3), (['foo', ' ', 'bar', ' ', 'baz'], 3))
-        self.do((['foo', ' ', 'bar', ' ', 'baz'], 4), (['foo', ' ', 'bar', ' ', 'baz'], 4))
-
-    def test_single_char_operators(self):
-        tokens = ['foo', ' ', '&', ' ', 'bar', ' ', 'baz', ' ', '|', ' ', 'bang', ' ', '-a']
-        self.do((tokens, 0), (['foo', ' '], 0))
-        self.do((tokens, 1), (['foo', ' '], 1))
-        self.do((tokens, 2), (None, None))
-        self.do((tokens, 3), ([' ', 'bar', ' ', 'baz', ' '], 0))
-        self.do((tokens, 4), ([' ', 'bar', ' ', 'baz', ' '], 1))
-        self.do((tokens, 5), ([' ', 'bar', ' ', 'baz', ' '], 2))
-        self.do((tokens, 6), ([' ', 'bar', ' ', 'baz', ' '], 3))
-        self.do((tokens, 7), ([' ', 'bar', ' ', 'baz', ' '], 4))
-        self.do((tokens, 8), (None, None))
-        self.do((tokens, 9), ([' ', 'bang', ' ', '-a'], 0))
-        self.do((tokens, 10), ([' ', 'bang', ' ', '-a'], 1))
-        self.do((tokens, 11), ([' ', 'bang', ' ', '-a'], 2))
-        self.do((tokens, 12), ([' ', 'bang', ' ', '-a'], 3))
-
-    def test_multi_char_operators(self):
-        tokens = ['foo', ' ', 'and', ' ', 'bar', ' ', 'baz', ' ', 'or', ' ', 'bang', ' ', '-a']
-        self.do((tokens, 0), (['foo', ' '], 0))
-        self.do((tokens, 1), (['foo', ' '], 1))
-        self.do((tokens, 2), (None, None))
-        self.do((tokens, 3), ([' ', 'bar', ' ', 'baz', ' '], 0))
-        self.do((tokens, 4), ([' ', 'bar', ' ', 'baz', ' '], 1))
-        self.do((tokens, 5), ([' ', 'bar', ' ', 'baz', ' '], 2))
-        self.do((tokens, 6), ([' ', 'bar', ' ', 'baz', ' '], 3))
-        self.do((tokens, 7), ([' ', 'bar', ' ', 'baz', ' '], 4))
-        self.do((tokens, 8), (None, None))
-        self.do((tokens, 9), ([' ', 'bang', ' ', '-a'], 0))
-        self.do((tokens, 10), ([' ', 'bang', ' ', '-a'], 1))
-        self.do((tokens, 11), ([' ', 'bang', ' ', '-a'], 2))
-        self.do((tokens, 12), ([' ', 'bang', ' ', '-a'], 3))
-
-
 class Test_on_any_substr(unittest.TestCase):
     def test_multiple_substrings(self):
         self.assertEqual(cliparser._on_any_substr('=foo!=bar>=baz<', 0, ('=','!=', '>=', '<')), (True, '=', 0, 0))
@@ -1010,182 +960,225 @@ class Test_get_position(unittest.TestCase):
         self.do((['foo', '|', 'bar', '|', 'baz'], 11), (4, 3))
 
 
+class Test_remove_delims(unittest.TestCase):
+    def do(self, input, output):
+        self.assertEqual(cliparser.remove_delims(*input), output)
+
+    def test_cursor_on_nondelimiter(self):
+        for curpos in (0, 1, 2, 3):
+            self.do((['foo', ':', '!', 'bar', '!', 'baz'], 0, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, curpos)))
+            self.do((['foo', ':', 'bar', '!', '!', 'baz'], 0, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, curpos)))
+            self.do((['foo', ':', 'bar', '!', 'baz', '!'], 0, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, curpos)))
+            self.do(([':', 'foo', ':', '!', 'bar', '!', 'baz'], 1, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, curpos)))
+        for curpos in (0, 1, 2, 3):
+            self.do((['foo', '!', ':', 'bar', ':', 'baz'], 3, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 1, curpos)))
+            self.do((['foo', ':', 'bar', '!', ':', 'baz'], 2, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 1, curpos)))
+            self.do((['foo', ':', 'bar', '!', 'baz', ':'], 2, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 1, curpos)))
+            self.do((['!', 'foo', ':', 'bar', ':', 'baz'], 3, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 1, curpos)))
+        for curpos in (0, 1, 2, 3):
+            self.do((['foo', ':', 'bar', '!', 'baz'], 4, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, curpos)))
+            self.do((['foo', ':', '!', 'bar', '!', 'baz'], 5, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, curpos)))
+            self.do((['foo', ':', 'bar', '!', ':', 'baz'], 5, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, curpos)))
+            self.do((['!', 'foo', ':', 'bar', '!', 'baz'], 5, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, curpos)))
+
+    def test_cursor_on_delimiter(self):
+        self.do((['foo', ':', '!', 'bar', '!', 'baz'], 1, 0, (':', '!')), ((['foo', 'bar', 'baz'], 0, 3)))
+        self.do((['foo', ':', '!', 'bar', '!', 'baz'], 1, 1, (':', '!')), ((['foo', 'bar', 'baz'], 0, 3)))
+        self.do((['foo', ':', '!', 'bar', '!', 'baz'], 2, 0, (':', '!')), ((['foo', 'bar', 'baz'], 0, 3)))
+        self.do((['foo', ':', '!', 'bar', '!', 'baz'], 2, 1, (':', '!')), ((['foo', 'bar', 'baz'], 1, 0)))
+        self.do((['foo', ':', '!', 'bar', '!', 'baz'], 4, 0, (':', '!')), ((['foo', 'bar', 'baz'], 1, 3)))
+        self.do((['foo', ':', '!', 'bar', '!', 'baz'], 4, 1, (':', '!')), ((['foo', 'bar', 'baz'], 2, 0)))
+
+    def test_cursor_on_delimiter_and_last_token(self):
+        for curpos in (0, 1):
+            self.do((['foo', ':', 'bar', '!', 'baz', '!'], 5, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, 3)))
+            self.do((['foo', ':', 'bar', '!', 'baz', '!', ':'], 6, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, 3)))
+            self.do((['foo', ':', 'bar', '!', 'baz', '!', ':', '!'], 7, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 2, 3)))
+
+    def test_cursor_on_delimiter_and_first_token(self):
+        for curpos in (0, 1):
+            self.do(([':', 'foo', ':', 'bar', '!', 'baz'], 0, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, 0)))
+            for index in (0, 1):
+                self.do(([':', '!', 'foo', ':', 'bar', '!', 'baz'], index, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, 0)))
+            for index in (0, 1, 2):
+                self.do(([':', '!', '!', 'foo', ':', 'bar', '!', 'baz'], index, curpos, (':', '!')), ((['foo', 'bar', 'baz'], 0, 0)))
+
+
 class Test_avoid_delims(unittest.TestCase):
     def do(self, input, output):
         self.assertEqual(cliparser.avoid_delims(*input), output)
 
-    def test_cursor_on_first_character_of_leading_delimiter(self):
-        self.do((['|', 'foo'], 0, 0, ('|',)), (['', '|', 'foo'], 0, 0))
-        self.do((['::', 'foo'], 0, 0, ('::', '.:!')), (['', '::', 'foo'], 0, 0))
-        self.do((['.:!', 'foo'], 0, 0, ('|', '.:!')), (['', '.:!', 'foo'], 0, 0))
+    def test_no_nondelimiters(self):
+        for curpos in (0, 1):
+            self.do(([':'], 0, curpos, (':', '!')), ([':'], 0, curpos))
+            for tokpos in (0, 1):
+                self.do(([':', '!'], tokpos, curpos, (':', '!')), ([':', '!'], tokpos, curpos))
+            for tokpos in (0, 1, 2):
+                self.do(([':', '!', ':'], tokpos, curpos, (':', '!')), ([':', '!', ':'], tokpos, curpos))
+        for curpos in (0, 1, 2):
+            self.do((['::'], 0, curpos, ('::', '.:')), (['::'], 0, curpos))
+            for tokpos in (0, 1):
+                self.do((['::', '.:'], tokpos, curpos, (':', '!')), (['::', '.:'], tokpos, curpos))
+            for tokpos in (0, 1, 2):
+                self.do((['::', '.:', '.:'], tokpos, curpos, (':', '!')), (['::', '.:', '.:'], tokpos, curpos))
 
-    def test_cursor_after_last_character_of_trailing_delimiter(self):
-        self.do((['foo', '|'], 1, 1, ('|',)), (['foo', '|', ''], 2, 0))
-        self.do((['foo', '::'], 1, 2, ('::', '.:!')), (['foo', '::', ''], 2, 0))
-        self.do((['foo', '.:!'], 1, 3, ('::', '.:!')), (['foo', '.:!', ''], 2, 0))
+    def test_cursor_on_leading_delimiter(self):
+        for curpos in (0, 1):
+            self.do(([':', 'foo'], 0, curpos, (':',)), ([':', 'foo'], 1, 0))
+            self.do(([':', ':', 'foo'], 0, curpos, (':',)), ([':', ':', 'foo'], 2, 0))
+        for curpos in (0, 1, 2):
+            self.do((['::', 'foo'], 0, curpos, ('::', '.:!')), (['::', 'foo'], 1, 0))
+            self.do((['::', '.:!', 'foo'], 0, curpos, ('::', '.:!')), (['::', '.:!', 'foo'], 2, 0))
+        for curpos in (0, 1, 2, 3):
+            self.do((['.:!', 'foo'], 0, curpos, (':', '.:!')), (['.:!', 'foo'], 1, 0))
+            self.do((['.:!', ':', 'foo'], 0, curpos, (':', '.:!')), (['.:!', ':', 'foo'], 2, 0))
+            self.do((['.:!', '.:!', 'foo'], 0, curpos, (':', '.:!')), (['.:!', '.:!', 'foo'], 2, 0))
 
-    def test_cursor_in_the_middle_of_multichar_delimiter(self):
-        self.do((['foo', '::', 'bar'], 1, 1, ('::', '.:!')), (['foo', ':', '', ':', 'bar'], 2, 0))
-        self.do((['foo', '.:!', 'bar'], 1, 1, ('|', '.:!')), (['foo', '.', '', ':!', 'bar'], 2, 0))
-        self.do((['foo', '.:!', 'bar'], 1, 2, ('|', '.:!')), (['foo', '.:', '', '!', 'bar'], 2, 0))
+    def test_cursor_on_trailing_delimiter(self):
+        for curpos in (0, 1):
+            self.do((['foo', ':'], 1, curpos, (':',)), (['foo', ':'], 0, 3))
+            self.do((['foo', ':', ':'], 2, curpos, (':',)), (['foo', ':', ':'], 0, 3))
+        for curpos in (0, 1, 2):
+            self.do((['foo', '::'], 1, curpos, ('::', '.:!')), (['foo', '::'], 0, 3))
+            self.do((['foo', '.:!', '::'], 2, curpos, ('::', '.:!')), (['foo', '.:!', '::'], 0, 3))
+        for curpos in (0, 1, 2, 3):
+            self.do((['foo', '.:!'], 1, curpos, ('::', '.:!')), (['foo', '.:!'], 0, 3))
+            self.do((['foo', '::', '.:!'], 2, curpos, ('::', '.:!')), (['foo', '::', '.:!'], 0, 3))
 
-    def test_cursor_on_first_character_of_multichar_delimiter(self):
-        self.do((['foo', '|', 'bar'], 1, 0, ('|',)), (['foo', '|', 'bar'], 0, 3))
+    def test_cursor_on_delimiting_delimiter(self):
+        self.do((['foo', ':', 'bar'], 1, 0, (':',)), (['foo', ':', 'bar'], 0, 3))
+        self.do((['foo', ':', 'bar'], 1, 1, (':',)), (['foo', ':', 'bar'], 2, 0))
+
+        self.do((['foo', ':', '!', 'bar'], 1, 0, (':', '!')), (['foo', ':', '!', 'bar'], 0, 3))
+        self.do((['foo', ':', '!', 'bar'], 1, 1, (':', '!')), (['foo', ':', '!', 'bar'], 3, 0))
+        self.do((['foo', ':', '!', 'bar'], 2, 0, (':', '!')), (['foo', ':', '!', 'bar'], 3, 0))
+        self.do((['foo', ':', '!', 'bar'], 2, 1, (':', '!')), (['foo', ':', '!', 'bar'], 3, 0))
+
         self.do((['foo', '::', 'bar'], 1, 0, ('::', '.:!')), (['foo', '::', 'bar'], 0, 3))
-        self.do((['foo', '.:!', 'bar'], 1, 0, ('::', '.:!')), (['foo', '.:!', 'bar'], 0, 3))
-
-    def test_cursor_after_last_character_of_multichar_delimiter(self):
-        self.do((['foo', '|', 'bar'], 1, 1, ('|',)), (['foo', '|', 'bar'], 2, 0))
+        self.do((['foo', '::', 'bar'], 1, 1, ('::', '.:!')), (['foo', '::', 'bar'], 2, 0))
         self.do((['foo', '::', 'bar'], 1, 2, ('::', '.:!')), (['foo', '::', 'bar'], 2, 0))
-        self.do((['foo', '.:!', 'bar'], 1, 3, ('::', '.:!')), (['foo', '.:!', 'bar'], 2, 0))
-
-    def test_multiple_singlechar_delimiters_in_the_middle(self):
-        self.do((['foo', '|', '|', '|', 'bar'], 1, 0, ('|',)), (['foo', '|', '|', '|', 'bar'], 0, 3))
-        self.do((['foo', '|', '|', '|', 'bar'], 1, 1, ('|',)), (['foo', '|', '', '|', '|', 'bar'], 2, 0))
-        self.do((['foo', '|', '|', '|', 'bar'], 2, 0, ('|',)), (['foo', '|', '', '|', '|', 'bar'], 2, 0))
-        self.do((['foo', '|', '|', '|', 'bar'], 2, 1, ('|',)), (['foo', '|', '|', '', '|', 'bar'], 3, 0))
-        self.do((['foo', '|', '|', '|', 'bar'], 3, 0, ('|',)), (['foo', '|', '|', '', '|', 'bar'], 3, 0))
-        self.do((['foo', '|', '|', '|', 'bar'], 3, 1, ('|',)), (['foo', '|', '|', '|', 'bar'], 4, 0))
-
-    def test_multiple_multichar_delimiters_in_the_middle(self):
-        self.do((['foo', '::', '::', '::', 'bar'], 1, 0, ('::', '.!')), (['foo', '::', '::', '::', 'bar'], 0, 3))
-        self.do((['foo', '.!', '.!', '.!', 'bar'], 1, 1, ('::', '.!')), (['foo', '.', '', '!', '.!', '.!', 'bar'], 2, 0))
-        self.do((['foo', '::', '::', '::', 'bar'], 1, 2, ('::', '.!')), (['foo', '::', '', '::', '::', 'bar'], 2, 0))
-        self.do((['foo', '::', '::', '::', 'bar'], 2, 0, ('::', '.!')), (['foo', '::', '', '::', '::', 'bar'], 2, 0))
-        self.do((['foo', '.!', '.!', '.!', 'bar'], 2, 1, ('::', '.!')), (['foo', '.!', '.', '', '!', '.!', 'bar'], 3, 0))
-        self.do((['foo', '::', '::', '::', 'bar'], 2, 2, ('::', '.!')), (['foo', '::', '::', '', '::', 'bar'], 3, 0))
-        self.do((['foo', '.!', '.!', '.!', 'bar'], 3, 0, ('::', '.!')), (['foo', '.!', '.!', '', '.!', 'bar'], 3, 0))
-        self.do((['foo', '::', '::', '::', 'bar'], 3, 1, ('::', '.!')), (['foo', '::', '::', ':', '', ':', 'bar'], 4, 0))
-        self.do((['foo', '.!', '.!', '.!', 'bar'], 3, 2, ('::', '.!')), (['foo', '.!', '.!', '.!', 'bar'], 4, 0))
-
-    def test_multiple_leading_multichar_delimiters(self):
-        self.do((['::', '::', '::', 'bar'], 0, 0, ('::', '.!')), (['', '::', '::', '::', 'bar'], 0, 0))
-        self.do((['.!', '.!', '.!', 'bar'], 0, 1, ('::', '.!')), (['.', '', '!', '.!', '.!', 'bar'], 1, 0))
-        self.do((['::', '::', '::', 'bar'], 0, 2, ('::', '.!')), (['::', '', '::', '::', 'bar'], 1, 0))
-        self.do((['::', '::', '::', 'bar'], 1, 0, ('::', '.!')), (['::', '', '::', '::', 'bar'], 1, 0))
-        self.do((['.!', '.!', '.!', 'bar'], 1, 1, ('::', '.!')), (['.!', '.', '', '!', '.!', 'bar'], 2, 0))
-        self.do((['::', '::', '::', 'bar'], 1, 2, ('::', '.!')), (['::', '::', '', '::', 'bar'], 2, 0))
-        self.do((['.!', '.!', '.!', 'bar'], 2, 0, ('::', '.!')), (['.!', '.!', '', '.!', 'bar'], 2, 0))
-        self.do((['::', '::', '::', 'bar'], 2, 1, ('::', '.!')), (['::', '::', ':', '', ':', 'bar'], 3, 0))
-        self.do((['.!', '.!', '.!', 'bar'], 2, 2, ('::', '.!')), (['.!', '.!', '.!', 'bar'], 3, 0))
-
-    def test_multiple_trailing_multichar_delimiters(self):
-        self.do((['foo', '::', '::', '::'], 1, 0, ('::', '.!')), (['foo', '::', '::', '::'], 0, 3))
-        self.do((['foo', '.!', '.!', '.!'], 1, 1, ('::', '.!')), (['foo', '.', '', '!', '.!', '.!'], 2, 0))
-        self.do((['foo', '::', '::', '::'], 1, 2, ('::', '.!')), (['foo', '::', '', '::', '::'], 2, 0))
-        self.do((['foo', '::', '::', '::'], 2, 0, ('::', '.!')), (['foo', '::', '', '::', '::'], 2, 0))
-        self.do((['foo', '.!', '.!', '.!'], 2, 1, ('::', '.!')), (['foo', '.!', '.', '', '!', '.!'], 3, 0))
-        self.do((['foo', '::', '::', '::'], 2, 2, ('::', '.!')), (['foo', '::', '::', '', '::'], 3, 0))
-        self.do((['foo', '.!', '.!', '.!'], 3, 0, ('::', '.!')), (['foo', '.!', '.!', '', '.!'], 3, 0))
-        self.do((['foo', '::', '::', '::'], 3, 1, ('::', '.!')), (['foo', '::', '::', ':', '', ':'], 4, 0))
-        self.do((['foo', '.!', '.!', '.!'], 3, 2, ('::', '.!')), (['foo', '.!', '.!', '.!', ''], 4, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 1, 0, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 0, 3))
+        self.do((['foo', '.:!', '::', 'bar'], 1, 1, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 3, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 1, 2, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 3, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 1, 3, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 3, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 2, 0, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 3, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 2, 1, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 3, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 2, 2, ('::', '.:!')), (['foo', '.:!', '::', 'bar'], 3, 0))
 
 
-class Test_as_args(unittest.TestCase):
-    def do(self, tokens, curtok, tokcurpos, delims, exp_args, exp_argindex, exp_argcurpos):
-        args, argindex, argcurpos = cliparser.as_args(tokens, curtok, tokcurpos, delims)
-        self.assertEqual((args, argindex, argcurpos), (exp_args, exp_argindex, exp_argcurpos))
-        for arg in args:
-            self.assertTrue(isinstance(arg, cliparser.Arg))
-        for i,arg in enumerate(args):
-            if i == argindex:
-                self.assertEqual(arg.curpos, exp_argcurpos)
-            else:
-                self.assertEqual(arg.curpos, None)
+class Test_maybe_insert_empty_token(unittest.TestCase):
+    def do(self, input, output):
+        self.assertEqual(cliparser.maybe_insert_empty_token(*input), output)
 
-    def test_no_tokens(self):
-        self.do(('',), 0, 0, ('?',), [''], 0, 0)
+    def test_cursor_on_first_char_of_first_arg(self):
+        self.do((['foo', ':', 'bar'], 0, 0, (':', '!')), (['foo', ':', 'bar'], 0, 0))
+        for curpos in (0, 1):
+            self.do((['!', 'foo', ':', 'bar'], 0, curpos, (':', '!')), (['', '!', 'foo', ':', 'bar'], 0, 0))
 
-    def test_single_singlechar_delimiters(self):
-        self.do(('foo', '|', 'bar', '|', 'baz'), 0, 0, ('|',), ['foo', 'bar', 'baz'], 0, 0)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 0, 1, ('|',), ['foo', 'bar', 'baz'], 0, 1)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 0, 2, ('|',), ['foo', 'bar', 'baz'], 0, 2)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 0, 3, ('|',), ['foo', 'bar', 'baz'], 0, 3)
+    def test_cursor_on_last_char_of_last_arg(self):
+        self.do((['foo', ':', 'bar'], 2, 3, (':', '!')), (['foo', ':', 'bar'], 2, 3))
+        for curpos in (0, 1):
+            self.do((['foo', ':', 'bar', '!'], 3, curpos, (':', '!')), (['foo', ':', 'bar', '!', ''], 4, 0))
 
-        self.do(('foo', '|', 'bar', '|', 'baz'), 1, 0, ('|',), ['foo', 'bar', 'baz'], 0, 3)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 1, 1, ('|',), ['foo', 'bar', 'baz'], 1, 0)
+    def test_cursor_on_first_char_of_delimiter_with_delimiter_before(self):
+        self.do((['foo', '!', ':', 'bar'], 2, 0, (':', '!')), (['foo', '!', '', ':', 'bar'], 2, 0))
+        self.do((['foo', '::', '.:!', 'bar'], 2, 0, ('::', '.:!')), (['foo', '::', '', '.:!', 'bar'], 2, 0))
 
-        self.do(('foo', '|', 'bar', '|', 'baz'), 2, 0, ('|',), ['foo', 'bar', 'baz'], 1, 0)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 2, 1, ('|',), ['foo', 'bar', 'baz'], 1, 1)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 2, 2, ('|',), ['foo', 'bar', 'baz'], 1, 2)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 2, 3, ('|',), ['foo', 'bar', 'baz'], 1, 3)
+    def test_cursor_on_last_char_of_delimiter_with_delimiter_after(self):
+        self.do((['foo', ':', '!', 'bar'], 1, 1, (':', '!')), (['foo', ':', '', '!', 'bar'], 2, 0))
+        self.do((['foo', '::', '.:!', 'bar'], 1, 2, ('::', '.:!')), (['foo', '::', '', '.:!', 'bar'], 2, 0))
+        self.do((['foo', '.:!', '::', 'bar'], 1, 3, ('::', '.:!')), (['foo', '.:!', '', '::', 'bar'], 2, 0))
 
-        self.do(('foo', '|', 'bar', '|', 'baz'), 3, 0, ('|',), ['foo', 'bar', 'baz'], 1, 3)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 3, 1, ('|',), ['foo', 'bar', 'baz'], 2, 0)
 
-        self.do(('foo', '|', 'bar', '|', 'baz'), 4, 0, ('|',), ['foo', 'bar', 'baz'], 2, 0)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 4, 1, ('|',), ['foo', 'bar', 'baz'], 2, 1)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 4, 2, ('|',), ['foo', 'bar', 'baz'], 2, 2)
-        self.do(('foo', '|', 'bar', '|', 'baz'), 4, 3, ('|',), ['foo', 'bar', 'baz'], 2, 3)
 
-    def test_multiple_singlechar_delimiters(self):
-        self.do(('foo', '|', '|', '|', 'bar'), 0, 3, ('|',), ['foo', 'bar'], 0, 3)
-        self.do(('foo', '|', '|', '|', 'bar'), 1, 0, ('|',), ['foo', 'bar'], 0, 3)
-        self.do(('foo', '|', '|', '|', 'bar'), 1, 1, ('|',), ['foo', 'bar'], 0, 3)
-        self.do(('foo', '|', '|', '|', 'bar'), 2, 0, ('|',), ['foo', 'bar'], 0, 3)
-        self.do(('foo', '|', '|', '|', 'bar'), 2, 1, ('|',), ['foo', 'bar'], 0, 3)
-        self.do(('foo', '|', '|', '|', 'bar'), 3, 0, ('|',), ['foo', 'bar'], 0, 3)
-        self.do(('foo', '|', '|', '|', 'bar'), 3, 1, ('|',), ['foo', 'bar'], 1, 0)
+    def test_cursor_on_last_arg_which_is_delimiter(self):
+        self.do((['foo', ' '], 1, 1, (' ',)), (['foo', ' ', ''], 2, 0))
 
-    def test_leading_singlechar_delimiters(self):
-        self.do(('|', '|', '|', 'bar'), 0, 0, ('|',), ['bar'], 0, 0)
-        self.do(('|', '|', '|', 'bar'), 0, 1, ('|',), ['bar'], 0, 0)
-        self.do(('|', '|', '|', 'bar'), 1, 0, ('|',), ['bar'], 0, 0)
-        self.do(('|', '|', '|', 'bar'), 1, 1, ('|',), ['bar'], 0, 0)
-        self.do(('|', '|', '|', 'bar'), 2, 0, ('|',), ['bar'], 0, 0)
-        self.do(('|', '|', '|', 'bar'), 2, 1, ('|',), ['bar'], 0, 0)
-        self.do(('|', '|', '|', 'bar'), 3, 0, ('|',), ['bar'], 0, 0)
 
-    def test_trailing_singlechar_delimiters(self):
-        self.do(('foo', '|', '|', '|'), 0, 3, ('|',), ['foo'], 0, 3)
-        self.do(('foo', '|', '|', '|'), 1, 0, ('|',), ['foo'], 0, 3)
-        self.do(('foo', '|', '|', '|'), 1, 1, ('|',), ['foo'], 0, 3)
-        self.do(('foo', '|', '|', '|'), 2, 0, ('|',), ['foo'], 0, 3)
-        self.do(('foo', '|', '|', '|'), 2, 1, ('|',), ['foo'], 0, 3)
-        self.do(('foo', '|', '|', '|'), 3, 0, ('|',), ['foo'], 0, 3)
-        self.do(('foo', '|', '|', '|'), 3, 1, ('|',), ['foo'], 0, 3)
 
-    def test_only_delimiter_tokens(self):
-        self.do(('::', '|', ',', '.:!'), 0, 0, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 0, 1, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 0, 2, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 1, 0, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 1, 1, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 2, 0, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 2, 1, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 3, 0, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 3, 1, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 3, 2, ('::', '|', ',', '.:!'), [''], 0, 0)
-        self.do(('::', '|', ',', '.:!'), 3, 3, ('::', '|', ',', '.:!'), [''], 0, 0)
+    def test_cursor_in_middle_of_multichar_delimiter(self):
+        self.do((['foo', '::', '.:!', 'bar'], 1, 1, ('::', '.:!')), (['foo', ':', '', ':', '.:!', 'bar'], 2, 0))
+        self.do((['foo', '::', '.:!', 'bar'], 2, 1, ('::', '.:!')), (['foo', '::', '.', '', ':!', 'bar'], 3, 0))
+        self.do((['foo', '::', '.:!', 'bar'], 2, 2, ('::', '.:!')), (['foo', '::', '.:', '', '!', 'bar'], 3, 0))
 
-    def test_special_characters(self):
-        # First token is literally " foo \"
-        tokens = ((r'\ foo\ ' '\\\\'), '|', '''" bar's "''', '|', r'b"a\"z"')
-        exp_args = [' foo \\', ''' bar's ''', 'ba"z']
-        self.do(tokens, 0, 1, ('|',), exp_args, 0, 0)
-        self.do(tokens, 0, 2, ('|',), exp_args, 0, 1)
-        self.do(tokens, 0, 3, ('|',), exp_args, 0, 2)
-        self.do(tokens, 0, 4, ('|',), exp_args, 0, 3)
-        self.do(tokens, 0, 5, ('|',), exp_args, 0, 4)
-        self.do(tokens, 0, 6, ('|',), exp_args, 0, 4)
-        self.do(tokens, 0, 7, ('|',), exp_args, 0, 5)
-        self.do(tokens, 0, 8, ('|',), exp_args, 0, 5)
-        self.do(tokens, 0, 9, ('|',), exp_args, 0, 6)
-        self.do(tokens, 2, 0, ('|',), exp_args, 1, 0)
-        self.do(tokens, 2, 1, ('|',), exp_args, 1, 0)
-        self.do(tokens, 2, 2, ('|',), exp_args, 1, 1)
-        self.do(tokens, 2, 3, ('|',), exp_args, 1, 2)
-        self.do(tokens, 2, 4, ('|',), exp_args, 1, 3)
-        self.do(tokens, 2, 5, ('|',), exp_args, 1, 4)
-        self.do(tokens, 2, 6, ('|',), exp_args, 1, 5)
-        self.do(tokens, 2, 7, ('|',), exp_args, 1, 6)
-        self.do(tokens, 2, 8, ('|',), exp_args, 1, 7)
-        self.do(tokens, 2, 9, ('|',), exp_args, 1, 7)
-        self.do(tokens, 4, 0, ('|',), exp_args, 2, 0)
-        self.do(tokens, 4, 1, ('|',), exp_args, 2, 1)
-        self.do(tokens, 4, 2, ('|',), exp_args, 2, 1)
-        self.do(tokens, 4, 3, ('|',), exp_args, 2, 2)
-        self.do(tokens, 4, 4, ('|',), exp_args, 2, 2)
+
+class Test_remove_options(unittest.TestCase):
+    def do(self, input, output):
+        self.assertEqual(cliparser.remove_options(*input), output)
+
+    def test_no_cursor_position(self):
+        self.do((['foo', '--bar', 'baz'], None, None), (['foo', 'baz'], None, None))
+        self.do((['foo', 'baz', '--bar'], None, None), (['foo', 'baz'], None, None))
+        self.do((['foo', 'baz', '--bar', 'bam'], None, None), (['foo', 'baz', 'bam'], None, None))
+        self.do((['foo', 'baz', '--bar', '-bam'], None, None), (['foo', 'baz'], None, None))
+
+    def test_cursor_to_the_left_of_an_option(self):
+        self.do((['foo', 'baz', '--bar'], 1, 0), (['foo', 'baz'], 1, 0))
+        self.do((['foo', 'baz', '--bar'], 1, 1), (['foo', 'baz'], 1, 1))
+        self.do((['foo', 'baz', '--bar'], 1, 2), (['foo', 'baz'], 1, 2))
+        self.do((['foo', 'baz', '--bar'], 1, 3), (['foo', 'baz'], 1, 3))
+
+    def test_cursor_to_the_right_of_an_option(self):
+        self.do((['foo', '--bar', 'baz'], 2, 0), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 2, 1), (['foo', 'baz'], 1, 1))
+        self.do((['foo', '--bar', 'baz'], 2, 2), (['foo', 'baz'], 1, 2))
+        self.do((['foo', '--bar', 'baz'], 2, 3), (['foo', 'baz'], 1, 3))
+
+    def test_cursor_on_an_option(self):
+        self.do((['foo', '--bar', 'baz'], 1, 0), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 1), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 2), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 3), (['foo', 'baz'], 1, 0))
+
+
+class Test_get_current_cmd(unittest.TestCase):
+    ops = ('&', 'and', '|', 'or')
+
+    def do(self, input, output):
+        input += (self.ops,)
+        self.assertEqual(cliparser.get_current_cmd(*input), output)
+
+    def test_empty_string(self):
+        self.do(([''], 0), ([''], 0))
+
+    def test_no_operators(self):
+        self.do((['foo', ' ' , 'bar', ' ', 'baz'], 0), (['foo', ' ', 'bar', ' ', 'baz'], 0))
+        self.do((['foo', ' ', 'bar', ' ', 'baz'], 1), (['foo', ' ', 'bar', ' ', 'baz'], 1))
+        self.do((['foo', ' ', 'bar', ' ', 'baz'], 2), (['foo', ' ', 'bar', ' ', 'baz'], 2))
+        self.do((['foo', ' ', 'bar', ' ', 'baz'], 3), (['foo', ' ', 'bar', ' ', 'baz'], 3))
+        self.do((['foo', ' ', 'bar', ' ', 'baz'], 4), (['foo', ' ', 'bar', ' ', 'baz'], 4))
+
+    def test_single_char_operators(self):
+        tokens = ['foo', ' ', '&', ' ', 'bar', ' ', 'baz', ' ', '|', ' ', 'bang', ' ', '-a']
+        self.do((tokens, 0), (['foo', ' '], 0))
+        self.do((tokens, 1), (['foo', ' '], 1))
+        self.do((tokens, 2), (None, None))
+        self.do((tokens, 3), ([' ', 'bar', ' ', 'baz', ' '], 0))
+        self.do((tokens, 4), ([' ', 'bar', ' ', 'baz', ' '], 1))
+        self.do((tokens, 5), ([' ', 'bar', ' ', 'baz', ' '], 2))
+        self.do((tokens, 6), ([' ', 'bar', ' ', 'baz', ' '], 3))
+        self.do((tokens, 7), ([' ', 'bar', ' ', 'baz', ' '], 4))
+        self.do((tokens, 8), (None, None))
+        self.do((tokens, 9), ([' ', 'bang', ' ', '-a'], 0))
+        self.do((tokens, 10), ([' ', 'bang', ' ', '-a'], 1))
+        self.do((tokens, 11), ([' ', 'bang', ' ', '-a'], 2))
+        self.do((tokens, 12), ([' ', 'bang', ' ', '-a'], 3))
+
+    def test_multi_char_operators(self):
+        tokens = ['foo', ' ', 'and', ' ', 'bar', ' ', 'baz', ' ', 'or', ' ', 'bang', ' ', '-a']
+        self.do((tokens, 0), (['foo', ' '], 0))
+        self.do((tokens, 1), (['foo', ' '], 1))
+        self.do((tokens, 2), (None, None))
+        self.do((tokens, 3), ([' ', 'bar', ' ', 'baz', ' '], 0))
+        self.do((tokens, 4), ([' ', 'bar', ' ', 'baz', ' '], 1))
+        self.do((tokens, 5), ([' ', 'bar', ' ', 'baz', ' '], 2))
+        self.do((tokens, 6), ([' ', 'bar', ' ', 'baz', ' '], 3))
+        self.do((tokens, 7), ([' ', 'bar', ' ', 'baz', ' '], 4))
+        self.do((tokens, 8), (None, None))
+        self.do((tokens, 9), ([' ', 'bang', ' ', '-a'], 0))
+        self.do((tokens, 10), ([' ', 'bang', ' ', '-a'], 1))
+        self.do((tokens, 11), ([' ', 'bang', ' ', '-a'], 2))
+        self.do((tokens, 12), ([' ', 'bang', ' ', '-a'], 3))
 
 
 class TestArg(unittest.TestCase):
@@ -1420,30 +1413,3 @@ class TestArgs(unittest.TestCase):
         self.assertEqual(args[:3], cliparser.Args(('a', 'b', 'c'), curarg_index=2, curarg_curpos=1))
 
 
-class Test_remove_options(unittest.TestCase):
-    def do(self, input, output):
-        self.assertEqual(cliparser.remove_options(*input), output)
-
-    def test_no_cursor_position(self):
-        self.do((['foo', '--bar', 'baz'], None, None), (['foo', 'baz'], None, None))
-        self.do((['foo', 'baz', '--bar'], None, None), (['foo', 'baz'], None, None))
-        self.do((['foo', 'baz', '--bar', 'bam'], None, None), (['foo', 'baz', 'bam'], None, None))
-        self.do((['foo', 'baz', '--bar', '-bam'], None, None), (['foo', 'baz'], None, None))
-
-    def test_cursor_to_the_left_of_an_option(self):
-        self.do((['foo', 'baz', '--bar'], 1, 0), (['foo', 'baz'], 1, 0))
-        self.do((['foo', 'baz', '--bar'], 1, 1), (['foo', 'baz'], 1, 1))
-        self.do((['foo', 'baz', '--bar'], 1, 2), (['foo', 'baz'], 1, 2))
-        self.do((['foo', 'baz', '--bar'], 1, 3), (['foo', 'baz'], 1, 3))
-
-    def test_cursor_to_the_right_of_an_option(self):
-        self.do((['foo', '--bar', 'baz'], 2, 0), (['foo', 'baz'], 1, 0))
-        self.do((['foo', '--bar', 'baz'], 2, 1), (['foo', 'baz'], 1, 1))
-        self.do((['foo', '--bar', 'baz'], 2, 2), (['foo', 'baz'], 1, 2))
-        self.do((['foo', '--bar', 'baz'], 2, 3), (['foo', 'baz'], 1, 3))
-
-    def test_cursor_on_an_option(self):
-        self.do((['foo', '--bar', 'baz'], 1, 0), (['foo', 'baz'], 1, 0))
-        self.do((['foo', '--bar', 'baz'], 1, 1), (['foo', 'baz'], 1, 0))
-        self.do((['foo', '--bar', 'baz'], 1, 2), (['foo', 'baz'], 1, 0))
-        self.do((['foo', '--bar', 'baz'], 1, 3), (['foo', 'baz'], 1, 0))

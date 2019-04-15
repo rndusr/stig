@@ -13,7 +13,7 @@ def tupleize(categories):
 class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
     async def do(self, get_cands, exp_cats):
         completer = Completer(get_cands)
-        result = await completer._get_candidates_wrapper(('',), 0, 0)
+        result = await completer._get_candidates_wrapper(('',))
         self.assertIsInstance(result, Categories)
         for c in result:
             self.assertIsInstance(c, Candidates)
