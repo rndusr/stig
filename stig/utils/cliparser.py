@@ -468,9 +468,9 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
 
     if token or not tokens:
         tokens.append(''.join(token))
-    #     log.debug('Added last token: %r', tokens[-1])
+        # log.debug('Added last token: %r', tokens[-1])
 
-    log.debug('Tokenized: %r', tokens)
+    # log.debug('Tokenized: %r', tokens)
     return tokens
 
 
@@ -512,20 +512,20 @@ def remove_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
 
     Return new `tokens`, `curtok_index` and `curtok_curpos`
     """
-    log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+    # log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
     new_tokens = []
     new_curtok_index = curtok_index
     new_curtok_curpos = curtok_curpos
     for i,token in enumerate(tokens):
         if token not in delims:
-            log.debug('    Token %r: %r: Not a delimiter', i, token)
+            # log.debug('    Token %r: %r: Not a delimiter', i, token)
             new_tokens.append(token)
 
         elif i < curtok_index:
             # If token is a delimiter, reduce `new_curtok_index` as long as we
             # haven't passed the `curtok_index` yet
             new_curtok_index -= 1
-            log.debug('    Token %r: %r: Reduced new_curtok_index by 1: %r', i, token, new_curtok_index)
+            # log.debug('    Token %r: %r: Reduced new_curtok_index by 1: %r', i, token, new_curtok_index)
 
         elif i == curtok_index:
             # Cursor is on a delimiter
@@ -534,17 +534,17 @@ def remove_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
             if next_token is not None and next_token not in delims and cursor_after_last_char:
                 # Move to to first character of next token
                 new_curtok_curpos = 0
-                log.debug('    Token %r: %r: Moved cursor to next token: %r', i, token, next_token)
+                # log.debug('    Token %r: %r: Moved cursor to next token: %r', i, token, next_token)
             else:
                 # Move to to last character of previous token
                 if new_tokens:
                     new_curtok_index = max(0, new_curtok_index-1)
                     new_curtok_curpos = len(new_tokens[new_curtok_index])
-                    log.debug('    Token %r: %r: Moved cursor to previous token: %r', i, token, new_tokens[new_curtok_index])
+                    # log.debug('    Token %r: %r: Moved cursor to previous token: %r', i, token, new_tokens[new_curtok_index])
                 else:
                     new_curtok_index = new_curtok_curpos = 0
 
-    log.debug('  Output: %r, %r, %r', new_tokens, new_curtok_index, new_curtok_curpos)
+    # log.debug('  Output: %r, %r, %r', new_tokens, new_curtok_index, new_curtok_curpos)
     return new_tokens, new_curtok_index, new_curtok_curpos
 
 
@@ -570,35 +570,36 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
         class ImpossibleMove(Exception): pass
 
         def forward():
-            log.debug('      Finding first non-delimiter token in %r', tokens[curtok_index+1:])
+            # log.debug('      Finding first non-delimiter token in %r', tokens[curtok_index+1:])
             for i,tok in enumerate(tokens[curtok_index+1:], start=1):
                 if tok not in delims:
-                    log.debug('      Avoiding delimiter - moving %d tokens forward', i)
+                    # log.debug('      Avoiding delimiter - moving %d tokens forward', i)
                     return curtok_index+i, 0
             raise ImpossibleMove()
 
         def backward():
-            log.debug('      Finding last non-delimiter token in %r', tokens[:curtok_index])
+            # log.debug('      Finding last non-delimiter token in %r', tokens[:curtok_index])
             for i,tok in enumerate(reversed(tokens[:curtok_index]), start=1):
                 if tok not in delims:
-                    log.debug('      Avoiding delimiter - moving %d tokens backward', i)
+                    # log.debug('      Avoiding delimiter - moving %d tokens backward', i)
                     return curtok_index-i, len(tokens[curtok_index-i])
             raise ImpossibleMove()
 
         def move(*movements):
             for func in movements:
-                log.debug('    Trying to move %s', func.__name__)
+                # log.debug('    Trying to move %s', func.__name__)
                 try:
                     return func()
                 except ImpossibleMove:
-                    log.debug('      No dice')
+                    # log.debug('      No dice')
+                    pass
             return curtok_index, curtok_curpos
 
         curtok_index_max = len(tokens) - 1
         curtok_curpos_max = len(curtok)
         prev_token = tokens[curtok_index-1] if curtok_index > 0 else None
         next_token = tokens[curtok_index+1] if curtok_index < curtok_index_max else None
-        log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+        # log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
 
         # Move to previous token if we're on the first character of a delimiter
         # and the previous token is a non-delimiter
@@ -611,7 +612,7 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
         else:
             curtok_index, curtok_curpos = move(forward, backward)
 
-    log.debug('  Output: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+    # log.debug('  Output: %r, %r, %r', tokens, curtok_index, curtok_curpos)
     return tokens, curtok_index, curtok_curpos
 
 
@@ -634,7 +635,7 @@ def maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims=DEFAULT
 
     Return new `tokens`, `curtok_index` and `curtok_curpos`
     """
-    log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+    # log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
     curtok = tokens[curtok_index]
     curtok_index_max = len(tokens) - 1
     curtok_curpos_max = len(curtok)
@@ -646,43 +647,43 @@ def maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims=DEFAULT
         nexttok = tokens[curtok_index+1] if curtok_index < curtok_index_max else None
 
         if curtok_index == 0:
-            log.debug('    Inserting empty token before the first')
+            # log.debug('    Inserting empty token before the first')
             tokens = ['', *tokens]
             curtok_curpos = 0
 
         elif curtok_index == curtok_index_max:
-            log.debug('    Inserting empty token after the last')
+            # log.debug('    Inserting empty token after the last')
             tokens = [*tokens, '']
             curtok_index = curtok_index_max + 1
             curtok_curpos = 0
 
         elif on_first_char and prevtok in delims:
             # ['foo', '/', '|/', 'bar'] -> ['foo', '/', '|', '/', 'bar']
-            log.debug('    Inserting empty token before the current')
+            # log.debug('    Inserting empty token before the current')
             tokens = [*tokens[:curtok_index], '', *tokens[curtok_index:]]
             curtok_curpos = 0
 
         elif on_last_char and nexttok in delims:
             # ['foo', '/|', '/', 'bar'] -> ['foo', '/', '|', '/', 'bar']
-            log.debug('    Inserting empty token after the current')
+            # log.debug('    Inserting empty token after the current')
             curtok_index += 1
             tokens = [*tokens[:curtok_index], '', *tokens[curtok_index:]]
             curtok_curpos = 0
 
         elif not on_first_char and not on_last_char:
             # ['foo', '!|=', 'bar'] -> ['foo', '!', '|', '=', 'bar']
-            log.debug('    Inserting empty token in multi-char delimiter')
+            # log.debug('    Inserting empty token in multi-char delimiter')
             subtoks = (curtok[:curtok_curpos], '', curtok[curtok_curpos:])
-            log.debug('    Replacing %r with %r', curtok, subtoks)
+            # log.debug('    Replacing %r with %r', curtok, subtoks)
             tokens = [*tokens[:curtok_index], *subtoks, *tokens[curtok_index+1:]]
             curtok_index += 1
             curtok_curpos = 0
-        else:
-            log.debug('    No need for empty token after %r: %r', curtok, tokens)
-    else:
-        log.debug('    Not a delimiter: %r', curtok)
+    #     else:
+    #         log.debug('    No need for empty token after %r: %r', curtok, tokens)
+    # else:
+    #     log.debug('    Not a delimiter: %r', curtok)
 
-    log.debug('  Output: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+    # log.debug('  Output: %r, %r, %r', tokens, curtok_index, curtok_curpos)
     return tokens, curtok_index, curtok_curpos
 
 
@@ -783,7 +784,7 @@ class Arg(str):
         Return an `Args` object
         """
         seps = tuple(seps)
-        log.debug('Splitting %r at separators: %r', str(self), seps)
+        # log.debug('Splitting %r at separators: %r', str(self), seps)
         parts = tokenize(self, delims=seps, maxdelims=maxseps)
 
         if self.curpos is not None:
@@ -794,12 +795,12 @@ class Arg(str):
         if include_seps:
             if self.curpos is not None:
                 parts, curpart_index, curpart_curpos = maybe_insert_empty_token(parts, curpart_index, curpart_curpos, seps)
-                log.debug('Maybe inserted empty token: %r, %r, %r', parts, curpart_index, curpart_curpos)
+                # log.debug('Maybe inserted empty token: %r, %r, %r', parts, curpart_index, curpart_curpos)
                 parts, curpart_index, curpart_curpos = avoid_delims(parts, curpart_index, curpart_curpos, seps)
-                log.debug('Moved away from separators: %r, %r, %r', parts, curpart_index, curpart_curpos)
+                # log.debug('Moved away from separators: %r, %r, %r', parts, curpart_index, curpart_curpos)
         else:
             parts, curpart_index, curpart_curpos = remove_delims(parts, curpart_index, curpart_curpos, seps)
-            log.debug('Removed separators: %r, %r, %r', parts, curpart_index, curpart_curpos)
+            # log.debug('Removed separators: %r, %r, %r', parts, curpart_index, curpart_curpos)
 
         if self.curpos is not None:
             return Args(parts, curpart_index, curpart_curpos)
@@ -848,7 +849,7 @@ class Args(tuple):
     """
     @classmethod
     def from_tokens(cls, tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
-        log.debug('Creating Args from tokens: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+        # log.debug('Creating Args from tokens: %r, %r, %r', tokens, curtok_index, curtok_curpos)
 
         # Ensure at least one empty string
         if not tokens:
@@ -856,10 +857,10 @@ class Args(tuple):
             curarg_index = curarg_curpos = 0
 
         tokens, curtok_index, curtok_curpos = maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims)
-        log.debug('Maybe inserted empty token: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+        # log.debug('Maybe inserted empty token: %r, %r, %r', tokens, curtok_index, curtok_curpos)
 
         tokens, curtok_index, curtok_curpos = remove_delims(tokens, curtok_index, curtok_curpos, delims)
-        log.debug('Removed separators: %r, %r, %r', tokens, curtok_index, curtok_curpos)
+        # log.debug('Removed separators: %r, %r, %r', tokens, curtok_index, curtok_curpos)
 
         # Convert everything to plaintext (e.g. remove backslashes from escaped characters)
         for i in range(len(tokens)):
