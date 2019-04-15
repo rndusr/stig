@@ -31,13 +31,13 @@ class Completer():
         self._operators = operators
         self.reset()
 
-    async def _get_candidates_wrapper(self, args, curarg_index, curarg_curpos):
+    async def _get_candidates_wrapper(self, args):
         async def maybe_await(x):
             while inspect.isawaitable(x):
                 x = await x
             return x
 
-        cands = await maybe_await(self._get_candidates(cliparser.Args(args, curarg_index, curarg_curpos)))
+        cands = await maybe_await(self._get_candidates(args))
         if cands is None:
             cats = ()
         elif isinstance(cands, Candidates):
@@ -70,6 +70,7 @@ class Completer():
         log.debug('Parsing: %r', cmdline[:curpos] + '|' + cmdline[curpos:])
         tokens = cliparser.tokenize(cmdline)
         curtok_index, curtok_curpos = cliparser.get_position(tokens, curpos)
+        tokens, curtok_index, curtok_curpos = cliparser.maybe_insert_empty_token(tokens, curtok_index, curtok_curpos)
         tokens, curtok_index, curtok_curpos = cliparser.avoid_delims(tokens, curtok_index, curtok_curpos)
         log.debug('Tokens: %r', tokens)
         curcmd_tokens, curcmd_curtok_index = cliparser.get_current_cmd(tokens, curtok_index, self._operators)
@@ -83,14 +84,11 @@ class Completer():
             # spaces removed (i.e. "arguments" or what would appear in sys.argv).
             # The cursor position and the index of the current argument may need to
             # be adjusted.
-            curcmd_args, curcmd_curarg_index, curarg_curpos = \
-                cliparser.as_args(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
-            curarg = curcmd_args[curcmd_curarg_index]
+            args = cliparser.Args.from_tokens(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
+            curarg = args.curarg
 
             # Get all possible candidates and find matches
-            self._categories = await self._get_candidates_wrapper(curcmd_args,
-                                                                  curcmd_curarg_index,
-                                                                  curarg_curpos)
+            self._categories = await self._get_candidates_wrapper(args)
             self._curarg_parts = {}
             for cands in self._categories.all:
                 # The candidate getter may have specified custom separators for
@@ -151,12 +149,15 @@ class Completer():
             # Return original, unmodified command line
             return ''.join(self._tokens), self._curpos
         else:
-            # Split the current token as specified by get_candidates() so we can
-            # replace part of an argument, e.g. a directory in a path.
+            # Split the current token as specified by the current Candidates
+            # object so we can replace part of an argument, e.g. a directory in
+            # a path.
             curtok = self._tokens[self._curtok_index]
             curarg_seps = self.categories.current.curarg_seps
             curtok_parts = cliparser.tokenize(curtok, delims=curarg_seps)
             curpart_index, curpart_curpos = cliparser.get_position(curtok_parts, self._curtok_curpos)
+            curtok_parts, curpart_index, curpart_curpos = \
+                cliparser.maybe_insert_empty_token(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
             curtok_parts, curpart_index, curpart_curpos = \
                 cliparser.avoid_delims(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
             log.debug('Separated current token: %r', curtok_parts)
