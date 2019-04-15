@@ -17,41 +17,6 @@ DEFAULT_ESCAPES = ('\\',)
 DEFAULT_QUOTES = ('"', "'")
 
 
-def get_current_cmd(tokens, curtok_index, ops):
-    """
-    Extract tokens before and after the currently focused token up to any
-    operators or the start/end
-
-    Return slice of those tokens and the index of the currently focused token in
-    that slice
-    """
-    def is_op(token):
-        return any(token == op for op in ops)
-
-    if is_op(tokens[curtok_index]):
-        # Cursor is on operator, so no command to return
-        return (None, None)
-    else:
-        first_tok = 0
-        last_tok = len(tokens) - 1
-
-        # Find operator before focused token
-        for i in range(curtok_index-1, 0, -1):
-            token = tokens[i]
-            if is_op(token):
-                first_tok = i + 1
-                break
-
-        # Find operator after focused token
-        for i,token in enumerate(tokens[curtok_index:-1]):
-            if is_op(token):
-                last_tok = curtok_index + i - 1
-                break
-
-    sub_curtok_index = curtok_index - first_tok
-    return (tokens[first_tok:last_tok+1], sub_curtok_index)
-
-
 class Char(str):
     """Single character with parser-provided attributes"""
 
@@ -614,6 +579,41 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=(' ',)):
     log.debug('  Final: Current token: %r, Cursor position: %r', curtok_index, curtok_curpos)
     log.debug('  Tokens: %r', tokens)
     return tokens, curtok_index, curtok_curpos
+
+
+def get_current_cmd(tokens, curtok_index, ops):
+    """
+    Extract tokens before and after the currently focused token up to any
+    operators or the start/end
+
+    Return slice of those tokens and the index of the currently focused token in
+    that slice
+    """
+    def is_op(token):
+        return any(token == op for op in ops)
+
+    if is_op(tokens[curtok_index]):
+        # Cursor is on operator, so no command to return
+        return (None, None)
+    else:
+        first_tok = 0
+        last_tok = len(tokens) - 1
+
+        # Find operator before focused token
+        for i in range(curtok_index-1, 0, -1):
+            token = tokens[i]
+            if is_op(token):
+                first_tok = i + 1
+                break
+
+        # Find operator after focused token
+        for i,token in enumerate(tokens[curtok_index:-1]):
+            if is_op(token):
+                last_tok = curtok_index + i - 1
+                break
+
+    sub_curtok_index = curtok_index - first_tok
+    return (tokens[first_tok:last_tok+1], sub_curtok_index)
 
 
 class Arg(str):
