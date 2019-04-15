@@ -85,7 +85,6 @@ class Completer():
             # The cursor position and the index of the current argument may need to
             # be adjusted.
             args = cliparser.Args.from_tokens(curcmd_tokens, curcmd_curtok_index, curtok_curpos)
-            curarg = args.curarg
 
             # Get all possible candidates and find matches
             self._categories = await self._get_candidates_wrapper(args)
@@ -97,11 +96,11 @@ class Completer():
                 # the full path, just the part between two "/".
                 if cands.curarg_seps:
                     log.debug('  Separators for current argument: %r', cands.curarg_seps)
-                    curarg_parts = curarg.separate(cands.curarg_seps, include_seps=True)
+                    curarg_parts = args.curarg.separate(cands.curarg_seps, include_seps=True)
                     log.debug('  Current argument parts: %r', curarg_parts)
                     common_prefix = curarg_parts.curarg.before_cursor
                 else:
-                    common_prefix = curarg.before_cursor
+                    common_prefix = args.curarg.before_cursor
                 self._curarg_parts[cands] = common_prefix
 
                 log.debug('Common prefix: %r', common_prefix)
