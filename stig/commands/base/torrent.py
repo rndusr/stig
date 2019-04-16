@@ -357,9 +357,10 @@ class RenameCmdbase(metaclass=InitCommand):
         # Split torrent filter from relative path in torrent
         if TORRENT and '/' in TORRENT:
             FILTER, PATH = TORRENT.split('/', maxsplit=1)
+            renaming_torrent = False
         else:
             FILTER, PATH = TORRENT, None
-            unique = True
+            renaming_torrent = True
 
         try:
             tfilter = self.select_torrents(FILTER,
@@ -373,8 +374,8 @@ class RenameCmdbase(metaclass=InitCommand):
                 quiet=True)
             if not response.success:
                 raise CmdError()
-            elif unique and len(response.torrents) > 1:
-                # When renaming a torrent or the user said so, tfilter must
+            elif (unique or renaming_torrent) and len(response.torrents) > 1:
+                # When renaming a torrent or --unique is given, tfilter must
                 # match exactly one torrent.  If it matches zero torrents,
                 # make_request() below with produce the appropriate error
                 # message.
