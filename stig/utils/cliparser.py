@@ -792,10 +792,11 @@ class Arg(str):
         else:
             curpart_index, curpart_curpos = 0, 0
 
+        parts, curpart_index, curpart_curpos = maybe_insert_empty_token(parts, curpart_index, curpart_curpos, seps)
+        # log.debug('Maybe inserted empty token: %r, %r, %r', parts, curpart_index, curpart_curpos)
+
         if include_seps:
             if self.curpos is not None:
-                parts, curpart_index, curpart_curpos = maybe_insert_empty_token(parts, curpart_index, curpart_curpos, seps)
-                # log.debug('Maybe inserted empty token: %r, %r, %r', parts, curpart_index, curpart_curpos)
                 parts, curpart_index, curpart_curpos = avoid_delims(parts, curpart_index, curpart_curpos, seps)
                 # log.debug('Moved away from separators: %r, %r, %r', parts, curpart_index, curpart_curpos)
         else:
