@@ -167,6 +167,47 @@ class select_torrents():
             if tid is not None:
                 return tid
 
+
+    @classmethod
+    def get_focused_item_data(cls):
+        """
+        Return 'torrent', 'file' or 'directory' depending on what is currently
+        focused
+        """
+        from ...tui.tuiobjects import tabs
+        return cls._deep_getattr(tabs, 'focus', 'focused_widget', 'data')
+
+    @classmethod
+    def get_focused_item_type(cls):
+        """
+        Return 'torrent', 'file' or 'directory' depending on what is currently
+        focused
+        """
+        from ...tui.tuiobjects import tabs
+        focused_widget = cls._deep_getattr(tabs, 'focus', 'focused_widget')
+        focused_data = cls._deep_getattr(focused_widget, 'data')
+
+        from ...client.aiotransmission.torrent import Torrent
+        if isinstance(focused_data, Torrent):
+            return 'torrent'
+        from ...views.file import TorrentFileDirectory
+        if isinstance(focused_data, TorrentFileDirectory):
+            return 'directory'
+        from ...client.ttypes import TorrentFile
+        if isinstance(focused_data, TorrentFile):
+            return 'file'
+        from ...tui.views.setting_list import SettingItemWidget
+        if isinstance(focused_widget, SettingItemWidget):
+            return 'setting'
+
+    @staticmethod
+    def _deep_getattr(obj, *attrs):
+        for attr in attrs:
+            obj = getattr(obj, attr, None)
+            if obj is None:
+                break
+        return obj
+
     @classmethod
     def _get_current_or_previous_tab(cls):
         """Return currently focused tab content if not empty, the previous one or None"""
