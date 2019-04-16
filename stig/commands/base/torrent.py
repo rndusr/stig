@@ -351,7 +351,10 @@ class RenameCmdbase(metaclass=InitCommand):
             # Autodetect path
             path = self.get_relative_path_from_focused(unique=unique)
             if path:
-                # path is <TORRENT IDENTIFIER>/relative/path/to/file/in/torrent
+                # path is "<TORRENT
+                # IDENTIFIER>/relative/path/to/file/in/torrent" where <TORRENT
+                # IDENTIFIER> is either the torrent's name or "id=<ID>" if
+                # unique is True.
                 TORRENT = path
 
         # Split torrent filter from relative path in torrent
