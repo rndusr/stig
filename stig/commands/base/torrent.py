@@ -63,7 +63,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
             raise CmdError()
 
     def make_path_absolute(self, path):
-        return os.path.abspath(path)
+        return os.path.abspath(os.path.expanduser(path))
 
     @classmethod
     def completion_candidates_params(cls, option, args):
