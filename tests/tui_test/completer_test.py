@@ -55,6 +55,15 @@ class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
             yield from (cands_iter, Candidates(('g', 'h', 'i')))
         await self.do(get_cands, (('a', 'b', 'c'), ('d', 'e', 'f'), ('g', 'h', 'i')))
 
+    async def test_get_candidates_returns_iterator_that_contains_None(self):
+        def get_cands(args):
+            for cands in (Candidates(('foo', 'bar', 'baz')),
+                          None,
+                          Candidates(('a', 'b', 'c'))):
+                yield cands
+        await self.do(get_cands, (('bar', 'baz', 'foo'),
+                                  ('a', 'b', 'c')))
+
 
 class TestCompleter_current_user_input(asynctest.TestCase):
     async def do(self, categories, cmdline, curpos, exp_cur_user_input):

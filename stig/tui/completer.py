@@ -44,8 +44,11 @@ class Completer():
             cats = (cands,)
         elif isinstance(cands, (abc.Iterable, abc.Iterator)):
             def flatten(iters):
+                # Only yield Candidates instances
                 for item in iters:
-                    if isinstance(item, Candidates):
+                    if item is None:
+                        pass
+                    elif isinstance(item, Candidates):
                         yield item
                     elif isinstance(item, abc.Iterable) and not isinstance(item, str):
                         yield from flatten(item)
