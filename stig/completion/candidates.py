@@ -90,7 +90,7 @@ def setting_values(args):
                        directories_only=os.path.isdir(value))
 
 
-def fs_path(path, base=os.path.expanduser('~'), directories_only=False, glob=None, regex=None):
+def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
     """
     File system path entries
 
