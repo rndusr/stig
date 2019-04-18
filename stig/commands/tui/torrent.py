@@ -16,11 +16,26 @@ from ._common import make_tab_title_widget
 from ...completion import candidates
 
 from functools import partial
+import os
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.polling_frenzy, mixin.make_request):
     provides = {'tui'}
+
+    # In the TUI, it makes more sense to use $HOME as the base directory for
+    # relative paths instead of the current working directory.
+
+    def make_path_absolute(self, path):
+        return os.path.join(os.environ.get('HOME', '.'),
+                            os.path.expanduser(path))
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.fs_path(args.curarg.before_cursor,
+                                  base=os.environ.get('HOME', '.'),
+                                  glob=r'*.torrent')
 
 
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,

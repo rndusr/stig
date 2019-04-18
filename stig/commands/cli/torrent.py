@@ -24,6 +24,14 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.make_request):
     provides = {'cli'}
 
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        # Use current working directory as base
+        return candidates.fs_path(args.curarg.before_cursor,
+                                  base='.',
+                                  glob=r'*.torrent')
+
 
 class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                         mixin.make_request, mixin.select_torrents):

@@ -10,6 +10,7 @@ from stig.completion import Candidates
 from asynctest import CoroutineMock
 from asynctest.mock import (patch, MagicMock, call)
 from types import SimpleNamespace
+import os
 
 
 from stig.commands.cli import AddTorrentsCmd
@@ -20,7 +21,8 @@ class TestAddTorrentsCmd(CommandTestCase):
                    srvapi=self.srvapi,
                    remotecfg=self.remotecfg)
 
-    async def test_success(self):
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_success(self, mock_make_path_absolute):
         self.srvapi.torrent.response = Response(
             success=True,
             msgs=('Added Some Torrent',),
@@ -31,7 +33,8 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
 
-    async def test_failure(self):
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_failure(self, mock_make_path_absolute):
         self.srvapi.torrent.response = Response(
             success=False,
             errors=('Bogus torrent',),
@@ -42,7 +45,8 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_stdout()
         self.assert_stderr('add: Bogus torrent')
 
-    async def test_multiple_torrents(self):
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_multiple_torrents(self, mock_make_path_absolute):
         self.srvapi.torrent.response = [
             Response(success=True,
                      msgs=['Added Some Torrent'],
@@ -59,7 +63,8 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr('add: Something went wrong')
 
-    async def test_option_stopped(self):
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_option_stopped(self, mock_make_path_absolute):
         self.srvapi.torrent.response = Response(
             success=True,
             msgs=('Added Some Torrent',),
@@ -71,15 +76,28 @@ class TestAddTorrentsCmd(CommandTestCase):
         self.assert_stderr()
 
     @patch('stig.completion.candidates.fs_path')
-    async def test_completion_candidates_for_posargs(self, mock_fs_path):
+    async def test_CLI_completion_candidates_for_posargs(self, mock_fs_path):
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))
-        mock_fs_path.assert_called_once_with('foo', glob='*.torrent')
+        mock_fs_path.assert_called_once_with('foo', glob='*.torrent', base='.')
         mock_fs_path.reset_mock()
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'), curarg_index=2),
                                                 exp_cands=('a', 'b', 'c'))
-        mock_fs_path.assert_called_once_with('bar', glob='*.torrent')
+        mock_fs_path.assert_called_once_with('bar', glob='*.torrent', base='.')
+
+    @patch('stig.completion.candidates.fs_path')
+    @patch.dict(os.environ, {'HOME': '/mock/home/dir'})
+    async def test_TUI_completion_candidates_for_posargs(self, mock_fs_path):
+        from stig.commands.tui import AddTorrentsCmd
+        mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1),
+                                                exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('foo', glob='*.torrent', base='/mock/home/dir')
+        mock_fs_path.reset_mock()
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
+        mock_fs_path.assert_called_once_with('bar', glob='*.torrent', base='/mock/home/dir')
 
     @patch('stig.completion.candidates.fs_path')
     async def test_completion_candidates_for_path_option(self, mock_fs_path):

@@ -48,7 +48,10 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         success = True
         force_torrentlist_update = False
         for source in TORRENT:
-            response = await self.make_request(objects.srvapi.torrent.add(source, stopped=stopped, path=path))
+            source_abs_path = self.make_path_absolute(source)
+            response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
+                                                                          stopped=stopped,
+                                                                          path=path))
             success = success and response.success
             force_torrentlist_update = force_torrentlist_update or success
 
@@ -59,11 +62,8 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         if not success:
             raise CmdError()
 
-    @classmethod
-    def completion_candidates_posargs(cls, args):
-        """Complete positional arguments"""
-        return candidates.fs_path(args.curarg.before_cursor,
-                                  glob=r'*.torrent')
+    def make_path_absolute(self, path):
+        return os.path.abspath(path)
 
     @classmethod
     def completion_candidates_params(cls, option, args):
