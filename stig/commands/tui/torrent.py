@@ -14,8 +14,7 @@ from . import _mixin as mixin
 from ... import objects
 from ._common import make_tab_title_widget
 from ...completion import candidates
-
-from functools import partial
+import functools
 import os
 
 
@@ -43,9 +42,9 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
     provides = {'tui'}
 
     async def display_details(self, torrent_id):
-        make_titlew = partial(make_tab_title_widget,
-                              attr_unfocused='tabs.torrentdetails.unfocused',
-                              attr_focused='tabs.torrentdetails.focused')
+        make_titlew = functools.partial(make_tab_title_widget,
+                                        attr_unfocused='tabs.torrentdetails.unfocused',
+                                        attr_focused='tabs.torrentdetails.focused')
 
         from ...tui.views.details import TorrentDetailsWidget
         from ...tui.tuiobjects import (keymap, tabs)
