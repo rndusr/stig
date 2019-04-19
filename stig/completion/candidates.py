@@ -303,3 +303,25 @@ async def torrent_file_path(curarg):
         return (find_filenames(t) for t in response.torrents)
     else:
         log.debug('No response: %r', response)
+
+
+async def torrent_filter_or_file_path(curarg):
+    """
+    If the cursor is positioned on or before the first '/', `curarg` is
+    forwarded to `torrent_filter`.
+
+    If the cursor is positioned after the first '/', `curarg` is forwarded to
+    `torrent_file_path`.
+    """
+    parts = curarg.before_cursor.separate(('/',), maxseps=1, include_seps=False)
+    log.debug('parts: %r', parts)
+    if parts.curarg_index == 0:
+        # The part before the first '/' is a torrent filter
+        log.debug('Completing torrents')
+        return await torrent_filter(parts[0])
+
+    elif parts.curarg_index == 1:
+        log.debug('Calling torrent_file_path(%r)', curarg)
+        return await torrent_file_path(curarg)
+
+    log.debug('Completing nothing')
