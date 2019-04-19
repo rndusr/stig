@@ -254,3 +254,52 @@ def _filter_takes_completable_values(filter_cls, name):
         return (name in filter_cls.COMPARATIVE_FILTERS and
                 filter_spec is not None and
                 issubclass(filter_spec.value_type, str))
+
+
+async def torrent_file_path(curarg):
+    """
+    Files or directories of a torrent's content
+
+    `curarg` starts with a torrent filter, a '/' and then the file path to get
+    candidates from.
+    """
+    parts = curarg.before_cursor.separate(('/',), include_seps=False)
+    log.debug('parts: %r', parts)
+    if len(parts) < 2:
+        # We need at least a torrent filter and a (possibly empty) path
+        log.debug('No file path given: %r', parts)
+        return ()
+    torrent_filter = parts[0]
+    filepath = parts[1:]
+    log.debug('Completing files from torrent(s): %r', torrent_filter)
+    log.debug('Looking for path: %r', filepath)
+
+    response = await objects.srvapi.torrent.torrents(torrent_filter, keys=('files',), from_cache=True)
+    if response.success:
+        def find_filenames(torrent):
+            log.debug('%r matched %r', torrent_filter, torrent)
+            # Unless torrent contains at least one directory, there are no files
+            # to complete.
+            if len(tuple(torrent['files'].directories)) > 0:
+                tree = torrent['files'][torrent['name']]
+                log.debug('tree: %r', tree)
+                for part in filepath:
+                    if part:
+                        subtree = tree.get(part)
+                        if subtree is None:
+                            log.debug('%r is not in %r', part, tuple(tree))
+                            break
+                        elif subtree.nodetype == 'leaf':
+                            log.debug('leaf: %r', part)
+                            return ()
+                        else:
+                            log.debug('new subtree: %r', part)
+                            tree = subtree
+                log.debug('returning candidates from: %r', tree.path)
+                yield Candidates(tree, curarg_seps=('/',), label=tree.path)
+            else:
+                log.debug('No directories in %r', torrent['files'])
+
+        return (find_filenames(t) for t in response.torrents)
+    else:
+        log.debug('No response: %r', response)
