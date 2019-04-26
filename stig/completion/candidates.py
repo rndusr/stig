@@ -19,6 +19,7 @@ from .. import objects
 from ..utils import usertypes
 from ..completion import (Candidates, Candidate)
 from ..client import filters as filter_clses
+from . import _utils
 
 import itertools
 import os
@@ -256,72 +257,74 @@ def _filter_takes_completable_values(filter_cls, name):
                 issubclass(filter_spec.value_type, str))
 
 
-async def torrent_file_path(curarg):
+async def torrent_path(curarg, only='auto'):
     """
-    Files or directories of a torrent's content
+    If `curarg` is a path to a file or directory in a torrent ("<TORRENT
+    FILTER>/<PATH>"), return one `Candidates` object for each matching torrent
+    that has a matching path.  Otherwise, simply pass `curarg` to
+    `torrent_filter` and return the result.
 
-    `curarg` starts with a torrent filter, a '/' and then the file path to get
-    candidates from.
+    `only` must be "files", "directories", "any" or "auto".  If "auto", file
+    names are returned if `curarg` points to a file and directory names are
+    returned if `curarg` points to a directory.
     """
     parts = curarg.before_cursor.separate(('/',), include_seps=False)
-    log.debug('parts: %r', parts)
     if len(parts) < 2:
         # We need at least a torrent filter and a (possibly empty) path
-        log.debug('No file path given: %r', parts)
-        return ()
-    torrent_filter = parts[0]
-    filepath = parts[1:]
-    log.debug('Completing files from torrent(s): %r', torrent_filter)
-    log.debug('Looking for path: %r', filepath)
+        log.debug('Passing %r to torrent_filter()', curarg)
+        return await torrent_filter(curarg)
 
-    response = await objects.srvapi.torrent.torrents(torrent_filter, keys=('files',), from_cache=True)
+    tfilter = parts[0]
+    path = parts[1:]
+    log.debug('Completing files or directories in %r torrents: %r', tfilter, path)
+    response = await objects.srvapi.torrent.torrents(tfilter, keys=('files',), from_cache=True)
     if response.success:
-        def find_filenames(torrent):
-            log.debug('%r matched %r', torrent_filter, torrent)
-            # Unless torrent contains at least one directory, there are no files
-            # to complete.
-            if len(tuple(torrent['files'].directories)) > 0:
-                tree = torrent['files'][torrent['name']]
-                log.debug('tree: %r', tree)
-                for part in filepath:
-                    if part:
-                        subtree = tree.get(part)
-                        if subtree is None:
-                            log.debug('%r is not in %r', part, tuple(tree))
-                            break
-                        elif subtree.nodetype == 'leaf':
-                            log.debug('leaf: %r', part)
-                            return ()
-                        else:
-                            log.debug('new subtree: %r', part)
-                            tree = subtree
-                log.debug('returning candidates from: %r', tree.path)
-                yield Candidates(tree, curarg_seps=('/',), label=tree.path)
-            else:
-                log.debug('No directories in %r', torrent['files'])
+        log.debug('  Found torrents: %r', tuple(t['name'] for t in response.torrents))
 
-        return (find_filenames(t) for t in response.torrents)
-    else:
-        log.debug('No response: %r', response)
+        def get_cands(torrent, path, only):
+            log.debug('  Torrent: %r', torrent)
+            subtree = _utils.find_subtree(torrent, path)
 
+            def level_up(path):
+                # Remove all empty parts from the right
+                while path and path[-1] == '':
+                    path = path[:-1]
+                # Remove last part from the right
+                log.debug('    Cropping %r', path)
+                return path[:-1] if path else path
 
-async def torrent_filter_or_file_path(curarg):
-    """
-    If the cursor is positioned on or before the first '/', `curarg` is
-    forwarded to `torrent_filter`.
+            if subtree is not None:
+                subtree_is_file = subtree.nodetype == 'leaf'
 
-    If the cursor is positioned after the first '/', `curarg` is forwarded to
-    `torrent_file_path`.
-    """
-    parts = curarg.before_cursor.separate(('/',), maxseps=1, include_seps=False)
-    log.debug('parts: %r', parts)
-    if parts.curarg_index == 0:
-        # The part before the first '/' is a torrent filter
-        log.debug('Completing torrents')
-        return await torrent_filter(parts[0])
+                if only == 'files':
+                    if subtree_is_file:
+                        subtree = _utils.find_subtree(torrent, level_up(path))
+                    log.debug('  Only files in %r', subtree.path)
+                    cands = _utils.find_files(subtree)
+                    return Candidates(cands, curarg_seps=('/',), label='Files in %s' % (subtree.path,))
 
-    elif parts.curarg_index == 1:
-        log.debug('Calling torrent_file_path(%r)', curarg)
-        return await torrent_file_path(curarg)
+                elif only == 'directories':
+                    if subtree_is_file:
+                        subtree = _utils.find_subtree(torrent, level_up(path))
+                    log.debug('  Only directories in %r', subtree.path)
+                    cands = _utils.find_dirs(subtree)
+                    return Candidates(cands, curarg_seps=('/',), label='Directories in %s' % (subtree.path,))
 
-    log.debug('Completing nothing')
+                elif only == 'any':
+                    if subtree_is_file:
+                        subtree = _utils.find_subtree(torrent, level_up(path))
+                    log.debug('  Only any in %r', subtree.path)
+                    return Candidates(subtree, curarg_seps=('/',), label=subtree.path)
+
+                elif only == 'auto':
+                    log.debug('  Only auto')
+                    if subtree_is_file:
+                        return get_cands(torrent, path[:-1], 'files')
+                    else:
+                        return get_cands(torrent, path[:-1], 'directories')
+
+                else:
+                    raise TypeError('Invalid value for argument "only": %r' % (only,))
+
+        return (get_cands(torrent, path, only)
+                for torrent in response.torrents)
