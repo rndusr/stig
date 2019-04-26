@@ -354,7 +354,7 @@ class RenameCmdbase(metaclass=InitCommand):
                 # path is "<TORRENT
                 # IDENTIFIER>/relative/path/to/file/in/torrent" where <TORRENT
                 # IDENTIFIER> is either the torrent's name or "id=<ID>" if
-                # unique is True.
+                # `unique` is True.
                 TORRENT = path
 
         # Split torrent filter from relative path in torrent
