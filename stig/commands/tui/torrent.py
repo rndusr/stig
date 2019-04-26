@@ -9,11 +9,15 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ...logging import make_logger
+log = make_logger(__name__)
+
 from ..base import torrent as base
 from . import _mixin as mixin
 from ... import objects
 from ._common import make_tab_title_widget
 from ...completion import candidates
+from ...utils.cliparser import Arg
 import functools
 import os
 
@@ -131,6 +135,48 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
 class RenameCmd(base.RenameCmdbase,
                 mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
+
+    @classmethod
+    async def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        # We don't care about options
+        args = args.without_options
+
+        # If there is only one argument and it doesn't contain a path separator,
+        # that means the user might want to rename the focused torrent, file or
+        # directory.  In that case, the first argument is the destination and
+        # the source is picked from the TUI.
+        if len(args) == 2 and args.curarg_index == 1 and '/' not in args.curarg:
+            source = cls._get_focused_item_source()
+            if source is not None:
+                log.debug('Getting destination candidates from TUI: %r', source)
+                source_arg = Arg(source, curpos=len(source))
+                tui_cands = await candidates.torrent_path(source_arg, only='auto')
+                regular_cands = await candidates.torrent_path(args.curarg, only='any')
+                return (tui_cands, regular_cands)
+
+        # Any other arguments are handled identically in CLI and TUI
+        log.debug('Not generating TUI-specific candidates')
+        return await super().completion_candidates_posargs(args)
+
+    @classmethod
+    def _get_focused_item_source(cls):
+        item_type = cls.get_focused_item_type()
+        if item_type == 'torrent':
+            data = cls.get_focused_item_data()
+            source = 'id=%d' % (data['id'],)
+            log.debug('  (focused torrent: %r)', source)
+            return source
+
+        elif item_type in ('file', 'directory'):
+            data = cls.get_focused_item_data()
+            # If there is no path separator in 'path-relative', that means focus
+            # is on the torrent's name (or top-level directory)
+            if '/' in data['path-relative']:
+                focused_path = '/'.join(data['path-relative'].split('/')[1:])
+                source = 'id=%d/%s' % (data['tid'], focused_path)
+                log.debug('  (focused file/directory: %r)', source)
+                return source
 
 
 class StartTorrentsCmd(base.StartTorrentsCmdbase,
