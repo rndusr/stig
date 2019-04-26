@@ -19,6 +19,13 @@ from .. import CmdError
 from .. import utils
 from ._common import make_tab_title_widget
 
+def _deep_getattr(obj, *attrs):
+    for attr in attrs:
+        obj = getattr(obj, attr, None)
+        if obj is None:
+            break
+    return obj
+
 
 class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
@@ -175,7 +182,7 @@ class select_torrents():
         focused
         """
         from ...tui.tuiobjects import tabs
-        return cls._deep_getattr(tabs, 'focus', 'focused_widget', 'data')
+        return _deep_getattr(tabs, 'focus', 'focused_widget', 'data')
 
     @classmethod
     def get_focused_item_type(cls):
@@ -184,8 +191,8 @@ class select_torrents():
         focused
         """
         from ...tui.tuiobjects import tabs
-        focused_widget = cls._deep_getattr(tabs, 'focus', 'focused_widget')
-        focused_data = cls._deep_getattr(focused_widget, 'data')
+        focused_widget = _deep_getattr(tabs, 'focus', 'focused_widget')
+        focused_data = _deep_getattr(focused_widget, 'data')
 
         from ...client.aiotransmission.torrent import Torrent
         if isinstance(focused_data, Torrent):
@@ -199,14 +206,6 @@ class select_torrents():
         from ...tui.views.setting_list import SettingItemWidget
         if isinstance(focused_widget, SettingItemWidget):
             return 'setting'
-
-    @staticmethod
-    def _deep_getattr(obj, *attrs):
-        for attr in attrs:
-            obj = getattr(obj, attr, None)
-            if obj is None:
-                break
-        return obj
 
     @classmethod
     def _get_current_or_previous_tab(cls):
