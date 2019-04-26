@@ -16,6 +16,7 @@ from .. import InitCommand, CmdError
 from ...completion import candidates
 from . import _mixin as mixin
 from ... import objects
+from ...utils.cliparser import Arg
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
                       make_SORT_ORDERS_doc, make_SCRIPTING_doc)
 
@@ -394,6 +395,36 @@ class RenameCmdbase(metaclass=InitCommand):
                         success = False
                 if not success:
                     raise CmdError()
+
+    @classmethod
+    async def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        # We don't care about options
+        args = args.without_options
+        log.debug(args)
+        if args.curarg_index == 1:
+            # Complete file and directory names from torrent(s)
+            log.debug('torrent_path(%r)', args.curarg)
+            return await candidates.torrent_path(args.curarg, only='any')
+        elif args.curarg_index == 2:
+            first_arg_stripped = args[1].strip('/')
+            if '/' in first_arg_stripped:
+                # First argument contains a path separator, so destination is
+                # the new file name.  The second argument can't contain a path
+                # separator if it's a file or directory.
+                if '/' not in args.curarg:
+                    # To make it more convenient to adjust file/directory names,
+                    # destination candidates are existing files or directories
+                    # from the path specified in the first argument.  Files if
+                    # the first argument points to a file, directories if the
+                    # first argument points to a directory.
+                    source = Arg(first_arg_stripped, curpos=len(first_arg_stripped))
+                    log.debug('Using destination candidates from: %r', source)
+                    return await candidates.torrent_path(source, only='auto')
+            else:
+                # Destination is the new torrent name
+                log.debug('Using torrent names as destination candidates')
+                return await candidates.torrent_filter(args.curarg, filter_names=False)
 
 
 # Argument definitions that are shared between commands
