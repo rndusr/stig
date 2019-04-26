@@ -712,184 +712,103 @@ class TestRenameCmd(CommandTestCase):
         self.mock_srvapi.torrent.torrents.assert_not_called()
         self.mock_srvapi.torrent.rename.assert_not_called()
 
-    @patch('stig.completion.candidates.torrent_file_path')
-    async def test_CLI_completion_candidates__first_arg(self, mock_torrent_file_path):
+    @patch('stig.completion.candidates.torrent_path')
+    async def test_CLI_completion_candidates__options_are_ignored(self, mock_torrent_path):
         from stig.commands.cli import RenameCmd
-        mock_torrent_file_path.return_value = 'mock candidates'
+        mock_torrent_path.return_value = 'mock candidates'
+        for args in (Args(('rename', '-a', 'foo'), curarg_index=2, curarg_curpos=0),
+                     Args(('rename', '-a', '-b', 'foo'), curarg_index=3, curarg_curpos=0),
+                     Args(('rename', '-a', '-b', '--cee', 'foo'), curarg_index=4, curarg_curpos=0)):
+            cands = await RenameCmd.completion_candidates(args)
+            mock_torrent_path.assert_called_once_with('foo', only='any')
+            self.assertEqual(cands, 'mock candidates')
+            mock_torrent_path.reset_mock()
+
+    @patch('stig.completion.candidates.torrent_path')
+    async def test_CLI_completion_candidates__first_arg(self, mock_torrent_path):
+        from stig.commands.cli import RenameCmd
+        mock_torrent_path.return_value = 'mock candidates'
         cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=1))
-        mock_torrent_file_path.assert_called_once_with('foo')
+        mock_torrent_path.assert_called_once_with('foo', only='any')
         self.assertEqual(cands, 'mock candidates')
 
-    @patch('stig.completion.candidates.torrent_filter_or_file_path')
-    @patch('stig.commands.tui.torrent.RenameCmd.get_focused_item_type')
-    async def test_TUI_completion_candidates__first_arg__nonfile_focused(
-            self,
-            mock_get_focused_item_type,
-            mock_torrent_filter_or_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_get_focused_item_type.return_value = 'anything, but definitely not a file'
-        mock_torrent_filter_or_file_path.return_value = 'mock torrent_filter_or_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=1))
-        mock_get_focused_item_type.assert_called_once_with()
-        mock_torrent_filter_or_file_path.assert_called_once_with('foo')
-        self.assertEqual(tuple(cands), ('mock torrent_filter_or_file_path() candidates',))
-
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter_or_file_path')
-    @patch('stig.commands.tui.torrent.RenameCmd.get_focused_item_type')
-    @patch('stig.commands.tui.torrent.RenameCmd.get_focused_item_data')
-    async def test_TUI_completion_candidates__first_arg__file_focused__no_path_separator_in_first_arg(
-            self,
-            mock_get_focused_item_data,
-            mock_get_focused_item_type,
-            mock_torrent_filter_or_file_path,
-            mock_torrent_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_get_focused_item_type.return_value = 'file'
-        mock_get_focused_item_data.return_value = {'path-relative': 'torrent name/path/in/torrent',
-                                                   'tid': 123}
-        mock_torrent_file_path.return_value = 'mock torrent_file_path() candidates'
-        mock_torrent_filter_or_file_path.return_value = 'mock torrent_filter_or_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=1))
-        mock_get_focused_item_type.assert_called_once_with()
-        mock_get_focused_item_data.assert_called_once_with()
-        mock_torrent_file_path.assert_called_once_with(Arg('id=123/path/in', curpos=14))
-        mock_torrent_filter_or_file_path.assert_called_once_with('foo')
-        self.assertEqual(tuple(cands), ('mock torrent_file_path() candidates',
-                                        'mock torrent_filter_or_file_path() candidates'))
-
-    @patch('stig.completion.candidates.torrent_filter_or_file_path')
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.commands.tui.torrent.RenameCmd.get_focused_item_type')
-    async def test_TUI_completion_candidates__first_arg__file_focused__path_separator_in_first_arg(
-            self,
-            mock_get_focused_item_type,
-            mock_torrent_file_path,
-            mock_torrent_filter_or_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_get_focused_item_type.return_value = 'file'
-        mock_torrent_file_path.return_value = 'mock torrent_file_path() candidates'
-        mock_torrent_filter_or_file_path.return_value = 'mock torrent_filter_or_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo/', 'bar', 'baz'), curarg_index=1))
-        mock_get_focused_item_type.assert_not_called()
-        mock_torrent_file_path.assert_called_once_with('foo/')
-        self.assertEqual(cands, 'mock torrent_file_path() candidates')
-
-    @patch('stig.completion.candidates.torrent_file_path')
+    @patch('stig.completion.candidates.torrent_path')
     @patch('stig.completion.candidates.torrent_filter')
-    async def test_CLI_completion_candidates__second_arg__new_torrent_name(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
+    async def test_CLI_completion_candidates__second_arg__first_arg_does_not_contain_path_separator(
+            self, mock_torrent_filter, mock_torrent_path):
         from stig.commands.cli import RenameCmd
         mock_torrent_filter.return_value = 'mock torrent_filter() candidates'
         cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=2))
+        mock_torrent_path.assert_not_called()
         mock_torrent_filter.assert_called_once_with('bar', filter_names=False)
         self.assertEqual(cands, 'mock torrent_filter() candidates')
 
-    @patch('stig.completion.candidates.torrent_file_path')
+    @patch('stig.completion.candidates.torrent_path')
     @patch('stig.completion.candidates.torrent_filter')
-    async def test_TUI_completion_candidates__second_arg__new_torrent_name(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
+    async def test_CLI_completion_candidates__second_arg__first_arg_contains_path_separator(
+            self, mock_torrent_filter, mock_torrent_path):
         from stig.commands.cli import RenameCmd
-        mock_torrent_filter.return_value = 'mock torrent_filter() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=2))
-        mock_torrent_filter.assert_called_once_with('bar', filter_names=False)
-        mock_torrent_file_path.assert_not_called()
-        self.assertEqual(cands, 'mock torrent_filter() candidates')
-
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter')
-    async def test_TUI_completion_candidates__second_arg__new_torrent_name(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_torrent_filter.return_value = 'mock torrent_filter() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=2))
-        mock_torrent_filter.assert_called_once_with('bar', filter_names=False)
-        mock_torrent_file_path.assert_not_called()
-        self.assertEqual(cands, 'mock torrent_filter() candidates')
-
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter')
-    async def test_CLI_completion_candidates__second_arg__new_file_name_without_path_separator(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
-        from stig.commands.cli import RenameCmd
-        mock_torrent_file_path.return_value = 'mock torrent_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'torrent name/path/to/file', 'bar', 'baz'), curarg_index=2))
+        mock_torrent_path.return_value = 'mock torrent_path() candidates'
+        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo/some/path', 'bar', 'baz'), curarg_index=2))
+        mock_torrent_path.assert_called_once_with('foo/some/path', only='auto')
         mock_torrent_filter.assert_not_called()
-        mock_torrent_file_path.assert_called_once_with(Arg('torrent name/path/to/', curpos=21))
-        self.assertEqual(cands, 'mock torrent_file_path() candidates')
+        self.assertEqual(cands, 'mock torrent_path() candidates')
 
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter')
-    async def test_TUI_completion_candidates__second_arg__new_file_name_without_path_separator(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_torrent_file_path.return_value = 'mock torrent_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'torrent name/path/to/file', 'bar', 'baz'), curarg_index=2))
-        mock_torrent_filter.assert_not_called()
-        mock_torrent_file_path.assert_called_once_with(Arg('torrent name/path/to/', curpos=21))
-        self.assertEqual(cands, 'mock torrent_file_path() candidates')
-
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter')
-    async def test_CLI_completion_candidates__second_arg__new_file_name_with_path_separator(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
-        from stig.commands.cli import RenameCmd
-        mock_torrent_file_path.return_value = 'mock torrent_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo/path/to/file', 'bar/', 'baz'), curarg_index=2))
-        mock_torrent_filter.assert_not_called()
-        mock_torrent_file_path.assert_not_called()
-        self.assertFalse(cands)
-
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter')
-    async def test_TUI_completion_candidates__second_arg__new_file_name_with_path_separator(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_torrent_file_path.return_value = 'mock torrent_file_path() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo/path/to/file', 'bar/', 'baz'), curarg_index=2))
-        mock_torrent_filter.assert_not_called()
-        mock_torrent_file_path.assert_not_called()
-        self.assertFalse(cands)
-
-    @patch('stig.completion.candidates.torrent_file_path')
+    @patch('stig.completion.candidates.torrent_path')
     @patch('stig.completion.candidates.torrent_filter')
     async def test_CLI_completion_candidates__third_arg(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
-        from stig.commands.tui import RenameCmd
-        mock_torrent_filter.return_value = 'mock torrent_filter() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=3))
+            self, mock_torrent_filter, mock_torrent_path):
+        from stig.commands.cli import RenameCmd
+        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo/some/path', 'bar', 'baz'), curarg_index=3))
+        mock_torrent_path.assert_not_called()
         mock_torrent_filter.assert_not_called()
-        mock_torrent_file_path.assert_not_called()
         self.assertFalse(cands)
 
-    @patch('stig.completion.candidates.torrent_file_path')
-    @patch('stig.completion.candidates.torrent_filter')
-    async def test_TUI_completion_candidates__third_arg(
-            self,
-            mock_torrent_filter,
-            mock_torrent_file_path):
+    @patch('stig.completion.candidates.torrent_path')
+    @patch('stig.commands.tui.torrent.RenameCmd._get_focused_item_source')
+    async def test_TUI_completion_candidates__options_are_ignored(
+            self, mock_get_focused_item_source, mock_torrent_path):
         from stig.commands.tui import RenameCmd
-        mock_torrent_filter.return_value = 'mock torrent_filter() candidates'
-        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo', 'bar', 'baz'), curarg_index=3))
-        mock_torrent_filter.assert_not_called()
-        mock_torrent_file_path.assert_not_called()
-        self.assertFalse(cands)
+        mock_torrent_path.return_value = 'mock candidates'
+        mock_get_focused_item_source.return_value = None
+        for args in (Args(('rename', '-a', 'foo'), curarg_index=2, curarg_curpos=0),
+                     Args(('rename', '-a', '-b', 'foo'), curarg_index=3, curarg_curpos=0),
+                     Args(('rename', '-a', '-b', '--cee', 'foo'), curarg_index=4, curarg_curpos=0)):
+            cands = await RenameCmd.completion_candidates(args)
+            from logging import getLogger
+            log = getLogger()
+            log.debug(mock_torrent_path.call_args_list)
+            mock_torrent_path.assert_called_once_with('foo', only='any')
+            mock_get_focused_item_source.assert_called_once_with()
+            self.assertEqual(cands, 'mock candidates')
+            mock_torrent_path.reset_mock()
+            mock_get_focused_item_source.reset_mock()
+
+    @patch('stig.completion.candidates.torrent_path')
+    @patch('stig.commands.tui.torrent.RenameCmd._get_focused_item_source')
+    async def test_TUI_completion_candidates__first_arg__getting_source_from_focused_item(
+            self, mock_get_focused_item_source, mock_torrent_path):
+        from stig.commands.tui import RenameCmd
+        mock_get_focused_item_source.return_value = 'mock torrent source'
+        mock_torrent_path.side_effect = lambda arg, **_: 'mock torrent_path(%r) candidates' % (str(arg),)
+        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo'), curarg_index=1, curarg_curpos=2))
+        mock_get_focused_item_source.assert_called_once_with()
+        self.assertEqual(mock_torrent_path.call_args_list, [call(Arg('mock torrent source', curpos=19), only='auto'),
+                                                            call(Arg('foo', curpos=2), only='any')])
+        self.assertEqual(cands, ("mock torrent_path('mock torrent source') candidates",
+                                 "mock torrent_path('foo') candidates"))
+
+    @patch('stig.completion.candidates.torrent_path')
+    @patch('stig.commands.tui.torrent.RenameCmd._get_focused_item_source')
+    async def test_TUI_completion_candidates__first_arg__unable_to_get_source_from_focused_item(
+            self, mock_get_focused_item_source, mock_torrent_path):
+        from stig.commands.tui import RenameCmd
+        mock_get_focused_item_source.return_value = None
+        mock_torrent_path.side_effect = lambda arg, **_: 'mock torrent_path(%r) candidates' % (str(arg),)
+        cands = await RenameCmd.completion_candidates(Args(('rename', 'foo'), curarg_index=1, curarg_curpos=2))
+        mock_get_focused_item_source.assert_called_once_with()
+        self.assertEqual(mock_torrent_path.call_args_list, [call(Arg('foo', curpos=2), only='any')])
+        self.assertEqual(cands, "mock torrent_path('foo') candidates")
 
 
 from stig.commands.cli import StartTorrentsCmd
