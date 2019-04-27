@@ -18,7 +18,6 @@ log = make_logger(__name__)
 from .. import objects
 from ..utils import usertypes
 from ..completion import (Candidates, Candidate)
-from ..client import filters as filter_clses
 from . import _utils
 
 import itertools
@@ -135,15 +134,6 @@ def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
     return Candidates(cands, label=label, curarg_seps=('/',))
 
 
-# All filters use the same operators
-_filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
-_filter_combine_ops = ('&', '|')
-_filter_labels = {'TorrentFilter' : 'Torrent Filters',
-                  'FileFilter'    : 'File Filters',
-                  'PeerFilter'    : 'Peer Filters',
-                  'TrackerFilter' : 'Tracker Filters',
-                  'SettingFilter' : 'Setting Filters'}
-
 async def torrent_filter(curarg, filter_names=True):
     """
     Values and/or names for torrent filters
@@ -154,27 +144,27 @@ async def torrent_filter(curarg, filter_names=True):
     The return value is either an empty tuple, a 1-tuple (filter values) or a
     2-tuple (filter names and filter values).
     """
-    filter_cls = _get_filter_cls('TorrentFilter')
+    filter_cls = _utils.get_filter_cls('TorrentFilter')
     if curarg.startswith(filter_cls.INVERT_CHAR):
         curarg = curarg[1:]
 
     # Separate individual filters, e.g. 'seeding|comment=foo'
-    filter_strings = curarg.separate(_filter_combine_ops, include_seps=True)
+    filter_strings = curarg.separate(_utils.filter_combine_ops, include_seps=True)
 
     # Separate filter name from filter value
-    parts = filter_strings.curarg.separate(_filter_compare_ops, include_seps=True)
+    parts = filter_strings.curarg.separate(_utils.filter_compare_ops, include_seps=True)
     if parts.curarg_index == 0:
         # If focus is on filter name, complete filter names and torrent names
         # (default torrent filter is 'name')
         if filter_names:
             log.debug('Completing torrent filter names and torrent names: %r', parts[0])
-            return (_filter_names('TorrentFilter'),
+            return (_utils.filter_names('TorrentFilter'),
                     await _torrent_filter_values(filter_cls.DEFAULT_FILTER))
         else:
             log.debug('Completing only torrent names: %r', parts[0])
             return (await _torrent_filter_values(filter_cls.DEFAULT_FILTER),)
 
-    elif parts.curarg_index == 1 and parts[0] in _filter_compare_ops:
+    elif parts.curarg_index == 1 and parts[0] in _utils.filter_compare_ops:
         # User gave a comparison operator but not a filter name, e.g. ('=', 'foo')
         filter_name = filter_cls.DEFAULT_FILTER
         log.debug('Completing %r (default) torrent filter values', filter_name)
@@ -187,30 +177,14 @@ async def torrent_filter(curarg, filter_names=True):
     else:
         return ()
 
-@functools.lru_cache(maxsize=None)
-def _filter_names(filter_cls_name):
-    """Filter names as Candidate instances with description and aliases"""
-    def get_names(filter_cls):
-        for name in _get_filter_names(filter_cls):
-            filter_spec = _get_filter_spec(filter_cls, name)
-            desc = filter_spec.description
-            alias_str = ','.join(filter_spec.aliases)
-            yield Candidate(name, description=desc, in_parens=alias_str)
-
-    filter_cls = _get_filter_cls(filter_cls_name)
-    curarg_seps = itertools.chain(_filter_compare_ops, _filter_combine_ops, (filter_cls.INVERT_CHAR,))
-    return Candidates(get_names(filter_cls),
-                      curarg_seps=curarg_seps,
-                      label=_filter_labels[filter_cls_name])
-
 async def _torrent_filter_values(filter_name):
-    filter_cls = _get_filter_cls('TorrentFilter')
+    filter_cls = _utils.get_filter_cls('TorrentFilter')
     cands = ()
-    if _filter_takes_completable_values(filter_cls, filter_name):
+    if _utils.filter_takes_completable_values(filter_cls, filter_name):
         keys = filter_cls(filter_name).needed_keys
         response = await objects.srvapi.torrent.torrents(keys=keys, from_cache=True)
         if response.success:
-            value_getter = _get_filter_spec(filter_cls, filter_name).value_getter
+            value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
             cands = []
             for t in response.torrents:
                 value = value_getter(t)
@@ -218,43 +192,10 @@ async def _torrent_filter_values(filter_name):
                     cands.extend(value)
                 else:
                     cands.append(value)
-    curarg_seps = itertools.chain(_filter_compare_ops, _filter_combine_ops)
+    curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
     return Candidates(cands,
                       label='Torrent Filter Values: %s' % (filter_name,),
                       curarg_seps=curarg_seps)
-
-@functools.lru_cache(maxsize=None)
-def _get_filter_cls(name):
-    try:
-        return getattr(filter_clses, name)
-    except AttributeError:
-        raise ValueError('Not a filter class: %r' % name)
-
-@functools.lru_cache(maxsize=None)
-def _get_filter_names(filter_cls):
-    return itertools.chain(filter_cls.BOOLEAN_FILTERS,
-                           filter_cls.COMPARATIVE_FILTERS)
-
-@functools.lru_cache(maxsize=None)
-def _get_filter_spec(filter_cls, name):
-    try:
-        return filter_cls.BOOLEAN_FILTERS[name]
-    except KeyError:
-        try:
-            return filter_cls.COMPARATIVE_FILTERS[name]
-        except KeyError:
-            raise ValueError('No such filter: %r' % (name,))
-
-@functools.lru_cache(maxsize=None)
-def _filter_takes_completable_values(filter_cls, name):
-    try:
-        filter_spec = _get_filter_spec(filter_cls, name)
-    except ValueError:
-        return False
-    else:
-        return (name in filter_cls.COMPARATIVE_FILTERS and
-                filter_spec is not None and
-                issubclass(filter_spec.value_type, str))
 
 
 async def torrent_path(curarg, only='auto'):

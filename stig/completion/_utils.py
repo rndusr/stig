@@ -9,7 +9,71 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import Candidates
+from . import Candidates, Candidate
+
+import itertools
+import functools
+
+
+from ..client import filters as filter_clses
+
+# All filters use the same operators
+filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
+filter_combine_ops = ('&', '|')
+filter_labels = {'TorrentFilter' : 'Torrent Filters',
+                  'FileFilter'    : 'File Filters',
+                  'PeerFilter'    : 'Peer Filters',
+                  'TrackerFilter' : 'Tracker Filters',
+                  'SettingFilter' : 'Setting Filters'}
+
+@functools.lru_cache(maxsize=None)
+def filter_names(filter_cls_name):
+    """Filter names as Candidate instances with description and aliases"""
+    def get_names(filter_cls):
+        for name in get_filter_names(filter_cls):
+            filter_spec = get_filter_spec(filter_cls, name)
+            desc = filter_spec.description
+            alias_str = ','.join(filter_spec.aliases)
+            yield Candidate(name, description=desc, in_parens=alias_str)
+
+    filter_cls = get_filter_cls(filter_cls_name)
+    curarg_seps = itertools.chain(filter_compare_ops, filter_combine_ops, (filter_cls.INVERT_CHAR,))
+    return Candidates(get_names(filter_cls),
+                      curarg_seps=curarg_seps,
+                      label=filter_labels[filter_cls_name])
+
+@functools.lru_cache(maxsize=None)
+def get_filter_cls(name):
+    try:
+        return getattr(filter_clses, name)
+    except AttributeError:
+        raise ValueError('Not a filter class: %r' % name)
+
+@functools.lru_cache(maxsize=None)
+def get_filter_names(filter_cls):
+    return itertools.chain(filter_cls.BOOLEAN_FILTERS,
+                           filter_cls.COMPARATIVE_FILTERS)
+
+@functools.lru_cache(maxsize=None)
+def get_filter_spec(filter_cls, name):
+    try:
+        return filter_cls.BOOLEAN_FILTERS[name]
+    except KeyError:
+        try:
+            return filter_cls.COMPARATIVE_FILTERS[name]
+        except KeyError:
+            raise ValueError('No such filter: %r' % (name,))
+
+@functools.lru_cache(maxsize=None)
+def filter_takes_completable_values(filter_cls, name):
+    try:
+        filter_spec = get_filter_spec(filter_cls, name)
+    except ValueError:
+        return False
+    else:
+        return (name in filter_cls.COMPARATIVE_FILTERS and
+                filter_spec is not None and
+                issubclass(filter_spec.value_type, str))
 
 
 def find_subtree(torrent, path):
