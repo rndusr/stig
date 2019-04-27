@@ -16,12 +16,14 @@
      * When renaming files, the "rename" command now attempts to rename files in
        all matching torrents.  When renaming torrents or if the new --unique
        option is given, the torrent filter expression must always match one
-       torrent.  This also works when renaming the focused file in the TUI.
+       torrent.  This also works when renaming the focused file or directory in
+       file lists in the TUI.
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
     * The command 'magnet' creates magnet URIs for torrents.
-    * The help structure was changed so that lists are separated from manuals.
+    * The help structure was changed so that lists of commands/filters/settings
+      and manuals explaining the concepts are separate.
 
   Fixed bugs:
     * File filters caused a crash when applied to single-file torrents.
