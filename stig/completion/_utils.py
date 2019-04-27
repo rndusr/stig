@@ -9,41 +9,40 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 from . import Candidates
 
 
 def find_subtree(torrent, path):
     """
-    `torrent` must be a Torrent instance and `path` must be a list of nested
+    `torrent` must be a Torrent instance and `path` must be a sequence of nested
     directory names in the tree `torrent['files']`
 
-    Return the subtree at `path` or None if `path` points to a leaf/file
+    Empty strings in `path` are ignored (like `ls foo//bar///baz` also works).
+
+    If `torrent` is a single-file torrent or any item in `path[:-1]` points to a
+    leaf or doesn't exist, return None.  Otherwise, return the subtree or
+    file/leaf that `path` points to.  (To clarify: the last item in `path` may
+    not exist, in which case its parent tree is returned.)
     """
-    if len(tuple(torrent['files'].directories)) <= 0:
-        log.debug('No directories in %r', torrent['files'])
+    tree = torrent['files'][torrent['name']]
+    if tree.nodetype == 'leaf':
+        # `torrent` is single-file torrent
+        return None
     else:
-        tree = torrent['files'][torrent['name']]
         for i,part in enumerate(path):
             if part:
                 subtree = tree.get(part)
                 is_last_part = i == len(path)-1
                 if subtree is None:
-                    log.debug('%r not found in %r', part, tree)
-                    if is_last_part:
-                        log.debug('  thats ok, its the last part')
-                    else:
-                        log.debug('  thats not ok, its not the last part')
+                    if not is_last_part:
                         return None
                 elif subtree.nodetype == 'leaf' and is_last_part:
-                    log.debug('Found leaf: %r', subtree)
                     return subtree
                 elif subtree.nodetype == 'parent':
                     tree = subtree
                 else:
-                    log.debug('  aborting resolution of weird path at %r', part)
+                    # An item in `path[:-1]` points to a leaf.  We can't use
+                    # files as subtrees.
                     return None
         return tree
 
