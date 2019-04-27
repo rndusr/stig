@@ -274,57 +274,46 @@ async def torrent_path(curarg, only='auto'):
         log.debug('Passing %r to torrent_filter()', curarg)
         return await torrent_filter(curarg)
 
+    def level_up(path):
+        # Remove all empty parts from the right
+        while path and path[-1] == '':
+            path = path[:-1]
+        # Remove last part from the right
+        log.debug('    Cropping %r', path)
+        return path[:-1] if path else path
+
+    def get_cands(torrent, path, only):
+        subtree = _utils.find_subtree(torrent, path)
+
+        if subtree is not None:
+            path_points_to_file = subtree.nodetype == 'leaf'
+            if path_points_to_file:
+                subtree = _utils.find_subtree(torrent, level_up(path))
+
+            if only == 'files':
+                cands = _utils.find_files(subtree)
+                return Candidates(cands, curarg_seps=('/',), label='Files in %s' % (subtree.path,))
+
+            elif only == 'directories':
+                cands = _utils.find_dirs(subtree)
+                return Candidates(cands, curarg_seps=('/',), label='Directories in %s' % (subtree.path,))
+
+            elif only == 'any':
+                return Candidates(subtree, curarg_seps=('/',), label=subtree.path)
+
+            elif only == 'auto':
+                if path_points_to_file:
+                    return get_cands(torrent, path[:-1], 'files')
+                else:
+                    return get_cands(torrent, path[:-1], 'directories')
+
+            else:
+                raise TypeError('Invalid value for argument "only": %r' % (only,))
+
     tfilter = parts[0]
     path = parts[1:]
     log.debug('Completing files or directories in %r torrents: %r', tfilter, path)
     response = await objects.srvapi.torrent.torrents(tfilter, keys=('files',), from_cache=True)
     if response.success:
-        log.debug('  Found torrents: %r', tuple(t['name'] for t in response.torrents))
-
-        def get_cands(torrent, path, only):
-            log.debug('  Torrent: %r', torrent)
-            subtree = _utils.find_subtree(torrent, path)
-
-            def level_up(path):
-                # Remove all empty parts from the right
-                while path and path[-1] == '':
-                    path = path[:-1]
-                # Remove last part from the right
-                log.debug('    Cropping %r', path)
-                return path[:-1] if path else path
-
-            if subtree is not None:
-                subtree_is_file = subtree.nodetype == 'leaf'
-
-                if only == 'files':
-                    if subtree_is_file:
-                        subtree = _utils.find_subtree(torrent, level_up(path))
-                    log.debug('  Only files in %r', subtree.path)
-                    cands = _utils.find_files(subtree)
-                    return Candidates(cands, curarg_seps=('/',), label='Files in %s' % (subtree.path,))
-
-                elif only == 'directories':
-                    if subtree_is_file:
-                        subtree = _utils.find_subtree(torrent, level_up(path))
-                    log.debug('  Only directories in %r', subtree.path)
-                    cands = _utils.find_dirs(subtree)
-                    return Candidates(cands, curarg_seps=('/',), label='Directories in %s' % (subtree.path,))
-
-                elif only == 'any':
-                    if subtree_is_file:
-                        subtree = _utils.find_subtree(torrent, level_up(path))
-                    log.debug('  Only any in %r', subtree.path)
-                    return Candidates(subtree, curarg_seps=('/',), label=subtree.path)
-
-                elif only == 'auto':
-                    log.debug('  Only auto')
-                    if subtree_is_file:
-                        return get_cands(torrent, path[:-1], 'files')
-                    else:
-                        return get_cands(torrent, path[:-1], 'directories')
-
-                else:
-                    raise TypeError('Invalid value for argument "only": %r' % (only,))
-
         return (get_cands(torrent, path, only)
                 for torrent in response.torrents)
