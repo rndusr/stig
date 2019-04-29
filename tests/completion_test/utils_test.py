@@ -1,6 +1,45 @@
+from stig.completion import candidates
 from stig.completion import _utils as utils
 
 import unittest
+from unittest.mock import patch, MagicMock
+from types import SimpleNamespace
+
+
+class Test_filter_helper_functions(unittest.TestCase):
+    @patch('stig.completion.candidates._utils.filter_clses')
+    def test_get_filter_cls(self, mock_filter_clses):
+        mock_filter_clses.mock_add_spec(('FooFilter',), spec_set=True)
+        mock_filter_clses.FooFilter = 'mock filter'
+        self.assertEqual(candidates._utils.get_filter_cls('FooFilter'), 'mock filter')
+        with self.assertRaises(ValueError):
+            candidates._utils.get_filter_cls('BarFilter')
+
+    def test_get_filter_names(self):
+        mock_filter_cls = MagicMock()
+        mock_filter_cls.BOOLEAN_FILTERS = {'foo': None, 'bar': None}
+        mock_filter_cls.COMPARATIVE_FILTERS = {'baz': None}
+        self.assertEqual(tuple(candidates._utils.get_filter_names(mock_filter_cls)),
+                         ('foo', 'bar', 'baz'))
+
+    def test_get_filter_spec(self):
+        mock_filter_cls = MagicMock()
+        mock_filter_cls.BOOLEAN_FILTERS = {'foo': 'mock foo spec', 'bar': 'mock bar spec'}
+        mock_filter_cls.COMPARATIVE_FILTERS = {'baz': 'mock baz spec'}
+        self.assertEqual(candidates._utils.get_filter_spec(mock_filter_cls, 'foo'), 'mock foo spec')
+        self.assertEqual(candidates._utils.get_filter_spec(mock_filter_cls, 'bar'), 'mock bar spec')
+        self.assertEqual(candidates._utils.get_filter_spec(mock_filter_cls, 'baz'), 'mock baz spec')
+
+    def test_filter_takes_completable_values(self):
+        mock_filter_cls = MagicMock()
+        mock_filter_cls.BOOLEAN_FILTERS = {'foo': None}
+        mock_filter_cls.COMPARATIVE_FILTERS = {'bar': SimpleNamespace(value_type=str),
+                                               'baz': SimpleNamespace(value_type=int)}
+        self.assertEqual(candidates._utils.filter_takes_completable_values(mock_filter_cls, 'bar'), True)
+        self.assertEqual(candidates._utils.filter_takes_completable_values(mock_filter_cls, 'baz'), False)
+        self.assertEqual(candidates._utils.filter_takes_completable_values(mock_filter_cls, 'foo'), False)
+        self.assertEqual(candidates._utils.filter_takes_completable_values(mock_filter_cls, 'asdf'), False)
+
 
 
 class MockTree(dict):
