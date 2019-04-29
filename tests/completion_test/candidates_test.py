@@ -222,10 +222,10 @@ class Test_fs_path(unittest.TestCase):
 
 
 class Test_torrent_filter_values(asynctest.TestCase):
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._filter_takes_completable_values')
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_filter_takes_no_completable_values(self, mock_torrents,
                                                       mock_filter_takes_completable_values,
@@ -240,11 +240,11 @@ class Test_torrent_filter_values(asynctest.TestCase):
                                label='Torrent Filter Values: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._filter_takes_completable_values')
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
+    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_server_request_failed(self, mock_torrents,
                                          mock_filter_takes_completable_values,
@@ -260,16 +260,16 @@ class Test_torrent_filter_values(asynctest.TestCase):
                                label='Torrent Filter Values: mockfilter')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._filter_takes_completable_values')
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
+    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_torrent_value_is_string(self, mock_torrents,
-                                             mock_filter_takes_completable_values,
-                                             mock_get_filter_spec,
-                                             mock_get_filter_cls):
+                                           mock_filter_takes_completable_values,
+                                           mock_get_filter_spec,
+                                           mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
         mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1', 'mockkey2')
         mock_torrents.return_value.success = True
@@ -286,11 +286,11 @@ class Test_torrent_filter_values(asynctest.TestCase):
                                label='Torrent Filter Values: mockfilter')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._filter_takes_completable_values')
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
+    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_torrent_value_is_iterable(self, mock_torrents,
                                              mock_filter_takes_completable_values,
@@ -316,12 +316,12 @@ class Test_torrent_filter_values(asynctest.TestCase):
 
 
 class Test_torrent_filter(asynctest.TestCase):
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._utils.filter_names')
     @asynctest.patch('stig.completion.candidates._torrent_filter_values')
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._filter_names')
-    async def test_focusing_filter_name(self, mock_filter_names, mock_get_filter_cls, mock_torrent_filter_values):
+    async def test_focusing_filter_name(self, mock_torrent_filter_values, mock_filter_names, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
         mock_filter_names.return_value = Candidates(('foo', 'bar', 'baz'),
@@ -336,11 +336,11 @@ class Test_torrent_filter(asynctest.TestCase):
         )
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
     @asynctest.patch('stig.completion.candidates._torrent_filter_values')
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    async def test_focusing_filter_value(self, mock_get_filter_cls, mock_torrent_filter_values):
+    async def test_focusing_filter_value(self, mock_torrent_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_torrent_filter_values.return_value = 'mock torrent values'
         cands = await candidates.torrent_filter(Arg('bar=asdf', curpos=4))
@@ -348,11 +348,11 @@ class Test_torrent_filter(asynctest.TestCase):
         exp_cands = ('mock torrent values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
     @asynctest.patch('stig.completion.candidates._torrent_filter_values')
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    async def test_operator_given_without_filter_name(self, mock_get_filter_cls, mock_torrent_filter_values):
+    async def test_operator_given_without_filter_name(self, mock_torrent_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default'
         mock_torrent_filter_values.return_value = 'mock torrent values'
@@ -361,11 +361,11 @@ class Test_torrent_filter(asynctest.TestCase):
         exp_cands = ('mock torrent values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
     @asynctest.patch('stig.completion.candidates._torrent_filter_values')
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    async def test_invert_char_is_first_char(self, mock_get_filter_cls, mock_torrent_filter_values):
+    async def test_invert_char_is_first_char(self, mock_torrent_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_torrent_filter_values.return_value = 'mock torrent values'
         cands = await candidates.torrent_filter(Arg('!bar=asdf', curpos=5))
@@ -373,11 +373,11 @@ class Test_torrent_filter(asynctest.TestCase):
         exp_cands = ('mock torrent values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
     @asynctest.patch('stig.completion.candidates._torrent_filter_values')
-    @asynctest.patch('stig.completion.candidates._get_filter_cls')
-    async def test_invert_char_in_operator(self, mock_get_filter_cls, mock_torrent_filter_values):
+    async def test_invert_char_in_operator(self, mock_torrent_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_torrent_filter_values.return_value = 'mock torrent values'
         cands = await candidates.torrent_filter(Arg('bar!=asdf', curpos=5))
