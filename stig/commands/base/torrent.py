@@ -545,3 +545,8 @@ class VerifyTorrentsCmdbase(metaclass=InitCommand):
                                                polling_frenzy=False)
             if not response.success:
                 raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.torrent_filter(args.curarg)
