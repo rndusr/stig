@@ -251,9 +251,9 @@ async def torrent_path(curarg, only='auto'):
 
             elif only == 'auto':
                 if path_points_to_file:
-                    return get_cands(torrent, path[:-1], 'files')
+                    return get_cands(torrent, level_up(path), 'files')
                 else:
-                    return get_cands(torrent, path[:-1], 'directories')
+                    return get_cands(torrent, level_up(path), 'directories')
 
             else:
                 raise TypeError('Invalid value for argument "only": %r' % (only,))
