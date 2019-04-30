@@ -187,8 +187,13 @@ async def _torrent_filter_values(filter_name):
             value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
             cands = []
             for t in response.torrents:
+                # Get the same value from torrent that the filter would get
                 value = value_getter(t)
-                if not isinstance(value, str) and isinstance(value, (abc.Iterable, abc.Iterator)):
+
+                # Some value_getters return multiple values, e.q. the torrent
+                # filter "tracker", which returns domain names for all tracker
+                # URLs.
+                if isinstance(value, (abc.Iterable, abc.Iterator)) and not isinstance(value, str):
                     cands.extend(value)
                 else:
                     cands.append(value)
