@@ -205,9 +205,10 @@ async def torrent_path(curarg, only='auto'):
     that has a matching path.  Otherwise, simply pass `curarg` to
     `torrent_filter` and return the result.
 
-    `only` must be "files", "directories", "any" or "auto".  If "auto", file
-    names are returned if `curarg` points to a file and directory names are
-    returned if `curarg` points to a directory.
+    `only` must be "files", "directories", "any" or "auto".  If `only` is
+    "auto", candidates are taken from the parent directory; if `curarg` points
+    to a file, only files are returned, if `curarg` points to a directory, only
+    directories are returned.
     """
     parts = curarg.before_cursor.separate(('/',), include_seps=False)
     if len(parts) < 2:
