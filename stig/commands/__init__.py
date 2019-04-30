@@ -486,7 +486,10 @@ class CommandManager():
 
     @property
     def active_commands(self):
-        """Tuple of commands for the active interface or all commands with no active interface"""
+        """
+        Tuple of command classes for the active interface or all commands if no
+        active interface is specified
+        """
         if self._active_interface is None:
             return self.all_commands
         else:
@@ -494,7 +497,7 @@ class CommandManager():
 
     @property
     def all_commands(self):
-        """Tuple of all commands for all interfaces"""
+        """Tuple of all command classes for all interfaces"""
         cmds = set()
         for interface,cmdnames in self._cmds.items():
             for cmdname in cmdnames:
