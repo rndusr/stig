@@ -49,11 +49,6 @@ from .commands import CommandManager
 cmdmgr = CommandManager(loop=aioloop,
                         info_handler=lambda msg: log.info(msg),
                         error_handler=lambda msg: log.error(msg))
-cmdmgr.resources.update(aioloop=aioloop,
-                        srvapi=srvapi,
-                        cfg=localcfg,
-                        srvcfg=remotecfg,
-                        helpmgr=helpmgr)
 helpmgr.cmdmgr = cmdmgr
 
 def _pre_run_hook(cmdline):

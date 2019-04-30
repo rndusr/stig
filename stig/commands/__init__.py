@@ -67,13 +67,6 @@ are exceptions:
 
 - 'nargs' can be the string 'REMAINDER', which is replaced with the value of
   argparse.REMAINDER.
-
-Resources
----------
-
-Resources are objects that are provided to the CommandManager instance as
-key-value pairs which sets them as attributes for command classes that want
-them.  For example, the global client API instance 'srvapi' is a resource.
 """
 
 from ..logging import make_logger
@@ -428,8 +421,6 @@ class CommandManager():
         self.pre_run_hook = pre_run_hook
         self._cmds = {}
         self._active_interface = None
-        self._resources = CallbackDict(callback=self._update_resources)
-        self._resources.update(cmdmgr=self)
 
     @property
     def info_handler(self):
@@ -474,8 +465,6 @@ class CommandManager():
         elif not cmdcls.provides:
             raise RuntimeError('{} does not provide any interfaces'.format(cmdcls))
 
-        self._provide_resources_to_cmdcls(cmdcls)
-
         # Store cmdcls for each of its supported interfaces
         for interface in cmdcls.provides:
             if interface not in self._cmds:
@@ -483,19 +472,6 @@ class CommandManager():
             log.debug('Registered %s command %s (%s)',
                       interface, cmdcls.name, type(cmdcls).__name__)
             self._cmds[interface][cmdcls.name] = cmdcls
-
-    @property
-    def resources(self):
-        return self._resources
-
-    def _update_resources(self):
-        for cmdcls in self.all_commands:
-            self._provide_resources_to_cmdcls(cmdcls)
-
-    def _provide_resources_to_cmdcls(self, cmdcls):
-        for name,obj in self._resources.items():
-            if hasattr(cmdcls, name):
-                setattr(cmdcls, name, obj)
 
     @property
     def active_interface(self):

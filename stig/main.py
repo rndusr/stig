@@ -111,7 +111,6 @@ def run():
 
     elif cmdmgr.active_interface == 'tui':
         from .tui import main as tui
-        cmdmgr.resources.update(tui=tui)
         if not tui.run(run_commands):
             exit_code = 1
 
