@@ -212,9 +212,15 @@ async def torrent_path(curarg, only='auto'):
     """
     parts = curarg.before_cursor.separate(('/',), include_seps=False)
     if len(parts) < 2:
-        # We need at least a torrent filter and a (possibly empty) path
-        log.debug('Passing %r to torrent_filter()', curarg)
-        return await torrent_filter(curarg)
+        # User is still writing the torrent filter part
+        log.debug('Passing %r to torrent_filter()', parts[0])
+        # If the command line looks like 'ls comment=|/some/path' ('|' is the
+        # cursor), '/' must be an argument separator to inform the completer
+        # that '/some/path' is not the part we are completing.
+        cats = await torrent_filter(parts[0])
+        for cands in cats:
+            cands.curarg_seps += ('/',)
+        return cats
 
     def level_up(path):
         # Remove all empty parts from the right
