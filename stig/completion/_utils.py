@@ -110,13 +110,11 @@ def find_subtree(torrent, path):
                     return None
         return tree
 
-
 def find_files(tree):
     """Files at TorrentFileTree object `tree`"""
     for item in tree:
         if tree[item].nodetype == 'leaf':
             yield item
-
 
 def find_dirs(tree):
     """Directories at TorrentFileTree object `tree`"""
