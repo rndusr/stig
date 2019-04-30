@@ -384,3 +384,138 @@ class Test_torrent_filter(asynctest.TestCase):
         mock_torrent_filter_values.assert_called_once_with('bar')
         exp_cands = ('mock torrent values',)
         self.assertEqual(cands, exp_cands)
+
+
+class MockFile(str):
+    nodetype = 'leaf'
+
+class MockTree(dict):
+    nodetype = 'parent'
+    path = 'mock/path'
+
+class Test_torrent_path(asynctest.TestCase):
+    def assert_no_candidates(self, cands_or_cats):
+        if not cands_or_cats:
+            return True  # Must be something like None, (), []
+        elif isinstance(cands_or_cats, Candidates):
+            self.assertFalse(cands_or_cats)
+        else:
+            # Must be iterable of Candidates objects
+            for cands in cands_or_cats:
+                self.assertFalse(cands)
+
+    @asynctest.patch('stig.completion.candidates.torrent_filter')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_no_path_given_completes_torrent_filter(self, mock_torrents, mock_torrent_filter):
+        mock_torrent_filter.return_value = (Candidates(('mock torrent_filter() candidates',),
+                                                       curarg_seps=('.', ',')),)
+        cands = await candidates.torrent_path(Arg('id=foo/a/b/c', curpos=6))
+        exp_cands = (Candidates(('mock torrent_filter() candidates',),
+                                curarg_seps=('.', ',', '/')),)
+        self.assertEqual(cands, exp_cands)
+        mock_torrent_filter.assert_called_once_with('id=foo')
+        mock_torrents.assert_not_called()
+
+    @asynctest.patch('stig.completion.candidates.torrent_filter')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_path_given_completes_torrent_path(self, mock_torrents, mock_torrent_filter):
+        cands = await candidates.torrent_path(Arg('id=foo/a/b/c', curpos=7))
+        mock_torrent_filter.assert_not_called()
+        mock_torrents.assert_called_once_with('id=foo', keys=('files',), from_cache=True)
+
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_no_success_when_requesting_torrents(self, mock_torrents):
+        mock_torrents.return_value = SimpleNamespace(success=False)
+        cands = await candidates.torrent_path(Arg('id=foo/bar/baz', curpos=8))
+        self.assert_no_candidates(cands)
+        mock_torrents.assert_called_once_with('id=foo', keys=('files',), from_cache=True)
+
+    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_single_file_in_torrent(self, mock_torrents, mock_find_subtree):
+        mock_find_subtree.return_value = None
+        mock_torrent_list = [{'name': 'Mock Torrent', 'files': MagicMock()}]
+        mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
+        cands = await candidates.torrent_path(Arg('id=foo/a/b/c', curpos=10))
+        self.assert_no_candidates(cands)
+        mock_torrents.assert_called_once_with('id=foo', keys=('files',), from_cache=True)
+        mock_find_subtree.assert_called_once_with(mock_torrent_list[0],
+                                                  Args(('a', 'b'), curarg_index=1, curarg_curpos=1))
+
+    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_only_files(self, mock_torrents, mock_find_subtree):
+        mock_files = MockTree(foo=MockTree(bar=MockTree(),
+                                           ber=MockFile('ber'),
+                                           bir=MockFile('biz')))
+        mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
+        mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
+        mock_find_subtree.return_value = mock_files['foo']
+
+        cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='files'))
+        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
+        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
+
+    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_only_directories(self, mock_torrents, mock_find_subtree):
+        mock_files = MockTree(foo=MockTree(bar=MockTree(),
+                                           ber=MockTree(),
+                                           bir=MockFile('biz')))
+        mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
+        mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
+        mock_find_subtree.return_value = mock_files['foo']
+
+        cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='directories'))
+        exp_cands = (Candidates(('bar', 'ber'), curarg_seps=('/',), label='Directories in mock/path'),)
+        mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
+        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
+
+    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_only_any(self, mock_torrents, mock_find_subtree):
+        mock_files = MockTree(foo=MockTree(bar=MockTree(),
+                                           ber=MockTree(),
+                                           bir=MockFile('biz')))
+        mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
+        mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
+        mock_find_subtree.return_value = mock_files['foo']
+
+        cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='any'))
+        exp_cands = (Candidates(('bar', 'ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
+        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
+
+    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_only_auto_with_path_pointing_to_file(self, mock_torrents, mock_find_subtree):
+        mock_files = MockTree(foo=MockTree(bar=MockFile('bar'),
+                                           ber=MockTree(),
+                                           bir=MockFile('biz')))
+        mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
+        mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
+        mock_find_subtree.return_value = mock_files['foo']
+
+        cands = tuple(await candidates.torrent_path(Arg('id=foo/bir', curpos=10), only='auto'))
+        exp_cands = (Candidates(('bar', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
+        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('bir',)),
+                                                            call(mock_torrent_list[0], ())])
+
+    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
+    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    async def test_only_auto_with_path_pointing_to_directory(self, mock_torrents, mock_find_subtree):
+        mock_files = MockTree(foo=MockTree(bar=MockFile('bar'),
+                                           ber=MockTree(baz=MockFile('baz'),
+                                                        biz=MockFile('biz')),
+                                           bir=MockTree()))
+        mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
+        mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
+        mock_find_subtree.return_value = mock_files['foo']
+
+        cands = tuple(await candidates.torrent_path(Arg('id=foo/ber', curpos=10), only='auto'))
+        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
+        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('ber',)),
+                                                            call(mock_torrent_list[0], ())])
