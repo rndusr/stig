@@ -223,7 +223,7 @@ class HelpManager():
             '\t\t- \tby providing them as command line arguments,',
             "\t\t- \tvia the command line in the TUI (press ':' to open it),",
             "\t\t- \tby binding them to keys (see 'help bind'),",
-            ("\t\t- \tby listing them in an rc file (see 'help rcfile') "
+            ("\t\t- \tby listing them in an rc file (see 'help cfgman') "
              "and loading it with the '--rcfile' option or the 'rc' command."),
             '',
             'CHAINING COMMANDS',

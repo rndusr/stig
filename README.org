@@ -73,7 +73,7 @@
    The default rc file is ~$XDG_CONFIG_HOME/stig/rc~.  ~XDG_CONFIG_HOME~
    defaults to ~$HOME/.config~ if not set.
 
-   See ~stig help rcfile~ for more information.
+   See ~stig help cfgman~ for more information.
 
 *** Example rc file
    #+BEGIN_SRC
