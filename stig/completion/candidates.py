@@ -26,10 +26,11 @@ import re
 import functools
 from collections import abc
 
-_commands = tuple(cmdcls.name for cmdcls in objects.cmdmgr.active_commands)
+@functools.lru_cache(maxsize=None)
 def commands():
     """Names of commands"""
-    return _commands
+    return Candidates((cmdcls.name for cmdcls in objects.cmdmgr.active_commands),
+                      label='Commands')
 
 
 @functools.lru_cache(maxsize=None)
