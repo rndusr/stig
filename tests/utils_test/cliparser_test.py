@@ -1387,7 +1387,7 @@ class TestArgs(unittest.TestCase):
         with self.assertRaises(IndexError):
             args[3]
 
-    def test_getitem_with_slice(self):
+    def test_getitem_with_slice_with_cursor_position(self):
         args = cliparser.Args(('a', 'b', 'c'), curarg_index=0, curarg_curpos=1)
         self.assertEqual(args[0:], cliparser.Args(('a', 'b', 'c'), curarg_index=0, curarg_curpos=1))
         self.assertEqual(args[1:], cliparser.Args(('b', 'c')))
@@ -1412,4 +1412,11 @@ class TestArgs(unittest.TestCase):
         self.assertEqual(args[:2], cliparser.Args(('a', 'b')))
         self.assertEqual(args[:3], cliparser.Args(('a', 'b', 'c'), curarg_index=2, curarg_curpos=1))
 
-
+    def test_getitem_with_slice_without_cursor_position(self):
+        args = cliparser.Args(('a', 'b', 'c'))
+        self.assertEqual(args[0:], cliparser.Args(('a', 'b', 'c')))
+        self.assertEqual(args[1:], cliparser.Args(('b', 'c')))
+        self.assertEqual(args[2:], cliparser.Args(('c',)))
+        self.assertEqual(args[:1], cliparser.Args(('a',)))
+        self.assertEqual(args[:2], cliparser.Args(('a', 'b')))
+        self.assertEqual(args[:3], cliparser.Args(('a', 'b', 'c')))
