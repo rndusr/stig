@@ -15,6 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError)
+from ...completion import candidates
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
 from ... import objects
@@ -841,6 +842,43 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if tabid is not None:
             log.debug('Found tab ID by title: %r -> %r', pos, tabid)
             return tabid
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        args_wo = args.without_options
+        if args_wo.curarg_index == 1:
+            # First positional argument is a command's name
+            return candidates.commands()
+        elif args_wo.curarg_index >= 2:
+            cmdcls = objects.cmdmgr.get_cmdcls(args_wo[1])
+            if cmdcls is not None:
+                return cmdcls.completion_candidates(args[1:])
+
+    @classmethod
+    def completion_candidates_opts(cls, args):
+        """Return candidates for arguments that start with '-'"""
+        if not args.curarg.startswith('-'):
+            # Cursor is not on an option
+            return
+
+        # Find name of command 'tab' is calling, i.e. the first non-option
+        # before the current argument
+        args_bc = args.before_curarg
+        for i,arg in enumerate(args_bc):
+            if i >= 1 and not arg.startswith('-'):
+                # Get command's class and ask it for completion candidates,
+                # providing the command line without 'tab' and it's options
+                cmdcls = objects.cmdmgr.get_cmdcls(arg)
+                if cmdcls is not None:
+                    return cmdcls.completion_candidates(args[i:])
+        return super().completion_candidates_opts(args)
+
+    @classmethod
+    def completion_candidates_params(cls, option, args):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option in ('--close', '--focus'):
+            return candidates.tab_titles()
 
 
 class TUICmd(metaclass=InitCommand):
