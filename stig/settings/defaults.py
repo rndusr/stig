@@ -228,7 +228,7 @@ DEFAULT_KEYMAP = (
      'description': 'Open help for keybindings in a new tab'},
     {'context': 'main', 'key': 'F1+f', 'action': 'tab help filters',
      'description': 'Open help for filters in a new tab'},
-    {'context': 'main', 'key': 'F1+r', 'action': 'tab help rcfile',
+    {'context': 'main', 'key': 'F1+r', 'action': 'tab help cfgman',
      'description': 'Open help for rc files in a new tab'},
     {'context': 'main', 'key': '?',    'action': '<F1>'},
 
