@@ -26,6 +26,7 @@ import re
 import functools
 from collections import abc
 
+
 @functools.lru_cache(maxsize=None)
 def commands():
     """Names of commands"""
@@ -89,6 +90,13 @@ def setting_values(args):
         return fs_path(args.curarg.before_cursor,
                        base=value.base_path,
                        directories_only=os.path.isdir(value))
+
+
+def tab_titles():
+    """Titles (strings) of TUI tabs"""
+    from ..tui.tuiobjects import tabs
+    return Candidates((widget.original_widget.text
+                       for widget in tabs.titles), label='Tab titles')
 
 
 def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
