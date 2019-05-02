@@ -897,7 +897,7 @@ class Args(tuple):
         if self._curarg_index is None:
             return self
         else:
-            return Args(self[:self._curarg_index])
+            return self[:self._curarg_index]
 
     @property
     def curarg_index(self):
