@@ -913,6 +913,12 @@ class Args(tuple):
         if curarg is not None:
             return curarg.curpos
 
+    @curarg_curpos.setter
+    def curarg_curpos(self, curpos):
+        curarg = self.curarg
+        if curarg is not None:
+            curarg.curpos = curpos
+
     @property
     def without_options(self):
         """
