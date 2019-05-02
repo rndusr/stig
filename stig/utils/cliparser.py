@@ -881,7 +881,6 @@ class Args(tuple):
                     yield Arg(arg)
         obj = super().__new__(cls, gen())
         obj._curarg_index = curarg_index
-        obj._curarg_curpos = curarg_curpos
         return obj
 
     @property
@@ -910,7 +909,9 @@ class Args(tuple):
     @property
     def curarg_curpos(self):
         """Cursor position in currently focused argument"""
-        return self._curarg_curpos
+        curarg = self.curarg
+        if curarg is not None:
+            return curarg.curpos
 
     @property
     def without_options(self):
@@ -919,7 +920,7 @@ class Args(tuple):
 
         `curarg_index` and `curarg_curpos` are adjusted sensibly.
         """
-        return Args(*remove_options(self, self._curarg_index, self._curarg_curpos))
+        return Args(*remove_options(self, self.curarg_index, self.curarg_curpos))
 
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -941,16 +942,16 @@ class Args(tuple):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (super().__eq__(other) and
-                self._curarg_index == other._curarg_index and
-                self._curarg_curpos == other._curarg_curpos)
+                self.curarg_index == other.curarg_index and
+                self.curarg_curpos == other.curarg_curpos)
 
     def __hash__(self):
         return super().__hash__()
 
     def __repr__(self):
         string = '%s(%s' % (type(self).__name__, tuple(str(arg) for arg in self))
-        if self._curarg_index is not None:
-            string += ', curarg_index=%d' % (self._curarg_index,)
-        if self._curarg_curpos is not None:
-            string += ', curarg_curpos=%d' % (self._curarg_curpos,)
+        if self.curarg_index is not None:
+            string += ', curarg_index=%d' % (self.curarg_index,)
+        if self.curarg_curpos is not None:
+            string += ', curarg_curpos=%d' % (self.curarg_curpos,)
         return string + ')'
