@@ -931,15 +931,45 @@ class Args(tuple):
     def __getitem__(self, item):
         if isinstance(item, slice):
             subargs = super().__getitem__(item)
-            if item.step is not None:
+            if not subargs:
+                # Args are never really empty
+                subargs = ('',)
+                if self.curarg_index is not None and self.curarg_curpos is not None:
+                    curarg_index = curarg_curpos = 0
+                else:
+                    curarg_index = curarg_curpos = None
+            elif item.step is not None:
                 raise RuntimeError('Slicing with steps is not implemented yet')
-            elif (self.curarg_index is not None and self.curarg_curpos is not None and
-                (item.start is None or item.start <= self.curarg_index) and
-                (item.stop is None or item.stop > self.curarg_index)):
-                curarg_index = self.curarg_index - (item.start or 0)
-                curarg_curpos = self.curarg_curpos
-            else:
+            elif self.curarg_index is None or self.curarg_curpos is None:
+                # No cursor position specifed
                 curarg_index = curarg_curpos = None
+            else:
+                start = item.start if item.start is not None else 0
+                stop  = item.stop  if item.stop  is not None else len(self)
+                if ((item.start is None or item.start <= self.curarg_index) and
+                    (item.stop is None or item.stop > self.curarg_index)):
+                    # Cursor is between `start` and `stop` or on `start`
+                    curarg_index = self.curarg_index - start
+                    curarg_curpos = self.curarg_curpos
+                elif self.curarg_index == start-1 and self.curarg_curpos == len(self.curarg):
+                    # Cursor is after the last character of the argument before
+                    # `start`, i.e. just before our slice.  This is essentially
+                    # the same position as on the first character of the
+                    # argument at `start`.
+                    # Example: ['a|', 'b', 'c'][1:]  ->  ['|b', 'c']
+                    curarg_index = self.curarg_index - start + 1
+                    curarg_curpos = 0
+                elif self.curarg_index == stop and self.curarg_curpos == 0:
+                    # Cursor is on the first character of the argument at
+                    # `stop`, i.e. just after our slice.  This is essentially
+                    # the same position as after the last character of the
+                    # argument at `stop`.
+                    # Example: ['a', 'b', '|c'][:2]  ->  ['a', 'b|']
+                    curarg_index = self.curarg_index - start - 1
+                    curarg_curpos = len(subargs[-1])
+                    curarg_curpos = len(subargs[-1])
+                else:
+                    curarg_index = curarg_curpos = None
             return Args(subargs, curarg_index=curarg_index, curarg_curpos=curarg_curpos)
         else:
             return super().__getitem__(item)
