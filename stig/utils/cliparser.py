@@ -873,16 +873,12 @@ class Args(tuple):
         return cls(tokens, curtok_index, curtok_curpos)
 
     def __new__(cls, args, curarg_index=None, curarg_curpos=None):
-        # Make sure all args are Arg instances
         def gen():
             for i,arg in enumerate(args):
-                if not isinstance(arg, Arg):
-                    if i == curarg_index:
-                        yield Arg(arg, curpos=curarg_curpos)
-                    else:
-                        yield Arg(arg)
+                if i == curarg_index:
+                    yield Arg(arg, curpos=curarg_curpos)
                 else:
-                    yield arg
+                    yield Arg(arg)
         obj = super().__new__(cls, gen())
         obj._curarg_index = curarg_index
         obj._curarg_curpos = curarg_curpos
