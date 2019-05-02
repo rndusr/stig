@@ -447,13 +447,14 @@ class Test_torrent_path(asynctest.TestCase):
     async def test_only_files(self, mock_torrents, mock_find_subtree):
         mock_files = MockTree(foo=MockTree(bar=MockTree(),
                                            ber=MockFile('ber'),
-                                           bir=MockFile('biz')))
+                                           bir=MockFile('bir')))
         mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
         mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='files'))
-        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Files in mock/path'),)
+        self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
 
@@ -462,13 +463,14 @@ class Test_torrent_path(asynctest.TestCase):
     async def test_only_directories(self, mock_torrents, mock_find_subtree):
         mock_files = MockTree(foo=MockTree(bar=MockTree(),
                                            ber=MockTree(),
-                                           bir=MockFile('biz')))
+                                           bir=MockFile('bir')))
         mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
         mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='directories'))
         exp_cands = (Candidates(('bar', 'ber'), curarg_seps=('/',), label='Directories in mock/path'),)
+        self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
 
@@ -477,45 +479,40 @@ class Test_torrent_path(asynctest.TestCase):
     async def test_only_any(self, mock_torrents, mock_find_subtree):
         mock_files = MockTree(foo=MockTree(bar=MockTree(),
                                            ber=MockTree(),
-                                           bir=MockFile('biz')))
+                                           bir=MockFile('bir')))
         mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
         mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='any'))
-        exp_cands = (Candidates(('bar', 'ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        exp_cands = (Candidates(('bar', 'ber', 'bir'), curarg_seps=('/',), label='mock/path'),)
+        self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
 
-    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
-    async def test_only_auto_with_path_pointing_to_file(self, mock_torrents, mock_find_subtree):
+    async def test_only_auto_with_path_pointing_to_file(self, mock_torrents):
         mock_files = MockTree(foo=MockTree(bar=MockFile('bar'),
                                            ber=MockTree(),
-                                           bir=MockFile('biz')))
+                                           bir=MockFile('bir')))
         mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
-        mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/bir', curpos=10), only='auto'))
-        exp_cands = (Candidates(('bar', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        exp_cands = (Candidates(('bar', 'bir'), curarg_seps=('/',), label='Files in mock/path'),)
+        self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
-        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('bir',)),
-                                                            call(mock_torrent_list[0], ())])
 
-    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
-    async def test_only_auto_with_path_pointing_to_directory(self, mock_torrents, mock_find_subtree):
+    async def test_only_auto_with_path_pointing_to_directory(self, mock_torrents):
         mock_files = MockTree(foo=MockTree(bar=MockFile('bar'),
                                            ber=MockTree(baz=MockFile('baz'),
                                                         biz=MockFile('biz')),
                                            bir=MockTree()))
         mock_torrent_list = [{'name': 'foo', 'files': mock_files}]
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
-        mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/ber', curpos=10), only='auto'))
         exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
-        self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('ber',)),
-                                                            call(mock_torrent_list[0], ())])
+        self.assertEqual(cands, exp_cands)
