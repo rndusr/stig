@@ -903,6 +903,9 @@ class Args(tuple):
     def curarg_index(self):
         """Index of currently focused argument"""
         return self._curarg_index
+    @curarg_index.setter
+    def curarg_index(self, index):
+        self._curarg_index = index
 
     @property
     def curarg_curpos(self):
