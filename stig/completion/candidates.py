@@ -238,10 +238,9 @@ async def torrent_path(curarg, only='auto'):
 
     def level_up(path):
         # Remove all empty parts from the right
-        while path and path[-1] == '':
+        while len(path) > 1 and path[-1] == '':
             path = path[:-1]
         # Remove last part from the right
-        log.debug('    Cropping %r', path)
         return path[:-1] if path else path
 
     def get_cands(torrent, path, only):
