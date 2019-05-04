@@ -163,8 +163,7 @@ class _CompletionCandidatesMixin():
             # Check if any argument left of the current argument is an option that
             # wants another parameter
             for i,arg in enumerate(reversed(args.before_curarg)):
-                if (hasattr(cls, 'completion_candidates_params') and
-                    _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i)):
+                if _is_option(cls, arg) and _option_wants_arg(cls, option=arg, roffset=i):
                     option_name = cls.short_options.get(arg, arg)
                     log.debug('Completing parameters for %r', option_name)
                     return cls.completion_candidates_params(option_name, args)
