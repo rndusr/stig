@@ -848,37 +848,44 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         """Complete positional arguments"""
         args_wo = args.without_options
         if args_wo.curarg_index == 1:
-            # First positional argument is a command's name
+            # First positional argument is the subcmd's name
             return candidates.commands()
-        elif args_wo.curarg_index >= 2:
-            cmdcls = objects.cmdmgr.get_cmdcls(args_wo[1])
-            if cmdcls is not None:
-                return cmdcls.completion_candidates(args[1:])
+        else:
+            # Any other positional arguments will be passed to subcmd
+            subcmd = cls._get_subcmd(args)
+            if subcmd:
+                return candidates.for_args(subcmd)
 
     @classmethod
     def completion_candidates_opts(cls, args):
         """Return candidates for arguments that start with '-'"""
-        if not args.curarg.startswith('-'):
-            # Cursor is not on an option
-            return
-
-        # Find name of command 'tab' is calling, i.e. the first non-option
-        # before the current argument
-        args_bc = args.before_curarg
-        for i,arg in enumerate(args_bc):
-            if i >= 1 and not arg.startswith('-'):
-                # Get command's class and ask it for completion candidates,
-                # providing the command line without 'tab' and it's options
-                cmdcls = objects.cmdmgr.get_cmdcls(arg)
-                if cmdcls is not None:
-                    return cmdcls.completion_candidates(args[i:])
-        return super().completion_candidates_opts(args)
+        subcmd = cls._get_subcmd(args)
+        if subcmd:
+            # Get completion candidates from subcmd's class
+            return candidates.for_args(subcmd)
+        else:
+            # Parent class generates candidates for our own options
+            return super().completion_candidates_opts(args)
 
     @classmethod
     def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option in ('--close', '--focus'):
             return candidates.tab_titles()
+
+    @classmethod
+    def _get_subcmd(cls, args):
+        # Find first argument after the first one (which is always 'tab') that
+        # doesn't start with '-' and return a slice from there to the end.
+        args_bc = args.before_curarg
+        for i,arg in enumerate(args_bc):
+            # The first argument is always 'tab' and command names never start with '-'
+            if i >= 1 and not arg.startswith('-'):
+                # If there is only one argument, it's the subcmd's name and
+                # because the cursor is still on it, it's not completed/known yet
+                subargs = args[i:]
+                if len(subargs) >= 2:
+                    return subargs
 
 
 class TUICmd(metaclass=InitCommand):
