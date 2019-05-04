@@ -34,6 +34,14 @@ def commands():
                       label='Commands')
 
 
+def for_args(args):
+    """Get completion candidates for command line `args`"""
+    cmdcls = objects.cmdmgr.get_cmdcls(args[0])
+    if cmdcls is not None:
+        log.debug('Getting candidates for args: %r', args)
+        return cmdcls.completion_candidates(args)
+
+
 @functools.lru_cache(maxsize=None)
 def setting_names():
     """Names of settings"""
