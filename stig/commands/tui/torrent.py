@@ -26,12 +26,15 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
                      mixin.polling_frenzy, mixin.make_request):
     provides = {'tui'}
 
-        # In the TUI, it makes more sense to use $HOME as the base directory for
-        # relative paths instead of the current working directory.
-        return os.path.join(os.environ.get('HOME', '.'),
-                            os.path.expanduser(path))
     @staticmethod
     def make_path_absolute(path):
+        if path.startswith('magnet:?'):
+            return path
+        else:
+            # In the TUI, it makes more sense to use $HOME as the base directory for
+            # relative paths instead of the current working directory.
+            return os.path.join(os.environ.get('HOME', '.'),
+                                os.path.normpath(os.path.expanduser(path)))
 
     @classmethod
     def completion_candidates_posargs(cls, args):
