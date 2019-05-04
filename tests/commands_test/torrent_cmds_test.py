@@ -13,7 +13,6 @@ from types import SimpleNamespace
 import os
 
 
-from stig.commands.cli import AddTorrentsCmd
 class TestAddTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -21,8 +20,39 @@ class TestAddTorrentsCmd(CommandTestCase):
                    srvapi=self.srvapi,
                    remotecfg=self.remotecfg)
 
+    async def test_CLI_make_path_absolute(self):
+        from stig.commands.cli import AddTorrentsCmd
+        abspath = '/path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
+        cwdpath = './path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), os.path.join(os.getcwd(), 'path/to/file.torrent'))
+        relpath = 'path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), os.path.join(os.getcwd(), 'path/to/file.torrent'))
+        homepath = '~/path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+        uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), uri)
+
+    async def test_TUI_make_path_absolute(self):
+        from stig.commands.tui import AddTorrentsCmd
+        abspath = '/path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
+        cwdpath = './path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+        relpath = 'path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+        with patch.dict(os.environ):
+            del os.environ['HOME']
+            for path in (cwdpath, relpath):
+                self.assertEqual(AddTorrentsCmd.make_path_absolute(path), './path/to/file.torrent')
+        homepath = '~/path/to/file.torrent'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+        uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
+        self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), uri)
+
     @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
     async def test_success(self, mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
         self.srvapi.torrent.response = Response(
             success=True,
             msgs=('Added Some Torrent',),
@@ -35,6 +65,7 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
     async def test_failure(self, mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
         self.srvapi.torrent.response = Response(
             success=False,
             errors=('Bogus torrent',),
@@ -47,6 +78,7 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
     async def test_multiple_torrents(self, mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
         self.srvapi.torrent.response = [
             Response(success=True,
                      msgs=['Added Some Torrent'],
@@ -57,14 +89,15 @@ class TestAddTorrentsCmd(CommandTestCase):
         ]
         process = await self.execute(AddTorrentsCmd, 'some.torrent', 'another.torrent')
         self.srvapi.torrent.assert_called(2, 'add',
-                                       ('some.torrent',), {'stopped': False, 'path': None},
-                                       ('another.torrent',), {'stopped': False, 'path': None})
+                                          ('some.torrent',), {'stopped': False, 'path': None},
+                                          ('another.torrent',), {'stopped': False, 'path': None})
         self.assertEqual(process.success, False)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr('add: Something went wrong')
 
     @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
     async def test_option_stopped(self, mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
         self.srvapi.torrent.response = Response(
             success=True,
             msgs=('Added Some Torrent',),
@@ -77,6 +110,7 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.fs_path')
     async def test_CLI_completion_candidates_for_posargs(self, mock_fs_path):
+        from stig.commands.cli import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))
@@ -101,6 +135,7 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.fs_path')
     async def test_completion_candidates_for_path_option(self, mock_fs_path):
+        from stig.commands.cli import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
         self.remotecfg['path.complete'] = '/bar/baz'
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', '--path', 'foo', 'x.torrent'), curarg_index=2),
