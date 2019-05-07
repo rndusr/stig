@@ -934,10 +934,7 @@ class Args(tuple):
             if not subargs:
                 # Args are never really empty
                 subargs = ('',)
-                if self.curarg_index is not None and self.curarg_curpos is not None:
-                    curarg_index = curarg_curpos = 0
-                else:
-                    curarg_index = curarg_curpos = None
+                curarg_index = curarg_curpos = None
             elif item.step is not None:
                 raise RuntimeError('Slicing with steps is not implemented yet')
             elif self.curarg_index is None or self.curarg_curpos is None:
