@@ -104,7 +104,7 @@ def tab_titles():
     """Titles (strings) of TUI tabs"""
     from ..tui.tuiobjects import tabs
     return Candidates((widget.original_widget.text
-                       for widget in tabs.titles), label='Tab titles')
+                       for widget in tabs.titles), label='Tab Titles')
 
 
 def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
