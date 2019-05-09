@@ -107,6 +107,12 @@ def tab_titles():
                        for widget in tabs.titles), label='Tab Titles')
 
 
+def keybinding_contexts():
+    """Arguments for the '--context' option of the 'bind' command"""
+    from ..tui.tuiobjects import keymap
+    return Candidates(keymap.contexts, label='Keybinding Contexts')
+
+
 def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
     """
     File system path entries
