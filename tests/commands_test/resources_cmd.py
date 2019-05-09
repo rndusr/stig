@@ -207,7 +207,7 @@ class CommandTestCase(asynctest.TestCase):
             cands = await cands
 
         if cands is None:
-            self.assertIs(exp_cands, None)
+            self.assertIs(None, exp_cands)
         else:
             self.assertEqual(tuple(cands), tuple(sorted(exp_cands)))
             self.assertEqual(cands.curarg_seps, exp_curarg_seps)
