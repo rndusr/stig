@@ -888,7 +888,9 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        args_wo = args.without_options()
+        args_wo = args.without_options({('--close', '-c'): 1,
+                                        ('--focus', '-f'): 1,
+                                        ('--title', '-t'): 1})
         if args_wo.curarg_index == 1:
             # First positional argument is the subcmd's name
             return candidates.commands()
