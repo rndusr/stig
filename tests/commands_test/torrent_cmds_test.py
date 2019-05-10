@@ -112,11 +112,13 @@ class TestAddTorrentsCmd(CommandTestCase):
     async def test_CLI_completion_candidates_for_posargs(self, mock_fs_path):
         from stig.commands.cli import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
-        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1),
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'),
+                                                                     curarg_index=1, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', glob='*.torrent', base='.')
         mock_fs_path.reset_mock()
-        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'), curarg_index=2),
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'),
+                                                                     curarg_index=2, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('bar', glob='*.torrent', base='.')
 
@@ -125,11 +127,13 @@ class TestAddTorrentsCmd(CommandTestCase):
     async def test_TUI_completion_candidates_for_posargs(self, mock_fs_path):
         from stig.commands.tui import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
-        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'), curarg_index=1),
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo'),
+                                                                     curarg_index=1, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', glob='*.torrent', base='/mock/home/dir')
         mock_fs_path.reset_mock()
-        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'), curarg_index=2),
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'foo', 'bar'),
+                                                                     curarg_index=2, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('bar', glob='*.torrent', base='/mock/home/dir')
 
@@ -138,16 +142,18 @@ class TestAddTorrentsCmd(CommandTestCase):
         from stig.commands.cli import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
         self.remotecfg['path.complete'] = '/bar/baz'
-        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', '--path', 'foo', 'x.torrent'), curarg_index=2),
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', '--path', 'foo', 'x.torrent'),
+                                                                     curarg_index=2, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
         mock_fs_path.reset_mock()
-        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'x.torrent', '--path', 'foo'), curarg_index=3),
+        await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'x.torrent', '--path', 'foo'),
+                                                                     curarg_index=3, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
         mock_fs_path.reset_mock()
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', 'x.torrent', 'y.torrent', '--path', 'foo'),
-                                                                     curarg_index=4),
+                                                                     curarg_index=4, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
         mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
 
@@ -337,7 +343,7 @@ class TestMoveTorrentsCLICmd(CommandTestCase):
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
         self.remotecfg['path.complete'] = '/some/path/'
 
-        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2))
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2, curarg_curpos=3))
         mock_torrent_filter.assert_not_called()
         mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
@@ -357,7 +363,7 @@ class TestMoveTorrentsTUICmd(CommandTestCase):
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
         self.remotecfg['path.complete'] = '/some/path/'
 
-        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo'), curarg_index=1))
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo'), curarg_index=1, curarg_curpos=3))
         mock_torrent_filter.assert_called_once_with('foo')
         mock_fs_path.assert_called_once_with('foo', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, (Candidates(('d', 'e', 'f')),
@@ -381,7 +387,7 @@ class TestMoveTorrentsTUICmd(CommandTestCase):
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
         self.remotecfg['path.complete'] = '/some/path/'
 
-        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2))
+        cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2, curarg_curpos=3))
         mock_torrent_filter.assert_not_called()
         mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
