@@ -687,31 +687,79 @@ def maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims=DEFAULT
     return tokens, curtok_index, curtok_curpos
 
 
-def remove_options(args, curarg_index, curarg_curpos):
+def _get_paramspec(options, arg):
+    for key,spec in options.items():
+        if arg in key:
+            return spec
+
+
+def remove_options(args, curarg_index, curarg_curpos, options={}):
     """
-    Remove arguments that start with "-" and adjust current argument and cursor
-    position if necessary
+    Remove options and parameters from `args` and adjust `curarg_index` and
+    `curarg_curpos` if necessary
+
+    `options` is a mapping that maps tuples of option names (e.g. `('--output',
+    '-o')`) to one of these values:
+
+        <int> - Remove <int> arguments after these options
+        "*"   - Remove all arguments after these options until an argument
+                that starts with "-" is encountered
+
+    (Parameters are defined as arguments to an option, e.g. "--option parameter".)
 
     Return new arguments, index of current argument and cursor position in
     current argument
     """
-    if curarg_index is None:
-        return ([arg for arg in args if not arg.startswith('-')],
-                curarg_index, curarg_curpos)
-
     # Reduce index of current argument if we remove options to the left of it
     new_curarg_index = curarg_index
     new_curarg_curpos = curarg_curpos
+    cur_spec, params_found = None, 0
     args_wo_opts = []
+
     for i,arg in enumerate(args):
-        if not arg.startswith('-'):
+        append_arg = True
+        is_option = arg.startswith('-')
+        if is_option:
+            append_arg = False
+            cur_spec, params_found = _get_paramspec(options, arg), 0
+        elif cur_spec is not None:
+            # Find out whether this argument is a parameter for an option we
+            # encountered earlier
+            params_found += 1
+            if isinstance(cur_spec, int):
+                if params_found <= cur_spec:
+                    append_arg = False
+            elif cur_spec == '*':
+                if not is_option:
+                    append_arg = False
+            else:
+                raise ValueError('Invalid parameter spec: %r' % (cur_spec,))
+
+        if append_arg:
             args_wo_opts.append(arg)
-        elif i < curarg_index:
-            # Removing an argument before the current one
-            new_curarg_index -= 1
-        elif i == curarg_index:
-            # Removing the current argument sets the cursor position in it to 0
-            new_curarg_curpos = 0
+        elif curarg_index is not None and curarg_curpos is not None:
+            if i < curarg_index:
+                # Removing an argument before the current one
+                new_curarg_index -= 1
+            elif i == curarg_index:
+                # Removing the current argument
+                new_curarg_curpos = 0
+
+    # Ensure at least one empty argument
+    if not args_wo_opts:
+        args_wo_opts = ['']
+        new_curarg_index = new_curarg_curpos = 0
+
+    # Ensure index and curpos are not out of bounds
+    elif curarg_index is not None and curarg_curpos is not None:
+        new_curarg_index_max = len(args_wo_opts) - 1
+        new_curarg_curpos_max = len(args_wo_opts[-1])
+        if new_curarg_index > new_curarg_index_max:
+            new_curarg_index = new_curarg_index_max
+            new_curarg_curpos = new_curarg_curpos_max
+        elif new_curarg_curpos > new_curarg_curpos_max:
+            new_curarg_curpos = new_curarg_curpos_max
+
     return args_wo_opts, new_curarg_index, new_curarg_curpos
 
 
@@ -919,14 +967,18 @@ class Args(tuple):
         if curarg is not None:
             curarg.curpos = curpos
 
-    @property
-    def without_options(self):
+    def without_options(self, options={}):
         """
-        Copy without arguments that start with '-'
+        Return copy without options and parameters for options
 
-        `curarg_index` and `curarg_curpos` are adjusted sensibly.
+        `options` is a mapping that maps tuples of option names (e.g. `('--output',
+        '-o')`) to one of these values:
+
+            <int> - Remove <int> arguments after these options
+            "*"   - Remove all arguments after these options until an argument
+                    that starts with "-" is encountered
         """
-        return Args(*remove_options(self, self.curarg_index, self.curarg_curpos))
+        return Args(*remove_options(self, self.curarg_index, self.curarg_curpos, options))
 
     def __getitem__(self, item):
         if isinstance(item, slice):

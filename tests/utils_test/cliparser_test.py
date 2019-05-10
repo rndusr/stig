@@ -1129,6 +1129,49 @@ class Test_remove_options(unittest.TestCase):
         self.do((['foo', '--bar', 'baz'], 1, 1), (['foo', 'baz'], 1, 0))
         self.do((['foo', '--bar', 'baz'], 1, 2), (['foo', 'baz'], 1, 0))
         self.do((['foo', '--bar', 'baz'], 1, 3), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 4), (['foo', 'baz'], 1, 0))
+        self.do((['foo', '--bar', 'baz'], 1, 5), (['foo', 'baz'], 1, 0))
+
+    def test_cursor_on_a_parameter_with_options(self):
+        opts = {('--foo', '-f'): 0, ('--bar', '-b'): 1, ('--baz', '-z'): 2}
+
+        for opt in ('--foo', '-f'):
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 2, 0, opts), (['foo', '1', '2', '3', 'end'], 1, 0))
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 2, 1, opts), (['foo', '1', '2', '3', 'end'], 1, 1))
+            self.do((['foo', opt, '-x'], 2, 0, opts), (['foo'], 0, 3))
+            self.do((['foo', opt, '-x'], 2, 1, opts), (['foo'], 0, 3))
+
+        for opt in ('--bar', '-b'):
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 2, 0, opts), (['foo', '2', '3', 'end'], 1, 0))
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 2, 1, opts), (['foo', '2', '3', 'end'], 1, 0))
+            self.do((['foo', opt, '1', '-x'], 2, 0, opts), (['foo'], 0, 3))
+            self.do((['foo', opt, '1', '-x'], 2, 1, opts), (['foo'], 0, 3))
+
+        for opt in ('--baz', '-z'):
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 3, 0, opts), (['foo', '3', 'end'], 1, 0))
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 3, 1, opts), (['foo', '3', 'end'], 1, 0))
+            self.do((['foo', opt, '1', '2', '-x'], 2, 0, opts), (['foo'], 0, 3))
+            self.do((['foo', opt, '1', '2', '-x'], 2, 1, opts), (['foo'], 0, 3))
+
+    def test_cursor_on_a_parameter_with_greedy_option(self):
+        opts = {('--greedy', '-g',): '*'}
+        for opt in ('--greedy', '-g'):
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 2, 0, opts), (['foo', 'end'], 1, 0))
+            self.do((['foo', opt, '1', '2', '3', '-x', 'end'], 2, 1, opts), (['foo', 'end'], 1, 0))
+            self.do((['foo', opt, '-x'], 2, 0, opts), (['foo'], 0, 3))
+            self.do((['foo', opt, '-x'], 2, 1, opts), (['foo'], 0, 3))
+
+    def test_multiple_options_that_take_parameters(self):
+        opts = {('-a'): 1, ('-b'): 1, ('-c'): 2}
+        self.do((['foo', '-a', '1', '-b', '2', '-c', '3', '4', '-x', 'end'], 0, 0, opts),
+                (['foo', 'end'], 0, 0))
+        self.do((['foo', '-a', '1', 'a', '-b', '2', 'b', '-c', '3', '4', 'c', '-x', 'end'], 0, 0, opts),
+                (['foo', 'a', 'b', 'c', 'end'], 0, 0))
+
+    def test_invalid_option_spec(self):
+        opts = {('-x',): 'x'}
+        with self.assertRaises(ValueError):
+            self.do((['foo', '-x', '1', '2', '3', '-x', 'end'], 2, 0, opts), ([], 0, 0))
 
 
 class Test_get_current_cmd(unittest.TestCase):

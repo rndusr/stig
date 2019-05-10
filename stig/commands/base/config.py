@@ -442,7 +442,7 @@ class RateLimitCmdbase(metaclass=InitCommand):
 
     @classmethod
     def completion_candidates_posargs(cls, args):
-        args_wo_opts = args.without_options
+        args_wo_opts = args.without_options()
         if args_wo_opts.curarg_index == 1:
             cands = []
             if 'up' not in args_wo_opts.curarg:
