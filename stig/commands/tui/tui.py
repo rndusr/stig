@@ -115,6 +115,48 @@ class BindCmd(metaclass=InitCommand):
         except ValueError as e:
             raise CmdError(e)
 
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        args_wo = args.without_options({('--context', '-c'): 1,
+                                        ('--description', '-d'): 1})
+        if args_wo.curarg_index == 2:
+            # First positional argument is the key, second is the command's name
+            return candidates.commands()
+        else:
+            # Any other positional arguments will be passed to subcmd
+            subcmd = cls._get_subcmd(args)
+            if subcmd:
+                return candidates.for_args(subcmd)
+
+    @classmethod
+    def completion_candidates_opts(cls, args):
+        """Return candidates for arguments that start with '-'"""
+        subcmd = cls._get_subcmd(args)
+        if subcmd:
+            # Get completion candidates from subcmd's class
+            return candidates.for_args(subcmd)
+        else:
+            # Parent class generates candidates for our own options
+            return super().completion_candidates_opts(args)
+
+    @classmethod
+    def completion_candidates_params(cls, option, args):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--context':
+            return candidates.keybinding_contexts()
+
+    @classmethod
+    def _get_subcmd(cls, args):
+        options = {('--context', '-c'): 1,
+                   ('--description', '-d'): 1}
+        # First posarg is 'bind', second posarg is the key
+        subcmd_start = args.nth_posarg_index(3, options)
+        # Subcmd is only relevant if the cursor is somewhere on it.
+        # Otherwise, we're on our own arguments.
+        if subcmd_start is not None and subcmd_start < args.curarg_index:
+            return args[subcmd_start:]
+
 
 class UnbindCmd(metaclass=InitCommand):
     name = 'unbind'
