@@ -919,17 +919,15 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
 
     @classmethod
     def _get_subcmd(cls, args):
-        # Find first argument after the first one (which is always 'tab') that
-        # doesn't start with '-' and return a slice from there to the end.
-        args_bc = args.before_curarg
-        for i,arg in enumerate(args_bc):
-            # The first argument is always 'tab' and command names never start with '-'
-            if i >= 1 and not arg.startswith('-'):
-                # If there is only one argument, it's the subcmd's name and
-                # because the cursor is still on it, it's not completed/known yet
-                subargs = args[i:]
-                if len(subargs) >= 2:
-                    return subargs
+        options = {('--close', '-c'): 1,
+                   ('--focus', '-f'): 1,
+                   ('--title', '-t'): 1}
+        # First posarg is 'tab'
+        subcmd_start = args.nth_posarg_index(2, options)
+        # Subcmd is only relevant if the cursor is somewhere on it.
+        # Otherwise, we're on our own arguments.
+        if subcmd_start is not None and subcmd_start < args.curarg_index:
+            return args[subcmd_start:]
 
 
 class TUICmd(metaclass=InitCommand):
