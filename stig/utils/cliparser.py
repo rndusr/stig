@@ -763,6 +763,48 @@ def remove_options(args, curarg_index, curarg_curpos, options={}):
     return args_wo_opts, new_curarg_index, new_curarg_curpos
 
 
+def get_nth_posarg_index(n, args, options={}):
+    """
+    Return index in `args` of the `n`th positional argument.  Positional
+    arguments don't start with "-" and are not parameters for options.
+
+    Return None if there are no positional arguments in `args`.
+
+    See `remove_options` for documentation about `options`.
+    """
+    posargs_found = -1
+    cur_spec, params_found = None, 0
+    for i,arg in enumerate(args):
+        is_option = arg.startswith('-')
+        is_posarg = False
+
+        if is_option:
+            cur_spec, params_found = _get_paramspec(options, arg), 0
+        elif cur_spec is not None:
+            # Find out whether this argument is a parameter for an option
+            params_found += 1
+
+            if isinstance(cur_spec, int):
+                if params_found > cur_spec:
+                    is_posarg = True
+                    posargs_found += 1
+            elif cur_spec == '*':
+                if not is_option:
+                    is_posarg = True
+                    posargs_found += 1
+            else:
+                raise ValueError('Invalid parameter spec: %r' % (cur_spec,))
+
+        else:
+            # Option is not specified in `options` but it's still an option
+            is_posarg = True
+            posargs_found += 1
+
+        if is_posarg and posargs_found == n-1:
+            return i
+    return None
+
+
 def get_current_cmd(tokens, curtok_index, ops):
     """
     Extract tokens before and after the currently focused token up to any
@@ -981,6 +1023,17 @@ class Args(tuple):
                     that starts with "-" is encountered
         """
         return Args(*remove_options(self, self.curarg_index, self.curarg_curpos, options))
+
+    def nth_posarg_index(self, n, options={}):
+        """
+        Return index of `n`th positional argument (any argument that isn't an option
+        or a parameter for an option)
+
+        Return None if there are no positional arguments.
+
+        See `without_options` for documentation on the `options` argument.
+        """
+        return get_nth_posarg_index(n, self, options)
 
     def __getitem__(self, item):
         if isinstance(item, slice):

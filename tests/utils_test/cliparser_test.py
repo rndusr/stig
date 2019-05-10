@@ -1174,6 +1174,54 @@ class Test_remove_options(unittest.TestCase):
             self.do((['foo', '-x', '1', '2', '3', '-x', 'end'], 2, 0, opts), ([], 0, 0))
 
 
+class Test_get_nth_posarg_index(unittest.TestCase):
+    def do(self, input, output):
+        self.assertEqual(cliparser.get_nth_posarg_index(*input), output)
+
+    def test_no_args(self):
+        self.do((1, []), None)
+
+    def test_no_posargs(self):
+        self.do((1, ['-a', '-b', '-c']), None)
+        self.do((1, ['-a', 'b'], {('-a',): 1}), None)
+        self.do((1, ['-a', 'b', 'c'], {('-a',): 2}), None)
+        self.do((1, ['-a', 'b', 'c', 'd'], {('-a',): 3}), None)
+        self.do((1, ['-a', 'b', '-c', 'd'], {('-a',): 1, ('-c',): 1}), None)
+
+    def test_only_posargs(self):
+        self.do((1, ['a', 'b', 'c', 'd']), 0)
+        self.do((2, ['a', 'b', 'c', 'd']), 1)
+        self.do((3, ['a', 'b', 'c', 'd']), 2)
+        self.do((4, ['a', 'b', 'c', 'd']), 3)
+        self.do((5, ['a', 'b', 'c', 'd']), None)
+
+    def test_options_without_parameters(self):
+        self.do((1, ['-a', 'b', 'c']), 1)
+        self.do((2, ['-a', 'b', 'c']), 2)
+        self.do((3, ['-a', 'b', 'c']), None)
+        self.do((1, ['a', '-b', 'c']), 0)
+        self.do((2, ['a', '-b', 'c']), 2)
+        self.do((3, ['a', '-b', 'c']), None)
+        self.do((1, ['a', 'b', '-c']), 0)
+        self.do((2, ['a', 'b', '-c']), 1)
+        self.do((3, ['a', 'b', '-c']), None)
+        self.do((1, ['-a', 'b', '-c']), 1)
+        self.do((2, ['-a', 'b', '-c']), None)
+        self.do((1, ['-a', '-b', '-c']), None)
+
+    def test_options_with_parameters(self):
+        options = {('-one',): 1, ('-two',): 2}
+        self.do((1, ['-one', 'a', 'b', 'c'], options), 2)
+        self.do((2, ['-one', 'a', 'b', 'c'], options), 3)
+        self.do((3, ['-one', 'a', 'b', 'c'], options), None)
+        self.do((1, ['a', '-one', 'b', 'c'], options), 0)
+        self.do((2, ['a', '-one', 'b', 'c'], options), 3)
+        self.do((3, ['a', '-one', 'b', 'c'], options), None)
+        self.do((1, ['a', 'b', '-one', 'c'], options), 0)
+        self.do((2, ['a', 'b', '-one', 'c'], options), 1)
+        self.do((3, ['a', 'b', '-one', 'c'], options), None)
+
+
 class Test_get_current_cmd(unittest.TestCase):
     ops = ('&', 'and', '|', 'or')
 
