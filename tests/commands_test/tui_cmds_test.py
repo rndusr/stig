@@ -11,46 +11,56 @@ class TestTabCmd(CommandTestCase):
     @patch('stig.completion.candidates.commands')
     async def test_completion_candidates__subcmd_name(self, mock_commands, mock_for_args):
         mock_commands.return_value = Candidates(('foo', 'bar', 'baz'))
-        args = Args(('tab', '--bar', 'a', '-b', 'c'), curarg_index=2, curarg_curpos=0)
-        await self.assert_completion_candidates(TabCmd, args, exp_cands=('foo', 'bar', 'baz'))
-        mock_commands.assert_called_once_with()
-        mock_for_args.assert_not_called()
+        for args in (Args(('tab', 'a', '-b', 'c'), curarg_index=1),
+                     Args(('tab', '-c', 'foo', 'a', '-b', 'c'), curarg_index=3),
+                     Args(('tab', '-c', 'foo', '-t', 'bar', 'a', '-b', 'c'), curarg_index=5),):
+            await self.assert_completion_candidates(TabCmd, args, exp_cands=('foo', 'bar', 'baz'))
+            mock_commands.assert_called_with()
+            mock_for_args.assert_not_called()
 
     @patch('stig.completion.candidates.for_args')
+    @patch('stig.completion.candidates.commands')
     @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
-    async def test_completion_candidates__own_options(self, mock_completion_candidates_opts, mock_for_args):
+    async def test_completion_candidates__own_options(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('--foo', '--bar', '--baz'))
-        args = Args(('tab', '--bar', 'a', '-b', 'c'), curarg_index=1, curarg_curpos=1)
-        await self.assert_completion_candidates(TabCmd, args, exp_cands=('--foo', '--bar', '--baz'))
-        mock_completion_candidates_opts.assert_called_once_with(args)
-        mock_for_args.assert_not_called()
+        for args in (Args(('tab', '-', 'a', '-b', 'c'), curarg_index=1, curarg_curpos=1),
+                     Args(('tab', '-c', 'foo', '-t', 'bar', 'a', '-b', 'c'), curarg_index=3)):
+            await self.assert_completion_candidates(TabCmd, args, exp_cands=('--foo', '--bar', '--baz'))
+            mock_completion_candidates_opts.assert_called_with(args)
+            mock_for_args.assert_not_called()
+            mock_commands.assert_not_called()
 
     @patch('stig.completion.candidates.for_args')
+    @patch('stig.completion.candidates.commands')
     @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
-    async def test_completion_candidates__subcmd_options(self, mock_completion_candidates_opts, mock_for_args):
+    async def test_completion_candidates__subcmd_options(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_for_args.return_value = Candidates(('--foo', '--bar', '--baz'))
         args = Args(('tab', '--bar', 'a', '-b', 'c'), curarg_index=3, curarg_curpos=1)
         await self.assert_completion_candidates(TabCmd, args, exp_cands=('--foo', '--bar', '--baz'))
         mock_completion_candidates_opts.assert_not_called()
         mock_for_args.assert_called_once_with(Args(('a', '-b', 'c'), curarg_index=1, curarg_curpos=1))
+        mock_commands.assert_not_called()
 
     @patch('stig.completion.candidates.for_args')
+    @patch('stig.completion.candidates.commands')
     @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
-    async def test_completion_candidates__own_parameters(self, mock_completion_candidates_opts, mock_for_args):
+    async def test_completion_candidates__own_parameters(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('foo', 'bar', 'baz'))
-        args = Args(('tab', '-c', 'asdf', 'a', '-b', 'c'), curarg_index=2, curarg_curpos=0)
-        await self.assert_completion_candidates(TabCmd, args, exp_cands=('foo', 'bar', 'baz'))
-        mock_for_args.assert_not_called()
-        mock_completion_candidates_opts.assert_called_once_with(args)
+        for args in (Args(('tab', '-c', 'foo', '-t', '', 'a', '-b', 'c'), curarg_index=4),
+                     Args(('tab', '-c', 'foo', '-t', 'bar', 'a', '-b', 'c'), curarg_index=2, curarg_curpos=2)):
+            await self.assert_completion_candidates(TabCmd, args, exp_cands=('foo', 'bar', 'baz'))
+            mock_completion_candidates_opts.assert_called_with(args)
+            mock_for_args.assert_not_called()
+            mock_commands.assert_not_called()
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
     async def test_completion_candidates__subcmd_parameters(self, mock_commands, mock_for_args):
         mock_for_args.return_value = Candidates(('foo', 'bar', 'baz'))
-        args = Args(('tab', '--bar', 'a', '-b', 'c'), curarg_index=4, curarg_curpos=0)
+        args = Args(('tab', '--bar', 'a', '-b', 'c'), curarg_index=4)
         await self.assert_completion_candidates(TabCmd, args, exp_cands=('foo', 'bar', 'baz'))
-        mock_commands.assert_not_called()
         mock_for_args.assert_called_once_with(Args(('a', '-b', 'c'), curarg_index=2, curarg_curpos=0))
+        mock_commands.assert_not_called()
 
 
 from stig.commands.tui import BindCmd
