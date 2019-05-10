@@ -929,6 +929,8 @@ class Args(tuple):
                     yield Arg(arg)
         obj = super().__new__(cls, gen())
         obj._curarg_index = curarg_index
+        if curarg_index is not None and obj.curarg_curpos is None:
+            obj.curarg_curpos = 0
         return obj
 
     @property
