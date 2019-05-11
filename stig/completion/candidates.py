@@ -116,6 +116,22 @@ def sort_orders(clsname):
                       label=_utils.sorters_labels[clsname])
 
 
+def column_names(list_type):
+    """
+    Columns names for a certain type of list
+
+    When `list_type` is appended to "columns.", it must resolve to a proper
+    setting.
+    """
+    setting = objects.localcfg['columns.%s' % list_type]
+    cands = (Candidate(colname,
+                       in_parens=', '.join(setting.aliases_inverse.get(colname, '')))
+             for colname in setting.options)
+    return Candidates(cands,
+                      curarg_seps=(setting.sep.strip(),),
+                      label=_utils.columns_labels[list_type])
+
+
 def tab_titles():
     """Titles (strings) of TUI tabs"""
     from ..tui.tuiobjects import tabs
