@@ -100,6 +100,22 @@ def setting_values(args):
                        directories_only=os.path.isdir(value))
 
 
+def sort_orders(clsname):
+    """
+    Names of sort orders
+
+    `clsname` must be the name of a SorterBase derivative.
+    """
+    cls = _utils.get_sorter_cls(clsname)
+    cands = (Candidate(name,
+                       in_parens=', '.join(spec.aliases),
+                       description=spec.description)
+             for name,spec in cls.SORTSPECS.items())
+    return Candidates(cands,
+                      curarg_seps=(objects.localcfg['sort.torrents'].sep.strip(),),
+                      label=_utils.sorters_labels[clsname])
+
+
 def tab_titles():
     """Titles (strings) of TUI tabs"""
     from ..tui.tuiobjects import tabs
