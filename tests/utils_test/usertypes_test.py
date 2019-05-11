@@ -321,9 +321,12 @@ class TestTuple(_TestBase):
         self.assertEqual(t.options, (1, 2, 3))
 
     def test_aliases(self):
-        aliases = {1: 'one', 2: 'two'}
+        aliases = {1: 'one', 2: 'two', 'too': 'two'}
         t = Tuple(1, 2, 'three', aliases=aliases)
         self.assertEqual(t, ('one', 'two', 'three'))
+        self.assertEqual(t, Tuple(1, 'too', 'three', aliases=aliases))
+        self.assertEqual(t.aliases, {1: 'one', 2: 'two', 'too': 'two'})
+        self.assertEqual(t.aliases_inverse, {'one': [1], 'two': [2, 'too']})
 
     def test_dedup(self):
         self.assertEqual(Tuple('foo', 'bar', 'bar', 'baz', 'foo', dedup=False),
@@ -342,10 +345,12 @@ class TestOption(_TestBase):
 
     def test_aliases(self):
         options = ('foo', 'bar')
-        aliases = {'f': 'foo'}
+        aliases = {'f': 'foo', 'b': 'bar', 'BAR': 'bar'}
         self.assertEqual(Option('f', options=options, aliases=aliases), 'foo')
         self.assertEqual(Option('foo', options=options, aliases=aliases), 'foo')
         self.assertEqual(Option('bar', options=options, aliases=aliases), 'bar')
+        self.assertEqual(Option('b', options=options, aliases=aliases), 'bar')
+        self.assertEqual(Option('BAR', options=options, aliases=aliases), 'bar')
         with self.assert_raises(ValueError, 'Not one of: foo, bar'):
             Option('fo', options=options, aliases=aliases)
 
@@ -358,6 +363,10 @@ class TestOption(_TestBase):
         self.assertEqual(o.aliases, {'one': '1'})
         o = Option('1', options=('1', '2', '3'))
         self.assertEqual(o.aliases, {})
+
+    def test_aliases_inverse_property(self):
+        o = Option('1', options=('1', '2', '3'), aliases={'one': '1', 'two': '2', 'too': '2'})
+        self.assertEqual(o.aliases_inverse, {'1': ['one'], '2': ['two', 'too']})
 
     def test_errors(self):
         with self.assert_raises(RuntimeError, 'No options provided'):

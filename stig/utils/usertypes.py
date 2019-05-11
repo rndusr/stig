@@ -395,7 +395,13 @@ class Tuple(tuple, UsertypeMixin):
 
     @property
     def aliases_inverse(self):
-        return {option:alias for alias,option in self._config['aliases'].items()}
+        """Mapping of values to lists of aliases"""
+        options = {}
+        for alias,option in self._config['aliases'].items():
+            aliases = options.get(option, [])
+            aliases.append(alias)
+            options[option] = aliases
+        return options
 
 
 class Option(str, UsertypeMixin):
@@ -440,7 +446,13 @@ class Option(str, UsertypeMixin):
 
     @property
     def aliases_inverse(self):
-        return {option:alias for alias,option in self._config['aliases'].items()}
+        """Mapping of options to lists of aliases"""
+        options = {}
+        for alias,option in self._config['aliases'].items():
+            aliases = options.get(option, [])
+            aliases.append(alias)
+            options[option] = aliases
+        return options
 
 
 class _NumberBase(UsertypeMixin):
