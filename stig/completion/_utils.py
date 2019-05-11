@@ -15,6 +15,13 @@ import itertools
 import functools
 
 
+columns_labels = {'torrents' : 'Torrent List Columns',
+                  'files'    : 'File List Columns',
+                  'peers'    : 'Peer List Columns',
+                  'trackers' : 'Tracker List Columns',
+                  'settings' : 'Setting List Columns'}
+
+
 from ..client import filters as filter_clses
 
 # All filters use the same operators
