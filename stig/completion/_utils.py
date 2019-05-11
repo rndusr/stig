@@ -40,7 +40,7 @@ from ..client import filters as filter_clses
 # All filters use the same operators
 filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
 filter_combine_ops = ('&', '|')
-filter_labels = {'TorrentFilter' : 'Torrent Filters',
+filter_labels = {'TorrentFilter'  : 'Torrent Filters',
                   'FileFilter'    : 'File Filters',
                   'PeerFilter'    : 'Peer Filters',
                   'TrackerFilter' : 'Tracker Filters',
@@ -94,6 +94,7 @@ def filter_takes_completable_values(filter_cls, name):
         return (name in filter_cls.COMPARATIVE_FILTERS and
                 filter_spec is not None and
                 issubclass(filter_spec.value_type, str))
+
 
 
 def find_subtree(torrent, path):
