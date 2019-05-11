@@ -80,12 +80,12 @@ def setting_values(args):
     # Get candidates depending on what kind of setting it is (bool, option, etc)
     if isinstance(value, usertypes.Option) and focus_on_first_value:
         aliases = value.aliases_inverse
-        cands = (Candidate(opt, in_parens=aliases.get(opt, ''))
+        cands = (Candidate(opt, in_parens=', '.join(aliases.get(opt, '')))
                  for opt in value.options)
         return Candidates(cands, label='%s options' % (setting,))
     elif isinstance(value, usertypes.Tuple):
         aliases = value.aliases_inverse
-        cands = (Candidate(opt, in_parens=aliases.get(opt, ''))
+        cands = (Candidate(opt, in_parens=', '.join(aliases.get(opt, '')))
                  for opt in value.options)
         return Candidates(cands, label='%s options' % (setting,),
                           curarg_seps=(value.sep.strip(),))
