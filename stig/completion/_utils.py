@@ -22,6 +22,11 @@ columns_labels = {'torrents' : 'Torrent List Columns',
                   'settings' : 'Setting List Columns'}
 
 
+sorters_labels = {'TorrentSorter' : 'Torrent Sort Orders',
+                  'PeerSorter'    : 'Peer Sort Orders',
+                  'TrackerSorter' : 'Tracker Sort Orders',
+                  'SettingSorter' : 'Setting Sort Orders'}
+
 from ..client import filters as filter_clses
 
 # All filters use the same operators
