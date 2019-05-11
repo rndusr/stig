@@ -27,6 +27,14 @@ sorters_labels = {'TorrentSorter' : 'Torrent Sort Orders',
                   'TrackerSorter' : 'Tracker Sort Orders',
                   'SettingSorter' : 'Setting Sort Orders'}
 
+from ..client import sorters as sorter_clses
+
+@functools.lru_cache(maxsize=None)
+def get_sorter_cls(clsname):
+    return getattr(sorter_clses, clsname)
+
+
+
 from ..client import filters as filter_clses
 
 # All filters use the same operators
