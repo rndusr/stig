@@ -181,11 +181,9 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
-            return candidates.Candidates(objects.localcfg['sort.torrents'].options,
-                                         curarg_seps=(objects.localcfg['sort.torrents'].sep.strip(),))
+            return candidates.sort_orders('TorrentSorter')
         elif option == '--columns':
-            return candidates.Candidates(objects.localcfg['columns.torrents'].options,
-                                         curarg_seps=(objects.localcfg['columns.torrents'].sep.strip(),))
+            return candidates.column_names('torrents')
 
 
 class TorrentMagnetURICmdbase(metaclass=InitCommand):

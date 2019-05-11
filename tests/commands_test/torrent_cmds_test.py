@@ -288,23 +288,27 @@ class TestListTorrentsCmd(CommandTestCase):
                                                 exp_cands=('a', 'b', 'c'))
         mock_torrent_filter.assert_called_once_with('bar')
 
-    async def test_completion_candidates_for_sort_option(self):
-        self.localcfg['sort.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ')
+    @patch('stig.completion.candidates.sort_orders')
+    async def test_completion_candidates_for_sort_option(self, mock_sort_orders):
+        mock_sort_orders.return_value = Candidates(('a', 'b', 'c'), curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--sort', 'foo'), curarg_index=2),
-                                          exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+                                                exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--sort', 'foo', 'bar'), curarg_index=2),
-                                          exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+                                                exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', 'bar', '--sort', 'foo'), curarg_index=3),
-                                          exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+                                                exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+        self.assertEqual(mock_sort_orders.call_args_list, [call('TorrentSorter'),
+                                                           call('TorrentSorter'),
+                                                           call('TorrentSorter')])
 
     async def test_completion_candidates_for_columns_option(self):
-        self.localcfg['columns.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ')
+        self.localcfg['columns.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ', aliases_inverse={})
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--columns', 'foo'), curarg_index=2),
-                                          exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+                                                exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--columns', 'foo', 'bar'), curarg_index=2),
-                                          exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+                                                exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', 'bar', '--columns', 'foo'), curarg_index=3),
-                                          exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
+                                                exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
 
 
 from stig.commands.cli import TorrentMagnetURICmd
@@ -313,9 +317,9 @@ class TestTorrentMagnetURICmd(CommandTestCase):
     async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
         mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(TorrentMagnetURICmd, Args(('magnet', 'foo'), curarg_index=1),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(TorrentMagnetURICmd, Args(('magnet', 'foo', 'bar'), curarg_index=2),
-                                          exp_cands=None)
+                                                exp_cands=None)
 
 
 class TestMoveTorrentsCLICmd(CommandTestCase):
