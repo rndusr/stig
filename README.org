@@ -111,15 +111,16 @@
    For Arch Linux stig is available on AUR as [[https://aur.archlinux.org/packages/stig][stig]] and the latest development
    version as [[https://aur.archlinux.org/packages/stig-git][stig-git]].
 
-*** Pipsi (recommended)
-    [[https://github.com/mitsuhiko/pipsi][pipsi]] installs applications in self-contained virtual environments in
-    ~$HOME/.local/venvs/~ that include all dependencies.  Executables are
+*** Pipx (recommended)
+    [[https://github.com/pipxproject/pipx][Pipx]] installs applications in self-contained virtual environments in
+    ~$HOME/.local/pipx/~ that include all dependencies.  Executables are
     sym-linked to ~$HOME/.local/bin/~.
 
     #+BEGIN_SRC sh
-    $ pipsi install stig
-    $ pipsi upgrade stig
-    $ pipsi uninstall stig
+    $ pipx install stig
+    $ pipx upgrade stig      # Upgrades only stig
+    $ pipx upgrade-all stig  # Upgrades stig and all dependencies
+    $ pipx uninstall stig
     #+END_SRC
 
 *** Pip
@@ -140,16 +141,16 @@
                          session (this requires Python headers; e.g.
                          ~apt-get install libpython3-dev~)
 
-   To install depdencies for an extra, append ~[<EXTRA1>,<EXTRA2>,...]~ to the
-   installation source.
+   To install depdencies for an extra, provide the ~--spec~ option to pipx.
    #+BEGIN_SRC sh
-   $ pipsi install 'stig[setproctitle,geoip]'
+   $ pipx install stig --spec 'stig[geoip,setproctitle]'
    #+END_SRC
 
 *** Development version
-    To install the latest development version, simply replace ~stig~ in the
-    commands above with ~git+https://github.com/rndusr/stig.git#egg=stig~.  (You
-    may need to escape the ~#~ depending on your shell.)
+    To install the latest development version, use pipx's ~--spec~ option.
+   #+BEGIN_SRC sh
+   $ pipx install stig --spec 'git+https://github.com/rndusr/stig.git#egg=stig'
+   #+END_SRC
 
 *** Developing
     To make your code changes effective immediately, you can either run
