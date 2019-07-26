@@ -119,8 +119,7 @@
 
     #+BEGIN_SRC sh
     $ pipx install stig
-    $ pipx upgrade stig      # Upgrades only stig
-    $ pipx upgrade-all stig  # Upgrades stig and all dependencies
+    $ pipx upgrade stig
     $ pipx uninstall stig
     #+END_SRC
 
