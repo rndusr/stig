@@ -74,7 +74,7 @@
    defaults to ~$HOME/.config~ if not set.  Because a default rc file is empty,
    it is not created automatically to avoid clutter.
 
-   See ~stig help cfgman~ for more information.
+   See ~stig help cfg~ for more information.
 
 *** Example rc file
    #+BEGIN_SRC
