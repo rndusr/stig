@@ -476,7 +476,7 @@ class FilterChain(metaclass=_forward_attrs):
             ops = []
             expect = 'filter'
             for i,part in enumerate(parts):
-                if expect is 'filter':
+                if expect == 'filter':
                     if part not in '&|':
                         f = self.filterclass(part)
                         if f.match_everything:
@@ -488,7 +488,7 @@ class FilterChain(metaclass=_forward_attrs):
                             filters.append(f)
                             expect = 'operator'
                             continue
-                elif expect is 'operator' and part in '&|':
+                elif expect == 'operator' and part in '&|':
                     if part in '&|':
                         ops.append(part)
                         expect = 'filter'
