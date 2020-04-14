@@ -28,13 +28,14 @@ class AddTorrentsCmd(base.AddTorrentsCmdbase,
 
     @staticmethod
     def make_path_absolute(path):
-        if path.startswith('magnet:?'):
-            return path
+        # In the TUI, it makes more sense to use $HOME as the base directory for
+        # relative paths instead of the current working directory.
+        abspath = os.path.join(os.environ.get('HOME', '.'),
+                               os.path.normpath(os.path.expanduser(path)))
+        if os.path.exists(abspath):
+            return abspath
         else:
-            # In the TUI, it makes more sense to use $HOME as the base directory for
-            # relative paths instead of the current working directory.
-            return os.path.join(os.environ.get('HOME', '.'),
-                                os.path.normpath(os.path.expanduser(path)))
+            return path
 
     @classmethod
     def completion_candidates_posargs(cls, args):

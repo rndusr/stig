@@ -22,33 +22,69 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     async def test_CLI_make_path_absolute(self):
         from stig.commands.cli import AddTorrentsCmd
-        abspath = '/path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
-        cwdpath = './path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), os.path.join(os.getcwd(), 'path/to/file.torrent'))
-        relpath = 'path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), os.path.join(os.getcwd(), 'path/to/file.torrent'))
-        homepath = '~/path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
-        uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), uri)
+        with patch('os.path.exists', side_effect=lambda path: True):
+            abspath = '/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
+            cwdpath = './path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), os.path.join(os.getcwd(), 'path/to/file.torrent'))
+            relpath = 'path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), os.path.join(os.getcwd(), 'path/to/file.torrent'))
+            homepath = '~/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+            uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), os.path.join(os.getcwd(), uri))
+            url = 'http://some/url.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(url), os.path.join(os.getcwd(), 'http:/some/url.torrent'))
+        with patch('os.path.exists', side_effect=lambda path: False):
+            abspath = '/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
+            cwdpath = './path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), './path/to/file.torrent')
+            relpath = 'path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), 'path/to/file.torrent')
+            homepath = '~/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), '~/path/to/file.torrent')
+            uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), uri)
+            url = 'http://some/url.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(url), url)
 
     async def test_TUI_make_path_absolute(self):
         from stig.commands.tui import AddTorrentsCmd
-        abspath = '/path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
-        cwdpath = './path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
-        relpath = 'path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
-        with patch.dict(os.environ):
-            del os.environ['HOME']
-            for path in (cwdpath, relpath):
-                self.assertEqual(AddTorrentsCmd.make_path_absolute(path), './path/to/file.torrent')
-        homepath = '~/path/to/file.torrent'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
-        uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
-        self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), uri)
+        with patch('os.path.exists', side_effect=lambda path: True):
+            abspath = '/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), '/path/to/file.torrent')
+            cwdpath = './path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+            relpath = 'path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+            with patch.dict(os.environ):
+                del os.environ['HOME']
+                for path in (cwdpath, relpath):
+                    self.assertEqual(AddTorrentsCmd.make_path_absolute(path), './path/to/file.torrent')
+            homepath = '~/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), os.path.join(os.environ['HOME'], 'path/to/file.torrent'))
+            uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), os.path.join(os.environ['HOME'], uri))
+            url = 'http://some/url.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(url), os.path.join(os.environ['HOME'], 'http:/some/url.torrent'))
+        with patch('os.path.exists', side_effect=lambda path: False):
+            abspath = '/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(abspath), abspath)
+            cwdpath = './path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(cwdpath), cwdpath)
+            relpath = 'path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(relpath), relpath)
+            with patch.dict(os.environ):
+                del os.environ['HOME']
+                for path in (cwdpath, relpath):
+                    self.assertEqual(AddTorrentsCmd.make_path_absolute(path), path)
+            homepath = '~/path/to/file.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(homepath), homepath)
+            uri = 'magnet:?xt=urn:btih:e186f17ea5b29a694f7e4b89865baa65e9e51083'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(uri), uri)
+            url = 'http://some/url.torrent'
+            self.assertEqual(AddTorrentsCmd.make_path_absolute(url), url)
 
     @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
     async def test_success(self, mock_make_path_absolute):

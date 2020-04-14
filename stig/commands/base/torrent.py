@@ -65,10 +65,11 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
 
     @staticmethod
     def make_path_absolute(path):
-        if path.startswith('magnet:?'):
-            return path
+        abspath = os.path.abspath(os.path.expanduser(path))
+        if os.path.exists(abspath):
+            return abspath
         else:
-            return os.path.abspath(os.path.expanduser(path))
+            return path
 
     @classmethod
     def completion_candidates_params(cls, option, args):
