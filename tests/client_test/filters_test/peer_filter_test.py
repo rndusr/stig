@@ -71,10 +71,21 @@ class TestPeerFilter(unittest.TestCase, HelpersMixin):
                               filter_names=('client', 'cl'),
                               key='client')
 
-    def test_host(self):
-        self.check_str_filter(PeerFilter,
-                              filter_names=('country', 'cn'),
-                              key='country')
+    @unittest.mock.patch('stig.client.rdns.gethostbyaddr_from_cache')
+    def test_host(self, mock_gethost):
+        mock_gethost.side_effect = lambda ip: f'hostname of {ip}' if ip[0] == '1' else ip
+        self.check_filter(PeerFilter,
+                          filter_names=('host',),
+                          items=({'id': 1, 'ip': '123.4.5.6'},
+                                 {'id': 2, 'ip': '123.6.5.4'},
+                                 {'id': 3, 'ip': '23.4.5.6'},
+                                 {'id': 4, 'ip': '3.4.5.6'}),
+                          test_cases=(('{name}', (1, 2, 3, 4)),
+                                      ('!{name}', ()),
+                                      ('{name}=hostname of 123.6.5.4', (2,)),
+                                      ('{name}!=hostname of 123.6.5.4', (1, 3, 4)),
+                                      ('{name}~123', (1, 2)),
+                                      ('{name}!~123', (3, 4))))
 
     def test_port(self):
         self.check_int_filter(PeerFilter,
