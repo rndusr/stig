@@ -58,7 +58,7 @@ class _SingleFilter(Filter):
                                       description='Match VALUE against peer client'),
         'host'        : CmpFilterSpec(value_getter=lambda p: rdns.gethostbyaddr_from_cache(p['ip']) or p['ip'],
                                       value_type=TorrentPeer.TYPES['ip'],
-                                      description='Match VALUE against peer IP address'),
+                                      description='Match VALUE against peer host name or IP address'),
         'port'        : CmpFilterSpec(value_getter=lambda p: p['port'],
                                       value_type=TorrentPeer.TYPES['port'],
                                       description='Match VALUE against peer port'),
