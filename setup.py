@@ -42,7 +42,6 @@ setup(
         'natsort',
     ],
     extras_require = {
-        'geoip': ['maxminddb'],
         'setproctitle': ['setproctitle'],
     },
     tests_require = [

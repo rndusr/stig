@@ -658,7 +658,6 @@ def _guess_peer_rate_and_eta(peer_id, peer_progress, torrent_size):
 
     return rate, eta
 
-from . import geoip
 class TorrentPeer(abc.Mapping):
     TYPES = {
         'id'          : None,
@@ -668,7 +667,6 @@ class TorrentPeer(abc.Mapping):
         'ip'          : str,
         'port'        : int,
         'client'      : SmartCmpStr,
-        'country'     : SmartCmpStr,
         '%downloaded' : Percent,
         'rate-up'     : BandwidthInBytes,
         'rate-down'   : BandwidthInBytes,
@@ -678,7 +676,6 @@ class TorrentPeer(abc.Mapping):
 
     _MODIFIERS = {
         'id'      : lambda p: (p['tid'], p['ip'], p['port']),
-        'country' : lambda p: geoip.country_code(p['ip']) or '?',
     }
 
     def __init__(self, tid, tname, tsize, ip, port, client, pdownloaded, rate_up, rate_down):

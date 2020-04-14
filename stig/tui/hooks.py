@@ -54,7 +54,6 @@ localcfg.on_change(_refresh_lists, name='unit.size')
 localcfg.on_change(_refresh_lists, name='unitprefix.bandwidth')
 localcfg.on_change(_refresh_lists, name='unitprefix.size')
 localcfg.on_change(_refresh_lists, name='reverse-dns')
-localcfg.on_change(_refresh_lists, name='geoip')
 
 
 def _set_poll_interval(settings, name, value):
@@ -104,9 +103,3 @@ _set_tui_marked_char('set_unmarked_char', localcfg, name='tui.marked.off', value
 def _update_quickhelp(keymap):
     tuiobjects.topbar.help.update()
 tuiobjects.keymap.on_bind_unbind(_update_quickhelp)
-
-
-def _set_geoip(settings, name, value):
-    if value:
-        tuiobjects.load_geoip_db()
-localcfg.on_change(_set_geoip, name='geoip')

@@ -14,7 +14,7 @@
 from .logging import make_logger
 log = make_logger(__name__)
 
-from .objects import (localcfg, srvapi, geoip)
+from .objects import localcfg, srvapi
 from .utils import convert
 from .views.torrent import COLUMNS as TORRENT_COLUMNS
 from .views.file import COLUMNS as FILE_COLUMNS
@@ -79,15 +79,3 @@ def _set_size_prefix(settings, name, value):
     srvapi.torrent.clearcache()
     srvapi.poll()
 localcfg.on_change(_set_size_prefix, name='unitprefix.size')
-
-
-def _set_geoip(settings, name, value):
-    if value and not geoip.available:
-        log.error('Missing geoip dependency: maxminddb')
-        localcfg['geoip'] = value = False
-    geoip.enabled = value
-localcfg.on_change(_set_geoip, name='geoip')
-
-def _set_geoip_dir(settings, name, value):
-    geoip.cachedir = value.full_path
-localcfg.on_change(_set_geoip_dir, name='geoip.dir')

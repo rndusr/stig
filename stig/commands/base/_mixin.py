@@ -108,11 +108,7 @@ class get_peer_columns():
 
         Raise ValueError or return a new list of `columns`.
         """
-        cols = objects.localcfg.validate('columns.peers', columns)
-        if 'country' in cols:
-            if not objects.localcfg['geoip']:
-                cols = cols.copy(*(col for col in cols if col != 'country'))
-        return cols
+        return objects.localcfg.validate('columns.peers', columns)
 
 
 

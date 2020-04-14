@@ -40,16 +40,6 @@ class Client(_COLUMNS['client'], CellWidgetBase):
 TUICOLUMNS['client'] = Client
 
 
-class Country(_COLUMNS['country'], CellWidgetBase):
-    width = 7
-    style = Style(prefix='peerlist.country', focusable=False,
-                  extras=('header',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['country'].header),
-                           style.attrs('header'))
-
-TUICOLUMNS['country'] = Country
-
-
 class Host(_COLUMNS['host'], CellWidgetBase):
     width = ('weight', 50)
     style = Style(prefix='peerlist.host', focusable=True,

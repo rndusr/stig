@@ -14,9 +14,6 @@ from .constants import *
 
 from .utils import (Response, URL)
 
-from .geoip import GeoIP
-geoip = GeoIP()
-
 from .filters import (TorrentFilter, FileFilter, PeerFilter, TrackerFilter,
                       SettingFilter)
 

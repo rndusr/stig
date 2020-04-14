@@ -19,7 +19,6 @@ from . import (ColumnBase, _ensure_hide_unit)
 
 COLUMNS = {}
 ALIASES = { 'cl'   : 'client',
-            'cn'   : 'country',
             '%dn'  : '%downloaded',
             'rup'  : 'rate-up',
             'rdn'  : 'rate-down',
@@ -49,18 +48,6 @@ class Client(ColumnBase):
         return self.data['client']
 
 COLUMNS['client'] = Client
-
-
-class Country(ColumnBase):
-    header = {'left': 'Country'}
-    align = 'right'
-    width = 7
-    min_width = 7
-
-    def get_value(self):
-        return self.data['country']
-
-COLUMNS['country'] = Country
 
 
 class Host(ColumnBase):

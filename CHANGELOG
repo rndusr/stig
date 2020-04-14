@@ -18,6 +18,9 @@
        option is given, the torrent filter expression must always match one
        torrent.  This also works when renaming the focused file or directory in
        file lists in the TUI.
+     * GeoIP support was dropped[1] and the peer list filter, column and sorter
+       "country" as well as the settings "geoip" and "geoip.dir" were
+       removed. If you use a custom theme, you also the country parts from it.
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
@@ -34,6 +37,8 @@
     * Setting filters are now documented (`help filters`).
     * When 'remove.max-hits' triggered, the displayed list of torrents didn't
       handle spaces correctly.
+
+  [1] https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases
 
 
 2018-09-25 0.10.1a

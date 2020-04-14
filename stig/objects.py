@@ -77,11 +77,3 @@ def _pre_run_hook(cmdline):
                 return ['help', 'tab']
     return cmdline
 cmdmgr.pre_run_hook = _pre_run_hook
-
-
-from .client import geoip
-if geoip.available:
-    geoip.cachedir = localcfg['geoip.dir']
-else:
-    localcfg['geoip'] = False
-geoip.enabled = localcfg['geoip']

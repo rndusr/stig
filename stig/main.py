@@ -31,8 +31,7 @@ from . import logging
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 
-from .objects import (aioloop, log, localcfg, remotecfg, srvapi, helpmgr,
-                      cmdmgr, geoip)
+from .objects import aioloop, log, localcfg, remotecfg, srvapi, helpmgr, cmdmgr
 
 def run():
     cmdmgr.load_cmds_from_module(
@@ -94,14 +93,6 @@ def run():
         # Exit when pipe is closed (e.g. `stig help | head -1`)
         import signal
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
-        # Load geoip database
-        if localcfg['geoip']:
-            try:
-                aioloop.run_until_complete(geoip.load())
-            except geoip.GeoIPError as e:
-                log.error(e)
-                exit_code = 1
 
         try:
             if not run_commands():

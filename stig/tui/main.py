@@ -37,10 +37,6 @@ def run(command_runner):
     except urwid.ExitMainLoop:
         return True
 
-    # Load/Download GeoIP database
-    if objects.geoip.available and objects.localcfg['geoip']:
-        tuiobjects.load_geoip_db()
-
     # Start logging to TUI widget instead of stdout/stderr
     tuiobjects.logwidget.enable()
 

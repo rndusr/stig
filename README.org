@@ -136,14 +136,13 @@
 
 *** Extras
    The following extras are available to enable optional features:
-     - ~geoip~ :: Display peers' country codes
      - ~setproctitle~ :: Strip arguments from process title when running in tmux
                          session (this requires Python headers; e.g.
                          ~apt-get install libpython3-dev~)
 
    To install depdencies for an extra, provide the ~--spec~ option to pipx.
    #+BEGIN_SRC sh
-   $ pipx install stig --spec 'stig[geoip,setproctitle]'
+   $ pipx install stig --spec 'stig[setproctitle]'
    #+END_SRC
 
 *** Development version
@@ -179,7 +178,6 @@
    - [[https://pypi.python.org/pypi/pyxdg][pyxdg]]
    - [[https://pypi.python.org/pypi/blinker][blinker]]
    - [[https://pypi.python.org/pypi/natsort][natsort]]
-   - [[https://pypi.org/project/maxminddb/][maxminddb]] (optional; shows country codes in peer lists)
    - [[https://pypi.python.org/pypi/setproctitle/1.1.10][setproctitle]] (optional; prettifies the process name)
    - [[https://pypi.python.org/pypi/asynctest/][asynctest]] (only needed to run tests)
 

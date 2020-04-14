@@ -11,7 +11,7 @@ venv:
 	python3 -m venv "$(VENV_PATH)"
 	# Docutils is needed for `setup.py check -r -s`
 	"$(VENV_PATH)"/bin/pip install --upgrade wheel docutils
-	"$(VENV_PATH)"/bin/pip install --upgrade pytest asynctest maxminddb
+	"$(VENV_PATH)"/bin/pip install --upgrade pytest asynctest
 	"$(VENV_PATH)"/bin/pip install --editable .
 
 test: venv

@@ -29,22 +29,6 @@ for args in DEFAULT_KEYMAP:
     keymap.bind(**args)
 
 
-def load_geoip_db():
-    """
-    Load geolocation database in a background task
-    """
-    def _handle_geoip_load_result(task):
-        import asyncio
-        try:
-            task.result()
-        except asyncio.CancelledError:
-            pass
-        except objects.geoip.GeoIPError as e:
-            log.error(e)
-    task = objects.aioloop.create_task(objects.geoip.load())
-    task.add_done_callback(_handle_geoip_load_result)
-
-
 # Widgets
 import urwid
 from . import urwidpatches

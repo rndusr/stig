@@ -23,7 +23,6 @@ from ..client.sorters import (TorrentSorter, PeerSorter, TrackerSorter, SettingS
 
 DEFAULT_RCFILE      = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
-DEFAULT_GEOIP_DIR   = os.path.join(XDG_CACHE_HOME, __appname__)
 DEFAULT_THEME_FILE  = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 
@@ -85,7 +84,7 @@ def init_defaults(localcfg):
                  description='Default columns in torrent lists')
     localcfg.add('columns.peers',
                  Tuple.partial(options=peer.COLUMNS, aliases=peer.ALIASES),
-                 default=('host', 'client', 'country', '%downloaded', 'rate-down',
+                 default=('host', 'client', '%downloaded', 'rate-down',
                           'rate-up', 'rate-est', 'eta'),
                  description='Default columns in peer lists')
     localcfg.add('columns.files',
@@ -101,15 +100,6 @@ def init_defaults(localcfg):
                  Tuple.partial(options=setting.COLUMNS, aliases=setting.ALIASES),
                  default=('name', 'value', 'default', 'description'),
                  description='Default columns in setting lists')
-
-    localcfg.add('geoip',
-                 Bool.partial(),
-                 default=True,
-                 description='Whether to lookup peers\' country codes')
-    localcfg.add('geoip.dir',
-                 Path.partial(base=os.path.expanduser('~')),
-                 default=DEFAULT_GEOIP_DIR,
-                 description='Where to cache the downloaded geolocation database')
 
     localcfg.add('remove.max-hits',
                  Int.partial(),
@@ -395,10 +385,6 @@ DEFAULT_KEYMAP = (
      'description': 'Mark or unmark all torrents'},
 
     # Peer list actions
-    {'context': 'peerlist', 'key': 's c', 'action': 'sort --add country',
-     'description': 'Sort peers by country'},
-    {'context': 'peerlist', 'key': 's C', 'action': 'sort --add !country',
-     'description': 'Sort peers by country in reverse'},
     {'context': 'peerlist', 'key': 's d', 'action': 'sort --add rate-down',
      'description': 'Sort peers by download rate'},
     {'context': 'peerlist', 'key': 's D', 'action': 'sort --add !rate-down',

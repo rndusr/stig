@@ -71,11 +71,6 @@ class TestPeerFilter(unittest.TestCase, HelpersMixin):
                               filter_names=('client', 'cl'),
                               key='client')
 
-    def test_country(self):
-        self.check_str_filter(PeerFilter,
-                              filter_names=('country', 'cn'),
-                              key='country')
-
     def test_host(self):
         self.check_str_filter(PeerFilter,
                               filter_names=('country', 'cn'),

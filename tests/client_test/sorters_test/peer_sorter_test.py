@@ -58,12 +58,6 @@ class TestPeerSorter(TestSorterBase):
                  {'id': 3, 'tname': 'baz', 'client': 'rtorrent'}]
         self.assert_sorted_ids('client', items, (2, 3, 1))
 
-    def test_country(self):
-        items = [{'id': 1, 'tname': 'foo', 'country': 'CD'},
-                 {'id': 2, 'tname': 'bar', 'country': 'AB'},
-                 {'id': 3, 'tname': 'baz', 'country': 'XY'}]
-        self.assert_sorted_ids('country', items, (2, 1, 3))
-
     @patch('stig.client.rdns.gethostbyaddr_from_cache')
     def test_host(self, mock_gethostbyaddr_from_cache):
         items = [{'id': 1, 'tname': 'foo', 'ip': '1.2.3.2'},
