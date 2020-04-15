@@ -168,17 +168,6 @@ class CLIEditWidget(urwid.WidgetWrap):
     def _complete(self, direction):
         compl = self._completer
         if compl is not None:
-            # If self._completer.update() is currently running, wait for that to
-            # finish so we don't insert candidates that won't be listed
-            # milliseconds later.
-            old_task = getattr(self, '_completion_update_task', None)
-            if old_task is not None and not old_task.done():
-                log.debug('Waiting for new candidates')
-                return
-                # TODO: Instead of doing nothing, create a background task that
-                # waits for self._completion_update_task and calls this function
-                # again.
-
             if direction == 'next':
                 self._editw.edit_text, self._editw.edit_pos = compl.complete_next()
             elif direction == 'prev':
@@ -198,8 +187,10 @@ class CLIEditWidget(urwid.WidgetWrap):
 
     def _update_completion_candidates(self):
         if self._completer is not None:
+            # If the previously scheduled call isn't finished yet, abort it
+            # because it's results will be out of date.
             old_task = getattr(self, '_completion_update_task', None)
-            if old_task is not None:
+            if old_task is not None and not old_task.done():
                 old_task.cancel()
 
             def callback(task):
