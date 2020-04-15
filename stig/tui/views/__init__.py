@@ -88,9 +88,10 @@ class CellWidgetBase(urwid.WidgetWrap):
     def update(self, data):
         self.data = data
         new_value = self.get_value()
-        if self.value != new_value:
+        new_text = str(new_value)
+        if self.text.text != new_text:
             self.value = new_value
-            self.text.set_text(str(new_value))
+            self.text.set_text(new_text)
             attr = self.style.attrs(self.get_mode(), focused=False)
             self.attrmap.set_attr_map({None: attr})
 
