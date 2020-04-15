@@ -109,8 +109,9 @@
 ** Installation
    The [[https://pypi.python.org/pypi/stig][latest release]] is always on PyPI.
 
-   For Arch Linux stig is available on AUR as [[https://aur.archlinux.org/packages/stig][stig]] and the latest development
-   version as [[https://aur.archlinux.org/packages/stig-git][stig-git]].
+*** Packages
+    - Arch (AUR): [[https://aur.archlinux.org/packages/stig][stig]], [[https://aur.archlinux.org/packages/stig-git][stig-git]]
+    - NixOS: [[https://nixos.org/nixos/packages.html?attr=stig&query=stig][stig]]
 
 *** Pipx (recommended)
     [[https://github.com/pipxproject/pipx][Pipx]] installs applications in self-contained virtual environments in
