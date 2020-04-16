@@ -110,7 +110,7 @@ class _SingleFilter(Filter):
         'path'            : CmpFilterSpec(value_getter=lambda t: t['path'],
                                           value_type=VALUETYPES['path'],
                                           needed_keys=('path',),
-                                          description=_desc('... full path to download directory')),
+                                          description=_desc('... absolute path to download directory')),
 
         'error'           : CmpFilterSpec(value_getter=lambda t: t['error'],
                                           value_type=VALUETYPES['error'],
