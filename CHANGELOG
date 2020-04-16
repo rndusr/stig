@@ -20,13 +20,15 @@
        file lists in the TUI.
      * GeoIP support was dropped[1] and the peer list filter, column and sorter
        "country" as well as the settings "geoip" and "geoip.dir" were
-       removed. If you use a custom theme, you also the country parts from it.
+       removed. If you use a custom theme, you also need to remove the "country"
+       parts from it.
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
     * The command 'magnet' creates magnet URIs for torrents.
     * The help structure was changed so that lists of commands/filters/settings
       and manuals explaining the concepts are separate.
+    * Added "hash" filter to find torrents by info hash.
 
   Fixed bugs:
     * File filters caused a crash when applied to single-file torrents.
