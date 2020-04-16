@@ -27,8 +27,11 @@ import time
 import datetime
 import calendar
 
-from .utils import (URL, Float, Int, Percent, convert, const)
+from .utils import URL, Float, Int, String, Percent, convert, const, multitype
 
+class SHA1(String):
+    def __new__(cls, value, regex=r'^[0-9a-fA-F]{,40}$'):
+        return super().__new__(cls, value, regex=regex)
 
 class SizeInBytes(Int):
     def __new__(cls, value, **kwargs):
@@ -788,7 +791,7 @@ class TorrentTracker(abc.Mapping):
 
 TYPES = {
     'id'                           : int,
-    'hash'                         : str,
+    'hash'                         : SHA1,
     'name'                         : SmartCmpStr,
     'ratio'                        : Ratio,
     'status'                       : Status,

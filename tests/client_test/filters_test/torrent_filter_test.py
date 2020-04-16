@@ -133,6 +133,19 @@ class TestTorrentFilter(unittest.TestCase, HelpersMixin):
                                       ('{name}=2', (2,)),
                                       ('{name}!=3', (1, 2))))
 
+    def test_hash(self):
+        self.check_filter(TorrentFilter,
+                          filter_names=('hash',),
+                          items=({'id': 1, 'hash': 'f1d2d2f924e986ac86fdf7b36c94bcdf32beec15'},
+                                 {'id': 2, 'hash': 'e242ed3bffccdf271b7fbaf34ed72d089537b42f'},
+                                 {'id': 3, 'hash': '6eadeac2dade6347e87c0d24fd455feffa7069f0'}),
+                          test_cases=(('{name}', (1, 2, 3)),
+                                      ('!{name}', ()),
+                                      ('{name}=e242ed3bffccdf271b7fbaf34ed72d089537b42f', (2,)),
+                                      ('{name}!=e242ed3bffccdf271b7fbaf34ed72d089537b42f', (1, 3)),
+                                      ('{name}~df', (1, 2)),
+                                      ('{name}!~df', (3,))))
+
     def test_name(self):
         self.check_str_filter(TorrentFilter,
                               filter_names=('name', 'n'),
