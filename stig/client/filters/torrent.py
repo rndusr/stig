@@ -93,7 +93,7 @@ class _SingleFilter(Filter):
         'id'              : CmpFilterSpec(value_getter=lambda t: t['id'],
                                           value_type=VALUETYPES['id'],
                                           needed_keys=('id',),
-                                          description=_desc('... upload rate limit')),
+                                          description=_desc('... torrent ID')),
 
         'name'            : CmpFilterSpec(value_getter=lambda t: t['name'],
                                           value_type=VALUETYPES['name'],
