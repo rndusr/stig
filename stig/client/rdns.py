@@ -27,6 +27,9 @@ def gethostbyaddr(ip):
         except OSError:
             hostname = ip
         finally:
+            # I've seen IPs being resolved to ".", dunno why.
+            if hostname == '.':
+                hostname = ip
             _cache[ip] = hostname
     return hostname
 
