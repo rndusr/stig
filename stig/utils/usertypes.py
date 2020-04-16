@@ -12,6 +12,7 @@
 from functools import partial
 from itertools import chain
 import re
+from typing import Pattern
 from collections.abc import Iterable
 import os
 
@@ -164,12 +165,15 @@ class String(str, UsertypeMixin):
     Options:
       minlen: Minimum length of the string
       maxlen: Maximum length of the string
+      regex:  Regular expression values must match or None
     """
     typename = 'string'
     defaults = {'minlen': 0,
-                'maxlen': _INFINITY}
+                'maxlen': _INFINITY,
+                'regex': None}
 
-    def __new__(cls, value, *, minlen=defaults['minlen'], maxlen=defaults['maxlen']):
+    def __new__(cls, value, *, minlen=defaults['minlen'], maxlen=defaults['maxlen'],
+                regex=defaults['regex']):
         # Convert
         self = super().__new__(cls, value)
 
@@ -179,26 +183,48 @@ class String(str, UsertypeMixin):
             raise ValueError('Too long (maximum length is %s)' % maxlen)
         if minlen is not None and self_len < minlen:
             raise ValueError('Too short (minimum length is %s)' % minlen)
+        if regex is not None:
+            if not self._ensure_regex(regex).search(self):
+                raise ValueError('Invalid value')
         return self
 
-    @staticmethod
-    def _get_syntax(minlen=defaults['minlen'], maxlen=defaults['maxlen']):
-        text = 'string'
+    @classmethod
+    def _get_syntax(cls, minlen=defaults['minlen'], maxlen=defaults['maxlen'],
+                    regex=defaults['regex']):
         if ((minlen == 1 or minlen <= 0) and
             (maxlen == 1 or maxlen >= _INFINITY)):
             chrstr = 'character'
         else:
             chrstr = 'characters'
+
+        specs = []
+        if regex is not None:
+            specs.append('pattern=%s' % (cls._ensure_regex(regex).pattern,))
         if minlen > 0 and maxlen < _INFINITY:
             if minlen == maxlen:
-                text += ' (%s %s)' % (minlen, chrstr)
+                specs.append('%s %s' % (minlen, chrstr))
             else:
-                text += ' (%s-%s %s)' % (minlen, maxlen, chrstr)
+                specs.append('%s-%s %s' % (minlen, maxlen, chrstr))
         elif minlen > 0:
-            text += ' (at least %s %s)' % (minlen, chrstr)
+            specs.append('at least %s %s' % (minlen, chrstr))
         elif maxlen < _INFINITY:
-            text += ' (at most %s %s)' % (maxlen, chrstr)
-        return text
+            specs.append('at most %s %s' % (maxlen, chrstr))
+
+        parts = []
+        if specs:
+            return 'string (%s)' % (', '.join(specs),)
+        else:
+            return 'string'
+
+    @staticmethod
+    def _ensure_regex(regex):
+        if isinstance(regex, Pattern):
+            return regex
+        else:
+            try:
+                return re.compile(regex)
+            except re.error:
+                raise RuntimeError('Invalid regex: %r' % (regex,))
 
 
 class Bool(str, UsertypeMixin):

@@ -176,6 +176,21 @@ class TestString(_TestBase):
         self.assertEqual(String('f',   maxlen=2).syntax, 'string (at most 2 characters)')
         self.assertEqual(String('f',   minlen=1, maxlen=2).syntax, 'string (1-2 characters)')
         self.assertEqual(String('fo',  minlen=2, maxlen=2).syntax, 'string (2 characters)')
+        self.assertEqual(String('f', regex=r'fo*').syntax, "string (pattern=fo*)")
+        self.assertEqual(String('f', regex=r'fo*', minlen=1).syntax, "string (pattern=fo*, at least 1 character)")
+        self.assertEqual(String('f', regex=r'fo*', maxlen=3).syntax, "string (pattern=fo*, at most 3 characters)")
+        self.assertEqual(String('f', regex=r'fo*', minlen=1, maxlen=3).syntax, "string (pattern=fo*, 1-3 characters)")
+
+    def test_regex(self):
+        assert String('f', regex='fo*') == 'f'
+        assert String('fo', regex='fo*') == 'fo'
+        assert String('foo', regex='fo*') == 'foo'
+        with self.assert_raises(ValueError, 'Invalid value'):
+            String('', regex='fo*')
+        with self.assert_raises(ValueError, 'Invalid value'):
+            String('f', regex='fo+')
+        with self.assert_raises(RuntimeError, "Invalid regex: 'f[?'"):
+            String('f', regex='f[?')
 
     def test_minlen(self):
         for value in ('foo', True, 123):
