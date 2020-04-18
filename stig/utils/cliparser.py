@@ -1004,7 +1004,6 @@ class Args(tuple):
         curarg = self.curarg
         if curarg is not None:
             return curarg.curpos
-
     @curarg_curpos.setter
     def curarg_curpos(self, curpos):
         curarg = self.curarg
