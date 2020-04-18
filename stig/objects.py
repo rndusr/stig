@@ -14,10 +14,6 @@ Application-wide instances that are always needed, regardless of interface
 or features
 """
 
-import asyncio
-aioloop = asyncio.get_event_loop()
-
-
 from . import logging
 log = logging.make_logger()
 
@@ -34,8 +30,7 @@ srvapi = API(host=localcfg['connect.host'],
              user=localcfg['connect.user'],
              password=localcfg['connect.password'],
              tls=localcfg['connect.tls'],
-             interval=localcfg['tui.poll'],
-             loop=aioloop)
+             interval=localcfg['tui.poll'])
 remotecfg = srvapi.settings
 
 
@@ -46,8 +41,7 @@ helpmgr.remotecfg = remotecfg
 
 
 from .commands import CommandManager
-cmdmgr = CommandManager(loop=aioloop,
-                        info_handler=lambda msg: log.info(msg),
+cmdmgr = CommandManager(info_handler=lambda msg: log.info(msg),
                         error_handler=lambda msg: log.error(msg))
 helpmgr.cmdmgr = cmdmgr
 

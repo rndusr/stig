@@ -61,8 +61,7 @@ class StatusAPI():
         self._on_update = blinker.Signal()
 
         self._poller_stats = RequestPoller(srvapi.rpc.session_stats,
-                                           interval=interval,
-                                           loop=srvapi.loop)
+                                           interval=interval)
         self._poller_stats.on_response(self._handle_session_stats)
         self._poller_stats.on_error(lambda e: log.debug('Ignoring exception: %r', e),
                                     autoremove=False)
@@ -71,8 +70,7 @@ class StatusAPI():
         # request a minimalistic torrent list.
         self._poller_tcount = RequestPoller(srvapi.torrent.torrents,
                                             keys=('rate-down', 'rate-up', 'status'),
-                                            interval=interval,
-                                            loop=srvapi.loop)
+                                            interval=interval)
         self._poller_tcount.on_response(self._handle_torrent_list)
 
     def _reset_session_stats(self):

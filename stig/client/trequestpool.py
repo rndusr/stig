@@ -32,7 +32,7 @@ class TorrentRequestPool(RequestPoller):
         self._api = srvapi.torrent
         self._tfilters = {}
         self._keys = {}
-        super().__init__(request=None, interval=interval, loop=srvapi.loop)
+        super().__init__(request=None, interval=interval)
         self.on_response(self._handle_torrent_list)
 
     def register(self, sid, callback, keys=(), tfilter=None):

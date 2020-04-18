@@ -15,7 +15,7 @@ class TestCommand(asynctest.TestCase):
 
         async def run_async(self_, A, B):
             assert isinstance(self_, _CommandBase)
-            await asyncio.sleep(0, loop=self_.loop)
+            await asyncio.sleep(0)
             self_.info(round(int(A) / int(B)))
 
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
@@ -67,7 +67,7 @@ class TestCommand(asynctest.TestCase):
         self.assertEqual(cmdcls.names, ['foo'])
 
     def test_argparser_error(self):
-        process = self.div_sync(['10', '2', '--frobnicate'], loop=None,
+        process = self.div_sync(['10', '2', '--frobnicate'],
                                 info_handler=self.info_handler,
                                 error_handler=self.error_handler)
 
@@ -89,7 +89,7 @@ class TestCommand(asynctest.TestCase):
     ### Test running commands with stopped asyncio loop
 
     def test_run_does_not_raise_exception_in_sync_context(self):
-        process = self.div_sync(['10', '2'], loop=None,
+        process = self.div_sync(['10', '2'],
                                 info_handler=self.info_handler,
                                 error_handler=self.error_handler)
         self.check(process, success=True, infos=[('div: 5',)])
@@ -97,14 +97,14 @@ class TestCommand(asynctest.TestCase):
         self.info_handler.reset()
         self.error_handler.reset()
 
-        process = self.div_async(['50', '2'], loop=self.loop,
+        process = self.div_async(['50', '2'],
                                  info_handler=self.info_handler,
                                  error_handler=self.error_handler)
         process.wait_sync()
         self.check(process, success=True, infos=[('div: 25',)])
 
     def test_run_raises_CmdError_in_sync_context(self):
-        process = self.div_sync(['10', 'foo'], loop=None,
+        process = self.div_sync(['10', 'foo'],
                                 info_handler=self.info_handler,
                                 error_handler=self.error_handler)
         self.check(process, success=False, errors=[("div: Argument B: invalid int value: 'foo'",)])
@@ -112,7 +112,7 @@ class TestCommand(asynctest.TestCase):
         self.info_handler.reset()
         self.error_handler.reset()
 
-        process = self.div_async(['1', 'bar'], loop=self.loop,
+        process = self.div_async(['1', 'bar'],
                                  info_handler=self.info_handler,
                                  error_handler=self.error_handler)
         process.wait_sync()
@@ -120,7 +120,7 @@ class TestCommand(asynctest.TestCase):
 
     def test_run_raises_Exception_in_sync_context(self):
         with self.assertRaises(ZeroDivisionError):
-            self.div_sync(['10', '0'], loop=None,
+            self.div_sync(['10', '0'],
                           info_handler=self.info_handler,
                           error_handler=self.error_handler)
         self.assertEqual(self.info_handler.args, [])
@@ -129,7 +129,7 @@ class TestCommand(asynctest.TestCase):
         self.info_handler.reset()
         self.error_handler.reset()
 
-        process = self.div_async(['1', '0'], loop=self.loop,
+        process = self.div_async(['1', '0'],
                                  info_handler=self.info_handler,
                                  error_handler=self.error_handler)
         with self.assertRaises(ZeroDivisionError):
@@ -141,7 +141,7 @@ class TestCommand(asynctest.TestCase):
     ### Test running commands with running asyncio loop
 
     async def test_run_does_not_raise_exception_in_async_context(self):
-        process = self.div_sync(['10', '2'], loop=None,
+        process = self.div_sync(['10', '2'],
                                 info_handler=self.info_handler,
                                 error_handler=self.error_handler)
         self.check(process, success=True, infos=[('div: 5',)])
@@ -149,14 +149,14 @@ class TestCommand(asynctest.TestCase):
         self.info_handler.reset()
         self.error_handler.reset()
 
-        process = self.div_async(['10', '5'], loop=self.loop,
+        process = self.div_async(['10', '5'],
                                 info_handler=self.info_handler,
                                 error_handler=self.error_handler)
         await process.wait_async()
         self.check(process, success=True, infos=[('div: 2',)])
 
     async def test_run_raises_CmdError_in_async_context(self):
-        process = self.div_sync(['10', 'foo'], loop=None,
+        process = self.div_sync(['10', 'foo'],
                                 info_handler=self.info_handler,
                                 error_handler=self.error_handler)
         self.check(process, success=False, errors=[("div: Argument B: invalid int value: 'foo'",)])
@@ -164,7 +164,7 @@ class TestCommand(asynctest.TestCase):
         self.info_handler.reset()
         self.error_handler.reset()
 
-        process = self.div_async(['100', 'bar'], loop=self.loop,
+        process = self.div_async(['100', 'bar'],
                                  info_handler=self.info_handler,
                                  error_handler=self.error_handler)
         await process.wait_async()
@@ -172,7 +172,7 @@ class TestCommand(asynctest.TestCase):
 
     async def test_run_raises_Exception_in_async_context(self):
         with self.assertRaises(ZeroDivisionError):
-            self.div_sync(['10', '0'], loop=None,
+            self.div_sync(['10', '0'],
                           info_handler=self.info_handler,
                           error_handler=self.error_handler)
         self.assertEqual(self.info_handler.calls, 0)
@@ -181,9 +181,7 @@ class TestCommand(asynctest.TestCase):
 
 class TestCommandManagerManagement(unittest.TestCase):
     def setUp(self):
-        # It's ok to use the default loop here because we're not using it in
-        # this test class.
-        self.cmdmgr = CommandManager(loop=asyncio.get_event_loop())
+        self.cmdmgr = CommandManager()
         self.cmd_foo = make_cmdcls(name='foo', provides=('cli',))
         self.cmd_bar = make_cmdcls(name='bar', provides=('tui',))
         self.cmd_baz = make_cmdcls(name='baz', provides=('cli', 'tui'))
@@ -254,8 +252,7 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
     def setUp(self):
         self.info_handler = Callback()
         self.error_handler = Callback()
-        self.cmdmgr = CommandManager(loop=self.loop,
-                                     info_handler=self.info_handler,
+        self.cmdmgr = CommandManager(info_handler=self.info_handler,
                                      error_handler=self.error_handler)
 
         def run_sync(self_, A, B):
@@ -264,7 +261,7 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
 
         async def run_async(self_, A, B):
             assert isinstance(self_, _CommandBase)
-            await asyncio.sleep(0, loop=self_.loop)
+            await asyncio.sleep(0)
             self_.info(round(int(A) / int(B)))
 
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
@@ -281,7 +278,7 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
             raise CmdError(msg)
 
         async def run_async_CmdError(self_, msg):
-            await asyncio.sleep(0, loop=self_.loop)
+            await asyncio.sleep(0)
             raise CmdError(msg)
 
         argspecs = ({'names': ('msg',), 'description': 'Error message'},)
@@ -296,7 +293,7 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
         def run_sync_Exception(self_):
             1/0
         async def run_async_Exception(self_):
-            await asyncio.sleep(0, loop=self_.loop)
+            await asyncio.sleep(0)
             1/0
         self.cmdmgr.register(
             make_cmdcls(name='raise', run=run_sync_Exception, argspecs=(), provides=('sync',))

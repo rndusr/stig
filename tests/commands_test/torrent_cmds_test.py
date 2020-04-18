@@ -579,7 +579,7 @@ class TestRenameCmd(CommandTestCase):
             torrents=(MockTorrent(id=1234, name='Some Torrent'),))
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['New Name'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['New Name'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -599,7 +599,7 @@ class TestRenameCmd(CommandTestCase):
             torrents=(MockTorrent(id=1234, name='Some Torrent'),))
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['file2'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['file2'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -618,7 +618,7 @@ class TestRenameCmd(CommandTestCase):
             torrents=(MockTorrent(id=1234, name='Some Torrent'),))
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['id=1234', 'Renamed Torrent'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['id=1234', 'Renamed Torrent'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -637,7 +637,7 @@ class TestRenameCmd(CommandTestCase):
             torrents=(MockTorrent(id=1234, name='Some Torrent'),))
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['id=1234/mock/path/to/file', 'file2'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['id=1234/mock/path/to/file', 'file2'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -657,7 +657,7 @@ class TestRenameCmd(CommandTestCase):
                       MockTorrent(id=1235, name='Some Torrent')))
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['Some Torrent', 'Renamed Torrent'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['Some Torrent', 'Renamed Torrent'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, False)
         info_cb.assert_not_called()
@@ -677,7 +677,7 @@ class TestRenameCmd(CommandTestCase):
                       MockTorrent(id=1235, name='Some Torrent')))
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['Some Torrent/mock/path/to/file', 'file2'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['Some Torrent/mock/path/to/file', 'file2'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -700,7 +700,7 @@ class TestRenameCmd(CommandTestCase):
 
         info_cb, err_cb = MagicMock(), MagicMock()
         process = RenameCmd(['--unique', 'file2'],
-                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+                            info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -723,7 +723,7 @@ class TestRenameCmd(CommandTestCase):
 
         info_cb, err_cb = MagicMock(), MagicMock()
         process = RenameCmd(['--unique', 'file2'],
-                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+                            info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, False)
         info_cb.assert_not_called()
@@ -743,7 +743,7 @@ class TestRenameCmd(CommandTestCase):
 
         info_cb, err_cb = MagicMock(), MagicMock()
         process = RenameCmd(['--unique', 'id=1235/path/to/file', 'file2'],
-                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+                            info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, True)
         info_cb.assert_not_called()
@@ -765,7 +765,7 @@ class TestRenameCmd(CommandTestCase):
 
         info_cb, err_cb = MagicMock(), MagicMock()
         process = RenameCmd(['--unique', 'Some Torrent/path/to/file', 'file2'],
-                            info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+                            info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, False)
         info_cb.assert_not_called()
@@ -782,7 +782,7 @@ class TestRenameCmd(CommandTestCase):
         self.mock_select_torrents.side_effect = ValueError('No torrent given')
 
         info_cb, err_cb = MagicMock(), MagicMock()
-        process = RenameCmd(['New Name'], info_handler=info_cb, error_handler=err_cb, loop=self.loop)
+        process = RenameCmd(['New Name'], info_handler=info_cb, error_handler=err_cb)
         await process.wait_async()
         self.assertEqual(process.success, False)
         info_cb.assert_not_called()

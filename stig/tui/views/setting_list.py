@@ -13,6 +13,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 import urwid
+import asyncio
 
 from .setting import TUICOLUMNS
 from . import (ItemWidgetBase, ListWidgetBase)
@@ -42,7 +43,7 @@ def _change_setting(name, new_value, on_success=None):
             else:
                 if on_success is not None:
                     on_success()
-        objects.aioloop.create_task(setter())
+        asyncio.ensure_future(setter())
 
     else:
         raise RuntimeError('Not a setting name: %r' % name)

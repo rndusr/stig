@@ -286,8 +286,7 @@ def InitCommand(clsname, bases, attrs):
 
 class _CommandBase():
     """Base for all command classes"""
-    def __init__(self, args=(), info_handler=None, error_handler=None, loop=None, **kwargs):
-        self._loop = loop
+    def __init__(self, args=(), info_handler=None, error_handler=None, **kwargs):
         self._args = args
         for k,v in kwargs.items():
             setattr(self, k, v)
@@ -314,7 +313,7 @@ class _CommandBase():
             if asyncio.iscoroutinefunction(self.run):
                 log.debug('Running async command: %r', self)
                 self._is_async = True
-                self._task = self.loop.create_task(self.run(**kwargs))
+                self._task = asyncio.ensure_future(self.run(**kwargs))
                 self._task.add_done_callback(lambda task: self._catch_exceptions(task.result))
             else:
                 log.debug('Running sync command: %r', self)
@@ -349,13 +348,14 @@ class _CommandBase():
         running or closed.
         """
         if not self.finished:
-            if self.loop.is_closed():
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
                 raise RuntimeError('AsyncIO loop is closed - cannot wait for {!r}'.format(self))
-            elif self.loop.is_running():
+            elif loop.is_running():
                 raise RuntimeError('AsyncIO loop is running - cannot wait for {!r}'.format(self))
             else:
                 log.debug('Waiting until finished: %r', self)
-                self._catch_exceptions(self.loop.run_until_complete, self._task)
+                self._catch_exceptions(loop.run_until_complete, self._task)
 
     async def wait_async(self):
         """Wait asynchronously until this command has finished"""
@@ -375,14 +375,6 @@ class _CommandBase():
     def error(self, msg):
         """Show error message (use this as your stderr)"""
         self._error_handler('%s: %s' % (self.name, msg))
-
-    @property
-    def loop(self):
-        """AsyncIO loop"""
-        if self._loop is None:
-            raise RuntimeError('Called with missing asyncio loop: {!r}'.format(self))
-        else:
-            return self._loop
 
     @property
     def success(self):
@@ -415,8 +407,7 @@ class _CommandBase():
 
 
 class CommandManager():
-    def __init__(self, loop=None, pre_run_hook=None, info_handler=None, error_handler=None):
-        self.loop = loop if loop is not None else asyncio.get_event_loop()
+    def __init__(self, pre_run_hook=None, info_handler=None, error_handler=None):
         self._info_handler = info_handler
         self._error_handler = error_handler
         self.pre_run_hook = pre_run_hook
@@ -600,7 +591,7 @@ class CommandManager():
     def run_task(self, commands, **kwargs):
         """Return Task that runs `run_async`"""
         log.debug('Creating command chain task: %r', commands)
-        return self.loop.create_task(self.run_async(commands, **kwargs))
+        return asyncio.ensure_future(self.run_async(commands, **kwargs))
 
     def _yield_from_cmdchain(self, commands, **kwargs):
         try:
@@ -717,7 +708,7 @@ class CommandManager():
             exc = CmdError('%s: No support for %s interface' % (cmdname, self._active_interface))
             process = self._dummy_process(cmdname, exception=exc)
         else:
-            process = cmdcls(cmdargs, loop=self.loop,
+            process = cmdcls(cmdargs,
                              info_handler=self._info_handler,
                              error_handler=self._error_handler,
                              **kwargs)
@@ -769,6 +760,6 @@ class CommandManager():
                 else:
                     return super().error(msg)
 
-        return DummyCommand((), loop=self.loop,
+        return DummyCommand((),
                             info_handler=self._info_handler,
                             error_handler=self._error_handler)

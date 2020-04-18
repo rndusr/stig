@@ -19,8 +19,7 @@ class FakeTransmissionRPC():
 
 
 class FakeRequestPoller():
-    def __init__(self, request, interval, loop, *args, **kwargs):
-        self.loop = loop
+    def __init__(self, request, interval, *args, **kwargs):
         self.request = request
         self.interval = interval
 
@@ -53,8 +52,7 @@ class TestStatusAPI(asynctest.TestCase):
         self.rpc = FakeTransmissionRPC()
         self.torrent = FakeTorrentAPI()
         srvapi = SimpleNamespace(rpc=self.rpc,
-                                 torrent=self.torrent,
-                                 loop=self.loop)
+                                 torrent=self.torrent)
         self.api = StatusAPI(srvapi, interval=1)
 
         self.rpc.fake_stats = {

@@ -120,9 +120,10 @@ def unhandled_input(key):
     if key is not None:
         log.debug('Unhandled key: %s', key)
 
+import asyncio
 urwidscreen = urwid.raw_display.Screen()
 urwidloop = urwid.MainLoop(widgets,
                            screen=urwidscreen,
-                           event_loop=urwid.AsyncioEventLoop(loop=objects.aioloop),
+                           event_loop=urwid.AsyncioEventLoop(loop=asyncio.get_event_loop()),
                            unhandled_input=unhandled_input,
                            handle_mouse=False)

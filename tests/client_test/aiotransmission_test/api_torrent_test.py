@@ -14,9 +14,9 @@ assert not os.path.exists(rsrc.TORRENTFILE_NOEXIST)
 
 class TorrentAPITestCase(asynctest.TestCase):
     async def setUp(self):
-        self.daemon = rsrc.FakeTransmissionDaemon(loop=self.loop)
+        self.daemon = rsrc.FakeTransmissionDaemon()
         await self.daemon.start()
-        self.rpc = TransmissionRPC(self.daemon.host, self.daemon.port, loop=self.loop)
+        self.rpc = TransmissionRPC(self.daemon.host, self.daemon.port)
         self.api = TorrentAPI(self.rpc)
         await self.rpc.connect()
         assert self.rpc.connected is True

@@ -113,17 +113,16 @@ class TestCLIEditWidget(asynctest.TestCase):
         self.assertEqual(self.w.edit_text, 'asdf')
 
     async def test_completer(self):
-        with patch('stig.tui.cli.aioloop', self.loop):
-            class MockCompleter():
-                update = asynctest.CoroutineMock()
-                complete_next = MagicMock()
-                categories = ()
-            self.w._completer = self.w._candsw._completer = MockCompleter()
+        class MockCompleter():
+            update = asynctest.CoroutineMock()
+            complete_next = MagicMock()
+            categories = ()
+        self.w._completer = self.w._candsw._completer = MockCompleter()
 
-            self.enter_line('foo', press_return=False)
-            self.assertEqual(self.w.edit_text, 'foo')
-            self.w._completer.complete_next.return_value = ('foobar', 3)
-            await asyncio.wait_for(self.w._completion_update_task, timeout=10, loop=self.loop)
-            self.w.keypress((80,), 'tab')
-            self.assertEqual(self.w.edit_text, 'foobar')
-            self.assertEqual(self.w.edit_pos, 3)
+        self.enter_line('foo', press_return=False)
+        self.assertEqual(self.w.edit_text, 'foo')
+        self.w._completer.complete_next.return_value = ('foobar', 3)
+        await asyncio.wait_for(self.w._completion_update_task, timeout=10)
+        self.w.keypress((80,), 'tab')
+        self.assertEqual(self.w.edit_text, 'foobar')
+        self.assertEqual(self.w.edit_pos, 3)

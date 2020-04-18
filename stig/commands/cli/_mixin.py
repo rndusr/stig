@@ -14,6 +14,8 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+import asyncio
+
 from .. import utils
 from ._common import clear_line
 from ... import objects
@@ -54,7 +56,6 @@ class ask_yes_no():
         return answer
 
     async def _run_func_or_coro(self, func_or_coro):
-        import asyncio
         if asyncio.iscoroutinefunction(func_or_coro):
             await func_or_coro()
         elif asyncio.iscoroutine(func_or_coro):

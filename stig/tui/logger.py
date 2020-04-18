@@ -34,11 +34,10 @@ class UILogRecordHandler(logging.Handler):
 class LogWidget(urwid.WidgetWrap):
     """Present LogRecords from logging module in a ListBox Widget"""
 
-    def __init__(self, height=10, autohide_delay=0, loop=None):
+    def __init__(self, height=10, autohide_delay=0):
         self._height = height
         self._autohide_delay = autohide_delay
         self._autohide_handle = None
-        self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._pile = urwid.Pile([])
         self._pile_options = self._pile.options('pack', None)
         self._scrollable = Scrollable(self._pile)
@@ -126,7 +125,7 @@ class LogWidget(urwid.WidgetWrap):
             def hide():
                 widgets.hide('log')
                 self._autohide_handle = None
-            self._autohide_handle = self._loop.call_later(self.autohide_delay, hide)
+            self._autohide_handle = asyncio.get_event_loop().call_later(self.autohide_delay, hide)
 
     def rows(self, size, focus=False):
         if not hasattr(self, '_rows'):

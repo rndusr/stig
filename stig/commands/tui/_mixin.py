@@ -14,6 +14,8 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+import asyncio
+
 from ... import objects
 from .. import CmdError
 from .. import utils
@@ -61,12 +63,11 @@ class ask_yes_no():
         ignored.
         """
         from ...tui import tuiobjects
-        import asyncio
         def run_func_or_coro(func_or_coro):
             if asyncio.iscoroutinefunction(func_or_coro):
-                objects.aioloop.create_task(func_or_coro())
+                asyncio.ensure_future(func_or_coro())
             elif asyncio.iscoroutine(func_or_coro):
-                objects.aioloop.create_task(func_or_coro)
+                asyncio.ensure_future(func_or_coro)
             elif func_or_coro is not None:
                 func_or_coro()
 
@@ -355,11 +356,10 @@ class polling_frenzy():
                 log.debug('Setting poll interval to %s for %s seconds', short_interval, duration)
                 orig_interval = objects.srvapi.interval
                 objects.srvapi.interval = short_interval
-                import asyncio
-                await asyncio.sleep(duration, loop=objects.aioloop)
+                await asyncio.sleep(duration)
                 objects.srvapi.interval = orig_interval
                 log.debug('Interval restored to %s', objects.srvapi.interval)
-            objects.aioloop.create_task(coro())
+            asyncio.ensure_future(coro())
 
 
 import os

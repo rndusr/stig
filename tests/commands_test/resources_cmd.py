@@ -180,8 +180,7 @@ class CommandTestCase(asynctest.TestCase):
 
     async def execute(self, cmdcls, *params):
         process = cmdcls(params,
-                         error_handler=lambda msg: print(msg, file=self.stderr),
-                         loop=self.loop)
+                         error_handler=lambda msg: print(msg, file=self.stderr))
         if not process.finished:
             await process.wait_async()
         self.assertTrue(process.finished)

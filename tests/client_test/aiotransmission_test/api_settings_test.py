@@ -26,7 +26,7 @@ class FakeTransmissionRPC():
 class TestSettingsAPI(asynctest.TestCase):
     async def setUp(self):
         self.rpc = FakeTransmissionRPC()
-        srvapi = SimpleNamespace(rpc=self.rpc, loop=self.loop)
+        srvapi = SimpleNamespace(rpc=self.rpc)
         self.api = SettingsAPI(srvapi)
 
 
@@ -55,7 +55,7 @@ class TestSettingsAPI(asynctest.TestCase):
             async def session_set(self, settings):
                 raise ClientError('Nah.')
         self.rpc = UnreachableRPC()
-        self.api = SettingsAPI(SimpleNamespace(rpc=self.rpc, loop=self.loop))
+        self.api = SettingsAPI(SimpleNamespace(rpc=self.rpc))
         self.rpc.fake_settings = {}
         self.rpc.fake_settings['foo'] = 'bar'
 

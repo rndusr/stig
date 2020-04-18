@@ -31,7 +31,7 @@ from . import logging
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 
-from .objects import aioloop, log, localcfg, remotecfg, srvapi, helpmgr, cmdmgr
+from .objects import log, localcfg, remotecfg, srvapi, helpmgr, cmdmgr
 
 def run():
     cmdmgr.load_cmds_from_module(
@@ -105,8 +105,8 @@ def run():
         if not tui.run(run_commands):
             exit_code = 1
 
-    aioloop.run_until_complete(srvapi.rpc.disconnect('Quit'))
+    asyncio.get_event_loop().run_until_complete(srvapi.rpc.disconnect('Quit'))
 
-    # We're not calling aioloop.close() here because it sometimes complains
-    # about unfinished tasks and not calling it seems to work fine.
+    # We're not closing the AsyncIO event loop here because it sometimes
+    # complains about unfinished tasks and not calling it seems to work fine.
     sys.exit(exit_code)

@@ -13,6 +13,7 @@ from ..logging import make_logger
 log = make_logger(__name__)
 
 import urwid
+import asyncio
 
 def run(command_runner):
     """
@@ -56,13 +57,13 @@ def run(command_runner):
 
     try:
         # Start polling torrent lists, counters, bandwidth usage, etc.
-        objects.aioloop.run_until_complete(objects.srvapi.start_polling())
+        asyncio.get_event_loop().run_until_complete(objects.srvapi.start_polling())
         old = tuiobjects.urwidscreen.tty_signal_keys('undefined','undefined',
                                                      'undefined','undefined','undefined')
         tuiobjects.urwidloop.run()
     finally:
         tuiobjects.urwidscreen.tty_signal_keys(*old)
         tuiobjects.logwidget.disable()
-        objects.aioloop.run_until_complete(objects.srvapi.stop_polling())
+        asyncio.get_event_loop().run_until_complete(objects.srvapi.stop_polling())
 
     return True

@@ -45,19 +45,17 @@ class RequestPoller():
 
     request: Coroutine that is called at intervals
     interval: Delay between calls
-    loop: Asyncio loop
 
     Any other positional or keyword arguments are passed to `request`.
     """
-    def __init__(self, request, *args, interval=1, loop=None, **kwargs):
-        self.loop = loop if loop is not None else asyncio.get_event_loop()
+    def __init__(self, request, *args, interval=1, **kwargs):
         self._on_response = blinker.Signal()
         self._on_error = blinker.Signal()
         self._prev_error = None
         self._interval = interval
         self._poll_task = None
         self._poll_loop_task = None
-        self._sleep = SleepUneasy(loop=loop)
+        self._sleep = SleepUneasy()
         self._skip_ongoing_request = False
         self._debug_info = {'request': 'No request specified yet',
                             'update_cbs': [], 'error_cbs': []}
@@ -69,7 +67,7 @@ class RequestPoller():
             log.debug('Already polling: %s', self._debug_info['request'])
         else:
             log.debug('Starting polling: %s', self._debug_info['request'])
-            self._poll_loop_task = self.loop.create_task(self._poll_loop())
+            self._poll_loop_task = asyncio.ensure_future(self._poll_loop())
             def reraise(task):
                 log.debug('Polling loop is finished: %s', self._debug_info['request'])
                 # Ignore if _poll_loop() was cancelled, raise all other exceptions
@@ -82,7 +80,7 @@ class RequestPoller():
     async def _poll_loop(self):
         self._prev_error = None
         while True:
-            self._poll_task = self.loop.create_task(self._do_poll())
+            self._poll_task = asyncio.ensure_future(self._do_poll())
             try:
                 await self._poll_task
             except asyncio.CancelledError:
@@ -154,7 +152,7 @@ class RequestPoller():
             log.debug('Stopping polling %s', self._debug_info['request'])
             self._poll_loop_task.cancel()
             try:
-                await asyncio.wait_for(self._poll_loop_task, timeout=0, loop=self.loop)
+                await asyncio.wait_for(self._poll_loop_task, timeout=0)
             except (asyncio.CancelledError, asyncio.TimeoutError):
                 pass
             finally:

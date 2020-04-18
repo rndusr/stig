@@ -30,7 +30,7 @@ class FakeTorrentAPI():
 
     async def torrents(self, torrents=None, keys='ALL'):
         if self.delay:
-            await asyncio.sleep(self.delay, loop=asyncio.get_event_loop())
+            await asyncio.sleep(self.delay)
         self.calls += 1
         self.arg_torrents = torrents
         self.arg_keys = keys
@@ -74,8 +74,7 @@ class Subscriber():
 class TestTorrentRequestPool(asynctest.ClockedTestCase):
     async def setUp(self):
         self.api = FakeTorrentAPI()
-        srvapi = SimpleNamespace(torrent=self.api,
-                                 loop=self.loop)
+        srvapi = SimpleNamespace(torrent=self.api)
         self.rp = TorrentRequestPool(srvapi)
         self.assertEqual(self.rp.running, False)
 

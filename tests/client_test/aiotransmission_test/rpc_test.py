@@ -10,10 +10,10 @@ from aiohttp import web
 
 class TestTransmissionRPC(asynctest.ClockedTestCase):
     async def setUp(self):
-        self.daemon = rsrc.FakeTransmissionDaemon(loop=self.loop)
+        self.daemon = rsrc.FakeTransmissionDaemon()
         self.daemon.response = rsrc.SESSION_GET_RESPONSE   # Default response
         await self.daemon.start()
-        self.client = TransmissionRPC(self.daemon.host, self.daemon.port, loop=self.loop)
+        self.client = TransmissionRPC(self.daemon.host, self.daemon.port)
 
         self.cb_connected = rsrc.FakeCallback('cb_connected')
         self.cb_disconnected = rsrc.FakeCallback('cb_disconnected')
@@ -316,8 +316,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
     async def test_timeout_minus_one(self):
         delay = self.client.timeout-1
         await asyncio.gather(self.advance(delay),
-                             self.client.connect(),
-                             loop=self.loop)
+                             self.client.connect())
         await self.client.disconnect()
         self.assert_cb_connected_called(calls=1, args=[(self.client,)])
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
@@ -329,14 +328,13 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         # NOTE: This function is only called sometimes, probably depending on
         # which task finishes first, advance() or client.connect().
         async def delayed_response(request):
-            await asyncio.sleep(delay, loop=self.loop)
+            await asyncio.sleep(delay)
             return web.Response(json=rsrc.SESSION_GET_RESPONSE)
         self.daemon.response = delayed_response
 
         with self.assertRaises(TimeoutError) as cm:
             await asyncio.gather(self.advance(delay),
-                                 self.client.connect(),
-                                 loop=self.loop)
+                                 self.client.connect())
         self.assertEqual(str(cm.exception),
                          'Timeout after %ds: %s' % (self.client.timeout, self.client.url))
         self.assert_cb_connected_called(calls=0)

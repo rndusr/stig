@@ -13,6 +13,8 @@ from ..utils.usertypes import Bool, Int, Float, String, Percent, Option, Path, m
 from ..utils import convert
 from . import constants as const
 
+import asyncio
+
 
 class Bandwidth(Int):
     typename = 'bandwidth'
@@ -60,12 +62,11 @@ BoolOrPath = multitype(Bool, Path)
 class PerfectInterval():
     """Remove processing time from intervals"""
 
-    def __init__(self, loop):
-        self._loop = loop
+    def __init__(self):
         self._last_timestamp = 0
 
     def __call__(self, seconds):
-        now = self._loop.time()
+        now = asyncio.get_event_loop().time()
         if self._last_timestamp <= 0:
             self._last_timestamp = int(now)
             return seconds
@@ -82,10 +83,9 @@ from async_timeout import timeout as async_timeout
 class SleepUneasy():
     """Asynchronous sleep() that can be aborted"""
 
-    def __init__(self, loop):
-        self.loop = loop
-        self._interrupt = asyncio.Event(loop=self.loop)
-        self._perfint = PerfectInterval(self.loop)
+    def __init__(self):
+        self._interrupt = asyncio.Event()
+        self._perfint = PerfectInterval()
 
     async def sleep(self, seconds):
         """Sleep for `seconds` or until `interrupt` is called"""
@@ -93,7 +93,7 @@ class SleepUneasy():
         # Remove processing time from seconds
         seconds = self._perfint(seconds)
         try:
-            async with async_timeout(seconds, loop=self.loop):
+            async with async_timeout(seconds):
                 await self._interrupt.wait()
         except asyncio.TimeoutError:
             pass  # Interval passed without interrupt

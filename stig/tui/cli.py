@@ -20,7 +20,6 @@ import time
 
 from .group import Group
 from .scroll import ScrollBar
-from ..objects import aioloop
 
 
 class CLIEditWidget(urwid.WidgetWrap):
@@ -203,7 +202,7 @@ class CLIEditWidget(urwid.WidgetWrap):
                     self._maybe_hide_or_show_menu()
 
             coro = self._completer.update(self._editw.edit_text, self._editw.edit_pos)
-            self._completion_update_task = aioloop.create_task(coro)
+            self._completion_update_task = asyncio.ensure_future(coro)
             self._completion_update_task.add_done_callback(callback)
 
     def _maybe_hide_or_show_menu(self):

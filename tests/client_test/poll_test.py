@@ -1,6 +1,7 @@
 from stig.client.poll import RequestPoller
 from stig.client.errors import (ConnectionError, AuthError)
 
+import asyncio
 import asynctest
 
 import logging
@@ -28,7 +29,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         return self.mock_request_calls
 
     async def test_start_stop(self):
-        rp = self.make_poller(self.mock_request, loop=self.loop)
+        rp = self.make_poller(self.mock_request)
         self.assertEqual(rp.running, False)
         await rp.start()
         self.assertEqual(rp.running, True)
@@ -44,8 +45,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         self.assertEqual(rp.running, False)
 
     async def test_request_args(self):
-        rp = self.make_poller(self.mock_request, 1, 2, 3, foo='bar',
-                              loop=self.loop)
+        rp = self.make_poller(self.mock_request, 1, 2, 3, foo='bar')
         await rp.start()
         await self.advance(0)
         self.assertEqual(self.mock_request_args, (1, 2, 3))
@@ -53,7 +53,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         await rp.stop()
 
     async def test_interval(self):
-        rp = self.make_poller(self.mock_request, interval=10, loop=self.loop)
+        rp = self.make_poller(self.mock_request, interval=10)
         self.assertEqual(rp.interval, 10)
         rp.interval = 5
         self.assertEqual(rp.interval, 5)
@@ -67,7 +67,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         await rp.stop()
 
     async def test_callbacks(self):
-        rp = self.make_poller(self.mock_request, loop=self.loop)
+        rp = self.make_poller(self.mock_request)
         status = None
         def cb1(calls):
             nonlocal status
@@ -105,7 +105,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         await rp.stop()
 
     async def test_callback_gets_None_when_stopped(self):
-        rp = self.make_poller(self.mock_request, loop=self.loop)
+        rp = self.make_poller(self.mock_request)
         status = None
         def cb(calls):
             nonlocal status
@@ -136,7 +136,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
                 raise ConnectionError('Server unreachable')
             else:
                 return requests
-        rp = RequestPoller(mock_request, loop=self.loop)
+        rp = RequestPoller(mock_request)
 
         # Collect responses
         responses = []
@@ -177,11 +177,11 @@ class TestRequestPoller(asynctest.ClockedTestCase):
     async def test_changing_request(self):
         status = []
         async def request1():
-            status.append('{}: request1() called'.format(self.loop.time()))
+            status.append('{}: request1() called'.format(asyncio.get_event_loop().time()))
         async def request2(a, b):
-            status.append('{}: request2({}, {}) called'.format(self.loop.time(), a, b))
+            status.append('{}: request2({}, {}) called'.format(asyncio.get_event_loop().time(), a, b))
 
-        rp = self.make_poller(request1, loop=self.loop)
+        rp = self.make_poller(request1)
         await rp.start()
         await self.advance(0)
         self.assertEqual(status, ['%d: request1() called' % 0])
@@ -197,7 +197,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         await rp.stop()
 
     async def test_manual_polling(self):
-        rp = self.make_poller(self.mock_request, loop=self.loop)
+        rp = self.make_poller(self.mock_request)
         await rp.start()
         self.assertEqual(self.mock_request_calls, 0)
         await self.advance(0)

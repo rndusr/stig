@@ -109,10 +109,9 @@ def response_torrents(*torrents):
 
 
 class FakeTransmissionDaemon:
-    def __init__(self, loop):
+    def __init__(self):
         self.host = 'localhost'
         self.port = unused_port()
-        self.loop = loop
         self.app = web.Application()
         self.app.router.add_route(method='POST',
                                   path='/{path:.*}',

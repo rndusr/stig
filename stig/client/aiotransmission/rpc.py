@@ -41,8 +41,7 @@ class TransmissionRPC():
     """
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user='',
-                 password='', path='/transmission/rpc', enabled=True, loop=None):
-        self.loop = loop if loop is not None else asyncio.get_event_loop()
+                 password='', path='/transmission/rpc', enabled=True):
         self._host = host
         self._port = port
         self._path = path
@@ -51,10 +50,10 @@ class TransmissionRPC():
         self._password = password
         self._headers = {'content-type': 'application/json'}
         self._session = None
-        self._enabled_event = asyncio.Event(loop=loop)
+        self._enabled_event = asyncio.Event()
         self.enabled = enabled
-        self._request_lock = asyncio.Lock(loop=loop)
-        self._connecting_lock = asyncio.Lock(loop=loop)
+        self._request_lock = asyncio.Lock()
+        self._connecting_lock = asyncio.Lock()
         self._connection_tested = False
         self._connection_exception = None
         self._timeout = TIMEOUT
@@ -271,7 +270,7 @@ class TransmissionRPC():
             await self._enabled_event.wait()
 
             import aiohttp
-            session_args = {'loop': self.loop}
+            session_args = {}
             if self.user or self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')

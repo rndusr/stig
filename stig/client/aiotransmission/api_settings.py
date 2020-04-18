@@ -101,7 +101,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         self._srvapi = srvapi
         self._on_update = blinker.Signal()
 
-        super().__init__(self._srvapi.rpc.session_get, interval=interval, loop=srvapi.loop)
+        super().__init__(self._srvapi.rpc.session_get, interval=interval)
         self.on_response(self._handle_session_get)
         self.on_error(self._handle_error)
 

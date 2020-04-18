@@ -44,12 +44,11 @@ class API():
     AuthError       = errors.AuthError
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
-                 password=None, path='/transmission/rpc', loop=None, interval=1):
-        self.loop = loop if loop is not None else asyncio.get_event_loop()
+                 password=None, path='/transmission/rpc', interval=1):
         self._rpc = TransmissionRPC(host=host, port=port, tls=tls, user=user,
-                                    password=password, loop=self.loop, path=path)
+                                    password=password, path=path)
         self._pollers = []
-        self._manage_pollers_interval = SleepUneasy(loop=self.loop)
+        self._manage_pollers_interval = SleepUneasy()
         self.interval = interval
 
     @property
@@ -98,19 +97,19 @@ class API():
         return TorrentRequestPool(self, interval=self._interval)
 
 
-    def create_poller(self, *args, interval=None, loop=None, **kwargs):
+    def create_poller(self, *args, interval=None, **kwargs):
         """
         Create, start and return custom RequestPoller instance
 
-        All arguments are used to create the poller, except for `interval` and
-        `loop`, which are ignored and replaced with this object's `interval` and
-        `loop` attributes so all pollers have the same interval.
+        All arguments are used to create the poller, except for `interval`,
+        which is ignored and replaced with this object's `interval` attribute so
+        all pollers have the same interval.
 
         The RequestPoller instance is treated like all other pollers, i.e. it
         is polled when `poll` is called, its interval is changed when
         `interval` is set, etc.
         """
-        poller = RequestPoller(*args, interval=self.interval, loop=self.loop, **kwargs)
+        poller = RequestPoller(*args, interval=self.interval, **kwargs)
         self._pollers.append(poller)
         self.manage_pollers_now()
         return poller
@@ -196,7 +195,7 @@ class API():
         for poller in self._existing_pollers:
             if not poller.running:
                 await poller.start()
-        self._manage_pollers_task = self.loop.create_task(self._manage_pollers())
+        self._manage_pollers_task = asyncio.ensure_future(self._manage_pollers())
         self._manage_pollers_task.add_done_callback(lambda task: task.result())
 
     async def stop_polling(self):
