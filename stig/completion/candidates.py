@@ -193,8 +193,8 @@ async def torrent_filter(curarg, filter_names=True):
     """
     Values and/or names for torrent filters
 
-    If `filter_names` evaluates to False, filter names are never included in the
-    returned list.
+    If `filter_names` evaluates to False, filter names are not included in the
+    returned list, only torrent names.
 
     The return value is either an empty tuple, a 1-tuple (filter values) or a
     2-tuple (filter names and filter values).
