@@ -13,6 +13,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError)
+from ...completion import candidates
 from . import _mixin as mixin
 from ... import objects
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc, make_SCRIPTING_doc)
@@ -66,6 +67,22 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
             await self.make_file_list(tfilter, ffilter, columns)
         else:
             self.make_file_list(tfilter, ffilter, columns)
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        args_wo_opts = args.without_options()
+        if args_wo_opts.curarg_index == 1:
+            return candidates.torrent_filter(args.curarg)
+        elif args_wo_opts.curarg_index == 2:
+            torrent_filter = args_wo_opts[1]
+            return candidates.file_filter(args.curarg, torrent_filter)
+
+    @classmethod
+    def completion_candidates_params(cls, option, args):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--columns':
+            return candidates.column_names('files')
 
 
 class PriorityCmdbase(metaclass=InitCommand):

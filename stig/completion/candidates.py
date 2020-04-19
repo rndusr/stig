@@ -324,3 +324,68 @@ async def torrent_path(curarg, only='auto'):
     if response.success:
         return (get_cands(torrent, path, only)
                 for torrent in response.torrents)
+
+
+async def file_filter(curarg, torrent_filter, filter_names=True):
+    """
+    Values and/or names for torrent filters
+
+    If `filter_names` evaluates to False, filter names are not included in the
+    returned list, only file names.
+
+    The return value is either an empty tuple, a 1-tuple (filter values) or a
+    2-tuple (filter names and filter values).
+    """
+    filter_cls = _utils.get_filter_cls('FileFilter')
+    if curarg.startswith(filter_cls.INVERT_CHAR):
+        curarg = curarg[1:]
+
+    # Separate individual filters, e.g. 'seeding|comment=foo'
+    filter_strings = curarg.separate(_utils.filter_combine_ops, include_seps=True)
+
+    # Separate filter name from filter value
+    parts = filter_strings.curarg.separate(_utils.filter_compare_ops, include_seps=True)
+    if parts.curarg_index == 0:
+        # If focus is on filter name, complete filter names and file names
+        # (default file filter is 'name')
+        if filter_names:
+            log.debug('Completing file filter names and file names: %r', parts[0])
+            return (_utils.filter_names('FileFilter'),
+                    await _file_filter_values(filter_cls.DEFAULT_FILTER, torrent_filter))
+        else:
+            log.debug('Completing only file names: %r', parts[0])
+            return (await _file_filter_values(filter_cls.DEFAULT_FILTER, torrent_filter),)
+
+    elif parts.curarg_index == 1 and parts[0] in _utils.filter_compare_ops:
+        # User gave a comparison operator but not a filter name, e.g. ('=', 'foo')
+        filter_name = filter_cls.DEFAULT_FILTER
+        log.debug('Completing %r (default) file filter values', filter_name)
+        return (await _file_filter_values(filter_name, torrent_filter),)
+
+    elif parts.curarg_index == 2:
+        # User gave filter name, operator and value, e.g. ('comment', '!=', 'foo')
+        log.debug('Completing %r file filter values', parts[0])
+        return (await _file_filter_values(parts[0].strip(), torrent_filter),)
+    else:
+        return ()
+
+async def _file_filter_values(filter_name, torrent_filter):
+    filter_cls = _utils.get_filter_cls('FileFilter')
+    cands = ()
+    if _utils.filter_takes_completable_values(filter_cls, filter_name):
+        keys = filter_cls(filter_name).needed_keys
+        response = await objects.srvapi.torrent.torrents(torrent_filter,
+                                                         keys=('files',),
+                                                         from_cache=True)
+        if response.success:
+            # Get the same values that the filter would get
+            value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
+            cands = []
+            for t in response.torrents:
+                for f in t['files'].files:
+                    value = value_getter(f)
+                    cands.append(value)
+    curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
+    return Candidates(cands,
+                      label='File Filter Values: %s' % (filter_name,),
+                      curarg_seps=curarg_seps)
