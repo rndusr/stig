@@ -631,7 +631,7 @@ class LimitCmd(metaclass=InitCommand):
           'description': ('Remove previously applied filter; this is '
                           'the default if no FILTER arguments are provided') },
         { 'names': ('FILTER',), 'nargs': '?',
-          'description': 'Filter expression (see `help filter`)' },
+          'description': 'Filter expression (see `help filters`)' },
     )
 
     def run(self, clear, FILTER):
