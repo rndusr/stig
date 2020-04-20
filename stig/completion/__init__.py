@@ -238,12 +238,10 @@ class Candidate(str):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
-        return (super().__eq__(other) and
-                self.info == other.info and
-                self.in_parens == other.in_parens)
+        return super().__eq__(other)
 
     def __hash__(self):
-        return hash((str(self), self.in_parens, tuple(self.info.items())))
+        return hash(str(self))
 
     def __repr__(self):
         kwargs = {}
