@@ -54,7 +54,7 @@ def filter_names(filter_cls_name):
             filter_spec = get_filter_spec(filter_cls, name)
             desc = filter_spec.description
             alias_str = ','.join(filter_spec.aliases)
-            yield Candidate(name, description=desc, in_parens=alias_str)
+            yield Candidate(name, in_parens=alias_str, Description=desc)
 
     filter_cls = get_filter_cls(filter_cls_name)
     curarg_seps = itertools.chain(filter_compare_ops, filter_combine_ops, (filter_cls.INVERT_CHAR,))

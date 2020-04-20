@@ -32,7 +32,7 @@ def commands():
     """Names of commands"""
     cands = (Candidate(cmdcls.name,
                        in_parens='%s' % (', '.join(cmdcls.aliases),),
-                       description=cmdcls.description)
+                       Description=cmdcls.description)
              for cmdcls in objects.cmdmgr.active_commands)
     return Candidates(cands, label='Commands')
 
@@ -49,12 +49,12 @@ def for_args(args):
 def setting_names():
     """Names of settings"""
     local_cands = (Candidate(name,
-                             description=objects.localcfg.description(name),
-                             default=str(objects.localcfg.default(name)))
+                             Description=objects.localcfg.description(name),
+                             Default=str(objects.localcfg.default(name)))
                    for name in objects.localcfg)
     remote_cands = (Candidate('srv.' + name,
-                              description=objects.remotecfg.description(name),
-                              default=str(objects.remotecfg.default(name)))
+                              Description=objects.remotecfg.description(name),
+                              Default=str(objects.remotecfg.default(name)))
                     for name in objects.remotecfg)
     return Candidates(itertools.chain(local_cands, remote_cands),
                       label='Settings')
@@ -112,7 +112,7 @@ def sort_orders(clsname):
     cls = _utils.get_sorter_cls(clsname)
     cands = (Candidate(name,
                        in_parens=', '.join(spec.aliases),
-                       description=spec.description)
+                       Description=spec.description)
              for name,spec in cls.SORTSPECS.items())
     return Candidates(cands,
                       curarg_seps=(objects.localcfg['sort.torrents'].sep.strip(),),
@@ -391,7 +391,7 @@ async def _file_filter_values(filter_name, torrent_filter):
                 if len(files) != 1 or t['name'] != files[0]['name']:
                     for f in t['files'].files:
                         value = value_getter(f)
-                        cands.append(value)
+                        cands.append(Candidate(value, Torrent=t['name']))
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
     return Candidates(cands,
                       label='File Filter: %s' % (filter_name,),

@@ -226,28 +226,30 @@ class Candidate(str):
     def __new__(cls, string, **kwargs):
         return super().__new__(cls, string)
 
-    def __init__(self, string, description='', in_parens='', default=''):
-        # `description` and `default are displayed in a separate columns.
+    def __init__(self, string, in_parens='', **info):
         # `in_parens` is displayed in parentheses after `string`.
-        self.description = str(description)
+        # `info` is a mapping with extra information, e.g. `Description='This
+        # value does that'` or 'Default='<default value>'`.
+        self.info = {}
+        for title,text in info.items():
+            self.info[str(title)] = str(text)
         self.in_parens = str(in_parens)
-        self.default = str(default)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
         return (super().__eq__(other) and
-                self.description == other.description and
+                self.info == other.info and
                 self.in_parens == other.in_parens)
 
     def __hash__(self):
-        return hash((str(self), self.description, self.in_parens))
+        return hash((str(self), self.in_parens, tuple(self.info.items())))
 
     def __repr__(self):
         kwargs = {}
-        if self.description: kwargs['description'] = self.description
-        if self.default: kwargs['default'] = self.default
         if self.in_parens: kwargs['in_parens'] = self.in_parens
+        for title,text in self.info.items():
+            kwargs[title] = text
         if kwargs:
             return '%s(%r, %s)' % (
                 type(self).__name__, str(self),

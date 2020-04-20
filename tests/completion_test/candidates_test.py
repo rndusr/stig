@@ -30,10 +30,10 @@ class Test_setting_names(unittest.TestCase):
         mock_lcfg.description.side_effect = lambda name: 'mock description for local setting %s' % name
         mock_rcfg.description.side_effect = lambda name: 'mock description for remote setting %s' % name
         settings = candidates.setting_names()
-        self.assertEqual(settings[0].description, 'mock description for local setting bar')
-        self.assertEqual(settings[1].description, 'mock description for local setting foo')
-        self.assertEqual(settings[2].description, 'mock description for remote setting Bar')
-        self.assertEqual(settings[3].description, 'mock description for remote setting Foo')
+        self.assertEqual(settings[0].info['Description'], 'mock description for local setting bar')
+        self.assertEqual(settings[1].info['Description'], 'mock description for local setting foo')
+        self.assertEqual(settings[2].info['Description'], 'mock description for remote setting Bar')
+        self.assertEqual(settings[3].info['Description'], 'mock description for remote setting Foo')
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
@@ -43,10 +43,11 @@ class Test_setting_names(unittest.TestCase):
         mock_lcfg.default.side_effect = lambda name: list(name)
         mock_rcfg.default.side_effect = lambda name: (name,) * 2
         cands = candidates.setting_names()
-        self.assertEqual(cands[0].default, "['b', 'a', 'r']")
-        self.assertEqual(cands[1].default, "['f', 'o', 'o']")
-        self.assertEqual(cands[2].default, "('Bar', 'Bar')")
-        self.assertEqual(cands[3].default, "('Foo', 'Foo')")
+        self.assertEqual(cands[0].info['Default'], "['b', 'a', 'r']")
+        self.assertEqual(cands[0].info['Default'], "['b', 'a', 'r']")
+        self.assertEqual(cands[1].info['Default'], "['f', 'o', 'o']")
+        self.assertEqual(cands[2].info['Default'], "('Bar', 'Bar')")
+        self.assertEqual(cands[3].info['Default'], "('Foo', 'Foo')")
 
 
 class Test_setting_values(unittest.TestCase):
@@ -577,8 +578,10 @@ class Test_file_filter_values(asynctest.TestCase):
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
         mock_value_getter.assert_any_call('mock file 1')
         mock_value_getter.assert_any_call('mock file 2')
-        exp_cands = Candidates(('mock file 1 value', 'mock file 2 value',
-                                'mock file 3 value', 'mock file 4 value'),
+        exp_cands = Candidates((candidates.Candidate('mock file 1 value', Torrent='mock torrent 1'),
+                                candidates.Candidate('mock file 2 value', Torrent='mock torrent 1'),
+                                candidates.Candidate('mock file 3 value', Torrent='mock torrent 2'),
+                                candidates.Candidate('mock file 4 value', Torrent='mock torrent 2')),
                                curarg_seps=('|', '&', '=', '!='),
                                label='File Filter: mock file filter')
         self.assertEqual(cands, exp_cands)
