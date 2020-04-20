@@ -75,10 +75,10 @@ class TestRcCmd(CommandTestCase):
     @patch('stig.commands.base.config.candidates')
     async def test_completion_candidates_on_first_argument(self, mock_candidates):
         mock_candidates.fs_path.return_value = Candidates(('a', 'b', 'c'))
-        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=1),
+        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=1, curarg_curpos=2),
                                                 exp_cands=('a', 'b', 'c'))
-        mock_candidates.fs_path.assert_called_once_with('hey', base=os.path.dirname(self.mock_default_rcfile))
-        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=2),
+        mock_candidates.fs_path.assert_called_once_with('he', base=os.path.dirname(self.mock_default_rcfile))
+        await self.assert_completion_candidates(RcCmd, Args(('rc', 'hey', 'ho'), curarg_index=2, curarg_curpos=2),
                                                 exp_cands=None)
 
     @patch('stig.commands.base.config.candidates')

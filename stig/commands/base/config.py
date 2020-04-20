@@ -69,7 +69,7 @@ class RcCmdbase(metaclass=InitCommand):
         """Complete positional arguments"""
         # Command only takes one argument
         if args.curarg_index == 1:
-            return candidates.fs_path(args.curarg,
+            return candidates.fs_path(args.curarg.before_cursor,
                                       base=os.path.dirname(defaults.DEFAULT_RCFILE))
 
 
