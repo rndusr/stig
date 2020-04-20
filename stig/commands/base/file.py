@@ -154,3 +154,16 @@ class PriorityCmdbase(metaclass=InitCommand):
             polling_frenzy=True, quiet=quiet)
         if not response.success:
             raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        if args.curarg_index == 1:
+            # "off", "low", "normal" or "high"
+            return candidates.Candidates((p[2] for p in cls._PRIORITY.values()),
+                                         label='File Priorities')
+        elif args.curarg_index == 2:
+            return candidates.torrent_filter(args.curarg)
+        elif args.curarg_index == 3:
+            torrent_filter = args[2]
+            return candidates.file_filter(args.curarg, torrent_filter)
