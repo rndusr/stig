@@ -254,7 +254,7 @@ async def _torrent_filter_values(filter_name):
                     cands.append(value)
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
     return Candidates(cands,
-                      label='Torrent Filter Values: %s' % (filter_name,),
+                      label='Torrent Filter: %s' % (filter_name,),
                       curarg_seps=curarg_seps)
 
 
@@ -387,5 +387,5 @@ async def _file_filter_values(filter_name, torrent_filter):
                     cands.append(value)
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
     return Candidates(cands,
-                      label='File Filter Values: %s' % (filter_name,),
+                      label='File Filter: %s' % (filter_name,),
                       curarg_seps=curarg_seps)

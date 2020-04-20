@@ -237,7 +237,7 @@ class Test_torrent_filter_values(asynctest.TestCase):
         mock_filter_takes_completable_values.assert_called_once_with('mock TorrentFilter class',
                                                                      'mock filter name')
         exp_cands = Candidates((), curarg_seps=('|', '&', '=', '!='),
-                               label='Torrent Filter Values: mock filter name')
+                               label='Torrent Filter: mock filter name')
         self.assertEqual(cands, exp_cands)
 
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
@@ -257,7 +257,7 @@ class Test_torrent_filter_values(asynctest.TestCase):
         mock_torrents.assert_called_with(keys=('mockkey1', 'mockkey2'), from_cache=True)
         mock_get_filter_spec.assert_not_called()
         exp_cands = Candidates((), curarg_seps=('|', '&', '=', '!='),
-                               label='Torrent Filter Values: mockfilter')
+                               label='Torrent Filter: mockfilter')
         self.assertEqual(cands, exp_cands)
 
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
@@ -283,7 +283,7 @@ class Test_torrent_filter_values(asynctest.TestCase):
         mock_value_getter.assert_any_call('mock torrent 2')
         exp_cands = Candidates(('mock torrent 1 value', 'mock torrent 2 value'),
                                curarg_seps=('|', '&', '=', '!='),
-                               label='Torrent Filter Values: mockfilter')
+                               label='Torrent Filter: mockfilter')
         self.assertEqual(cands, exp_cands)
 
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
@@ -311,7 +311,7 @@ class Test_torrent_filter_values(asynctest.TestCase):
         exp_cands = Candidates(('mock torrent 1 value 1', 'mock torrent 1 value 2',
                                 'mock torrent 2 value 1', 'mock torrent 2 value 2'),
                                curarg_seps=('|', '&', '=', '!='),
-                               label='Torrent Filter Values: mockfilter')
+                               label='Torrent Filter: mockfilter')
         self.assertEqual(cands, exp_cands)
 
 
@@ -534,7 +534,7 @@ class Test_file_filter_values(asynctest.TestCase):
         mock_filter_takes_completable_values.assert_called_once_with('mock FileFilter class',
                                                                      'mock file filter')
         exp_cands = Candidates((), curarg_seps=('|', '&', '=', '!='),
-                               label='File Filter Values: mock file filter')
+                               label='File Filter: mock file filter')
         self.assertEqual(cands, exp_cands)
 
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
@@ -551,7 +551,7 @@ class Test_file_filter_values(asynctest.TestCase):
         mock_torrents.assert_called_with('mock torrent filter', keys=('files',), from_cache=True)
         mock_get_filter_spec.assert_not_called()
         exp_cands = Candidates((), curarg_seps=('|', '&', '=', '!='),
-                               label='File Filter Values: mock file filter')
+                               label='File Filter: mock file filter')
         self.assertEqual(cands, exp_cands)
 
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
@@ -580,7 +580,7 @@ class Test_file_filter_values(asynctest.TestCase):
         exp_cands = Candidates(('mock file 1 value', 'mock file 2 value',
                                 'mock file 3 value', 'mock file 4 value'),
                                curarg_seps=('|', '&', '=', '!='),
-                               label='File Filter Values: mock file filter')
+                               label='File Filter: mock file filter')
         self.assertEqual(cands, exp_cands)
 
 
