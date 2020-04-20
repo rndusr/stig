@@ -408,7 +408,9 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
     """
     Split `cmdline` into list of tokens
 
-    All special characters are included: ''.join(tokenize(cmd)) == string
+    All special characters are retained:
+
+    >>> ''.join(tokenize(cmdline)) == cmdline
 
     Delimiters are included as separate tokens.
     """
