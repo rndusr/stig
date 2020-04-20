@@ -442,13 +442,13 @@ class RateLimitCmdbase(metaclass=InitCommand):
 
     @classmethod
     def completion_candidates_posargs(cls, args):
-        args_wo_opts = args.without_options()
-        if args_wo_opts.curarg_index == 1:
+        posargs = args.posargs()
+        if posargs.curarg_index == 1:
             cands = []
-            if 'up' not in args_wo_opts.curarg:
+            if 'up' not in posargs.curarg:
                 cands.append('up')
-            if all(x not in args_wo_opts.curarg for x in ('down', 'dn')):
+            if all(x not in posargs.curarg for x in ('down', 'dn')):
                 cands.append('down')
             return candidates.Candidates(cands, label='DIRECTION', curarg_seps=(',',))
-        elif args_wo_opts.curarg_index >= 3:
+        elif posargs.curarg_index >= 3:
             return candidates.torrent_filter(args.curarg)

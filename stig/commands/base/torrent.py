@@ -403,11 +403,9 @@ class RenameCmdbase(metaclass=InitCommand):
     async def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         # We don't care about options
-        args = args.without_options()
-        log.debug(args)
+        args = args.posargs()
         if args.curarg_index == 1:
             # Complete file and directory names from torrent(s)
-            log.debug('torrent_path(%r)', args.curarg)
             return await candidates.torrent_path(args.curarg, only='any')
         elif args.curarg_index == 2:
             first_arg_stripped = args[1].strip('/')

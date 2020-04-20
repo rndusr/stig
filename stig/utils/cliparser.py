@@ -1012,7 +1012,7 @@ class Args(tuple):
         if curarg is not None:
             curarg.curpos = curpos
 
-    def without_options(self, options={}):
+    def posargs(self, options={}):
         """
         Return copy without options and parameters for options
 
@@ -1032,7 +1032,7 @@ class Args(tuple):
 
         Return None if there are no positional arguments.
 
-        See `without_options` for documentation on the `options` argument.
+        See `posargs` for documentation on the `options` argument.
         """
         return get_nth_posarg_index(n, self, options)
 

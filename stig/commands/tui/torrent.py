@@ -144,7 +144,7 @@ class RenameCmd(base.RenameCmdbase,
     async def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         # We don't care about options
-        args = args.without_options()
+        args = args.posargs()
 
         # If there is only one argument and it doesn't contain a path separator,
         # that means the user might want to rename the focused torrent, file or

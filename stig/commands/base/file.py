@@ -71,11 +71,11 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        args_wo_opts = args.without_options()
-        if args_wo_opts.curarg_index == 1:
+        posargs = args.posargs()
+        if posargs.curarg_index == 1:
             return candidates.torrent_filter(args.curarg)
-        elif args_wo_opts.curarg_index == 2:
-            torrent_filter = args_wo_opts[1]
+        elif posargs.curarg_index == 2:
+            torrent_filter = posargs[1]
             return candidates.file_filter(args.curarg, torrent_filter)
 
     @classmethod
