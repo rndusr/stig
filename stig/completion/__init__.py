@@ -258,9 +258,6 @@ class Candidate(str):
         else:
             return '%s(%r)' % (type(self).__name__, str(self))
 
-        return '%s(%s, description=%r, in_parens=%r, default=%r)' % (
-            type(self).__name__, str(self), self.description, self.in_parens, self.default)
-
 
 class SingleCandidate(Candidates):
     """
