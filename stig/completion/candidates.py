@@ -382,9 +382,13 @@ async def _file_filter_values(filter_name, torrent_filter):
             value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
             cands = []
             for t in response.torrents:
-                for f in t['files'].files:
-                    value = value_getter(f)
-                    cands.append(value)
+                files = tuple(t['files'].files)
+                # Exclude single-file torrents (torrents that don't contain a
+                # directory) because file filters are irrelevant in that case.
+                if len(files) != 1 or t['name'] != files[0]['name']:
+                    for f in t['files'].files:
+                        value = value_getter(f)
+                        cands.append(value)
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
     return Candidates(cands,
                       label='File Filter: %s' % (filter_name,),
