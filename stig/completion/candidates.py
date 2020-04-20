@@ -346,7 +346,7 @@ async def file_filter(curarg, torrent_filter, filter_names=True):
     # Separate individual filters, e.g. 'seeding|comment=foo'
     filter_strings = curarg.separate(_utils.filter_combine_ops, include_seps=True)
 
-    # Separate filter name from filter value
+    # Split current filter into [<filter name>, <operator>, <value>]
     parts = filter_strings.curarg.separate(_utils.filter_compare_ops, include_seps=True)
     if parts.curarg_index == 0:
         # If focus is on filter name, complete filter names and file names
