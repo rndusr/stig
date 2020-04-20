@@ -48,10 +48,11 @@ class Host(_COLUMNS['host'], CellWidgetBase):
                            style.attrs('header'))
 
     def update(self, data):
-        # Set IP address initially
-        super().update(data)
+        if not self.text.text:
+            # Set raw IP address initially
+            super().update(data)
 
-        # Lookup hostname once per instance
+        # Set hostname via callback
         from ...objects import localcfg
         if localcfg['reverse-dns']:
             def set_hostname(hostname):
