@@ -30,8 +30,11 @@ from collections import abc
 @functools.lru_cache(maxsize=None)
 def commands():
     """Names of commands"""
-    return Candidates((cmdcls.name for cmdcls in objects.cmdmgr.active_commands),
-                      label='Commands')
+    cands = (Candidate(cmdcls.name,
+                       in_parens='%s' % (', '.join(cmdcls.aliases),),
+                       description=cmdcls.description)
+             for cmdcls in objects.cmdmgr.active_commands)
+    return Candidates(cands, label='Commands')
 
 
 def for_args(args):
