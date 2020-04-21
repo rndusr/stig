@@ -121,3 +121,21 @@ class LogCmdbase(metaclass=InitCommand):
             self.info(' '.join(ACTION[1:]))
         else:
             self.info(' '.join(ACTION))
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        if args.curarg_index == 1:
+            return candidates.Candidates(
+                (candidates.Candidate(topic, Description=''.join(cls.more_sections[topic]).split('.')[0])
+                 for topic in cls.more_sections),
+                label='Actions')
+        elif args.curarg_index == 2 and args[1] == 'scroll':
+            return candidates.Candidates(
+                (candidates.Candidate('up', Description='Scroll log messages up one line'),
+                 candidates.Candidate('down', Description='Scroll log messages down one line'),
+                 candidates.Candidate('page up', Description='Scroll log messages up one page'),
+                 candidates.Candidate('page down', Description='Scroll log messages down one page'),
+                 candidates.Candidate('top', Description='Scroll to top of log messages'),
+                 candidates.Candidate('bottom', Description='Scroll to bottom of log messages')),
+                label='Actions')
