@@ -27,6 +27,14 @@ import functools
 from collections import abc
 
 
+def for_args(args):
+    """Get completion candidates for command line `args`"""
+    cmdcls = objects.cmdmgr.get_cmdcls(args[0])
+    if cmdcls is not None:
+        log.debug('Getting candidates for args: %r', args)
+        return cmdcls.completion_candidates(args)
+
+
 @functools.lru_cache(maxsize=None)
 def commands():
     """Names of commands"""
@@ -37,12 +45,24 @@ def commands():
     return Candidates(cands, label='Commands')
 
 
-def for_args(args):
-    """Get completion candidates for command line `args`"""
-    cmdcls = objects.cmdmgr.get_cmdcls(args[0])
-    if cmdcls is not None:
-        log.debug('Getting candidates for args: %r', args)
-        return cmdcls.completion_candidates(args)
+@functools.lru_cache(maxsize=None)
+def help_topics():
+    """All known help topics"""
+    cats = []
+    cats.append(Candidates(
+        (Candidate(topic, Description=objects.helpmgr.MAIN_TOPICS[topic])
+         for topic in objects.helpmgr.MAIN_TOPICS),
+        label='Main Topics'))
+    cats.append(commands())
+    cats.append(Candidates(
+        (Candidate(topic, Description=objects.localcfg.description(topic))
+         for topic in objects.localcfg),
+        label='Local Settings'))
+    cats.append(Candidates(
+        (Candidate('srv.' + topic, Description=objects.remotecfg.description(topic))
+         for topic in objects.remotecfg),
+        label='Remote Settings'))
+    return cats
 
 
 @functools.lru_cache(maxsize=None)

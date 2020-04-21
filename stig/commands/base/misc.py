@@ -15,6 +15,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError)
+from ...completion import candidates
 from ... import (objects, __appname__, __version__)
 
 
@@ -66,6 +67,11 @@ class HelpCmdbase(metaclass=InitCommand):
         self.display_help(existing_topics, lines)
         if not success:
             raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.help_topics()
 
 
 class VersionCmdbase(metaclass=InitCommand):
