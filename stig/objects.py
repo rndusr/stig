@@ -36,14 +36,11 @@ remotecfg = srvapi.settings
 
 from .helpmgr import HelpManager
 helpmgr = HelpManager()
-helpmgr.localcfg = localcfg
-helpmgr.remotecfg = remotecfg
 
 
 from .commands import CommandManager
 cmdmgr = CommandManager(info_handler=lambda msg: log.info(msg),
                         error_handler=lambda msg: log.error(msg))
-helpmgr.cmdmgr = cmdmgr
 
 def _pre_run_hook(cmdline):
     # Change command before it is executed

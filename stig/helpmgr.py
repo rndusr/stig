@@ -17,23 +17,11 @@ log = make_logger(__name__)
 from collections import abc
 import re
 
-from . import (__appname__, __version__)
+from . import __appname__, __version__
+from . import objects
 from .utils import expandtabs
 from .utils.string import striplines
 from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
-
-
-ALIASES = {
-    'cmds': 'commands',
-    'cmdsman': 'commandsmanual',
-
-    'filtersman': 'filtersmanual',
-
-    'config': 'settings', 'cfg': 'settings',
-    'configman': 'settingsmanual', 'cfgman': 'settingsmanual',
-
-    'keymap': 'keys', 'keybindings': 'keys',
-}
 
 
 import string
@@ -58,10 +46,33 @@ finalize_lines = ForgivingFormatter()
 
 class HelpManager():
     """Provide help texts for CommandManager, Settings and KeyMap objects"""
+
+    MAIN_TOPICS = {
+        'commandsmanual' : 'Describes how to call and chain commands',
+        'commands'       : 'Lists commands',
+        'filtersmanual'  : 'Describes how to define and combine filters',
+        'filters'        : 'Lists filters for torrents, files, etc',
+        'settingsmanual' : 'Describes how to change settings',
+        'settings'       : 'Lists configuration settings',
+        'keybindings'    : 'Lists TUI keybindings',
+    }
+
+    ALIASES = {
+        'cmds'        : 'commands',
+        'cmdsman'     : 'commandsmanual',
+        'filtersman'  : 'filtersmanual',
+        'config'      : 'settings',
+        'cfg'         : 'settings',
+        'configman'   : 'settingsmanual',
+        'cfgman'      : 'settingsmanual',
+        'keymap'      : 'keybindings',
+        'keys'        : 'keybindings',
+    }
+
     def find(self, topic=None):
         """Find help topic and return lines"""
-        if topic in ALIASES:
-            topic = ALIASES[topic]
+        if topic in self.ALIASES:
+            topic = self.ALIASES[topic]
 
         if topic is None:
             return self.topic_overview
@@ -69,9 +80,9 @@ class HelpManager():
             return getattr(self, 'topic_' + topic)
         except AttributeError:
             pass
-        if topic in self.cmdmgr:
+        if topic in objects.cmdmgr:
             return self.command(topic)
-        elif topic in self.localcfg or topic[4:] in self.remotecfg:
+        elif topic in objects.localcfg or topic[4:] in objects.remotecfg:
             return self.setting(topic)
 
         raise ValueError('Unknown help topic: %r' % topic)
@@ -92,22 +103,16 @@ class HelpManager():
                 lines.append('\t%s  \t%s' % (opts, desc))
             lines.append('')
 
-        def topic_line(topic, description):
-            names = (topic,) + tuple(alias for alias,topic_ in ALIASES.items()
+        def topic_line(topic):
+            names = (topic,) + tuple(alias for alias,topic_ in self.ALIASES.items()
                                      if topic_ == topic)
-            return '\t\t%s \t- \t%s' % (', '.join(names), description)
+            return '\t\t%s \t- \t%s' % (', '.join(names), self.MAIN_TOPICS[topic])
 
         lines += ['HELP TOPICS',
                   ('\tAll commands and settings are valid help topics.  Read '
                    "them with '{__appname__} help <TOPIC>' or '{__appname__} -h <TOPIC>'.  "
-                   'Additionally, the following topics are available:'),
-                  topic_line('commandsmanual', 'Describes how to call and chain commands'),
-                  topic_line('commands',       'Lists commands'),
-                  topic_line('filtersmanual',  'Describes how to define and combine filters'),
-                  topic_line('filters',        'Lists filters for torrents, files, etc'),
-                  topic_line('settingsmanual', 'Describes how to change settings'),
-                  topic_line('settings',       'Lists configuration settings'),
-                  topic_line('keys',           'Lists TUI keybindings')]
+                   'Additionally, the following topics are available:')]
+        lines.extend(topic_line(topic) for topic in self.MAIN_TOPICS)
 
         return finalize_lines(lines)
 
@@ -163,8 +168,8 @@ class HelpManager():
     @property
     def topic_settings(self):
         """Return help text for all settings"""
-        localcfg = self.localcfg
-        remotecfg = self.remotecfg
+        localcfg = objects.localcfg
+        remotecfg = objects.remotecfg
 
         lines = []
         lines.append('LOCAL SETTINGS')
@@ -180,11 +185,11 @@ class HelpManager():
 
     def setting(self, name):
         """Return help text for setting"""
-        if name in self.localcfg:
-            cfg = self.localcfg
+        if name in objects.localcfg:
+            cfg = objects.localcfg
             key = name
-        elif name[4:] in self.remotecfg:
-            cfg = self.remotecfg
+        elif name[4:] in objects.remotecfg:
+            cfg = objects.remotecfg
             key = name[4:]
         else:
             raise ValueError('Unknown help topic: %r' % name)
@@ -266,16 +271,15 @@ class HelpManager():
     @property
     def topic_commands(self):
         """Must be set to a CommandManager object; provides a help text"""
-        cmdmgr = self.cmdmgr
         lines = []
-        for category in cmdmgr.categories:
+        for category in objects.cmdmgr.categories:
             lines.append('{} COMMANDS'.format(category.upper()))
 
             # To deduplicate commands with the same name that provide
             # different interfaces (but should have the same docs), map
             # command names to commands.
             cmds = {}
-            for cmd in cmdmgr.all_commands:
+            for cmd in objects.cmdmgr.all_commands:
                 if category == cmd.category:
                     cmds[cmd.name] = cmd
 
@@ -287,7 +291,7 @@ class HelpManager():
 
     def command(self, name):
         """Return help text for command"""
-        cmd = self.cmdmgr[name]
+        cmd = objects.cmdmgr[name]
 
         def takes_value(argspec):
             if argspec.get('action') in ('store_true', 'store_false', 'store_const'):
@@ -380,7 +384,7 @@ class HelpManager():
         return finalize_lines(lines)
 
     @property
-    def topic_keys(self):
+    def topic_keybindings(self):
         """Must be set to a KeyMap object; provides a help text"""
         from .tui.tuiobjects import keymap
 
