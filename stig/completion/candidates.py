@@ -212,75 +212,6 @@ def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
     return Candidates(cands, label=label, curarg_seps=('/',))
 
 
-async def torrent_filter(curarg, filter_names=True):
-    """
-    Values and/or names for torrent filters
-
-    If `filter_names` evaluates to False, filter names are not included in the
-    returned list, only torrent names.
-
-    The return value is either an empty tuple, a 1-tuple (filter values) or a
-    2-tuple (filter names and filter values).
-    """
-    filter_cls = _utils.get_filter_cls('TorrentFilter')
-    if curarg.startswith(filter_cls.INVERT_CHAR):
-        curarg = curarg[1:]
-
-    # Separate individual filters, e.g. 'seeding|comment=foo'
-    filter_strings = curarg.separate(_utils.filter_combine_ops, include_seps=True)
-
-    # Separate filter name from filter value
-    parts = filter_strings.curarg.separate(_utils.filter_compare_ops, include_seps=True)
-    if parts.curarg_index == 0:
-        # If focus is on filter name, complete filter names and torrent names
-        # (default torrent filter is 'name')
-        if filter_names:
-            log.debug('Completing torrent filter names and torrent names: %r', parts[0])
-            return (_utils.filter_names('TorrentFilter'),
-                    await _torrent_filter_values(filter_cls.DEFAULT_FILTER))
-        else:
-            log.debug('Completing only torrent names: %r', parts[0])
-            return (await _torrent_filter_values(filter_cls.DEFAULT_FILTER),)
-
-    elif parts.curarg_index == 1 and parts[0] in _utils.filter_compare_ops:
-        # User gave a comparison operator but not a filter name, e.g. ('=', 'foo')
-        filter_name = filter_cls.DEFAULT_FILTER
-        log.debug('Completing %r (default) torrent filter values', filter_name)
-        return (await _torrent_filter_values(filter_name),)
-
-    elif parts.curarg_index == 2:
-        # parts is something like ('comment', '!=', 'foo')
-        log.debug('Completing %r torrent filter values', parts[0])
-        return (await _torrent_filter_values(parts[0].strip()),)
-    else:
-        return ()
-
-async def _torrent_filter_values(filter_name):
-    filter_cls = _utils.get_filter_cls('TorrentFilter')
-    cands = ()
-    if _utils.filter_takes_completable_values(filter_cls, filter_name):
-        keys = filter_cls(filter_name).needed_keys
-        response = await objects.srvapi.torrent.torrents(keys=keys, from_cache=True)
-        if response.success:
-            value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
-            cands = []
-            for t in response.torrents:
-                # Get the same value from torrent that the filter would get
-                value = value_getter(t)
-
-                # Some value_getters return multiple values, e.q. the torrent
-                # filter "tracker", which returns domain names for all tracker
-                # URLs.
-                if isinstance(value, (abc.Iterable, abc.Iterator)) and not isinstance(value, str):
-                    cands.extend(value)
-                else:
-                    cands.append(value)
-    curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
-    return Candidates(cands,
-                      label='Torrent Filter: %s' % (filter_name,),
-                      curarg_seps=curarg_seps)
-
-
 async def torrent_path(curarg, only='auto'):
     """
     If `curarg` is a path to a file or directory in a torrent ("<TORRENT
@@ -349,70 +280,125 @@ async def torrent_path(curarg, only='auto'):
                 for torrent in response.torrents)
 
 
-async def file_filter(curarg, torrent_filter, filter_names=True):
+async def torrent_filter(curarg, filter_names=True):
     """
     Values and/or names for torrent filters
 
     If `filter_names` evaluates to False, filter names are not included in the
-    returned list, only file names.
+    returned list, only torrent names.
 
     The return value is either an empty tuple, a 1-tuple (filter values) or a
     2-tuple (filter names and filter values).
     """
-    filter_cls = _utils.get_filter_cls('FileFilter')
+    return await _filter(curarg, 'TorrentFilter',
+                         torrent_filter=None,
+                         filter_names=filter_names,
+                         items_getter=None)
+
+async def file_filter(curarg, torrent_filter, filter_names=True):
+    """Values and/or names for file filters (see `torrent_filter`)"""
+    # Get list of files from Torrent instance
+    def items_getter(t):
+        # Exclude single-file torrents (torrents that don't contain a
+        # directory); file filters are irrelevant in that case.
+        files = tuple(t['files'].files)
+        if len(files) != 1 or t['name'] != files[0]['name']:
+            return files
+        else:
+            return ()
+    return await _filter(curarg, 'FileFilter',
+                         torrent_filter=torrent_filter,
+                         filter_names=filter_names,
+                         items_getter=items_getter)
+
+async def _filter(curarg, filter_cls_name, torrent_filter, filter_names, items_getter):
+    """
+    Values and/or names for filters
+
+    If `filter_names` evaluates to False, filter names are not included in the
+    returned list, i.e. only values for the default filter (e.g. torrent name)
+    are completed.
+
+    The return value is either an empty tuple, a 1-tuple (filter values) or a
+    2-tuple (filter names and filter values).
+    """
+    filter_cls = _utils.get_filter_cls(filter_cls_name)
+    default_filter = filter_cls.DEFAULT_FILTER
     if curarg.startswith(filter_cls.INVERT_CHAR):
         curarg = curarg[1:]
 
-    # Separate individual filters, e.g. 'seeding|comment=foo'
+    # Separate individual filters, e.g. 'seeding|comment=foo' -> ('seeding', 'comment=foo')
     filter_strings = curarg.separate(_utils.filter_combine_ops, include_seps=True)
 
-    # Split current filter into [<filter name>, <operator>, <value>]
+    # Most arguments to _filter_values() are the same
+    filter_values = functools.partial(_filter_values, filter_cls_name,
+                                      torrent_filter=torrent_filter,
+                                      items_getter=items_getter)
+
+    # Separate filter name from filter value
     parts = filter_strings.curarg.separate(_utils.filter_compare_ops, include_seps=True)
     if parts.curarg_index == 0:
-        # If focus is on filter name, complete filter names and file names
-        # (default file filter is 'name')
+        # If focus is on filter name, complete filter names and values for the
+        # default filter (usually "name")
         if filter_names:
-            log.debug('Completing file filter names and file names: %r', parts[0])
-            return (_utils.filter_names('FileFilter'),
-                    await _file_filter_values(filter_cls.DEFAULT_FILTER, torrent_filter))
+            log.debug('Completing filter names and %r values: %r', default_filter, parts[0])
+            return (_utils.filter_names(filter_cls_name),
+                    await filter_values(default_filter))
         else:
-            log.debug('Completing only file names: %r', parts[0])
-            return (await _file_filter_values(filter_cls.DEFAULT_FILTER, torrent_filter),)
+            log.debug('Completing %r values (no filter names): %r', default_filter, parts[0])
+            return (await filter_values(default_filter),)
 
     elif parts.curarg_index == 1 and parts[0] in _utils.filter_compare_ops:
         # User gave a comparison operator but not a filter name, e.g. ('=', 'foo')
-        filter_name = filter_cls.DEFAULT_FILTER
-        log.debug('Completing %r (default) file filter values', filter_name)
-        return (await _file_filter_values(filter_name, torrent_filter),)
+        log.debug('Completing %r (default) values', default_filter)
+        return (await filter_values(default_filter),)
 
     elif parts.curarg_index == 2:
         # User gave filter name, operator and value, e.g. ('comment', '!=', 'foo')
-        log.debug('Completing %r file filter values', parts[0])
-        return (await _file_filter_values(parts[0].strip(), torrent_filter),)
+        filter_name = parts[0].strip()
+        log.debug('Completing %r values', filter_name)
+        return (await filter_values(filter_name),)
     else:
         return ()
 
-async def _file_filter_values(filter_name, torrent_filter):
-    filter_cls = _utils.get_filter_cls('FileFilter')
+async def _filter_values(filter_cls_name, filter_name, torrent_filter, items_getter):
+    # Return list of possible values for filter (if filter is comparative)
+    filter_cls = _utils.get_filter_cls(filter_cls_name)
     cands = ()
     if _utils.filter_takes_completable_values(filter_cls, filter_name):
         keys = filter_cls(filter_name).needed_keys
         response = await objects.srvapi.torrent.torrents(torrent_filter,
-                                                         keys=('files',),
+                                                         keys=keys,
                                                          from_cache=True)
         if response.success:
             # Get the same values that the filter would get
             value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
+
             cands = []
-            for t in response.torrents:
-                files = tuple(t['files'].files)
-                # Exclude single-file torrents (torrents that don't contain a
-                # directory) because file filters are irrelevant in that case.
-                if len(files) != 1 or t['name'] != files[0]['name']:
-                    for f in t['files'].files:
-                        value = value_getter(f)
-                        cands.append(Candidate(value, Torrent=t['name']))
+            def add_cands_for(item, _value_getter=value_getter, _cands=cands):
+                # Get the same value from `item` that the filter would get
+                value = _value_getter(item)
+                # Some value_getters return multiple values, e.q. the torrent
+                # filter "tracker", which matches against domain names of
+                # announce URLs.
+                if isinstance(value, (abc.Iterable, abc.Iterator)) and not isinstance(value, str):
+                    value = tuple(value)
+                    _cands.extend(value)
+                else:
+                    _cands.append(value)
+
+            # File
+            if items_getter is None:
+                # Filtering Torrent instances
+                for t in response.torrents:
+                    add_cands_for(t)
+            else:
+                # Filtering items from torrent['files'] or torrent['peers']
+                for t in response.torrents:
+                    items = items_getter(t)
+                    for i in items:
+                        add_cands_for(i)
+
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
-    return Candidates(cands,
-                      label='File Filter: %s' % (filter_name,),
-                      curarg_seps=curarg_seps)
+    label = '%s Filter: %s' % (filter_cls_name[:-6], filter_name)
+    return Candidates(cands, label=label, curarg_seps=curarg_seps)
