@@ -23,45 +23,52 @@ def _cmp_host_or_ip(p, op, v):
     else:
         return op(hostname, v)
 
+class _BoolFilterSpec(BoolFilterSpec):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, needed_keys=('peers',), **kwargs)
+
+class _CmpFilterSpec(CmpFilterSpec):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, needed_keys=('peers',), **kwargs)
 
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'host'
 
     BOOLEAN_FILTERS = FilterSpecDict({
-        'all'         : BoolFilterSpec(None,
-                                       aliases=('*',),
-                                       description='All peers'),
-        'uploading'   : BoolFilterSpec(lambda p: p['rate-up'] > 0,
-                                       aliases=('upg',),
-                                       description='Peers we are uploading to'),
-        'downloading' : BoolFilterSpec(lambda p: p['rate-down'] > 0,
-                                       aliases=('dng',),
-                                       description='Peers we are downloading from'),
-        'seeding'     : BoolFilterSpec(lambda p: p['%downloaded'] >= 100,
-                                       aliases=('sdg',),
-                                       description='Peers that have downloaded all data'),
+        'all'         : _BoolFilterSpec(None,
+                                        aliases=('*',),
+                                        description='All peers'),
+        'uploading'   : _BoolFilterSpec(lambda p: p['rate-up'] > 0,
+                                        aliases=('upg',),
+                                        description='Peers we are uploading to'),
+        'downloading' : _BoolFilterSpec(lambda p: p['rate-down'] > 0,
+                                        aliases=('dng',),
+                                        description='Peers we are downloading from'),
+        'seeding'     : _BoolFilterSpec(lambda p: p['%downloaded'] >= 100,
+                                        aliases=('sdg',),
+                                        description='Peers that have downloaded all data'),
     })
 
     COMPARATIVE_FILTERS = FilterSpecDict({
-        'downloaded'  : CmpFilterSpec(value_getter=lambda p: p['tsize'] * (p['%downloaded']/100),
-                                      value_type=TorrentPeer.TYPES['tsize'],
-                                      as_bool=lambda p: p['%downloaded'] >= 100,
-                                      aliases=('dn',),
-                                      description='Match VALUE against number of bytes peer has downloaded'),
-        '%downloaded' : CmpFilterSpec(value_getter=lambda p: p['%downloaded'],
-                                      value_type=TorrentPeer.TYPES['%downloaded'],
-                                      aliases=('%dn',),
-                                      description='Match VALUE against percentage of bytes peer has downloaded'),
-        'client'      : CmpFilterSpec(value_getter=lambda p: p['client'],
-                                      value_type=TorrentPeer.TYPES['client'],
-                                      aliases=('cl',),
-                                      description='Match VALUE against peer client'),
-        'host'        : CmpFilterSpec(value_getter=lambda p: rdns.gethostbyaddr_from_cache(p['ip']) or p['ip'],
-                                      value_type=TorrentPeer.TYPES['ip'],
-                                      description='Match VALUE against peer host name or IP address'),
-        'port'        : CmpFilterSpec(value_getter=lambda p: p['port'],
-                                      value_type=TorrentPeer.TYPES['port'],
-                                      description='Match VALUE against peer port'),
+        'downloaded'  : _CmpFilterSpec(value_getter=lambda p: p['tsize'] * (p['%downloaded']/100),
+                                       value_type=TorrentPeer.TYPES['tsize'],
+                                       as_bool=lambda p: p['%downloaded'] >= 100,
+                                       aliases=('dn',),
+                                       description='Match VALUE against number of bytes peer has downloaded'),
+        '%downloaded' : _CmpFilterSpec(value_getter=lambda p: p['%downloaded'],
+                                       value_type=TorrentPeer.TYPES['%downloaded'],
+                                       aliases=('%dn',),
+                                       description='Match VALUE against percentage of bytes peer has downloaded'),
+        'client'      : _CmpFilterSpec(value_getter=lambda p: p['client'],
+                                       value_type=TorrentPeer.TYPES['client'],
+                                       aliases=('cl',),
+                                       description='Match VALUE against peer client'),
+        'host'        : _CmpFilterSpec(value_getter=lambda p: rdns.gethostbyaddr_from_cache(p['ip']) or p['ip'],
+                                       value_type=TorrentPeer.TYPES['ip'],
+                                       description='Match VALUE against peer host name or IP address'),
+        'port'        : _CmpFilterSpec(value_getter=lambda p: p['port'],
+                                       value_type=TorrentPeer.TYPES['port'],
+                                       description='Match VALUE against peer port'),
     })
 
 

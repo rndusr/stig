@@ -5,6 +5,9 @@ from filter_helpers import HelpersMixin
 
 
 class TestFileFilter(unittest.TestCase, HelpersMixin):
+    def test_needed_keys(self):
+        self.assertEqual(FileFilter('foo').needed_keys, ('files',))
+
     def test_default_filter(self):
         self.assertEqual(FileFilter.DEFAULT_FILTER, 'name')
 

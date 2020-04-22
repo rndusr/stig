@@ -5,6 +5,9 @@ from filter_helpers import HelpersMixin
 
 
 class TestPeerFilter(unittest.TestCase, HelpersMixin):
+    def test_needed_keys(self):
+        self.assertEqual(PeerFilter('foo').needed_keys, ('peers',))
+
     def test_default_filter(self):
         self.assertEqual(PeerFilter.DEFAULT_FILTER, 'host')
 

@@ -5,6 +5,9 @@ from filter_helpers import HelpersMixin
 
 
 class TestTrackerFilter(unittest.TestCase, HelpersMixin):
+    def test_needed_keys(self):
+        self.assertEqual(TrackerFilter('foo').needed_keys, ('trackers',))
+
     def test_default_filter(self):
         self.assertEqual(TrackerFilter.DEFAULT_FILTER, 'domain')
 

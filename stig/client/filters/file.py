@@ -14,48 +14,56 @@
 from ..ttypes import TorrentFile
 from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 
+class _BoolFilterSpec(BoolFilterSpec):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, needed_keys=('files',), **kwargs)
+
+class _CmpFilterSpec(CmpFilterSpec):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, needed_keys=('files',), **kwargs)
+
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
     BOOLEAN_FILTERS = FilterSpecDict({
-        'all'      : BoolFilterSpec(None,
-                                    aliases=('*',),
-                                    description='All files'),
-        'wanted'   : BoolFilterSpec(lambda f: f['is-wanted'],
-                                    description='Wanted files'),
-        'complete' : BoolFilterSpec(lambda f: f['%downloaded'] >= 100,
-                                    aliases=('cmp',),
-                                    description='Fully downloaded files'),
+        'all'      : _BoolFilterSpec(None,
+                                     aliases=('*',),
+                                     description='All files'),
+        'wanted'   : _BoolFilterSpec(lambda f: f['is-wanted'],
+                                     description='Wanted files'),
+        'complete' : _BoolFilterSpec(lambda f: f['%downloaded'] >= 100,
+                                     aliases=('cmp',),
+                                     description='Fully downloaded files'),
     })
 
     COMPARATIVE_FILTERS = FilterSpecDict({
-        'name'        : CmpFilterSpec(value_getter=lambda f: f['name'],
-                                      value_type=TorrentFile.TYPES['name'],
-                                      aliases=('n',),
-                                      description='Match VALUE against file name'),
-        'path'        : CmpFilterSpec(value_getter=lambda f: f['path-absolute'],
-                                      value_type=TorrentFile.TYPES['path-absolute'],
-                                      aliases=('dir',),
-                                      description='Match VALUE against file path'),
-        'size'        : CmpFilterSpec(value_getter=lambda f: f['size-total'],
-                                      value_type=TorrentFile.TYPES['size-total'],
-                                      aliases=('sz',),
-                                      description='Match VALUE against file size'),
-        'downloaded'  : CmpFilterSpec(value_getter=lambda f: f['size-downloaded'],
-                                      value_type=TorrentFile.TYPES['size-downloaded'],
-                                      as_bool=lambda f: f['%downloaded'] >= 100,
-                                      aliases=('dn',),
-                                      description='Match VALUE against downloaded bytes'),
-        '%downloaded' : CmpFilterSpec(value_getter=lambda f: f['%downloaded'],
-                                      value_type=TorrentFile.TYPES['%downloaded'],
-                                      as_bool=lambda f: f['%downloaded'] >= 100,
-                                      aliases=('%dn',),
-                                      description='Match VALUE against percentage of downloaded bytes'),
-        'priority'    : CmpFilterSpec(value_getter=lambda f: f['priority'],
-                                      value_type=TorrentFile.TYPES['priority'],
-                                      as_bool=lambda f: f['priority'] != 0,  # Any non-normal priority
-                                      aliases=('prio',),
-                                      description='Match VALUE against download priority (off, low, normal, high)'),
+        'name'        : _CmpFilterSpec(value_getter=lambda f: f['name'],
+                                       value_type=TorrentFile.TYPES['name'],
+                                       aliases=('n',),
+                                       description='Match VALUE against file name'),
+        'path'        : _CmpFilterSpec(value_getter=lambda f: f['path-absolute'],
+                                       value_type=TorrentFile.TYPES['path-absolute'],
+                                       aliases=('dir',),
+                                       description='Match VALUE against file path'),
+        'size'        : _CmpFilterSpec(value_getter=lambda f: f['size-total'],
+                                       value_type=TorrentFile.TYPES['size-total'],
+                                       aliases=('sz',),
+                                       description='Match VALUE against file size'),
+        'downloaded'  : _CmpFilterSpec(value_getter=lambda f: f['size-downloaded'],
+                                       value_type=TorrentFile.TYPES['size-downloaded'],
+                                       as_bool=lambda f: f['%downloaded'] >= 100,
+                                       aliases=('dn',),
+                                       description='Match VALUE against downloaded bytes'),
+        '%downloaded' : _CmpFilterSpec(value_getter=lambda f: f['%downloaded'],
+                                       value_type=TorrentFile.TYPES['%downloaded'],
+                                       as_bool=lambda f: f['%downloaded'] >= 100,
+                                       aliases=('%dn',),
+                                       description='Match VALUE against percentage of downloaded bytes'),
+        'priority'    : _CmpFilterSpec(value_getter=lambda f: f['priority'],
+                                       value_type=TorrentFile.TYPES['priority'],
+                                       as_bool=lambda f: f['priority'] != 0,  # Any non-normal priority
+                                       aliases=('prio',),
+                                       description='Match VALUE against download priority (off, low, normal, high)'),
     })
 
 
