@@ -299,7 +299,7 @@ class Timedelta(int):
             return ts
 
     def __repr__(self):
-        return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.__str__())
+        return '<%s %s / %s>' % (type(self).__name__, str(int(self)), self.__str__())
 
 
 class Timestamp(int):
@@ -498,7 +498,7 @@ class Timestamp(int):
         return bool(self) and self > time.time()
 
     def __repr__(self):
-        return '<%s %s / %s>' % (type(self).__name__, super().__str__(), self.full)
+        return '<%s %s / %s>' % (type(self).__name__, str(int(self)), self.full)
 
 
 
