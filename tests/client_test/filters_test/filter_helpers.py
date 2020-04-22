@@ -6,7 +6,6 @@ import contextlib
 @contextlib.contextmanager
 def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):
     dt = datetime(year, month, day, hour, minute, second)
-    print(f'mocking time: {dt.timestamp()} {dt}')
     class Mock_datetime(datetime):
         @classmethod
         def now(cls, *args, **kwargs):

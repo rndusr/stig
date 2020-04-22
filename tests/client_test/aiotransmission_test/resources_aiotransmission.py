@@ -131,7 +131,7 @@ class FakeTransmissionDaemon:
                     user, password = creds_str.split(':')
                     return user, password
                 except:
-                    raise ValueError(f"Wrong 'Authorization' header format: {basic_auth_str}")
+                    raise ValueError("Wrong 'Authorization' header format: %s" % (basic_auth_str,))
 
             if not self.auth:
                 return True
