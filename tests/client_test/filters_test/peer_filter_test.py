@@ -51,17 +51,17 @@ class TestPeerFilter(unittest.TestCase, HelpersMixin):
     def test_downloaded(self):
         self.check_filter(PeerFilter,
                           filter_names=('downloaded', 'dn'),
-                          items=({'id': 1, 'tsize': 5000, '%downloaded': 0},
-                                 {'id': 2, 'tsize': 2000, '%downloaded': 50},
-                                 {'id': 3, 'tsize': 4000, '%downloaded': 75},
-                                 {'id': 4, 'tsize': 3000, '%downloaded': 100}),
-                          test_cases=(('{name}', (4,)),
-                                      ('!{name}', (1, 2, 3)),
+                          items=({'id': 1, 'downloaded': 0},
+                                 {'id': 2, 'downloaded': 1000},
+                                 {'id': 3, 'downloaded': 10000},
+                                 {'id': 4, 'downloaded': 15999}),
+                          test_cases=(('{name}', (2, 3, 4)),
+                                      ('!{name}', (1,)),
                                       ('{name}=1000', (2,)),
-                                      ('{name}!=1000', (1, 3, 4)),
+                                      ('{name}!=1k', (1, 3, 4)),
                                       ('{name}<1000', (1,)),
-                                      ('{name}<=1000', (1, 2)),
-                                      ('{name}>1000', (3, 4)),
+                                      ('{name}<=1k', (1, 2)),
+                                      ('{name}>1k', (3, 4)),
                                       ('{name}>=1000', (2, 3, 4))))
 
     def test_percent_downloaded(self):

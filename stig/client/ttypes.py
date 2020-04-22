@@ -670,6 +670,7 @@ class TorrentPeer(abc.Mapping):
         'ip'          : str,
         'port'        : int,
         'client'      : SmartCmpStr,
+        'downloaded'  : SizeInBytes,
         '%downloaded' : Percent,
         'rate-up'     : BandwidthInBytes,
         'rate-down'   : BandwidthInBytes,
@@ -681,9 +682,10 @@ class TorrentPeer(abc.Mapping):
         'id'      : lambda p: (p['tid'], p['ip'], p['port']),
     }
 
-    def __init__(self, tid, tname, tsize, ip, port, client, pdownloaded, rate_up, rate_down):
+    def __init__(self, tid, tname, tsize, ip, port, client, downloaded, pdownloaded, rate_up, rate_down):
         self._dct = {'tid': tid, 'tname': tname, 'tsize': tsize,
-                     'ip': ip, 'port': port, 'client': client, '%downloaded': pdownloaded,
+                     'ip': ip, 'port': port, 'client': client,
+                     'downloaded': downloaded, '%downloaded': pdownloaded,
                      'rate-up': rate_up, 'rate-down': rate_down}
         self._cache = {}
 
