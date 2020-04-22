@@ -50,9 +50,9 @@ class _SingleFilter(Filter):
     })
 
     COMPARATIVE_FILTERS = FilterSpecDict({
-        'downloaded'  : _CmpFilterSpec(value_getter=lambda p: p['tsize'] * (p['%downloaded']/100),
-                                       value_type=TorrentPeer.TYPES['tsize'],
-                                       as_bool=lambda p: p['%downloaded'] >= 100,
+        'downloaded'  : _CmpFilterSpec(value_getter=lambda p: p['downloaded'],
+                                       value_type=TorrentPeer.TYPES['downloaded'],
+                                       as_bool=lambda p: p['downloaded'] > 0,
                                        aliases=('dn',),
                                        description='Match VALUE against number of bytes peer has downloaded'),
         '%downloaded' : _CmpFilterSpec(value_getter=lambda p: p['%downloaded'],
