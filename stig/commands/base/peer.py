@@ -13,6 +13,7 @@ from ...logging import make_logger
 log = make_logger(__name__)
 
 from .. import (InitCommand, CmdError)
+from ...completion import candidates
 from . import _mixin as mixin
 from ... import objects
 from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
@@ -86,3 +87,22 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
             await self.make_peer_list(tfilter, pfilter, sort, columns)
         else:
             self.make_peer_list(tfilter, pfilter, sort, columns)
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        posargs = args.posargs({('--columns', '-c'): 1,
+                                ('--sort', '-s'): 1})
+        if posargs.curarg_index == 1:
+            return candidates.torrent_filter(args.curarg)
+        elif posargs.curarg_index == 2:
+            torrent_filter = posargs[1]
+            return candidates.peer_filter(args.curarg, torrent_filter)
+
+    @classmethod
+    def completion_candidates_params(cls, option, args):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--columns':
+            return candidates.column_names('peers')
+        elif option == '--sort':
+            return candidates.sort_orders('PeerSorter')
