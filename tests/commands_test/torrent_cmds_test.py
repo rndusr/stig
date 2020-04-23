@@ -939,6 +939,14 @@ class TestStartTorrentsCmd(CommandTestCase):
                       msgs=('Stopped torrent 1',
                             'Started torrent 2'))
 
+    @patch('stig.completion.candidates.torrent_filter')
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        await self.assert_completion_candidates(StartTorrentsCmd, Args(('start', 'foo'), curarg_index=1),
+                                                exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(StartTorrentsCmd, Args(('start', 'foo', 'bar'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
+
 
 from stig.commands.cli import StopTorrentsCmd
 class TestStopTorrentsCmd(CommandTestCase):
@@ -985,6 +993,14 @@ class TestStopTorrentsCmd(CommandTestCase):
                       msgs=('Started torrent 1',
                             'Started torrent 2'))
 
+    @patch('stig.completion.candidates.torrent_filter')
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        await self.assert_completion_candidates(StopTorrentsCmd, Args(('stop', 'foo'), curarg_index=1),
+                                                exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(StopTorrentsCmd, Args(('stop', 'foo', 'bar'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
+
 
 from stig.commands.cli import VerifyTorrentsCmd
 class TestVerifyTorrentsCmd(CommandTestCase):
@@ -1016,3 +1032,11 @@ class TestVerifyTorrentsCmd(CommandTestCase):
     async def test_no_torrents_found(self):
         await self.do(['idle'], success_exp=True,
                       errors=('no torrents found',))
+
+    @patch('stig.completion.candidates.torrent_filter')
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        await self.assert_completion_candidates(VerifyTorrentsCmd, Args(('verify', 'foo'), curarg_index=1),
+                                                exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(VerifyTorrentsCmd, Args(('verify', 'foo', 'bar'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
