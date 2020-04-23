@@ -347,10 +347,10 @@ class TestListTorrentsCmd(CommandTestCase):
                                                 exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
 
 
-from stig.commands.cli import TorrentMagnetURICmd
 class TestTorrentMagnetURICmd(CommandTestCase):
     @patch('stig.completion.candidates.torrent_filter')
     async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
+        from stig.commands.cli import TorrentMagnetURICmd
         mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(TorrentMagnetURICmd, Args(('magnet', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))
