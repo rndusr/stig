@@ -358,7 +358,7 @@ class TestTorrentMagnetURICmd(CommandTestCase):
                                                 exp_cands=None)
 
 
-class TestMoveTorrentsCLICmd(CommandTestCase):
+class TestMoveTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         self.patch('stig.objects',
@@ -387,13 +387,6 @@ class TestMoveTorrentsCLICmd(CommandTestCase):
         mock_torrent_filter.assert_not_called()
         mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
-
-
-class TestMoveTorrentsTUICmd(CommandTestCase):
-    def setUp(self):
-        super().setUp()
-        self.patch('stig.objects',
-                   remotecfg=self.remotecfg)
 
     @patch('stig.completion.candidates.torrent_filter')
     @patch('stig.completion.candidates.fs_path')
