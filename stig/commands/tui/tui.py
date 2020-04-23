@@ -150,7 +150,7 @@ class BindCmd(metaclass=InitCommand):
     def _get_subcmd(cls, args):
         options = {('--context', '-c'): 1,
                    ('--description', '-d'): 1}
-        # First posarg is 'bind', second posarg is the key
+        # posarg[0] is 'bind', posarg[1] is the key
         subcmd_start = args.nth_posarg_index(3, options)
         # Subcmd is only relevant if the cursor is somewhere on it.
         # Otherwise, we're on our own arguments.
