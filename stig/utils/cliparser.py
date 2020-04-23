@@ -1016,8 +1016,8 @@ class Args(tuple):
         """
         Return copy without options and parameters for options
 
-        `options` is a mapping that maps tuples of option names (e.g. `('--output',
-        '-o')`) to one of these values:
+        `options` is a mapping that maps tuples of option names
+        (e.g. `('--output', '-o')`) to one of these values:
 
             <int> - Remove <int> arguments after these options
             "*"   - Remove all arguments after these options until an argument
