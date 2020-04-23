@@ -546,9 +546,12 @@ class KeyMap():
             return match_func is None or match_func(key, action)
 
         if context is not None:
-            for k,a in self._actions[context].items():
-                if is_match(k, a):
-                    yield k
+            try:
+                for k,a in self._actions[context].items():
+                    if is_match(k, a):
+                        yield k
+            except KeyError:
+                raise ValueError('No such context: %s' % (context,))
         else:
             for context in self.contexts:
                 for k,a in self._actions[context].items():
