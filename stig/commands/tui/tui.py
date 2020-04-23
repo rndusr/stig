@@ -196,6 +196,17 @@ class UnbindCmd(metaclass=InitCommand):
         if not success:
             raise CmdError()
 
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.keybinding_keys(args)
+
+    @classmethod
+    def completion_candidates_params(cls, option, args):
+        """Complete parameters (e.g. --option parameter1,parameter2)"""
+        if option == '--context':
+            return candidates.keybinding_contexts()
+
 
 class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
     name = 'setcommand'
