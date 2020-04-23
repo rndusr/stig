@@ -147,7 +147,7 @@ class TrackerCmdbase(metaclass=InitCommand):
     usage = ('tracker %s <URL>' % '|'.join(_ALL_ACTIONS),
              'tracker %s <TORRENT FILTER> <URL> <URL> ...' % '|'.join(_ALL_ACTIONS))
 
-    examples = ('tracker add "torrent with no tracker" http://tracker3.example.org:12345/announce',
+    examples = ('tracker add !tracker http://tracker3.example.org:12345/announce',
                 'tracker remove all tracker1.example tracker2.example ')
     argspecs = (
         { 'names': ('ACTION',) },
