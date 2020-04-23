@@ -167,6 +167,25 @@ def keybinding_contexts():
     from ..tui.tuiobjects import keymap
     return Candidates(keymap.contexts, label='Keybinding Context')
 
+def keybinding_keys(args):
+    """Bound keys"""
+    from ..tui.tuiobjects import keymap
+    keys = ()
+    params = args.params(('--context', '-c'))
+    if params:
+        context = params[0]
+        label = 'Keybinding in %s' % (context,)
+        try:
+            keys = tuple(keymap.keys(context=context))
+        except ValueError:
+            pass
+        else:
+            keys = (Candidate(key, Description=keymap.get_description(key, context=context))
+                    for key in keys)
+    else:
+        label = 'Keybinding'
+    return Candidates(keys, label=label)
+
 
 def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
     """
