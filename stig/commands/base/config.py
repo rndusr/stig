@@ -315,15 +315,9 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
     def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':
-            return candidates.Candidates(
-                objects.localcfg['sort.settings'].options,
-                label='--sort parameters',
-                curarg_seps=(objects.localcfg['sort.settings'].sep.strip(),))
+            return candidates.sort_orders('SettingSorter')
         elif option == '--columns':
-            return candidates.Candidates(
-                objects.localcfg['columns.settings'].options,
-                label='--columns parameters',
-                curarg_seps=(objects.localcfg['columns.settings'].sep.strip(),))
+            return candidates.column_names('settings')
 
 
 class RateLimitCmdbase(metaclass=InitCommand):
