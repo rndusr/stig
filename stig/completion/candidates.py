@@ -319,6 +319,14 @@ async def peer_filter(curarg, torrent_filter, filter_names=True):
                          # Get list of peers from Torrent instance
                          items_getter=lambda t: t['peers'])
 
+async def tracker_filter(curarg, torrent_filter, filter_names=True):
+    """Values and/or names for tracker filters (see `torrent_filter`)"""
+    return await _filter(curarg, 'TrackerFilter',
+                         torrent_filter=torrent_filter,
+                         filter_names=filter_names,
+                         # Get list of trackers from Torrent instance
+                         items_getter=lambda t: t['trackers'])
+
 async def _filter(curarg, filter_cls_name, torrent_filter, filter_names, items_getter):
     """
     Values and/or names for filters
