@@ -42,7 +42,7 @@ def commands():
                        in_parens='%s' % (', '.join(cmdcls.aliases),),
                        Description=cmdcls.description)
              for cmdcls in objects.cmdmgr.active_commands)
-    return Candidates(cands, label='Commands')
+    return Candidates(cands, label='Command')
 
 
 @functools.lru_cache(maxsize=None)
@@ -52,16 +52,16 @@ def help_topics():
     cats.append(Candidates(
         (Candidate(topic, Description=objects.helpmgr.MAIN_TOPICS[topic])
          for topic in objects.helpmgr.MAIN_TOPICS),
-        label='Main Topics'))
+        label='Main Topic'))
     cats.append(commands())
     cats.append(Candidates(
         (Candidate(topic, Description=objects.localcfg.description(topic))
          for topic in objects.localcfg),
-        label='Local Settings'))
+        label='Local Setting'))
     cats.append(Candidates(
         (Candidate('srv.' + topic, Description=objects.remotecfg.description(topic))
          for topic in objects.remotecfg),
-        label='Remote Settings'))
+        label='Remote Setting'))
     return cats
 
 
@@ -77,7 +77,7 @@ def setting_names():
                               Default=str(objects.remotecfg.default(name)))
                     for name in objects.remotecfg)
     return Candidates(itertools.chain(local_cands, remote_cands),
-                      label='Settings')
+                      label='Setting')
 
 
 def setting_values(args):
@@ -105,18 +105,18 @@ def setting_values(args):
         aliases = value.aliases_inverse
         cands = (Candidate(opt, in_parens=', '.join(aliases.get(opt, '')))
                  for opt in value.options)
-        return Candidates(cands, label='%s options' % (setting,))
+        return Candidates(cands, label='%s option' % (setting,))
     elif isinstance(value, usertypes.Tuple):
         aliases = value.aliases_inverse
         cands = (Candidate(opt, in_parens=', '.join(aliases.get(opt, '')))
                  for opt in value.options)
-        return Candidates(cands, label='%s options' % (setting,),
+        return Candidates(cands, label='%s option' % (setting,),
                           curarg_seps=(value.sep.strip(),))
     elif isinstance(value, usertypes.Bool) and focus_on_first_value:
         options = (val
                    for vals in zip(value.truths, value.falsities)
                    for val in vals)
-        return Candidates(options, label='%s options' % (setting,))
+        return Candidates(options, label='%s option' % (setting,))
     elif isinstance(value, usertypes.Path):
         return fs_path(args.curarg.before_cursor,
                        base=value.base_path,
@@ -159,13 +159,13 @@ def tab_titles():
     """Titles (strings) of TUI tabs"""
     from ..tui.tuiobjects import tabs
     return Candidates((widget.original_widget.text
-                       for widget in tabs.titles), label='Tab Titles')
+                       for widget in tabs.titles), label='Tab Title')
 
 
 def keybinding_contexts():
     """Arguments for the '--context' option of the 'bind' command"""
     from ..tui.tuiobjects import keymap
-    return Candidates(keymap.contexts, label='Keybinding Contexts')
+    return Candidates(keymap.contexts, label='Keybinding Context')
 
 
 def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
@@ -253,11 +253,11 @@ async def torrent_path(curarg, only='auto'):
 
             if only == 'files':
                 cands = _utils.find_files(subtree)
-                return Candidates(cands, curarg_seps=('/',), label='Files in %s' % (subtree.path,))
+                return Candidates(cands, curarg_seps=('/',), label='File in %s' % (subtree.path,))
 
             elif only == 'directories':
                 cands = _utils.find_dirs(subtree)
-                return Candidates(cands, curarg_seps=('/',), label='Directories in %s' % (subtree.path,))
+                return Candidates(cands, curarg_seps=('/',), label='Directory in %s' % (subtree.path,))
 
             elif only == 'any':
                 return Candidates(subtree, curarg_seps=('/',), label=subtree.path)

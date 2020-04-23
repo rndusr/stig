@@ -161,7 +161,7 @@ class PriorityCmdbase(metaclass=InitCommand):
         if args.curarg_index == 1:
             # "off", "low", "normal" or "high"
             return candidates.Candidates((p[2] for p in cls._PRIORITY.values()),
-                                         label='File Priorities')
+                                         label='Priority')
         elif args.curarg_index == 2:
             return candidates.torrent_filter(args.curarg)
         elif args.curarg_index == 3:

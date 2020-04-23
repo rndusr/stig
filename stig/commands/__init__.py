@@ -158,7 +158,7 @@ class _CompletionCandidatesMixin():
                                        in_parens=', '.join(cls.long_options[cand]),
                                        description=_get_argspec(cls, cand)['description'])
                              for cand in options)
-                    return Candidates(cands, label='%s options' % cls.name)
+                    return Candidates(cands, label='%s option' % cls.name)
 
             # Check if any argument left of the current argument is an option that
             # wants another parameter

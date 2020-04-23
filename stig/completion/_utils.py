@@ -15,17 +15,17 @@ import itertools
 import functools
 
 
-columns_labels = {'torrents' : 'Torrent List Columns',
-                  'files'    : 'File List Columns',
-                  'peers'    : 'Peer List Columns',
-                  'trackers' : 'Tracker List Columns',
-                  'settings' : 'Setting List Columns'}
+columns_labels = {'torrents' : 'Torrent List Column',
+                  'files'    : 'File List Column',
+                  'peers'    : 'Peer List Column',
+                  'trackers' : 'Tracker List Column',
+                  'settings' : 'Setting List Column'}
 
 
-sorters_labels = {'TorrentSorter' : 'Torrent Sort Orders',
-                  'PeerSorter'    : 'Peer Sort Orders',
-                  'TrackerSorter' : 'Tracker Sort Orders',
-                  'SettingSorter' : 'Setting Sort Orders'}
+sorters_labels = {'TorrentSorter' : 'Torrent Sort Order',
+                  'PeerSorter'    : 'Peer Sort Order',
+                  'TrackerSorter' : 'Tracker Sort Order',
+                  'SettingSorter' : 'Setting Sort Order'}
 
 from ..client import sorters as sorter_clses
 

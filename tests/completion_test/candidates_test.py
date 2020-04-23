@@ -20,7 +20,7 @@ class Test_setting_names(unittest.TestCase):
         mock_rcfg.__iter__.return_value = ('Foo', 'Bar', 'Baz')
         cands = candidates.setting_names()
         self.assertEqual(tuple(cands), ('bar', 'baz', 'foo', 'srv.Bar', 'srv.Baz', 'srv.Foo'))
-        self.assertEqual(cands.label, 'Settings')
+        self.assertEqual(cands.label, 'Setting')
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
@@ -74,7 +74,7 @@ class Test_setting_values(unittest.TestCase):
             mock_cfg.__getitem__.return_value = usertypes.Option('b', options=('a', 'b', 'c'))
             cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
             self.assertEqual(candidates.setting_values(cmdline), Candidates(('a', 'b', 'c'),
-                                                                            label='%s options' % setting_name))
+                                                                            label='%s option' % setting_name))
             cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
             self.assertFalse(candidates.setting_values(cmdline))
 
@@ -89,7 +89,7 @@ class Test_setting_values(unittest.TestCase):
             for i in (1, 2, 3):
                 cmdline = Args((setting_name, '_', '_', '_'), curarg_index=i, curarg_curpos=0)
                 cands = candidates.setting_values(cmdline)
-                exp_cands = Candidates(('a', 'b', 'c'), label='%s options' % setting_name, curarg_seps=(',',))
+                exp_cands = Candidates(('a', 'b', 'c'), label='%s option' % setting_name, curarg_seps=(',',))
                 self.assertEqual(cands, exp_cands)
 
     @patch('stig.objects.localcfg')
@@ -102,7 +102,7 @@ class Test_setting_values(unittest.TestCase):
             mock_cfg.__getitem__.return_value = usertypes.Bool('1', true=('1',), false=('0',))
             cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
             cands = candidates.setting_values(cmdline)
-            exp_cands = Candidates(('1', '0'), label='%s options' % setting_name)
+            exp_cands = Candidates(('1', '0'), label='%s option' % setting_name)
             self.assertEqual(cands, exp_cands)
             cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
             self.assertFalse(candidates.setting_values(cmdline))
@@ -552,7 +552,7 @@ class Test_torrent_path(asynctest.TestCase):
         mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='files'))
-        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Files in mock/path'),)
+        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='File in mock/path'),)
         self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
@@ -568,7 +568,7 @@ class Test_torrent_path(asynctest.TestCase):
         mock_find_subtree.return_value = mock_files['foo']
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/', curpos=7), only='directories'))
-        exp_cands = (Candidates(('bar', 'ber'), curarg_seps=('/',), label='Directories in mock/path'),)
+        exp_cands = (Candidates(('bar', 'ber'), curarg_seps=('/',), label='Directory in mock/path'),)
         self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
@@ -598,7 +598,7 @@ class Test_torrent_path(asynctest.TestCase):
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/bir', curpos=10), only='auto'))
-        exp_cands = (Candidates(('bar', 'bir'), curarg_seps=('/',), label='Files in mock/path'),)
+        exp_cands = (Candidates(('bar', 'bir'), curarg_seps=('/',), label='File in mock/path'),)
         self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
 
@@ -612,6 +612,6 @@ class Test_torrent_path(asynctest.TestCase):
         mock_torrents.return_value = SimpleNamespace(success=True, torrents=mock_torrent_list)
 
         cands = tuple(await candidates.torrent_path(Arg('id=foo/ber', curpos=10), only='auto'))
-        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Directories in mock/path'),)
+        exp_cands = (Candidates(('ber', 'bir'), curarg_seps=('/',), label='Directory in mock/path'),)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(cands, exp_cands)
