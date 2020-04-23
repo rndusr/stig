@@ -223,6 +223,7 @@ class Test_fs_path(unittest.TestCase):
 
 
 class Test_filter_values(asynctest.TestCase):
+    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
     @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
     @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
@@ -242,9 +243,10 @@ class Test_filter_values(asynctest.TestCase):
         mock_items_getter.assert_not_called()
         mock_torrents.assert_not_called()
         exp_cands = Candidates((), curarg_seps=('|', '&', '=', '!='),
-                               label='Mock Filter: mock filter name')
+                               label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
+    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
     @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
     @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
@@ -268,9 +270,10 @@ class Test_filter_values(asynctest.TestCase):
         mock_get_filter_spec.assert_not_called()
 
         exp_cands = Candidates((), curarg_seps=('|', '&', '=', '!='),
-                               label='Mock Filter: mock filter name')
+                               label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
+    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
     @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
     @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
@@ -300,9 +303,10 @@ class Test_filter_values(asynctest.TestCase):
                                                     call('mock item 1'), call('mock item 2')]
         exp_cands = Candidates(('mock value 1', 'mock value 2', 'mock value 3', 'mock value 4'),
                                curarg_seps=('|', '&', '=', '!='),
-                               label='Mock Filter: mock filter name')
+                               label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
+    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
     @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
     @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
@@ -333,9 +337,10 @@ class Test_filter_values(asynctest.TestCase):
                                                     call('mock item 1'), call('mock item 2')]
         exp_cands = Candidates(('mock value 1', 'mock value 2', 'mock value 3', 'mock value 4'),
                                curarg_seps=('|', '&', '=', '!='),
-                               label='Mock Filter: mock filter name')
+                               label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
+    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
     @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
     @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
     @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
@@ -363,7 +368,7 @@ class Test_filter_values(asynctest.TestCase):
         assert mock_value_getter.call_args_list == [call('mock torrent 1'), call('mock torrent 2')]
         exp_cands = Candidates(('mock value 1', 'mock value 2', 'mock value 3'),
                                curarg_seps=('|', '&', '=', '!='),
-                               label='Mock Filter: mock filter name')
+                               label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
 

@@ -416,5 +416,5 @@ async def _filter_values(filter_cls_name, filter_name, torrent_filter, items_get
                         add_cands_for(i)
 
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
-    label = '%s Filter: %s' % (filter_cls_name[:-6], filter_name)
+    label = '%s: %s' % (_utils.filter_labels[filter_cls_name], filter_name)
     return Candidates(cands, label=label, curarg_seps=curarg_seps)

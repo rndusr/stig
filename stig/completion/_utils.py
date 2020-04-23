@@ -40,11 +40,11 @@ from ..client import filters as filter_clses
 # All filters use the same operators
 filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
 filter_combine_ops = ('&', '|')
-filter_labels = {'TorrentFilter'  : 'Torrent Filters',
-                  'FileFilter'    : 'File Filters',
-                  'PeerFilter'    : 'Peer Filters',
-                  'TrackerFilter' : 'Tracker Filters',
-                  'SettingFilter' : 'Setting Filters'}
+filter_labels = {'TorrentFilter'  : 'Torrent Filter',
+                  'FileFilter'    : 'File Filter',
+                  'PeerFilter'    : 'Peer Filter',
+                  'TrackerFilter' : 'Tracker Filter',
+                  'SettingFilter' : 'Setting Filter'}
 
 @functools.lru_cache(maxsize=None)
 def filter_names(filter_cls_name):
