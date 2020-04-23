@@ -443,6 +443,6 @@ class RateLimitCmdbase(metaclass=InitCommand):
                 cands.append('up')
             if all(x not in posargs.curarg for x in ('down', 'dn')):
                 cands.append('down')
-            return candidates.Candidates(cands, label='DIRECTION', curarg_seps=(',',))
+            return candidates.Candidates(cands, label='Direction', curarg_seps=(',',))
         elif posargs.curarg_index >= 3:
             return candidates.torrent_filter(args.curarg)
