@@ -134,6 +134,11 @@ class AnnounceCmdbase(metaclass=InitCommand):
             if not response.success:
                 raise CmdError()
 
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.torrent_filter(args.curarg)
+
 
 class TrackerCmdbase(metaclass=InitCommand):
     name = 'tracker'
