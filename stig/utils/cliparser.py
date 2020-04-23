@@ -12,6 +12,8 @@
 from ..logging import make_logger
 log = make_logger(__name__)
 
+from collections import abc
+
 DEFAULT_DELIMS = (' ',)
 DEFAULT_ESCAPES = ('\\',)
 DEFAULT_QUOTES = ('"', "'")
@@ -1024,6 +1026,47 @@ class Args(tuple):
                     that starts with "-" is encountered
         """
         return Args(*remove_options(self, self.curarg_index, self.curarg_curpos, options))
+
+    def params(self, option, maxparams=None):
+        """
+        Return list of parameters for `option`
+
+        `option` is either the name of an option (e.g. "-h" or "--help") or an
+        iterable of names.
+
+        `max` is the maximum number of parameters to return.
+        """
+        # Find index of option
+        option_index = None
+        if isinstance(option, str):
+            for i,arg in enumerate(self):
+                if arg == option:
+                    option_index = i
+                    break
+        elif isinstance(option, abc.Iterable):
+            opts = tuple(option)
+            for i,arg in enumerate(self):
+                if any(arg == o for o in opts):
+                    option_index = i
+                    break
+        # Get parameters that follow option
+        params = []
+        curarg_index = None
+        curarg_curpos = None
+        if option_index is not None:
+            stop = option_index+maxparams+1 if maxparams is not None else len(self)
+            for i in range(option_index+1, stop):
+                try:
+                    arg = self[i]
+                except IndexError:
+                    break
+                if arg and arg[0] == '-':
+                    break
+                params.append(arg)
+                if arg.curpos is not None:
+                    curarg_curpos = arg.curpos
+                    curarg_index = i - option_index - 1
+        return Args(params, curarg_index, curarg_curpos)
 
     def nth_posarg_index(self, n, options={}):
         """

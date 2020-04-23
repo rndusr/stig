@@ -1549,3 +1549,31 @@ class TestArgs(unittest.TestCase):
         self.assertEqual(args[:1], cliparser.Args(('a',)))
         self.assertEqual(args[:2], cliparser.Args(('a', 'b')))
         self.assertEqual(args[:3], cliparser.Args(('a', 'b', 'c'), curarg_index=2, curarg_curpos=1))
+
+    def test_params(self):
+        def do(*args, i=None, c=None, **kwargs):
+            return cliparser.Args(args, curarg_index=i, curarg_curpos=c).params('--foo', **kwargs)
+        self.assertEqual(do('a', 'b', 'c', 'd'), cliparser.Args(()))
+        self.assertEqual(do('a', '--foo', 'b', 'c'), cliparser.Args(('b', 'c')))
+        self.assertEqual(do('a', '--foo', 'b', 'c', maxparams=1), cliparser.Args(('b',)))
+        self.assertEqual(do('a', '--foo', 'b', 'c', maxparams=2), cliparser.Args(('b', 'c')))
+        self.assertEqual(do('a', 'b', '--foo', 'c', 'd'), cliparser.Args(('c', 'd')))
+        self.assertEqual(do('a', 'b', '--foo', 'c', 'd', maxparams=1), cliparser.Args(('c',)))
+        self.assertEqual(do('a', '--foo', 'b', '-c'), cliparser.Args(('b',)))
+        self.assertEqual(do('a', '--foo', 'b', 'c', '-d', '-e'), cliparser.Args(('b', 'c')))
+
+        self.assertEqual(do('a', 'b', 'c', i=2, c=1), cliparser.Args(()))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=0, c=1),
+                         cliparser.Args(('bar', 'baz')))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=1, c=2),
+                         cliparser.Args(('bar', 'baz')))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=2, c=0),
+                         cliparser.Args(('bar', 'baz'), curarg_index=0, curarg_curpos=0))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=2, c=2),
+                         cliparser.Args(('bar', 'baz'), curarg_index=0, curarg_curpos=2))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=3, c=2),
+                         cliparser.Args(('bar', 'baz'), curarg_index=1, curarg_curpos=2))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=2, c=1, maxparams=1),
+                         cliparser.Args(('bar',), curarg_index=0, curarg_curpos=1))
+        self.assertEqual(do('a', '--foo', 'bar', 'baz', i=3, c=1, maxparams=1),
+                         cliparser.Args(('bar',)))
