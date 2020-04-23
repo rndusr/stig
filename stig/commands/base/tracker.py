@@ -185,3 +185,11 @@ class TrackerCmdbase(metaclass=InitCommand):
         response = await self.make_request(request, polling_frenzy=True)
         if not response.success:
             raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        if args.curarg_index == 1:
+            return candidates.Candidates(('add', 'remove'), label='Action')
+        elif args.curarg_index == 2:
+            return candidates.torrent_filter(args.curarg)
