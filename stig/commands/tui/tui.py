@@ -641,7 +641,7 @@ class LimitCmd(metaclass=InitCommand):
         { 'names': ('--clear','-c'), 'action': 'store_true',
           'description': ('Remove previously applied filter; this is '
                           'the default if no FILTER arguments are provided') },
-        { 'names': ('FILTER',), 'nargs': '?',
+        { 'names': ('FILTER',), 'nargs': '*',
           'description': 'Filter expression (see `help filters`)' },
     )
 
