@@ -461,3 +461,9 @@ def stringify_torrent_filter(tfilter, torrents):
 
 
 from . import hooks
+
+from .torrent_list import TorrentListWidget
+from .file_list import FileListWidget
+from .peer_list import PeerListWidget
+from .tracker_list import TrackerListWidget
+from .setting_list import SettingListWidget
