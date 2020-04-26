@@ -659,6 +659,27 @@ class LimitCmd(metaclass=InitCommand):
                 except ValueError as e:
                     raise CmdError(e)
 
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        from ...tui.tuiobjects import tabs
+        from ...tui.views import (TorrentListWidget, FileListWidget,
+                                  PeerListWidget, TrackerListWidget,
+                                  SettingListWidget)
+        widget = tabs.focus.base_widget
+        if hasattr(widget, 'secondary_filter'):
+            if isinstance(widget, TorrentListWidget):
+                return candidates.torrent_filter(args.curarg)
+            elif isinstance(widget, FileListWidget):
+                torrent_filter = 'id=%s' % (widget.focused_torrent_id,)
+                return candidates.file_filter(args.curarg, torrent_filter)
+            elif isinstance(widget, PeerListWidget):
+                return candidates.peer_filter(args.curarg, None)
+            elif isinstance(widget, TrackerListWidget):
+                torrent_filter = '|'.join('id=%s' % (itemw.torrent_id,)
+                                          for itemw in widget.items)
+                return candidates.tracker_filter(args.curarg, torrent_filter)
+
 
 class SortCmd(metaclass=InitCommand):
     name = 'sort'
