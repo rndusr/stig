@@ -205,6 +205,31 @@ class TestKeyMapped(unittest.TestCase):
         self.assertEqual(lst_got_j.callnum, 1)
 
 
+class TestKeyMap(unittest.TestCase):
+    def setUp(self):
+        self.km = KeyMap()
+
+    def test_clear_all_contexts(self):
+        self.km.bind(key='a', action='1', context='x')
+        self.km.bind(key='b', action='2', context='y')
+        self.km.bind(key='c', action='3', context='z')
+        self.assertEqual(tuple(self.km.keys()), ('a', 'b', 'c'))
+        self.km.clear()
+        self.assertEqual(tuple(self.km.keys()), ())
+
+    def test_clear_context(self):
+        self.km.bind(key='a', action='1', context='x')
+        self.km.bind(key='b', action='2', context='y')
+        self.km.bind(key='c', action='3', context='z')
+        self.assertEqual(tuple(self.km.keys()), ('a', 'b', 'c'))
+        self.km.clear(context='x')
+        self.assertEqual(tuple(self.km.keys()), ('b', 'c'))
+        self.km.clear(context='y')
+        self.assertEqual(tuple(self.km.keys()), ('c',))
+        self.km.clear(context='z')
+        self.assertEqual(tuple(self.km.keys()), ())
+
+
 class TestKeyMap_with_single_keys(unittest.TestCase):
     def setUp(self):
         self.km = KeyMap()

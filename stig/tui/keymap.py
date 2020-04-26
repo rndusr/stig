@@ -253,12 +253,15 @@ class KeyMap():
         self._keychain_partial = []
         self._keychain_context = self.NO_CONTEXT
 
-    def clear(self):
+    def clear(self, context=None):
         """Remove all keybindings"""
-        contexts = self._actions
-        for context in contexts:
+        if context is not None:
             log.debug('%s: Removing all keybindings', context)
-            contexts[context] = {}
+            self._actions[context] = {}
+        else:
+            for context in self._actions.keys():
+                log.debug('%s: Removing all keybindings', context)
+                self._actions[context] = {}
         self._bindunbind_callbacks.send(self)
 
     def _unbind_from_urwid_command_map(self, key):
