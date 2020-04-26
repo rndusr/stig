@@ -60,10 +60,9 @@ class BindCmd(metaclass=InitCommand):
 
     def __create_CONTEXTS_section():
         lines = [
-            ('Keys are mapped in contexts.  With no context given, the default '
-             'context is used.  The default context only gets the key if no '
-             'other context wants it.  The same key can be mapped to different '
-             'actions in different contexts.'),
+            ('The same key can be bound multiple times in different contexts.  '
+             'With no context given, the default context is used.  The default '
+             "context gets the key if it isn't mapped in any other relevant context."),
             '',
             'Available contexts are: ' +
               ', '.join('%s' % context for context in _get_keymap_contexts()),
@@ -74,9 +73,10 @@ class BindCmd(metaclass=InitCommand):
             '\tbind ctrl-t <left>',
             '',
             ('\tWhen focusing a torrent, <ctrl-t> starts the focused torrent.  '
-             'If focus is not on a torrent but still on a tab (e.g. when reading '
-             'documentation) a new tab is opened.  Otherwise (e.g. focus is on the '
-             'command prompt), <ctrl-t> does the same as <left>.'),
+             'If focus is not on a torrent but still on a tab (e.g. in an empty '
+             'torrent list or when reading this text) a new tab is opened.  '
+             'Otherwise (e.g. focus is on the command prompt), <ctrl-t> does the '
+             'same as <left>.'),
         ]
         return lines
 
@@ -92,7 +92,7 @@ class BindCmd(metaclass=InitCommand):
              "(e.g. alt-i, shift-delete, ctrl-a).  shift-x is identical to X."),
             '',
             ("Chained keys are sparated by single spaces (' ') or pluses ('+') and must be "
-             "given as a single argument."),
+             "given as one argument per chain."),
         )
     }
 
