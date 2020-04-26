@@ -425,6 +425,12 @@ class ListWidgetBase(urwid.WidgetWrap):
 
 
     @property
+    def items(self):
+        """Yield non-hidden widgets from list"""
+        for item in self._listbox.body:
+            yield item
+
+    @property
     def focused_widget(self):
         """Currently focused widget in list"""
         if self.focusable_items:
