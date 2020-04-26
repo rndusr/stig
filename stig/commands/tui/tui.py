@@ -170,7 +170,7 @@ class UnbindCmd(metaclass=InitCommand):
         { 'names': ('--context','-c'),
           'description': 'Where KEY is grabbed (see "bind" command)' },
         { 'names': ('--all','-a'), 'action': 'store_true',
-          'description': 'Remove all existing keybindings, including defaults' },
+          'description': 'Remove all keybindings or only those in given context' },
         { 'names': ('KEY',), 'nargs': 'REMAINDER',
           'description': 'Keys or key combinations (see "bind" command)' },
     )
@@ -178,7 +178,7 @@ class UnbindCmd(metaclass=InitCommand):
     def run(self, context, all, KEY):
         from ...tui.tuiobjects import keymap
         if all:
-            keymap.clear()
+            keymap.clear(context=context)
         if context is None:
             context = keymap.DEFAULT_CONTEXT
         elif context not in _get_keymap_contexts():
