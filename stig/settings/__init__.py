@@ -85,6 +85,19 @@ class Settings(abc.Mapping):
         else:
             self._signals[name].connect(callback, weak=autoremove)
 
+    @property
+    def as_dict(self):
+        # The "id" key is important because filters (including SettingFilter)
+        # expect it.  This requirement can possibly removed but it probably
+        # means rewriting lots of filter tests.
+        return {name:{'id': name,
+                      'value': self[name],
+                      'default': self.default(name),
+                      'description': self.description(name),
+                      'syntax': self.syntax(name),
+                      'validate': lambda v: self.validate(name, v)}
+                for name,value in self.items()}
+
     def __getitem__(self, name):
         return self._values[name]
 
