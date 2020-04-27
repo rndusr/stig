@@ -175,18 +175,11 @@ class SettingListWidget(ListWidgetBase):
         self.refresh()
 
     def _handle_update(self, *_, **__):
-        self._data_dict = {
-            **{k: {'id': k,
-                   'value': v,
-                   'default': objects.localcfg.default(k),
-                   'description': objects.localcfg.description(k)}
-               for k,v in objects.localcfg.items()},
-            **{'srv.'+k: {'id': 'srv.'+k,
-                          'value': v,
-                          'default': '',
-                          'description': objects.remotecfg.description(k)}
-               for k,v in objects.remotecfg.items()},
-        }
+        combined = {**objects.localcfg.as_dict,
+                    # For the user, remote settings start with 'srv.'
+                    **{name:{**item, 'id':'srv.'+item['id']}
+                       for name,item in objects.remotecfg.as_dict.items()}}
+        self._data_dict = combined
         self._invalidate()
 
     def refresh(self):

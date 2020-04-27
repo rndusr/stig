@@ -11,6 +11,7 @@
 
 from ..ttypes import SmartCmpStr
 from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
+from .. import constants as const
 
 
 class _SingleFilter(Filter):
@@ -20,7 +21,7 @@ class _SingleFilter(Filter):
         'all'     : BoolFilterSpec(None,
                                    aliases=('*',),
                                    description='All settings'),
-        'changed' : BoolFilterSpec(lambda s: s['default'] != s['value'],
+        'changed' : BoolFilterSpec(lambda s: s['value'] not in (s['default'], const.DISCONNECTED),
                                    aliases=('ch',),
                                    description='Settings with customized values'),
     })
