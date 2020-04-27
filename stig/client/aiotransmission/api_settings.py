@@ -117,6 +117,12 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         # Maintain consistency with local Settings class
         return const.DISCONNECTED
 
+    def validate(self, name, value):
+        if not isinstance(value, str) and isinstance(value, abc.Iterable):
+            return self._converters[name](*value)
+        else:
+            return self._converters[name](value)
+
     async def update(self):
         """Request update from server"""
         log.debug('Requesting immediate settings update')
