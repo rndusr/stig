@@ -355,7 +355,7 @@ class Tuple(tuple, UsertypeMixin):
     Immutable list
 
     Options:
-      sep:     Separator between list items when parsing string
+      sep:     Separator between list items in string representation
       options: Iterable of valid values; any other values raise ValueError
       aliases: <alias> -> <value> mapping: any occurrence of <alias> is replaced
                with <value>
