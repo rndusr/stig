@@ -18,6 +18,7 @@ from blinker import Signal
 from collections import abc
 
 
+# TODO: Make this abase class that Settings and client.SettingsAPI can inherit from.
 class Settings(abc.Mapping):
     """Specialized mapping for *Value instances"""
 

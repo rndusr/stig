@@ -35,6 +35,9 @@ class HelpersMixin():
             # filter name or one of its aliases
             for filter_string, exp_ids in test_cases:
                 f = filter_string.format(name=fn)
+                # TODO: Don't rely on "id" (or any other) key (see
+                # settings.Settings.as_dict and
+                # client.aiotransmission.api_torrent.SettingsAPI.as_dict)
                 self.assertEqual(tuple(filter_cls(f).apply(items, key='id')), exp_ids)
 
     def check_int_filter(self, filter_cls, filter_names, key):
