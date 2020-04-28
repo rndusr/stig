@@ -9,9 +9,48 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from collections import abc
+import operator
+
 from ..ttypes import SmartCmpStr
 from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 from .. import constants as const
+
+
+def _is_sequence(obj):
+    return isinstance(obj, abc.Sequence) and not isinstance(obj, str)
+
+# Setting values have multiple incompatible types.  Try hard to compare them to
+# the user-given value or fail silently.
+def _match_coerced_value(setting, key, op, value):
+    setting_value = setting[key]
+
+    # Try to make `value` the same type as `setting['value']`
+    validate = setting.get('validate', None)
+    if validate is not None:
+        try:
+            value = validate(value)
+        except ValueError as e:
+            return False
+
+    # Sequence matches if all its items are in `setting['value']`
+    if _is_sequence(setting_value) and _is_sequence(value):
+        if op is operator.__contains__:
+            # Match if `settings['value'] contains all items of `value`, in any order
+            for v in value:
+                if v not in setting_value:
+                    return False
+            return True
+        else:
+            try:
+                return op(setting_value, value)
+            except TypeError:
+                return False
+    else:
+        try:
+            return op(setting_value, value)
+        except TypeError:
+            return False
 
 
 class _SingleFilter(Filter):
@@ -32,10 +71,12 @@ class _SingleFilter(Filter):
                                       aliases=('n',),
                                       description='Match VALUE against setting name'),
         'value'       : CmpFilterSpec(value_getter=lambda s: s['value'],
+                                      value_matcher=lambda s, op, v: _match_coerced_value(s, 'value', op, v),
                                       value_type=SmartCmpStr,
                                       aliases=('v',),
                                       description='Match VALUE against current value'),
         'default'     : CmpFilterSpec(value_getter=lambda s: s['default'],
+                                      value_matcher=lambda s, op, v: _match_coerced_value(s, 'default', op, v),
                                       value_type=SmartCmpStr,
                                       aliases=('def',),
                                       description='Match VALUE against default value'),
