@@ -309,13 +309,21 @@ async def torrent_filter(curarg, filter_names=True):
     The return value is either an empty tuple, a 1-tuple (filter values) or a
     2-tuple (filter names and filter values).
     """
+    async def objects_getter(keys):
+        response = await objects.srvapi.torrent.torrents(keys=keys, from_cache=True)
+        if response.success:
+            return response.torrents
     return await _filter(curarg, 'TorrentFilter',
-                         torrent_filter=None,
-                         filter_names=filter_names,
-                         items_getter=None)
+                         objects_getter=objects_getter,
+                         items_getter=None,
+                         filter_names=filter_names)
 
 async def file_filter(curarg, torrent_filter, filter_names=True):
     """Values and/or names for file filters (see `torrent_filter`)"""
+    async def objects_getter(keys):
+        response = await objects.srvapi.torrent.torrents(torrent_filter, keys=keys, from_cache=True)
+        if response.success:
+            return response.torrents
     # Get list of files from Torrent instance
     def items_getter(t):
         # Exclude single-file torrents (torrents that don't contain a
@@ -326,29 +334,44 @@ async def file_filter(curarg, torrent_filter, filter_names=True):
         else:
             return ()
     return await _filter(curarg, 'FileFilter',
-                         torrent_filter=torrent_filter,
-                         filter_names=filter_names,
-                         items_getter=items_getter)
+                         objects_getter=objects_getter,
+                         items_getter=items_getter,
+                         filter_names=filter_names)
 
 async def peer_filter(curarg, torrent_filter, filter_names=True):
     """Values and/or names for peer filters (see `torrent_filter`)"""
+    async def objects_getter(keys):
+        response = await objects.srvapi.torrent.torrents(torrent_filter, keys=keys, from_cache=True)
+        if response.success:
+            return response.torrents
     return await _filter(curarg, 'PeerFilter',
-                         torrent_filter=torrent_filter,
-                         filter_names=filter_names,
+                         objects_getter=objects_getter,
                          # Get list of peers from Torrent instance
-                         items_getter=lambda t: t['peers'])
+                         items_getter=lambda t: t['peers'],
+                         filter_names=filter_names)
 
 async def tracker_filter(curarg, torrent_filter, filter_names=True):
     """Values and/or names for tracker filters (see `torrent_filter`)"""
+    async def objects_getter(keys):
+        response = await objects.srvapi.torrent.torrents(torrent_filter, keys=keys, from_cache=True)
+        if response.success:
+            return response.torrents
     return await _filter(curarg, 'TrackerFilter',
-                         torrent_filter=torrent_filter,
-                         filter_names=filter_names,
+                         objects_getter=objects_getter,
                          # Get list of trackers from Torrent instance
-                         items_getter=lambda t: t['trackers'])
+                         items_getter=lambda t: t['trackers'],
+                         filter_names=filter_names)
 
-async def _filter(curarg, filter_cls_name, torrent_filter, filter_names, items_getter):
+async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_names):
     """
     Values and/or names for filters
+
+    `objects_getter` is a coroutine function that returns a sequence of objects
+    that are used to get values via the filter's value_getter (e.g. Torrent).
+
+    If `items_getter` is not None, it is a callable that gets an object (see
+    above) and returns a list of items that are used to get values via the
+    filter's value_getter (e.g. TorrentPeer or TorrentTracker).
 
     If `filter_names` evaluates to False, filter names are not included in the
     returned list, i.e. only values for the default filter (e.g. torrent name)
@@ -367,7 +390,7 @@ async def _filter(curarg, filter_cls_name, torrent_filter, filter_names, items_g
 
     # Most arguments to _filter_values() are the same
     filter_values = functools.partial(_filter_values, filter_cls_name,
-                                      torrent_filter=torrent_filter,
+                                      objects_getter=objects_getter,
                                       items_getter=items_getter)
 
     # Separate filter name from filter value
@@ -396,16 +419,14 @@ async def _filter(curarg, filter_cls_name, torrent_filter, filter_names, items_g
     else:
         return ()
 
-async def _filter_values(filter_cls_name, filter_name, torrent_filter, items_getter):
+async def _filter_values(filter_cls_name, filter_name, objects_getter, items_getter):
     # Return list of possible values for filter (if filter is comparative)
     filter_cls = _utils.get_filter_cls(filter_cls_name)
     cands = ()
     if _utils.filter_takes_completable_values(filter_cls, filter_name):
         keys = filter_cls(filter_name).needed_keys
-        response = await objects.srvapi.torrent.torrents(torrent_filter,
-                                                         keys=keys,
-                                                         from_cache=True)
-        if response.success:
+        objects = await objects_getter(keys=keys)
+        if objects:
             # Get the same values that the filter would get
             value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
 
@@ -424,13 +445,14 @@ async def _filter_values(filter_cls_name, filter_name, torrent_filter, items_get
 
             # File
             if items_getter is None:
-                # Filtering Torrent instances
-                for t in response.torrents:
-                    add_cands_for(t)
+                # Filtering objects directly (e.g. Torrent instances)
+                for obj in objects:
+                    add_cands_for(obj)
             else:
-                # Filtering items from torrent['files'] or torrent['peers']
-                for t in response.torrents:
-                    items = items_getter(t)
+                # Filtering items from a sub-list of an object,
+                # (e.g. torrent['files'] or torrent['peers'])
+                for obj in objects:
+                    items = items_getter(obj)
                     for i in items:
                         add_cands_for(i)
 
