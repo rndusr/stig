@@ -125,15 +125,18 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     @property
     def as_dict(self):
-        # The "id" key is important because filters (including SettingFilter)
-        # expect it.  This requirement can possibly removed but it probably
-        # means rewriting lots of filter tests.
+        # NOTE 1: The "id" key is important because filters (including
+        #         SettingFilter) expect it.  This requirement can possibly
+        #         removed but it probably means rewriting lots of filter tests.
+        # NOTE 2: The "validate" lambda MUST store the value of `name`,
+        #         otherwise `self.validate` always gets called with the for
+        #         loop's last `name` value.
         return {name:{'id': name,
                       'value': self[name],
                       'default': self.default(name),
                       'description': self.description(name),
                       'syntax': self.syntax(name),
-                      'validate': lambda v: self.validate(name, v)}
+                      'validate': lambda v, n=name: self.validate(n, v)}
                 for name,value in self.items()}
 
     async def update(self):
