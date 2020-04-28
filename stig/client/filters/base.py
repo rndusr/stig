@@ -55,8 +55,8 @@ class CmpFilterSpec():
                         Multiple values must be given as an iterator (list,
                         tuple, generator, etc), and the item matches if any
                         match
-        value_convert : Callable that takes a value and converts it to something else
-                        (e.g. "42" (str) -> 42 (int))
+        value_convert : Callable that takes a value and converts it to something
+                        comparable (e.g. "42" (str) -> 42 (int))
         value_matcher : Callable that takes (item, operator, value) and returns True/False
         as_bool       : Callable that takes an item and returns True/False
         needed_keys   : Needed keys for this filter
