@@ -679,6 +679,8 @@ class LimitCmd(metaclass=InitCommand):
                 torrent_filter = '|'.join('id=%s' % (itemw.torrent_id,)
                                           for itemw in widget.items)
                 return candidates.tracker_filter(args.curarg, torrent_filter)
+            elif isinstance(widget, SettingListWidget):
+                return candidates.setting_filter(args.curarg)
 
 
 class SortCmd(metaclass=InitCommand):

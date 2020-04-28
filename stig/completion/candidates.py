@@ -362,6 +362,19 @@ async def tracker_filter(curarg, torrent_filter, filter_names=True):
                          items_getter=lambda t: t['trackers'],
                          filter_names=filter_names)
 
+async def setting_filter(curarg, filter_names=True):
+    """Values and/or names for setting filters (see `torrent_filter`)"""
+    async def objects_getter(**_):
+        combined = list(objects.localcfg.as_dict.values())
+        # For the user, remote settings start with 'srv.'
+        combined.extend({**item, 'id':'srv.'+item['id']}
+                        for item in objects.remotecfg.as_dict.values())
+        return combined
+    return await _filter(curarg, 'SettingFilter',
+                         objects_getter=objects_getter,
+                         items_getter=None,
+                         filter_names=filter_names)
+
 async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_names):
     """
     Values and/or names for filters
