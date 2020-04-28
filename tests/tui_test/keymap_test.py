@@ -55,6 +55,12 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('shift-alt-ö'), Key('alt-Ö'))
         self.assertEqual(Key('ctrl-shift-alt-ö'), Key('ctrl-alt-Ö'))
 
+    def test_convert_multiple_modifiers(self):
+        self.assertEqual(Key('shift meta right'), Key('shift-alt-right'))
+        self.assertEqual(Key('meta shift right'), Key('shift-alt-right'))
+        self.assertEqual(Key('meta ctrl x'), Key('ctrl-alt-x'))
+        self.assertEqual(Key('ctrl meta shift u'), Key('ctrl-meta-U'))
+
     def test_invalid_modifier(self):
         with self.assertRaises(ValueError) as cm:
             Key('shit-e')

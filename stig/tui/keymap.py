@@ -23,7 +23,7 @@ class Key(str):
     _INIT = (
         (re.compile(r'^<(.+)>$'),                            r'\1'),
         (re.compile(r'^(.*) $'),                             r'\1space'),
-        (re.compile(r'^meta', flags=re.I),                   r'alt'),
+        (re.compile(r'\bmeta\b', flags=re.I),                r'alt'),
         (re.compile(r'\besc$', flags=re.I),                  r'escape'),
         (re.compile(r'\bpos1$', flags=re.I),                 r'home'),
         (re.compile(r'\bdel$', flags=re.I),                  r'delete'),
