@@ -730,10 +730,8 @@ class SortCmd(metaclass=InitCommand):
 
         if ORDER:
             # Find appropriate sorter class for focused list
-            from ...tui.views.torrent_list import TorrentListWidget
-            from ...tui.views.peer_list import PeerListWidget
-            from ...tui.views.tracker_list import TrackerListWidget
-            from ...tui.views.setting_list import SettingListWidget
+            from ...tui.views import (TorrentListWidget, PeerListWidget,
+                                      TrackerListWidget, SettingListWidget)
             if isinstance(current_tab, TorrentListWidget):
                 sortcls = self.TorrentSorter
             elif isinstance(current_tab, PeerListWidget):

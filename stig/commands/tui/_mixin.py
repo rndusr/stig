@@ -204,7 +204,7 @@ class select_torrents():
         from ...client.ttypes import TorrentFile
         if isinstance(focused_data, TorrentFile):
             return 'file'
-        from ...tui.views.setting_list import SettingItemWidget
+        from ...tui.views import SettingItemWidget
         if isinstance(focused_widget, SettingItemWidget):
             return 'setting'
 
@@ -453,8 +453,7 @@ class placeholders(make_request):
 
     async def _get_placeholder_map(self):
         if not hasattr(self, '_placeholders'):
-            from ...tui.views.torrent_list import TorrentListWidget
-            from ...tui.views.file_list import FileListWidget
+            from ...tui.views import TorrentListWidget, FileListWidget
             from ...tui.tuiobjects import tabs
             focused_list = tabs.focus
             if focused_list is None:

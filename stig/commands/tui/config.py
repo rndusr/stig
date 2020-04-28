@@ -26,7 +26,7 @@ class ResetCmd(base.ResetCmdbase):
         else:
             # Get name from focused item in setting list
             from ...tui import main as tui
-            from ...tui.views.setting_list import SettingListWidget
+            from ...tui.views import SettingListWidget
             widget = tui.tabs.focus
             if isinstance(widget, SettingListWidget):
                 setting_name = widget.focused_widget.name
@@ -38,7 +38,7 @@ class SetCmd(base.SetCmdbase,
     provides = {'tui'}
 
     def make_setting_list(self, sort, columns):
-        from ...tui.views.setting_list import SettingListWidget
+        from ...tui.views import SettingListWidget
         self.create_list_widget(SettingListWidget, theme_name='settinglist',
                                 sort=sort, columns=columns)
 

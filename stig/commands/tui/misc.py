@@ -25,7 +25,7 @@ class HelpCmd(base.HelpCmdbase):
 
     def display_help(self, topics, lines):
         from ...tui.scroll import ScrollBar
-        from ...tui.views.text import SearchableText
+        from ...tui.views import SearchableText
         from ...tui import tuiobjects
 
         if hasattr(self, 'title'):
