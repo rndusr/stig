@@ -347,6 +347,8 @@ class create_list_widget():
         tabs.set_title(make_titlew('Loading...', ''), position=tabid)
 
 
+# TODO: Take a callable that return True to stop and False to keep polling rapidly.
+#       `duration` should be a timeout to prevent polling rapidly forever.
 class polling_frenzy():
     @classmethod
     def polling_frenzy(cls, duration=2, short_interval=0.5):
