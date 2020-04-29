@@ -149,7 +149,8 @@
 *** Development version
     To install the latest development version of stig with pipx:
    #+BEGIN_SRC sh
-   $ pipx install 'git+https://github.com/rndusr/stig.git#egg=stig'
+   $ pipx install 'git+https://github.com/rndusr/stig.git#egg=stig'	# For pipx version>=0.15.0.0
+   $ pipx install stig --spec 'git+https://github.com/rndusr/stig.git#egg=stig'	# For pipx version<0.15.0.0
    #+END_SRC
 
 *** Developing
