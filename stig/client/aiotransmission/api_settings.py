@@ -60,7 +60,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     properties with 'get_' removed from the equivalent method name
     (e.g. api.get_port() -> api.port).
 
-    Use `on_change` to set a callback for interval updates.
+    Use `on_update` to set a callback for interval updates.
 
     Cached values are also available as mapping items with '.' instead of '_',
     e.g.  `settings['path.incomplete']`.
