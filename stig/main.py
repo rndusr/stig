@@ -31,7 +31,7 @@ from . import logging
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 
-from .objects import log, localcfg, remotecfg, srvapi, helpmgr, cmdmgr
+from .objects import log, srvapi, cmdmgr
 
 def run():
     cmdmgr.load_cmds_from_module(
