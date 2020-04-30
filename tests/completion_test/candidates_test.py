@@ -15,115 +15,95 @@ class Test_setting_names(unittest.TestCase):
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
-    def test_remote_and_local_settings_are_combined(self, mock_rcfg, mock_lcfg):
-        mock_lcfg.__iter__.return_value = ('foo', 'bar', 'baz')
-        mock_rcfg.__iter__.return_value = ('Foo', 'Bar', 'Baz')
-        cands = candidates.setting_names()
-        self.assertEqual(tuple(cands), ('bar', 'baz', 'foo', 'srv.Bar', 'srv.Baz', 'srv.Foo'))
-        self.assertEqual(cands.label, 'Setting')
-
-    @patch('stig.objects.localcfg')
-    @patch('stig.objects.remotecfg')
     def test_description(self, mock_rcfg, mock_lcfg):
         mock_lcfg.__iter__.return_value = ('foo', 'bar')
-        mock_rcfg.__iter__.return_value = ('Foo', 'Bar')
         mock_lcfg.description.side_effect = lambda name: 'mock description for local setting %s' % name
+        mock_rcfg.__iter__.return_value = ('FOO', 'BAR')
         mock_rcfg.description.side_effect = lambda name: 'mock description for remote setting %s' % name
-        settings = candidates.setting_names()
-        self.assertEqual(settings[0].info['Description'], 'mock description for local setting bar')
-        self.assertEqual(settings[1].info['Description'], 'mock description for local setting foo')
-        self.assertEqual(settings[2].info['Description'], 'mock description for remote setting Bar')
-        self.assertEqual(settings[3].info['Description'], 'mock description for remote setting Foo')
+        cats = candidates.setting_names()
+        self.assertEqual(cats[0][0].info['Description'], 'mock description for local setting bar')
+        self.assertEqual(cats[0][1].info['Description'], 'mock description for local setting foo')
+        self.assertEqual(cats[1][0].info['Description'], 'mock description for remote setting BAR')
+        self.assertEqual(cats[1][1].info['Description'], 'mock description for remote setting FOO')
 
     @patch('stig.objects.localcfg')
     @patch('stig.objects.remotecfg')
     def test_default(self, mock_rcfg, mock_lcfg):
         mock_lcfg.__iter__.return_value = ('foo', 'bar')
-        mock_rcfg.__iter__.return_value = ('Foo', 'Bar')
-        mock_lcfg.default.side_effect = lambda name: list(name)
-        mock_rcfg.default.side_effect = lambda name: (name,) * 2
-        cands = candidates.setting_names()
-        self.assertEqual(cands[0].info['Default'], "['b', 'a', 'r']")
-        self.assertEqual(cands[0].info['Default'], "['b', 'a', 'r']")
-        self.assertEqual(cands[1].info['Default'], "['f', 'o', 'o']")
-        self.assertEqual(cands[2].info['Default'], "('Bar', 'Bar')")
-        self.assertEqual(cands[3].info['Default'], "('Foo', 'Foo')")
+        mock_lcfg.default.side_effect = lambda name: 'mock default for local setting %s' % name
+        mock_rcfg.__iter__.return_value = ('FOO', 'BAR')
+        mock_rcfg.default.side_effect = lambda name: 'mock default for remote setting %s' % name
+        cats = candidates.setting_names()
+        self.assertEqual(cats[0][0].info['Default'], 'mock default for local setting bar')
+        self.assertEqual(cats[0][1].info['Default'], 'mock default for local setting foo')
+        self.assertEqual(cats[1][0].info['Default'], 'mock default for remote setting BAR')
+        self.assertEqual(cats[1][1].info['Default'], 'mock default for remote setting FOO')
 
 
 class Test_setting_values(unittest.TestCase):
-    @patch('stig.objects.localcfg')
-    @patch('stig.objects.remotecfg')
-    def test_unknown_setting(self, mock_rcfg, mock_lcfg):
-        mock_lcfg.__iter__.return_value = ('foo', 'bar', 'baz')
-        mock_rcfg.__iter__.return_value = ('Foo', 'Bar', 'Baz')
+    @patch('stig.objects.cfg')
+    def test_unknown_setting(self, mock_cfg):
+        mock_cfg.__iter__.return_value = ('foo', 'bar', 'baz')
         for args in (('foo', 'bar', 'baz'),
                      ('foo', 'bar', 'baz'),
                      ('foo', 'bar', 'baz')):
             for curarg_index in (0, 1, 2):
                 for curarg_curpos in (0, 1, 2, 3):
                     cmdline = Args(args, curarg_index=curarg_index, curarg_curpos=curarg_curpos)
-                    self.assertFalse(candidates.setting_values(cmdline))
+                    self.assertIs(candidates.setting_values(cmdline), None)
 
-    @patch('stig.objects.localcfg')
-    @patch('stig.objects.remotecfg')
-    def test_setting_is_an_Option(self, mock_rcfg, mock_lcfg):
-        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
-                                      (mock_rcfg, 'srv.foo')):
-            mock_cfg.__iter__.return_value = (setting_name,)
-            mock_cfg.__contains__.return_value = True
-            mock_cfg.__getitem__.return_value = usertypes.Option('b', options=('a', 'b', 'c'))
-            cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
-            self.assertEqual(candidates.setting_values(cmdline), Candidates(('a', 'b', 'c'),
-                                                                            label='%s option' % setting_name))
-            cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
-            self.assertFalse(candidates.setting_values(cmdline))
+    @patch('stig.objects.cfg')
+    def test_setting_is_an_Option(self, mock_cfg):
+        setting_name = 'foo'
+        mock_cfg.__iter__.return_value = (setting_name,)
+        mock_cfg.__contains__.return_value = True
+        mock_cfg.__getitem__.return_value = usertypes.Option('b', options=('a', 'b', 'c'))
+        cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
+        self.assertEqual(candidates.setting_values(cmdline), Candidates(('a', 'b', 'c'),
+                                                                        label='%s option' % setting_name))
+        cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
+        self.assertFalse(candidates.setting_values(cmdline))
 
-    @patch('stig.objects.localcfg')
-    @patch('stig.objects.remotecfg')
-    def test_setting_is_a_Tuple(self, mock_rcfg, mock_lcfg):
-        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
-                                      (mock_rcfg, 'srv.foo')):
-            mock_cfg.__iter__.return_value = (setting_name,)
-            mock_cfg.__contains__.return_value = True
-            mock_cfg.__getitem__.return_value = usertypes.Tuple('a', 'b', options=('a', 'b', 'c'))
-            for i in (1, 2, 3):
-                cmdline = Args((setting_name, '_', '_', '_'), curarg_index=i, curarg_curpos=0)
-                cands = candidates.setting_values(cmdline)
-                exp_cands = Candidates(('a', 'b', 'c'), label='%s option' % setting_name, curarg_seps=(',',))
-                self.assertEqual(cands, exp_cands)
-
-    @patch('stig.objects.localcfg')
-    @patch('stig.objects.remotecfg')
-    def test_setting_is_a_Bool(self, mock_rcfg, mock_lcfg):
-        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
-                                      (mock_rcfg, 'srv.foo')):
-            mock_cfg.__iter__.return_value = (setting_name,)
-            mock_cfg.__contains__.return_value = True
-            mock_cfg.__getitem__.return_value = usertypes.Bool('1', true=('1',), false=('0',))
-            cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
+    @patch('stig.objects.cfg')
+    def test_setting_is_a_Tuple(self, mock_cfg):
+        setting_name = 'bar'
+        mock_cfg.__iter__.return_value = (setting_name,)
+        mock_cfg.__contains__.return_value = True
+        mock_cfg.__getitem__.return_value = usertypes.Tuple('a', 'b', options=('a', 'b', 'c'))
+        for i in (1, 2, 3):
+            cmdline = Args((setting_name, '_', '_', '_'), curarg_index=i, curarg_curpos=0)
             cands = candidates.setting_values(cmdline)
-            exp_cands = Candidates(('1', '0'), label='%s option' % setting_name)
+            exp_cands = Candidates(('a', 'b', 'c'), label='%s option' % setting_name, curarg_seps=(',',))
             self.assertEqual(cands, exp_cands)
-            cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
-            self.assertFalse(candidates.setting_values(cmdline))
 
-    @patch('stig.objects.localcfg')
-    @patch('stig.objects.remotecfg')
+    @patch('stig.objects.cfg')
+    def test_setting_is_a_Bool(self, mock_cfg):
+        setting_name = 'foo'
+        mock_cfg.__iter__.return_value = (setting_name,)
+        mock_cfg.__contains__.return_value = True
+        mock_cfg.__getitem__.return_value = usertypes.Bool('1', true=('1',), false=('0',))
+        cmdline = Args((setting_name, '_', '_'), curarg_index=1, curarg_curpos=0)
+        cands = candidates.setting_values(cmdline)
+        exp_cands = Candidates(('1', '0'), label='%s option' % setting_name)
+        self.assertEqual(cands, exp_cands)
+        cmdline = Args((setting_name, '_', '_'), curarg_index=2, curarg_curpos=0)
+        self.assertFalse(candidates.setting_values(cmdline))
+
+    @patch('stig.objects.cfg')
     @patch('os.path.isdir')
     @patch('stig.completion.candidates.fs_path')
-    def test_setting_is_a_Path(self, mock_fs_path, mock_isdir, mock_rcfg, mock_lcfg):
-        for mock_cfg,setting_name in ((mock_lcfg, 'foo'),
-                                      (mock_rcfg, 'srv.foo')):
-            for mocking_directory in (True, False):
-                mock_isdir.return_value = mocking_directory
-                mock_cfg.__iter__.return_value = (setting_name,)
-                mock_cfg.__contains__.return_value = True
-                mock_cfg.__getitem__.return_value = usertypes.Path('mock/path', base='/mockbase/')
-                cmdline = Args((setting_name, 'abcdef'), curarg_index=1, curarg_curpos=3)
-                candidates.setting_values(cmdline)
-                mock_isdir.assert_called_with('mock/path')
-                mock_fs_path.assert_called_with('abc', base='/mockbase/',
-                                                directories_only=mocking_directory)
+    def test_setting_is_a_Path(self, mock_fs_path, mock_isdir, mock_cfg):
+        setting_name = 'foo'
+        for mocking_directory in (True, False):
+            mock_isdir.return_value = mocking_directory
+            mock_cfg.__iter__.return_value = (setting_name,)
+            mock_cfg.__contains__.return_value = True
+            mock_cfg.__getitem__.return_value = usertypes.Path('mock/path', base='/mockbase/')
+            cmdline = Args((setting_name, 'abcdef'), curarg_index=1, curarg_curpos=3)
+            candidates.setting_values(cmdline)
+            mock_isdir.assert_called_with('mock/path')
+            mock_fs_path.assert_called_with('abc', base='/mockbase/',
+                                            directories_only=mocking_directory)
 
 
 class Test_fs_path(unittest.TestCase):

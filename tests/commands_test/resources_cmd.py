@@ -138,12 +138,10 @@ class MockSettings(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.reset = MagicMock()
-
-class MockRemoteSettings(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.set = CoroutineMock()
+        self.set = CoroutineMock(side_effect=lambda name, value: self.__setitem__(name, value))
         self.update = CoroutineMock()
+        self.is_local = lambda name: not name.startswith('srv.')
+        self.is_remote = lambda name: name.startswith('srv.')
 
 
 from types import SimpleNamespace
@@ -155,8 +153,7 @@ class CommandTestCase(asynctest.TestCase):
         self.srvapi = SimpleNamespace(torrent=MockAPI(),
                                       rpc=MockAPI(),
                                       settings=MockAPI())
-        self.localcfg = MockSettings()
-        self.remotecfg = MockRemoteSettings()
+        self.cfg = MockSettings()
         self.helpmgr = MockHelpManager()
         self.cmdmgr = MagicMock()
         self.cmdmgr.run_async = CoroutineMock()

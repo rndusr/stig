@@ -1,12 +1,12 @@
-from stig.settings import Settings
+from stig.settings import LocalSettings, RemoteSettings
 
 import unittest
 from unittest.mock import MagicMock, call
 
 
-class TestSettings(unittest.TestCase):
+class TestLocalSettings(unittest.TestCase):
     def setUp(self):
-        self.s = Settings()
+        self.s = LocalSettings()
         def one(value): return str(value).upper()
         def two(value): return str(value).lower()
         def three(value): return '(%s)' % value
@@ -91,3 +91,72 @@ class TestSettings(unittest.TestCase):
         del cb
         self.s['three'] = 'bar'
         self.assertEqual(x, 1)
+
+
+class TestRemoteSettings(unittest.TestCase):
+    def setUp(self):
+        self.api = MagicMock()
+        self.remotecfg = RemoteSettings(self.api)
+
+    def test_reset(self):
+        with self.assertRaises(KeyError) as cm:
+            self.remotecfg.reset('foo')
+        with self.assertRaises(NotImplementedError):
+            self.remotecfg.reset('srv.foo')
+
+    def test_default(self):
+        with self.assertRaises(KeyError) as cm:
+            self.remotecfg.default('foo')
+        self.remotecfg.default('srv.foo')
+        self.api.default.assert_called_once_with('foo')
+
+    def test_description(self):
+        with self.assertRaises(KeyError) as cm:
+            self.remotecfg.description('foo')
+        self.remotecfg.description('srv.foo')
+        self.api.description.assert_called_once_with('foo')
+
+    def test_syntax(self):
+        with self.assertRaises(KeyError) as cm:
+            self.remotecfg.syntax('foo')
+        self.remotecfg.syntax('srv.foo')
+        self.api.syntax.assert_called_once_with('foo')
+
+    def test_validate(self):
+        with self.assertRaises(KeyError) as cm:
+            self.remotecfg.validate('foo', 'bar')
+        self.remotecfg.validate('srv.foo', 'bar')
+        self.api.validate.assert_called_once_with('foo', 'bar')
+
+    def test_as_dict(self):
+        self.api.as_dict = {'foo': {'id': 'foo', 'value': 1},
+                                  'bar': {'id': 'bar', 'value': 'asdf'}}
+        self.assertEqual(self.remotecfg.as_dict, {'srv.foo': {'id': 'srv.foo', 'value': 1},
+                                            'srv.bar': {'id': 'srv.bar', 'value': 'asdf'}})
+
+    def test_getitem(self):
+        with self.assertRaises(KeyError) as cm:
+            self.remotecfg['foo']
+        def mock_getitem(name):
+            if name == 'foo': return 1
+            if name == 'bar': return 'asdf'
+        self.api.__getitem__.side_effect = mock_getitem
+        self.assertEqual(self.remotecfg['srv.foo'], 1)
+        self.assertEqual(self.remotecfg['srv.bar'], 'asdf')
+
+    def test_contains(self):
+        self.assertNotIn('foo', self.remotecfg)
+        def mock_contains(name):
+            if name == 'foo': return True
+            if name == 'bar': return False
+        self.api.__contains__.side_effect = mock_contains
+        self.assertTrue('srv.foo' in self.remotecfg)
+        self.assertFalse('srv.bar' in self.remotecfg)
+
+    def test_iter(self):
+        self.api.__iter__.return_value = ('foo', 'bar')
+        self.assertEqual(tuple(iter(self.remotecfg)), ('srv.foo', 'srv.bar'))
+
+    def test_len(self):
+        self.api.__len__.return_value = 123
+        self.assertEqual(len(self.remotecfg), 123)

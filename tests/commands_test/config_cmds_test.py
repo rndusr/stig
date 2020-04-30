@@ -93,42 +93,38 @@ from stig.commands.cli import ResetCmd
 class TestResetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.objects',
-                   localcfg=self.localcfg,
-                   remotecfg=self.remotecfg)
+        self.patch('stig.objects', cfg=self.cfg)
 
     async def test_unknown_setting(self):
-        process = await self.execute(ResetCmd, 'some.string', 'foo.bar')
+        self.cfg.reset.side_effect = KeyError('invalid.setting')
+        process = await self.execute(ResetCmd, 'invalid_setting')
         self.assertEqual(process.success, False)
         self.assert_stdout()
-        self.assert_stderr('reset: Unknown setting: some.string',
-                           'reset: Unknown setting: foo.bar')
+        self.assert_stderr('reset: Unknown setting: invalid_setting')
 
     async def test_remote_setting(self):
-        self.remotecfg['some.string'] = 'foo'
-        self.remotecfg['some.number'] = 12
-        process = await self.execute(ResetCmd, 'srv.some.string', 'srv.some.number')
+        self.cfg.reset.side_effect = NotImplementedError()
+        process = await self.execute(ResetCmd, 'srv.some.string')
         self.assertEqual(process.success, False)
         self.assert_stdout()
-        self.assert_stderr('reset: Remote settings cannot be reset: srv.some.string',
-                           'reset: Remote settings cannot be reset: srv.some.number')
+        self.assert_stderr('reset: Remote settings cannot be reset: srv.some.string')
 
     async def test_space_separated_arguments(self):
-        self.localcfg['some.string'] = 'foo'
-        self.localcfg['some.number'] = 12
+        self.cfg['some.string'] = 'foo'
+        self.cfg['some.number'] = 12
         process = await self.execute(ResetCmd, 'some.string', 'some.number')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg.reset.mock_calls, [call('some.string'),
+        self.assertEqual(self.cfg.reset.mock_calls, [call('some.string'),
                                                      call('some.number')])
         self.assert_stdout()
         self.assert_stderr()
 
     async def test_comma_separated_arguments(self):
-        self.localcfg['some.string'] = 'foo'
-        self.localcfg['some.number'] = 12
+        self.cfg['some.string'] = 'foo'
+        self.cfg['some.number'] = 12
         process = await self.execute(ResetCmd, 'some.string,some.number')
         self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg.reset.mock_calls, [call('some.string'),
+        self.assertEqual(self.cfg.reset.mock_calls, [call('some.string'),
                                                      call('some.number')])
         self.assert_stdout()
         self.assert_stderr()
@@ -145,122 +141,115 @@ from stig.commands.cli import SetCmd
 class TestSetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
-        self.patch('stig.objects',
-                   localcfg=self.localcfg,
-                   remotecfg=self.remotecfg)
+        self.patch('stig.objects', cfg=self.cfg)
 
     async def test_unknown_setting(self):
         process = await self.execute(SetCmd, 'foo.bar', '27')
-        self.assertEqual(process.success, False)
         self.assert_stdout()
         self.assert_stderr('set: Unknown setting: foo.bar')
+        self.assertEqual(process.success, False)
 
     async def test_setting_string(self):
-        self.localcfg['some.string'] = 'asdf'
+        self.cfg['some.string'] = 'asdf'
         process = await self.execute(SetCmd, 'some.string', 'bar', 'foo')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.string'], 'bar foo')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.string'], 'bar foo')
 
     async def test_setting_integer(self):
-        self.localcfg['some.integer'] = 42
+        self.cfg['some.integer'] = 42
         process = await self.execute(SetCmd, 'some.integer', '39')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.integer'], '39')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.integer'], '39')
 
     async def test_setting_float(self):
-        self.localcfg['some.number'] = 3.7
+        self.cfg['some.number'] = 3.7
         process = await self.execute(SetCmd, 'some.number', '39.2')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.number'], '39.2')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], '39.2')
 
     async def test_adjusting_number(self):
-        self.localcfg['some.number'] = 20
+        self.cfg['some.number'] = 20
         process = await self.execute(SetCmd, 'some.number', '+=15')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.number'], 35)
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], 35)
 
         process = await self.execute(SetCmd, 'some.number', '-=45')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.number'], -10)
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.number'], -10)
 
     async def test_setting_bool(self):
-        self.localcfg['some.boolean'] = 'no'
+        self.cfg['some.boolean'] = 'no'
         process = await self.execute(SetCmd, 'some.boolean', 'yes')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.boolean'], 'yes')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'], 'yes')
 
     async def test_setting_option(self):
-        self.localcfg['some.option'] = 'foo bar'
+        self.cfg['some.option'] = 'foo bar'
         process = await self.execute(SetCmd, 'some.option', 'red', 'with', 'a', 'hint', 'of', 'yellow')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.option'], 'red with a hint of yellow')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.option'], 'red with a hint of yellow')
 
     async def test_setting_comma_separated_list(self):
-        self.localcfg['some.list'] = ('foo', 'bar', 'baz')
+        self.cfg['some.list'] = ('foo', 'bar', 'baz')
         process = await self.execute(SetCmd, 'some.list', 'alice,bob,bert')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.list'], ['alice', 'bob', 'bert'])
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.list'], ['alice', 'bob', 'bert'])
 
     async def test_setting_space_separated_list(self):
-        self.localcfg['some.list'] = ('foo', 'bar', 'baz')
+        self.cfg['some.list'] = ('foo', 'bar', 'baz')
         process = await self.execute(SetCmd, 'some.list', 'alice', 'bert')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.list'], ['alice', 'bert'])
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.list'], ['alice', 'bert'])
 
     async def test_setting_with_eval(self):
-        self.localcfg['some.boolean'] = 'false'
+        self.cfg['some.boolean'] = 'false'
         process = await self.execute(SetCmd, 'some.boolean:eval', 'echo', 'true')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.boolean'], 'true')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'], 'true')
 
         process = await self.execute(SetCmd, 'some.boolean:eval', 'echo false')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['some.boolean'], 'false')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['some.boolean'], 'false')
 
     async def test_remote_setting(self):
-        self.localcfg['something'] = 'foo'
-        self.remotecfg['something'] = 'bar'
+        self.cfg['srv.something'] = 'foo'
+        self.cfg.set.side_effect = None
         process = await self.execute(SetCmd, 'srv.something', 'baz')
-        self.assertEqual(process.success, True)
-        self.assertEqual(self.localcfg['something'], 'foo')
-        self.remotecfg.update.assert_called_once_with()
-        self.remotecfg.set.assert_called_once_with('something', 'baz')
         self.assert_stdout()
         self.assert_stderr()
+        self.assertEqual(process.success, True)
+        self.assertEqual(self.cfg['srv.something'], 'foo')
+        self.cfg.update.assert_called_once_with()
+        self.cfg.set.assert_called_once_with('srv.something', 'baz')
 
     async def test_setting_raises_error(self):
-        class AngryDict(dict):
-            def __contains__(self, name):
-                return True
-            def __getitem__(self, name):
-                return 'Some bullshit value'
-            def __setitem__(self, name, value):
-                raise ValueError('I hate your values!')
-        with patch('stig.objects.localcfg', AngryDict()):
+        self.cfg['some.string'] = 'foo'
+        with patch('stig.objects.cfg.set') as mock_set:
+            mock_set.side_effect = ValueError('I hate your values!')
             process = await self.execute(SetCmd, 'some.string', 'bar')
-            self.assert_stderr('set: some.string = bar: I hate your values!')
+        self.assert_stderr('set: some.string = bar: I hate your values!')
 
     async def test_no_completion_candidates_if_sort_or_columns_options_given(self):
         for opt in ('--columns', '--sort'):

@@ -18,7 +18,7 @@ class TestAddTorrentsCmd(CommandTestCase):
         super().setUp()
         self.patch('stig.objects',
                    srvapi=self.srvapi,
-                   remotecfg=self.remotecfg)
+                   cfg=self.cfg)
 
     async def test_CLI_make_path_absolute(self):
         from stig.commands.cli import AddTorrentsCmd
@@ -177,7 +177,7 @@ class TestAddTorrentsCmd(CommandTestCase):
     async def test_completion_candidates_for_path_option(self, mock_fs_path):
         from stig.commands.cli import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
-        self.remotecfg['path.complete'] = '/bar/baz'
+        self.cfg['srv.path.complete'] = '/bar/baz'
         await self.assert_completion_candidates(AddTorrentsCmd, Args(('add', '--path', 'foo', 'x.torrent'),
                                                                      curarg_index=2, curarg_curpos=3),
                                                 exp_cands=('a', 'b', 'c'))
@@ -250,9 +250,9 @@ class TestListTorrentsCmd(CommandTestCase):
         super().setUp()
         self.patch('stig.objects',
                    srvapi=self.srvapi,
-                   localcfg=self.localcfg)
-        self.localcfg['sort.torrents'] = ('name',)
-        self.localcfg['columns.torrents'] = ('name',)
+                   cfg=self.cfg)
+        self.cfg['sort.torrents'] = ('name',)
+        self.cfg['columns.torrents'] = ('name',)
 
         self.patch('stig.commands.cli.ListTorrentsCmd',
                    select_torrents=mock_select_torrents,
@@ -338,7 +338,7 @@ class TestListTorrentsCmd(CommandTestCase):
                                                            call('TorrentSorter')])
 
     async def test_completion_candidates_for_columns_option(self):
-        self.localcfg['columns.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ', aliases_inverse={})
+        self.cfg['columns.torrents'] = SimpleNamespace(options=('a', 'b', 'c'), sep=' , ', aliases_inverse={})
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--columns', 'foo'), curarg_index=2),
                                                 exp_cands=('a', 'b', 'c'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(ListTorrentsCmd, Args(('ls', '--columns', 'foo', 'bar'), curarg_index=2),
@@ -362,7 +362,7 @@ class TestMoveTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
         self.patch('stig.objects',
-                   remotecfg=self.remotecfg)
+                   cfg=self.cfg)
 
     @patch('stig.completion.candidates.torrent_filter')
     @patch('stig.completion.candidates.fs_path')
@@ -381,11 +381,11 @@ class TestMoveTorrentsCmd(CommandTestCase):
         from stig.commands.cli import MoveTorrentsCmd
         mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
-        self.remotecfg['path.complete'] = '/some/path/'
+        self.cfg['srv.path.complete'] = '/some/path/'
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2, curarg_curpos=3))
         mock_torrent_filter.assert_not_called()
-        mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
+        mock_fs_path.assert_called_once_with('bar', base=self.cfg['srv.path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
 
     @patch('stig.completion.candidates.torrent_filter')
@@ -394,11 +394,11 @@ class TestMoveTorrentsCmd(CommandTestCase):
         from stig.commands.tui import MoveTorrentsCmd
         mock_torrent_filter.return_value = (Candidates(('a', 'b', 'c')),)
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
-        self.remotecfg['path.complete'] = '/some/path/'
+        self.cfg['srv.path.complete'] = '/some/path/'
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo'), curarg_index=1, curarg_curpos=3))
         mock_torrent_filter.assert_called_once_with('foo')
-        mock_fs_path.assert_called_once_with('foo', base=self.remotecfg['path.complete'], directories_only=True)
+        mock_fs_path.assert_called_once_with('foo', base=self.cfg['srv.path.complete'], directories_only=True)
         self.assertEqual(cands, (Candidates(('d', 'e', 'f')),
                                  Candidates(('a', 'b', 'c'))))
 
@@ -418,11 +418,11 @@ class TestMoveTorrentsCmd(CommandTestCase):
     async def test_TUI_completion_candidates_for_posargs_with_two_args_on_second_arg(self, mock_fs_path, mock_torrent_filter):
         from stig.commands.tui import MoveTorrentsCmd
         mock_fs_path.return_value = Candidates(('d', 'e', 'f'))
-        self.remotecfg['path.complete'] = '/some/path/'
+        self.cfg['srv.path.complete'] = '/some/path/'
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2, curarg_curpos=3))
         mock_torrent_filter.assert_not_called()
-        mock_fs_path.assert_called_once_with('bar', base=self.remotecfg['path.complete'], directories_only=True)
+        mock_fs_path.assert_called_once_with('bar', base=self.cfg['srv.path.complete'], directories_only=True)
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
 
 
@@ -432,8 +432,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         super().setUp()
         self.patch('stig.objects',
                    srvapi=self.srvapi,
-                   localcfg=self.localcfg)
-        self.localcfg['remove.max-hits'] = 10
+                   cfg=self.cfg)
+        self.cfg['remove.max-hits'] = 10
         self.patch('stig.commands.cli.RemoveTorrentsCmd',
                    select_torrents=mock_select_torrents)
 
@@ -477,7 +477,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         from stig import objects
-        objects.localcfg['remove.max-hits'] = 2
+        objects.cfg['remove.max-hits'] = 2
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
@@ -494,8 +494,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        from stig import objects
-        objects.localcfg['remove.max-hits'] = 2
+        self.cfg['remove.max-hits'] = 2
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
@@ -510,8 +509,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        from stig import objects
-        objects.localcfg['remove.max-hits'] = -1
+        self.cfg['remove.max-hits'] = -1
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         await self.do(['all'], tlist=tlist, remove_called=True, success_exp=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
@@ -521,8 +519,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         tlist = (MockTorrent(id=1, name='Torrent1', seeds='51'),
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
-        from stig import objects
-        objects.localcfg['remove.max-hits'] = 2
+        self.cfg['remove.max-hits'] = 2
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
         RemoveTorrentsCmd.ask_yes_no = CoroutineMock()
         await self.do(['all', '--force'], tlist=tlist, remove_called=True, success_exp=True,
