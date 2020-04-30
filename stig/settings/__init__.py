@@ -52,7 +52,7 @@ class Settings(abc.Mapping):
         self[name] = self._defaults[name]
 
     def default(self, name):
-        """Return settings default/initial value"""
+        """Return setting's default/initial value"""
         return self._defaults[name]
 
     def description(self, name):
