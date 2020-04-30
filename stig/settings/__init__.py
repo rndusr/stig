@@ -74,7 +74,7 @@ class Settings(abc.Mapping):
         """
         Run `callback` every time a value changes
 
-        If `name` is None, run `callback` if any signal changes.
+        If `name` is None, run `callback` after every change.
 
         The signature of `callback` must be: (settings, name, value)
 
