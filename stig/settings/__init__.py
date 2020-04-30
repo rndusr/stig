@@ -16,11 +16,11 @@ from .defaults import init_defaults
 
 from blinker import Signal
 from collections import abc
+import itertools
 
 
-# TODO: Make this abase class that Settings and client.SettingsAPI can inherit from.
-class Settings(abc.Mapping):
-    """Specialized mapping for *Value instances"""
+class LocalSettings(abc.Mapping):
+    """Specialized mapping for usertypes instances (see utils.usertypes)"""
 
     def __init__(self):
         self._defaults = {}
@@ -119,3 +119,82 @@ class Settings(abc.Mapping):
 
     def __len__(self):
         return len(self._constructors)
+
+
+class RemoteSettings(abc.Mapping):
+    """Thin wrapper around client.SettingsAPI that transparently adds/removes "srv." from keys"""
+    def __init__(self, remotecfg):
+        self._cfg = remotecfg
+
+    # Forward calls to SettingsAPI object
+
+    def poll(self):
+        """Get current values from server soon"""
+        self._cfg.poll()
+
+    async def update(self):
+        """Get current values from server"""
+        await self._cfg.update()
+
+    async def set(self, name, value):
+        """Change setting on the server"""
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        await self._cfg.set(name[4:], value)
+
+    def on_update(self, *args, **kwargs):
+        """Run `callback` after settings are updated"""
+        return self._cfg.on_update(*args, **kwargs)
+
+    # LocalSettings protocol
+
+    def reset(self, name):
+        """Reset setting `name` to default/initial value"""
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        raise NotImplementedError()
+
+    def default(self, name):
+        """Return setting's default/initial value"""
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        return self._cfg.default(name[4:])
+
+    def description(self, name):
+        """Return setting's description"""
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        return self._cfg.description(name[4:])
+
+    def syntax(self, name):
+        """Return setting's description"""
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        return self._cfg.syntax(name[4:])
+
+    def validate(self, name, value):
+        """Pass `value` to `name`'s constructor and return the result"""
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        return self._cfg.validate(name[4:], value)
+
+    @property
+    def as_dict(self):
+        return {'srv.'+name: {**setting, 'id': 'srv.'+name}
+                for name,setting in self._cfg.as_dict.items()}
+
+    def __getitem__(self, name):
+        if not name.startswith('srv.'):
+            raise KeyError(name)
+        return self._cfg[name[4:]]
+
+    def __contains__(self, name):
+        if not name.startswith('srv.'):
+            return False
+        return name[4:] in self._cfg
+
+    def __iter__(self):
+        return iter('srv.' + name for name in self._cfg)
+
+    def __len__(self):
+        return len(self._cfg)

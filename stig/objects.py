@@ -19,9 +19,8 @@ log = logging.make_logger()
 
 
 from . import settings
-localcfg = settings.Settings()
+localcfg = settings.LocalSettings()
 settings.init_defaults(localcfg)
-
 
 from .client import API
 srvapi = API(host=localcfg['connect.host'],
@@ -31,7 +30,7 @@ srvapi = API(host=localcfg['connect.host'],
              password=localcfg['connect.password'],
              tls=localcfg['connect.tls'],
              interval=localcfg['tui.poll'])
-remotecfg = srvapi.settings
+remotecfg = settings.RemoteSettings(srvapi.settings)
 
 
 from .helpmgr import HelpManager

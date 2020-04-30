@@ -180,7 +180,7 @@ class HelpManager():
 
         lines.append('REMOTE SETTINGS')
         for name in sorted(remotecfg):
-            lines.append('\tsrv.' + name + '  \t' + remotecfg.description(name))
+            lines.append('\t' + name + '  \t' + remotecfg.description(name))
         return finalize_lines(lines)
 
     def setting(self, name):

@@ -59,7 +59,7 @@ def help_topics():
          for topic in objects.localcfg),
         label='Local Setting'))
     cats.append(Candidates(
-        (Candidate('srv.' + topic, Description=objects.remotecfg.description(topic))
+        (Candidate(topic, Description=objects.remotecfg.description(topic))
          for topic in objects.remotecfg),
         label='Remote Setting'))
     return cats
