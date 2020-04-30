@@ -32,6 +32,8 @@ srvapi = API(host=localcfg['connect.host'],
              interval=localcfg['tui.poll'])
 remotecfg = settings.RemoteSettings(srvapi.settings)
 
+cfg = settings.CombinedSettings(localcfg, remotecfg)
+
 
 from .helpmgr import HelpManager
 helpmgr = HelpManager()

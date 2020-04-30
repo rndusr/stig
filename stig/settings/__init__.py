@@ -198,3 +198,78 @@ class RemoteSettings(abc.Mapping):
 
     def __len__(self):
         return len(self._cfg)
+
+
+class CombinedSettings(abc.Mapping):
+    """
+    Combination of local settings (settings.LocalSettings) and remote settings
+    (client.SettingsAPI)
+    """
+    def __init__(self, local, remote):
+        self._local = local
+        self._remote = remote
+
+    def is_local(self, name):
+        return not name.startswith('srv.')
+
+    def is_remote(self, name):
+        return name.startswith('srv.')
+
+    async def update(self):
+        """Get current remote settings from server"""
+        await self._remote.update()
+
+    async def set(self, name, value):
+        if name in self._local:
+            self._local[name] = value
+        elif name in self._remote:
+            await self._remote.set(name, value)
+        else:
+            raise KeyError(name)
+
+    def _find(self, name):
+        if name in self._local:
+            return self._local
+        elif name in self._remote:
+            return self._remote
+        else:
+            raise KeyError(name)
+
+    def reset(self, name):
+        """Reset setting `name` to default/initial value"""
+        return self._find(name).reset(name)
+
+    def default(self, name):
+        """Return setting's default/initial value"""
+        return self._find(name).default(name)
+
+    def description(self, name):
+        """Return setting's description"""
+        return self._find(name).description(name)
+
+    def syntax(self, name):
+        """Return setting's description"""
+        return self._find(name).syntax(name)
+
+    def validate(self, name, value):
+        """Pass `value` to `name`'s constructor and return the result"""
+        return self._find(name).validate(name)
+
+    @property
+    def as_dict(self):
+        return {**self._local.as_dict, **self._remote.as_dict}
+
+    def __getitem__(self, name):
+        return self._find(name)[name]
+
+    def __setitem__(self, name, value):
+        self._find(name)[name] = value
+
+    def __contains__(self, name):
+        return name in self._find(name)
+
+    def __iter__(self):
+        return iter(itertools.chain(self._local, self._remote))
+
+    def __len__(self):
+        return len(self._local) + len(self._remote)
