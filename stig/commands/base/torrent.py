@@ -76,7 +76,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--path':
             return candidates.fs_path(args.curarg.before_cursor,
-                                      base=objects.remotecfg['path.complete'],
+                                      base=objects.cfg['srv.path.complete'],
                                       directories_only=True)
 
 
@@ -301,7 +301,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
             response = await objects.srvapi.torrent.torrents(tfilter, keys=('id',))
             hits = len(response.torrents)
             success = hits > 0
-            if force or objects.localcfg['remove.max-hits'] < 0 or hits < objects.localcfg['remove.max-hits']:
+            if force or objects.cfg['remove.max-hits'] < 0 or hits < objects.cfg['remove.max-hits']:
                 return await do_remove()
             else:
                 await self.show_list_of_hits(tfilter)

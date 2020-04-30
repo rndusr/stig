@@ -131,7 +131,7 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
             return await candidates.torrent_filter(args.curarg)
         elif args.curarg_index == 2:
             return candidates.fs_path(args.curarg.before_cursor,
-                                      base=objects.remotecfg['path.complete'],
+                                      base=objects.cfg['srv.path.complete'],
                                       directories_only=True)
 
 

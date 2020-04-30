@@ -23,21 +23,19 @@ from ...client import SettingFilter
 
 
 def _change_setting(name, new_value, on_success=None):
-    remote_name = name[4:]  # Remove 'srv.'
-
-    if name in objects.localcfg:
+    if objects.cfg.is_local(name):
         try:
-            objects.localcfg[name] = new_value
+            objects.cfg[name] = new_value
         except ValueError as e:
             log.error('Cannot set %s = %r: %s', name, new_value, e)
         else:
             if on_success is not None:
                 on_success()
 
-    elif remote_name in objects.remotecfg:
+    elif objects.cfg.is_remote(name):
         async def setter():
             try:
-                await objects.remotecfg.set(remote_name, new_value)
+                await objects.cfg.set(name, new_value)
             except (ValueError, objects.srvapi.ClientError) as e:
                 log.error('Cannot set %s = %r: %s', name, new_value, e)
             else:
@@ -175,11 +173,7 @@ class SettingListWidget(ListWidgetBase):
         self.refresh()
 
     def _handle_update(self, *_, **__):
-        combined = {**objects.localcfg.as_dict,
-                    # For the user, remote settings start with 'srv.'
-                    **{name:{**item, 'id':'srv.'+item['id']}
-                       for name,item in objects.remotecfg.as_dict.items()}}
-        self._data_dict = combined
+        self._data_dict = objects.cfg.as_dict
         self._invalidate()
 
     def refresh(self):

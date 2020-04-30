@@ -92,16 +92,16 @@ class ResetCmdbase(metaclass=InitCommand):
     def run(self, NAME):
         success = True
         for name in utils.listify_args(NAME):
-            if name.startswith('srv.') and name[4:] in objects.remotecfg:
+            try:
+                objects.cfg.reset(name)
+            except NotImplementedError:
                 self.error('Remote settings cannot be reset: %s' % name)
-                success = False
-            elif name not in objects.localcfg:
+                raise CmdError()
+            except KeyError:
                 self.error('Unknown setting: %s' % name)
-                success = False
+                raise CmdError()
             else:
-                objects.localcfg.reset(name)
-        if not success:
-            raise CmdError()
+                return True
 
     @classmethod
     def completion_candidates_posargs(cls, args):
@@ -152,7 +152,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
         if not NAME and not VALUE:
             # Get remote setting values
             try:
-                await objects.remotecfg.update()
+                await objects.cfg.update()
             except ClientError as e:
                 error = e
             else:
@@ -173,26 +173,22 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return
 
         # NAME might have ':eval' attached if VALUE is shell command.
-        # `name` is the user-facing name of the variable.
-        # `key` is the lookup key in the config mapping.
         try:
-            name, key, is_local_setting = self._parse_name(NAME)
+            name = self._parse_name(NAME)
         except ValueError as e:
             raise CmdError(e)
 
-        cfg = objects.localcfg if is_local_setting else objects.remotecfg
-
-        # Get current value in case we want to adjust it
-        if not is_local_setting:
+        # Get current value in case we want to display or adjust it
+        if objects.cfg.is_remote(name):
             try:
-                await cfg.update()
+                await objects.cfg.update()
             except ClientError as e:
                 raise CmdError(e)
 
         # VALUE might be shell command or have '+='/'-=' prepended
         try:
             value = self._parse_value(VALUE,
-                                      listify=isinstance(cfg[key], (tuple, list)),
+                                      listify=isinstance(objects.cfg[name], (tuple, list)),
                                       is_cmd=NAME.endswith(':eval'))
         except ValueError as e:
             # Report potential stderr output if VALUE is a command
@@ -205,38 +201,30 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             # Report invalid value after operator (e.g. nan)
             raise CmdError('%s = %s: %s' % (name, self._stringify(value), e))
 
-        # Value may have an operator (e.g. '+=' or '-=') to adjust the current value
+        # Apply operator to current value
         if op is not None:
             try:
-                value = self._adjust_value(cfg[key], op, value)
+                value = self._adjust_value(objects.cfg[name], op, value)
             except ValueError as e:
                 # Report out-of-bounds value
                 opfunc = getattr(operator, op)
-                unbound = cfg[key].copy(min=-float('inf'), max=float('inf'))
+                unbound = objects.cfg[name].copy(min=-float('inf'), max=float('inf'))
                 invalid = opfunc(unbound, value)
                 raise CmdError('%s = %s: %s' % (name, self._stringify(invalid), e))
 
         # Update setting's value
         try:
-            if is_local_setting:
-                log.debug('Local setting: %r = %r', name, value)
-                cfg[key] = value
-            else:
-                log.debug('Remote setting: %r = %r', name, value)
-                await cfg.set(key, value)
+            await objects.cfg.set(name, value)
         except ValueError as e:
             raise CmdError('%s = %s: %s' % (name, self._stringify(value), e))
         except ClientError as e:
             raise CmdError(e)
 
     def _parse_name(self, name):
-        # Return (name, key, is_local_setting)
         if name.endswith(':eval'):
             name = name[:-5]
-        if name in objects.localcfg:
-            return name, name, True
-        elif name.startswith('srv.') and name[4:] in objects.remotecfg:
-            return name, name[4:], False
+        if name in objects.cfg:
+            return name
         else:
             raise ValueError('Unknown setting: %s' % name)
 

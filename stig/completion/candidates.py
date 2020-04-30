@@ -68,17 +68,16 @@ def help_topics():
 @functools.lru_cache(maxsize=None)
 def setting_names():
     """Names of settings"""
-    local_cands = (Candidate(name,
-                             Description=objects.localcfg.description(name),
-                             Default=str(objects.localcfg.default(name)))
-                   for name in objects.localcfg)
-    remote_cands = (Candidate('srv.' + name,
-                              Description=objects.remotecfg.description(name),
-                              Default=str(objects.remotecfg.default(name)))
-                    for name in objects.remotecfg)
-    return Candidates(itertools.chain(local_cands, remote_cands),
-                      label='Setting')
-
+    return (Candidates((Candidate(name,
+                                  Description=objects.localcfg.description(name),
+                                  Default=str(objects.localcfg.default(name)))
+                        for name in objects.localcfg),
+                       label='Local Setting'),
+            Candidates((Candidate(name,
+                                  Description=objects.remotecfg.description(name),
+                                  Default=str(objects.remotecfg.default(name)))
+                        for name in objects.remotecfg),
+                       label='Remote Setting'))
 
 def setting_values(args):
     """
@@ -88,12 +87,9 @@ def setting_values(args):
     argument is the name of a setting.
     """
     setting = args[0]
-
-    if setting in objects.localcfg:
-        value = objects.localcfg[setting]
-    elif setting.startswith('srv.') and setting[4:] in objects.remotecfg:
-        value = objects.remotecfg[setting[4:]]
-    else:
+    try:
+        value = objects.cfg[setting]
+    except KeyError:
         return
 
     # Some settings accept multiple values, others only one
@@ -135,7 +131,7 @@ def sort_orders(clsname):
                        Description=spec.description)
              for name,spec in cls.SORTSPECS.items())
     return Candidates(cands,
-                      curarg_seps=(objects.localcfg['sort.torrents'].sep.strip(),),
+                      curarg_seps=(objects.cfg['sort.torrents'].sep.strip(),),
                       label=_utils.sorters_labels[clsname])
 
 
@@ -146,7 +142,7 @@ def column_names(list_type):
     When `list_type` is appended to "columns.", it must resolve to a proper
     setting.
     """
-    setting = objects.localcfg['columns.%s' % list_type]
+    setting = objects.cfg['columns.%s' % list_type]
     cands = (Candidate(colname,
                        in_parens=', '.join(setting.aliases_inverse.get(colname, '')))
              for colname in setting.options)
@@ -365,11 +361,7 @@ async def tracker_filter(curarg, torrent_filter, filter_names=True):
 async def setting_filter(curarg, filter_names=True):
     """Values and/or names for setting filters (see `torrent_filter`)"""
     async def objects_getter(**_):
-        combined = list(objects.localcfg.as_dict.values())
-        # For the user, remote settings start with 'srv.'
-        combined.extend({**item, 'id':'srv.'+item['id']}
-                        for item in objects.remotecfg.as_dict.values())
-        return combined
+        return objects.cfg.as_dict.values()
     return await _filter(curarg, 'SettingFilter',
                          objects_getter=objects_getter,
                          items_getter=None,

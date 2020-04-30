@@ -30,23 +30,9 @@ class SetCmd(base.SetCmdbase,
 
     def make_setting_list(self, sort, columns):
         from ...views.setting import COLUMNS as SETTING_COLUMNS
-
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, SETTING_COLUMNS)
-
-        settings = sort.apply(
-            chain(({'id': k,
-                    'value': v,
-                    'default': objects.localcfg.default(k),
-                    'description': objects.localcfg.description(k)}
-                   for k,v in objects.localcfg.items()),
-                  ({'id': 'srv.'+k,
-                    'value': v,
-                    'default': '',
-                    'description': objects.remotecfg.description(k)}
-                   for k,v in objects.remotecfg.items()))
-        )
-
+        settings = sort.apply(objects.cfg.as_dict.values())
         print_table(settings, columns, SETTING_COLUMNS)
 
 

@@ -185,15 +185,10 @@ class HelpManager():
 
     def setting(self, name):
         """Return help text for setting"""
-        if name in objects.localcfg:
-            cfg = objects.localcfg
-            key = name
-        elif name[4:] in objects.remotecfg:
-            cfg = objects.remotecfg
-            key = name[4:]
-        else:
+        cfg = objects.cfg
+        if name not in objects.cfg:
             raise ValueError('Unknown help topic: %r' % name)
-        value = cfg[key]
+        value = cfg[name]
 
         def maybe_quote(value):
             if isinstance(value, str) and re.match(r'^\s+$', value):
@@ -201,9 +196,9 @@ class HelpManager():
             else:
                 return str(value)
 
-        lines = ['%s - \t%s' % (name, cfg.description(key)),
-                 '\tValue: \t' + maybe_quote(cfg[key]),
-                 '\tDefault: \t' + maybe_quote(cfg.default(key))]
+        lines = ['%s - \t%s' % (name, cfg.description(name)),
+                 '\tValue: \t' + maybe_quote(cfg[name]),
+                 '\tDefault: \t' + maybe_quote(cfg.default(name))]
 
         if hasattr(value, 'options'):
             opt_strs = []
@@ -215,7 +210,7 @@ class HelpManager():
                     opt_strs[-1] += ' (%s)' % (', '.join(aliases))
             lines.append('\tOptions: \t' + ', '.join(opt_strs))
 
-        lines.append('\tSyntax: \t' + cfg.syntax(key))
+        lines.append('\tSyntax: \t' + cfg.syntax(name))
 
         return finalize_lines(lines)
 
