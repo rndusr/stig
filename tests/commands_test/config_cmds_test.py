@@ -2,7 +2,7 @@ from resources_cmd import CommandTestCase
 from stig.utils.cliparser import Args
 from stig.completion import Candidates
 
-from asynctest.mock import call, patch
+from asynctest.mock import call, patch, CoroutineMock, MagicMock
 import os
 
 

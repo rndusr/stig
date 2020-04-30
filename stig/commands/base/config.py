@@ -96,12 +96,12 @@ class ResetCmdbase(metaclass=InitCommand):
                 objects.cfg.reset(name)
             except NotImplementedError:
                 self.error('Remote settings cannot be reset: %s' % name)
-                raise CmdError()
+                success = False
             except KeyError:
                 self.error('Unknown setting: %s' % name)
-                raise CmdError()
-            else:
-                return True
+                success = False
+        if not success:
+            raise CmdError()
 
     @classmethod
     def completion_candidates_posargs(cls, args):
