@@ -741,10 +741,10 @@ class SortCmd(metaclass=InitCommand):
          'description': 'Remove all sort orders from the list'},
     )
 
-    def _list_sort_orders(title, sortercls):
+    def _list_sort_orders(title, sortcls):
         return (title,) + \
             tuple('\t{}\t - \t{}'.format(', '.join((sname,) + s.aliases), s.description)
-                  for sname,s in sorted(sortercls.SORTSPECS.items()))
+                  for sname,s in sorted(sortcls.SORTSPECS.items()))
 
     from ...client import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
     more_sections = {
@@ -766,20 +766,10 @@ class SortCmd(metaclass=InitCommand):
             current_tab.sort = None
 
         if ORDER:
-            # Find appropriate sorter class for focused list
-            from ...tui.views import (TorrentListWidget, PeerListWidget,
-                                      TrackerListWidget, SettingListWidget)
-            if isinstance(current_tab, TorrentListWidget):
-                sortcls = self.TorrentSorter
-            elif isinstance(current_tab, PeerListWidget):
-                sortcls = self.PeerSorter
-            elif isinstance(current_tab, TrackerListWidget):
-                sortcls = self.TrackerSorter
-            elif isinstance(current_tab, SettingListWidget):
-                sortcls = self.SettingSorter
-            else:
+            # # Find appropriate sorter class for focused list
+            sortcls = self._widget2sortcls(current_tab)
+            if sortcls is None:
                 raise CmdError('Current tab is not sortable.')
-
             try:
                 new_sort = sortcls(utils.listify_args(ORDER))
             except ValueError as e:
@@ -789,6 +779,28 @@ class SortCmd(metaclass=InitCommand):
                 current_tab.sort += new_sort
             else:
                 current_tab.sort = new_sort
+
+    @staticmethod
+    def _widget2sortcls(list_widget):
+        from ...client import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
+        from ...tui.views import (TorrentListWidget, PeerListWidget,
+                                  TrackerListWidget, SettingListWidget)
+        if isinstance(list_widget, TorrentListWidget):
+            return TorrentSorter
+        elif isinstance(list_widget, PeerListWidget):
+            return PeerSorter
+        elif isinstance(list_widget, TrackerListWidget):
+            return TrackerSorter
+        elif isinstance(list_widget, SettingListWidget):
+            return SettingSorter
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        from ...tui.tuiobjects import tabs
+        sortcls = cls._widget2sortcls(tabs.focus.base_widget)
+        if sortcls is not None:
+            return candidates.sort_orders(sortcls.__name__)
 
 
 class TabCmd(mixin.select_torrents, metaclass=InitCommand):
