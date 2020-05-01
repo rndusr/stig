@@ -305,10 +305,13 @@ class Group(urwid.WidgetWrap):
         for item in self._items_list:
             if isinstance(item['widget'], Group):
                 names.append(item['name'])
-                names.extend('{}.{}'.format(item['name'], subname)
+                names.extend('.'.join((item['name'], subname))
                              for subname in item['widget'].names_recursive)
             else:
-                names.append(item['name'])
+                # Leading "_" means the widget is private
+                name = item['name']
+                if not name.startswith('_'):
+                    names.append(name)
         return names
 
     @property
