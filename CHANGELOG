@@ -22,6 +22,7 @@
        "country" as well as the settings "geoip" and "geoip.dir" were
        removed. If you use a custom theme, you also need to remove the "country"
        parts from it.
+     * Some default keybindings for sorting lists were changed.
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
