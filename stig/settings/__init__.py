@@ -142,9 +142,9 @@ class RemoteSettings(abc.Mapping):
             raise KeyError(name)
         await self._cfg.set(name[4:], value)
 
-    def on_update(self, *args, **kwargs):
+    def on_update(self, callback, autoremove=True):
         """Run `callback` after settings are updated"""
-        return self._cfg.on_update(*args, **kwargs)
+        return self._cfg.on_update(callback, autoremove=autoremove)
 
     # LocalSettings protocol
 
