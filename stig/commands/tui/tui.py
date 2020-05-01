@@ -252,6 +252,39 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
             widgets.cli.base_widget.edit_text = cmdstr
             widgets.cli.base_widget.edit_pos = len(cmdstr)
 
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        posargs = args.posargs()
+        if posargs.curarg_index == 1:
+            # First positional argument is the subcmd's name
+            return candidates.commands()
+        else:
+            # Any other positional arguments are part of subcmd
+            subcmd = cls._get_subcmd(args)
+            if subcmd:
+                return candidates.for_args(subcmd)
+
+    @classmethod
+    def completion_candidates_opts(cls, args):
+        """Return candidates for arguments that start with '-'"""
+        subcmd = cls._get_subcmd(args)
+        if subcmd:
+            # Get completion candidates for subcmd
+            return candidates.for_args(subcmd)
+        else:
+            # Parent class generates candidates for our own options
+            return super().completion_candidates_opts(args)
+
+    @staticmethod
+    def _get_subcmd(args):
+        # First posarg is 'setcommand'
+        subcmd_start = args.nth_posarg_index(2)
+        # Subcmd is only relevant if the cursor is somewhere on it.
+        # Otherwise, we're on our own arguments.
+        if subcmd_start is not None and subcmd_start < args.curarg_index:
+            return args[subcmd_start:]
+
 
 class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
     name = 'interactive'
