@@ -253,7 +253,7 @@ class CombinedSettings(abc.Mapping):
 
     def validate(self, name, value):
         """Pass `value` to `name`'s constructor and return the result"""
-        return self._find(name).validate(name)
+        return self._find(name).validate(name, value)
 
     @property
     def as_dict(self):
