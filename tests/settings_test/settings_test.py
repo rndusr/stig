@@ -1,4 +1,4 @@
-from stig.settings import LocalSettings, RemoteSettings
+from stig.settings import LocalSettings, RemoteSettings, CombinedSettings
 
 import unittest
 from unittest.mock import MagicMock, call
@@ -182,3 +182,119 @@ class TestRemoteSettings(asynctest.TestCase):
         cb = lambda: None
         self.remotecfg.on_update(cb, autoremove=False)
         self.api.on_update.assert_called_once_with(cb, autoremove=False)
+
+
+class TestCombinedSettings(asynctest.TestCase):
+    def setUp(self):
+        self.lcfg = MagicMock()
+        self.rcfg = MagicMock()
+        self.cfg = CombinedSettings(local=self.lcfg, remote=self.rcfg)
+
+    def test_is_local_remote(self):
+        self.assertTrue(self.cfg.is_local('foo'))
+        self.assertFalse(self.cfg.is_local('srv.foo'))
+        self.assertFalse(self.cfg.is_remote('foo'))
+        self.assertTrue(self.cfg.is_remote('srv.foo'))
+
+    async def test_update(self):
+        self.rcfg.update = asynctest.CoroutineMock()
+        await self.cfg.update()
+        self.rcfg.update.assert_called_once_with()
+
+    async def test_set(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.rcfg.set = asynctest.CoroutineMock()
+        await self.cfg.set('foo', 'bar')
+        self.lcfg.__setitem__.assert_called_once_with('foo', 'bar')
+        self.rcfg.set.assert_not_called()
+
+        self.lcfg.reset_mock()
+        await self.cfg.set('srv.foo', 'bar')
+        self.lcfg.__setitem__.assert_not_called()
+        self.rcfg.set.assert_called_once_with('srv.foo', 'bar')
+
+        with self.assertRaises(KeyError):
+            await self.cfg.set('bar', 'baz')
+        with self.assertRaises(KeyError):
+            await self.cfg.set('srv.bar', 'baz')
+
+    def test_reset(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg.reset('foo')
+        self.lcfg.reset.assert_called_once_with('foo')
+        self.cfg.reset('srv.foo')
+        self.rcfg.reset.assert_called_once_with('srv.foo')
+
+    def test_default(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg.default('foo')
+        self.lcfg.default.assert_called_once_with('foo')
+        self.cfg.default('srv.foo')
+        self.rcfg.default.assert_called_once_with('srv.foo')
+
+    def test_description(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg.description('foo')
+        self.lcfg.description.assert_called_once_with('foo')
+        self.cfg.description('srv.foo')
+        self.rcfg.description.assert_called_once_with('srv.foo')
+
+    def test_syntax(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg.syntax('foo')
+        self.lcfg.syntax.assert_called_once_with('foo')
+        self.cfg.syntax('srv.foo')
+        self.rcfg.syntax.assert_called_once_with('srv.foo')
+
+    def test_validate(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg.validate('foo', 'bar')
+        self.lcfg.validate.assert_called_once_with('foo', 'bar')
+        self.cfg.validate('srv.foo', 'bar')
+        self.rcfg.validate.assert_called_once_with('srv.foo', 'bar')
+
+    def test_as_dict(self):
+        self.lcfg.as_dict = {'foo': 1, 'bar': 'hello'}
+        self.rcfg.as_dict = {'srv.asdf': 'something', 'srv.baz': 'something else'}
+        self.assertEqual(self.cfg.as_dict, {'foo': 1, 'bar': 'hello',
+                                            'srv.asdf': 'something', 'srv.baz': 'something else'})
+
+    def test_getitem(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg['foo']
+        self.lcfg.__getitem__.assert_called_once_with('foo')
+        self.cfg['srv.foo']
+        self.rcfg.__getitem__.assert_called_once_with('srv.foo')
+
+    def test_setitem(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.cfg['foo'] = 'bar'
+        self.lcfg.__setitem__.assert_called_once_with('foo', 'bar')
+        self.cfg['srv.foo'] = 'bar'
+        self.rcfg.__setitem__.assert_called_once_with('srv.foo', 'bar')
+
+    def test_contains(self):
+        self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
+        self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
+        self.assertIn('foo', self.cfg)
+        self.assertIn('srv.foo', self.cfg)
+        self.assertNotIn('bar', self.cfg)
+        self.assertNotIn('srv.bar', self.cfg)
+
+    def test_iter(self):
+        self.lcfg.__iter__.return_value = ('foo', 'bar')
+        self.rcfg.__iter__.return_value = ('srv.foo', 'srv.bar')
+        self.assertEqual(tuple(self.cfg), ('foo', 'bar', 'srv.foo', 'srv.bar'))
+
+    def test_len(self):
+        self.lcfg.__len__.return_value = 2
+        self.rcfg.__len__.return_value = 3
+        self.assertEqual(len(self.cfg), 5)
