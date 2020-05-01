@@ -10,22 +10,21 @@
   stig is a TUI (text user interface) and CLI (command line interface) client
   for the [[http://www.transmissionbt.com/][BitTorrent client Transmission]].
 
-  stig being in alpha status does *not* mean you should expect bugs.  It's
-  supposed to indicate that behaviour may change with a new release since I'm
-  still experimenting with what works best.  If you know how to make stig more
-  flexible, convenient, intuitive or just /better/, feel free to open an issue.
+  stig is still in alpha state, which means breaking changes will be introduced
+  in new releases without increasing the major version number.  You shouldn't
+  accept bugs, though; please report them.
 
 ** Features
-   - *Filters* are used to list/start/stop/remove/etc torrents matching any
-     combination of criteria
-   - *Tabs* with list of torrents/peers/files, documentation, etc
-   - *Commands* or *sub-commands* (think git) do everything, and they can be
-     invoked
+   - *Filters* are used to select torrents for listing, starting/stopping,
+     deleting, etc
+   - *Tabs* allow you to open and switch between multiple lists (torrents,
+     peers, files, etc)
+   - *Commands* do almost everything, and they can be invoked
      - through single- or multi-key (think emacs) *keybindings*,
-     - by entering them in a *command prompt* (think vi),
-     - by providing them as *CLI arguments* in your interactive shell or in
-       *scripts*,
-     - or by listing them in an *rc file*.
+     - by entering them in a *command prompt* in the TUI (think vi) with *tab
+       completion*,
+     - by providing them as *CLI arguments* when invoking stig (think git),
+     - or by listing them in an *rc file* which is automatically loaded.
    - *Color themes* support 16 and 256 colors
    - *Complete built-in documentation* with ~help~ command or ~--help~ argument
    - Full *API abstraction layer* makes it possible to add support for other
