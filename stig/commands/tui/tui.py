@@ -220,7 +220,8 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
         '\tAsk the user for a filter before opening a new torrent list.',
         '',
         'setcommand move {{location}}/',
-        '\tMove the focused torrent, using the current path as default.',
+        ('\tMove the focused torrent, using the path of the currently focused '
+         'list item as a starting point.'),
         '',
         'setcommand move id={{id}} {{location}}/',
         ('\tSame as above, but make sure to move the correct torrent in case '
