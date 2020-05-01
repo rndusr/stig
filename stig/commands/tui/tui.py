@@ -757,7 +757,7 @@ class SortCmd(metaclass=InitCommand):
 
     async def run(self, add, reset, none, ORDER):
         from ...tui.tuiobjects import tabs
-        current_tab = tabs.focus
+        current_tab = tabs.focus.base_widget
 
         if reset:
             current_tab.sort = 'RESET'
