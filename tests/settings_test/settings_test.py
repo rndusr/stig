@@ -2,6 +2,7 @@ from stig.settings import LocalSettings, RemoteSettings
 
 import unittest
 from unittest.mock import MagicMock, call
+import asynctest
 
 
 class TestLocalSettings(unittest.TestCase):
@@ -93,37 +94,37 @@ class TestLocalSettings(unittest.TestCase):
         self.assertEqual(x, 1)
 
 
-class TestRemoteSettings(unittest.TestCase):
+class TestRemoteSettings(asynctest.TestCase):
     def setUp(self):
         self.api = MagicMock()
         self.remotecfg = RemoteSettings(self.api)
 
     def test_reset(self):
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(KeyError):
             self.remotecfg.reset('foo')
         with self.assertRaises(NotImplementedError):
             self.remotecfg.reset('srv.foo')
 
     def test_default(self):
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(KeyError):
             self.remotecfg.default('foo')
         self.remotecfg.default('srv.foo')
         self.api.default.assert_called_once_with('foo')
 
     def test_description(self):
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(KeyError):
             self.remotecfg.description('foo')
         self.remotecfg.description('srv.foo')
         self.api.description.assert_called_once_with('foo')
 
     def test_syntax(self):
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(KeyError):
             self.remotecfg.syntax('foo')
         self.remotecfg.syntax('srv.foo')
         self.api.syntax.assert_called_once_with('foo')
 
     def test_validate(self):
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(KeyError):
             self.remotecfg.validate('foo', 'bar')
         self.remotecfg.validate('srv.foo', 'bar')
         self.api.validate.assert_called_once_with('foo', 'bar')
@@ -135,7 +136,7 @@ class TestRemoteSettings(unittest.TestCase):
                                             'srv.bar': {'id': 'srv.bar', 'value': 'asdf'}})
 
     def test_getitem(self):
-        with self.assertRaises(KeyError) as cm:
+        with self.assertRaises(KeyError):
             self.remotecfg['foo']
         def mock_getitem(name):
             if name == 'foo': return 1
@@ -160,3 +161,24 @@ class TestRemoteSettings(unittest.TestCase):
     def test_len(self):
         self.api.__len__.return_value = 123
         self.assertEqual(len(self.remotecfg), 123)
+
+    def test_poll(self):
+        self.remotecfg.poll()
+        self.api.poll.assert_called_once_with()
+
+    async def test_update(self):
+        self.api.update = asynctest.CoroutineMock()
+        await self.remotecfg.update()
+        self.api.update.assert_called_once_with()
+
+    async def test_set(self):
+        with self.assertRaises(KeyError):
+            await self.remotecfg.set('foo', 'bar')
+        self.api.set = asynctest.CoroutineMock()
+        await self.remotecfg.set('srv.foo', 'bar')
+        self.api.set.assert_called_once_with('foo', 'bar')
+
+    def test_on_update(self):
+        cb = lambda: None
+        self.remotecfg.on_update(cb, autoremove=False)
+        self.api.on_update.assert_called_once_with(cb, autoremove=False)
