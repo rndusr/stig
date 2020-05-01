@@ -115,11 +115,13 @@ class BindCmd(metaclass=InitCommand):
         except ValueError as e:
             raise CmdError(e)
 
+    _own_options = {('--context', '-c'): 1,
+                    ('--description', '-d'): 1}
+
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        posargs = args.posargs({('--context', '-c'): 1,
-                                ('--description', '-d'): 1})
+        posargs = args.posargs(cls._own_options)
         if posargs.curarg_index == 2:
             # First positional argument is the key, second is the command's name
             return candidates.commands()
@@ -148,10 +150,8 @@ class BindCmd(metaclass=InitCommand):
 
     @classmethod
     def _get_subcmd(cls, args):
-        options = {('--context', '-c'): 1,
-                   ('--description', '-d'): 1}
         # posarg[0] is 'bind', posarg[1] is the key
-        subcmd_start = args.nth_posarg_index(3, options)
+        subcmd_start = args.nth_posarg_index(3, cls._own_options)
         # Subcmd is only relevant if the cursor is somewhere on it.
         # Otherwise, we're on our own arguments.
         if subcmd_start is not None and subcmd_start < args.curarg_index:
@@ -951,12 +951,14 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
             log.debug('Found tab ID by title: %r -> %r', pos, tabid)
             return tabid
 
+    _own_options = {('--close', '-c'): 1,
+                    ('--focus', '-f'): 1,
+                    ('--title', '-t'): 1}
+
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        posargs = args.posargs({('--close', '-c'): 1,
-                                ('--focus', '-f'): 1,
-                                ('--title', '-t'): 1})
+        posargs = args.posargs(cls._own_options)
         if posargs.curarg_index == 1:
             # First positional argument is the subcmd's name
             return candidates.commands()
@@ -983,13 +985,10 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if option in ('--close', '--focus'):
             return candidates.tab_titles()
 
-    @staticmethod
-    def _get_subcmd(args):
-        options = {('--close', '-c'): 1,
-                   ('--focus', '-f'): 1,
-                   ('--title', '-t'): 1}
+    @classmethod
+    def _get_subcmd(cls, args):
         # First posarg is 'tab'
-        subcmd_start = args.nth_posarg_index(2, options)
+        subcmd_start = args.nth_posarg_index(2, cls._own_options)
         # Subcmd is only relevant if the cursor is somewhere on it.
         # Otherwise, we're on our own arguments.
         if subcmd_start is not None and subcmd_start < args.curarg_index:
