@@ -949,8 +949,8 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if option in ('--close', '--focus'):
             return candidates.tab_titles()
 
-    @classmethod
-    def _get_subcmd(cls, args):
+    @staticmethod
+    def _get_subcmd(args):
         options = {('--close', '-c'): 1,
                    ('--focus', '-f'): 1,
                    ('--title', '-t'): 1}
