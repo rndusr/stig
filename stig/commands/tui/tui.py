@@ -1014,9 +1014,9 @@ class TUICmd(metaclass=InitCommand):
     # Lazily load the element names from tui (HelpManager supports sequences
     # of lines or a callable that returns them)
     def __create_element_names():
-        from ...tui.main import widgets
+        from ...tui import tuiobjects
         return ('Available TUI element names are: ' +
-                ', '.join(str(e) for e in sorted(widgets.names_recursive)),)
+                ', '.join(str(e) for e in sorted(tuiobjects.widgets.names_recursive)),)
     more_sections = { 'ELEMENT NAMES': __create_element_names }
 
     def run(self, ACTION, ELEMENT):
