@@ -24,6 +24,7 @@ from .. import utils
 import shlex
 from functools import partial
 import os
+import functools
 
 
 # Import tui.main module only on demand
@@ -1010,14 +1011,9 @@ class TUICmd(metaclass=InitCommand):
           'description': ('Name of TUI elements; '
                           'see ELEMENT NAMES section for a list') },
     )
-
-    # Lazily load the element names from tui (HelpManager supports sequences
-    # of lines or a callable that returns them)
-    def __create_element_names():
-        from ...tui import tuiobjects
-        return ('Available TUI element names are: ' +
-                ', '.join(str(e) for e in sorted(tuiobjects.widgets.names_recursive)),)
-    more_sections = { 'ELEMENT NAMES': __create_element_names }
+    # HelpManager supports sequences of lines or a callable that returns them
+    more_sections = {'ELEMENT NAMES': lambda: ('Available TUI element names are: ' +
+                                               ', '.join(_tui_element_names()),)}
 
     def run(self, ACTION, ELEMENT):
         from ...tui.tuiobjects import widgets
@@ -1052,3 +1048,22 @@ class TUICmd(metaclass=InitCommand):
 
         if not success:
             raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        posargs = args.posargs()
+        if posargs.curarg_index == 1:
+            for argspec in cls.argspecs:
+                if 'ACTION' in argspec['names']:
+                    return candidates.Candidates(argspec['choices'],
+                                                 label='Action')
+        else:
+            return candidates.Candidates(_tui_element_names(),
+                                         label='Element')
+
+# Lazily load element names from tui module
+@functools.lru_cache
+def _tui_element_names():
+    from ...tui import tuiobjects
+    return tuple(str(name) for name in sorted(tuiobjects.widgets.names_recursive))
