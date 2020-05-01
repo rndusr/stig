@@ -75,9 +75,12 @@ def _greedy_spacer():
 from .group import Group
 from .miscwidgets import (ConnectionStatusWidget, QuickHelpWidget)
 
+# Widget names start with "_" if they are hidden, e.g. they aren't mentioned in
+# the output of "help tui".
+
 topbar = Group(cls=urwid.Columns)
 topbar.add(name='host',   widget=ConnectionStatusWidget(), options='pack')
-topbar.add(name='spacer', widget=urwid.AttrMap(_greedy_spacer(), 'topbar'))
+topbar.add(name='_spacer', widget=urwid.AttrMap(_greedy_spacer(), 'topbar'))
 topbar.add(name='help',   widget=QuickHelpWidget(), options='pack')
 
 from .tabs import (Tabs, TabBar)
@@ -88,9 +91,9 @@ tabs = keymap.wrap(Tabs, context='tabs')(
 from .miscwidgets import (TorrentCountersWidget, MarkedItemsWidget, BandwidthStatusWidget)
 bottombar = Group(cls=urwid.Columns)
 bottombar.add(name='counters', widget=TorrentCountersWidget(), options='pack')
-bottombar.add(name='spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
+bottombar.add(name='_spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
 bottombar.add(name='marked', widget=MarkedItemsWidget(), options='pack')
-bottombar.add(name='spacer2', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
+bottombar.add(name='_spacer2', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
 bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
 
 cli = urwid.AttrMap(_create_cli_widget(), 'cli')
@@ -108,7 +111,7 @@ widgets.add(name='topbar', widget=topbar, options='pack')
 widgets.add(name='main', widget=tabs)
 widgets.add(name='log', widget=logwidget, options='pack', visible=False)
 widgets.add(name='cli', widget=cli, options='pack', visible=False)
-widgets.add(name='keychains', widget=keychains, options='pack')
+widgets.add(name='_keychains', widget=keychains, options='pack')
 widgets.add(name='bottombar', widget=bottombar, options='pack')
 
 
