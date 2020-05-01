@@ -938,7 +938,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         """Return candidates for arguments that start with '-'"""
         subcmd = cls._get_subcmd(args)
         if subcmd:
-            # Get completion candidates from subcmd's class
+            # Get completion candidates for subcmd
             return candidates.for_args(subcmd)
         else:
             # Parent class generates candidates for our own options
