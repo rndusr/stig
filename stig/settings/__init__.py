@@ -266,7 +266,7 @@ class CombinedSettings(abc.Mapping):
         self._find(name)[name] = value
 
     def __contains__(self, name):
-        return name in self._find(name)
+        return name in self._local or name in self._remote
 
     def __iter__(self):
         return iter(itertools.chain(self._local, self._remote))
