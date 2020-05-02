@@ -376,7 +376,9 @@ async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_
 
     If `items_getter` is not None, it is a callable that gets an object (see
     above) and returns a list of items that are used to get values via the
-    filter's value_getter (e.g. TorrentPeer or TorrentTracker).
+    filter's value_getter (e.g. TorrentPeer or TorrentTracker).  If
+    `items_getter` is None, the objects returned by `objects_getter` are used as
+    items.
 
     If `filter_names` evaluates to False, filter names are not included in the
     returned list, i.e. only values for the default filter (e.g. torrent name)
