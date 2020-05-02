@@ -211,8 +211,8 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_filter_takes_no_completable_values(self, mock_filter_takes_completable_values,
                                                       mock_get_filter_spec, mock_get_filter_cls):
-        mock_get_filter_cls.return_value = 'mock filter class'
         mock_filter_takes_completable_values.return_value = False
+        mock_get_filter_cls.return_value = 'mock filter class'
         mock_objects_getter = asynctest.CoroutineMock()
         mock_items_getter = MagicMock()
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -235,8 +235,10 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_server_request_failed(self, mock_filter_takes_completable_values,
                                          mock_get_filter_spec, mock_get_filter_cls):
-        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1', 'mockkey2')
         mock_filter_takes_completable_values.return_value = True
+        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1', 'mockkey2')
+        mock_value_type = mock_get_filter_spec.return_value.value_type
+        delattr(mock_value_type, 'valid_values')
         mock_objects_getter = asynctest.CoroutineMock()
         mock_items_getter = MagicMock()
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -257,11 +259,13 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_item_value_is_string(self, mock_filter_takes_completable_values,
                                         mock_get_filter_spec, mock_get_filter_cls):
-        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey2',)
         mock_filter_takes_completable_values.return_value = True
+        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey2',)
         mock_objects = ({'mockkey1': 'foo', 'mockkey2': 'bar'},
                         {'mockkey1': '123', 'mockkey2': '456'})
         mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_value_type = mock_get_filter_spec.return_value.value_type
+        delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
         mock_value_getter.side_effect = lambda item: item['mockkey2']
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -282,11 +286,13 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_item_value_is_iterable(self, mock_filter_takes_completable_values,
                                           mock_get_filter_spec, mock_get_filter_cls):
-        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1',)
         mock_filter_takes_completable_values.return_value = True
+        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1',)
         mock_objects = ({'mockkey1': ('a', 'b'), 'mockkey2': ('b', 'c')},
                         {'mockkey1': ('d', 'e'), 'mockkey2': ('f', 'g')})
         mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_value_type = mock_get_filter_spec.return_value.value_type
+        delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
         mock_value_getter.side_effect = lambda item: item['mockkey1']
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -307,11 +313,13 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_item_value_is_mixed_string_and_iterable(self, mock_filter_takes_completable_values,
                                                            mock_get_filter_spec, mock_get_filter_cls):
-        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey2',)
         mock_filter_takes_completable_values.return_value = True
+        mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey2',)
         mock_objects = ({'mockkey1': ('a', 'b'), 'mockkey2': 'b'},
                         {'mockkey1': ('d', 'e'), 'mockkey2': ('f', 'g')})
         mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_value_type = mock_get_filter_spec.return_value.value_type
+        delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
         mock_value_getter.side_effect = lambda item: item['mockkey2']
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -332,14 +340,16 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_items_getter(self, mock_filter_takes_completable_values,
                                 mock_get_filter_spec, mock_get_filter_cls):
-        mock_get_filter_cls.return_value.return_value.needed_keys = ('list',)
         mock_filter_takes_completable_values.return_value = True
+        mock_get_filter_cls.return_value.return_value.needed_keys = ('list',)
         mock_objects = ({'list': ({'x': 1, 'y': 2},
                                   {'x': 3, 'y': 4})},
                         {'list': ({'x': 5, 'y': 6},
                                   {'x': 7, 'y': 8})})
         mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
         mock_items_getter = lambda obj: obj['list']
+        mock_value_type = mock_get_filter_spec.return_value.value_type
+        delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
         mock_value_getter.side_effect = lambda item: item['x']
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -348,6 +358,28 @@ class Test_filter_values(asynctest.TestCase):
         mock_get_filter_spec.assert_called_once_with(mock_get_filter_cls(), 'mock filter name')
         assert mock_objects_getter.call_args_list == [call(keys=('list',))]
         exp_cands = Candidates(('1', '3', '5', '7'),
+                               curarg_seps=('|', '&', '=', '!='),
+                               label='Mock Filter Label: mock filter name')
+        self.assertEqual(cands, exp_cands)
+
+    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
+    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    async def test_valid_values(self, mock_filter_takes_completable_values,
+                                   mock_get_filter_spec, mock_get_filter_cls):
+        mock_filter_takes_completable_values.return_value = True
+        mock_objects_getter = asynctest.CoroutineMock()
+        mock_value_type = mock_get_filter_spec.return_value.value_type
+        mock_value_type.valid_values = ('foo', 'bar', 'baz')
+        cands = await candidates._filter_values('MockFilter', 'mock filter name',
+                                                mock_objects_getter, None)
+        mock_get_filter_cls.assert_called_once_with('MockFilter')
+        mock_get_filter_spec.assert_called_once_with(mock_get_filter_cls(), 'mock filter name')
+        mock_objects_getter.assert_not_called()
+        exp_cands = Candidates(('foo', 'bar', 'baz'),
                                curarg_seps=('|', '&', '=', '!='),
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)

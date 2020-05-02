@@ -431,37 +431,44 @@ async def _filter_values(filter_cls_name, filter_name, objects_getter, items_get
     filter_cls = _utils.get_filter_cls(filter_cls_name)
     cands = ()
     if _utils.filter_takes_completable_values(filter_cls, filter_name):
-        keys = filter_cls(filter_name).needed_keys
-        objects = await objects_getter(keys=keys)
-        if objects:
-            # Get the same values that the filter would get
-            value_getter = _utils.get_filter_spec(filter_cls, filter_name).value_getter
+        filter_spec = _utils.get_filter_spec(filter_cls, filter_name)
 
-            cands = []
-            def add_cands_for(item, _value_getter=value_getter, _cands=cands):
-                # Get the same value from `item` that the filter would get
-                value = _value_getter(item)
-                # Some value_getters return multiple values, e.q. the torrent
-                # filter "tracker", which matches against domain names of
-                # announce URLs.
-                if isinstance(value, (abc.Iterable, abc.Iterator)) and not isinstance(value, str):
-                    value = tuple(value)
-                    _cands.extend(value)
+        # Some filters (e.g. file filter "priority") have a fixed set of allowed values).
+        if hasattr(filter_spec.value_type, 'valid_values'):
+            cands = filter_spec.value_type.valid_values
+
+        # Get a list of items (torrents, files, peers, etc) and ask the filter
+        # class for the values it would match against.
+        else:
+            keys = filter_cls(filter_name).needed_keys
+            objects = await objects_getter(keys=keys)
+            if objects:
+                cands = []
+                def add_cands_for(item):
+                    # Get the same value from `item` that the filter would get
+                    value_getter = filter_spec.value_getter
+                    value = value_getter(item)
+                    # Some value_getters return multiple values, e.q. the torrent
+                    # filter "tracker", which matches against domain names of
+                    # announce URLs.
+                    if isinstance(value, (abc.Iterable, abc.Iterator)) and not isinstance(value, str):
+                        value = tuple(value)
+                        cands.extend(value)
+                    else:
+                        cands.append(value)
+
+                # File
+                if items_getter is None:
+                    # Filtering objects directly (e.g. Torrent instances)
+                    for obj in objects:
+                        add_cands_for(obj)
                 else:
-                    _cands.append(value)
-
-            # File
-            if items_getter is None:
-                # Filtering objects directly (e.g. Torrent instances)
-                for obj in objects:
-                    add_cands_for(obj)
-            else:
-                # Filtering items from a sub-list of an object,
-                # (e.g. torrent['files'] or torrent['peers'])
-                for obj in objects:
-                    items = items_getter(obj)
-                    for i in items:
-                        add_cands_for(i)
+                    # Filtering items from a sub-list of an object,
+                    # (e.g. torrent['files'] or torrent['peers'])
+                    for obj in objects:
+                        items = items_getter(obj)
+                        for i in items:
+                            add_cands_for(i)
 
     curarg_seps = itertools.chain(_utils.filter_compare_ops, _utils.filter_combine_ops)
     label = '%s: %s' % (_utils.filter_labels[filter_cls_name], filter_name)
