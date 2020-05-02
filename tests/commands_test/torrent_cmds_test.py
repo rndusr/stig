@@ -7,6 +7,7 @@ from stig.client.errors import ClientError
 from stig.utils.cliparser import Arg, Args
 from stig.completion import Candidates
 
+import asynctest
 from asynctest import CoroutineMock
 from asynctest.mock import (patch, MagicMock, call)
 from types import SimpleNamespace
@@ -160,6 +161,7 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.fs_path')
     @patch.dict(os.environ, {'HOME': '/mock/home/dir'})
+    @asynctest.skip('https://github.com/Martiusweb/asynctest/issues/149')
     async def test_TUI_completion_candidates_for_posargs(self, mock_fs_path):
         from stig.commands.tui import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
