@@ -847,9 +847,9 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
 
     async def run(self, close, close_all, focus, background, title, COMMAND):
         from ...tui.tuiobjects import tabs
+        tabid_old = tabs.get_id()
 
         # Find relevant tab IDs and fail immediately if unsuccessful
-        tabid_old = tabs.get_id()
         if focus is not None:
             tabid_focus = self._get_tab_id(focus)
             if tabid_focus is None:
