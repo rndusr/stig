@@ -416,7 +416,8 @@ class ListWidgetBase(urwid.WidgetWrap):
                 yield self.focused_widget
 
     def refresh_marks(self):
-        """Redraw the "marked" column in all items widgets
+        """
+        Redraw the "marked" column in all items widgets
 
         This shouldn't be needed unless the marked character was changed.
         """
