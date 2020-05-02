@@ -505,6 +505,7 @@ class Timestamp(int):
 class TorrentFilePriority(str):
     _MAP = {-2: (-2, 'off'), -1: (-1, 'low'), 0: (0, 'normal'), 1: (1, 'high'),
             'off': (-2, 'off'), 'low': (-1, 'low'), 'normal': (0, 'normal'), 'high': (1, 'high')}
+    valid_values = ('off', 'low', 'normal', 'high')
 
     def __new__(cls, prio):
         try:
