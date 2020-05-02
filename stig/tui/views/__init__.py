@@ -156,12 +156,10 @@ class ItemWidgetBase(urwid.WidgetWrap):
             return self._cells.marked.is_marked
         else:
             return False
-
     @is_marked.setter
     def is_marked(self, is_marked):
         if self._cells.exists('marked'):
             self._cells.marked.is_marked = bool(is_marked)
-
 
 
 from ..table import Table
