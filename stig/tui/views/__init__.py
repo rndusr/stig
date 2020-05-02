@@ -397,6 +397,11 @@ class ListWidgetBase(urwid.WidgetWrap):
         """Generator that yields ItemWidgetBase descendants"""
         yield from self._marked
 
+    @property
+    def marked_count(self):
+        """Number of marked items"""
+        return len(self._marked)
+
     def _set_mark(self, mark, toggle=False, all=False):
         if toggle and self.focused_widget is not None:
             mark = not self.focused_widget.is_marked
