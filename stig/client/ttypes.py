@@ -357,7 +357,7 @@ class Timestamp(int):
                         new_args[name] = getattr(dt_default, name)
             return datetime.datetime(**new_args)
 
-        def get_timespan(dt, given):
+        def get_timerange(dt, given):
             # Return min/max timestamp based on the least significant value.
             # Example: Use gave '2012-08' (year and month): Return timestamp for
             #          '2012-08-01 00:00:00' and '2012-08-31 23:59:59'.
@@ -393,32 +393,32 @@ class Timestamp(int):
                 continue
             else:
                 dt = fill_in_missing_values(dt, given)
-                return cls(dt.timestamp(), _timespan=get_timespan(dt, given))
+                return cls(dt.timestamp(), _timerange=get_timerange(dt, given))
 
         raise ValueError('Invalid format: %r' % string)
 
-    def __new__(cls, seconds, _timespan=None):
+    def __new__(cls, seconds, _timerange=None):
         obj = super().__new__(cls, seconds)
-        obj._timespan = _timespan if _timespan is not None else (seconds, seconds)
+        obj._timerange = _timerange if _timerange is not None else (seconds, seconds)
         return obj
 
     def __eq__(self, other):
-        return self._timespan[0] <= other <= self._timespan[1]
+        return self._timerange[0] <= other <= self._timerange[1]
 
     def __hash__(self):  # Needed to stay hashable with __eq__()
         return super().__hash__()
 
     def __gt__(self, other):
-        return self._timespan[0] > other
+        return self._timerange[0] > other
 
     def __ge__(self, other):
-        return self._timespan[1] >= other
+        return self._timerange[1] >= other
 
     def __lt__(self, other):
-        return self._timespan[1] < other
+        return self._timerange[1] < other
 
     def __le__(self, other):
-        return self._timespan[0] <= other
+        return self._timerange[0] <= other
 
     def __str__(self):
         if self == self.UNKNOWN:
