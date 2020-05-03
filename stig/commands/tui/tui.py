@@ -1080,7 +1080,7 @@ class TUICmd(metaclass=InitCommand):
                                          label='Element')
 
 # Lazily load element names from tui module
-@functools.lru_cache
+@functools.lru_cache()
 def _tui_element_names():
     from ...tui import tuiobjects
     return tuple(str(name) for name in sorted(tuiobjects.widgets.names_recursive))
