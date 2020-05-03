@@ -389,8 +389,14 @@ async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_
     """
     filter_cls = _utils.get_filter_cls(filter_cls_name)
     default_filter = filter_cls.DEFAULT_FILTER
+
+    # Remove any leading special character from the filter
     if curarg.startswith(filter_cls.INVERT_CHAR):
         curarg = curarg[1:]
+        # If the cursor was on a special character, move it to the first
+        # character of the filter name
+        if curarg.curpos is None:
+            curarg.curpos = 0
 
     # Separate individual filters, e.g. 'seeding|comment=foo' -> ('seeding', 'comment=foo')
     filter_strings = curarg.separate(_utils.filter_combine_ops, include_seps=True)

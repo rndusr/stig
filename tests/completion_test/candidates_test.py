@@ -497,6 +497,22 @@ class Test_filter(asynctest.TestCase):
         exp_cands = ('mock items values',)
         self.assertEqual(cands, exp_cands)
 
+    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
+    @asynctest.patch('stig.completion.candidates._filter_values')
+    async def test_cursor_is_on_leading_inverting_character(self, mock_filter_values, mock_get_filter_cls):
+        mock_get_filter_cls.return_value.INVERT_CHAR = '!'
+        mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
+        mock_filter_values.return_value = 'mock items values'
+        cands = await candidates._filter(Arg('!bar', curpos=0), 'MockFilter', 'mock objects getter',
+                                         filter_names=False, items_getter='mock items getter')
+        mock_filter_values.assert_called_once_with('MockFilter', 'mock default filter',
+                                                   objects_getter='mock objects getter',
+                                                   items_getter='mock items getter')
+        exp_cands = ('mock items values',)
+        self.assertEqual(cands, exp_cands)
+
 
 class MockFile(str):
     nodetype = 'leaf'
