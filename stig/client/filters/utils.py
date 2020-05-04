@@ -58,10 +58,10 @@ def cmp_timestamp_or_timdelta(item_value, op, user_value):
             # return result
             return op(item_value, user_value.timedelta)
     elif type_user_value is Timedelta:
-        # If the filter is, e.g., 'less than 1y ago', future dates would match,
-        # but we interpret the filter as 'less than 1y ago up till now'.  Same
-        # thing for 'in less than 1y' - past dates technically match, but they
-        # shouldn't.
+        # If the filter is, e.g., 'less than 1y ago', future dates would match
+        # (because "[any future date] > -[seconds in 1y]") but we interpret the
+        # filter as 'less than 1y ago up till now'.  Same thing for 'in less
+        # than 1y' - past dates technically match, but they shouldn't.
         if not _either_past_or_future(item_value, user_value):
             return False
         elif type_item_value is Timedelta:
