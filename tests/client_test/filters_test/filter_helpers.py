@@ -153,10 +153,10 @@ class HelpersMixin():
                  {'id': 2, key: Timestamp.from_string('2002-01-01')},
                  {'id': 3, key: Timestamp.from_string('2003-01-01')},
                  {'id': 4, key: Timestamp(Timestamp.NOW)},
-                 {'id': 5, key: Timestamp(Timestamp.UNKNOWN)},
-                 {'id': 6, key: Timestamp(Timestamp.NOT_APPLICABLE)},
-                 {'id': 7, key: Timestamp(Timestamp.NEVER)},
-                 {'id': 8, key: Timestamp(Timestamp.SOON)})
+                 {'id': 5, key: Timestamp(Timestamp.SOON)},
+                 {'id': 6, key: Timestamp(Timestamp.UNKNOWN)},
+                 {'id': 7, key: Timestamp(Timestamp.NOT_APPLICABLE)},
+                 {'id': 8, key: Timestamp(Timestamp.NEVER)})
 
         for fn in filter_names:
             self._check_timestamp_as_bool(filter_cls, fn, key, items)
@@ -171,8 +171,8 @@ class HelpersMixin():
                 raise RuntimeError('Invalid default_sign: %r' % (default_sign,))
 
     def _check_timestamp_as_bool(self, filter_cls, filter_name, key, items):
-        self.assertEqual(tuple(filter_cls('%s' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 8))
-        self.assertEqual(tuple(filter_cls('!%s' % filter_name).apply(items, key='id')), (5, 6, 7))
+        self.assertEqual(tuple(filter_cls('%s' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 5))
+        self.assertEqual(tuple(filter_cls('!%s' % filter_name).apply(items, key='id')), (6, 7, 8))
 
     def _check_timestamp_with_absolute_times(self, filter_cls, filter_name, key, items):
         self.assertEqual(tuple(filter_cls('%s=2000' % filter_name).apply(items, key='id')), ())
@@ -181,15 +181,15 @@ class HelpersMixin():
         self.assertEqual(tuple(filter_cls('%s=2003' % filter_name).apply(items, key='id')), (3,))
         self.assertEqual(tuple(filter_cls('%s=2004' % filter_name).apply(items, key='id')), ())
 
-        self.assertEqual(tuple(filter_cls('%s<2001' % filter_name).apply(items, key='id')), (4, 8))
-        self.assertEqual(tuple(filter_cls('%s<2002' % filter_name).apply(items, key='id')), (1, 4, 8))
-        self.assertEqual(tuple(filter_cls('%s<2003' % filter_name).apply(items, key='id')), (1, 2, 4, 8))
-        self.assertEqual(tuple(filter_cls('%s<2004' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 8))
+        self.assertEqual(tuple(filter_cls('%s<2001' % filter_name).apply(items, key='id')), (4, 5))
+        self.assertEqual(tuple(filter_cls('%s<2002' % filter_name).apply(items, key='id')), (1, 4, 5))
+        self.assertEqual(tuple(filter_cls('%s<2003' % filter_name).apply(items, key='id')), (1, 2, 4, 5))
+        self.assertEqual(tuple(filter_cls('%s<2004' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 5))
 
-        self.assertEqual(tuple(filter_cls('%s<=2000' % filter_name).apply(items, key='id')), (4, 8))
-        self.assertEqual(tuple(filter_cls('%s<=2001' % filter_name).apply(items, key='id')), (1, 4, 8))
-        self.assertEqual(tuple(filter_cls('%s<=2002' % filter_name).apply(items, key='id')), (1, 2, 4, 8))
-        self.assertEqual(tuple(filter_cls('%s<=2003' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 8))
+        self.assertEqual(tuple(filter_cls('%s<=2000' % filter_name).apply(items, key='id')), (4, 5))
+        self.assertEqual(tuple(filter_cls('%s<=2001' % filter_name).apply(items, key='id')), (1, 4, 5))
+        self.assertEqual(tuple(filter_cls('%s<=2002' % filter_name).apply(items, key='id')), (1, 2, 4, 5))
+        self.assertEqual(tuple(filter_cls('%s<=2003' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 5))
 
         self.assertEqual(tuple(filter_cls('%s>2000' % filter_name).apply(items, key='id')), (1, 2, 3))
         self.assertEqual(tuple(filter_cls('%s>2001' % filter_name).apply(items, key='id')), (2, 3))
