@@ -401,6 +401,20 @@ class TestTimestamp(unittest.TestCase):
         self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE).date, 'not applicable')
         self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NEVER).date, 'never')
 
+    def test_timedelta(self):
+        self.assertIsInstance(ttypes.Timestamp(1234).timedelta, ttypes.Timedelta)
+        self.assertIsInstance(ttypes.Timestamp(ttypes.Timestamp.NOW).timedelta, ttypes.Timedelta)
+        self.assertIsInstance(ttypes.Timestamp(ttypes.Timestamp.SOON).timedelta, ttypes.Timedelta)
+        self.assertIsInstance(ttypes.Timestamp(ttypes.Timestamp.UNKNOWN).timedelta, ttypes.Timedelta)
+        self.assertIsInstance(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE).timedelta, ttypes.Timedelta)
+        self.assertIsInstance(ttypes.Timestamp(ttypes.Timestamp.NEVER).timedelta, ttypes.Timedelta)
+        with mock_time(2000, 1, 1, 0, 0, 0):
+            self.assertEqual(ttypes.Timestamp.from_string('00:00:00').timedelta, ttypes.Timedelta(0))
+            self.assertEqual(ttypes.Timestamp.from_string('00:00:01').timedelta, ttypes.Timedelta(1))
+            self.assertEqual(ttypes.Timestamp.from_string('00:05:00').timedelta, ttypes.Timedelta(300))
+            self.assertEqual(ttypes.Timestamp.from_string('01-02 00:00:00').timedelta, ttypes.Timedelta(3600*24))
+            self.assertEqual(ttypes.Timestamp.from_string('02-01 00:00:00').timedelta, ttypes.Timedelta(3600*24*31))
+
     def test_accuracy__year_eq(self):
         ts = ttypes.Timestamp.from_string('2005')
         self.assertTrue(ts != mktime('2004-12-31 23:59:59'))
