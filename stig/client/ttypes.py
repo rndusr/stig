@@ -146,6 +146,8 @@ class Timedelta(int):
     UNKNOWN        = 1e10
     NOT_APPLICABLE = 1e11
     CONSTANTS = (UNKNOWN, NOT_APPLICABLE)
+    _CONSTANTS_MAP_STRINGS = {'unknown': UNKNOWN, 'na': NOT_APPLICABLE,
+                              'n/a': NOT_APPLICABLE, 'not applicable': NOT_APPLICABLE}
 
     _FULL_REGEX = re.compile((r'^(in |-|\+|)(\S+)( ago|)$'), flags=re.IGNORECASE)
     _SPLIT_REGEX = re.compile((r'((?:\d+\.\d+|\d+|\.\d+)[' +
@@ -155,6 +157,10 @@ class Timedelta(int):
     @classmethod
     def from_string(cls, string):
         exc = ValueError('Invalid %s: %r' % (cls.__name__, string))
+
+        const_value = cls._CONSTANTS_MAP_STRINGS.get(string, None)
+        if const_value is not None:
+            return cls(const_value)
 
         match = cls._FULL_REGEX.match(string)
         if not match:

@@ -129,6 +129,12 @@ def mktime(string):
 
 
 class TestTimedelta(unittest.TestCase):
+    def test_from_string__constants(self):
+        self.assertEqual(ttypes.Timedelta.from_string('unknown'), ttypes.Timedelta.UNKNOWN)
+        self.assertEqual(ttypes.Timedelta.from_string('na'), ttypes.Timedelta.NOT_APPLICABLE)
+        self.assertEqual(ttypes.Timedelta.from_string('n/a'), ttypes.Timedelta.NOT_APPLICABLE)
+        self.assertEqual(ttypes.Timedelta.from_string('not applicable'), ttypes.Timedelta.NOT_APPLICABLE)
+
     def test_from_string__no_unit(self):
         self.assertEqual(ttypes.Timedelta.from_string('0'), 0)
         self.assertEqual(ttypes.Timedelta.from_string('60'), MIN)
