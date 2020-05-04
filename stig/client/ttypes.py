@@ -156,15 +156,13 @@ class Timedelta(int):
 
     @classmethod
     def from_string(cls, string):
-        exc = ValueError('Invalid %s: %r' % (cls.__name__, string))
-
         const_value = cls._CONSTANTS_MAP_STRINGS.get(string, None)
         if const_value is not None:
             return cls(const_value)
 
         match = cls._FULL_REGEX.match(string)
         if not match:
-            raise exc
+            raise ValueError('Invalid %s: %r' % (cls.__name__, string))
 
         sign_start = match.group(1).lower().strip()
         timespan = match.group(2)
@@ -173,11 +171,11 @@ class Timedelta(int):
 
         if sign_start == '-' or sign_end == 'ago':
             if sign_start == '+':
-                raise exc
+                raise ValueError('Invalid %s: %r' % (cls.__name__, string))
             sign = -1
         if any(sign_start == x for x in ('+', 'in')):
             if sign_end == 'ago':
-                raise exc
+                raise ValueError('Invalid %s: %r' % (cls.__name__, string))
 
         secs_total = 0
         kwargs = {}
@@ -185,7 +183,7 @@ class Timedelta(int):
             if len(part) < 1:
                 continue
             elif not cls._SPLIT_REGEX.match(part):
-                raise exc
+                raise ValueError('Invalid %s: %r' % (cls.__name__, string))
             elif part[-1].isdigit():
                 # No unit specified - assume seconds
                 secs_total += float(part)
