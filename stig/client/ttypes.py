@@ -427,40 +427,31 @@ class Timestamp(float):
     def __le__(self, other):
         return self._timerange[0] <= other
 
+    _SHORT_STR_MAP = {NOW: 'now', SOON: 'soon', UNKNOWN: '?',
+                      NOT_APPLICABLE: '', NEVER: 'never'}
     def __str__(self):
-        if self == self.UNKNOWN:
-            return '?'
-        elif self == self.NOT_APPLICABLE:
-            return ''
-        elif self == self.NOW:
-            return 'now'
-        elif self == self.SOON:
-            return 'soon'
-        elif self == self.NEVER:
-            return 'never'
-
-        # The format is based on the delta of seconds compared to the current time
-        abs_delta = abs(self - time.time())
-        if abs_delta < 120:
-            frmt = '%H:%M:%S'
-        elif abs_delta < 86400:
-            frmt = '%H:%M'
+        const_str = self._SHORT_STR_MAP.get(self, None)
+        if const_str is not None:
+            return const_str
         else:
-            frmt = '%Y-%m-%d'
-        return time.strftime(frmt, time.localtime(self))
+            # The format is based on the delta of seconds compared to the
+            # current time
+            abs_delta = abs(self - time.time())
+            if abs_delta < 120:
+                frmt = '%H:%M:%S'
+            elif abs_delta < 86400:
+                frmt = '%H:%M'
+            else:
+                frmt = '%Y-%m-%d'
+            return time.strftime(frmt, time.localtime(self))
 
+    _LONG_STR_MAP = {NOW: 'now', SOON: 'soon', UNKNOWN: 'unknown',
+                     NOT_APPLICABLE: 'not applicable', NEVER: 'never'}
     @property
     def full(self):
-        if self == self.NOW:
-            return 'now'
-        elif self == self.UNKNOWN:
-            return 'unknown'
-        elif self == self.NOT_APPLICABLE:
-            return 'not applicable'
-        elif self == self.NEVER:
-            return 'never'
-        elif self == self.SOON:
-            return 'soon'
+        const_str = self._LONG_STR_MAP.get(self, None)
+        if const_str is not None:
+            return const_str
         else:
             return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self))
 
