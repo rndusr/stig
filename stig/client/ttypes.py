@@ -476,18 +476,15 @@ class Timestamp(float):
     def is_known(self):
         return self not in self.CONSTANTS
 
+    _DELTA_MAP = {NOW: Timedelta(0), SOON: Timedelta(0),
+                  UNKNOWN: Timedelta(Timedelta.UNKNOWN),
+                  NOT_APPLICABLE: Timedelta(Timedelta.NOT_APPLICABLE),
+                  NEVER: Timedelta(Timedelta.NOT_APPLICABLE)}
     @property
     def timedelta(self):
-        if self == self.UNKNOWN:
-            return Timedelta(Timedelta.UNKNOWN)
-        elif self == self.NOT_APPLICABLE:
-            return Timedelta(Timedelta.NOT_APPLICABLE)
-        elif self == self.NOW:
-            return Timedelta(0)
-        elif self == self.SOON:
-            return Timedelta(0)
-        elif self == self.NEVER:
-            return Timedelta(Timedelta.NOT_APPLICABLE)
+        delta = self._DELTA_MAP.get(self, None)
+        if delta is not None:
+            return delta
         else:
             return Timedelta(self - time.time())
 
