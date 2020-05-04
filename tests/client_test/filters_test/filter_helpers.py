@@ -162,7 +162,7 @@ class HelpersMixin():
             self._check_timestamp_as_bool(filter_cls, fn, key, items)
             self._check_timestamp_with_absolute_times(filter_cls, fn, key, items)
             self._check_timestamp_with_relative_times(filter_cls, fn, key, items)
-
+            self._check_timestamp_with_constants(filter_cls, fn, key, items)
             if default_sign == 1:
                 self._check_timestamp_with_positive_default_sign(filter_cls, fn, key, items)
             elif default_sign == -1:
@@ -191,15 +191,15 @@ class HelpersMixin():
         self.assertEqual(tuple(filter_cls('%s<=2002' % filter_name).apply(items, key='id')), (1, 2, 4, 5))
         self.assertEqual(tuple(filter_cls('%s<=2003' % filter_name).apply(items, key='id')), (1, 2, 3, 4, 5))
 
-        self.assertEqual(tuple(filter_cls('%s>2000' % filter_name).apply(items, key='id')), (1, 2, 3))
-        self.assertEqual(tuple(filter_cls('%s>2001' % filter_name).apply(items, key='id')), (2, 3))
-        self.assertEqual(tuple(filter_cls('%s>2002' % filter_name).apply(items, key='id')), (3,))
-        self.assertEqual(tuple(filter_cls('%s>2003' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s>2000' % filter_name).apply(items, key='id')), (1, 2, 3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>2001' % filter_name).apply(items, key='id')), (2, 3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>2002' % filter_name).apply(items, key='id')), (3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>2003' % filter_name).apply(items, key='id')), (6, 7, 8))
 
-        self.assertEqual(tuple(filter_cls('%s>=2001' % filter_name).apply(items, key='id')), (1, 2, 3))
-        self.assertEqual(tuple(filter_cls('%s>=2002' % filter_name).apply(items, key='id')), (2, 3,))
-        self.assertEqual(tuple(filter_cls('%s>=2003' % filter_name).apply(items, key='id')), (3,))
-        self.assertEqual(tuple(filter_cls('%s>=2004' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s>=2001' % filter_name).apply(items, key='id')), (1, 2, 3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>=2002' % filter_name).apply(items, key='id')), (2, 3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>=2003' % filter_name).apply(items, key='id')), (3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>=2004' % filter_name).apply(items, key='id')), (6, 7, 8))
 
     def _check_timestamp_with_relative_times(self, filter_cls, filter_name, key, items):
         with mock_time(year=2000, month=1, day=1, hour=0, minute=0, second=0):
@@ -272,6 +272,43 @@ class HelpersMixin():
             self.assertEqual(tuple(filter_cls('%s<1y' % filter_name).apply(items, key='id')), (2,))
             self.assertEqual(tuple(filter_cls('%s<=1y' % filter_name).apply(items, key='id')), (1, 2))
 
+    def _check_timestamp_with_constants(self, filter_cls, filter_name, key, items):
+        self.assertEqual(tuple(filter_cls('%s=now' % (filter_name,)).apply(items, key='id')), (4,))
+        self.assertEqual(tuple(filter_cls('%s!=now' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 5, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s<now' % (filter_name,)).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s>now' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 5, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s<=now' % (filter_name,)).apply(items, key='id')), (4,))
+        self.assertEqual(tuple(filter_cls('%s>=now' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6, 7, 8))
+
+        self.assertEqual(tuple(filter_cls('%s=soon' % (filter_name,)).apply(items, key='id')), (5,))
+        self.assertEqual(tuple(filter_cls('%s!=soon' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s<soon' % (filter_name,)).apply(items, key='id')), (4,))
+        self.assertEqual(tuple(filter_cls('%s>soon' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s<=soon' % (filter_name,)).apply(items, key='id')), (4, 5))
+        self.assertEqual(tuple(filter_cls('%s>=soon' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 5, 6, 7, 8))
+
+        self.assertEqual(tuple(filter_cls('%s=unknown' % (filter_name,)).apply(items, key='id')), (6,))
+        self.assertEqual(tuple(filter_cls('%s!=unknown' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s<unknown' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5))
+        self.assertEqual(tuple(filter_cls('%s>unknown' % (filter_name,)).apply(items, key='id')), (7, 8))
+        self.assertEqual(tuple(filter_cls('%s<=unknown' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6))
+        self.assertEqual(tuple(filter_cls('%s>=unknown' % (filter_name,)).apply(items, key='id')), (6, 7, 8))
+
+        self.assertEqual(tuple(filter_cls('%s=na' % (filter_name,)).apply(items, key='id')), (7,))
+        self.assertEqual(tuple(filter_cls('%s!=na' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6, 8))
+        self.assertEqual(tuple(filter_cls('%s<na' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6))
+        self.assertEqual(tuple(filter_cls('%s>na' % (filter_name,)).apply(items, key='id')), (8,))
+        self.assertEqual(tuple(filter_cls('%s<=na' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6, 7))
+        self.assertEqual(tuple(filter_cls('%s>=na' % (filter_name,)).apply(items, key='id')), (7, 8))
+
+        self.assertEqual(tuple(filter_cls('%s=never' % (filter_name,)).apply(items, key='id')), (8,))
+        self.assertEqual(tuple(filter_cls('%s!=never' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6, 7))
+        self.assertEqual(tuple(filter_cls('%s<never' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6, 7))
+        self.assertEqual(tuple(filter_cls('%s>never' % (filter_name,)).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s<=never' % (filter_name,)).apply(items, key='id')), (1, 2, 3, 4, 5, 6, 7, 8))
+        self.assertEqual(tuple(filter_cls('%s>=never' % (filter_name,)).apply(items, key='id')), (8,))
+
+
     def check_timedelta_filter(self, filter_cls, filter_names, key, default_sign):
         from stig.client.ttypes import Timedelta
         items = ({'id': 1, key: Timedelta.from_string('1h ago')},
@@ -284,7 +321,7 @@ class HelpersMixin():
             self._check_timedelta_as_bool(filter_cls, fn, key, items)
             self._check_timedelta_with_absolute_times(filter_cls, fn, key, items)
             self._check_timedelta_with_relative_times(filter_cls, fn, key, items)
-
+            self._check_timedelta_with_constants(filter_cls, fn, key, items)
             if default_sign == 1:
                 self._check_timedelta_with_positive_default_sign(filter_cls, fn, key, items)
             elif default_sign == -1:
@@ -382,11 +419,22 @@ class HelpersMixin():
         self.assertEqual(tuple(filter_cls('%s<1h' % filter_name).apply(items, key='id')), ())
         self.assertEqual(tuple(filter_cls('%s<=1h' % filter_name).apply(items, key='id')), (3,))
 
+    # No filter currently has a negative default sign
     def _check_timedelta_with_negative_default_sign(self, filter_cls, filter_name, key, items):
         # '1h' should be the same as '1h ago'
         raise NotImplementedError('Please implement _check_timedelta_with_negative_default_sign()')
-        self.assertEqual(tuple(filter_cls('%s=1h' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s>1h' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s<1h' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s>=1h' % filter_name).apply(items, key='id')), ())
-        self.assertEqual(tuple(filter_cls('%s<=1h' % filter_name).apply(items, key='id')), ())
+
+    def _check_timedelta_with_constants(self, filter_cls, filter_name, key, items):
+        self.assertEqual(tuple(filter_cls('%s=unknown' % filter_name).apply(items, key='id')), (4,))
+        self.assertEqual(tuple(filter_cls('%s!=unknown' % filter_name).apply(items, key='id')), (1, 2, 3, 5))
+        self.assertEqual(tuple(filter_cls('%s<unknown' % filter_name).apply(items, key='id')), (1, 2, 3))
+        self.assertEqual(tuple(filter_cls('%s>unknown' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s<=unknown' % filter_name).apply(items, key='id')), (1, 2, 3))
+        self.assertEqual(tuple(filter_cls('%s>=unknown' % filter_name).apply(items, key='id')), ())
+
+        self.assertEqual(tuple(filter_cls('%s=na' % filter_name).apply(items, key='id')), (5,))
+        self.assertEqual(tuple(filter_cls('%s!=na' % filter_name).apply(items, key='id')), (1, 2, 3, 4))
+        self.assertEqual(tuple(filter_cls('%s<na' % filter_name).apply(items, key='id')), (1, 2, 3))
+        self.assertEqual(tuple(filter_cls('%s>na' % filter_name).apply(items, key='id')), ())
+        self.assertEqual(tuple(filter_cls('%s<=na' % filter_name).apply(items, key='id')), (1, 2, 3))
+        self.assertEqual(tuple(filter_cls('%s>=na' % filter_name).apply(items, key='id')), ())

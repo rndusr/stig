@@ -12,6 +12,7 @@
 from ...logging import make_logger
 log = make_logger(__name__)
 
+import operator
 
 from ..ttypes import (Timedelta, Timestamp)
 from ..utils import const
@@ -37,9 +38,16 @@ def timestamp_or_timedelta(string, default_sign=1):
             delta = delta.inverse if default_sign < 0 else delta
         return delta
 
+
+_lgfilters = (operator.__lt__, operator.__le__, operator.__gt__, operator.__ge__)
 def cmp_timestamp_or_timdelta(item_value, op, user_value):
     """Compare any combination of Timestamp and Timedelta objects"""
-    if not item_value:
+    # Some filters don't make any sense
+    if (item_value in Timestamp.CONSTANTS and
+        isinstance(user_value, Timedelta) and
+        op in _lgfilters):
+            return False
+    elif item_value in Timedelta.CONSTANTS and op in _lgfilters:
         return False
 
     type_item_value = type(item_value)
