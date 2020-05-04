@@ -461,7 +461,7 @@ class Timestamp(float):
         else:
             return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self))
 
-    @property
+    @cached_property
     def date(self):
         if self in self.CONSTANTS:
             return self.full
