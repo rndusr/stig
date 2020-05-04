@@ -15,9 +15,9 @@
      * The "summary" command was renamed to "details".
      * When renaming files, the "rename" command now attempts to rename files in
        all matching torrents.  When renaming torrents or if the new --unique
-       option is given, the torrent filter expression must always match one
-       torrent.  This also works when renaming the focused file or directory in
-       file lists in the TUI.
+       option is given, the torrent filter expression must match exactly one
+       torrent or nothing is renamed.  This also works when renaming the focused
+       file or directory in file lists in the TUI.
      * GeoIP support was dropped[1] and the peer list filter, column and sorter
        "country" as well as the settings "geoip" and "geoip.dir" were
        removed. If you use a custom theme, you also need to remove the "country"
