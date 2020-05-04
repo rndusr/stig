@@ -372,6 +372,35 @@ class TestTimestamp(unittest.TestCase):
         self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE).full, 'not applicable')
         self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NEVER).full, 'never')
 
+    def test_time(self):
+        self.assertEqual(ttypes.Timestamp.from_string('1954').time, '00:00:00')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08').time, '00:00:00')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-09').time, '00:00:00')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-09 23:59:59').time, '23:59:59')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-10 11:12:13').time, '11:12:13')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOW).time, 'now')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.SOON).time, 'soon')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.UNKNOWN).time, 'unknown')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE).time, 'not applicable')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NEVER).time, 'never')
+
+    def test_date(self):
+        with mock_time(1954, 2, 3, 0, 0, 0):
+            self.assertEqual(ttypes.Timestamp.from_string('00:00:00').date, '1954-02-03')
+            self.assertEqual(ttypes.Timestamp.from_string('08:09:10').date, '1954-02-03')
+            self.assertEqual(ttypes.Timestamp.from_string('23:59:59').date, '1954-02-03')
+        self.assertEqual(ttypes.Timestamp.from_string('1954').date, '1954-01-01')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08').date, '1954-08-01')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-09').date, '1954-08-09')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-09 23:59:59').date, '1954-08-09')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-10 00:00:00').date, '1954-08-10')
+        self.assertEqual(ttypes.Timestamp.from_string('1954-08-10 11:12:13').date, '1954-08-10')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOW).date, 'now')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.SOON).date, 'soon')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.UNKNOWN).date, 'unknown')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE).date, 'not applicable')
+        self.assertEqual(ttypes.Timestamp(ttypes.Timestamp.NEVER).date, 'never')
+
     def test_accuracy__year_eq(self):
         ts = ttypes.Timestamp.from_string('2005')
         self.assertTrue(ts != mktime('2004-12-31 23:59:59'))
