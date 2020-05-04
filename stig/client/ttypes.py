@@ -145,6 +145,7 @@ class Timedelta(int):
     # actual values.
     UNKNOWN        = 1e10
     NOT_APPLICABLE = 1e11
+    CONSTANTS = (UNKNOWN, NOT_APPLICABLE)
 
     _FULL_REGEX = re.compile((r'^(in |-|\+|)(\S+)( ago|)$'), flags=re.IGNORECASE)
     _SPLIT_REGEX = re.compile((r'((?:\d+\.\d+|\d+|\.\d+)[' +
@@ -246,7 +247,7 @@ class Timedelta(int):
 
     def __bool__(self):
         """Whether delta is known"""
-        return self not in (self.UNKNOWN, self.NOT_APPLICABLE)
+        return self not in self.CONSTANTS
 
     @property
     def is_known(self):
