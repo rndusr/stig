@@ -254,7 +254,7 @@ class Timedelta(int):
         """Whether delta is known"""
         return self not in self.CONSTANTS
 
-    @property
+    @cached_property
     def is_known(self):
         return bool(self)
 
