@@ -453,7 +453,7 @@ class Timestamp(float):
 
     _LONG_STR_MAP = {NOW: 'now', SOON: 'soon', UNKNOWN: 'unknown',
                      NOT_APPLICABLE: 'not applicable', NEVER: 'never'}
-    @property
+    @cached_property
     def full(self):
         const_str = self._LONG_STR_MAP.get(self, None)
         if const_str is not None:
