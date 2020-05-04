@@ -265,6 +265,20 @@ class TestTimedelta(unittest.TestCase):
 
 
 class TestTimestamp(unittest.TestCase):
+    def test_string__constants(self):
+        self.assertEqual(ttypes.Timestamp.from_string('now'), ttypes.Timestamp.NOW)
+        self.assertEqual(ttypes.Timestamp.from_string('Now'), ttypes.Timestamp.NOW)
+        self.assertEqual(ttypes.Timestamp.from_string('soon'), ttypes.Timestamp.SOON)
+        self.assertEqual(ttypes.Timestamp.from_string('SOON'), ttypes.Timestamp.SOON)
+        self.assertEqual(ttypes.Timestamp.from_string('unknown'), ttypes.Timestamp.UNKNOWN)
+        self.assertEqual(ttypes.Timestamp.from_string('uNknoWn'), ttypes.Timestamp.UNKNOWN)
+        self.assertEqual(ttypes.Timestamp.from_string('na'), ttypes.Timestamp.NOT_APPLICABLE)
+        self.assertEqual(ttypes.Timestamp.from_string('NA'), ttypes.Timestamp.NOT_APPLICABLE)
+        self.assertEqual(ttypes.Timestamp.from_string('N/A'), ttypes.Timestamp.NOT_APPLICABLE)
+        self.assertEqual(ttypes.Timestamp.from_string('Not Applicable'), ttypes.Timestamp.NOT_APPLICABLE)
+        self.assertEqual(ttypes.Timestamp.from_string('never'), ttypes.Timestamp.NEVER)
+        self.assertEqual(ttypes.Timestamp.from_string('NeveR'), ttypes.Timestamp.NEVER)
+
     def test_string__year(self):
         ts = ttypes.Timestamp.from_string('2000')
         self.assertEqual(int(ts), mktime('2000-01-01 00:00:00'))

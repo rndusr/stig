@@ -311,6 +311,9 @@ class Timestamp(int):
     NOT_APPLICABLE = 1e11 + 0.123456789
     NEVER          = 1e12 + 0.123456789
     CONSTANTS = (NOW, SOON, UNKNOWN, NOT_APPLICABLE, NEVER)
+    _CONSTANTS_MAP_STRINGS = {'now': NOW, 'soon': SOON, 'unknown': UNKNOWN,
+                              'na': NOT_APPLICABLE, 'n/a': NOT_APPLICABLE, 'not applicable': NOT_APPLICABLE,
+                              'never': NEVER}
 
     _FORMATS_DATE = (('%Y',       ('year',)),
                      ('%Y-%m',    ('year', 'month')),
@@ -335,6 +338,10 @@ class Timestamp(int):
     def from_string(cls, string):
         string = string.strip().replace('  ', ' ')
         now = datetime.datetime.now()
+        value = cls._CONSTANTS_MAP_STRINGS.get(string.lower(), None)
+        if value is not None:
+            return cls(value, _timerange=(value, value))
+
         dt_now = now.replace(second=0, microsecond=0)
         dt_default = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
