@@ -27,7 +27,8 @@ import time
 import datetime
 import calendar
 
-from .utils import URL, Float, Int, String, Percent, convert, const, multitype
+from .utils import (URL, Float, Int, String, Percent, convert, const, multitype,
+                    cached_property)
 
 class SHA1(String):
     def __new__(cls, value, regex=r'^[0-9a-fA-F]{,40}$'):
@@ -206,7 +207,7 @@ class Timedelta(int):
         obj._real_months = _real_months
         return obj
 
-    @property
+    @cached_property
     def inverse(self):
         """Return the same object with the sign switched"""
         real_years, real_months = self._real_years, self._real_months
