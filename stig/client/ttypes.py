@@ -478,7 +478,7 @@ class Timestamp(float):
     def __bool__(self):
         return self not in (self.UNKNOWN, self.NOT_APPLICABLE, self.NEVER)
 
-    @property
+    @cached_property
     def is_known(self):
         return self not in self.CONSTANTS
 
