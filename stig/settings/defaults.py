@@ -281,6 +281,10 @@ DEFAULT_KEYMAP = (
      'description': 'Focus ninth tab'},
     {'context': 'tabs', 'key': 'alt-0', 'action': 'tab --focus 10',
      'description': 'Focus tenth tab'},
+    {'context': 'tabs', 'key': 'H',     'action': 'tab --move left',
+     'description': 'Move current tab to the left'},
+    {'context': 'tabs', 'key': 'L',     'action': 'tab --move right',
+     'description': 'Move current tab to the right'},
 
     # List torrents with different filters
     {'context': 'tabs', 'key': 'f a', 'action': 'tab ls active',

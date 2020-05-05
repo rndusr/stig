@@ -26,6 +26,7 @@
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
+    * Move tabs with <H> and <L>.
     * The command 'magnet' creates magnet URIs for torrents.
     * The help structure was changed so that lists of commands/filters/settings
       and manuals explaining the concepts are separate.
