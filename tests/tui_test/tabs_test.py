@@ -358,6 +358,18 @@ class TestTabs(unittest.TestCase):
             tabs.move(3, 'right')
         assert str(cm.exception) == 'No tab at position: 3'
 
+    def test_move_tab_to_negative_index(self):
+        tabs = Tabs((urwid.Text('1'),), (urwid.Text('2'),), (urwid.Text('3'),))
+        tabs.move(-1, 0)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('3', '1', '2'))
+        tabs.move(-2, 0)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('1', '3', '2'))
+        tabs.move(-3, 2)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('3', '2', '1',))
+        with self.assertRaises(IndexError) as cm:
+            tabs.move(-4, 0)
+        assert str(cm.exception) == 'No tab at position: -4'
+
 
 class TestTabsKeyPress(unittest.TestCase):
     def setUp(self):

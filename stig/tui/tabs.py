@@ -284,7 +284,14 @@ class Tabs(urwid.Widget):
         for l in (self._ids, self._contents, self._tabbar.base_widget):
             item = l[old_index]
             del l[old_index]
-            l.insert(new_index, item)
+            if new_index == -1:
+                # list.insert() can only insert before
+                l.append(item)
+            elif new_index < -1:
+                # First negative index is -1
+                l.insert(new_index+1, item)
+            else:
+                l.insert(new_index, item)
 
         # Restore focus
         self.focus_id = focused_tab_id
