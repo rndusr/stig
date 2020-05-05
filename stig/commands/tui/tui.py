@@ -901,7 +901,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
             tabs.focus_id = tabid_old
         else:
             content = tabs.focus
-            if content is not None:
+            if content is not None and hasattr(content, 'marked_count'):
                 from ...tui.tuiobjects import bottombar
                 bottombar.marked.update(content.marked_count)
 
