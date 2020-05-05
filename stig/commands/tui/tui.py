@@ -830,7 +830,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         { 'names': ('--title', '-t'),
           'description': 'Manually set tab title instead of generating one' },
         { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
-          'description': ('Command to run in new tab') },
+          'description': ('Command to run in tab') },
     )
     more_sections = {
         'TAB IDENTIFIERS': (
@@ -838,7 +838,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
             ('  - \tIntegers specify the position of the tab.  Positive numbers '
              'start from the left and negative numbers start from the right '
              '(1 (and 0) is the leftmost tab and -1 is the rightmost tab).'),
-            ('  - \t"left" and "right" specify the tabs right and left to the '
+            ('  - \t"left" and "right" specify the tabs next to the '
              'currently focused tab.'),
             ('  - \tAnything else is assumed to be a part of a tab title.  If there '
              'are multiple matches, the first match from the left wins.'),
