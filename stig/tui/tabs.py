@@ -49,6 +49,9 @@ class TabBar(urwid.GridFlow):
     def insert(self, pos, widget):
         self.contents.insert(pos, self._make_title(widget))
 
+    def append(self, widget):
+        self.contents.append(self._make_title(widget))
+
     def _make_title(self, widget):
         if hasattr(widget.base_widget, 'text'):
             opts = ('given', strwidth(widget.base_widget.text))
