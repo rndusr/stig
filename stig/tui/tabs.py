@@ -281,7 +281,7 @@ class Tabs(urwid.Widget):
         # Temporarily disable focus change callback
         self._contents.set_focus_changed_callback(lambda _: None)
 
-        for l in (self._ids, self._contents, self._tabbar):
+        for l in (self._ids, self._contents, self._tabbar.base_widget):
             item = l[old_index]
             del l[old_index]
             l.insert(new_index, item)
