@@ -827,6 +827,8 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
           'description': 'Close focused or specified tab (see TAB IDENTIFIERS SECTION)' },
         { 'names': ('--focus', '-f'),
           'description': 'Focus specified tab (see TAB IDENTIFIERS SECTION)' },
+        { 'names': ('--move', '-m'),
+          'description': 'Move focused tab left, right or to absolute position' },
         { 'names': ('--title', '-t'),
           'description': 'Manually set tab title instead of generating one' },
         { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
@@ -845,7 +847,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         ),
     }
 
-    async def run(self, close, close_all, focus, background, title, COMMAND):
+    async def run(self, background, close_all, close, focus, move, title, COMMAND):
         from ...tui.tuiobjects import tabs
         tabid_old = tabs.get_id()
 
@@ -862,7 +864,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         # COMMAND may get additional hidden arguments as instance attributes
         cmd_attrs = {}
 
-        # Apply close/focus operations
+        # Apply close/focus/move operations
         if focus is not None:
             log.debug('Focusing tab %r', tabid_focus)
             tabs.focus_id = tabid_focus
@@ -872,9 +874,11 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         elif close is not False:
             log.debug('Closing tab %r', tabid_close)
             tabs.remove(tabid_close)
+        elif move and tabs.focus:
+            self._move_tab(tabs, move)
 
-        # If no tabs were closed or focused, open a new one
-        if close is False and close_all is False and focus is None:
+        # If no tabs were closed, focused or moved, open a new one
+        if close is False and close_all is False and focus is None and not move:
             titlew = make_tab_title_widget(title or 'Empty tab',
                                            attr_unfocused='tabs.unfocused',
                                            attr_focused='tabs.focused')
@@ -968,6 +972,22 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if tabid is not None:
             log.debug('Found tab ID by title: %r -> %r', pos, tabid)
             return tabid
+
+    def _move_tab(self, tabs, move):
+        if move == 'left':
+            tabs.move(tabs.get_id(), 'left')
+        elif move == 'right':
+            tabs.move(tabs.get_id(), 'right')
+        else:
+            try:
+                index = int(move)
+            except (ValueError, TypeError):
+                raise CmdError('--move argument must be "left", "right" or tab index: %r' % (move,))
+            else:
+                # Positive tab index starts at 0, negative at -1
+                if index > 0:
+                    index -= 1
+                tabs.move(tabs.get_id(), index)
 
     _own_options = {('--close', '-c'): 1,
                     ('--focus', '-f'): 1,
