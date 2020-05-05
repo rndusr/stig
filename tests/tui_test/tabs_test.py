@@ -326,6 +326,38 @@ class TestTabs(unittest.TestCase):
                          ('Bar', 'Tab2'))
         self.assertEqual(self.tabs.focus_position, 1)
 
+    def test_move_tab_left_right(self):
+        tabs = Tabs((urwid.Text('1'),), (urwid.Text('2'),), (urwid.Text('3'),))
+        tabs.move(0, 'right')
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('2', '1', '3'))
+        tabs.move(2, 'left')
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('2', '3', '1'))
+        tabs.move(1, 'left')
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('3', '2', '1'))
+        tabs.move(0, 'left')
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('3', '2', '1'))
+        tabs.move(2, 'right')
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('3', '2', '1'))
+
+    def test_move_tab_with_wrapping(self):
+        tabs = Tabs((urwid.Text('1'),), (urwid.Text('2'),), (urwid.Text('3'),))
+        tabs.move(0, 'left', wrap=True)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('2', '3', '1'))
+        tabs.move(2, 'right', wrap=True)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('1', '2', '3'))
+
+    def test_move_tab_to_index(self):
+        tabs = Tabs((urwid.Text('1'),), (urwid.Text('2'),), (urwid.Text('3'),))
+        tabs.move(0, 1)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('2', '1', '3'))
+        tabs.move(1, 2)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('2', '3', '1'))
+        tabs.move(2, 0)
+        self.assertEqual(tuple(t.text for t in tabs.titles), ('1', '2', '3'))
+        with self.assertRaises(IndexError) as cm:
+            tabs.move(3, 'right')
+        assert str(cm.exception) == 'No tab at position: 3'
+
 
 class TestTabsKeyPress(unittest.TestCase):
     def setUp(self):

@@ -247,6 +247,46 @@ class Tabs(urwid.Widget):
             self.focus_position = newpos
         return this_id
 
+    def move(self, position=None, destination='right', wrap=False):
+        """
+        Move tab at `position` to `where`
+
+        position: Index (int), ID (TabID) or None (focused tab)
+        destination: "left", "right" or new index (int)
+        wrap: Whether to move the right-most tab to the first index when it is
+              moved to the right and the left-most tab to the last index when it
+              is moved to the left
+
+        Raises IndexError if tab can't be found.
+        """
+        focused_tab_id = self.focus_id
+        max_index = len(self._ids) - 1
+        old_index = self.get_index(position)
+        if destination == 'left':
+            new_index = old_index - 1
+            if new_index < 0:
+                new_index = max_index if wrap else 0
+        elif destination == 'right':
+            new_index = old_index + 1
+            if new_index > max_index:
+                new_index = 0 if wrap else max_index
+        elif isinstance(destination, int):
+            new_index = destination
+        else:
+            raise ValueError('Invalid destination: %r' % (destination,))
+
+        # Temporarily disable focus change callback
+        self._contents.set_focus_changed_callback(lambda _: None)
+
+        for l in (self._ids, self._contents, self._tabbar):
+            item = l[old_index]
+            del l[old_index]
+            l.insert(new_index, item)
+
+        # Restore focus
+        self.focus_id = focused_tab_id
+        self._contents.set_focus_changed_callback(self._focus_changed_callback)
+
     def remove(self, position=None):
         """
         Remove tab `position`
