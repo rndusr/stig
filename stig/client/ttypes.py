@@ -241,7 +241,7 @@ class Timedelta(int):
 
                 return '%d%s' % (int(num), unit)
 
-    @property
+    @cached_property
     def with_preposition(self):
         if self > 0:
             return 'in %s' % self
