@@ -1079,7 +1079,7 @@ class TUICmd(metaclass=InitCommand):
             return candidates.Candidates(_tui_element_names(),
                                          label='Element')
 
-# Lazily load element names from tui module
+# Lazily load element names from tui module to avoid importing TUI stuff if possible
 @functools.lru_cache()
 def _tui_element_names():
     from ...tui import tuiobjects
