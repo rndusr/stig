@@ -130,8 +130,9 @@ def sort_orders(clsname):
                        in_parens=', '.join(spec.aliases),
                        Description=spec.description)
              for name,spec in cls.SORTSPECS.items())
+    settingname = 'sort.' + clsname[:-len('Sorter')].lower() + 's'
     return Candidates(cands,
-                      curarg_seps=(objects.cfg['sort.torrents'].sep.strip(),),
+                      curarg_seps=(objects.cfg[settingname].sep.strip(),),
                       label=_utils.sorters_labels[clsname])
 
 
