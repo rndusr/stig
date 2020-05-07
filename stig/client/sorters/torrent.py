@@ -32,7 +32,7 @@ class TorrentSorter(SorterBase):
         'path':              _SortSpec(lambda t: t['path'],
                                        aliases=('dir',),
                                        needed_keys=('path',),
-                                       description='download location'),
+                                       description='download path'),
         'status':            _SortSpec(lambda t: t['status'],
                                        aliases=('st',),
                                        needed_keys=('status',),
