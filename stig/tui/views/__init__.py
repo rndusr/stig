@@ -285,9 +285,21 @@ class ListWidgetBase(urwid.WidgetWrap):
     def _sort_widgets(self):
         walker = self._listbox.body
         if self._sort is not None:
-            self._sort.apply(walker,
-                             item_getter=lambda w: w.data,
-                             inplace=True)
+            try:
+                self._sort.apply(walker,
+                                 item_getter=lambda w: w.data,
+                                 inplace=True)
+            except KeyError as e:
+                # This happens when adding a new sort order that needs
+                # previously unneeded keys (e.g. "started" needs "time-started",
+                # which is normally not used).  The new request is correctly
+                # registered in client.trequestpool, but when the async RPC
+                # request is made, the asyncio loop yields control to the TUI,
+                # which redraws (i.e. sorts) the list with the old widget.data.
+                # (I couldn't figure out why this redraw happens.)  Ignoring the
+                # KeyError fixes this because as soon as the RPC response gets
+                # through, a new redraw is issued and the new sort exists.
+                pass
 
     def _hide_or_unhide_widgets(self):
         walker = self._listbox.body
