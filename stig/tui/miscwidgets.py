@@ -69,8 +69,9 @@ class KeyChainsWidget(urwid.WidgetWrap):
             ]), 'keychains.header')
         ]
         next_key_index = len(keys_given)
-        reduced_keychains = self._compress_keychains(active_keychains, next_key_index)
-        for kc,action in sorted(reduced_keychains.items(), key=lambda x: str(x[0]).lower()):
+        if len(active_keychains) > 10:
+            active_keychains = self._compress_keychains(active_keychains, next_key_index)
+        for kc,action in sorted(active_keychains, key=lambda x: str(x[0]).lower()):
             row = []
             for colnum in range(key_col_num):
                 colwidth = key_col_widths[colnum]
@@ -123,7 +124,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
                 key += ('…',)
             if key not in reduced:
                 reduced[key] = action
-        return reduced
+        return tuple(reduced.items())
 
 
 class QuickHelpWidget(urwid.Text):
