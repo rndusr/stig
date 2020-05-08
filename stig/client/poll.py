@@ -123,7 +123,7 @@ class RequestPoller():
 
     def _run_callbacks(self, response=None, error=None):
         if self._skip_ongoing_request:
-            log.debug('Not running callbacks: %s', self)
+            log.debug('Request was skipped - not running callbacks: %s', self)
             self._skip_ongoing_request = False
         else:
             log.debug('Running callbacks: %s', self)
