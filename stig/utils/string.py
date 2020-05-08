@@ -129,3 +129,22 @@ def crop_and_align(string, width, align, has_wide_chars=True):
             else:
                 raise err
     return string
+
+
+def common_substring(*strings):
+    if not strings:
+        return ''
+    common = []
+    i = 0
+    while True:
+        try:
+            next_char_is_common = all(s[i] == strings[0][i] for s in strings)
+        except IndexError:
+            break
+        else:
+            if next_char_is_common:
+                common.append(strings[0][i])
+            else:
+                break
+        i += 1
+    return ''.join(common) + '…'
