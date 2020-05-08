@@ -12,6 +12,7 @@
 import urwid
 
 from .. import objects
+from .. import utils
 from . import main as tui
 from ..client import constants as const
 
@@ -38,8 +39,10 @@ class KeyChainsWidget(urwid.WidgetWrap):
         if not active_keychains:
             return
 
-        # Find widest key for each column (each key is in its own cell)
+        # Find number of keychain columns
         key_col_num = max(len(kc) for kc,action in active_keychains)
+
+        # Find widest key for each column (each key is in its own cell)
         key_col_widths = [0] * key_col_num
         for kc,action in active_keychains:
             for colnum in range(key_col_num):
@@ -49,13 +52,14 @@ class KeyChainsWidget(urwid.WidgetWrap):
                     width = 0
                 key_col_widths[colnum] = max(key_col_widths[colnum], width)
         # Total key chain column width is:
-        # max(len(key) for each key) + (1 for each space between keys)
+        # max(len(key) for each key) + (1 space between keys)
         key_col_width = sum(key_col_widths) + key_col_num-1
 
         # Create list of rows
         keychain_col_width = max(len(self._headers[0]), key_col_width)
         spacer = ('pack' , urwid.Text('  '))
         rows = [
+            # First row is the headers
             urwid.AttrMap(urwid.Columns([
                 (keychain_col_width, urwid.Text(self._headers[0])),
                 spacer,
@@ -64,8 +68,9 @@ class KeyChainsWidget(urwid.WidgetWrap):
                 urwid.Text(self._headers[2]),
             ]), 'keychains.header')
         ]
-        index_next_key = len(keys_given)
-        for kc,action in sorted(active_keychains, key=lambda k: str(k).lower()):
+        next_key_index = len(keys_given)
+        reduced_keychains = self._compress_keychains(active_keychains, next_key_index)
+        for kc,action in sorted(reduced_keychains.items(), key=lambda x: str(x[0]).lower()):
             row = []
             for colnum in range(key_col_num):
                 colwidth = key_col_widths[colnum]
@@ -76,7 +81,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
                     row.append(('pack', urwid.Text(('keychains.keys', ''.ljust(colwidth)))))
                 else:
                     # Highlight the key the user needs to press to advance keychain
-                    attrs = ('keychains.keys.next' if colnum == index_next_key else 'keychains.keys')
+                    attrs = ('keychains.keys.next' if colnum == next_key_index else 'keychains.keys')
                     row.append(('pack', urwid.Text((attrs, keytext))))
 
                 # Add space between this key cell and the next unless this is the last column
@@ -93,12 +98,32 @@ class KeyChainsWidget(urwid.WidgetWrap):
             row.append(spacer)
             row.append(urwid.AttrMap(urwid.Text(keymap.get_description(kc, context)),
                                      'keychains.description'))
+
             rows.append(urwid.Columns(row))
 
         options = self._pile.options('pack')
         for row in rows:
             self._pile.contents.append((row, options))
 
+    @staticmethod
+    def _compress_keychains(keychains, next_key_index):
+        # Cut off any keys after next_key_index and deduplilcate the resulting
+        # shortened keys.
+        # Example: <a> <b> <1> command with argument 1
+        #          <a> <b> <2> command with argument 2
+        #          <a> <b> <3> command with argument 3
+        # Becomes: <a> <b> …   command with argument …
+        reduced = {}
+        for kc,action in keychains:
+            key = kc[:next_key_index+1]
+            if key != kc:
+                subkeychains = (action for kc,action in keychains
+                                if kc.startswith(key))
+                action = utils.string.common_substring(*subkeychains)
+                key += ('…',)
+            if key not in reduced:
+                reduced[key] = action
+        return reduced
 
 
 class QuickHelpWidget(urwid.Text):
