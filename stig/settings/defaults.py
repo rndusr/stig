@@ -375,9 +375,9 @@ DEFAULT_KEYMAP = (
      'description': TorrentSorter.SORTSPECS['rate-up'].description},
     {'context': 'torrentlist', 'key': 's r U', 'action': 'sort --add !rate-up',
      'description': TorrentSorter.SORTSPECS['rate-up'].description + ' (reverse)'},
-    {'context': 'torrentlist', 'key': 's r c', 'action': 'sort --add rate',
+    {'context': 'torrentlist', 'key': 's r r', 'action': 'sort --add rate',
      'description': TorrentSorter.SORTSPECS['rate'].description},
-    {'context': 'torrentlist', 'key': 's r C', 'action': 'sort --add !rate',
+    {'context': 'torrentlist', 'key': 's r R', 'action': 'sort --add !rate',
      'description': TorrentSorter.SORTSPECS['rate'].description + ' (reverse)'},
 
     {'context': 'torrentlist', 'key': 's ,', 'action': 'sort --reset',
