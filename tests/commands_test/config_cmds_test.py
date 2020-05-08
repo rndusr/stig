@@ -263,11 +263,11 @@ class TestSetCmd(CommandTestCase):
     @patch('stig.commands.base.config.candidates')
     async def test_completion_candidates_when_completing_setting_names(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('a', 'b', 'c'))
-        mock_candidates.setting_values.return_value = Candidates('mock values')
+        mock_candidates.setting_values.return_value = Candidates(('mock values',))
         await self.assert_completion_candidates(SetCmd, Args(('set', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_'), curarg_index=1), exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=1), exp_cands=('a', 'b', 'c'))
-        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=2), exp_cands='mock values')
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', 'z'), curarg_index=2), exp_cands=('mock values',))
 
     @patch('stig.commands.base.config.candidates')
     async def test_completion_candidates_when_completing_values(self, mock_candidates):
