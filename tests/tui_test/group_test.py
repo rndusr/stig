@@ -8,13 +8,9 @@ from .resources_tui import get_canvas_text
 
 class TestGroup(unittest.TestCase):
     def setUp(self):
-        self.items = {
-            'one': {'name': 'one',
-                    'widget': urwid.Text('Widget one')},
-            'two': {'name': 'two',
-                    'widget': urwid.Text('Widget two')},
-        }
-        self.grp = Group(*tuple(self.items.values()), cls=urwid.Pile)
+        items = [{'name': 'one', 'widget': urwid.Text('Widget one')},
+                 {'name': 'two', 'widget': urwid.Text('Widget two')},]
+        self.grp = Group(*items, cls=urwid.Pile)
 
     def assert_render_text(self, *texts):
         size = (20,)

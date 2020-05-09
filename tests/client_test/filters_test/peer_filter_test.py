@@ -76,7 +76,7 @@ class TestPeerFilter(unittest.TestCase, HelpersMixin):
 
     @unittest.mock.patch('stig.client.rdns.gethostbyaddr_from_cache')
     def test_host(self, mock_gethost):
-        mock_gethost.side_effect = lambda ip: f'hostname of {ip}' if ip[0] == '1' else ip
+        mock_gethost.side_effect = lambda ip: 'hostname of %s' % (ip,) if ip[0] == '1' else ip
         self.check_filter(PeerFilter,
                           filter_names=('host',),
                           items=({'id': 1, 'ip': '123.4.5.6'},

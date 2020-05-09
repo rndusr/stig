@@ -219,7 +219,12 @@ class TestKeyMap(unittest.TestCase):
         self.km.bind(key='a', action='1', context='x')
         self.km.bind(key='b', action='2', context='y')
         self.km.bind(key='c', action='3', context='z')
-        self.assertEqual(tuple(self.km.keys()), ('a', 'b', 'c'))
+        import sys
+        if sys.hexversion < 0x03060000:
+            # Python <= 3.6 dicts are not ordered yet
+            self.assertEqual(set(self.km.keys()), {'a', 'b', 'c'})
+        else:
+            self.assertEqual(tuple(self.km.keys()), ('a', 'b', 'c'))
         self.km.clear()
         self.assertEqual(tuple(self.km.keys()), ())
 
@@ -227,9 +232,18 @@ class TestKeyMap(unittest.TestCase):
         self.km.bind(key='a', action='1', context='x')
         self.km.bind(key='b', action='2', context='y')
         self.km.bind(key='c', action='3', context='z')
-        self.assertEqual(tuple(self.km.keys()), ('a', 'b', 'c'))
+        import sys
+        if sys.hexversion < 0x03060000:
+            # Python <= 3.6 dicts are not ordered yet
+            self.assertEqual(set(self.km.keys()), {'a', 'b', 'c'})
+        else:
+            self.assertEqual(tuple(self.km.keys()), ('a', 'b', 'c'))
         self.km.clear(context='x')
-        self.assertEqual(tuple(self.km.keys()), ('b', 'c'))
+        if sys.hexversion < 0x03060000:
+            # Python <= 3.6 dicts are not ordered yet
+            self.assertEqual(set(self.km.keys()), {'b', 'c'})
+        else:
+            self.assertEqual(tuple(self.km.keys()), ('b', 'c'))
         self.km.clear(context='y')
         self.assertEqual(tuple(self.km.keys()), ('c',))
         self.km.clear(context='z')

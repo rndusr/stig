@@ -21,6 +21,7 @@ class TestAddTorrentsCmd(CommandTestCase):
                    srvapi=self.srvapi,
                    cfg=self.cfg)
 
+    @patch.dict(os.environ, HOME='/mock/home/dir')
     async def test_CLI_make_path_absolute(self):
         from stig.commands.cli import AddTorrentsCmd
         with patch('os.path.exists', side_effect=lambda path: True):
@@ -50,6 +51,7 @@ class TestAddTorrentsCmd(CommandTestCase):
             url = 'http://some/url.torrent'
             self.assertEqual(AddTorrentsCmd.make_path_absolute(url), url)
 
+    @patch.dict(os.environ, HOME='/mock/home/dir')
     async def test_TUI_make_path_absolute(self):
         from stig.commands.tui import AddTorrentsCmd
         with patch('os.path.exists', side_effect=lambda path: True):
@@ -160,7 +162,7 @@ class TestAddTorrentsCmd(CommandTestCase):
         mock_fs_path.assert_called_once_with('bar', glob='*.torrent', base='.')
 
     @patch('stig.completion.candidates.fs_path')
-    @patch.dict(os.environ, {'HOME': '/mock/home/dir'})
+    @patch.dict(os.environ, HOME='/mock/home/dir')
     @asynctest.skip('https://github.com/Martiusweb/asynctest/issues/149')
     async def test_TUI_completion_candidates_for_posargs(self, mock_fs_path):
         from stig.commands.tui import AddTorrentsCmd

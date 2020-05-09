@@ -14,7 +14,7 @@ class Test_cached_property(unittest.TestCase):
         x = X()
         for _ in range(5):
             self.assertEqual(x.foo, 'bar')
-        foo.assert_called_once()
+        foo.assert_called_once_with()
 
     def test_after_creation(self):
         foo = MagicMock(return_value='bar')

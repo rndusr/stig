@@ -1,6 +1,9 @@
-import unittest
 from stig.utils.usertypes import (String, Bool, Path, Tuple, Option, Float,
                                   Percent, Int, UsertypeMixin, multitype)
+
+import unittest
+from unittest.mock import patch
+import os
 
 
 from contextlib import contextmanager
@@ -251,17 +254,16 @@ class TestPath(_TestBase):
     def test_syntax(self):
         self.assertEqual(Path('/foo/bar/baz').syntax, 'file system path')
 
+    @patch.dict(os.environ, HOME='/mock/home/dir')
     def test_parsing_tilde(self):
-        import os
         homedir = os.environ['HOME']
         self.assertEqual(Path('~/foo/bar'), os.path.join(homedir, 'foo/bar'))
         self.assertEqual(str(Path('~/foo/bar')), os.path.join(homedir, 'foo/bar'))
         self.assertEqual(repr(Path('~/foo/bar')), repr(os.path.join(homedir, 'foo/bar')))
 
+    @patch.dict(os.environ, HOME='/mock/home/dir')
     def test_prettified(self):
-        import os
-        homedir = os.environ['HOME']
-        p = Path(os.path.join(homedir, 'foo/bar'))
+        p = Path(os.path.join(os.environ['HOME'], 'foo/bar'))
         self.assertEqual(p.prettified, '~/foo/bar')
 
     def test_mustexist(self):
@@ -272,8 +274,8 @@ class TestPath(_TestBase):
         p = Path(existing_path, mustexist=True)
         self.assertEqual(repr(p), repr(__file__))
 
+    @patch.dict(os.environ, HOME='/mock/home/dir')
     def test_base_with_tilde(self):
-        import os
         p = Path('bar/baz', base='~/foo')
         self.assertEqual(p, 'bar/baz')
         self.assertEqual(p.base_path, os.path.join(os.environ['HOME'], 'foo'))
@@ -341,7 +343,14 @@ class TestTuple(_TestBase):
         self.assertEqual(t, ('one', 'two', 'three'))
         self.assertEqual(t, Tuple(1, 'too', 'three', aliases=aliases))
         self.assertEqual(t.aliases, {1: 'one', 2: 'two', 'too': 'two'})
-        self.assertEqual(t.aliases_inverse, {'one': [1], 'two': [2, 'too']})
+        import sys
+        if sys.hexversion < 0x03060000:
+            # Python <= 3.6 dicts are not ordered yet
+            inverse = t.aliases_inverse
+            inverse['two'] = set(inverse['two'])
+            self.assertEqual(inverse, {'one': [1], 'two': {2, 'too'}})
+        else:
+            self.assertEqual(t.aliases_inverse, {'one': [1], 'two': [2, 'too']})
 
     def test_dedup(self):
         self.assertEqual(Tuple('foo', 'bar', 'bar', 'baz', 'foo', dedup=False),
@@ -381,7 +390,14 @@ class TestOption(_TestBase):
 
     def test_aliases_inverse_property(self):
         o = Option('1', options=('1', '2', '3'), aliases={'one': '1', 'two': '2', 'too': '2'})
-        self.assertEqual(o.aliases_inverse, {'1': ['one'], '2': ['two', 'too']})
+        import sys
+        if sys.hexversion < 0x03060000:
+            # Python <= 3.6 dicts are not ordered yet
+            inverse = o.aliases_inverse
+            inverse['2'] = set(inverse['2'])
+            self.assertEqual(inverse, {'1': ['one'], '2': {'two', 'too'}})
+        else:
+            self.assertEqual(o.aliases_inverse, {'1': ['one'], '2': ['two', 'too']})
 
     def test_errors(self):
         with self.assert_raises(RuntimeError, 'No options provided'):

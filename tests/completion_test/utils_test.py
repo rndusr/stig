@@ -19,8 +19,14 @@ class Test_filter_helper_functions(unittest.TestCase):
         mock_filter_cls = MagicMock()
         mock_filter_cls.BOOLEAN_FILTERS = {'foo': None, 'bar': None}
         mock_filter_cls.COMPARATIVE_FILTERS = {'baz': None}
-        self.assertEqual(tuple(candidates._utils.get_filter_names(mock_filter_cls)),
-                         ('foo', 'bar', 'baz'))
+        import sys
+        if sys.hexversion < 0x03060000:
+            # Python <= 3.6 dicts are not ordered yet
+            self.assertEqual(set(candidates._utils.get_filter_names(mock_filter_cls)),
+                             {'foo', 'bar', 'baz'})
+        else:
+            self.assertEqual(tuple(candidates._utils.get_filter_names(mock_filter_cls)),
+                             ('foo', 'bar', 'baz'))
 
     def test_get_filter_spec(self):
         mock_filter_cls = MagicMock()
