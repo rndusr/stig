@@ -1,28 +1,9 @@
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
 *.egg-info/
-
-# Unit test / coverage reports
 .cache
 .pytest_cache
-
-# pyenv
 .python-version
-
-# dotenv
-.env
-
-# virtualenv
-.venv
 venv/
-ENV/
-
-# Rope project settings
-.ropeproject
+.tox
