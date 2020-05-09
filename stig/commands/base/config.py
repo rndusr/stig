@@ -300,6 +300,22 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return candidates.setting_values(args[1:])
 
     @classmethod
+    def completion_candidates_opts(cls, args):
+        """Return candidates for arguments that start with '-'"""
+        # Only complete options or parameters for options if there are no
+        # positional arguments (i.e. when the command doesn't look like it's
+        # changing a setting).  But positional arguments may also be parameters
+        # for --columns or --sort.
+        posargs = args.posargs({('--columns', '-c'): 1,
+                                ('--sort', '-s'): 1})
+        if len(posargs) == 1:
+            if args.curarg_index == 1:
+                return (super().completion_candidates_opts(args),
+                        candidates.setting_names())
+            else:
+                return super().completion_candidates_opts(args)
+
+    @classmethod
     def completion_candidates_params(cls, option, args):
         """Complete parameters (e.g. --option parameter1,parameter2)"""
         if option == '--sort':

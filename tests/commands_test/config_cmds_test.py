@@ -261,6 +261,38 @@ class TestSetCmd(CommandTestCase):
             await self.assert_completion_candidates(SetCmd, Args(('set', '_', '_', opt, 'name'), curarg_index=2), exp_cands=None)
 
     @patch('stig.commands.base.config.candidates')
+    async def test_completion_candidates_for_options_or_setting_names(self, mock_candidates):
+        mock_candidates.setting_names.return_value = Candidates(('mock settings',))
+        mock_candidates.setting_values.return_value = Candidates(('mock values',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '-'), curarg_index=1, curarg_curpos=1),
+                                                exp_cands=(('--columns', '--sort'),
+                                                           ('mock settings',)))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '-'), curarg_index=2, curarg_curpos=1),
+                                                exp_cands=('mock values',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '-', 'bar'), curarg_index=3, curarg_curpos=2),
+                                                exp_cands=('mock values',))
+
+    @patch('stig.commands.base.config.candidates')
+    async def test_completion_candidates_for_column_option(self, mock_candidates):
+        mock_candidates.column_names.return_value = Candidates(('mock columns',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--columns', ''), curarg_index=2),
+                                                exp_cands=('mock columns',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--columns', 'f'), curarg_index=2, curarg_curpos=1),
+                                                exp_cands=('mock columns',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--columns', 'foo'), curarg_index=2, curarg_curpos=2),
+                                                exp_cands=('mock columns',))
+
+    @patch('stig.commands.base.config.candidates')
+    async def test_completion_candidates_for_sort_option(self, mock_candidates):
+        mock_candidates.sort_orders.return_value = Candidates(('mock sort orders',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--sort', ''), curarg_index=2),
+                                                exp_cands=('mock sort orders',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--sort', 'b'), curarg_index=2, curarg_curpos=1),
+                                                exp_cands=('mock sort orders',))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--sort', 'bar'), curarg_index=2, curarg_curpos=2),
+                                                exp_cands=('mock sort orders',))
+
+    @patch('stig.commands.base.config.candidates')
     async def test_completion_candidates_when_completing_setting_names(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('a', 'b', 'c'))
         mock_candidates.setting_values.return_value = Candidates(('mock values',))
@@ -280,8 +312,19 @@ class TestSetCmd(CommandTestCase):
     async def test_completion_candidates_when_completing_list_values(self, mock_candidates):
         mock_candidates.setting_names.return_value = Candidates(('foo', 'bar'))
         mock_candidates.setting_values.return_value = Candidates(('a', 'b', 'c'))
-        await self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '_', '_', '_'), curarg_index=2), exp_cands=('a', 'b', 'c'))
-        await self.assert_completion_candidates(SetCmd, Args(('set', 'bar', '_', '_', '_'), curarg_index=3), exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'foo', '_', '_', '_'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', 'bar', '_', '_', '_'), curarg_index=3),
+                                                exp_cands=('a', 'b', 'c'))
+
+    @patch('stig.commands.base.config.candidates')
+    async def test_no_completion_candidates_for_settings_or_names_with_option_given(self, mock_candidates):
+        mock_candidates.setting_names.return_value = Candidates(('foo', 'bar'))
+        mock_candidates.setting_values.return_value = Candidates(('a', 'b', 'c'))
+        await self.assert_completion_candidates(SetCmd, Args(('set', '--sort', 'foo', '_'), curarg_index=3), exp_cands=None)
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '--sort', 'foo'), curarg_index=1), exp_cands=None)
+        await self.assert_completion_candidates(SetCmd, Args(('set', '-c', 'foo', '_'), curarg_index=3), exp_cands=None)
+        await self.assert_completion_candidates(SetCmd, Args(('set', '_', '-c'), curarg_index=1), exp_cands=None)
 
 
 from stig.commands.cli import RateLimitCmd

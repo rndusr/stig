@@ -205,8 +205,14 @@ class CommandTestCase(asynctest.TestCase):
         if cands is None:
             self.assertIs(None, exp_cands)
         else:
-            self.assertEqual(tuple(cands), tuple(sorted(exp_cands)))
-            self.assertEqual(cands.curarg_seps, exp_curarg_seps)
+            if cands and not isinstance(cands[0], str):
+                self.assertEqual(tuple(tuple(subcands) for subcands in cands),
+                                 tuple(sorted(exp_cands)))
+                for subcands,exp_seps in zip(cands,exp_curarg_seps):
+                    self.assertEqual(subcands.curarg_seps, exp_seps)
+            else:
+                self.assertEqual(tuple(cands), tuple(sorted(exp_cands)))
+                self.assertEqual(cands.curarg_seps, exp_curarg_seps)
 
     def clear_stdout(self):
         self.stdout = sys.stdout = io.StringIO()
