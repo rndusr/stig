@@ -1079,6 +1079,20 @@ class Args(tuple):
         """
         return get_nth_posarg_index(n, self, options)
 
+    def remove_empty(self):
+        """Return new Args object with any empty ("") arguments removed"""
+        new_args = []
+        new_curarg_index = self.curarg_index
+        new_curarg_curpos = self.curarg_curpos
+        for i,arg in enumerate(self):
+            if len(arg) >= 1:
+                new_args.append(arg)
+            elif self.curarg_index > i:
+                new_curarg_index -= 1
+        return Args(new_args,
+                    curarg_index=min(new_curarg_index, len(new_args)-1),
+                    curarg_curpos=new_curarg_curpos)
+
     def __getitem__(self, item):
         if isinstance(item, slice):
             subargs = super().__getitem__(item)

@@ -1577,3 +1577,42 @@ class TestArgs(unittest.TestCase):
                          cliparser.Args(('bar',), curarg_index=0, curarg_curpos=1))
         self.assertEqual(do('a', '--foo', 'bar', 'baz', i=3, c=1, maxparams=1),
                          cliparser.Args(('bar',)))
+
+    def test_remove_empty(self):
+        def do(*args, i=None, c=None, **kwargs):
+            return cliparser.Args(args, curarg_index=i, curarg_curpos=c).remove_empty()
+        self.assertEqual(do('', 'b', 'c', 'd', i=0, c=1),
+                         cliparser.Args(('b', 'c', 'd'), curarg_index=0, curarg_curpos=1))
+        self.assertEqual(do('', 'b', 'c', 'd', i=1, c=1),
+                         cliparser.Args(('b', 'c', 'd'), curarg_index=0, curarg_curpos=1))
+        self.assertEqual(do('', 'b', 'c', 'd', i=2, c=1),
+                         cliparser.Args(('b', 'c', 'd'), curarg_index=1, curarg_curpos=1))
+        self.assertEqual(do('', 'b', 'c', 'd', i=3, c=1),
+                         cliparser.Args(('b', 'c', 'd'), curarg_index=2, curarg_curpos=1))
+
+        self.assertEqual(do('a', '', 'c', 'd', i=0, c=1),
+                         cliparser.Args(('a', 'c', 'd'), curarg_index=0, curarg_curpos=1))
+        self.assertEqual(do('a', '', 'c', 'd', i=1, c=1),
+                         cliparser.Args(('a', 'c', 'd'), curarg_index=1, curarg_curpos=1))
+        self.assertEqual(do('a', '', 'c', 'd', i=2, c=1),
+                         cliparser.Args(('a', 'c', 'd'), curarg_index=1, curarg_curpos=1))
+        self.assertEqual(do('a', '', 'c', 'd', i=3, c=1),
+                         cliparser.Args(('a', 'c', 'd'), curarg_index=2, curarg_curpos=1))
+
+        self.assertEqual(do('a', 'b', '', 'd', i=0, c=1),
+                         cliparser.Args(('a', 'b', 'd'), curarg_index=0, curarg_curpos=1))
+        self.assertEqual(do('a', 'b', '', 'd', i=1, c=1),
+                         cliparser.Args(('a', 'b', 'd'), curarg_index=1, curarg_curpos=1))
+        self.assertEqual(do('a', 'b', '', 'd', i=2, c=1),
+                         cliparser.Args(('a', 'b', 'd'), curarg_index=2, curarg_curpos=1))
+        self.assertEqual(do('a', 'b', '', 'd', i=3, c=1),
+                         cliparser.Args(('a', 'b', 'd'), curarg_index=2, curarg_curpos=1))
+
+        self.assertEqual(do('a', 'b', 'c', '', i=0, c=1),
+                         cliparser.Args(('a', 'b', 'c'), curarg_index=0, curarg_curpos=1))
+        self.assertEqual(do('a', 'b', 'c', '', i=1, c=1),
+                         cliparser.Args(('a', 'b', 'c'), curarg_index=1, curarg_curpos=1))
+        self.assertEqual(do('a', 'b', 'c', '', i=2, c=1),
+                         cliparser.Args(('a', 'b', 'c'), curarg_index=2, curarg_curpos=1))
+        self.assertEqual(do('a', 'b', 'c', '', i=3, c=1),
+                         cliparser.Args(('a', 'b', 'c'), curarg_index=2, curarg_curpos=1))
