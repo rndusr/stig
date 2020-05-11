@@ -11,13 +11,12 @@
 
 """Documentation commands"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-
-from ..base import misc as base
 from .. import CmdError
+from ..base import misc as base
 from ._common import make_tab_title_widget
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class HelpCmd(base.HelpCmdbase):

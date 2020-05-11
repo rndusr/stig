@@ -9,17 +9,18 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from ..base import torrent as base
-from . import _mixin as mixin
-from ... import objects
-from ._common import make_tab_title_widget
-from ...completion import candidates
-from ...utils.cliparser import Arg
 import functools
 import os
+
+from . import _mixin as mixin
+from ... import objects
+from ...completion import candidates
+from ...utils.cliparser import Arg
+from ..base import torrent as base
+from ._common import make_tab_title_widget
+
+from ...logging import make_logger # isort:skip
+log = make_logger(__name__)
 
 
 class AddTorrentsCmd(base.AddTorrentsCmdbase,

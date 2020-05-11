@@ -11,21 +11,19 @@
 
 """Commands that work exclusively in the TUI"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from .. import (InitCommand, CmdError)
-from ...completion import candidates
-from ... import client
-from . import _mixin as mixin
-from ._common import make_tab_title_widget
-from ... import objects
-from .. import utils
-
+import functools
+import os
 import shlex
 from functools import partial
-import os
-import functools
+
+from . import _mixin as mixin
+from .. import CmdError, InitCommand, utils
+from ... import client, objects
+from ...completion import candidates
+from ._common import make_tab_title_widget
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 # Import tui.main module only on demand

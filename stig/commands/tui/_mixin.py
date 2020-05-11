@@ -13,11 +13,10 @@
 
 import asyncio
 import functools
+import os
 
-from ... import objects
-from ... import client
-from .. import CmdError
-from .. import utils
+from .. import CmdError, utils
+from ... import client, objects
 from ._common import make_tab_title_widget
 
 from ...logging import make_logger  # isort:skip
@@ -362,8 +361,6 @@ class polling_frenzy():
             asyncio.ensure_future(coro())
 
 
-import os
-import collections
 class placeholders(make_request):
     class _Placeholder():
         def __init__(self, name, needed_keys, description, modifier=None):
