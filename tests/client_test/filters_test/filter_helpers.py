@@ -28,7 +28,6 @@ class HelpersMixin():
                     self.assertEqual(specdict[alias], specdict[name])
 
     def check_filter(self, filter_cls, items, filter_names, test_cases):
-        print(items)
         assert all('id' in item for item in items), "All items must have an 'id' field: %r" % (items,)
         for fn in filter_names:
             # filter_string must contain '{name}' as a placeholder for the
