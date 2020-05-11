@@ -158,18 +158,33 @@
     ~python3 -m stig <ARGUMENTS>~ in the project directory or use ~pip3~'s
     ~--editable~ option.
 
-    To run the tests, simply run ~make test~ in the project directory.  This
-    creates a virtual environment in ~./venv~, installs stig and its
-    dependencies in there and runs all available tests.
+**** Run tests with your system's Python version
+     To run the tests with the Python version that is installed on your system,
+     simply run ~make test~ in the project directory.  This creates a virtual
+     environment in ~./venv~, installs stig and its dependencies in there and
+     runs all tests.
 
-    If you want to only run tests for a specific module or package:
+     If you want to only run tests for a specific module or package:
 
-    1. Create a virtual environment:
-       ~make venv~
-    2. Activate it:
-       ~. venv/bin/activate~
-    3. Pass any path in the ~tests~ directory to pytest:
-       ~venv/bin/pytest tests/settings~
+     1. Create a virtual environment with all dependencies:
+        ~make venv~
+     2. Activate the virtual environment:
+        ~source venv/bin/activate~
+     3. Pass any path in the ~tests~ directory to pytest:
+        ~pytest tests/settings_test~
+
+**** Run tests with all supported Python versions
+     1. Install and set up [[https://github.com/pyenv/pyenv#table-of-contents][pyenv]].
+     2. With pyenv, install the supported Python versions listed in
+        ~.python-version~.
+     3. In stig's project directory, create a virtual environment with all
+        dependencies: ~make venv~
+     4. Activate the virtual environment:
+        ~source venv/bin/activate~
+     5. Run the tests for each supported Python version:
+        ~tox~
+     6. Pass arguments to pytest:
+        ~tox -- --exitfirst tests/settings_test~
 
 ** Requirements
    - Python >=3.5
