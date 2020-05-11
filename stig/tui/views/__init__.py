@@ -405,7 +405,13 @@ class ListWidgetBase(urwid.WidgetWrap):
     @property
     def marked(self):
         """Generator that yields ItemWidgetBase descendants"""
-        yield from self._marked
+        secondary_filter = self.secondary_filter
+        if secondary_filter is None:
+            yield from self._marked
+        else:
+            for widget in self._marked:
+                if secondary_filter.match(widget.data):
+                    yield widget
 
     @property
     def marked_count(self):
