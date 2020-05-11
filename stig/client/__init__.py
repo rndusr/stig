@@ -26,4 +26,7 @@ from .aiotransmission.rpc import TransmissionRPC
 from .aiotransmission.api_status import StatusAPI
 from .aiotransmission.api_settings import SettingsAPI
 from .aiotransmission.api_torrent import TorrentAPI
+from .aiotransmission.torrent import Torrent
+from .ttypes import TorrentFile, TorrentTracker, TorrentPeer
+
 from .api import API
