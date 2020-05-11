@@ -4,6 +4,5 @@ __pycache__/
 *.egg-info/
 .cache
 .pytest_cache
-.python-version
 venv/
 .tox
