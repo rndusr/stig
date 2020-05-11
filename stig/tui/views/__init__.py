@@ -441,6 +441,16 @@ class ListWidgetBase(urwid.WidgetWrap):
 
 
     @property
+    def secondary_filter(self):
+        """Another filter that can be changed during the lifetime of this list"""
+        return None
+
+    @secondary_filter.setter
+    def secondary_filter(self, value):
+        raise RuntimeError('%r does not have a secondary_filter implementation' % (self,))
+
+
+    @property
     def items(self):
         """Yield non-hidden widgets from list"""
         for item in self._listbox.body:
