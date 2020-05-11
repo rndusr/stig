@@ -90,7 +90,13 @@ class HelpersMixin():
                                       ('{name}=foo', (1,)),
                                       ('{name}!=foo', (2, 3, 4)),
                                       ('{name}~ba', (2, 3)),
-                                      ('{name}!~ba', (1, 4))))
+                                      ('{name}!~ba', (1, 4)),
+                                      ('{name}=~b+', (2,3)),
+                                      ('{name}!=~^r', (1, 2, 3, 4))))
+        for fn in filter_names:
+            with self.assertRaises(ValueError) as cm:
+                filter_cls('{name}=~['.format(name=fn))
+            assert str(cm.exception) == "Invalid regular expression: Unterminated character set at position 0: ["
 
     def check_bool_filter(self, filter_cls, filter_names, **kwargs):
         self.check_filter(filter_cls=filter_cls, filter_names=filter_names, **kwargs)

@@ -420,8 +420,9 @@ class HelpManager():
             '',
             '\tThe syntax of comparative filters is: [[<FILTER NAME>]<OPERATOR>]<VALUE>',
             '',
-            ('\tBesides the usual operators (=, !=, >, <, >=, <=), "~" matches '
-             'if the item\'s value contains VALUE.'),
+            ('\tBesides the usual operators (=, !=, >, <, >=, <=), "~" matches if the '
+             'item\'s value contains the literal string VALUE and "=~" matches if the '
+             'item\'s value matches against the Perl-style regular expression VALUE.'),
             '\tExample: "name~foo" matches all torrents with "foo" in their name.',
             '',
             ('\tIf FILTER NAME is omitted, it defaults to a comparative filter that '

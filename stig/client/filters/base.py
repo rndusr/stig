@@ -140,6 +140,7 @@ class Filter():
         '='  : operator.__eq__, '~'  : operator.__contains__,
         '>'  : operator.__gt__, '<'  : operator.__lt__,
         '>=' : operator.__ge__, '<=' : operator.__le__,
+        '=~' : lambda a, b: re.search(b, a),
     }
     INVERT_CHAR = '!'
     POSSIBLE_OPERATORS = tuple(itertools.chain.from_iterable((op, '!'+op)
@@ -247,13 +248,20 @@ class Filter():
             except ValueError:
                 raise ValueError('Invalid value for filter %r: %r' % (name, user_value))
 
-        # Test if target_type supports operator
-        try:
-            log.debug('Trying %r(%r [%r], %r [%r])',
-                      cls.OPERATORS[op], user_value, type(user_value), user_value, type(user_value))
-            cls.OPERATORS[op](user_value, user_value)
-        except TypeError as e:
-            raise ValueError('Invalid operator for filter %r: %s' % (name, op))
+        # In case of regex operator, compile user_value
+        if op == '=~':
+            try:
+                user_value = re.compile(user_value)
+            except re.error as e:
+                raise ValueError('Invalid regular expression: %s: %s' % (str(e).capitalize(), user_value))
+        else:
+            # Test if target_type supports operator
+            try:
+                log.debug('Trying %r(%r [%r], %r [%r])',
+                          cls.OPERATORS[op], user_value, type(user_value), user_value, type(user_value))
+                cls.OPERATORS[op](user_value, user_value)
+            except TypeError as e:
+                raise ValueError('Invalid operator for filter %r: %s' % (name, op))
 
         return user_value
 
