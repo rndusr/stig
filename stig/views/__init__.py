@@ -11,7 +11,7 @@
 
 """Display specifications for tables and such"""
 
-from ..logging import make_logger
+from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 from collections import defaultdict

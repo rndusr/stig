@@ -9,11 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from ...utils.string import strcrop
+
 
 def make_tab_title_widget(text_cropable, text_fixed='', attr_unfocused='', attr_focused=''):
-    import urwid
-    from ...utils.string import strcrop
-    from ...tui.tuiobjects import MAX_TAB_TITLE_WIDTH
+    import urwid                                       # isort:skip
+    from ...tui.tuiobjects import MAX_TAB_TITLE_WIDTH  # isort:skip
     max_width = max(1, MAX_TAB_TITLE_WIDTH-len(text_fixed))
     text_cropped = strcrop(text_cropable, max_width, tail='…')
     return urwid.AttrMap(urwid.Text(''.join((text_cropped, text_fixed))),

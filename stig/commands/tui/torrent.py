@@ -54,8 +54,8 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                                         attr_unfocused='tabs.torrentdetails.unfocused',
                                         attr_focused='tabs.torrentdetails.focused')
 
-        from ...tui.views import TorrentDetailsWidget
-        from ...tui.tuiobjects import (keymap, tabs)
+        from ...tui.views import TorrentDetailsWidget  # isort:skip
+        from ...tui.tuiobjects import keymap, tabs     # isort:skip
         TorrentDetailsWidget_keymapped = keymap.wrap(TorrentDetailsWidget,
                                                      context='torrent')
         title_str = self.title if hasattr(self, 'title') else None
@@ -79,7 +79,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     provides = {'tui'}
 
     def make_torrent_list(self, tfilter, sort, columns):
-        from ...tui.views import TorrentListWidget
+        from ...tui.views import TorrentListWidget  # isort:skip
         self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
                                 tfilter=tfilter, sort=sort, columns=columns,
                                 markable_items=True)
@@ -126,14 +126,12 @@ class RemoveTorrentsCmd(base.RemoveTorrentsCmdbase,
     CONFIRMATION_TAB_TITLE = 'Removal Confirmation'
 
     async def show_list_of_hits(self, tfilter):
-        from ...objects import cmdmgr
         cmd = 'tab --title %r ls --sort name %s' % (self.CONFIRMATION_TAB_TITLE, tfilter)
-        await cmdmgr.run_async(cmd)
+        await objects.cmdmgr.run_async(cmd)
 
     async def remove_list_of_hits(self):
-        from ...objects import cmdmgr
         cmd = 'tab --close %r --focus left' % self.CONFIRMATION_TAB_TITLE
-        await cmdmgr.run_async(cmd)
+        await objects.cmdmgr.run_async(cmd)
 
 
 class RenameCmd(base.RenameCmdbase,

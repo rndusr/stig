@@ -24,9 +24,9 @@ class HelpCmd(base.HelpCmdbase):
     provides = {'tui'}
 
     def display_help(self, topics, lines):
-        from ...tui.scroll import ScrollBar
-        from ...tui.views import SearchableText
-        from ...tui import tuiobjects
+        from ...tui.scroll import ScrollBar      # isort:skip
+        from ...tui.views import SearchableText  # isort:skip
+        from ...tui import tuiobjects            # isort:skip
 
         if hasattr(self, 'title'):
             titlew = make_tab_title_widget(str(self.title),
@@ -52,7 +52,7 @@ class LogCmd(base.LogCmdbase):
     provides = {'tui'}
 
     def _do(self, action, *args):
-        from ...tui.tuiobjects import logwidget
+        from ...tui.tuiobjects import logwidget  # isort:skip
         if action == 'clear':
             if len(tuple(logwidget.entries)) < 1:
                 raise CmdError()

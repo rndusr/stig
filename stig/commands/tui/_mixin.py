@@ -11,15 +11,18 @@
 
 """Mixin classes for TUI commands"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import asyncio
+import functools
 
 from ... import objects
+from ... import client
 from .. import CmdError
 from .. import utils
 from ._common import make_tab_title_widget
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
+
 
 def _deep_getattr(obj, *attrs):
     for attr in attrs:
@@ -62,7 +65,7 @@ class ask_yes_no():
         coroutines. They don't get any arguments and their return value is
         ignored.
         """
-        from ...tui import tuiobjects
+        from ...tui import tuiobjects  # isort:skip
         def run_func_or_coro(func_or_coro):
             if asyncio.iscoroutinefunction(func_or_coro):
                 asyncio.ensure_future(func_or_coro())
@@ -108,8 +111,7 @@ class select_torrents():
         otherwise a ValueError is raised.
         """
         if FILTER:
-            from ...client import TorrentFilter
-            return TorrentFilter(FILTER)
+            return client.TorrentFilter(FILTER)
         else:
             if discover_torrent:
                 tids = self.discover_torrent_ids(prefer_focused=prefer_focused)
@@ -182,7 +184,7 @@ class select_torrents():
         Return 'torrent', 'file' or 'directory' depending on what is currently
         focused
         """
-        from ...tui.tuiobjects import tabs
+        from ...tui.tuiobjects import tabs  # isort:skip
         return _deep_getattr(tabs, 'focus', 'focused_widget', 'data')
 
     @classmethod
@@ -191,27 +193,25 @@ class select_torrents():
         Return 'torrent', 'file' or 'directory' depending on what is currently
         focused
         """
-        from ...tui.tuiobjects import tabs
+        from ...tui.tuiobjects import tabs  # isort:skip
         focused_widget = _deep_getattr(tabs, 'focus', 'focused_widget')
         focused_data = _deep_getattr(focused_widget, 'data')
 
-        from ...client.aiotransmission.torrent import Torrent
-        if isinstance(focused_data, Torrent):
+        if isinstance(focused_data, client.Torrent):
             return 'torrent'
-        from ...views.file import TorrentFileDirectory
+        from ...views.file import TorrentFileDirectory  # isort:skip
         if isinstance(focused_data, TorrentFileDirectory):
             return 'directory'
-        from ...client.ttypes import TorrentFile
-        if isinstance(focused_data, TorrentFile):
+        if isinstance(focused_data, client.TorrentFile):
             return 'file'
-        from ...tui.views import SettingItemWidget
+        from ...tui.views import SettingItemWidget  # isort:skip
         if isinstance(focused_widget, SettingItemWidget):
             return 'setting'
 
     @classmethod
     def _get_current_or_previous_tab(cls):
         """Return currently focused tab content if not empty, the previous one or None"""
-        from ...tui.tuiobjects import tabs
+        from ...tui.tuiobjects import tabs  # isort:skip
         widget = tabs.focus
         if widget is not None:
             return widget
@@ -222,8 +222,7 @@ class select_torrents():
     def ids2tfilter(ids):
         """Turn an iterable of ids into a TorrentFilter instance"""
         if all(isinstance(x, int) for x in ids):
-            from ...client import TorrentFilter
-            return TorrentFilter('|'.join(('id=%d' % id for id in ids)))
+            return client.TorrentFilter('|'.join(('id=%d' % id for id in ids)))
         else:
             raise RuntimeError('Not a list of IDs: %r' % (ids,))
 
@@ -238,7 +237,7 @@ class select_files():
         'id=<TORRENT ID>' to make this path unique to this torrent even if there
         are multiple torrents with the same name.
         """
-        from ...tui.tuiobjects import tabs
+        from ...tui.tuiobjects import tabs  # isort:skip
         focused_widget = tabs.focus
         if hasattr(focused_widget, 'focused_file_ids'):
             data = focused_widget.focused_widget.data
@@ -271,8 +270,7 @@ class select_files():
         tab's widget.
         """
         if FILTER:
-            from ...client import FileFilter
-            return FileFilter(FILTER)
+            return client.FileFilter(FILTER)
         else:
             if discover_file:
                 fids = self._find_file_ids()
@@ -285,7 +283,7 @@ class select_files():
                 raise ValueError('No torrent file specified')
 
     def _find_file_ids(self):
-        from ...tui.tuiobjects import tabs
+        from ...tui.tuiobjects import tabs  # isort:skip
         focused_widget = tabs.focus
         # Get marked file IDs
         if hasattr(focused_widget, 'marked'):
@@ -307,10 +305,10 @@ class select_files():
 class create_list_widget():
     def create_list_widget(self, list_cls, *args, theme_name, markable_items=False, **kwargs):
         # Helper function that creates a tab title widget
-        from functools import partial
-        make_titlew = partial(make_tab_title_widget,
-                              attr_unfocused='tabs.%s.unfocused' % theme_name,
-                              attr_focused='tabs.%s.focused' % theme_name)
+        make_titlew = functools.partial(
+            make_tab_title_widget,
+            attr_unfocused='tabs.%s.unfocused' % theme_name,
+            attr_focused='tabs.%s.focused' % theme_name)
 
         # If tab is specified by the user, pass it on to the list widget
         if hasattr(self, 'title'):
@@ -318,11 +316,11 @@ class create_list_widget():
 
         # Create list widget
         log.debug('Creating %s(%s, %s)', list_cls.__name__, args, kwargs)
-        from ...tui.tuiobjects import keymap
+        from ...tui.tuiobjects import keymap  # isort:skip
         listw = list_cls(objects.srvapi, keymap, *args, **kwargs)
 
         # Add list to tabs
-        from ...tui.tuiobjects import tabs
+        from ...tui.tuiobjects import tabs  # isort:skip
         tabid = tabs.load(make_titlew(listw.title), listw)
 
         # If list items are markable, automatically add the 'marked' column
@@ -455,8 +453,8 @@ class placeholders(make_request):
 
     async def _get_placeholder_map(self):
         if not hasattr(self, '_placeholders'):
-            from ...tui.views import TorrentListWidget, FileListWidget
-            from ...tui.tuiobjects import tabs
+            from ...tui.views import TorrentListWidget, FileListWidget  # isort:skip
+            from ...tui.tuiobjects import tabs                          # isort:skip
             focused_list = tabs.focus
             if focused_list is None:
                 raise CmdError(self._RESOLVE_ERROR % 'No tab opened')
