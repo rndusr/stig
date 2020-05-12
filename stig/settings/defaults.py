@@ -9,17 +9,19 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 import os
+
+from xdg.BaseDirectory import xdg_cache_home as XDG_CACHE_HOME
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
-from xdg.BaseDirectory import xdg_cache_home  as XDG_CACHE_HOME
-from xdg.BaseDirectory import xdg_data_home  as XDG_DATA_HOME
+from xdg.BaseDirectory import xdg_data_home as XDG_DATA_HOME
 
 from .. import __appname__
-from ..views import (torrent, file, peer, tracker, setting)
-from ..client.sorters import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
+from ..client.sorters import PeerSorter, SettingSorter, TorrentSorter, TrackerSorter
+from ..views import file, peer, setting, torrent, tracker
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
+
 
 DEFAULT_RCFILE      = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
