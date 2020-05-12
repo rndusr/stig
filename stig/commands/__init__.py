@@ -69,17 +69,19 @@ are exceptions:
   argparse.REMAINDER.
 """
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-import asyncio
 import argparse
+import asyncio
 import shlex
-from inspect import getmembers
-from importlib import import_module
-from collections import abc
-from .utils import CallbackDict
 import sys
+from collections import abc
+from importlib import import_module
+from inspect import getmembers
+
+from ..completion import Candidate, Candidates
+from .utils import CallbackDict
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 OPS_AND = ('&', 'and')
@@ -132,7 +134,6 @@ def _option_wants_arg(cls, option, roffset):
     return False
 
 
-from ..completion import (Candidates, Candidate)
 class _CompletionCandidatesMixin():
     """
     Mixin class that provides class methods for generating tab completion

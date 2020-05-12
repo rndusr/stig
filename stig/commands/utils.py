@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from collections import abc
+
 
 class CallbackDict(dict):
     """Mapping that runs a callback on every change"""
@@ -36,7 +38,6 @@ class CallbackDict(dict):
     update = _wrap(dict.update)
 
 
-from collections import abc
 def listify_args(args):
     """
     Make list from `args`
