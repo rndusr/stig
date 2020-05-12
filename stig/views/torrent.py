@@ -121,7 +121,10 @@ class Path(ColumnBase):
             cur_len = calc_cur_len(dirs)
 
         # Re-assemble shortened path
-        path = PATHSEP + PATHSEP.join(dirs)
+        if path[0] == PATHSEP:
+            path = PATHSEP + PATHSEP.join(dirs)
+        else:
+            path = PATHSEP.join(dirs)
 
         # If "/t/p/t/y/t" is still too long, simply remove enough
         # characters from the front.
