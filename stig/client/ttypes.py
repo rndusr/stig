@@ -615,54 +615,6 @@ class TorrentFile(abc.Mapping):
 
 
 
-MAX_SAMPLES = 10
-MAX_SAMPLE_AGE = 5*3600
-_PEER_PROGRESS_DATA = defaultdict(lambda: deque(maxlen=MAX_SAMPLES))
-
-def gc_peer_progress_data():
-    for peer_id,samples in tuple(_PEER_PROGRESS_DATA.items()):
-        # Remove samples that are too old
-        while samples and (samples[0][0] + MAX_SAMPLE_AGE) < time.monotonic():
-            samples.popleft()
-
-        # Remove deque if there are no samples left
-        if not samples:
-            del _PEER_PROGRESS_DATA[peer_id]
-
-def _guess_peer_rate_and_eta(peer_id, peer_progress, torrent_size):
-    rate = 0
-    if peer_progress >= 1:
-        # Peer has already downloaded everything
-        eta = Timedelta.NOT_APPLICABLE
-    else:
-        eta = Timedelta.UNKNOWN
-        samples = _PEER_PROGRESS_DATA[peer_id]
-
-        # Don't add the same progress twice
-        if not samples or peer_progress != samples[-1][1]:
-            samples.append((time.monotonic(), peer_progress))
-
-        # We need at least 3 samples
-        if len(samples) >= 3:
-            # Use second and last sample to calculate rate.  The first sample is
-            # ignored because its timestamp may be inaccurate: When we add the
-            # first sample, the peer's progress is not current but the latest we
-            # received, which happened likely tens of seconds ago.
-            t_first, p_first = samples[1]
-            t_last, p_last = samples[-1]
-            p_diff = p_last - p_first
-            t_diff = t_last - t_first
-
-            # It's possible progress goes down, e.g. if a peer deletes a file
-            if p_diff > 0:
-                torrent_size = int(torrent_size)  # Don't copy unit + unit prefix from torrent_size
-                size_diff = torrent_size * p_diff
-                rate = size_diff / t_diff
-                size_remaining = torrent_size - (torrent_size * peer_progress)
-                eta = size_remaining / rate
-
-    return rate, eta
-
 class TorrentPeer(abc.Mapping):
     TYPES = {
         'id'          : None,
@@ -684,6 +636,61 @@ class TorrentPeer(abc.Mapping):
         'id'      : lambda p: (p['tid'], p['ip'], p['port']),
     }
 
+    _MAX_PEER_PROGRESS_SAMPLE_AGE = 1800  # 30 minutes
+    _PEER_PROGRESS_DATA = defaultdict(lambda: deque(maxlen=10))
+
+    @classmethod
+    def gc_peer_progress_data(cls):
+        log.debug('Pruning peer progress data:')
+        for peer_id,samples in tuple(cls._PEER_PROGRESS_DATA.items()):
+            # Remove samples that are too old
+            while samples and (samples[0][0] + cls._MAX_PEER_PROGRESS_SAMPLE_AGE) < time.monotonic():
+                log.debug('Sample from %s is too old: %r', peer_id, samples[0])
+                samples.popleft()
+
+            # Remove deque if there are no samples left
+            if not samples:
+                del cls._PEER_PROGRESS_DATA[peer_id]
+
+        log.debug('Pruned peer progress data:')
+        for peer_id,samples in tuple(cls._PEER_PROGRESS_DATA.items()):
+            log.debug('%s: %s', peer_id, samples)
+
+    @classmethod
+    def _guess_peer_rate_and_eta(cls, peer_id, peer_progress, torrent_size):
+        rate = 0
+        if peer_progress >= 1:
+            # Peer has already downloaded everything
+            eta = Timedelta.NOT_APPLICABLE
+        else:
+            eta = Timedelta.UNKNOWN
+            samples = cls._PEER_PROGRESS_DATA[peer_id]
+
+            # Don't add the same progress twice
+            if not samples or peer_progress != samples[-1][1]:
+                samples.append((time.monotonic(), peer_progress))
+
+            # We need at least 3 samples
+            if len(samples) >= 3:
+                # Use second and last sample to calculate rate.  The first sample is
+                # ignored because its timestamp may be inaccurate: When we add the
+                # first sample, the peer's progress is not current but the latest we
+                # received, which happened likely tens of seconds ago.
+                t_first, p_first = samples[1]
+                t_last, p_last = samples[-1]
+                p_diff = p_last - p_first
+                t_diff = t_last - t_first
+
+                # It's possible progress goes down, e.g. if a peer deletes a file
+                if p_diff > 0:
+                    torrent_size = int(torrent_size)  # Don't copy unit + unit prefix from torrent_size
+                    size_diff = torrent_size * p_diff
+                    rate = size_diff / t_diff
+                    size_remaining = torrent_size - (torrent_size * peer_progress)
+                    eta = size_remaining / rate
+
+        return rate, eta
+
     def __init__(self, tid, tname, tsize, ip, port, client, downloaded, pdownloaded, rate_up, rate_down):
         self._cache = {}
         self._dct = {'tid': tid, 'tname': tname, 'tsize': tsize,
@@ -691,7 +698,7 @@ class TorrentPeer(abc.Mapping):
                      'downloaded': downloaded, '%downloaded': pdownloaded,
                      'rate-up': rate_up, 'rate-down': rate_down}
         self._dct['rate-est'], self._dct['eta'] = \
-            _guess_peer_rate_and_eta(self['id'], pdownloaded / 100, tsize)
+            self._guess_peer_rate_and_eta(self['id'], pdownloaded / 100, tsize)
 
     def __getitem__(self, key):
         cache = self._cache

@@ -139,9 +139,9 @@ class API():
         # peers' progresses, and we need to prune that data from time to
         # time. It's a bit dirty to put this here, but managing another task
         # just for this isn't much better.
-        from .ttypes import gc_peer_progress_data
+        from .ttypes import TorrentPeer
         while True:
-            gc_peer_progress_data()
+            TorrentPeer.gc_peer_progress_data()
 
             log.debug('Managing pollers:')
             await manage()
