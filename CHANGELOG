@@ -1,7 +1,6 @@
 20??-??-?? ?.??.??
   Breaking changes:
-    * The 'scrollbar' palette in themes was removed and the following palettes
-      were added:
+    * The 'scrollbar' palette in themes was removed and the following palettes were added:
            torrentlist.scrollbar
            filelist.scrollbar
            peerlist.scrollbar
@@ -13,15 +12,14 @@
        - "incomplete" is the same as "!complete"
        - "public" is the same as "!private"
      * The "summary" command was renamed to "details".
-     * When renaming files, the "rename" command now attempts to rename files in
-       all matching torrents.  When renaming torrents or if the new --unique
-       option is given, the torrent filter expression must match exactly one
-       torrent or nothing is renamed.  This also works when renaming the focused
-       file or directory in file lists in the TUI.
-     * GeoIP support was dropped[1] and the peer list filter, column and sorter
-       "country" as well as the settings "geoip" and "geoip.dir" were
-       removed. If you use a custom theme, you also need to remove the "country"
-       parts from it.
+     * When renaming files, the "rename" command now attempts to rename files in all
+       matching torrents.  When renaming torrents or if the new --unique option is given,
+       the torrent filter expression must match exactly one torrent or nothing is renamed.
+       This also works when renaming the focused file or directory in file lists in the
+       TUI.
+     * GeoIP support was dropped[1] and the peer list filter, column and sorter "country"
+       as well as the settings "geoip" and "geoip.dir" were removed. If you use a custom
+       theme, you also need to remove the "country" parts from it.
      * Some default keybindings for sorting lists were changed.
 
   Other changes:
@@ -29,9 +27,11 @@
     * Move tabs with <H> and <L>.
     * Filters can use regular expressions with the new '=~' operator.
     * The command 'magnet' creates magnet URIs for torrents.
-    * The help structure was changed so that lists of commands/filters/settings
-      and manuals explaining the concepts are separate.
+    * The help structure was changed so that lists of commands/filters/settings and
+      manuals explaining the concepts are separate.
     * Added "hash" filter to find torrents by info hash.
+    * Peer download rate estimates are now always calculated, not just when a peer list is
+      focused.
 
   Fixed bugs:
     * File filters caused a crash when applied to single-file torrents.
@@ -39,8 +39,8 @@
     * Download priority in TUI file lists is now updated correctly.
     * Parameters for any command's --sort option didn't accept aliases.
     * Setting filters are now documented (`help filters`).
-    * When 'remove.max-hits' triggered, the displayed list of torrents didn't
-      handle spaces correctly.
+    * When 'remove.max-hits' triggered, the displayed list of torrents didn't handle
+      spaces correctly.
 
   [1] https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases
 
