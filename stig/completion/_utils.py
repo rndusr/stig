@@ -9,11 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import Candidates, Candidate
-
-import itertools
 import functools
+import itertools
 
+from . import Candidate, Candidates
+from ..client import filters as filter_clses
+from ..client import sorters as sorter_clses
 
 columns_labels = {'torrents' : 'Torrent List Column',
                   'files'    : 'File List Column',
@@ -27,15 +28,11 @@ sorters_labels = {'TorrentSorter' : 'Torrent Sort Order',
                   'TrackerSorter' : 'Tracker Sort Order',
                   'SettingSorter' : 'Setting Sort Order'}
 
-from ..client import sorters as sorter_clses
 
 @functools.lru_cache(maxsize=None)
 def get_sorter_cls(clsname):
     return getattr(sorter_clses, clsname)
 
-
-
-from ..client import filters as filter_clses
 
 # All filters use the same operators
 filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS

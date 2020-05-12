@@ -11,20 +11,19 @@
 
 """Getters for tab completion candidates"""
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-
-from .. import objects
-from ..utils import usertypes
-from ..completion import (Candidates, Candidate)
-from . import _utils
-
+import functools
 import itertools
 import os
 import re
-import functools
 from collections import abc
+
+from . import _utils
+from .. import objects
+from ..completion import Candidate, Candidates
+from ..utils import usertypes
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def for_args(args):

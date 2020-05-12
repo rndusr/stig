@@ -9,9 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-
-from collections import abc
 import re
+from collections import abc
 from typing import Pattern
 
 
