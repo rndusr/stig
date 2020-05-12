@@ -11,10 +11,11 @@
 
 """TUI and CLI specs for peer list columns"""
 
+from . import ColumnBase, _ensure_hide_unit
 from ..logging import make_logger
+
 log = make_logger(__name__)
 
-from . import (ColumnBase, _ensure_hide_unit)
 
 
 COLUMNS = {}

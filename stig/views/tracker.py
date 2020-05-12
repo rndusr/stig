@@ -11,10 +11,10 @@
 
 """TUI and CLI specs for tracker list columns"""
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 from . import ColumnBase
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 COLUMNS = {}

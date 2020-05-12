@@ -11,10 +11,13 @@
 
 """TUI and CLI specs for torrent list columns"""
 
-from ..logging import make_logger
+import os
+
+from . import ColumnBase, _ensure_hide_unit
+
+from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
-from . import (ColumnBase, _ensure_hide_unit)
 
 COLUMNS = {}
 ALIASES = { 'mark'     : 'marked',
@@ -75,7 +78,6 @@ class Name(ColumnBase):
 COLUMNS['name'] = Name
 
 
-import os
 PATHSEP = os.sep
 class Path(ColumnBase):
     header = {'left': 'Path'}

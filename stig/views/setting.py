@@ -13,7 +13,6 @@
 
 from . import ColumnBase
 
-
 COLUMNS = {}
 ALIASES = {}
 

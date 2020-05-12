@@ -11,10 +11,12 @@
 
 """TUI and CLI specs for file list columns"""
 
-from ..logging import make_logger
-log = make_logger(__name__)
+import os
 
-from . import (ColumnBase, _ensure_hide_unit)
+from . import ColumnBase, _ensure_hide_unit
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 COLUMNS = {}
@@ -102,7 +104,6 @@ class Marked(ColumnBase):
 COLUMNS['marked'] = Marked
 
 
-import os
 class TorrentFileDirectory(dict):
     """
     A mapping with the same keys as a TorrentFile instance but represents a directory

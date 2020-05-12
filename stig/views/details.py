@@ -11,10 +11,10 @@
 
 """TUI and CLI specs for torrent details sections"""
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 from functools import partial
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def _size_hr(t):
