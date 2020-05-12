@@ -11,12 +11,13 @@
 
 """Base classes for documentation commands"""
 
+from .. import CmdError, InitCommand
+from ... import __appname__, __version__, objects
+from ...completion import candidates
 from ...logging import make_logger
+
 log = make_logger(__name__)
 
-from .. import (InitCommand, CmdError)
-from ...completion import candidates
-from ... import (objects, __appname__, __version__)
 
 
 class HelpCmdbase(metaclass=InitCommand):

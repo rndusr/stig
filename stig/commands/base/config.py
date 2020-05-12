@@ -9,24 +9,24 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from .. import (InitCommand, CmdError, utils)
-from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
-                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
-from ...completion import candidates
-from ...settings import defaults
-from ...utils.usertypes import Float
-from . import _mixin as mixin
-from ... import objects
-
-import subprocess
 import operator
 import os
+import subprocess
+
+from . import _mixin as mixin
+from .. import CmdError, InitCommand, utils
+from ... import objects
+from ...client import ClientError
+from ...completion import candidates
+from ...settings import defaults, rcfile
+from ...utils.usertypes import Float
+from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
+                      make_X_FILTER_spec)
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
-from ...settings import rcfile
 class RcCmdbase(metaclass=InitCommand):
     name = 'rc'
     aliases = ('source',)
@@ -109,7 +109,6 @@ class ResetCmdbase(metaclass=InitCommand):
         return candidates.setting_names()
 
 
-from ...client import ClientError
 class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                  metaclass=InitCommand):
     name = 'set'

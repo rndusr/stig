@@ -9,18 +9,18 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from .. import (InitCommand, CmdError)
-from ...completion import candidates
-from . import _mixin as mixin
-from ... import objects
-from ._common import (make_X_FILTER_spec, make_COLUMNS_doc,
-                      make_SORT_ORDERS_doc, make_SCRIPTING_doc)
-
 import asyncio
 from collections import abc
+
+from . import _mixin as mixin
+from .. import CmdError, InitCommand
+from ... import objects
+from ...completion import candidates
+from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
+                      make_X_FILTER_spec)
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
