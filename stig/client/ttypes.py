@@ -685,31 +685,28 @@ class TorrentPeer(abc.Mapping):
     }
 
     def __init__(self, tid, tname, tsize, ip, port, client, downloaded, pdownloaded, rate_up, rate_down):
+        self._cache = {}
         self._dct = {'tid': tid, 'tname': tname, 'tsize': tsize,
                      'ip': ip, 'port': port, 'client': client,
                      'downloaded': downloaded, '%downloaded': pdownloaded,
                      'rate-up': rate_up, 'rate-down': rate_down}
-        self._cache = {}
+        self._dct['rate-est'], self._dct['eta'] = \
+            _guess_peer_rate_and_eta(self['id'], pdownloaded / 100, tsize)
 
     def __getitem__(self, key):
         cache = self._cache
         value = cache.get(key)
         if value is None:
-            if key in ('eta', 'rate-est'):
-                rate, eta = _guess_peer_rate_and_eta(self['id'], self['%downloaded'] / 100, self['tsize'])
-                cache['rate-est'] = self.TYPES['rate-est'](rate)
-                cache['eta'] = self.TYPES['eta'](eta)
+            modifier = self._MODIFIERS.get(key)
+            if modifier is not None:
+                val = modifier(self._dct)
             else:
-                modifier = self._MODIFIERS.get(key)
-                if modifier is not None:
-                    val = modifier(self._dct)
-                else:
-                    val = self._dct[key]
-                typ = self.TYPES.get(key)
-                if typ is not None:
-                    cache[key] = typ(val)
-                else:
-                    cache[key] = val
+                val = self._dct[key]
+            typ = self.TYPES.get(key)
+            if typ is not None:
+                cache[key] = typ(val)
+            else:
+                cache[key] = val
         return cache[key]
 
     def clearcache(self):
