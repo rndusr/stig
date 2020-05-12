@@ -9,15 +9,17 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from ...utils.string import (strwidth, stralign, crop_and_align, normalize_unicode)
-
 import re
 import textwrap
-from types import SimpleNamespace
 from shutil import get_terminal_size
+from types import SimpleNamespace
+
+from ...utils.string import crop_and_align, normalize_unicode, stralign, strwidth
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
+
+
 TERMSIZE = get_terminal_size(fallback=(None, None))
 
 

@@ -9,16 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from ..base import file as base
 from . import _mixin as mixin
 from .. import CmdError
 from ... import objects
-from ._table import (print_table, TERMSIZE)
+from ..base import file as base
+from ._table import TERMSIZE, print_table
 
-import os
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class ListFilesCmd(base.ListFilesCmdbase,

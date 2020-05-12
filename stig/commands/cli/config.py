@@ -9,12 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..base import config as base
 from . import _mixin as mixin
 from ... import objects
+from ..base import config as base
 from ._table import print_table
-
-from itertools import chain
 
 
 class RcCmd(base.RcCmdbase):

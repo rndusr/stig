@@ -10,8 +10,8 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from .config import *
-from .misc import *
-from .torrent import *
 from .file import *
+from .misc import *
 from .peer import *
+from .torrent import *
 from .tracker import *

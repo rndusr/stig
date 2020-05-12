@@ -9,14 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from ..base import tracker as base
 from . import _mixin as mixin
 from .. import CmdError
 from ... import objects
+from ..base import tracker as base
 from ._table import print_table
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class ListTrackersCmd(base.ListTrackersCmdbase,

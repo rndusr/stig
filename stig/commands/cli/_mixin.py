@@ -11,14 +11,15 @@
 
 """Mixin classes for CLI commands"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import asyncio
 
 from .. import utils
-from ._common import clear_line
 from ... import objects
+from ._common import clear_line
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
+
 
 class make_request():
     async def make_request(self, request_coro, polling_frenzy=False, quiet=False):
