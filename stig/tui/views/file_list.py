@@ -16,10 +16,11 @@ import urwid
 import urwidtrees
 from urwidtrees.decoration import ArrowTree
 
-from . import ItemWidgetBase, ListWidgetBase, stringify_torrent_filter
 from ...client import FileFilter
 from ...views.file import TorrentFileDirectory
+from .base import ItemWidgetBase, ListWidgetBase
 from .file import TUICOLUMNS
+from .utils import stringify_torrent_filter
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)

@@ -13,10 +13,10 @@
 
 import urwid
 
-from . import CellWidgetBase, Style
 from ...utils.string import normalize_unicode
 from ...views.file import COLUMNS as _COLUMNS
 from ..table import ColumnHeaderWidget
+from .base import CellWidgetBase, Style
 from .common_columns import MarkedBase
 
 TUICOLUMNS = {}

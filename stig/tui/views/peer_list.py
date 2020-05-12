@@ -9,9 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import ItemWidgetBase, ListWidgetBase, stringify_torrent_filter
 from ...client import PeerFilter
+from .base import ItemWidgetBase, ListWidgetBase
 from .peer import TUICOLUMNS
+from .utils import stringify_torrent_filter
 
 
 class PeerItemWidget(ItemWidgetBase):

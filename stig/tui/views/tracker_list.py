@@ -9,9 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import ItemWidgetBase, ListWidgetBase, stringify_torrent_filter
 from ...client import TrackerFilter
+from .base import ItemWidgetBase, ListWidgetBase
 from .tracker import TUICOLUMNS
+from .utils import stringify_torrent_filter
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)

@@ -13,11 +13,12 @@ import asyncio
 
 import urwid
 
-from . import ItemWidgetBase, ListWidgetBase
 from ... import objects
 from ...client import SettingFilter
 from ...utils.usertypes import Bool, Option
+from .base import ItemWidgetBase, ListWidgetBase
 from .setting import TUICOLUMNS
+from .utils import stringify_torrent_filter
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)

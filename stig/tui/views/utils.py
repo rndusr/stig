@@ -9,11 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import hooks
-from .details import TorrentDetailsWidget
-from .file_list import FileItemWidget, FileListWidget
-from .peer_list import PeerItemWidget, PeerListWidget
-from .setting_list import SettingItemWidget, SettingListWidget
-from .text import SearchableText
-from .torrent_list import TorrentItemWidget, TorrentListWidget
-from .tracker_list import TrackerItemWidget, TrackerListWidget
+def stringify_torrent_filter(tfilter, torrents):
+    if tfilter is None:
+        return 'all'
+    else:
+        return str(tfilter)

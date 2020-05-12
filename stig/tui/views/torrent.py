@@ -11,11 +11,11 @@
 
 import urwid
 
-from . import CellWidgetBase, Style
 from ...client import ttypes
 from ...utils.string import normalize_unicode
 from ...views.torrent import COLUMNS as _COLUMNS
 from ..table import ColumnHeaderWidget
+from .base import CellWidgetBase, Style
 from .common_columns import MarkedBase
 
 TUICOLUMNS = {}
