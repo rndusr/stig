@@ -95,6 +95,8 @@ class Path(ColumnBase):
             return '…'
         elif width <= 0:
             return ''
+        elif not path:
+            return ''
 
         # Remove characters from the end of the most toplevel directory until
         # there's only one left. Then do the same with the next level.
