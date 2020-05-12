@@ -9,21 +9,22 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
+import builtins
+from collections import abc
 
 import urwid
 import urwidtrees
-from collections import abc
-import builtins
-
-from .file import TUICOLUMNS
-from . import (ItemWidgetBase, ListWidgetBase, stringify_torrent_filter)
-from ...client import FileFilter
-
-
-from ...views.file import TorrentFileDirectory
 from urwidtrees.decoration import ArrowTree
+
+from . import ItemWidgetBase, ListWidgetBase, stringify_torrent_filter
+from ...client import FileFilter
+from ...views.file import TorrentFileDirectory
+from .file import TUICOLUMNS
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
+
+
 class FileTreeDecorator(ArrowTree):
     """urwidtrees decorator for TorrentFiles and TorrentFileTrees"""
 

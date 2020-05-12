@@ -11,17 +11,16 @@
 
 import urwid
 
-from ..table import ColumnHeaderWidget
-from . import (Style, CellWidgetBase)
-from ...views.torrent import COLUMNS as _COLUMNS
+from . import CellWidgetBase, Style
 from ...client import ttypes
 from ...utils.string import normalize_unicode
-
+from ...views.torrent import COLUMNS as _COLUMNS
+from ..table import ColumnHeaderWidget
+from .common_columns import MarkedBase
 
 TUICOLUMNS = {}
 
 
-from .common_columns import MarkedBase
 class Marked(MarkedBase):
     style = Style(prefix='torrentlist.marked', focusable=True, extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(), style.attrs('header'))

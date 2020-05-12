@@ -9,10 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import urwid
+
 from ...utils.string import strwidth
 from ..scroll import Scrollable
 

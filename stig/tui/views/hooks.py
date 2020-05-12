@@ -10,10 +10,9 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from ...objects import localcfg
-from .torrent import TUICOLUMNS as TCOLUMNS
 from .file import TUICOLUMNS as FCOLUMNS
 from .peer import TUICOLUMNS as PCOLUMNS
-
+from .torrent import TUICOLUMNS as TCOLUMNS
 
 _BANDWIDTH_COLUMNS = (TCOLUMNS['rate-up'], TCOLUMNS['rate-down'],
                       TCOLUMNS['limit-rate-up'], TCOLUMNS['limit-rate-down'],

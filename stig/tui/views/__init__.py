@@ -9,10 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-import urwid
 import collections
 
-from ..table import ColumnHeaderWidget
+import urwid
+
+from ..scroll import ScrollBar
+from ..table import ColumnHeaderWidget, Table
 from ..tuiobjects import bottombar
 
 
@@ -162,8 +164,6 @@ class ItemWidgetBase(urwid.WidgetWrap):
             self._cells.marked.is_marked = bool(is_marked)
 
 
-from ..table import Table
-from ..scroll import ScrollBar
 class ListWidgetBase(urwid.WidgetWrap):
     """Base class for Torrent/File/Peer/... lists"""
 
@@ -492,12 +492,12 @@ def stringify_torrent_filter(tfilter, torrents):
         return str(tfilter)
 
 
-from . import hooks
+from . import hooks  # isort:skip
 
-from .torrent_list import TorrentListWidget, TorrentItemWidget
-from .file_list import FileListWidget, FileItemWidget
-from .peer_list import PeerListWidget, PeerItemWidget
-from .tracker_list import TrackerListWidget, TrackerItemWidget
-from .setting_list import SettingListWidget, SettingItemWidget
-from .details import TorrentDetailsWidget
-from .text import SearchableText
+from .file_list import FileItemWidget, FileListWidget           # isort:skip
+from .peer_list import PeerItemWidget, PeerListWidget           # isort:skip
+from .setting_list import SettingItemWidget, SettingListWidget  # isort:skip
+from .torrent_list import TorrentItemWidget, TorrentListWidget  # isort:skip
+from .tracker_list import TrackerItemWidget, TrackerListWidget  # isort:skip
+from .details import TorrentDetailsWidget                       # isort:skip
+from .text import SearchableText                                # isort:skip

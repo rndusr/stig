@@ -11,10 +11,9 @@
 
 import urwid
 
-from ..table import ColumnHeaderWidget
-from . import (Style, CellWidgetBase)
+from . import CellWidgetBase, Style
 from ...views.setting import COLUMNS as _COLUMNS
-
+from ..table import ColumnHeaderWidget
 
 TUICOLUMNS = {}
 

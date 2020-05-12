@@ -13,15 +13,15 @@
 
 import urwid
 
-from ..table import ColumnHeaderWidget
-from . import (Style, CellWidgetBase)
+from . import CellWidgetBase, Style
+from ...utils.string import normalize_unicode
 from ...views.file import COLUMNS as _COLUMNS
-
+from ..table import ColumnHeaderWidget
+from .common_columns import MarkedBase
 
 TUICOLUMNS = {}
 
 
-from .common_columns import MarkedBase
 class Marked(MarkedBase):
     style = Style(prefix='filelist.marked', focusable=True, extras=('header',))
     header = urwid.AttrMap(ColumnHeaderWidget(), style.attrs('header'))
@@ -29,7 +29,6 @@ class Marked(MarkedBase):
 TUICOLUMNS['marked'] = Marked
 
 
-from ...utils.string import normalize_unicode
 class Filename(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='filelist.name', focusable=True,

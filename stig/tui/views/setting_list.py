@@ -9,17 +9,18 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-import urwid
 import asyncio
 
-from .setting import TUICOLUMNS
-from . import (ItemWidgetBase, ListWidgetBase)
+import urwid
+
+from . import ItemWidgetBase, ListWidgetBase
 from ... import objects
-from ...utils.usertypes import (Bool, Option)
 from ...client import SettingFilter
+from ...utils.usertypes import Bool, Option
+from .setting import TUICOLUMNS
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def _change_setting(name, new_value, on_success=None):
@@ -206,4 +207,3 @@ class SettingListWidget(ListWidgetBase):
             for sw in setting_widgets:
                 if not sfilter.match(sw.data):
                     yield sw
-

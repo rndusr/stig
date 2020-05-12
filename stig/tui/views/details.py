@@ -9,12 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import urwid
-from ..scroll import (ScrollBar, Scrollable)
+
 from ... import objects
+from ...views.details import SECTIONS
+from ..scroll import Scrollable, ScrollBar
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def mksection(title, width, items):
@@ -50,7 +52,6 @@ def mksection(title, width, items):
 
 
 _sections = []
-from ...views.details import SECTIONS
 for section in SECTIONS:
     sectionw = mksection(**section)
     _sections.append(sectionw)

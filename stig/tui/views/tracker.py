@@ -13,12 +13,12 @@
 
 import urwid
 
-from ..table import ColumnHeaderWidget
-from . import (Style, CellWidgetBase)
+from . import CellWidgetBase, Style
 from ...views.tracker import COLUMNS as _COLUMNS
-
+from ..table import ColumnHeaderWidget
 
 TUICOLUMNS = {}
+
 
 class Torrent(_COLUMNS['torrent'], CellWidgetBase):
     width = ('weight', 50)
