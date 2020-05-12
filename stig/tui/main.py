@@ -13,6 +13,8 @@ import asyncio
 
 import urwid
 
+from ..settings.defaults import DEFAULT_TAB_COMMANDS
+
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
@@ -47,15 +49,8 @@ def run(command_runner):
 
     # If no tab has been opened by cli or rc file, open default tabs
     if len(tuiobjects.tabs) <= 0:
-        for cmd in ('tab ls -c seeds,status,ratio,path,name,tracker',
-                    'tab ls active|incomplete',
-                    'tab ls downloading -c size,downloaded,%downloaded,rate-down,completed,eta,path,name',
-                    'tab ls uploading -c size,ratio,uploaded,rate-up,peers,seeds,tracker,path,name',
-                    'tab -t peers lsp -s torrent',
-                    'tab ls stopped -s ratio,path -c size,%downloaded,seeds,ratio,activity,path,name',
-                    'tab ls isolated -c error,tracker,path,name -s tracker'):
+        for cmd in DEFAULT_TAB_COMMANDS:
             objects.cmdmgr.run_sync(cmd, on_error=log.error)
-        tuiobjects.tabs.focus_position = 1
 
     try:
         # Start polling torrent lists, counters, bandwidth usage, etc.

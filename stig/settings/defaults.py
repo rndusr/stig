@@ -27,6 +27,17 @@ DEFAULT_RCFILE      = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
 DEFAULT_THEME_FILE  = os.path.join(os.path.dirname(__file__), 'default.theme')
 
+DEFAULT_TAB_COMMANDS = (
+    'tab ls active|incomplete',
+    'tab ls -c status,seeds,ratio,size,uploaded,path,name',
+    'tab ls downloading -c size,downloaded,%downloaded,%available,rate-down,completed,eta,path,name',
+    'tab ls uploading -c size,ratio,uploaded,rate-up,peers,seeds,tracker,path,name',
+    'tab -t peers lsp -s torrent',
+    'tab ls stopped -s ratio,path -c size,%downloaded,seeds,ratio,activity,completed,path,name',
+    'tab ls isolated -c error,tracker,path,name -s tracker',
+    'tab --focus 1',
+)
+
 
 def init_defaults(localcfg):
     from ..utils.usertypes import (String, Int, Float, Bool, Path, Tuple, Option)
