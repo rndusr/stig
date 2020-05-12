@@ -11,20 +11,19 @@
 
 """Anything related to the help system that is common between interfaces"""
 
-from .logging import make_logger
-log = make_logger(__name__)
-
-from collections import abc
 import re
+import string
+from collections import abc
 
-from . import __appname__, __version__
-from . import objects
+from . import __appname__, __version__, objects
+from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
 from .utils import expandtabs
 from .utils.string import striplines
-from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
+
+from .logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
-import string
 class ForgivingFormatter(string.Formatter):
     def get_value(self, key, args, kwargs):
         if isinstance(key, str):

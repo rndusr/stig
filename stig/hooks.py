@@ -11,14 +11,14 @@
 
 """General hooks that are always needed regardless of the interface"""
 
-from .logging import make_logger
-log = make_logger(__name__)
-
 from .objects import localcfg, srvapi
 from .utils import convert
-from .views.torrent import COLUMNS as TORRENT_COLUMNS
 from .views.file import COLUMNS as FILE_COLUMNS
 from .views.peer import COLUMNS as PEER_COLUMNS
+from .views.torrent import COLUMNS as TORRENT_COLUMNS
+
+from .logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def _make_connection_callback(attr):

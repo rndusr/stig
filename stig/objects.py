@@ -14,15 +14,17 @@ Application-wide instances that are always needed, regardless of interface
 or features
 """
 
-from . import logging
+from . import logging, settings
+from .client import API
+from .commands import CommandManager
+from .helpmgr import HelpManager
+
 log = logging.make_logger()
 
 
-from . import settings
 localcfg = settings.LocalSettings()
 settings.init_defaults(localcfg)
 
-from .client import API
 srvapi = API(host=localcfg['connect.host'],
              port=localcfg['connect.port'],
              path=localcfg['connect.path'],
@@ -35,11 +37,9 @@ remotecfg = settings.RemoteSettings(srvapi.settings)
 cfg = settings.CombinedSettings(localcfg, remotecfg)
 
 
-from .helpmgr import HelpManager
 helpmgr = HelpManager()
 
 
-from .commands import CommandManager
 cmdmgr = CommandManager(info_handler=lambda msg: log.info(msg),
                         error_handler=lambda msg: log.error(msg))
 

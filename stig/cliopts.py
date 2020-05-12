@@ -9,13 +9,16 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+import argparse
 from collections import OrderedDict
+
+from .commands import is_op
+
 DESCRIPTIONS = OrderedDict()
 
 # This is a function so all the objects get garbage collected after
 # parsing finished
 def parse():
-    import argparse
     _parser = argparse.ArgumentParser(add_help=False)
     def _add_arg(*args, section='OPTIONS', description=None, varname=None, **kwargs):
         if description is not None:
@@ -86,7 +89,6 @@ def parse():
 
 
     # Assemble commands into a command sequence (see CommandManager.split_cmdchain)
-    from .commands import is_op
     _cmds = [[]]
     for arg in _subcmds:
         if is_op(arg):

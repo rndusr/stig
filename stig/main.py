@@ -9,8 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-# Remove python from process name when running inside tmux
+import asyncio
 import os
+import sys
+
+from . import cliopts, logging
+from .objects import cmdmgr, log, srvapi
+
+# Remove python from process name when running inside tmux
 if 'TMUX' in os.environ:
     try:
         from setproctitle import setproctitle
@@ -20,18 +26,12 @@ if 'TMUX' in os.environ:
         from . import __appname__
         setproctitle(__appname__)
 
-import sys
-import asyncio
 
-
-from . import cliopts
 cliargs, clicmds = cliopts.parse()
 
-from . import logging
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 
-from .objects import log, srvapi, cmdmgr
 
 def run():
     cmdmgr.load_cmds_from_module(
