@@ -9,21 +9,19 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-from functools import partial
 import os
+from functools import partial
 
-from .. objects import (localcfg, srvapi)
 from . import tuiobjects
-
-from .views.torrent_list import TorrentListWidget
+from ..objects import localcfg, srvapi
+from .views.file import TUICOLUMNS as FILE_COLUMNS
 from .views.file_list import FileListWidget
 from .views.peer_list import PeerListWidget
-
 from .views.torrent import TUICOLUMNS as TORRENT_COLUMNS
-from .views.file import TUICOLUMNS as FILE_COLUMNS
+from .views.torrent_list import TorrentListWidget
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def _reconnect(settings, name, value):

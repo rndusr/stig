@@ -9,15 +9,16 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-import logging
-import urwid
-import time
 import asyncio
+import logging
+import time
 
-from .scroll import (Scrollable, ScrollBar)
+import urwid
+
+from .scroll import Scrollable, ScrollBar
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class UILogRecordHandler(logging.Handler):

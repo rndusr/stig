@@ -29,7 +29,7 @@ urwid.COMPLETE_PREV            = 'complete previous'
 for key in tuple(urwid.command_map._command):
     del urwid.command_map._command[key]
 
-from .keymap import Key
+from .keymap import Key  # isort:skip
 urwid.command_map[Key('pgup')]           = urwid.CURSOR_PAGE_UP
 urwid.command_map[Key('pgdn')]           = urwid.CURSOR_PAGE_DOWN
 urwid.command_map[Key('ctrl-b')]         = urwid.CURSOR_PAGE_UP
@@ -65,8 +65,8 @@ urwid.command_map[Key('tab')]            = urwid.COMPLETE_NEXT
 urwid.command_map[Key('shift-tab')]      = urwid.COMPLETE_PREV
 
 
-import re
-import operator
+import re        # isort:skip
+import operator  # isort:skip
 class Edit_readline(urwid.Edit):
     def keypress(self, size, key):
         def move_to_next_word(forward=True):
@@ -232,7 +232,7 @@ urwid.ListBox = ListBox_patched
 
 # Don't use deprecated inspect.getargspect()
 # https://github.com/urwid/urwid/pull/311
-from inspect import getfullargspec
+from inspect import getfullargspec  # isort:skip
 def remove_defaults(d, fn):
     args, varargs, varkw, defaults, _, _, _ = getfullargspec(fn)
 

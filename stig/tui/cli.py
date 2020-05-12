@@ -9,17 +9,18 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-import urwid
-import os
-import blinker
 import asyncio
+import os
 import time
+
+import blinker
+import urwid
 
 from .group import Group
 from .scroll import ScrollBar
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class CLIEditWidget(urwid.WidgetWrap):

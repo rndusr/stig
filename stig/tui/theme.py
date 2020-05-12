@@ -55,9 +55,10 @@ Variables can be used as FOREGROUND or BACKGROUND attributes.
 
 """
 
-from collections import abc
 import re
-from urwid import (AttrSpec, AttrSpecError)
+from collections import abc
+
+from urwid import AttrSpec, AttrSpecError
 
 
 class ThemeError(Exception): pass

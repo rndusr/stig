@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import urwid
-from urwid.widget import (BOX, FLOW, FIXED)
+from urwid.widget import BOX, FIXED, FLOW
 
 # Scroll actions
 SCROLL_LINE_UP        = 'line up'

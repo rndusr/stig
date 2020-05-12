@@ -11,11 +11,9 @@
 
 import urwid
 
-from .. import objects
-from .. import utils
 from . import main as tui
+from .. import objects, utils
 from ..client import constants as const
-
 
 # Workaround for urwid bug: When a Text widget is initialized with an empty
 # string, subsequent set_text() calls have no effect.

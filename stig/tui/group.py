@@ -9,8 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-import urwid
 import operator
+
+import urwid
 
 
 class _Fill(urwid.SolidFill):

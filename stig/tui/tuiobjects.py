@@ -13,26 +13,30 @@
 Application-wide instances for the TUI
 """
 
-from ..logging import make_logger
+import asyncio
+
+import urwid
+
+from . import theme, urwidpatches
+from .. import objects
+from ..settings.defaults import DEFAULT_KEYMAP
+from .group import Group
+from .keymap import KeyMap
+from .logger import LogWidget
+from .miscwidgets import (BandwidthStatusWidget, ConnectionStatusWidget, KeyChainsWidget,
+                          MarkedItemsWidget, QuickHelpWidget, TorrentCountersWidget)
+from .tabs import TabBar, Tabs
+
+from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
-from .. import objects
 
-
-# Keybindings
-from .keymap import KeyMap
-from ..settings.defaults import DEFAULT_KEYMAP
 keymap = KeyMap(callback=lambda cmd,widget: objects.cmdmgr.run_task(cmd, on_error=log.error))
 for args in DEFAULT_KEYMAP:
     if args['action'][0] == '<' and args['action'][-1] == '>':
         args['action'] = keymap.mkkey(args['action'])
     keymap.bind(**args)
 
-
-# Widgets
-import urwid
-from . import urwidpatches
-from . import theme
 
 MAX_TAB_TITLE_WIDTH = 50
 
@@ -72,8 +76,6 @@ def _create_cli_widget():
 def _greedy_spacer():
     return urwid.Padding(urwid.Text(''))
 
-from .group import Group
-from .miscwidgets import (ConnectionStatusWidget, QuickHelpWidget)
 
 # Widget names start with "_" if they are hidden, e.g. they aren't mentioned in
 # the output of "help tui".
@@ -83,12 +85,10 @@ topbar.add(name='host',   widget=ConnectionStatusWidget(), options='pack')
 topbar.add(name='_spacer', widget=urwid.AttrMap(_greedy_spacer(), 'topbar'))
 topbar.add(name='help',   widget=QuickHelpWidget(), options='pack')
 
-from .tabs import (Tabs, TabBar)
 tabs = keymap.wrap(Tabs, context='tabs')(
     tabbar=urwid.AttrMap(TabBar(), 'tabs.unfocused')
 )
 
-from .miscwidgets import (TorrentCountersWidget, MarkedItemsWidget, BandwidthStatusWidget)
 bottombar = Group(cls=urwid.Columns)
 bottombar.add(name='counters', widget=TorrentCountersWidget(), options='pack')
 bottombar.add(name='_spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
@@ -98,11 +98,9 @@ bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
 
 cli = urwid.AttrMap(_create_cli_widget(), 'cli')
 
-from .logger import LogWidget
 logwidget = LogWidget(height=int(objects.localcfg['tui.log.height']),
                       autohide_delay=objects.localcfg['tui.log.autohide'])
 
-from .miscwidgets import KeyChainsWidget
 keychains = KeyChainsWidget()
 keymap.on_keychain(keychains.update)
 
@@ -120,7 +118,6 @@ def unhandled_input(key):
     if key is not None:
         log.debug('Unhandled key: %s', key)
 
-import asyncio
 urwidscreen = urwid.raw_display.Screen()
 urwidloop = urwid.MainLoop(widgets,
                            screen=urwidscreen,

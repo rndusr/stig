@@ -9,13 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-import urwid
 from collections import abc
 
+import urwid
+
 from ..utils.string import strwidth
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class TabID(int):
