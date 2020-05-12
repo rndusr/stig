@@ -17,18 +17,20 @@
 # Types are used to convert values from the server (e.g. `Float(1234567)`) and
 # for some types from the user as strings (e.g. `Float('1.3GB')`).
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-from collections import abc
+import calendar
+import datetime
+import operator
 import os
 import re
 import time
-import datetime
-import calendar
+from collections import abc, defaultdict, deque
 
-from .utils import (URL, Float, Int, String, Percent, convert, const, multitype,
-                    cached_property)
+from .utils import (URL, Float, Int, Percent, String, cached_property, const, convert,
+                    multitype)
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
+
 
 class SHA1(String):
     def __new__(cls, value, regex=r'^[0-9a-fA-F]{,40}$'):
@@ -94,7 +96,6 @@ class Status(tuple):
     def __ge__(self, other):
         return self.ORDER.index(self[0]) >= self.ORDER.index(other[0])
 
-import operator
 class SmartCmpStr(str):
     """
     String that compares case-insensitively if the other string consists solely
@@ -614,7 +615,6 @@ class TorrentFile(abc.Mapping):
 
 
 
-from collections import (defaultdict, deque)
 MAX_SAMPLES = 10
 MAX_SAMPLE_AGE = 5*3600
 _PEER_PROGRESS_DATA = defaultdict(lambda: deque(maxlen=MAX_SAMPLES))

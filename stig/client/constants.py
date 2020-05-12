@@ -11,6 +11,7 @@
 
 from .utils import Float
 
+
 class ConstantBase():
     pass
 

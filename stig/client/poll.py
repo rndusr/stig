@@ -9,15 +9,16 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 import asyncio
 import functools
+
 import blinker
 
 from . import errors
 from .utils import SleepUneasy
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def _func_call_str(func, *posargs, **kwargs):

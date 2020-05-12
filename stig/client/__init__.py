@@ -9,24 +9,19 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .errors import *
-from .constants import *
+# Prevent circular import
+from .constants import *  # isort:skip
+from .errors import *     # isort:skip
 
-from .utils import (Response, URL)
-
-from .filters import (TorrentFilter, FileFilter, PeerFilter, TrackerFilter,
-                      SettingFilter)
-
-from .sorters import (TorrentSorter, PeerSorter, TrackerSorter, SettingSorter)
-
-from .poll import RequestPoller
-from .trequestpool import TorrentRequestPool
-
-from .aiotransmission.rpc import TransmissionRPC
-from .aiotransmission.api_status import StatusAPI
 from .aiotransmission.api_settings import SettingsAPI
+from .aiotransmission.api_status import StatusAPI
 from .aiotransmission.api_torrent import TorrentAPI
+from .aiotransmission.rpc import TransmissionRPC
 from .aiotransmission.torrent import Torrent
-from .ttypes import TorrentFile, TorrentTracker, TorrentPeer
-
 from .api import API
+from .filters import FileFilter, PeerFilter, SettingFilter, TorrentFilter, TrackerFilter
+from .poll import RequestPoller
+from .sorters import PeerSorter, SettingSorter, TorrentSorter, TrackerSorter
+from .trequestpool import TorrentRequestPool
+from .ttypes import TorrentFile, TorrentPeer, TorrentTracker
+from .utils import URL, Response

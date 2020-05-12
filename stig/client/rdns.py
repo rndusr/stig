@@ -9,15 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
-import socket
 import concurrent
+import socket
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 _cache = {}
 _lookup_pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
-
 
 def gethostbyaddr(ip):
     hostname = _cache.get(ip)
@@ -33,10 +32,8 @@ def gethostbyaddr(ip):
             _cache[ip] = hostname
     return hostname
 
-
 def gethostbyaddr_from_cache(ip):
     return _cache.get(ip)
-
 
 def query(*ips, callback=None):
     def cb(fut):

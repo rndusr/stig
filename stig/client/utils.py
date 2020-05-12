@@ -9,11 +9,15 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..utils.usertypes import Bool, Int, Float, String, Percent, Option, Path, multitype
-from ..utils import convert
-from . import constants as const
-
 import asyncio
+import re
+from types import SimpleNamespace
+
+from async_timeout import timeout as async_timeout
+
+from . import constants as const
+from ..utils import convert
+from ..utils.usertypes import Bool, Float, Int, Option, Path, Percent, String, multitype
 
 
 class Bandwidth(Int):
@@ -78,8 +82,6 @@ class PerfectInterval():
             return interval
 
 
-import asyncio
-from async_timeout import timeout as async_timeout
 class SleepUneasy():
     """Asynchronous sleep() that can be aborted"""
 
@@ -105,7 +107,6 @@ class SleepUneasy():
         self._interrupt.set()
 
 
-from types import SimpleNamespace
 class Response(SimpleNamespace):
     """
     Response to an API call
@@ -163,7 +164,6 @@ class LazyDict(dict):
         return value
 
 
-import re
 class URL():
     """Parse URL as lenient as possible (no validation)"""
 

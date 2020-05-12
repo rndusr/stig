@@ -9,11 +9,15 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
+import os
+from collections import abc
+from urllib.parse import quote_plus as urlquote
+
+from . import ClientError
+
+from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
-from collections import abc
-from . import ClientError
 
 class TorrentBase(abc.Mapping):
     """Information about a torrent as a mapping
@@ -59,7 +63,6 @@ class TorrentBase(abc.Mapping):
         return hash(self['id'])
 
 
-from urllib.parse import quote_plus as urlquote
 class TorrentAPIBase():
     async def get_magnet_uris(self, tfilter, tracker=False, trackers=True, name=True, size=True):
         response = await self.torrents(tfilter, keys=('hash', 'name', 'size-total', 'trackers'))
@@ -87,8 +90,6 @@ class TorrentAPIBase():
         return uris
 
 
-from collections import abc
-import os
 class TorrentFileTreeBase(abc.Mapping):
     """Nested mapping of a Torrent's files"""
 

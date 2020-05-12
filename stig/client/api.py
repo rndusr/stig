@@ -9,22 +9,19 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
-log = make_logger(__name__)
-
 import asyncio
 
-from .utils import SleepUneasy
-
-from .aiotransmission.rpc import TransmissionRPC
-from .aiotransmission.api_status import StatusAPI
+from . import errors
 from .aiotransmission.api_settings import SettingsAPI
+from .aiotransmission.api_status import StatusAPI
 from .aiotransmission.api_torrent import TorrentAPI
-
+from .aiotransmission.rpc import TransmissionRPC
 from .poll import RequestPoller
 from .trequestpool import TorrentRequestPool
-from .utils import cached_property
-from . import errors
+from .utils import SleepUneasy, cached_property
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class API():
