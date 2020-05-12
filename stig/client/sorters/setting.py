@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .base import (SorterBase, SortSpec)
+from .base import SorterBase, SortSpec
 
 
 class _SortSpec(SortSpec):

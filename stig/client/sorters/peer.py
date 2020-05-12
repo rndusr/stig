@@ -9,7 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .base import (SorterBase, SortSpec)
+from .. import rdns
+from .base import SorterBase, SortSpec
 
 
 class _SortSpec(SortSpec):
@@ -18,7 +19,6 @@ class _SortSpec(SortSpec):
         super().__init__(*args, description=description, **kwargs)
 
 
-from .. import rdns
 def _get_hostname_or_ip(torrent):
     ip = torrent['ip']
     hostname = rdns.gethostbyaddr_from_cache(ip)

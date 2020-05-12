@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .torrent import TorrentSorter
 from .peer import PeerSorter
-from .tracker import TrackerSorter
 from .setting import SettingSorter
+from .torrent import TorrentSorter
+from .tracker import TrackerSorter
