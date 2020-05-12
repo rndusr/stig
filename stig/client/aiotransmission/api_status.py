@@ -9,14 +9,15 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-import blinker
 from collections import namedtuple
 
+import blinker
+
 from ..poll import RequestPoller
-from ..utils import (convert, const)
+from ..utils import const, convert
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 TorrentCount = namedtuple('TorrentCount', ('active', 'downloading', 'isolated',

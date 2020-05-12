@@ -11,17 +11,18 @@
 
 """Low-level communication with the Transmission daemon"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import asyncio
 import json
 import textwrap
-from blinker import Signal
 import warnings
-import async_timeout
 
-from ..errors import (ConnectionError, TimeoutError, RPCError, AuthError, ClientError)
+import async_timeout
+from blinker import Signal
+
+from ..errors import AuthError, ClientError, ConnectionError, RPCError, TimeoutError
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 AUTH_ERROR_CODE = 401

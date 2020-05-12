@@ -11,12 +11,14 @@
 
 """Torrent class and value modifiers for compatibility with ttypes"""
 
-from ...logging import make_logger
-log = make_logger(__name__)
+import os
+import time
 
-from .. import ttypes
+from .. import base, ttypes
 from ..utils import LazyDict
-from .. import base
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 # Some values need to be modified to comply with our internal standards
@@ -54,7 +56,6 @@ def _modify_timestamp(t, key, zero_means=ttypes.Timestamp.UNKNOWN):
         return seconds
 
 
-import time
 def _modify_timestamp_completed(t):
     if t['percentDone'] >= 1:
         doneDate = t['doneDate']
@@ -194,7 +195,6 @@ class TorrentFileID(tuple):
     def __repr__(self):
         return 'TorrentFileID(torrent_id=%d, file_id=%d)' % self
 
-import os
 class TorrentFileTree(base.TorrentFileTreeBase):
     @classmethod
     def create(cls, raw_torrent):

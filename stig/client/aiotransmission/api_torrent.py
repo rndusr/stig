@@ -9,21 +9,20 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
-from string import hexdigits as HEXDIGITS
-from collections import abc
-import os
 import base64
+import os
+from collections import abc
+from string import hexdigits as HEXDIGITS
 
-from ..utils import (Response, URL)
-from ..base import TorrentAPIBase
-from .torrent import (TorrentFields, Torrent)
 from .. import ClientError
-from ..filters import (TorrentFilter, FileFilter)
-from ..utils import (Bool, Bandwidth, BoolOrBandwidth)
+from ..base import TorrentAPIBase
+from ..filters import FileFilter, TorrentFilter
 from ..ttypes import Path
+from ..utils import URL, Bandwidth, Bool, BoolOrBandwidth, Response
+from .torrent import Torrent, TorrentFields
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class _TorrentCache():
