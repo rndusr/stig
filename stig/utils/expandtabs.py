@@ -11,8 +11,9 @@
 
 """Indent and expand tabs and wrap lines"""
 
-from textwrap import wrap
 from shutil import get_terminal_size
+from textwrap import wrap
+
 
 def _explode(lines, indent):
     """Split each line in `lines` at tabstops

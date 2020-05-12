@@ -9,7 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ._converter import DataSizeConverter
 from types import SimpleNamespace
+
+from ._converter import DataSizeConverter
+
 convert = SimpleNamespace(bandwidth=DataSizeConverter(),
                           size=DataSizeConverter())

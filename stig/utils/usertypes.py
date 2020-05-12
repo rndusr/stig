@@ -9,12 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+import os
+import re
+from collections.abc import Iterable
 from functools import partial
 from itertools import chain
-import re
 from typing import Pattern
-from collections.abc import Iterable
-import os
 
 _INFINITY = float('inf')
 

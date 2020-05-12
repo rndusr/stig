@@ -9,10 +9,11 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ..logging import make_logger
+from collections import abc
+
+from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
-from collections import abc
 
 DEFAULT_DELIMS = (' ',)
 DEFAULT_ESCAPES = ('\\',)

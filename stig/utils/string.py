@@ -9,8 +9,10 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-
+from unicodedata import east_asian_width as _east_asian_width
 from unicodedata import normalize as _normalize_unicode
+
+
 def normalize_unicode(string):
     """
     Convert combining character sequences into graphemes (e.g. "a˚" -> "å") so
@@ -30,7 +32,6 @@ def striplines(lines):
     yield from lines
 
 
-from unicodedata import east_asian_width as _east_asian_width
 def strwidth(string):
     """Return displayed width of `string`, considering wide characters"""
     return len(string) + sum(1 for char in string
