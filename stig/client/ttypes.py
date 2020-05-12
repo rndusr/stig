@@ -648,6 +648,11 @@ class TorrentPeer(abc.Mapping):
                 log.debug('Sample from %s is too old: %r', peer_id, samples[0])
                 samples.popleft()
 
+            # Remove samples where progress is 0.0.  A lot of the cache entries just have
+            # a single sample from peers connecting for some reason but not downloading.
+            if samples[0][1] in (0.0, 1.0):
+                samples.popleft()
+
             # Remove deque if there are no samples left
             if not samples:
                 del cls._PEER_PROGRESS_DATA[peer_id]
