@@ -9,12 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from collections import abc
 import operator
+from collections import abc
 
-from ..ttypes import SmartCmpStr
-from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
 from .. import constants as const
+from ..ttypes import SmartCmpStr
+from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
 
 
 def _is_sequence(obj):

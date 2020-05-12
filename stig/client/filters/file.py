@@ -12,7 +12,8 @@
 """Filtering TorrentFiles by various values"""
 
 from ..ttypes import TorrentFile
-from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
+from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
+
 
 class _BoolFilterSpec(BoolFilterSpec):
     def __init__(self, *args, **kwargs):

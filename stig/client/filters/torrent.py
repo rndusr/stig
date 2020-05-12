@@ -12,9 +12,10 @@
 """Filtering Torrents by their values"""
 
 from ..ttypes import TYPES as VALUETYPES
-from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
-from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta, limit_rate_filter)
-from ..utils import (Bandwidth, BoolOrBandwidth, convert)
+from ..ttypes import Status
+from ..utils import Bandwidth, BoolOrBandwidth, convert
+from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
+from .utils import cmp_timestamp_or_timdelta, limit_rate_filter, timestamp_or_timedelta
 
 
 def _desc(text):
@@ -23,7 +24,6 @@ def _desc(text):
     return text
 
 
-from ..ttypes import Status
 _STATUS_VERIFY    = Status.VERIFY
 _STATUS_DOWNLOAD  = Status.DOWNLOAD
 _STATUS_UPLOAD    = Status.UPLOAD

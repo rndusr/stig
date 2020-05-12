@@ -11,11 +11,11 @@
 
 """Filtering PeerList items by various values"""
 
-from ..ttypes import TorrentPeer
-from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
-
-
 from .. import rdns
+from ..ttypes import TorrentPeer
+from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
+
+
 def _cmp_host_or_ip(p, op, v):
     hostname = rdns.gethostbyaddr_from_cache(p['ip'])
     if hostname is None:

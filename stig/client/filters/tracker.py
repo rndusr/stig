@@ -12,8 +12,9 @@
 """Filtering TrackerList items by various values"""
 
 from ..ttypes import TorrentTracker
-from .base import (BoolFilterSpec, CmpFilterSpec, FilterSpecDict, Filter, FilterChain)
-from .utils import (timestamp_or_timedelta, cmp_timestamp_or_timdelta)
+from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
+from .utils import cmp_timestamp_or_timdelta, timestamp_or_timedelta
+
 
 class _BoolFilterSpec(BoolFilterSpec):
     def __init__(self, *args, **kwargs):

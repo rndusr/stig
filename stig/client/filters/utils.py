@@ -9,13 +9,13 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from ...logging import make_logger
-log = make_logger(__name__)
-
 import operator
 
-from ..ttypes import (Timedelta, Timestamp)
+from ..ttypes import Timedelta, Timestamp
 from ..utils import const
+
+from ...logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 def timestamp_or_timedelta(string, default_sign=1):
