@@ -245,17 +245,17 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
     @staticmethod
     def _get_operator(value):
         if isinstance(value, str):
-            value = value.strip()
-            if len(value) >= 3:
+            stripped = value.strip()
+            if len(stripped) >= 3:
                 def to_num(string):
                     try:
                         return Float(string)
                     except ValueError as e:
                         raise ValueError('%s: %r' % (e, string))
-                if value[:2] == '+=':
-                    return '__add__', to_num(value[2:])
-                elif value[:2] == '-=':
-                    return '__sub__', to_num(value[2:])
+                if stripped[:2] == '+=':
+                    return '__add__', to_num(stripped[2:])
+                elif stripped[:2] == '-=':
+                    return '__sub__', to_num(stripped[2:])
         return None, value
 
     @staticmethod
