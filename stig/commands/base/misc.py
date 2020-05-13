@@ -82,7 +82,7 @@ class VersionCmdbase(metaclass=InitCommand):
     description = 'Show {} version'.format(__appname__)
 
     def run(self):
-        print('%s ersion %s' % (__appname__, __version__))
+        print('%s version %s' % (__appname__, __version__))
 
 
 class LogCmdbase(metaclass=InitCommand):
