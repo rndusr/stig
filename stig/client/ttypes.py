@@ -650,7 +650,7 @@ class TorrentPeer(abc.Mapping):
 
             # Remove samples where progress is 0.0.  A lot of the cache entries just have
             # a single sample from peers connecting for some reason but not downloading.
-            if samples[0][1] in (0.0, 1.0):
+            if samples and samples[0][1] in (0.0, 1.0):
                 samples.popleft()
 
             # Remove deque if there are no samples left
