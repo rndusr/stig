@@ -28,7 +28,8 @@ from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 
-class RcCmdbase(metaclass=InitCommand):
+class RcCmdbase(mixin.get_rc_file,
+                metaclass=InitCommand):
     name = 'rc'
     aliases = ('source',)
     category = 'configuration'
