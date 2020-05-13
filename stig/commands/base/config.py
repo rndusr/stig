@@ -44,14 +44,7 @@ class RcCmdbase(metaclass=InitCommand):
     )
 
     async def run(self, FILE):
-        filepath = os.path.expanduser(FILE)
-        if not os.path.exists(filepath) and \
-           not os.path.isabs(filepath) and \
-           not filepath.startswith(f'.{os.sep}') and \
-           not filepath.startswith('~'):
-            default_dir = os.path.dirname(defaults.DEFAULT_RCFILE)
-            filepath = os.path.join(default_dir, filepath)
-
+        filepath = self.get_rc_file(FILE)
         try:
             lines = rcfile.read(filepath)
         except rcfile.RcFileError as e:
