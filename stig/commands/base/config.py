@@ -12,6 +12,7 @@
 import operator
 import os
 import subprocess
+from collections import abc
 
 from . import _mixin as mixin
 from .. import CmdError, InitCommand, utils
@@ -269,8 +270,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
 
     @staticmethod
     def _stringify(value):
-        from collections.abc import Iterable
-        if not isinstance(value, str) and isinstance(value, Iterable):
+        if not isinstance(value, str) and isinstance(value, abc.Iterable):
             return ', '.join(str(item) for item in value)
         else:
             return str(value)
