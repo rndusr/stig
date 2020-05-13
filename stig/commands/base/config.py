@@ -34,11 +34,12 @@ class RcCmdbase(metaclass=InitCommand):
     provides = set()
     description = 'Run commands in rc file'
     usage = ('rc <FILE>',)
-    examples = ('rc rc.example   # Load $XDG_CONFIG_HOME/.config/{__appname__}/rc.example',)
+    examples = (f'rc rc.example   # Load $XDG_CONFIG_HOME{os.sep}.config/{{__appname__}}{os.sep}rc.example',)
     argspecs = (
         {'names': ('FILE',),
          'description': ('Path to rc file; if FILE does not exist and does not start with '
-                         '"/", "./" or "~", "$XDG_CONFIG_HOME/.config/{__appname__}/" '
+                         f'"{os.sep}", ".{os.sep}" or "~", '
+                         f'"$XDG_CONFIG_HOME{os.sep}.config{os.sep}{{__appname__}}{os.sep}" '
                          'is prepended')},
     )
 
@@ -46,7 +47,7 @@ class RcCmdbase(metaclass=InitCommand):
         filepath = os.path.expanduser(FILE)
         if not os.path.exists(filepath) and \
            not os.path.isabs(filepath) and \
-           not filepath.startswith('./') and \
+           not filepath.startswith(f'.{os.sep}') and \
            not filepath.startswith('~'):
             default_dir = os.path.dirname(defaults.DEFAULT_RCFILE)
             filepath = os.path.join(default_dir, filepath)
