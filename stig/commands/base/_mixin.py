@@ -11,7 +11,10 @@
 
 """Mixin classes that are common between TUI and CLI commands"""
 
+import os
+
 from ... import objects
+from ...settings import defaults
 
 
 class get_single_torrent():
@@ -173,3 +176,16 @@ class get_setting_columns():
         Raise ValueError or return a new list of `columns`.
         """
         return objects.localcfg.validate('columns.settings', columns)
+
+
+class get_rc_file():
+    def get_rc_file(self, path):
+        """Return `path` relative to default rc file path unless it is absolute."""
+        path = os.path.expanduser(path)
+        if not os.path.exists(path) and \
+           not os.path.isabs(path) and \
+           not path.startswith(f'.{os.sep}') and \
+           not path.startswith('~'):
+            default_dir = os.path.dirname(defaults.DEFAULT_RCFILE)
+            path = os.path.join(default_dir, path)
+        return path
