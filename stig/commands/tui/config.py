@@ -10,7 +10,18 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from . import _mixin as mixin
+from .. import CmdError
 from ..base import config as base
+
+
+class DumpCmd(base.DumpCmdbase):
+    provides = {'tui'}
+
+    def dump_rc(self, content, path, force=False):
+        if path is None:
+            raise CmdError('Missing argument: FILE')
+        else:
+            return self.write_rc_file(content, path, force)
 
 
 class RcCmd(base.RcCmdbase):

@@ -15,8 +15,19 @@ from ..base import config as base
 from ._table import print_table
 
 
+class DumpCmd(base.DumpCmdbase):
+    provides = {'cli'}
+
+    def dump_rc(self, content, path, force=False):
+        if path is None:
+            print(content)
+        else:
+            return self.write_rc_file(content, path, force)
+
+
 class RcCmd(base.RcCmdbase):
     provides = {'cli'}
+
 
 class ResetCmd(base.ResetCmdbase):
     provides = {'cli'}

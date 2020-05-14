@@ -12,20 +12,186 @@
 import operator
 import os
 import subprocess
+import textwrap
 from collections import abc
+from datetime import datetime
 
 from . import _mixin as mixin
 from .. import CmdError, InitCommand, utils
-from ... import objects
+from ... import __appname__, __version__, objects
 from ...client import ClientError
 from ...completion import candidates
 from ...settings import defaults, rcfile
-from ...utils import usertypes
+from ...utils import cliparser, usertypes
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
+
+
+class DumpCmdbase(mixin.get_rc_filepath,
+                  metaclass=InitCommand):
+    name = 'dump'
+    aliases = ()
+    category = 'configuration'
+    provides = set()
+    description = 'Generate commands that reproduce current settings, keybindings and tabs'
+    usage = ('dump [<OPTIONS>] [<FILE>]',)
+    examples = (f'dump rc.current    # Write $XDG_CONFIG_HOME{os.sep}.config/{{__appname__}}{os.sep}rc.current',
+                f'dump ./rc.current  # Write rc.current in current working directory')
+    argspecs = (
+        {'names': ('FILE',), 'nargs': '?',
+         'description': ('Path to rc file; if FILE does not exist and does not start with '
+                         '"/", "./" or "~", "$XDG_CONFIG_HOME/.config/{__appname__}/" '
+                         'is prepended')},
+        { 'names': ('--force', '-f'), 'action': 'store_true',
+          'description': 'Overwrite FILE if it exists' },
+    )
+
+    DUMP_WIDTH = 79
+
+    def run(self, force, FILE):
+        now = datetime.now()
+        content = '\n'.join((
+            f'# This is an rc file for {__appname__} {__version__}.',
+            f'# This file was created on {now.isoformat(sep=" ", timespec="seconds")}.',
+            '', '',
+            '### SETTINGS',
+            '',
+            self._get_settings(),
+            '', '',
+            '### KEYBINDINGS',
+            '',
+            self._get_keybindings(),
+        )) + '\n'
+        if FILE:
+            return self.dump_rc(content, force=force, path=self.get_rc_filepath(FILE))
+        else:
+            return self.dump_rc(content, force=force, path=None)
+
+    def write_rc_file(self, content, path, force=False):
+        if os.path.exists(path) and not force:
+            raise CmdError('File exists: %s' % (path,))
+        else:
+            try:
+                with open(path, 'w') as f:
+                    f.write(content)
+            except OSError as e:
+                raise CmdError('Unable to write %s: %s' % (path, e))
+            else:
+                log.info('Wrote rc file: %s' % (path,))
+                return True
+
+    def _get_settings(self):
+        lcfg = objects.localcfg
+        settings = []
+        for name in sorted(lcfg):
+            value = lcfg[name]
+            if isinstance(value, abc.Iterable) and not isinstance(value, str):
+                value = ' '.join(value)
+            else:
+                value = str(value)
+                if ' ' in value:
+                    value = repr(value)
+            escape_set_cmd = lcfg[name] == lcfg.default(name)
+            lines = (self._wrap_setting_description(lcfg.description(name)) +
+                     self._wrap_setting_default(lcfg.default(name)) +
+                     self._wrap_set_cmd(name, value, escape=escape_set_cmd))
+            settings.append('\n'.join(lines))
+        return '\n\n'.join(settings)
+
+    def _wrap_setting_description(self, string):
+        return textwrap.wrap('# ' + str(string),
+                             width=self.DUMP_WIDTH,
+                             subsequent_indent='# ')
+
+    def _wrap_setting_default(self, string):
+        subseqind = '# ' + len('Default: ') * ' '
+        prefix = '# Default: '
+        lines = textwrap.wrap(prefix + str(string),
+                              width=self.DUMP_WIDTH,
+                              subsequent_indent=subseqind,
+                              break_long_words=False,
+                              break_on_hyphens=False)
+        # First line must always contain the beginning of the default value, even if it is
+        # too long
+        if len(lines) >= 2 and lines[0].strip() == prefix.strip():
+            lines[0] = lines[0] + lines[1][len(subseqind)-1:]
+            del lines[1]
+        return lines
+
+    def _wrap_set_cmd(self, name, value, escape):
+        cmd = 'set'
+        lines = textwrap.wrap(' '.join((cmd, name, value)),
+                              width=self.DUMP_WIDTH,
+                              subsequent_indent=(len(cmd) + len(name) + 2) * ' ',
+                              break_long_words=False,
+                              break_on_hyphens=False)
+
+        # First line must always contain command, name and beginning of value, even if it
+        # is too long
+        if len(lines) >= 3 and lines[0].strip() == cmd:
+            lines[0] = ' '.join((lines[0], lines[1].strip(), lines[2].strip()))
+            del lines[1], lines[1]
+        elif len(lines) >= 2 and lines[0].strip() == ' '.join((cmd, name)):
+            lines[0] = ' '.join((lines[0], lines[1].strip()))
+            del lines[1]
+
+        # Escape linebreaks of multi-line commands
+        for i in range(len(lines)-1):
+            lines[i] += ' \\'
+
+        if escape:
+            return ['#' + line for line in lines]
+        else:
+            return lines
+
+    def _get_keybindings(self):
+        from ...tui.tuiobjects import keymap
+        contexts = []
+        for context in sorted(keymap.contexts):
+            # Command can consist of one or two lines
+            lines = []
+            for key,action in keymap.map(context):
+                desc = keymap.get_description(key, context)
+                escape = self._is_default_keybinding(key, context, action, desc)
+                cmd = self._wrap_bind_cmd(key, action, context, desc, escape)
+                lines.extend(cmd)
+            contexts.append('\n'.join(lines))
+        return '\n\n'.join(contexts)
+
+    def _is_default_keybinding(self, key, context, action, description):
+        from ...tui.tuiobjects import keymap
+        if isinstance(key, tuple):
+            key_str = ' '.join(k.strip('<>') for k in key)
+        else:
+            key_str = key.strip('<>')
+        dct = {'key': key_str, 'action': action}
+        if context != keymap.DEFAULT_CONTEXT:
+            dct['context'] = context
+        if description:
+            dct['description'] = description
+        for d in defaults.DEFAULT_KEYMAP:
+            if dct == d:
+                return True
+        return False
+
+    def _wrap_bind_cmd(self, key, action, context, description, escape=False):
+        from ...tui.tuiobjects import keymap
+        lines = [['bind']]
+        if description:
+            lines[0].extend(('--description', cliparser.quote(description), '\\'))
+            indent = len(lines[0][0]) * ' '
+            lines.append([indent])
+        if context != keymap.DEFAULT_CONTEXT:
+            lines[-1].extend(('--context', cliparser.quote(context))),
+        lines[-1].append(cliparser.quote(str(key)))
+        lines[-1].append(str(action))
+        if escape:
+            return ['#' + ' '.join(line) for line in lines]
+        else:
+            return [' '.join(line) for line in lines]
 
 
 class RcCmdbase(mixin.get_rc_filepath,
