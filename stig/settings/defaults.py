@@ -223,15 +223,15 @@ DEFAULT_KEYMAP = (
      'description': 'Find torrents in a new tab'},
 
     # Help
-    {'context': 'main', 'key': 'F1+c', 'action': 'tab help commands',
+    {'context': 'main', 'key': 'F1 c', 'action': 'tab help commands',
      'description': 'Open help for commands in a new tab'},
-    {'context': 'main', 'key': 'F1+s', 'action': 'tab help settings',
+    {'context': 'main', 'key': 'F1 s', 'action': 'tab help settings',
      'description': 'Open help for settings in a new tab'},
-    {'context': 'main', 'key': 'F1+k', 'action': 'tab help keybindings',
+    {'context': 'main', 'key': 'F1 k', 'action': 'tab help keybindings',
      'description': 'Open help for keybindings in a new tab'},
-    {'context': 'main', 'key': 'F1+f', 'action': 'tab help filters',
+    {'context': 'main', 'key': 'F1 f', 'action': 'tab help filters',
      'description': 'Open help for filters in a new tab'},
-    {'context': 'main', 'key': 'F1+r', 'action': 'tab help cfgman',
+    {'context': 'main', 'key': 'F1 r', 'action': 'tab help cfgman',
      'description': 'Open help for rc files in a new tab'},
     {'context': 'main', 'key': '?',    'action': '<F1>'},
 
