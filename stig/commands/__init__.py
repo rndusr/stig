@@ -776,3 +776,21 @@ class CommandManager():
         return DummyCommand((),
                             info_handler=self._info_handler,
                             error_handler=self._error_handler)
+
+    def run_ignored_calls(self, cmdname=None):
+        """
+        Run any commands that were previously ignored because their interface was not active
+
+        See `temporary_active_interface` for changing the active interface while running
+        ignored calls.
+        """
+        cmds = tuple((cmd for cmd in self._ignored_calls
+                      if cmdname is None or cmdname == cmd[0][0]))
+        log.debug(cmds)
+        for cmd in cmds:
+            self.run_sync(cmd)
+            self._ignored_calls.remove(cmd)
+
+        log.debug('Ignored commands after:')
+        for cmd in self._ignored_calls:
+            log.debug(cmd)
