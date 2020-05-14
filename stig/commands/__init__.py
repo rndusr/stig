@@ -74,6 +74,7 @@ import asyncio
 import shlex
 import sys
 from collections import abc
+from contextlib import contextmanager
 from importlib import import_module
 from inspect import getmembers
 
@@ -476,6 +477,14 @@ class CommandManager():
             self._active_interface = interface
         else:
             raise ValueError('No commands for interface {!r} registered'.format(interface))
+
+    @contextmanager
+    def temporary_active_interface(self, interface):
+        """Context manager that temporarily changes the active interface"""
+        orig_interface = self.active_interface
+        self.active_interface = interface
+        yield
+        self.active_interface = orig_interface
 
     @property
     def active_commands(self):
