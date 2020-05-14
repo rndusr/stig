@@ -28,7 +28,7 @@ from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 
-class RcCmdbase(mixin.get_rc_file,
+class RcCmdbase(mixin.get_rc_filepath,
                 metaclass=InitCommand):
     name = 'rc'
     aliases = ('source',)
@@ -46,7 +46,7 @@ class RcCmdbase(mixin.get_rc_file,
     )
 
     async def run(self, FILE):
-        filepath = self.get_rc_file(FILE)
+        filepath = self.get_rc_filepath(FILE)
         try:
             lines = rcfile.read(filepath)
         except rcfile.RcFileError as e:

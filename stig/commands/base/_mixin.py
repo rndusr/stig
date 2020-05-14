@@ -178,8 +178,8 @@ class get_setting_columns():
         return objects.localcfg.validate('columns.settings', columns)
 
 
-class get_rc_file():
-    def get_rc_file(self, path):
+class get_rc_filepath():
+    def get_rc_filepath(self, path):
         """Return `path` relative to default rc file path unless it is absolute."""
         path = os.path.expanduser(path)
         if not os.path.exists(path) and \
