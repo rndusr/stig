@@ -52,6 +52,9 @@ class DumpCmdbase(mixin.get_rc_filepath,
     DUMP_WIDTH = 79
 
     def run(self, force, FILE):
+        with objects.cmdmgr.temporary_active_interface('tui'):
+            objects.cmdmgr.run_ignored_calls('bind')
+
         now = datetime.now()
         content = '\n'.join((
             f'# This is an rc file for {__appname__} {__version__}.',
