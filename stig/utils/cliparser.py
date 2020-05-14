@@ -9,6 +9,17 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+# TODO: Make all functions that take a cursor position return a tuple if the cursor
+#       position is given, or just a single argument otherwise.
+
+# TODO: To comply with bash, a backslash shouldn't have special meaning unless it's in
+#       front of a special character, e.g. "\1" should be a backslash and 1.
+
+# TODO: To comply with bash, backslashes shouldn't have special meaning inside single
+#       quotes, e.g. '\' should be a single backslash while "\" would be a double quote
+#       with the closing quote missing.
+
+
 from collections import abc
 
 from ..logging import make_logger  # isort:skip
