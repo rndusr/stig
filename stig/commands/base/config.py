@@ -36,7 +36,8 @@ class RcCmdbase(mixin.get_rc_filepath,
     provides = set()
     description = 'Run commands in rc file'
     usage = ('rc <FILE>',)
-    examples = (f'rc rc.example   # Load $XDG_CONFIG_HOME{os.sep}.config/{{__appname__}}{os.sep}rc.example',)
+    examples = (f'rc rc.example    # Load $XDG_CONFIG_HOME{os.sep}.config/{{__appname__}}{os.sep}rc.example',
+                f'rc ./rc.example  # Load rc.example from current working directory',)
     argspecs = (
         {'names': ('FILE',),
          'description': ('Path to rc file; if FILE does not exist and does not start with '
