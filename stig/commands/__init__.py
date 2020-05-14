@@ -415,6 +415,7 @@ class CommandManager():
         self.pre_run_hook = pre_run_hook
         self._cmds = {}
         self._active_interface = None
+        self._ignored_calls = []
 
     @property
     def info_handler(self):
@@ -708,8 +709,10 @@ class CommandManager():
         cmdcls = self.get_cmdcls(cmdname, interface='ACTIVE')
         if cmdcls is None:
             if self.get_cmdcls(cmdname, interface='ANY') is not None:
-                # Command exists but not in active interface - we ignore it
+                # Command exists but not in active interface.  Store it in case we want to
+                # run it later and run a fake command so command chains are still working.
                 log.debug('Ignoring inactive command: %s', cmdname)
+                self._ignored_calls.append(((cmdname,) + tuple(cmdargs),))
                 process = self._dummy_process(cmdname)
             else:
                 exc = CmdNotFoundError('Unknown command')
