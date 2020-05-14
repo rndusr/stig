@@ -20,7 +20,7 @@ from ... import objects
 from ...client import ClientError
 from ...completion import candidates
 from ...settings import defaults, rcfile
-from ...utils.usertypes import Float
+from ...utils import usertypes
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 
@@ -251,7 +251,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             if len(stripped) >= 3:
                 def to_num(string):
                     try:
-                        return Float(string)
+                        return usertypes.Float(string)
                     except ValueError as e:
                         raise ValueError('%s: %r' % (e, string))
                 if stripped[:2] == '+=':
@@ -264,7 +264,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
     def _adjust_value(current, op, value):
         if isinstance(current, (float, int)):
             if current >= float('inf'):
-                current = Float(0)
+                current = usertypes.Float(0)
             func = getattr(operator, op)
             value = func(current, value)
         return value
