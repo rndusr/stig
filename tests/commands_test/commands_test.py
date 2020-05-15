@@ -205,6 +205,8 @@ class TestCommandManagerManagement(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             self.cmdmgr.active_interface = 'fooi'
         self.assertIn('fooi', str(cm.exception))
+        self.cmdmgr.active_interface = None
+        self.assertEqual(self.cmdmgr.active_interface, None)
 
     def test_all_commands(self):
         self.assertEqual(set(self.cmdmgr.all_commands),

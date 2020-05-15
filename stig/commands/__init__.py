@@ -474,7 +474,7 @@ class CommandManager():
 
     @active_interface.setter
     def active_interface(self, interface):
-        if interface in self._cmds:
+        if interface in self._cmds or interface is None:
             self._active_interface = interface
         else:
             raise ValueError('No commands for interface {!r} registered'.format(interface))
