@@ -1,10 +1,10 @@
-import unittest
-import asynctest
 import asyncio
+import unittest
 
-from stig.commands import (CommandManager, _CommandBase,
-                           CmdError, CmdArgError, CmdNotFoundError)
-from resources_cmd import (make_cmdcls, assertIsException, Callback)
+import asynctest
+from resources_cmd import Callback, assertIsException, make_cmdcls
+from stig.commands import (CmdArgError, CmdError, CmdNotFoundError, CommandManager,
+                           _CommandBase)
 
 
 class TestCommand(asynctest.TestCase):
