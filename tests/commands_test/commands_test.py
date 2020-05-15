@@ -208,6 +208,17 @@ class TestCommandManagerManagement(unittest.TestCase):
         self.cmdmgr.active_interface = None
         self.assertEqual(self.cmdmgr.active_interface, None)
 
+    def test_temporary_active_interface(self):
+        self.assertEqual(self.cmdmgr.active_interface, None)
+        with self.cmdmgr.temporary_active_interface('cli'):
+            self.assertEqual(self.cmdmgr.active_interface, 'cli')
+        self.assertEqual(self.cmdmgr.active_interface, None)
+
+        self.cmdmgr.active_interface = 'tui'
+        with self.cmdmgr.temporary_active_interface('cli'):
+            self.assertEqual(self.cmdmgr.active_interface, 'cli')
+        self.assertEqual(self.cmdmgr.active_interface, 'tui')
+
     def test_all_commands(self):
         self.assertEqual(set(self.cmdmgr.all_commands),
                          set((self.cmd_foo, self.cmd_bar, self.cmd_baz)))
