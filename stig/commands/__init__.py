@@ -484,7 +484,9 @@ class CommandManager():
         """Context manager that temporarily changes the active interface"""
         orig_interface = self.active_interface
         self.active_interface = interface
+        log.debug('Activating temporary interface %r', interface)
         yield
+        log.debug('Deactivating temporary interface %r', interface)
         self.active_interface = orig_interface
 
     @property
