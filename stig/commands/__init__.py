@@ -601,6 +601,37 @@ class CommandManager():
                 await process.wait_async()
         return self._handle_final_process(process)
 
+    def run_ignored_calls_sync(self, cmdname=None):
+        """
+        Execute any calls that were previously ignored because their interface was not active
+
+        cmdname: Only run calls for this command or all calls if None.
+
+        See `temporary_active_interface` for changing the active interface while running
+        ignored calls.
+        """
+        calls_made = False
+        success = True
+        for call in self._get_ignored_calls(cmdname):
+            success = success and self.run_sync(call)
+            calls_made = True
+        return calls_made and success
+
+    async def run_ignored_calls_async(self, cmdname=None):
+        """Asynchronous version of `run_ignored_calls_sync`"""
+        calls_made = False
+        success = True
+        for call in self._get_ignored_calls(cmdname):
+            success = success and await self.run_async(call)
+            calls_made = True
+        return calls_made and success
+
+    def _get_ignored_calls(self, cmdname):
+        for call in self._ignored_calls:
+            if cmdname is None or cmdname == call[0][0]:
+                yield call
+                self._ignored_calls.remove(call)
+
     def run_task(self, commands, **kwargs):
         """Return Task that runs `run_async`"""
         log.debug('Creating command chain task: %r', commands)
@@ -777,16 +808,3 @@ class CommandManager():
         return DummyCommand((),
                             info_handler=self._info_handler,
                             error_handler=self._error_handler)
-
-    def run_ignored_calls(self, cmdname=None):
-        """
-        Run any commands that were previously ignored because their interface was not active
-
-        See `temporary_active_interface` for changing the active interface while running
-        ignored calls.
-        """
-        cmds = tuple((cmd for cmd in self._ignored_calls
-                      if cmdname is None or cmdname == cmd[0][0]))
-        for cmd in cmds:
-            self.run_sync(cmd)
-            self._ignored_calls.remove(cmd)

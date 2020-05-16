@@ -1,5 +1,6 @@
 import asyncio
 import unittest
+from unittest.mock import call
 
 import asynctest
 from resources_cmd import Callback, assertIsException, make_cmdcls
@@ -259,8 +260,6 @@ class TestCommandManagerManagement(unittest.TestCase):
         self.assertIn('interface', str(cm.exception).lower())
 
 
-
-
 class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
     def setUp(self):
         self.info_handler = Callback()
@@ -446,6 +445,74 @@ class TestCommandManagerCalls_OtherTests(TestCommandManagerCallsBase):
         self.assertEqual(self.error_handler.args, [('No closing quotation',)])
 
 
+class TestCommandManagerCalls_RunIgnoredCalls(TestCommandManagerCallsBase):
+    def setUp(self):
+        super().setUp()
+
+        self.mock_gui = unittest.mock.MagicMock()
+        argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
+                    {'names': ('B',), 'type': int, 'description': 'Second number'})
+
+        def run_add(self_, A, B, _gui=self.mock_gui):
+            print('add called with %r, %r' % (A, B))
+            _gui.display('Result: %d' % (int(A) + int(B),))
+        self.cmdmgr.register(make_cmdcls(name='add', run=run_add, argspecs=argspecs, provides=('gui',)))
+
+        async def run_sub(self_, A, B, _gui=self.mock_gui):
+            print('sub called with %r, %r' % (A, B))
+            _gui.display('Result: %d' % (int(A) - int(B),))
+            await asyncio.sleep(0)
+        self.cmdmgr.register(make_cmdcls(name='sub', run=run_sub, argspecs=argspecs, provides=('tui',)))
+
+    def test_run_ignored_sync_calls_sync(self):
+        self.cmdmgr.active_interface = 'tui'
+        # Make call for active interface
+        success = self.cmdmgr.run_sync('sub 12 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 8')])
+        # Make call for inactive interface
+        success = self.cmdmgr.run_sync('add 12 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 8')])
+        # Run call for inactive interface
+        with self.cmdmgr.temporary_active_interface('gui'):
+            success = self.cmdmgr.run_ignored_calls_sync('add')
+            self.assertEqual(success, True)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 8'), call('Result: 16')])
+        # Call for inactive interface was consumed
+        with self.cmdmgr.temporary_active_interface('gui'):
+            success = self.cmdmgr.run_ignored_calls_sync('add')
+            self.assertEqual(success, False)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 8'), call('Result: 16')])
+        # Unknown commands are ignored
+        success = self.cmdmgr.run_ignored_calls_sync('foo')
+        self.assertEqual(success, False)
+
+    async def test_run_ignored_sync_calls_async(self):
+        self.cmdmgr.active_interface = 'gui'
+        # Make call for active interface
+        success = await self.cmdmgr.run_async('add 12 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 16')])
+        # Make call for inactive interface
+        success = await self.cmdmgr.run_async('sub 12 4')
+        self.assertEqual(success, True)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 16')])
+        # Run call for inactive interface
+        with self.cmdmgr.temporary_active_interface('tui'):
+            success = await self.cmdmgr.run_ignored_calls_async('sub')
+            self.assertEqual(success, True)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 16'), call('Result: 8')])
+        # Call for inactive interface was consumed
+        with self.cmdmgr.temporary_active_interface('tui'):
+            success = self.cmdmgr.run_ignored_calls_sync('sub')
+            self.assertEqual(success, False)
+        self.assertEqual(self.mock_gui.display.call_args_list, [call('Result: 16'), call('Result: 8')])
+        # Unknown commands are ignored
+        success = self.cmdmgr.run_ignored_calls_sync('foo')
+        self.assertEqual(success, False)
+
+
 class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
     def setUp(self):
         super().setUp()
@@ -468,7 +535,6 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
         false_cmd = make_cmdcls(name='false', run=false_run, argspecs=args, provides=('F',))
         self.cmdmgr.register(true_cmd)
         self.cmdmgr.register(false_cmd)
-
 
     async def assert_success(self, cmdchain):
         success = self.cmdmgr.run_sync(cmdchain)
