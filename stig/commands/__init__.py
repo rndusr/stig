@@ -627,7 +627,7 @@ class CommandManager():
         return calls_made and success
 
     def _get_ignored_calls(self, cmdname):
-        for call in self._ignored_calls:
+        for call in tuple(self._ignored_calls):
             if cmdname is None or cmdname == call[0][0]:
                 yield call
                 self._ignored_calls.remove(call)
