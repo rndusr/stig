@@ -1,10 +1,15 @@
-import asynctest
-
-from stig.client.utils import Response
-from stig.client.base import TorrentBase
-from stig.commands import (InitCommand, _CommandBase, CmdError)
-
 import asyncio
+import io
+import sys
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
+import asynctest
+from asynctest import CoroutineMock
+from stig.client.base import TorrentBase
+from stig.client.utils import Response
+from stig.commands import CmdError, InitCommand, _CommandBase
+
 
 def make_cmdcls(defaults=True, **clsattrs):
     assert isinstance(defaults, bool)
@@ -144,10 +149,6 @@ class MockSettings(dict):
         self.is_remote = lambda name: name.startswith('srv.')
 
 
-from types import SimpleNamespace
-import sys, io
-from unittest.mock import (patch, MagicMock)
-from asynctest import CoroutineMock
 class CommandTestCase(asynctest.TestCase):
     def setUp(self):
         self.srvapi = SimpleNamespace(torrent=MockAPI(),
