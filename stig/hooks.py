@@ -11,7 +11,7 @@
 
 """General hooks that are always needed regardless of the interface"""
 
-from .objects import localcfg, srvapi
+from .objects import cmdmgr, localcfg, srvapi
 from .utils import convert
 from .views.file import COLUMNS as FILE_COLUMNS
 from .views.peer import COLUMNS as PEER_COLUMNS
@@ -19,6 +19,33 @@ from .views.torrent import COLUMNS as TORRENT_COLUMNS
 
 from .logging import make_logger  # isort:skip
 log = make_logger(__name__)
+
+
+def _pre_run_hook(cmdline):
+    # Dirty hack to make "ls -h" work
+    # If there is '-h' or '--help' in the arguments, replace it with 'help
+    # <cmd>'.  This is dirty but easier than forcing argparse to ignore all
+    # other arguments without calling sys.exit().
+    if '-h' in cmdline or '--help' in cmdline:
+        cmdcls = cmdmgr.get_cmdcls(cmdline[0], interface='ANY')
+        if cmdcls is not None:
+            if cmdcls.name != 'tab':
+                return ['help', cmdcls.name]
+            else:
+                # 'tab ls -h' is a little trickier because both 'tab' and 'ls'
+                # can have arbitrary additional arguments which we must remove.
+                #
+                # Find first argument to 'tab' that is also a valid command
+                # name.  Preserve all arguments before that.
+                tab_args = []
+                for arg in cmdline[1:]:
+                    if cmdmgr.get_cmdcls(arg, interface='ANY') is not None:
+                        return ['tab'] + tab_args + ['help', arg]
+                    else:
+                        tab_args.append(arg)
+                return ['help', 'tab']
+    return cmdline
+cmdmgr.pre_run_hook = _pre_run_hook
 
 
 def _make_connection_callback(attr):
