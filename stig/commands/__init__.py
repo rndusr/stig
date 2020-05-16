@@ -677,7 +677,6 @@ class CommandManager():
         else:
             cmdchain = [str(item) if is_op(item) else list(item)
                         for item in commands]
-            log.debug('turned %r into %r', commands, cmdchain)
 
         for item in cmdchain:
             self._validate_cmdchain_item(item)
@@ -786,11 +785,6 @@ class CommandManager():
         """
         cmds = tuple((cmd for cmd in self._ignored_calls
                       if cmdname is None or cmdname == cmd[0][0]))
-        log.debug(cmds)
         for cmd in cmds:
             self.run_sync(cmd)
             self._ignored_calls.remove(cmd)
-
-        log.debug('Ignored commands after:')
-        for cmd in self._ignored_calls:
-            log.debug(cmd)
