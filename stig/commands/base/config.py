@@ -68,7 +68,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
             '### KEYBINDINGS',
             '',
             self._get_keybindings(),
-        )) + '\n'
+        ))
         if FILE:
             return self.dump_rc(content, force=force, path=self.get_rc_filepath(FILE))
         else:
