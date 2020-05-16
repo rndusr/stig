@@ -52,8 +52,9 @@ class DumpCmdbase(mixin.get_rc_filepath,
     DUMP_WIDTH = 79
 
     def run(self, force, FILE):
+        # Because it is a TUI-only command, calls to "bind" are ignored in CLI mode.
         with objects.cmdmgr.temporary_active_interface('tui'):
-            objects.cmdmgr.run_ignored_calls('bind')
+            objects.cmdmgr.run_ignored_calls_sync('bind')
 
         now = datetime.now()
         content = '\n'.join((
