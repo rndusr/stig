@@ -366,10 +366,12 @@ class ListWidgetBase(urwid.WidgetWrap):
         else:
             return len(self._listbox.body)
 
+    DEFAULT_TITLE = 'No title'
+
     @property
     def title_name(self):
         """The base name of the title"""
-        return str(self._title_name or 'No title')
+        return str(self._title_name or self.DEFAULT_TITLE)
 
     @property
     def title_sort_order(self):
