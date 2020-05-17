@@ -30,7 +30,7 @@ def _pre_run_hook(cmdline):
         cmdcls = cmdmgr.get_cmdcls(cmdline[0], interface='ANY')
         if cmdcls is not None:
             if cmdcls.name != 'tab':
-                return ['help', cmdcls.name]
+                cmdline = ['help', cmdcls.name]
             else:
                 # 'tab ls -h' is a little trickier because both 'tab' and 'ls'
                 # can have arbitrary additional arguments which we must remove.
@@ -43,7 +43,7 @@ def _pre_run_hook(cmdline):
                         return ['tab'] + tab_args + ['help', arg]
                     else:
                         tab_args.append(arg)
-                return ['help', 'tab']
+                cmdline = ['help', 'tab']
     return cmdline
 cmdmgr.pre_run_hook = _pre_run_hook
 
