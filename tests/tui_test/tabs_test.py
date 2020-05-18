@@ -1,10 +1,9 @@
-from stig.tui.tabs import (Tabs, TabID, _find_unused_id)
-
 import unittest
+
 import urwid
 
-import logging
-log = logging.getLogger(__name__)
+from stig.tui import tabs
+from stig.tui.tabs import TabID, Tabs, _find_unused_id
 
 
 def test_find_unused_id():
@@ -12,7 +11,6 @@ def test_find_unused_id():
     assert _find_unused_id([0, 1, 2]) == 3
     assert _find_unused_id([1, 2]) == 0
     assert _find_unused_id([0, 1, 3]) == 2
-
 
 # Normal TabIDs are lowest unused integers.  That means for these simple
 # tests, TabIDs are mostly identical to tab indexes, which may have weird
@@ -22,7 +20,6 @@ def make_large_id(existing_ids):
         return TabID(999)
     else:
         return TabID(max(existing_ids) + 100)
-from stig.tui import tabs
 tabs._find_unused_id = make_large_id
 
 
