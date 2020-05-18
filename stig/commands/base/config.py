@@ -82,7 +82,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
                 with open(path, 'w') as f:
                     f.write(content)
             except OSError as e:
-                raise CmdError('Unable to write %s: %s' % (path, e))
+                raise CmdError('Unable to write %s: %s' % (path, e.strerror))
             else:
                 self.info('Wrote rc file: %s' % (path,))
                 return True
