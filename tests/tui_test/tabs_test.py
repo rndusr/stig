@@ -259,6 +259,10 @@ class TestTabs(unittest.TestCase):
         self.tabs.set_title(urwid.Text('BAR'), position=self.tabs.get_id(1))
         self.assertEqual(self.tabs.get_title(1).text, 'BAR')
 
+        with self.assertRaises(RuntimeError) as cm:
+            Tabs().set_title('asdf')
+        self.assertEqual(str(cm.exception), 'Tabs is empty')
+
     def test_get_content(self):
         self.tabs.focus_position = 0
         self.assertEqual(self.tabs.get_content().text, 'Tab one')
