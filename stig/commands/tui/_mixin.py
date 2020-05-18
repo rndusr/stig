@@ -321,6 +321,7 @@ class create_list_widget():
         # Add list to tabs
         from ...tui.tuiobjects import tabs  # isort:skip
         tabid = tabs.load(make_titlew(listw.title), listw)
+        tabs.set_info(command=self.command)
 
         # If list items are markable, automatically add the 'marked' column
         if markable_items:
