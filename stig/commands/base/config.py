@@ -54,8 +54,8 @@ class DumpCmdbase(mixin.get_rc_filepath,
     def run(self, force, FILE):
         now = datetime.now()
         content = '\n'.join((
-            f'# This is an rc file for {__appname__} {__version__}.',
-            f'# This file was created on {now.isoformat(sep=" ", timespec="seconds")}.',
+            '# This is an rc file for %s version %s.' % (__appname__, __version__),
+            '# This file was created on %s.' % (now.isoformat(sep=" ", timespec="seconds"),),
             '', '',
             '### TABS',
             '',
