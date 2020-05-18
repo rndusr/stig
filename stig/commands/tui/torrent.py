@@ -62,6 +62,7 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
         title_str = self.title if hasattr(self, 'title') else None
         detailsw = TorrentDetailsWidget_keymapped(torrent_id, title=title_str)
         tabid = tabs.load(make_titlew(detailsw.title), detailsw)
+        tabs.set_info(command=self.command)
 
         def set_tab_title(text):
             # set_title() throws IndexError if the tab was removed, which may
