@@ -38,13 +38,13 @@ class DumpCmdbase(mixin.get_rc_filepath,
     provides = set()
     description = 'Generate commands that reproduce current settings, keybindings and tabs'
     usage = ('dump [<OPTIONS>] [<FILE>]',)
-    examples = (f'dump rc.current    # Write $XDG_CONFIG_HOME{os.sep}.config/{{__appname__}}{os.sep}rc.current',
-                f'dump ./rc.current  # Write rc.current in current working directory')
+    examples = ('dump rc.current    # Write $XDG_CONFIG_HOME{sep}.config{sep}{{__appname__}}{sep}rc.current'.format(sep=os.sep),
+                'dump .{sep}rc.current  # Write rc.current in current working directory'.format(sep=os.sep))
     argspecs = (
         {'names': ('FILE',), 'nargs': '?',
          'description': ('Path to rc file; if FILE does not exist and does not start with '
-                         '"/", "./" or "~", "$XDG_CONFIG_HOME/.config/{__appname__}/" '
-                         'is prepended')},
+                         '"{sep}", ".{sep}" or "~", "$XDG_CONFIG_HOME{sep}.config{sep}{{__appname__}}{sep}" '
+                         'is prepended'.format(sep=os.sep))},
         { 'names': ('--force', '-f'), 'action': 'store_true',
           'description': 'Overwrite FILE if it exists' },
     )
