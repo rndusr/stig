@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 from asynctest import CoroutineMock
 from asynctest.mock import CoroutineMock, MagicMock, call, mock_open, patch
@@ -16,7 +17,10 @@ class TestDumpCmd(CommandTestCase):
     @patch.object(DumpCmd, '_get_tabs', return_value='mock tabs')
     @patch('datetime.datetime')
     async def test_dump_to_stdout(self, mock_datetime, mock_get_tabs, mock_get_kbs, mock_get_sets):
-        mock_datetime.now().isoformat = MagicMock(return_value='mock_date')
+        if sys.hexversion < 0x03060000:
+            mock_datetime.now().replace().isoformat = MagicMock(return_value='mock_date')
+        else:
+            mock_datetime.now().isoformat = MagicMock(return_value='mock_date')
         process = await self.execute(DumpCmd)
         self.assertEqual(process.success, True)
         self.assert_stderr()

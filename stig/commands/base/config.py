@@ -13,6 +13,7 @@ import datetime
 import operator
 import os
 import subprocess
+import sys
 import textwrap
 from collections import abc
 
@@ -53,9 +54,14 @@ class DumpCmdbase(mixin.get_rc_filepath,
 
     def run(self, force, FILE):
         now = datetime.datetime.now()
+        if sys.hexversion < 0x03060000:
+            now_str = now.replace(microsecond=0).isoformat(sep=' ')
+        else:
+            now_str = now.isoformat(sep=' ', timespec='minutes')
+
         content = '\n'.join((
             '# This is an rc file for %s version %s.' % (__appname__, __version__),
-            '# This file was created on %s.' % (now.isoformat(sep=" ", timespec="seconds"),),
+            '# This file was created on %s.' % (now_str,),
             '', '',
             '### TABS',
             '',
