@@ -393,7 +393,10 @@ class Tabs(urwid.Widget):
         Raises IndexError if tab can't be found.
         """
         tabid = self.get_id(position)
-        self._info[tabid].update(kwargs)
+        if tabid is not None:
+            self._info[tabid].update(kwargs)
+        else:
+            raise RuntimeError('Tabs is empty')
 
     def _focus_changed_callback(self, pos):
         tab_id = self.get_id(pos)
