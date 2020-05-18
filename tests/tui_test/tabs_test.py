@@ -272,6 +272,8 @@ class TestTabs(unittest.TestCase):
         self.assertEqual(self.tabs.get_content(1).text, 'Tab two')
         self.assertEqual(self.tabs.get_content(self.tabs.get_id(1)).text, 'Tab two')
 
+        self.assertEqual(Tabs().get_content(), None)
+
     def test_set_content(self):
         self.tabs.focus_position = 0
         self.tabs.set_content(urwid.Text('foo'))
