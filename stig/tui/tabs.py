@@ -378,7 +378,8 @@ class Tabs(urwid.Widget):
         Raises IndexError if tab can't be found.
         """
         tabid = self.get_id(position)
-        return self._info[tabid]
+        if tabid is not None:
+            return self._info[tabid]
 
     def set_info(self, position=None, **kwargs):
         """
