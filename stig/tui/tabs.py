@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from collections import abc
+from collections import abc, defaultdict
 
 import urwid
 
@@ -99,6 +99,7 @@ class Tabs(urwid.Widget):
 
         self._ids = []
         self._focus_history = []
+        self._info = defaultdict(lambda: {})
         self._contents = urwid.MonitoredFocusList()
         self._contents.set_focus_changed_callback(self._focus_changed_callback)
         for content in contents:
@@ -310,6 +311,8 @@ class Tabs(urwid.Widget):
         tabid = self.get_id(position)
         del self._ids[index]
         del self._contents[index]
+        if tabid in self._info:
+            del self._info[tabid]
         del self._tabbar.base_widget[index]
         fh = self._focus_history
         while tabid in fh:
@@ -365,6 +368,31 @@ class Tabs(urwid.Widget):
         """
         i = self.get_index(position)
         self._contents[i] = widget
+
+    def get_info(self, position=None):
+        """
+        Return information about tab at `position`
+
+        position: Index (int), ID (TabID) or None (focused tab)
+
+        Raises IndexError if tab can't be found.
+        """
+        tabid = self.get_id(position)
+        return self._info[tabid]
+
+    def set_info(self, position=None, **kwargs):
+        """
+        Set information about tab at `position`
+
+        position: Index (int), ID (TabID) or None (focused tab)
+
+        Information is taken as arbitrary keyword arguments and is stored as an ordinary
+        dictionary.
+
+        Raises IndexError if tab can't be found.
+        """
+        tabid = self.get_id(position)
+        self._info[tabid].update(kwargs)
 
     def _focus_changed_callback(self, pos):
         tab_id = self.get_id(pos)
