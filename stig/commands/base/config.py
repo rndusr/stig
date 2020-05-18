@@ -238,14 +238,14 @@ class RcCmdbase(mixin.get_rc_filepath,
     provides = set()
     description = 'Run commands in rc file'
     usage = ('rc <FILE>',)
-    examples = (f'rc rc.example    # Load $XDG_CONFIG_HOME{os.sep}.config/{{__appname__}}{os.sep}rc.example',
-                f'rc ./rc.example  # Load rc.example from current working directory',)
+    examples = ('rc rc.example    # Load $XDG_CONFIG_HOME{sep}.config{sep}{{__appname__}}{sep}rc.example'.format(sep=os.sep),
+                'rc .{sep}rc.example  # Load rc.example from current working directory'.format(sep=os.sep))
     argspecs = (
         {'names': ('FILE',),
          'description': ('Path to rc file; if FILE does not exist and does not start with '
-                         f'"{os.sep}", ".{os.sep}" or "~", '
-                         f'"$XDG_CONFIG_HOME{os.sep}.config{os.sep}{{__appname__}}{os.sep}" '
-                         'is prepended')},
+                         '"{sep}", ".{sep}" or "~", '
+                         '"$XDG_CONFIG_HOME{sep}.config{sep}{{__appname__}}{sep}" '
+                         'is prepended').format(sep=os.sep)},
     )
 
     async def run(self, FILE):
