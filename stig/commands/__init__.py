@@ -79,6 +79,7 @@ from importlib import import_module
 from inspect import getmembers
 
 from ..completion import Candidate, Candidates
+from ..utils import cliparser
 from .utils import CallbackDict
 
 from ..logging import make_logger  # isort:skip
@@ -287,8 +288,19 @@ def InitCommand(clsname, bases, attrs):
 
 
 class _CommandBase():
-    """Base for all command classes"""
-    def __init__(self, args=(), info_handler=None, error_handler=None, **kwargs):
+    """
+    Base for all command classes
+
+    args: Any arguments for this command
+    argv: Command line as given by user, including command name, as sequence
+    info_handler: Function that is called with info messages via the info() method
+    error_handler: Function that is called with error messages via the error() method
+
+    Any remaining keyword arguments are made available as instance attributes.
+    """
+    def __init__(self, args=(), argv=(), info_handler=None, error_handler=None, **kwargs):
+        # Store the command that invoked this instance
+        self._command = ' '.join((cliparser.quote(arg) for arg in argv))
         self._args = args
         for k,v in kwargs.items():
             setattr(self, k, v)
@@ -392,6 +404,11 @@ class _CommandBase():
     def is_async(self):
         """Whether this command runs asynchronously"""
         return self._is_async
+
+    @property
+    def command(self):
+        """Invoking command as string"""
+        return self._command
 
     def __repr__(self):
         if isinstance(self._args, abc.Sequence):
@@ -733,11 +750,11 @@ class CommandManager():
                           self.pre_run_hook.__name__, old_cmdline, cmdline)
 
         try:
-            cmdname = cmdline.pop(0)
+            cmdname = cmdline[0]
         except IndexError:
             # cmdline is empty
             return self._dummy_process(cmdname=None)
-        cmdargs = cmdline
+        cmdargs = cmdline[1:]
         cmdcls = self.get_cmdcls(cmdname, interface='ACTIVE')
         if cmdcls is None:
             if self.get_cmdcls(cmdname, interface='ANY') is not None:
@@ -754,6 +771,7 @@ class CommandManager():
             process = self._dummy_process(cmdname, exception=exc)
         else:
             process = cmdcls(cmdargs,
+                             argv=tuple(cmdline),
                              info_handler=self._info_handler,
                              error_handler=self._error_handler,
                              **kwargs)
