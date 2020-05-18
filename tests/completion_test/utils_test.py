@@ -1,9 +1,9 @@
-from stig.completion import candidates
-from stig.completion import _utils as utils
-
 import unittest
-from unittest.mock import patch, MagicMock
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
+from stig.completion import _utils as utils
+from stig.completion import candidates
 
 
 class Test_filter_helper_functions(unittest.TestCase):
