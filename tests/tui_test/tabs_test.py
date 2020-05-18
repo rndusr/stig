@@ -99,6 +99,60 @@ class TestTabs(unittest.TestCase):
         self.tabs = Tabs()
         self.assertEqual(self.tabs.get_id(), None)
 
+
+    def test_get_set_info_focused(self):
+        self.tabs.focus_position = 0
+        self.assertEqual(self.tabs.get_info(), {})
+        self.tabs.focus_position = 1
+        self.assertEqual(self.tabs.get_info(), {})
+        self.tabs.set_info(hey='you')
+        self.assertEqual(self.tabs.get_info(), {'hey': 'you'})
+        self.tabs.focus_position = 0
+        self.tabs.set_info(out='there')
+        self.assertEqual(self.tabs.get_info(), {'out': 'there'})
+
+    def test_get_set_info_by_existing_index(self):
+        self.assertEqual(self.tabs.get_info(0), {})
+        self.assertEqual(self.tabs.get_info(1), {})
+        self.tabs.set_info(0, hey='you')
+        self.tabs.set_info(1, out='there')
+        self.assertEqual(self.tabs.get_info(0), {'hey': 'you'})
+        self.assertEqual(self.tabs.get_info(1), {'out': 'there'})
+
+    def test_get_set_info_by_nonexisting_index(self):
+        with self.assertRaises(IndexError) as cm:
+            self.tabs.get_info(17)
+        self.assertIn('position', str(cm.exception))
+        self.assertIn('17', str(cm.exception))
+
+    def test_get_set_info_by_existing_id(self):
+        self.assertEqual(self.tabs.get_info(self.tabs.get_id(0)), {})
+        self.assertEqual(self.tabs.get_info(self.tabs.get_id(1)), {})
+        self.tabs.set_info(self.tabs.get_id(0), hey='you')
+        self.tabs.set_info(self.tabs.get_id(1), out='there')
+        self.assertEqual(self.tabs.get_info(self.tabs.get_id(0)), {'hey': 'you'})
+        self.assertEqual(self.tabs.get_info(self.tabs.get_id(1)), {'out': 'there'})
+
+    def test_get_set_info_by_nonexisting_id(self):
+        with self.assertRaises(IndexError) as cm:
+            self.tabs.get_info(TabID(1000000))
+        self.assertIn('ID', str(cm.exception))
+        self.assertIn('1000', str(cm.exception))
+
+    def test_get_set_info_when_no_tabs_exist(self):
+        with self.assertRaises(RuntimeError) as cm:
+            Tabs().set_info(foo='bar')
+        self.assertEqual(str(cm.exception), 'Tabs is empty')
+        self.assertEqual(Tabs().get_info(), None)
+
+    def test_tab_info_is_removed_when_tab_is_removed(self):
+        self.tabs.set_info(self.tabs.get_id(TabID(999)), hey='you')
+        self.tabs.set_info(self.tabs.get_id(TabID(1099)), out='there')
+        self.tabs.remove(1)
+        self.assertEqual(self.tabs._info, {TabID(999): {'hey': 'you'}})
+        self.tabs.remove(0)
+        self.assertEqual(self.tabs._info, {})
+
     def test_tab_ids_are_not_equal(self):
         id1 = self.tabs.get_id(0)
         id2 = self.tabs.get_id(1)
