@@ -41,6 +41,7 @@ class HelpCmd(base.HelpCmdbase):
         textw = tuiobjects.urwid.AttrMap(helptext_widget, 'helptext')
         contentw = tuiobjects.urwid.AttrMap(ScrollBar(textw), 'helptext.scrollbar')
         tuiobjects.tabs.load(titlew, contentw)
+        tuiobjects.tabs.set_info(command=self.command)
 
 
 class VersionCmd(base.VersionCmdbase):
