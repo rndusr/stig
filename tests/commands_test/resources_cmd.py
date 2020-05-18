@@ -1,5 +1,6 @@
 import asyncio
 import io
+import re
 import sys
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -194,9 +195,19 @@ class CommandTestCase(asynctest.TestCase):
 
     def _compare_lines(self, lines, lines_exp):
         from itertools import zip_longest
-        for line,line_exp in zip_longest(lines, lines_exp, fillvalue='<NO MESSAGE>'):
-            line = line.rstrip('\n')
-            self.assertRegex(line, line_exp)
+        try:
+            for line,line_exp in zip_longest(lines, lines_exp, fillvalue='<NO MESSAGE>'):
+                line = line.rstrip('\n')
+                self.assertRegex(line, line_exp)
+        except AssertionError:
+            for line,line_exp in zip_longest(lines, lines_exp, fillvalue='<NO MESSAGE>'):
+                line = line.rstrip('\n')
+                if re.search(line_exp, line):
+                    sys.__stdout__.write('      OK: %r\n' % (line,))
+                else:
+                    sys.__stdout__.write('Expected: %r\n' % (line_exp,))
+                    sys.__stdout__.write('  Actual: %r\n' % (line,))
+            raise
 
     async def assert_completion_candidates(self, cmdcls, args, exp_cands, exp_curarg_seps=()):
         cands = cmdcls.completion_candidates(args)
