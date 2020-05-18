@@ -1,11 +1,80 @@
 import os
+import re
 
 from asynctest import CoroutineMock
-from asynctest.mock import CoroutineMock, MagicMock, call, patch
+from asynctest.mock import CoroutineMock, MagicMock, call, mock_open, patch
 from resources_cmd import CommandTestCase
+from stig import __appname__, __version__
 from stig.commands.cli import DumpCmd, RateLimitCmd, RcCmd, ResetCmd, SetCmd
 from stig.completion import Candidates
 from stig.utils.cliparser import Args
+
+
+class TestDumpCmd(CommandTestCase):
+    @patch.object(DumpCmd, '_get_settings', return_value='mock settings')
+    @patch.object(DumpCmd, '_get_keybindings', return_value='mock keybindings')
+    @patch.object(DumpCmd, '_get_tabs', return_value='mock tabs')
+    @patch('datetime.datetime')
+    async def test_dump_to_stdout(self, mock_datetime, mock_get_tabs, mock_get_kbs, mock_get_sets):
+        mock_datetime.now().isoformat = MagicMock(return_value='mock_date')
+        process = await self.execute(DumpCmd)
+        self.assertEqual(process.success, True)
+        self.assert_stderr()
+        self.assert_stdout(r'^# This is an rc file for %s version %s\.$' % (re.escape(__appname__),
+                                                                            re.escape(__version__)),
+                           r'^# This file was created on mock_date\.$',
+                           '^$', '^$',
+                           '^### TABS$', '^$', '^mock tabs$',
+                           '^$', '^$',
+                           '^### SETTINGS$', '^$', '^mock settings$',
+                           '^$', '^$',
+                           '^### KEYBINDINGS$', '^$', '^mock keybindings$')
+
+    @patch.object(DumpCmd, '_get_settings', return_value='mock settings')
+    @patch.object(DumpCmd, '_get_keybindings', return_value='mock keybindings')
+    @patch.object(DumpCmd, '_get_tabs', return_value='mock tabs')
+    @patch.object(DumpCmd, 'info')
+    @patch('os.path.exists')
+    @patch('builtins.open', mock_open())
+    async def test_dump_to_local_path(self, mock_path_exists, mock_info,
+                                      mock_get_tabs, mock_get_kbs, mock_get_sets):
+        mock_path_exists.return_value = False
+        process = await self.execute(DumpCmd, './my.rc')
+        self.assertEqual(open.call_args_list, [call('./my.rc', 'w')])
+        self.assertEqual(mock_info.call_args_list, [call('Wrote rc file: ./my.rc')])
+        self.assertEqual(process.success, True)
+        self.assert_stderr()
+
+    @patch.object(DumpCmd, '_get_settings', return_value='mock settings')
+    @patch.object(DumpCmd, '_get_keybindings', return_value='mock keybindings')
+    @patch.object(DumpCmd, '_get_tabs', return_value='mock tabs')
+    @patch.object(DumpCmd, 'info')
+    @patch('os.path.exists')
+    @patch('builtins.open', mock_open())
+    @patch.multiple('stig.settings.defaults', DEFAULT_RCFILE='/mock/default/path/to/rc')
+    async def test_dump_to_relative_path(self, mock_path_exists, mock_info,
+                                         mock_get_tabs, mock_get_kbs, mock_get_sets):
+        mock_path_exists.return_value = False
+        process = await self.execute(DumpCmd, 'my.rc')
+        self.assertEqual(open.call_args_list, [call('/mock/default/path/to/my.rc', 'w')])
+        self.assertEqual(mock_info.call_args_list, [call('Wrote rc file: /mock/default/path/to/my.rc')])
+        self.assertEqual(process.success, True)
+        self.assert_stderr()
+
+    @patch.object(DumpCmd, '_get_settings', return_value='mock settings')
+    @patch.object(DumpCmd, '_get_keybindings', return_value='mock keybindings')
+    @patch.object(DumpCmd, '_get_tabs', return_value='mock tabs')
+    @patch.object(DumpCmd, 'info')
+    @patch('os.path.exists')
+    @patch('builtins.open', mock_open())
+    async def test_dump_to_absolute_path(self, mock_path_exists, mock_info,
+                                         mock_get_tabs, mock_get_kbs, mock_get_sets):
+        mock_path_exists.return_value = False
+        process = await self.execute(DumpCmd, '/absolute/path/to/my.rc')
+        self.assertEqual(open.call_args_list, [call('/absolute/path/to/my.rc', 'w')])
+        self.assertEqual(mock_info.call_args_list, [call('Wrote rc file: /absolute/path/to/my.rc')])
+        self.assertEqual(process.success, True)
+        self.assert_stderr()
 
 
 class TestRcCmd(CommandTestCase):
