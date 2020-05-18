@@ -856,7 +856,10 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
         if close is not False:
             tabid_close = self._get_tab_id(close)
             if tabid_close is None:
-                raise CmdError('No such tab: %r' % (close,))
+                if close is None:
+                    raise CmdError('No tab is open')
+                else:
+                    raise CmdError('No such tab: %r' % (close,))
 
         # COMMAND may get additional hidden arguments as instance attributes
         cmd_attrs = {}
