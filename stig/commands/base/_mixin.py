@@ -184,7 +184,7 @@ class get_rc_filepath():
         path = os.path.expanduser(path)
         if not os.path.exists(path) and \
            not os.path.isabs(path) and \
-           not path.startswith(f'.{os.sep}') and \
+           not path.startswith('.{sep}'.format(sep=os.sep)) and \
            not path.startswith('~'):
             default_dir = os.path.dirname(defaults.DEFAULT_RCFILE)
             path = os.path.join(default_dir, path)
