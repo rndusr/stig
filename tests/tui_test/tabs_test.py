@@ -243,6 +243,8 @@ class TestTabs(unittest.TestCase):
         self.assertEqual(self.tabs.get_title(1).text, 'Tab2')
         self.assertEqual(self.tabs.get_title(self.tabs.get_id(1)).text, 'Tab2')
 
+        self.assertEqual(Tabs().get_title(), None)
+
     def test_set_title(self):
         self.tabs.focus_position = 0
         self.tabs.set_title(urwid.Text('foo'))
