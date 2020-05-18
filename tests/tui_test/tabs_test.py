@@ -288,6 +288,10 @@ class TestTabs(unittest.TestCase):
         self.tabs.set_content(urwid.Text('BAR'), position=self.tabs.get_id(1))
         self.assertEqual(self.tabs.get_content(1).text, 'BAR')
 
+        with self.assertRaises(RuntimeError) as cm:
+            Tabs().set_content('asdf')
+        self.assertEqual(str(cm.exception), 'Tabs is empty')
+
     def test_remove(self):
         self.tabs.insert(urwid.Text('Tab3'), urwid.Text('Tab three'))
         self.assertEqual(tuple(t.text for t in self.tabs.titles),
