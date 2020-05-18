@@ -469,6 +469,12 @@ class Tabs(urwid.Widget):
             return fh[-2]
 
     @property
+    def ids(self):
+        """Yields all tab IDs"""
+        for w in self._ids:
+            yield w
+
+    @property
     def contents(self):
         """Yields all content widgets"""
         for w in self._contents:
