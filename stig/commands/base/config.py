@@ -9,12 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+import datetime
 import operator
 import os
 import subprocess
 import textwrap
 from collections import abc
-from datetime import datetime
 
 from . import _mixin as mixin
 from .. import CmdError, InitCommand, utils
@@ -52,7 +52,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
     DUMP_WIDTH = 79
 
     def run(self, force, FILE):
-        now = datetime.now()
+        now = datetime.datetime.now()
         content = '\n'.join((
             '# This is an rc file for %s version %s.' % (__appname__, __version__),
             '# This file was created on %s.' % (now.isoformat(sep=" ", timespec="seconds"),),
