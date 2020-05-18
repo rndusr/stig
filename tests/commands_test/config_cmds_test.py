@@ -1,12 +1,13 @@
-from resources_cmd import CommandTestCase
-from stig.utils.cliparser import Args
-from stig.completion import Candidates
-
-from asynctest.mock import call, patch, CoroutineMock, MagicMock
 import os
 
+from asynctest import CoroutineMock
+from asynctest.mock import CoroutineMock, MagicMock, call, patch
+from resources_cmd import CommandTestCase
+from stig.commands.cli import DumpCmd, RateLimitCmd, RcCmd, ResetCmd, SetCmd
+from stig.completion import Candidates
+from stig.utils.cliparser import Args
 
-from stig.commands.cli import RcCmd
+
 class TestRcCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -89,7 +90,6 @@ class TestRcCmd(CommandTestCase):
         mock_candidates.fs_path.assert_not_called()
 
 
-from stig.commands.cli import ResetCmd
 class TestResetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -137,7 +137,6 @@ class TestResetCmd(CommandTestCase):
         mock_candidates.setting_names.assert_called_once_with()
 
 
-from stig.commands.cli import SetCmd
 class TestSetCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -327,8 +326,6 @@ class TestSetCmd(CommandTestCase):
         await self.assert_completion_candidates(SetCmd, Args(('set', '_', '-c'), curarg_index=1), exp_cands=None)
 
 
-from stig.commands.cli import RateLimitCmd
-from asynctest import CoroutineMock
 class TestRateLimitCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
