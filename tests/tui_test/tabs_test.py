@@ -306,6 +306,10 @@ class TestTabs(unittest.TestCase):
         with self.assertRaises(IndexError):
             self.tabs.remove(0)
 
+        with self.assertRaises(RuntimeError) as cm:
+            Tabs().remove()
+        self.assertEqual(str(cm.exception), 'Tabs is empty')
+
     def test_insert(self):
         self.tabs.focus_position = len(self.tabs) - 1
         self.tabs.insert(urwid.Text('Tab3'), urwid.Text('Tab three'))

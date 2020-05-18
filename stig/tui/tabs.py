@@ -309,6 +309,8 @@ class Tabs(urwid.Widget):
         """
         index = self.get_index(position)
         tabid = self.get_id(position)
+        if tabid is None:
+            raise RuntimeError('Tabs is empty')
         del self._ids[index]
         del self._contents[index]
         if tabid in self._info:
