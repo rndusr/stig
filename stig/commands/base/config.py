@@ -52,14 +52,14 @@ class DumpCmdbase(mixin.get_rc_filepath,
     DUMP_WIDTH = 79
 
     def run(self, force, FILE):
-        # Because it is a TUI-only command, calls to "bind" are ignored in CLI mode.
-        with objects.cmdmgr.temporary_active_interface('tui'):
-            objects.cmdmgr.run_ignored_calls_sync('bind')
-
         now = datetime.now()
         content = '\n'.join((
             f'# This is an rc file for {__appname__} {__version__}.',
             f'# This file was created on {now.isoformat(sep=" ", timespec="seconds")}.',
+            '', '',
+            '### TABS',
+            '',
+            self._get_tabs(),
             '', '',
             '### SETTINGS',
             '',
@@ -152,6 +152,11 @@ class DumpCmdbase(mixin.get_rc_filepath,
             return lines
 
     def _get_keybindings(self):
+        # Calls to "bind" are ignored in CLI mode
+        if objects.cmdmgr.active_interface != 'tui':
+            with objects.cmdmgr.temporary_active_interface('tui'):
+                objects.cmdmgr.run_ignored_calls_sync('bind')
+
         from ...tui.tuiobjects import keymap
         contexts = []
         for context in sorted(keymap.contexts):
@@ -196,6 +201,33 @@ class DumpCmdbase(mixin.get_rc_filepath,
             return ['#' + ' '.join(line) for line in lines]
         else:
             return [' '.join(line) for line in lines]
+
+    def _get_tabs(self):
+        return '\n'.join(self._get_tab_cmds())
+
+    def _get_tab_cmds(self):
+        # Calls to "tab" are ignored in CLI mode
+        if objects.cmdmgr.active_interface != 'tui':
+            with objects.cmdmgr.temporary_active_interface('tui'):
+                objects.cmdmgr.run_ignored_calls_sync('tab')
+
+        # Get commands from opened tabs
+        from ...tui.tuiobjects import tabs
+        cmds = []
+        for tabid in tabs.ids:
+            cmd = tabs.get_info(tabid).get('command', None)
+            if cmd is not None:
+                cmds.append('tab ' + cmd)
+
+        if not cmds:
+            # No tabs were opened by the user
+            cmds = list(defaults.DEFAULT_TAB_COMMANDS)
+
+        # Store current tab
+        if tabs.focus_position is not None:
+            cmds.append('tab --focus %d' % (tabs.focus_position + 1,))
+
+        return cmds
 
 
 class RcCmdbase(mixin.get_rc_filepath,
