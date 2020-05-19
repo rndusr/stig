@@ -129,8 +129,7 @@ class HelpManager():
              'restarted (see RC FILES).'),
             '',
             ('\tChanges made to remote settings, on the other hand, are '
-             'permanent as the daemon has its own system which maintains '
-             'a configuration file.'),
+             'permanent as the daemon has its own configuration system.'),
             '',
             'RC FILES',
             ('\tAn rc file contains a list of arbitrary commands.  '
@@ -139,6 +138,9 @@ class HelpManager():
             '',
             ('\tCommands in an rc file are called during startup before the '
              'commands given on the command line.'),
+            '',
+            ('\tThe "dump" command (bound to <alt-shift-s> by default) makes your '
+             'current settings, keybindings and tabs permanent.'),
             '',
             ('\tThe default rc file path is "$XDG_CONFIG_HOME/{__appname__}/rc", '
              'where $XDG_CONFIG_HOME defaults to "~/.config" if it is not set.'),
