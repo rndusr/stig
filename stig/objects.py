@@ -14,13 +14,16 @@ Application-wide instances that are always needed, regardless of interface
 or features
 """
 
-from . import logging, settings
+from . import cliopts, logging, settings
 from .client import API
 from .commands import CommandManager
 from .helpmgr import HelpManager
 
 log = logging.make_logger()
 
+cliargs, clicmds = cliopts.parse()
+
+main_rcfile = cliargs['rcfile'] or settings.defaults.DEFAULT_RCFILE
 
 localcfg = settings.LocalSettings()
 settings.init_defaults(localcfg)
@@ -36,9 +39,7 @@ remotecfg = settings.RemoteSettings(srvapi.settings)
 
 cfg = settings.CombinedSettings(localcfg, remotecfg)
 
-
 helpmgr = HelpManager()
-
 
 cmdmgr = CommandManager(info_handler=lambda msg: log.info(msg),
                         error_handler=lambda msg: log.error(msg))

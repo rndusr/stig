@@ -14,7 +14,7 @@ import os
 import sys
 
 from . import cliopts, logging
-from .objects import cmdmgr, log, srvapi
+from .objects import cliargs, clicmds, cmdmgr, log, main_rcfile, srvapi
 
 # Remove python from process name when running inside tmux
 if 'TMUX' in os.environ:
@@ -26,17 +26,11 @@ if 'TMUX' in os.environ:
         from . import __appname__
         setproctitle(__appname__)
 
-
-cliargs, clicmds = cliopts.parse()
-
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 
-
 def run():
-    cmdmgr.load_cmds_from_module(
-        'stig.commands.cli', 'stig.commands.tui',
-    )
+    cmdmgr.load_cmds_from_module('stig.commands.cli', 'stig.commands.tui')
 
     from .commands.guess_ui import (guess_ui, UIGuessError)
     from .commands import CmdError
@@ -46,9 +40,8 @@ def run():
     rclines = ()
     if not cliargs['norcfile']:
         from .settings import rcfile
-        from .settings.defaults import DEFAULT_RCFILE
         try:
-            rclines = rcfile.read(cliargs['rcfile'] or DEFAULT_RCFILE)
+            rclines = rcfile.read(main_rcfile)
         except rcfile.RcFileError as e:
             log.error('Loading rc file failed: {}'.format(e))
             sys.exit(1)
