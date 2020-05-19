@@ -19,7 +19,7 @@ class DumpCmd(base.DumpCmdbase):
 
     def dump_rc(self, content, path, force=False):
         if path is None:
-            raise CmdError('Missing argument: FILE')
+            raise CmdError('Printing to stdout is not supported in the TUI.')
         else:
             return self.write_rc_file(content, path, force)
 
