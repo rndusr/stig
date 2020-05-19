@@ -57,7 +57,7 @@ class TestDumpCmd(CommandTestCase):
         mock_path_exists.return_value = True
         process = await self.execute(DumpCmd)
         self.assertEqual(open.call_args_list, [call('/mock/path/to/rc', 'r')])
-        self.assert_stderr('dump: File exists: /mock/path/to/rc')
+        self.assert_stderr('dump: Not overwriting edited rc file: /mock/path/to/rc')
         self.assertEqual(process.success, False)
 
     @patch.object(DumpCmd, '_get_settings', return_value='mock settings')

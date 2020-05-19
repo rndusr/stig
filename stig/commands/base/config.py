@@ -127,6 +127,8 @@ class DumpCmdbase(mixin.get_rc_filepath,
                 header_regex = self._make_header_regex()
                 if header_regex.search(header):
                     return True
+                else:
+                    raise CmdError('Not overwriting edited rc file: %s' % (string.tildify(path),))
         raise CmdError('File exists: %s' % (string.tildify(path),))
 
     def _get_settings(self):
