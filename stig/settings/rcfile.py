@@ -11,17 +11,11 @@
 
 import os
 
+from ..utils import string
 from .defaults import DEFAULT_RCFILE
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
-
-
-def _tildify(p):
-    homedir = os.path.expanduser('~')
-    if p.startswith(homedir):
-        return '~' + p[len(homedir):]
-    return p
 
 
 def _unescape_linebreaks(lines):
@@ -57,12 +51,12 @@ def read(filepath=DEFAULT_RCFILE):
                        if line and not line.startswith('#'))
 
     except FileNotFoundError:
-        if _tildify(filepath) == _tildify(DEFAULT_RCFILE):
+        if string.tildify(filepath) == string.tildify(DEFAULT_RCFILE):
             return ()  # Missing default rc file is not an error
         else:
-            raise RcFileError('File not found: {}'.format(_tildify(filepath)))
+            raise RcFileError('File not found: {}'.format(string.tildify(filepath)))
 
     except PermissionError as e:
-        raise RcFileError('No read permission for rc file: {}'.format(_tildify(filepath)))
+        raise RcFileError('No read permission for rc file: {}'.format(string.tildify(filepath)))
 
     return _unescape_linebreaks(cmdstrs)

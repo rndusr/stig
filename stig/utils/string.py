@@ -9,6 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+import os
 from unicodedata import east_asian_width as _east_asian_width
 from unicodedata import normalize as _normalize_unicode
 
@@ -149,3 +150,10 @@ def common_substring(*strings):
                 break
         i += 1
     return ''.join(common) + '…'
+
+
+def tildify(path):
+    homedir = os.path.expanduser('~')
+    if path.startswith(homedir):
+        return '~' + path[len(homedir):]
+    return path
