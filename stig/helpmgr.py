@@ -75,11 +75,10 @@ class HelpManager():
 
         if topic is None:
             return self.topic_overview
-        try:
+
+        if hasattr(self, 'topic_' + topic):
             return getattr(self, 'topic_' + topic)
-        except AttributeError:
-            pass
-        if topic in objects.cmdmgr:
+        elif topic in objects.cmdmgr:
             return self.command(topic)
         elif topic in objects.localcfg or topic[4:] in objects.remotecfg:
             return self.setting(topic)
