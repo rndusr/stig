@@ -23,7 +23,7 @@ from ... import __appname__, __version__, objects
 from ...client import ClientError
 from ...completion import candidates
 from ...settings import defaults, rcfile
-from ...utils import cliparser, usertypes
+from ...utils import cliparser, string, usertypes
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 

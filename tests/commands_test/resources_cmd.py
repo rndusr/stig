@@ -202,8 +202,11 @@ class CommandTestCase(asynctest.TestCase):
         except AssertionError:
             for line,line_exp in zip_longest(lines, lines_exp, fillvalue='<NO MESSAGE>'):
                 line = line.rstrip('\n')
-                if re.search(line_exp, line):
+                match = re.search(line_exp, line)
+                if match:
                     sys.__stdout__.write('      OK: %r\n' % (line,))
+                    if match.groups():
+                        sys.__stdout__.write('  Groups: %r\n' % (match.groups(),))
                 else:
                     sys.__stdout__.write('Expected: %r\n' % (line_exp,))
                     sys.__stdout__.write('  Actual: %r\n' % (line,))
