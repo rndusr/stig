@@ -28,7 +28,7 @@ DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
 DEFAULT_THEME_FILE  = os.path.join(os.path.dirname(__file__), 'default.theme')
 
 DEFAULT_TAB_COMMANDS = (
-    'tab ls active|incomplete',
+    'tab ls active|!complete',
     'tab ls -c status,seeds,ratio,size,uploaded,path,name',
     'tab ls downloading -c size,downloaded,%downloaded,%available,rate-down,completed,eta,path,name',
     'tab ls uploading -c size,ratio,uploaded,rate-up,peers,seeds,tracker,path,name',
