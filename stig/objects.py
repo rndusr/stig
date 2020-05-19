@@ -21,9 +21,8 @@ from .helpmgr import HelpManager
 
 log = logging.make_logger()
 
-cliargs, clicmds = cliopts.parse()
-
-main_rcfile = cliargs['rcfile'] or settings.defaults.DEFAULT_RCFILE
+# Set by main.run()
+main_rcfile = None
 
 localcfg = settings.LocalSettings()
 settings.init_defaults(localcfg)

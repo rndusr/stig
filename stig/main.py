@@ -13,8 +13,8 @@ import asyncio
 import os
 import sys
 
-from . import cliopts, logging
-from .objects import cliargs, clicmds, cmdmgr, log, main_rcfile, srvapi
+from . import cliopts, logging, objects, settings
+from .objects import cmdmgr, log, main_rcfile, srvapi
 
 # Remove python from process name when running inside tmux
 if 'TMUX' in os.environ:
@@ -25,6 +25,9 @@ if 'TMUX' in os.environ:
     else:
         from . import __appname__
         setproctitle(__appname__)
+
+cliargs, clicmds = cliopts.parse()
+objects.main_rcfile = cliargs['rcfile'] or settings.defaults.DEFAULT_RCFILE
 
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
@@ -41,7 +44,7 @@ def run():
     if not cliargs['norcfile']:
         from .settings import rcfile
         try:
-            rclines = rcfile.read(main_rcfile)
+            rclines = rcfile.read(objects.main_rcfile)
         except rcfile.RcFileError as e:
             log.error('Loading rc file failed: {}'.format(e))
             sys.exit(1)
