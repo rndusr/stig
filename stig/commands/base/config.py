@@ -106,9 +106,9 @@ class DumpCmdbase(mixin.get_rc_filepath,
                 with open(path, 'w') as f:
                     f.write(content + '\n')
             except OSError as e:
-                raise CmdError('Unable to write %s: %s' % (path, e.strerror))
+                raise CmdError('Unable to write %s: %s' % (string.tildify(path), e.strerror))
             else:
-                self.info('Wrote rc file: %s' % (path,))
+                self.info('Wrote rc file: %s' % (string.tildify(path),))
                 return True
 
     def _check_write(self, path, force):
@@ -122,12 +122,12 @@ class DumpCmdbase(mixin.get_rc_filepath,
                 with open(path, 'r') as f:
                     header = f.read(1024)
             except OSError as e:
-                raise CmdError('Unable to read %s: %s' % (path, e.strerror))
+                raise CmdError('Unable to read %s: %s' % (string.tildify(path), e.strerror))
             else:
                 header_regex = self._make_header_regex()
                 if header_regex.search(header):
                     return True
-        raise CmdError('File exists: %s' % (path,))
+        raise CmdError('File exists: %s' % (string.tildify(path),))
 
     def _get_settings(self):
         lcfg = objects.localcfg
