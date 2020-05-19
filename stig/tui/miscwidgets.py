@@ -158,6 +158,7 @@ class QuickHelpWidget(urwid.Text):
 
         items = []
         maybe_add_entry(items, 'Settings', get_key('tab set', contexts=('main', None)))
+        maybe_add_entry(items, 'Save', get_key('dump', contexts=('main', None)))
         maybe_add_entry(items, 'Prompt', get_key('tui show cli', contexts=('main', None)))
         maybe_add_entry(items, 'Quit', get_key('quit', contexts=('main', None)))
         maybe_add_entry(items, 'Help', get_first_key('tab help', contexts=('main', None)))

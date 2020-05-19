@@ -219,6 +219,8 @@ DEFAULT_KEYMAP = (
      'description': 'Open command line interface'},
     {'context': 'main', 'key': 'alt-s', 'action': 'tab set',
      'description': 'Open settings in a new tab'},
+    {'context': 'main', 'key': 'alt-shift-s', 'action': 'dump',
+     'description': 'Save current settings, keybindings and tabs in the default rc file'},
     {'context': 'main', 'key': 'shift-f', 'action': 'setcommand --trailing-space tab ls',
      'description': 'Find torrents in a new tab'},
 
