@@ -16,8 +16,9 @@ from types import SimpleNamespace
 from async_timeout import timeout as async_timeout
 
 from . import constants as const
-from ..utils import cached_property, convert
-from ..utils.usertypes import Bool, Float, Int, Option, Path, Percent, String, multitype
+from ..utils import cached_property, convert  # noqa: F401
+from ..utils.usertypes import (Bool, Float, Int, Option, Path, Percent,  # noqa: F401
+                               String, multitype)
 
 
 class Bandwidth(Int):
@@ -138,7 +139,7 @@ class LazyDict(dict):
 class URL():
     """Parse URL as lenient as possible (no validation)"""
 
-    ### Pilfered from yurl: https://github.com/homm/yurl
+    # Pilfered from yurl: https://github.com/homm/yurl
     # This is not validating regexp.
     # It splits url to unambiguous parts according RFC.
     _split_re = re.compile(r'''
@@ -182,7 +183,7 @@ class URL():
         port = None
         port_idx = host.rfind(':')
         if port_idx >= 0:
-            port_str = host[port_idx+1:]
+            port_str = host[port_idx + 1:]
             if port_str.isdigit():
                 host = host[:port_idx]
                 port = int(port_str)
@@ -192,6 +193,7 @@ class URL():
         return dct
 
     _obj_cache = {}
+
     def __new__(cls, url):
         if isinstance(url, cls):
             return url

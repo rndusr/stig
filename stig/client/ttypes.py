@@ -25,8 +25,7 @@ import re
 import time
 from collections import abc, defaultdict, deque
 
-from .utils import (URL, Float, Int, Percent, String, cached_property, const, convert,
-                    multitype)
+from .utils import URL, Float, Int, Percent, String, cached_property, const, convert
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -55,6 +54,7 @@ class Ratio(Float):
     """A Torrent's upload/download ratio as a float"""
     INFINITE = float('inf')
     NOT_APPLICABLE = -1
+
     def __str__(self):
         if self == self.INFINITE:
             return '∞'
@@ -65,6 +65,7 @@ class Ratio(Float):
 
 class Count(Int):
     UNKNOWN = -1
+
     def __str__(self):
         return '?' if self == self.UNKNOWN else super().without_unit
 
@@ -227,11 +228,11 @@ class Timedelta(int):
         abs_secs = abs(self)
         for i,(unit,amount) in enumerate(SECONDS):
             if abs_secs >= amount:
-                num = self/amount
+                num = self / amount
 
                 # Small numbers get a sub-unit, for example '1d15h'
-                if 1 <= abs_secs/amount < 10 and i < len(SECONDS)-1:
-                    subunit, subamount = SECONDS[i+1]
+                if 1 <= abs_secs / amount < 10 and i < len(SECONDS) - 1:
+                    subunit, subamount = SECONDS[i + 1]
                     if num >= 0:
                         subnum = abs(((num % 1) * amount) / subamount)
                     else:
@@ -378,14 +379,14 @@ class Timestamp(float):
             least_significant_given = given[-1]
             if least_significant_given == 'year':
                 ts_min = datetime.datetime(year=dt.year, month=1, day=1)
-                ts_max = datetime.datetime(year=dt.year+1, month=1, day=1) - datetime.timedelta(seconds=1)
+                ts_max = datetime.datetime(year=dt.year + 1, month=1, day=1) - datetime.timedelta(seconds=1)
             elif least_significant_given == 'month':
                 ts_min = datetime.datetime(year=dt.year, month=dt.month, day=1)
                 if dt.month < 12:
-                    ts_max = (datetime.datetime(year=dt.year, month=dt.month+1, day=1)
+                    ts_max = (datetime.datetime(year=dt.year, month=dt.month + 1, day=1)
                               - datetime.timedelta(seconds=1))
                 else:
-                    ts_max = (datetime.datetime(year=dt.year+1, month=1, day=1)
+                    ts_max = (datetime.datetime(year=dt.year + 1, month=1, day=1)
                               - datetime.timedelta(seconds=1))
             elif least_significant_given == 'day':
                 ts_min = datetime.datetime(year=dt.year, month=dt.month, day=dt.day)
@@ -436,6 +437,7 @@ class Timestamp(float):
 
     _SHORT_STR_MAP = {NOW: 'now', SOON: 'soon', UNKNOWN: '?',
                       NOT_APPLICABLE: '', NEVER: 'never'}
+
     def __str__(self):
         const_str = self._SHORT_STR_MAP.get(self, None)
         if const_str is not None:
@@ -454,6 +456,7 @@ class Timestamp(float):
 
     _LONG_STR_MAP = {NOW: 'now', SOON: 'soon', UNKNOWN: 'unknown',
                      NOT_APPLICABLE: 'not applicable', NEVER: 'never'}
+
     @cached_property
     def full(self):
         const_str = self._LONG_STR_MAP.get(self, None)
@@ -487,6 +490,7 @@ class Timestamp(float):
                   UNKNOWN: Timedelta(Timedelta.UNKNOWN),
                   NOT_APPLICABLE: Timedelta(Timedelta.NOT_APPLICABLE),
                   NEVER: Timedelta(Timedelta.NOT_APPLICABLE)}
+
     @property
     def timedelta(self):
         delta = self._DELTA_MAP.get(self, None)

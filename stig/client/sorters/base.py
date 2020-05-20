@@ -114,7 +114,7 @@ class SorterBase(metaclass=_SorterBaseMeta):
             items = sorter(items, inplace=inplace, item_getter=item_getter)
 
         log.debug('-> Sorted %d items by %s in %.3fms',
-                  len(items), self, (time.monotonic()-start_time)*1e3)
+                  len(items), self, (time.monotonic() - start_time) * 1e3)
 
         if not inplace:
             return items

@@ -94,6 +94,7 @@ class TorrentRequestPool(RequestPoller):
         tlist = response.torrents if response is not None else ()
 
         dead_subscribers = []
+
         def send(event, tlist):
             if not bool(event.receivers):
                 dead_subscribers.append(event.name)

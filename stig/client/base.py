@@ -9,7 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-import os
 from collections import abc
 from urllib.parse import quote_plus as urlquote
 

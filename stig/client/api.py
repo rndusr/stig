@@ -67,7 +67,7 @@ class API():
 
     def created(self, prop):
         """Whether property `prop` was created"""
-        return hasattr(self, prop+'_created')
+        return hasattr(self, prop + '_created')
 
     @cached_property(after_creation=lambda self: setattr(self, 'torrent_created', True))
     def torrent(self):

@@ -69,6 +69,7 @@ class RequestPoller():
         else:
             log.debug('Starting polling: %s', self._debug_info['request'])
             self._poll_loop_task = asyncio.ensure_future(self._poll_loop())
+
             def reraise(task):
                 log.debug('Polling loop is finished: %s', self._debug_info['request'])
                 # Ignore if _poll_loop() was cancelled, raise all other exceptions
@@ -76,6 +77,7 @@ class RequestPoller():
                     task.result()
                 except asyncio.CancelledError:
                     pass
+
             self._poll_loop_task.add_done_callback(reraise)
 
     async def _poll_loop(self):
@@ -227,8 +229,8 @@ class RequestPoller():
     @property
     def has_callbacks(self):
         """Whether anyone is interested in response to callback"""
-        return bool(self._on_response.receivers) or \
-               bool(self._on_error.receivers)
+        return (bool(self._on_response.receivers) or
+                bool(self._on_error.receivers))
 
     @property
     def interval(self):

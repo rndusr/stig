@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+# flake8: noqa
+
 # Prevent circular import
 from .constants import *  # isort:skip
 from .errors import *     # isort:skip
