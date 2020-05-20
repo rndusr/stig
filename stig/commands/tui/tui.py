@@ -47,15 +47,15 @@ class BindCmd(metaclass=CommandMeta):
                 'bind u <up>',
                 'bind d <down>')
     argspecs = (
-        { 'names': ('--context','-c'),
-          'description': 'Where KEY is grabbed (see CONTEXTS section)' },
-        { 'names': ('--description','-d'),
-          'description': 'Explanation of what ACTION does' },
-        { 'names': ('KEY',),
-          'description': 'One or more keys or key combinations (see KEYS section)' },
-        { 'names': ('ACTION',), 'nargs': 'REMAINDER',
-          'description': ("Any command or '<KEY>' (including the brackets) "
-                          'to translate one key to another') },
+        {'names': ('--context','-c'),
+         'description': 'Where KEY is grabbed (see CONTEXTS section)'},
+        {'names': ('--description','-d'),
+         'description': 'Explanation of what ACTION does'},
+        {'names': ('KEY',),
+         'description': 'One or more keys or key combinations (see KEYS section)'},
+        {'names': ('ACTION',), 'nargs': 'REMAINDER',
+         'description': ("Any command or '<KEY>' (including the brackets) "
+                         'to translate one key to another')},
     )
 
     def __create_CONTEXTS_section():
@@ -64,8 +64,7 @@ class BindCmd(metaclass=CommandMeta):
              'With no context given, the default context is used.  The default '
              "context gets the key if it isn't mapped in any other relevant context."),
             '',
-            'Available contexts are: ' +
-              ', '.join('%s' % context for context in _get_keymap_contexts()),
+            'Available contexts are: ' + ', '.join(str(c) for c in _get_keymap_contexts()),
             '',
             'EXAMPLE',
             '\tbind --context torrent ctrl-t start',
@@ -167,12 +166,12 @@ class UnbindCmd(metaclass=CommandMeta):
     examples = ('unbind --context main ctrl-l',
                 'unbind q')
     argspecs = (
-        { 'names': ('--context','-c'),
-          'description': 'Where KEY is grabbed (see "bind" command)' },
-        { 'names': ('--all','-a'), 'action': 'store_true',
-          'description': 'Remove all keybindings or only those in given context' },
-        { 'names': ('KEY',), 'nargs': 'REMAINDER',
-          'description': 'Keys or key combinations (see "bind" command)' },
+        {'names': ('--context','-c'),
+         'description': 'Where KEY is grabbed (see "bind" command)'},
+        {'names': ('--all','-a'), 'action': 'store_true',
+         'description': 'Remove all keybindings or only those in given context'},
+        {'names': ('KEY',), 'nargs': 'REMAINDER',
+         'description': 'Keys or key combinations (see "bind" command)'},
     )
 
     def run(self, context, all, KEY):
@@ -229,10 +228,10 @@ class SetCommandCmd(mixin.placeholders, metaclass=CommandMeta):
          'we\'re listing active torrents and the focused torrent stops being active.'),
     )
     argspecs = (
-        { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
-          'description': 'Command the can user edit before executing it (see PLACEHOLDERS)' },
-        { 'names': ('--trailing-space', '-s'), 'action': 'store_true',
-          'description': 'Append a space at the end of COMMAND' },
+        {'names': ('COMMAND',), 'nargs': 'REMAINDER',
+         'description': 'Command the can user edit before executing it (see PLACEHOLDERS)'},
+        {'names': ('--trailing-space', '-s'), 'action': 'store_true',
+         'description': 'Append a space at the end of COMMAND'},
     )
     more_sections = {
         'PLACEHOLDERS': mixin.placeholders.HELP,
@@ -308,21 +307,21 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
          'accepted or not.'),
     )
     argspecs = (
-        { 'names': ('COMMAND',),
-          'description': ('Any command with "[PREFILLED TEXT]" as marker for '
-                          'user input field (see USER INPUT FIELDS) and '
-                          '"{{NAME}}" as placeholder for values of the currently '
-                          'focused list item (see PLACEHOLDERS)') },
-        { 'names': ('--per-change', '-p'), 'action': 'store_true',
-          'description': 'Whether to run COMMAND every time the input is changed'},
-        { 'names': ('--on-accept', '-a'), 'metavar': 'ACCEPT COMMAND',
-          'description': 'Command to run when the dialog is accepted (with <enter>)' },
-        { 'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
-          'description': 'Command to run when the dialog is aborted (with <escape>)' },
-        { 'names': ('--on-close', '-x'), 'metavar': 'CLOSE COMMAND',
-          'description': 'Command to run after the dialog is closed either way' },
-        { 'names': ('--ignore-errors', '-i'), 'action': 'store_true',
-          'description': 'Whether to ignore errors from COMMAND' },
+        {'names': ('COMMAND',),
+         'description': ('Any command with "[PREFILLED TEXT]" as marker for '
+                         'user input field (see USER INPUT FIELDS) and '
+                         '"{{NAM}}" as placeholder for values of the currently '
+                         'focused list item (see PLACEHOLDERS)')},
+        {'names': ('--per-change', '-p'), 'action': 'store_true',
+         'description': 'Whether to run COMMAND every time the input is changed'},
+        {'names': ('--on-accept', '-a'), 'metavar': 'ACCEPT COMMAND',
+         'description': 'Command to run when the dialog is accepted (with <enter>)'},
+        {'names': ('--on-cancel', '-c'), 'metavar': 'CANCEL COMMAND',
+         'description': 'Command to run when the dialog is aborted (with <escape>)'},
+        {'names': ('--on-close', '-x'), 'metavar': 'CLOSE COMMAND',
+         'description': 'Command to run after the dialog is closed either way'},
+        {'names': ('--ignore-errors', '-i'), 'action': 'store_true',
+         'description': 'Whether to ignore errors from COMMAND'},
     )
     more_sections = {
         'COMMANDS': (('For each occurrence of "[]" in any command, the user is '
@@ -394,6 +393,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
     _WIDGET_NAME = 'interactive_prompt'
     _MIN_EDIT_WIDTH = 25
     _MAX_EDIT_WIDTH = 50
+
     def _open_dialog(self, cmd, on_change=None, on_accept=None, on_cancel=None, on_close=None):
         import urwid                          # isort:skip
         from ...tui.cli import CLIEditWidget  # isort:skip
@@ -446,8 +446,9 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
         class MyColumns(urwid.Columns):
             """Use <tab> and <shift-tab> to move focus between input fields"""
             def keypress(self, size, key):
+
                 def move_right():
-                    if self.focus_position < len(self.contents)-1:
+                    if self.focus_position < len(self.contents) - 1:
                         self.focus_position += 1
                     else:
                         self.focus_position = 0
@@ -456,7 +457,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
                     if self.focus_position > 0:
                         self.focus_position -= 1
                     else:
-                        self.focus_position = len(self.contents)-1
+                        self.focus_position = len(self.contents) - 1
 
                 if key == 'tab':
                     move_right()
@@ -556,12 +557,12 @@ class MarkCmd(metaclass=CommandMeta):
     description = 'Select torrents or files for an action'
     usage = ('mark [<OPTIONS>]',)
     argspecs = (
-        { 'names': ('--focus-next','-n'), 'action': 'store_true',
-          'description': 'Move focus forward after marking or toggling' },
-        { 'names': ('--toggle','-t'), 'action': 'store_true',
-          'description': 'Mark if unmarked, unmark if marked' },
-        { 'names': ('--all','-a'), 'action': 'store_true',
-          'description': 'Mark or toggle all items' },
+        {'names': ('--focus-next','-n'), 'action': 'store_true',
+         'description': 'Move focus forward after marking or toggling'},
+        {'names': ('--toggle','-t'), 'action': 'store_true',
+         'description': 'Mark if unmarked, unmark if marked'},
+        {'names': ('--all','-a'), 'action': 'store_true',
+         'description': 'Mark or toggle all items'},
     )
     more_sections = {
         'NOTES': (('The column "marked" must be in the "columns.*" settings. Otherwise '
@@ -589,12 +590,12 @@ class UnmarkCmd(metaclass=CommandMeta):
     description = 'Deselect torrents or files for an action'
     usage = ('unmark [<OPTIONS>]',)
     argspecs = (
-        { 'names': ('--focus-next','-n'), 'action': 'store_true',
-          'description': 'Move focus forward after unmarking or toggling' },
-        { 'names': ('--toggle','-t'), 'action': 'store_true',
-          'description': 'Mark if unmarked, unmark if marked' },
-        { 'names': ('--all','-a'), 'action': 'store_true',
-          'description': 'Unmark or toggle all items' },
+        {'names': ('--focus-next','-n'), 'action': 'store_true',
+         'description': 'Move focus forward after unmarking or toggling'},
+        {'names': ('--toggle','-t'), 'action': 'store_true',
+         'description': 'Mark if unmarked, unmark if marked'},
+        {'names': ('--all','-a'), 'action': 'store_true',
+         'description': 'Unmark or toggle all items'},
     )
     more_sections = MarkCmd.more_sections
 
@@ -627,15 +628,15 @@ class FindCmd(metaclass=CommandMeta):
     description = 'Find text in the content of the focused tab'
     usage = ('find [<OPTIONS>] [<PHRASE>]',)
     argspecs = (
-        { 'names': ('--clear','-c'), 'action': 'store_true',
-          'description': ('Remove previously applied filter; this is '
-                          'the default if no PHRASE arguments are provided') },
-        { 'names': ('--next','-n'), 'action': 'store_true',
-          'description': 'Jump to next match (call `find <PHRASE>` first)' },
-        { 'names': ('--previous','-p'), 'action': 'store_true',
-          'description': 'Jump to previous match (call `find <PHRASE>` first)' },
-        { 'names': ('PHRASE',), 'nargs': '*',
-          'description': 'Search phrase' },
+        {'names': ('--clear','-c'), 'action': 'store_true',
+         'description': ('Remove previously applied filter; this is '
+                         'the default if no PHRASE arguments are provided')},
+        {'names': ('--next','-n'), 'action': 'store_true',
+         'description': 'Jump to next match (call `find <PHRASE>` first)'},
+        {'names': ('--previous','-p'), 'action': 'store_true',
+         'description': 'Jump to previous match (call `find <PHRASE>` first)'},
+        {'names': ('PHRASE',), 'nargs': '*',
+         'description': 'Search phrase'},
     )
 
     def run(self, clear, next, previous, PHRASE):
@@ -672,11 +673,11 @@ class LimitCmd(metaclass=CommandMeta):
     description = 'Limit contents of the focused tab by applying more filters'
     usage = ('limit [<OPTIONS>] [<FILTER> <FILTER> ...]',)
     argspecs = (
-        { 'names': ('--clear','-c'), 'action': 'store_true',
-          'description': ('Remove previously applied filter; this is '
-                          'the default if no FILTER arguments are provided') },
-        { 'names': ('FILTER',), 'nargs': '*',
-          'description': 'Filter expression (see `help filters`)' },
+        {'names': ('--clear','-c'), 'action': 'store_true',
+         'description': ('Remove previously applied filter; this is '
+                         'the default if no FILTER arguments are provided')},
+        {'names': ('FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filters`)'},
     )
 
     def run(self, clear, FILTER):
@@ -746,11 +747,11 @@ class SortCmd(metaclass=CommandMeta):
                   for sname,s in sorted(sortcls.SORTSPECS.items()))
 
     more_sections = {
-        'SORT ORDERS': _list_sort_orders('TORRENT LISTS', client.TorrentSorter) +
-                       ('',) +
-                       _list_sort_orders('PEER LISTS', client.PeerSorter) +
-                       ('',) +
-                       _list_sort_orders('TRACKER LISTS', client.TrackerSorter)
+        'SORT ORDERS': (_list_sort_orders('TORRENT LISTS', client.TorrentSorter) +
+                        ('',) +
+                        _list_sort_orders('PEER LISTS', client.PeerSorter) +
+                        ('',) +
+                        _list_sort_orders('TRACKER LISTS', client.TrackerSorter))
     }
 
     async def run(self, add, reset, none, ORDER):
@@ -816,20 +817,20 @@ class TabCmd(mixin.select_torrents, metaclass=CommandMeta):
                 'tab -f 3 ls active',
                 'tab -b -f -1 ls active')
     argspecs = (
-        { 'names': ('--background', '-b'), 'action': 'store_true',
-          'description': 'Do not focus new tab' },
-        { 'names': ('--close-all', '-C'), 'action': 'store_true',
-          'description': 'Close all tabs' },
-        { 'names': ('--close', '-c'), 'nargs': '?', 'default': False, 'document_default': False,
-          'description': 'Close focused or specified tab (see TAB IDENTIFIERS SECTION)' },
-        { 'names': ('--focus', '-f'),
-          'description': 'Focus specified tab (see TAB IDENTIFIERS SECTION)' },
-        { 'names': ('--move', '-m'),
-          'description': 'Move focused tab left, right or to absolute position' },
-        { 'names': ('--title', '-t'),
-          'description': 'Manually set tab title instead of generating one' },
-        { 'names': ('COMMAND',), 'nargs': 'REMAINDER',
-          'description': ('Command to run in tab') },
+        {'names': ('--background', '-b'), 'action': 'store_true',
+         'description': 'Do not focus new tab'},
+        {'names': ('--close-all', '-C'), 'action': 'store_true',
+         'description': 'Close all tabs'},
+        {'names': ('--close', '-c'), 'nargs': '?', 'default': False, 'document_default': False,
+         'description': 'Close focused or specified tab (see TAB IDENTIFIERS SECTION)'},
+        {'names': ('--focus', '-f'),
+         'description': 'Focus specified tab (see TAB IDENTIFIERS SECTION)'},
+        {'names': ('--move', '-m'),
+         'description': 'Move focused tab left, right or to absolute position'},
+        {'names': ('--title', '-t'),
+         'description': 'Manually set tab title instead of generating one'},
+        {'names': ('COMMAND',), 'nargs': 'REMAINDER',
+         'description': ('Command to run in tab')},
     )
     more_sections = {
         'TAB IDENTIFIERS': (
@@ -928,12 +929,12 @@ class TabCmd(mixin.select_torrents, metaclass=CommandMeta):
                 index_max = len(tabs) - 1
                 # Internally, first tab is at index 0, but for users it's 1, unless
                 # they gave us 0, in which case we assume they mean 1.
-                index = index-1 if index > 0 else index
+                index = index - 1 if index > 0 else index
 
                 # Limit index to index_max, considering negative values when
                 # indexing from the right.
                 if index < 0:
-                    index = max(index, -index_max-1)
+                    index = max(index, -index_max - 1)
                 else:
                     index = min(index, index_max)
                 return tabs.get_id(index)
@@ -944,9 +945,9 @@ class TabCmd(mixin.select_torrents, metaclass=CommandMeta):
                 cur_index = tabs.focus_position
                 cur_index = 1 if cur_index is None else cur_index
                 if right_or_left == 'left':
-                    return tabs.get_id(max(0, cur_index-1))
+                    return tabs.get_id(max(0, cur_index - 1))
                 elif right_or_left == 'right':
-                    return tabs.get_id(min(tabcount-1, cur_index+1))
+                    return tabs.get_id(min(tabcount - 1, cur_index + 1))
 
         def find_id_by_title(string):
             for index,title in enumerate(tabs.titles):
@@ -1042,11 +1043,11 @@ class TUICmd(metaclass=CommandMeta):
     examples = ('tui toggle log',
                 'tui hide topbar.help')
     argspecs = (
-        { 'names': ('ACTION',), 'choices': ('show', 'hide', 'toggle'),
-          'description': '"show", "hide" or "toggle"' },
-        { 'names': ('ELEMENT',), 'nargs': '+',
-          'description': ('Name of TUI elements; '
-                          'see ELEMENT NAMES section for a list') },
+        {'names': ('ACTION',), 'choices': ('show', 'hide', 'toggle'),
+         'description': '"show", "hide" or "toggle"'},
+        {'names': ('ELEMENT',), 'nargs': '+',
+         'description': ('Name of TUI elements; '
+                         'see ELEMENT NAMES section for a list')},
     )
     # HelpManager supports sequences of lines or a callable that returns them
     more_sections = {'ELEMENT NAMES': lambda: ('Available TUI element names are: ' +
@@ -1066,7 +1067,7 @@ class TUICmd(metaclass=CommandMeta):
                 for widgetname in path:
                     current_path.append(widgetname)
                     widget = getattr(widget, widgetname)
-            except AttributeError as e:
+            except AttributeError:
                 self.error('Unknown TUI element: %r' % ('.'.join(current_path),))
 
             if widget is not None:

@@ -19,7 +19,7 @@ from ...utils.cliparser import Arg
 from ..base import torrent as base
 from ._common import make_tab_title_widget
 
-from ...logging import make_logger # isort:skip
+from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 

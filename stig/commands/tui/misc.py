@@ -66,9 +66,9 @@ class LogCmd(base.LogCmdbase):
             elif args == 'down':
                 logwidget.scroll_relative('down', 1)
             elif args == 'page up':
-                logwidget.scroll_relative('up', logwidget.height-1)
+                logwidget.scroll_relative('up', logwidget.height - 1)
             elif args == 'page down':
-                logwidget.scroll_relative('down', logwidget.height-1)
+                logwidget.scroll_relative('down', logwidget.height - 1)
             elif args == 'top':
                 logwidget.scroll_to('top')
             elif args == 'bottom':

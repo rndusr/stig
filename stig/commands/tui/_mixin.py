@@ -65,6 +65,7 @@ class ask_yes_no():
         ignored.
         """
         from ...tui import tuiobjects  # isort:skip
+
         def run_func_or_coro(func_or_coro):
             if asyncio.iscoroutinefunction(func_or_coro):
                 asyncio.ensure_future(func_or_coro())
@@ -395,31 +396,31 @@ class placeholders(make_request):
                  _Placeholder('location', needed_keys=('location',),
                               description='Torrent\'s absolute download path'),
                  _Placeholder('torrentname', needed_keys=('path-relative',),
-                              description='Torrent name',
+                              description='Name of the torrent',
                               modifier=lambda data: data['path-relative'].split('/', maxsplit=1)[0]),
                  _Placeholder('path', needed_keys=('path-relative',),
                               description='Relative path within the torrent, including name',
                               modifier=lambda data: os.sep.join(data['path-relative'].split('/')[1:])))
     }
 
-    HELP = (('Placeholders are evaluated to values of the focused list item.  '
-             'Their format is "{{NAME}}" where valid values for NAME are as follows:'),
-            '',
-            '\tIn torrent lists:') \
-            + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['torrent']) \
-            + ('',
-             '\tIn file lists:') \
-            + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['file']) \
+    HELP = ((('Placeholders are evaluated to values of the focused list item.  '
+              'Their format is "{{NAME}}" where valid values for NAME are as follows:'),
+             '',
+             '\tIn torrent lists:')
+            + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['torrent'])
+            + ('', '\tIn file lists:')
+            + tuple('\t\t%s \t- %s' % (ph.name, ph.description) for ph in _placeholder_specs['file'])
             + ('',
                'To get a literal "{{", escape it with "\\".  "}}" doesn\'t need '
                'to be escaped.  Note that you must escape the "\\" itself unless '
-               'it is quoted because it escapes arbitrary characters.')
+               'it is quoted because it escapes arbitrary characters.'))
 
     _NOT_SUPPORTED_ERROR = 'Placeholders are not supported in the current tab'
     _RESOLVE_ERROR = 'Unable to resolve placeholders: %s'
 
     import re
     _placeholder_split_regex = re.compile(r'(?<!\\)(\{.+?\})')
+
     async def parse_placeholders(self, *args):
         parsed_args = []
         for i,arg in enumerate(args):
