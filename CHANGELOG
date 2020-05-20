@@ -26,7 +26,7 @@
     * Press <tab> in the built-in CLI to complete commands and arguments.
     * Move tabs with <H> and <L>.
     * The command 'dump' collects settings, keybindings and open tabs, translates them
-      into commands and writes them to a file or stdout.  It is bound to <alt-shift-s> by
+      into commands and writes them to a file or stdout.  It is bound to <alt-S> by
       default.
     * Filters can use regular expressions with the new '=~' operator.
     * The command 'magnet' creates magnet URIs for torrents.

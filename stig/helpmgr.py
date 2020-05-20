@@ -134,7 +134,7 @@ class HelpManager():
             '',
             ('\tIn the TUI, the "set" command with no arguments (bound to <alt-s> '
              'by default) lists all settings and lets you edit them with <enter>.  '
-             'The "dump" command (bound to <alt-shift-s> by default) makes your '
+             'The "dump" command (bound to <alt-S> by default) makes your '
              'current settings, keybindings and tabs permanent.'),
             '',
             'RC FILES',
