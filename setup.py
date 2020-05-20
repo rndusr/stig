@@ -11,10 +11,17 @@ except ImportError:
     pass
 
 # Load __version__ variable without importing the whole stig module
-with open('stig/__version__.py') as f:
-    exec(f.read())
+import re
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
+version_match = re.search(r"^__version__\s*=\s*['\"]([^'\"]*)['\"]",
+                          open('stig/__init__.py').read(), re.M)
+if version_match:
+    __version__ = version_match.group(1)
+else:
+    raise RuntimeError("Unable to find __version__")
+
 setup(
     name             = 'stig',
     version          = __version__,
