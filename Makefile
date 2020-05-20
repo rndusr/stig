@@ -21,5 +21,8 @@ test: venv
 	# Check if README.org converts correctly to rst for PyPI
 	python3 setup.py check -r -s >/dev/null
 
+fulltest: venv
+	tox
+
 release:
 	pyrelease CHANGELOG ./stig/__version__.py
