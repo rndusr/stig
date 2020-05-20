@@ -73,7 +73,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     def __getitem__(self, key):
         try:
             item = getattr(self, _key2property(key))
-        except AttributeError as e:
+        except AttributeError:
             raise KeyError(key)
         else:
             return item
@@ -483,11 +483,11 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     @staticmethod
     def _limit_rate_fields(direction, alt):
         if alt:
-            field_value = 'alt-speed-'+direction
+            field_value = 'alt-speed-' + direction
             field_enabled = 'alt-speed-enabled'
         else:
-            field_value = 'speed-limit-'+direction
-            field_enabled = 'speed-limit-'+direction+'-enabled'
+            field_value = 'speed-limit-' + direction
+            field_enabled = 'speed-limit-' + direction + '-enabled'
         return (field_value, field_enabled)
 
     @staticmethod
@@ -506,7 +506,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
             elif self._raw[field_enabled]:
                 # Transmission reports kilobytes
                 self._cache[key] = self._converters[key](
-                    convert.bandwidth(self._raw[field_value]*1000, unit='B'))
+                    convert.bandwidth(self._raw[field_value] * 1000, unit='B'))
             else:
                 self._cache[key] = const.UNLIMITED
         return self._cache[key]

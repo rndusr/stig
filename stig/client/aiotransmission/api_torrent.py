@@ -11,6 +11,7 @@
 
 import base64
 import os
+import time
 from collections import abc
 from string import hexdigits as HEXDIGITS
 
@@ -66,7 +67,7 @@ class _TorrentCache():
         return len(self._tdict)
 
     def __repr__(self):
-        tlist = ', '.join('#'+str(tid) for tid in self._tdict)
+        tlist = ', '.join('#' + str(tid) for tid in self._tdict)
         return '<{cls} {tlist}>'.format(cls=type(self).__name__,
                                         tlist=tlist or '(empty)')
 
@@ -238,7 +239,7 @@ class TorrentAPI(TorrentAPIBase):
                 tids = tuple(t['id'] for t in raw_tlist)
                 self._tcache.purge(existing_tids=tids)
 
-            log.debug('Requested %d torrents in %.3fms', len(raw_tlist), (time()-start)*1e3)
+            log.debug('Requested %d torrents in %.3fms', len(raw_tlist), (time() - start) * 1e3)
             return Response(success=True, raw_torrents=raw_tlist)
 
     def _get_torrents_from_cache(self, ids):
@@ -267,7 +268,7 @@ class TorrentAPI(TorrentAPIBase):
 
         # Success if we found any torrents or no torrents were requested
         success = len(tlist) > 0 or not ids
-        log.debug('Got %d cached torrents in %.3fms', len(tlist), (time()-start)*1e3)
+        log.debug('Got %d cached torrents in %.3fms', len(tlist), (time() - start) * 1e3)
         return Response(success=success, torrents=tlist, errors=errors)
 
     async def _get_torrents_by_ids(self, keys, ids=None, from_cache=False):
@@ -373,8 +374,8 @@ class TorrentAPI(TorrentAPIBase):
         elif isinstance(torrents, (str, TorrentFilter)):
             return await self._get_torrents_by_filter(keys, tfilter=torrents,
                                                       from_cache=from_cache)
-        elif isinstance(torrents, abc.Sequence) and \
-             all(isinstance(id, int) for id in torrents):
+        elif (isinstance(torrents, abc.Sequence) and
+              all(isinstance(id, int) for id in torrents)):
             return await self._get_torrents_by_ids(keys, ids=torrents,
                                                    from_cache=from_cache)
         else:
@@ -532,7 +533,7 @@ class TorrentAPI(TorrentAPIBase):
             msgs.extend(response.msgs)
             errors.extend(response.errors)
         if len(stopped) > 0:
-            r = await self.start(tuple(t['id'] for t in stopped), force=force)
+            response = await self.start(tuple(t['id'] for t in stopped), force=force)
             torrents.extend(response.torrents)
             msgs.extend(response.msgs)
             errors.extend(response.errors)
@@ -751,12 +752,14 @@ class TorrentAPI(TorrentAPIBase):
             # Set filter_files to a lambda that takes a TorrentFileTree and
             # returns a list of TorrentFiles.
             if files is None:
-                filter_files = lambda ftree: tuple(ftree.files)
+                def filter_files(ftree):
+                    return tuple(ftree.files)
             elif isinstance(files, FileFilter):
-                filter_files = lambda ftree: tuple(files.apply(ftree.files))
+                def filter_files(ftree):
+                    return tuple(files.apply(ftree.files))
             elif isinstance(files, abc.Sequence):
-                filter_files = lambda ftree: tuple(f for f in ftree.files
-                                                   if f['id'] in files)
+                def filter_files(ftree):
+                    return tuple(f for f in ftree.files if f['id'] in files)
             else:
                 raise ValueError("Invalid 'files' argument: %r" % (files,))
 
@@ -838,7 +841,7 @@ class TorrentAPI(TorrentAPIBase):
         return await self._limit_rate(torrents, direction, get_new_limit=add_to_current_limit)
 
     async def _limit_rate(self, torrents, direction, get_new_limit):
-        response = await self._map_tid_to_torrent_values(torrents, keys=('limit-rate-'+direction,))
+        response = await self._map_tid_to_torrent_values(torrents, keys=('limit-rate-' + direction,))
         if not response.success:
             return Response(success=False, torrent_set_args={}, errors=response.errors)
         else:
@@ -870,7 +873,7 @@ class TorrentAPI(TorrentAPIBase):
                 if new_limit >= float('inf'):
                     args = (('%sloadLimited' % direction, False),)
                 else:
-                    raw_limit = round(int(new_limit.copy(convert_to='B'))/1000)  # Transmission expects kilobytes
+                    raw_limit = round(int(new_limit.copy(convert_to='B')) / 1000)  # Transmission expects kilobytes
                     args = (('%sloadLimited' % direction, True),
                             ('%sloadLimit' % direction, raw_limit))
 
@@ -888,7 +891,7 @@ class TorrentAPI(TorrentAPIBase):
 
         # Fetch torrents again and return Response with new rate limit messages
         all_tids = sum(torrent_set_args.values(), []) + list(errors)
-        response = await self.torrents(all_tids, keys=('name', 'id', 'limit-rate-'+direction))
+        response = await self.torrents(all_tids, keys=('name', 'id', 'limit-rate-' + direction))
         if not response.success:
             return Response(success=False, torrents=(), errors=response.errors)
         msgs = []
@@ -899,7 +902,7 @@ class TorrentAPI(TorrentAPIBase):
                 errormsgs.append('%s %sload rate limit: %s' % (t['name'], direction, errors[t['id']]))
             else:
                 success = True
-                msgs.append('%s %sload rate limit: %s' % (t['name'], direction, t['limit-rate-'+direction]))
+                msgs.append('%s %sload rate limit: %s' % (t['name'], direction, t['limit-rate-' + direction]))
         return Response(success=success, torrents=response.torrents, msgs=msgs, errors=errormsgs)
 
     async def set_limit_rate_up(self, torrents, limit):
@@ -1079,7 +1082,6 @@ class TorrentAPI(TorrentAPIBase):
             msgs:     List of info messages
             errors:   List of error messages
         """
-        import time
         def check(t):
             if len(t['trackers']) < 1:
                 return (False, 'Torrent has no trackers: %s' % t['name'])

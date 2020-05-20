@@ -24,8 +24,8 @@ log = make_logger(__name__)
 # Some values need to be modified to comply with our internal standards
 
 def _modify_ratio(t):
-    #define TR_RATIO_NA  -1
-    #define TR_RATIO_INF -2
+    # #define TR_RATIO_NA  -1
+    # #define TR_RATIO_INF -2
     ratio = t['uploadRatio']
     if ratio == -1:
         return ttypes.Ratio.NOT_APPLICABLE
@@ -36,8 +36,8 @@ def _modify_ratio(t):
 
 
 def _modify_eta(t):
-    #define TR_ETA_NOT_AVAIL -1
-    #define TR_ETA_UNKNOWN -2
+    # #define TR_ETA_NOT_AVAIL -1
+    # #define TR_ETA_UNKNOWN -2
     seconds = t['eta']
     if seconds == -1:
         return ttypes.Timedelta.NOT_APPLICABLE
@@ -242,7 +242,7 @@ class TorrentFileTree(base.TorrentFileTreeBase):
 
         for subdir,filelist in subdirs.items():
             items[subdir] = TorrentFileTree(torrent_id, torrent_location,
-                                            filelist, path=path+(subdir,))
+                                            filelist, path=path + (subdir,))
         self._items = items
 
     def update(self, raw_torrent):
@@ -267,11 +267,11 @@ class TorrentFileTree(base.TorrentFileTreeBase):
         update_files(self._items, raw_torrent['fileStats'])
 
 
-
 class PeerList(tuple):
     def __new__(cls, t):
         TorrentPeer = ttypes.TorrentPeer
-        return super().__new__(cls,
+        return super().__new__(
+            cls,
             (TorrentPeer(tid=t['id'], tname=t['name'], tsize=t['totalSize'],
                          ip=p['address'], port=p['port'], client=p['clientName'],
                          downloaded=p['progress'] * t['totalSize'],
@@ -279,7 +279,6 @@ class PeerList(tuple):
                          rate_up=p['rateToPeer'], rate_down=p['rateToClient'])
              for p in t['peers'])
         )
-
 
 
 class TrackerList(tuple):
@@ -349,7 +348,7 @@ class TrackerList(tuple):
     def __new__(cls, raw_torrent):
         return super().__new__(cls,
             (ttypes.TorrentTracker(
-                (LazyDict({
+                (LazyDict({  # noqa: E128
                     'id'                 : (raw_torrent['id'], raw_tracker['id']),
                     'tid'                : raw_torrent['id'],
                     'tname'              : raw_torrent['name'],
@@ -374,7 +373,6 @@ class TrackerList(tuple):
                     'time-next-scrape'   : lambda: cls._next_time(raw_tracker, 'Scrape'),
                 }))) for raw_tracker in raw_torrent['trackerStats'])
         )
-
 
 
 # Map our keys to tuples of needed RPC field names for those keys
@@ -444,37 +442,37 @@ class Torrent(base.TorrentBase):
     # Map our keys to callables that adjust the raw RPC values or create values
     # from multiple RPC values
     _MODIFIERS = {
-        '%downloaded'                  : lambda raw: raw['percentDone'] * 100,
-        '%uploaded'                    : _percent_uploaded,
-        '%metadata'                    : lambda raw: raw['metadataPercentComplete'] * 100,
-        '%verified'                    : lambda raw: raw['recheckProgress'] * 100,
-        '%available'                   : _percent_available,
-        'status'                       : _status,
-        'peers-seeding'                : _count_seeds,
-        'ratio'                        : _modify_ratio,
-        'size-available'               : _bytes_available,
+        '%downloaded'        : lambda raw: raw['percentDone'] * 100,
+        '%uploaded'          : _percent_uploaded,
+        '%metadata'          : lambda raw: raw['metadataPercentComplete'] * 100,
+        '%verified'          : lambda raw: raw['recheckProgress'] * 100,
+        '%available'         : _percent_available,
+        'status'             : _status,
+        'peers-seeding'      : _count_seeds,
+        'ratio'              : _modify_ratio,
+        'size-available'     : _bytes_available,
 
         # Transmission provides rate limits in kilobytes - we want bytes
-        'limit-rate-down'              : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,
-        'limit-rate-up'                : lambda raw: None if not raw['uploadLimited']   else raw['uploadLimit']   * 1000,
+        'limit-rate-down'    : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,
+        'limit-rate-up'      : lambda raw: None if not raw['uploadLimited']   else raw['uploadLimit']   * 1000,
 
-        'timespan-eta'                 : _modify_eta,
-        'time-created'                 : lambda raw: _modify_timestamp(raw, 'dateCreated',
-                                                                       zero_means=ttypes.Timestamp.UNKNOWN),
-        'time-added'                   : lambda raw: _modify_timestamp(raw, 'addedDate',
-                                                                       zero_means=ttypes.Timestamp.UNKNOWN),
-        'time-started'                 : lambda raw: _modify_timestamp(raw, 'startDate',
-                                                                       zero_means=ttypes.Timestamp.NOT_APPLICABLE),
-        'time-activity'                : lambda raw: _modify_timestamp(raw, 'activityDate',
-                                                                       zero_means=ttypes.Timestamp.NEVER),
-        'time-completed'               : lambda raw: _modify_timestamp_completed(raw),
+        'timespan-eta'       : _modify_eta,
+        'time-created'       : lambda raw: _modify_timestamp(raw, 'dateCreated',
+                                                             zero_means=ttypes.Timestamp.UNKNOWN),
+        'time-added'         : lambda raw: _modify_timestamp(raw, 'addedDate',
+                                                             zero_means=ttypes.Timestamp.UNKNOWN),
+        'time-started'       : lambda raw: _modify_timestamp(raw, 'startDate',
+                                                             zero_means=ttypes.Timestamp.NOT_APPLICABLE),
+        'time-activity'      : lambda raw: _modify_timestamp(raw, 'activityDate',
+                                                             zero_means=ttypes.Timestamp.NEVER),
+        'time-completed'     : lambda raw: _modify_timestamp_completed(raw),
         'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime',
                                                                        zero_means=ttypes.Timestamp.NEVER),
 
-        'error'                        : _find_error,
-        'trackers'                     : TrackerList,
-        'peers'                        : PeerList,
-        'files'                        : TorrentFileTree.create,
+        'error'              : _find_error,
+        'trackers'           : TrackerList,
+        'peers'              : PeerList,
+        'files'              : TorrentFileTree.create,
     }
 
     def __init__(self, raw_torrent):

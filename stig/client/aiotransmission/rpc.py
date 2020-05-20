@@ -13,7 +13,6 @@
 
 import asyncio
 import json
-import textwrap
 import warnings
 
 import async_timeout
@@ -117,6 +116,7 @@ class TransmissionRPC():
         Setting this property calls disconnect().
         """
         return self._host
+
     @host.setter
     def host(self, host):
         self._host = str(host)
@@ -130,6 +130,7 @@ class TransmissionRPC():
         Setting this property calls disconnect().
         """
         return self._path
+
     @path.setter
     def path(self, path):
         if not path or path[0] != '/':
@@ -145,6 +146,7 @@ class TransmissionRPC():
         Setting this property calls disconnect().
         """
         return self._port
+
     @port.setter
     def port(self, port):
         self._port = int(port)
@@ -158,6 +160,7 @@ class TransmissionRPC():
         Setting this property calls disconnect().
         """
         return self._user
+
     @user.setter
     def user(self, user):
         self._user = str(user)
@@ -171,6 +174,7 @@ class TransmissionRPC():
         Setting this property calls disconnect().
         """
         return self._password
+
     @password.setter
     def password(self, password):
         self._password = str(password)
@@ -184,6 +188,7 @@ class TransmissionRPC():
         Setting this property calls disconnect().
         """
         return self._tls
+
     @tls.setter
     def tls(self, tls):
         self._tls = bool(tls)
@@ -199,6 +204,7 @@ class TransmissionRPC():
     def timeout(self):
         """Number of seconds to try to connect before giving up"""
         return self._timeout
+
     @timeout.setter
     def timeout(self, timeout):
         self._timeout = float(timeout)
@@ -214,6 +220,7 @@ class TransmissionRPC():
         unwarranted error messages.
         """
         return self._enabled_event.is_set()
+
     @enabled.setter
     def enabled(self, enabled):
         if enabled and not self.enabled:
@@ -369,7 +376,7 @@ class TransmissionRPC():
             log.debug('Caught during POST request: %r', e)
             raise ConnectionError(self.url)
 
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             raise TimeoutError(self.timeout, self.url)
 
         else:
