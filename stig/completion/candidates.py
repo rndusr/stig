@@ -320,6 +320,7 @@ async def file_filter(curarg, torrent_filter, filter_names=True):
         response = await objects.srvapi.torrent.torrents(torrent_filter, keys=keys, from_cache=True)
         if response.success:
             return response.torrents
+
     # Get list of files from Torrent instance
     def items_getter(t):
         # Exclude single-file torrents (torrents that don't contain a
@@ -450,6 +451,7 @@ async def _filter_values(filter_cls_name, filter_name, objects_getter, items_get
             objects = await objects_getter(keys=keys)
             if objects:
                 cands = []
+
                 def add_cands_for(item):
                     # Get the same value from `item` that the filter would get
                     value_getter = filter_spec.value_getter

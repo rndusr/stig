@@ -38,10 +38,10 @@ def get_sorter_cls(clsname):
 filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
 filter_combine_ops = ('&', '|')
 filter_labels = {'TorrentFilter'  : 'Torrent Filter',
-                  'FileFilter'    : 'File Filter',
-                  'PeerFilter'    : 'Peer Filter',
-                  'TrackerFilter' : 'Tracker Filter',
-                  'SettingFilter' : 'Setting Filter'}
+                 'FileFilter'    : 'File Filter',
+                 'PeerFilter'    : 'Peer Filter',
+                 'TrackerFilter' : 'Tracker Filter',
+                 'SettingFilter' : 'Setting Filter'}
 
 @functools.lru_cache(maxsize=None)
 def filter_names(filter_cls_name):
@@ -114,7 +114,7 @@ def find_subtree(torrent, path):
         for i,part in enumerate(path):
             if part:
                 subtree = tree.get(part)
-                is_last_part = i == len(path)-1
+                is_last_part = i == len(path) - 1
                 if subtree is None:
                     if not is_last_part:
                         return None

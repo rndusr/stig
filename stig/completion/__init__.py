@@ -84,6 +84,7 @@ class Categories(abc.Sequence):
         # Make sure the current index is not pointing to an empty list
         self.current_index = self._current_index
         return self._current_index
+
     @current_index.setter
     def current_index(self, index):
         if not self:
@@ -91,7 +92,7 @@ class Categories(abc.Sequence):
         elif index is None and self:
             self._current_index = 0
         else:
-            self._current_index = max(0, min(index, len(self)-1))
+            self._current_index = max(0, min(index, len(self) - 1))
 
     @property
     def current(self):
@@ -150,6 +151,7 @@ class Candidates(abc.Sequence):
     def current_index(self):
         """Index of currently selected candidate or None"""
         return self._current_index
+
     @current_index.setter
     def current_index(self, index):
         if not self._matches:
@@ -157,7 +159,7 @@ class Candidates(abc.Sequence):
         elif index is None and self._matches:
             self._current_index = 0
         else:
-            self._current_index = max(0, min(index, len(self._matches)-1))
+            self._current_index = max(0, min(index, len(self._matches) - 1))
 
     @property
     def current(self):
@@ -187,6 +189,7 @@ class Candidates(abc.Sequence):
         applying a candidate from this list
         """
         return self._curarg_seps
+
     @curarg_seps.setter
     def curarg_seps(self, seps):
         self._curarg_seps = seps
