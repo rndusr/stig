@@ -1,0 +1,30 @@
+[flake8]
+ignore =
+    # visually indented line with same indent as next logical line
+    E129,
+    # missing whitespace before ':'
+    E203,
+    # multiple spaces before operator
+    E221,
+    # missing whitespace after ','
+    E231,
+    # multiple spaces before keyword
+    E272,
+    # line too long
+    E501,
+    # expected 2 blank lines
+    E302,
+    # too many blank lines
+    E303,
+    # expected 2 blank lines after class or function definition
+    E305,
+    # multiple spaces after ','
+    E241,
+    # multiple statements on one line (colon)
+    E701,
+    # multiple statements on one line (def)
+    E704,
+    # line break before binary operator
+    W503,
+    # line break after binary operator
+    W504,
