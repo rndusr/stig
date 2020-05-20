@@ -50,12 +50,6 @@ class Callback():
         self.kwargs.append(kwargs)
 
 
-def assertIsException(obj, exccls, text):
-    assert isinstance(obj, exccls), 'Not a {!r}: {!r}'.format(exccls.__name__, obj)
-    assert text in str(obj), 'Not in {!r}: {!r}'.format(obj, text)
-    return True
-
-
 class MockAPI():
     def __init__(self, *args, **kwargs):
         self.init_args = args
