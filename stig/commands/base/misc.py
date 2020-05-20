@@ -11,7 +11,7 @@
 
 """Base classes for documentation commands"""
 
-from .. import CmdError, InitCommand
+from .. import CmdError, CommandMeta
 from ... import __appname__, __version__, objects
 from ...completion import candidates
 from ...logging import make_logger
@@ -20,7 +20,7 @@ log = make_logger(__name__)
 
 
 
-class HelpCmdbase(metaclass=InitCommand):
+class HelpCmdbase(metaclass=CommandMeta):
     name = 'help'
     aliases = ('man',)
     category = 'miscellaneous'
@@ -75,7 +75,7 @@ class HelpCmdbase(metaclass=InitCommand):
         return candidates.help_topics()
 
 
-class VersionCmdbase(metaclass=InitCommand):
+class VersionCmdbase(metaclass=CommandMeta):
     name = 'version'
     category = 'miscellaneous'
     provides = set()
@@ -85,7 +85,7 @@ class VersionCmdbase(metaclass=InitCommand):
         log.info('%s version %s' % (__appname__, __version__))
 
 
-class LogCmdbase(metaclass=InitCommand):
+class LogCmdbase(metaclass=CommandMeta):
     name = 'log'
     provides = set()
     category = 'miscellaneous'

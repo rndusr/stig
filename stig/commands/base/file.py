@@ -12,7 +12,7 @@
 import asyncio
 
 from . import _mixin as mixin
-from .. import CmdError, InitCommand
+from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
 from ._common import make_COLUMNS_doc, make_SCRIPTING_doc, make_X_FILTER_spec
@@ -21,7 +21,7 @@ from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 
-class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
+class ListFilesCmdbase(mixin.get_file_columns, metaclass=CommandMeta):
     name = 'filelist'
     aliases = ('fls', 'lsf')
     provides = set()
@@ -85,7 +85,7 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=InitCommand):
             return candidates.column_names('files')
 
 
-class PriorityCmdbase(metaclass=InitCommand):
+class PriorityCmdbase(metaclass=CommandMeta):
     name = 'priority'
     aliases = ('prio',)
     provides = set()

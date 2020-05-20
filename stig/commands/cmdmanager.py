@@ -17,7 +17,7 @@ from importlib import import_module
 from inspect import getmembers
 
 from . import OPS_AND, OPS_OR, OPS_SEQ, _CommandBase, utils
-from .cmdbase import InitCommand
+from .cmdbase import CommandMeta
 from .cmderror import CmdError, CmdNotFoundError
 
 from ..logging import make_logger  # isort:skip
@@ -55,7 +55,7 @@ class CommandManager():
         """
         Import modules and look for command classes
 
-        Command classes must have set metaclass=InitCommand.
+        Command classes must have set metaclass=CommandMeta.
         """
         for modname in modules:
             log.debug('Looking for commands in %s', modname)
@@ -69,10 +69,10 @@ class CommandManager():
         """
         Add new command
 
-        cmdcls: command class (must have InitCommand as metaclass)
+        cmdcls: command class (must have CommandMeta as metaclass)
         """
         if not issubclass(cmdcls, _CommandBase):
-            raise RuntimeError("{} must have InitCommand as metaclass".format(cmdcls))
+            raise RuntimeError("{} must have CommandMeta as metaclass".format(cmdcls))
         elif not cmdcls.provides:
             raise RuntimeError('{} does not provide any interfaces'.format(cmdcls))
 
@@ -399,7 +399,7 @@ class CommandManager():
         used in chains as a dummy process, e.g. "invalidcommand | validcommand"
         runs "validcommand" because "invalidcommand" fails.
         """
-        class DummyCommand(metaclass=InitCommand):
+        class DummyCommand(metaclass=CommandMeta):
             name = cmdname
             category = 'dummies'
             provides = set()

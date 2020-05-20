@@ -13,7 +13,7 @@ import asyncio
 from collections import abc
 
 from . import _mixin as mixin
-from .. import CmdError, InitCommand
+from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
@@ -24,7 +24,7 @@ log = make_logger(__name__)
 
 
 class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
-                          mixin.get_tracker_filter, metaclass=InitCommand):
+                          mixin.get_tracker_filter, metaclass=CommandMeta):
     name = 'trackerlist'
     aliases = ('trkls', 'lstrk')
     provides = set()
@@ -107,7 +107,7 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
             return candidates.sort_orders('TrackerSorter')
 
 
-class AnnounceCmdbase(metaclass=InitCommand):
+class AnnounceCmdbase(metaclass=CommandMeta):
     name = 'announce'
     aliases = ('an',)
     provides = set()
@@ -140,7 +140,7 @@ class AnnounceCmdbase(metaclass=InitCommand):
         return candidates.torrent_filter(args.curarg)
 
 
-class TrackerCmdbase(metaclass=InitCommand):
+class TrackerCmdbase(metaclass=CommandMeta):
     name = 'tracker'
     aliases = ('trk',)
     provides = set()

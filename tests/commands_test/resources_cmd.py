@@ -9,7 +9,7 @@ import asynctest
 from asynctest import CoroutineMock
 from stig.client.base import TorrentBase
 from stig.client.utils import Response
-from stig.commands import CmdError, InitCommand, _CommandBase
+from stig.commands import CmdError, CommandMeta, _CommandBase
 
 
 def make_cmdcls(defaults=True, **clsattrs):
@@ -30,7 +30,7 @@ def make_cmdcls(defaults=True, **clsattrs):
     else:
         clsname = 'MockCommand'
 
-    cmdcls = InitCommand(clsname, (), clsattrs)
+    cmdcls = CommandMeta(clsname, (), clsattrs)
     assert issubclass(cmdcls, _CommandBase)
     return cmdcls
 

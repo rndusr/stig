@@ -24,7 +24,7 @@ class TestCommandManagerManagement(asynctest.TestCase):
         with self.assertRaises(RuntimeError) as cm:
             self.cmdmgr.register(InvalidCommandClass)
         self.assertIn('metaclass', str(cm.exception))
-        self.assertIn('InitCommand', str(cm.exception))
+        self.assertIn('CommandMeta', str(cm.exception))
 
     def test_active_interface(self):
         self.assertEqual(self.cmdmgr.active_interface, None)

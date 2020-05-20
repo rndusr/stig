@@ -13,7 +13,7 @@ import asyncio
 import os
 
 from . import _mixin as mixin
-from .. import CmdError, InitCommand
+from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
 from ...utils.cliparser import Arg
@@ -24,7 +24,7 @@ from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 
-class AddTorrentsCmdbase(metaclass=InitCommand):
+class AddTorrentsCmdbase(metaclass=CommandMeta):
     name = 'add'
     aliases = ('download','get')
     provides = set()
@@ -80,7 +80,7 @@ class AddTorrentsCmdbase(metaclass=InitCommand):
                                       directories_only=True)
 
 
-class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
+class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=CommandMeta):
     name = 'details'
     aliases = ('info',)
     provides = set()
@@ -120,7 +120,7 @@ class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=InitCommand):
 
 
 class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
-                          metaclass=InitCommand):
+                          metaclass=CommandMeta):
     name = 'list'
     aliases = ('ls',)
     provides = set()
@@ -187,7 +187,7 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
             return candidates.column_names('torrents')
 
 
-class TorrentMagnetURICmdbase(metaclass=InitCommand):
+class TorrentMagnetURICmdbase(metaclass=CommandMeta):
     name = 'magnet'
     aliases = ('uri',)
     provides = set()
@@ -223,7 +223,7 @@ class TorrentMagnetURICmdbase(metaclass=InitCommand):
             return candidates.torrent_filter(args.curarg)
 
 
-class MoveTorrentsCmdbase(metaclass=InitCommand):
+class MoveTorrentsCmdbase(metaclass=CommandMeta):
     name = 'move'
     aliases = ('mv',)
     provides = set()
@@ -256,7 +256,7 @@ class MoveTorrentsCmdbase(metaclass=InitCommand):
                 raise CmdError()
 
 
-class RemoveTorrentsCmdbase(metaclass=InitCommand):
+class RemoveTorrentsCmdbase(metaclass=CommandMeta):
     name = 'remove'
     aliases = ('rm', 'delete')
     provides = set()
@@ -322,7 +322,7 @@ class RemoveTorrentsCmdbase(metaclass=InitCommand):
         return candidates.torrent_filter(args.curarg)
 
 
-class RenameCmdbase(metaclass=InitCommand):
+class RenameCmdbase(metaclass=CommandMeta):
     name = 'rename'
     aliases = ('rn',)
     provides = set()
@@ -434,7 +434,7 @@ ARGSPEC_TOGGLE = {
     'description': ('Start TORRENT if stopped and vice versa')
 }
 
-class StartTorrentsCmdbase(metaclass=InitCommand):
+class StartTorrentsCmdbase(metaclass=CommandMeta):
     name = 'start'
     aliases = ()
     provides = set()
@@ -479,7 +479,7 @@ class StartTorrentsCmdbase(metaclass=InitCommand):
         return candidates.torrent_filter(args.curarg)
 
 
-class StopTorrentsCmdbase(metaclass=InitCommand):
+class StopTorrentsCmdbase(metaclass=CommandMeta):
     name = 'stop'
     aliases = ('pause',)
     provides = set()
@@ -520,7 +520,7 @@ class StopTorrentsCmdbase(metaclass=InitCommand):
         return candidates.torrent_filter(args.curarg)
 
 
-class VerifyTorrentsCmdbase(metaclass=InitCommand):
+class VerifyTorrentsCmdbase(metaclass=CommandMeta):
     name = 'verify'
     aliases = ('check',)
     provides = set()

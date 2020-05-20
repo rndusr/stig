@@ -13,9 +13,9 @@
 Create and manage commands
 
 Commands can be created anywhere by defining a class with metaclass set to
-InitCommand.
+CommandMeta.
 
->>> class MyCommand(metaclass=InitCommand):
+>>> class MyCommand(metaclass=CommandMeta):
 >>>     ...
 
 Every command class must have a 'run' method, which is called when the command
@@ -74,7 +74,7 @@ OPS_OR  = ('|', 'or')
 OPS_SEQ = (';', 'also')
 OPS = OPS_AND + OPS_OR + OPS_SEQ
 
-from .cmdbase import InitCommand, _CommandBase
+from .cmdbase import CommandMeta, _CommandBase
 from .cmderror import *
 from .cmdmanager import CommandManager
 from .utils import is_cmdcls, is_op

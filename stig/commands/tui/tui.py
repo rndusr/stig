@@ -17,7 +17,7 @@ import shlex
 from functools import partial
 
 from . import _mixin as mixin
-from .. import CmdError, InitCommand, utils
+from .. import CmdError, CommandMeta, utils
 from ... import client, objects
 from ...completion import candidates
 from ._common import make_tab_title_widget
@@ -32,7 +32,7 @@ def _get_keymap_contexts():
     return tuple(keymap.contexts)
 
 
-class BindCmd(metaclass=InitCommand):
+class BindCmd(metaclass=CommandMeta):
     name = 'bind'
     provides = {'tui'}
     category = 'tui'
@@ -158,7 +158,7 @@ class BindCmd(metaclass=InitCommand):
             return args[subcmd_start:]
 
 
-class UnbindCmd(metaclass=InitCommand):
+class UnbindCmd(metaclass=CommandMeta):
     name = 'unbind'
     provides = {'tui'}
     category = 'tui'
@@ -208,7 +208,7 @@ class UnbindCmd(metaclass=InitCommand):
             return candidates.keybinding_contexts()
 
 
-class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
+class SetCommandCmd(mixin.placeholders, metaclass=CommandMeta):
     name = 'setcommand'
     aliases = ('setcmd',)
     provides = {'tui'}
@@ -286,7 +286,7 @@ class SetCommandCmd(mixin.placeholders, metaclass=InitCommand):
             return args[subcmd_start:]
 
 
-class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
+class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
     name = 'interactive'
     provides = {'tui'}
     category = 'tui'
@@ -549,7 +549,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=InitCommand):
         return parts
 
 
-class MarkCmd(metaclass=InitCommand):
+class MarkCmd(metaclass=CommandMeta):
     name = 'mark'
     provides = {'tui'}
     category = 'tui'
@@ -582,7 +582,7 @@ class MarkCmd(metaclass=InitCommand):
                 widget.focus_position += 1
 
 
-class UnmarkCmd(metaclass=InitCommand):
+class UnmarkCmd(metaclass=CommandMeta):
     name = 'unmark'
     provides = {'tui'}
     category = 'tui'
@@ -609,7 +609,7 @@ class UnmarkCmd(metaclass=InitCommand):
                 widget.focus_position += 1
 
 
-class QuitCmd(metaclass=InitCommand):
+class QuitCmd(metaclass=CommandMeta):
     name = 'quit'
     provides = {'tui'}
     category = 'tui'
@@ -620,7 +620,7 @@ class QuitCmd(metaclass=InitCommand):
         raise urwid.ExitMainLoop()
 
 
-class FindCmd(metaclass=InitCommand):
+class FindCmd(metaclass=CommandMeta):
     name = 'find'
     provides = {'tui'}
     category = 'tui'
@@ -665,7 +665,7 @@ class FindCmd(metaclass=InitCommand):
                 raise CmdError(e)
 
 
-class LimitCmd(metaclass=InitCommand):
+class LimitCmd(metaclass=CommandMeta):
     name = 'limit'
     provides = {'tui'}
     category = 'tui'
@@ -717,7 +717,7 @@ class LimitCmd(metaclass=InitCommand):
                 return candidates.setting_filter(args.curarg)
 
 
-class SortCmd(metaclass=InitCommand):
+class SortCmd(metaclass=CommandMeta):
     name = 'sort'
     aliases = ()
     provides = {'tui'}
@@ -800,7 +800,7 @@ class SortCmd(metaclass=InitCommand):
             return candidates.sort_orders(sortcls.__name__)
 
 
-class TabCmd(mixin.select_torrents, metaclass=InitCommand):
+class TabCmd(mixin.select_torrents, metaclass=CommandMeta):
     name = 'tab'
     provides = {'tui'}
     category = 'tui'
@@ -1033,7 +1033,7 @@ class TabCmd(mixin.select_torrents, metaclass=InitCommand):
             return args[subcmd_start:]
 
 
-class TUICmd(metaclass=InitCommand):
+class TUICmd(metaclass=CommandMeta):
     name = 'tui'
     provides = {'tui'}
     category = 'tui'

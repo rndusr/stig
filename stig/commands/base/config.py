@@ -19,7 +19,7 @@ import textwrap
 from collections import abc
 
 from . import _mixin as mixin
-from .. import CmdError, InitCommand, utils
+from .. import CmdError, CommandMeta, utils
 from ... import __appname__, __version__, objects
 from ...client import ClientError
 from ...completion import candidates
@@ -33,7 +33,7 @@ log = make_logger(__name__)
 
 
 class DumpCmdbase(mixin.get_rc_filepath,
-                  metaclass=InitCommand):
+                  metaclass=CommandMeta):
     name = 'dump'
     aliases = ()
     category = 'configuration'
@@ -280,7 +280,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
 
 
 class RcCmdbase(mixin.get_rc_filepath,
-                metaclass=InitCommand):
+                metaclass=CommandMeta):
     name = 'rc'
     aliases = ('source',)
     category = 'configuration'
@@ -321,7 +321,7 @@ class RcCmdbase(mixin.get_rc_filepath,
                                       base=os.path.dirname(defaults.DEFAULT_RCFILE))
 
 
-class ResetCmdbase(metaclass=InitCommand):
+class ResetCmdbase(metaclass=CommandMeta):
     name = 'reset'
     category = 'configuration'
     provides = set()
@@ -358,7 +358,7 @@ class ResetCmdbase(metaclass=InitCommand):
 
 
 class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
-                 metaclass=InitCommand):
+                 metaclass=CommandMeta):
     name = 'set'
     category = 'configuration'
     provides = set()
@@ -570,7 +570,7 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
             return candidates.column_names('settings')
 
 
-class RateLimitCmdbase(metaclass=InitCommand):
+class RateLimitCmdbase(metaclass=CommandMeta):
     name = 'ratelimit'
     aliases = ('rate', 'rl')
     provides = set()

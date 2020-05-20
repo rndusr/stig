@@ -13,7 +13,7 @@ import asyncio
 from collections import abc
 
 from . import _mixin as mixin
-from .. import CmdError, InitCommand
+from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
@@ -24,7 +24,7 @@ log = make_logger(__name__)
 
 
 class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
-                       mixin.get_peer_filter, metaclass=InitCommand):
+                       mixin.get_peer_filter, metaclass=CommandMeta):
     name = 'peerlist'
     aliases = ('pls', 'lsp')
     provides = set()

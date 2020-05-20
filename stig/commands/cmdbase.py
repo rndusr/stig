@@ -36,7 +36,7 @@ _MANDATORY_CMD_ATTRS = ('name', 'category', 'provides', 'description', 'run')
 _OPTIONAL_CMD_ATTRS = {
     'aliases': (), 'usage': (), 'examples': (), 'argspecs': (), 'more_sections': {}
 }
-def InitCommand(clsname, bases, attrs):
+def CommandMeta(clsname, bases, attrs):
     """
     Class factory that inits all commands
 
