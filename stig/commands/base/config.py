@@ -186,7 +186,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
             lines[0] = ' '.join((lines[0], lines[1].strip()))
             del lines[1]
 
-        # Escape linebreaks of multi-line commands
+        # Escape line breaks of multi-line commands
         for i in range(len(lines)-1):
             lines[i] += ' \\'
 
