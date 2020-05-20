@@ -24,7 +24,7 @@ from ... import __appname__, __version__, objects
 from ...client import ClientError
 from ...completion import candidates
 from ...settings import defaults, rcfile
-from ...utils import cliparser, string, usertypes
+from ...utils import cached_property, cliparser, string, usertypes
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 
@@ -216,19 +216,24 @@ class DumpCmdbase(mixin.get_rc_filepath,
 
     def _is_default_keybinding(self, key, context, action, description):
         from ...tui.tuiobjects import keymap
-        if isinstance(key, tuple):
-            key_str = ' '.join(k.strip('<>') for k in key)
-        else:
-            key_str = key.strip('<>')
-        dct = {'key': key_str, 'action': action}
+        dct = {'key': key, 'action': action}
         if context != keymap.DEFAULT_CONTEXT:
             dct['context'] = context
         if description:
             dct['description'] = description
-        for d in defaults.DEFAULT_KEYMAP:
+        for d in self._default_keymap:
             if dct == d:
                 return True
         return False
+
+    @cached_property
+    def _default_keymap(self):
+        # Convert string keys to Key objects
+        from ...tui.tuiobjects import keymap
+        km = []
+        for kwargs in defaults.DEFAULT_KEYMAP:
+            km.append({**kwargs, **{'key': keymap.mkkey(kwargs['key'])}})
+        return km
 
     def _wrap_bind_cmd(self, key, action, context, description, escape=False):
         from ...tui.tuiobjects import keymap
