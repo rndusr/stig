@@ -26,32 +26,6 @@ def is_cmdcls(obj):
         issubclass(obj, _CommandBase)
 
 
-class CallbackDict(dict):
-    """Mapping that runs a callback on every change"""
-    # https://stackoverflow.com/a/5186698
-
-    __slots__ = ["callback"]
-
-    def __init__(self, callback, *args, **kwargs):
-        self.callback = callback
-        dict.__init__(self, *args, **kwargs)
-
-    def _wrap(method):
-        def wrapper(self, *args, **kwargs):
-            result = method(self, *args, **kwargs)
-            self.callback()
-            return result
-        return wrapper
-
-    __delitem__ = _wrap(dict.__delitem__)
-    __setitem__ = _wrap(dict.__setitem__)
-    clear = _wrap(dict.clear)
-    pop = _wrap(dict.pop)
-    popitem = _wrap(dict.popitem)
-    setdefault = _wrap(dict.setdefault)
-    update = _wrap(dict.update)
-
-
 def listify_args(args):
     """
     Make list from `args`
