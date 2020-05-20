@@ -122,7 +122,8 @@ class HelpManager():
              "(see 'help set' and 'help reset')."),
             '',
             ('\tLocal settings change the behaviour of {__appname__} while '
-             'remote settings change the behaviour of the connected daemon.'),
+             'remote settings change the behaviour of the connected daemon.  '
+             'The names of remote settings start with "srv.".'),
             '',
             ('\tChanges made to local settings are not permanent.  All '
              'values are set back to their defaults once {__appname__} is '
@@ -131,16 +132,18 @@ class HelpManager():
             ('\tChanges made to remote settings, on the other hand, are '
              'permanent as the daemon has its own configuration system.'),
             '',
+            ('\tIn the TUI, the "set" command with no arguments (bound to <alt-s> '
+             'by default) lists all settings and lets you edit them with <enter>.  '
+             'The "dump" command (bound to <alt-shift-s> by default) makes your '
+             'current settings, keybindings and tabs permanent.'),
+            '',
             'RC FILES',
             ('\tAn rc file contains a list of arbitrary commands.  '
-             r'Commands can span multiple lines by escaping linebreaks with "\".  '
+             r'Commands can span multiple lines by escaping line breaks with "\".  '
              'Lines starting with "#" (optionally preceded by spaces) are ignored.'),
             '',
             ('\tCommands in an rc file are called during startup before the '
              'commands given on the command line.'),
-            '',
-            ('\tThe "dump" command (bound to <alt-shift-s> by default) makes your '
-             'current settings, keybindings and tabs permanent.'),
             '',
             ('\tThe default rc file path is "$XDG_CONFIG_HOME/{__appname__}/rc", '
              'where $XDG_CONFIG_HOME defaults to "~/.config" if it is not set.'),
