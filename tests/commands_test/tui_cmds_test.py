@@ -1,11 +1,10 @@
-from resources_cmd import CommandTestCase
-from stig.utils.cliparser import Args
-from stig.completion import Candidates
-
 from asynctest.mock import patch
+from resources_cmd import CommandTestCase
+from stig.commands.tui import BindCmd, TabCmd
+from stig.completion import Candidates
+from stig.utils.cliparser import Args
 
 
-from stig.commands.tui import TabCmd
 class TestTabCmd(CommandTestCase):
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
@@ -63,7 +62,6 @@ class TestTabCmd(CommandTestCase):
         mock_commands.assert_not_called()
 
 
-from stig.commands.tui import BindCmd
 class TestBindCmd(CommandTestCase):
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
