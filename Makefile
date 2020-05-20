@@ -23,6 +23,7 @@ test: venv
 
 fulltest: venv
 	tox
+	flake8
 
 release:
 	pyrelease CHANGELOG ./stig/__version__.py
