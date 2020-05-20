@@ -11,9 +11,9 @@
 
 
 def make_X_FILTER_spec(filtername, or_focused=False, more_text='', **kwargs):
-    spec = { 'names': (filtername.upper() + ' FILTER',),
-             'description': ('%s filter expression (see %s FILTERS section in `help filters`)' %
-                             (filtername.capitalize(), filtername.upper()))}
+    spec = {'names': (filtername.upper() + ' FILTER',),
+            'description': ('%s filter expression (see %s FILTERS section in `help filters`)' %
+                            (filtername.capitalize(), filtername.upper()))}
     if or_focused:
         spec['description'] += ' or focused %s in the TUI if omitted' % filtername.lower()
     if more_text:
@@ -23,22 +23,22 @@ def make_X_FILTER_spec(filtername, or_focused=False, more_text='', **kwargs):
 
 
 def make_SCRIPTING_doc(cmdname):
-    return ( ("If invoked as a command line argument and the output does not "
-              "go to a TTY (i.e. the terminal size can't be determined), "
-              "the output is optimized for scripting.  Numbers are "
-              "unformatted, columns are separated by a horizontal tab "
-              "character ('\\t') and headers are not printed."),
-             "",
-             ("To enforce human-readable, formatted output, set the environment "
-              "variables COLUMNS and LINES."),
-             "",
-             "\t$ \tCOLUMNS=80 LINES=24 {{__appname__}} {CMDNAME} | less -R".format(CMDNAME=cmdname) )
+    return (("If invoked as a command line argument and the output does not "
+             "go to a TTY (i.e. the terminal size can't be determined), "
+             "the output is optimized for scripting.  Numbers are "
+             "unformatted, columns are separated by a horizontal tab "
+             "character ('\\t') and headers are not printed."),
+            "",
+            ("To enforce human-readable, formatted output, set the environment "
+             "variables COLUMNS and LINES."),
+            "",
+            "\t$ \tCOLUMNS=80 LINES=24 {{__appname__}} {CMDNAME} | less -R".format(CMDNAME=cmdname))
 
 
 def make_SORT_ORDERS_doc(sortercls, option, setting, append=()):
     doc = [('The following sort orders can be specified with the {option} option '
             'or the "{setting}" setting:').format(option=option, setting=setting),
-            '']
+           '']
 
     for sname,s in sorted(sortercls.SORTSPECS.items()):
         snames = ', '.join((sname,) + s.aliases)

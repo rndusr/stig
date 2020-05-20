@@ -40,15 +40,15 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('PEER', nargs='?'),
 
-        { 'names': ('--sort', '-s'),
-          'default_description': "current value of 'sort.peers' setting",
-          'description': ('Comma-separated list of sort orders '
-                          "(see SORT ORDERS section)") },
+        {'names': ('--sort', '-s'),
+         'default_description': "current value of 'sort.peers' setting",
+         'description': ('Comma-separated list of sort orders '
+                         "(see SORT ORDERS section)")},
 
-        { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'columns.peers' setting",
-          'description': ('Comma-separated list of column names '
-                          "(see COLUMNS section)") },
+        {'names': ('--columns', '-c'),
+         'default_description': "current value of 'columns.peers' setting",
+         'description': ('Comma-separated list of column names '
+                         "(see COLUMNS section)")},
     )
 
     from ...views.peer import COLUMNS

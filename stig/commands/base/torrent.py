@@ -34,15 +34,15 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
     examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
                 'add --stopped http://example.org/something.torrent')
     argspecs = (
-        { 'names': ('TORRENT',), 'nargs': '+',
-          'description': 'Link or path to torrent file, magnet link or info hash' },
+        {'names': ('TORRENT',), 'nargs': '+',
+         'description': 'Link or path to torrent file, magnet link or info hash'},
 
-        { 'names': ('--stopped','-s'), 'action': 'store_true',
-          'description': 'Do not start downloading the added torrent(s)' },
+        {'names': ('--stopped','-s'), 'action': 'store_true',
+         'description': 'Do not start downloading the added torrent(s)'},
 
-        { 'names': ('--path','-p'),
-          'description': ('Custom download directory for added torrent(s) '
-                          'relative to "srv.path.complete" setting')},
+        {'names': ('--path','-p'),
+         'description': ('Custom download directory for added torrent(s) '
+                         'relative to "srv.path.complete" setting')},
     )
 
     async def run(self, TORRENT, stopped, path):
@@ -136,15 +136,15 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=False, nargs='*'),
 
-        { 'names': ('--sort', '-s'),
-          'default_description': "current value of 'sort.torrents' setting",
-          'description': ('Comma-separated list of sort orders '
-                          "(see SORT ORDERS section)") },
+        {'names': ('--sort', '-s'),
+         'default_description': "current value of 'sort.torrents' setting",
+         'description': ('Comma-separated list of sort orders '
+                         "(see SORT ORDERS section)")},
 
-        { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'columns.torrents' setting",
-          'description': ('Comma-separated list of column names '
-                          "(see COLUMNS section)") },
+        {'names': ('--columns', '-c'),
+         'default_description': "current value of 'columns.torrents' setting",
+         'description': ('Comma-separated list of column names '
+                         "(see COLUMNS section)")},
     )
 
     from ...views.torrent import COLUMNS
@@ -236,10 +236,10 @@ class MoveTorrentsCmdbase(metaclass=CommandMeta):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
 
-        { 'names': ('PATH',),
-          'description': ('Move the specified torrent(s) to this directory.  If PATH is relative '
-                          '(i.e. does not start with "/"), it is relative to the value of the '
-                          'setting "srv.path.complete".  That means "." is the download path.') },
+        {'names': ('PATH',),
+         'description': ('Move the specified torrent(s) to this directory.  If PATH is relative '
+                         '(i.e. does not start with "/"), it is relative to the value of the '
+                         'setting "srv.path.complete".  That means "." is the download path.')},
     )
 
     async def run(self, TORRENT_FILTER, PATH):
@@ -270,13 +270,13 @@ class RemoveTorrentsCmdbase(metaclass=CommandMeta):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
 
-        { 'names': ('--delete-files','-d'), 'action': 'store_true',
-          'description': 'Delete any downloaded files' },
+        {'names': ('--delete-files','-d'), 'action': 'store_true',
+         'description': 'Delete any downloaded files'},
 
-        { 'names': ('--force','-f'), 'action': 'store_true',
-          'description': ('Ignore remove.max-hits setting: Remove all '
-                          'matching torrents instead of asking for confirmation '
-                          'if the number of matches exceeds remove.max-hits')},
+        {'names': ('--force','-f'), 'action': 'store_true',
+         'description': ('Ignore remove.max-hits setting: Remove all '
+                         'matching torrents instead of asking for confirmation '
+                         'if the number of matches exceeds remove.max-hits')},
     )
 
     async def run(self, TORRENT_FILTER, delete_files, force):
@@ -334,20 +334,20 @@ class RenameCmdbase(metaclass=CommandMeta):
                 'rename id=123 Foo',
                 'rename id=123/some/file new_file_name')
     argspecs = (
-        { 'names': ('TORRENT',), 'nargs': '?',
-          'description': ('Torrent filter expression, optionally followed by a "/" and '
-                          'the relative path to a file or directory in the torrent'),
-          'default_description': 'Focused torrent, file or directory in the TUI' },
+        {'names': ('TORRENT',), 'nargs': '?',
+         'description': ('Torrent filter expression, optionally followed by a "/" and '
+                         'the relative path to a file or directory in the torrent'),
+         'default_description': 'Focused torrent, file or directory in the TUI'},
 
-        { 'names': ('NEW',),
-          'description': ('New name of the torrent, file or directory specified by TORRENT '
-                          '(must not contain "/" or be "." or "..")') },
+        {'names': ('NEW',),
+         'description': ('New name of the torrent, file or directory specified by TORRENT '
+                         '(must not contain "/" or be "." or "..")')},
 
-        { 'names': ('--unique', '-u'), 'action': 'store_true',
-          'description': ('Ensure the torrent filter expression in TORRENT matches exactly '
-                          'one torrent; if not given, all matching files in all matching '
-                          'torrents are renamed'),
-          'default_description': 'Enabled automatically when renaming torrents' },
+        {'names': ('--unique', '-u'), 'action': 'store_true',
+         'description': ('Ensure the torrent filter expression in TORRENT matches exactly '
+                         'one torrent; if not given, all matching files in all matching '
+                         'torrents are renamed'),
+         'default_description': 'Enabled automatically when renaming torrents'},
     )
 
     async def run(self, TORRENT, NEW, unique):
@@ -448,8 +448,8 @@ class StartTorrentsCmdbase(metaclass=CommandMeta):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
 
-        { 'names': ('--force','-f'), 'action': 'store_true',
-          'description': 'Ignore download queue' },
+        {'names': ('--force','-f'), 'action': 'store_true',
+         'description': 'Ignore download queue'},
 
         ARGSPEC_TOGGLE,
     )

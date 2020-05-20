@@ -36,10 +36,10 @@ class ListFilesCmdbase(mixin.get_file_columns, metaclass=CommandMeta):
     argspecs = (
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('FILE', or_focused=False, nargs='?'),
-        { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'columns.files' setting",
-          'description': ('Comma-separated list of column names '
-                          "(see COLUMNS section)") },
+        {'names': ('--columns', '-c'),
+         'default_description': "current value of 'columns.files' setting",
+         'description': ('Comma-separated list of column names '
+                         "(see COLUMNS section)")},
     )
 
     from ...views.file import COLUMNS
@@ -101,12 +101,11 @@ class PriorityCmdbase(metaclass=CommandMeta):
                  'normal' : ('n', '=', 'normal'),
                  'high'   : ('h', '+', 'high')}
     argspecs = (
-        { 'names': ('PRIORITY',),
-          'description': 'File priority; must be %s, %s or %s' % (
-              '/'.join(p[2] for p in _PRIORITY.values()),
-              '/'.join(p[0] for p in _PRIORITY.values()),
-              '/'.join(p[1] for p in _PRIORITY.values()),
-          )},
+        {'names': ('PRIORITY',),
+         'description': 'File priority; must be %s, %s or %s' % (
+             '/'.join(p[2] for p in _PRIORITY.values()),
+             '/'.join(p[0] for p in _PRIORITY.values()),
+             '/'.join(p[1] for p in _PRIORITY.values()))},
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('FILE', or_focused=True, nargs='?'),
     )

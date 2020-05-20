@@ -39,15 +39,15 @@ class ListTrackersCmdbase(mixin.get_tracker_sorter, mixin.get_tracker_columns,
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('TRACKER', or_focused=True, nargs='?'),
 
-        { 'names': ('--sort', '-s'),
-          'default_description': "current value of 'sort.trackers' setting",
-          'description': ('Comma-separated list of sort orders '
-                          "(see SORT ORDERS section)") },
+        {'names': ('--sort', '-s'),
+         'default_description': "current value of 'sort.trackers' setting",
+         'description': ('Comma-separated list of sort orders '
+                         "(see SORT ORDERS section)")},
 
-        { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'columns.trackers' setting",
-          'description': ('Comma-separated list of column names '
-                          "(see COLUMNS section)") },
+        {'names': ('--columns', '-c'),
+         'default_description': "current value of 'columns.trackers' setting",
+         'description': ('Comma-separated list of column names '
+                         "(see COLUMNS section)")},
     )
 
     from ...views.tracker import COLUMNS
@@ -155,13 +155,13 @@ class TrackerCmdbase(metaclass=CommandMeta):
     examples = ('tracker add !tracker http://tracker3.example.org:12345/announce',
                 'tracker remove all tracker1.example tracker2.example ')
     argspecs = (
-        { 'names': ('ACTION',) },
+        {'names': ('ACTION',)},
 
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
 
-        { 'names': ('URL',), 'nargs': '+',
-          'description': ('Announce URL to add to or remove from matching torrents; '
-                          'may be partial (e.g. domain name) when removing trackers') },
+        {'names': ('URL',), 'nargs': '+',
+         'description': ('Announce URL to add to or remove from matching torrents; '
+                         'may be partial (e.g. domain name) when removing trackers')},
     )
 
     async def run(self, ACTION, TORRENT_FILTER, URL):

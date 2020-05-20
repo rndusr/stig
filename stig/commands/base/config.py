@@ -41,15 +41,15 @@ class DumpCmdbase(mixin.get_rc_filepath,
     description = 'Generate commands that reproduce current settings, keybindings and tabs'
     usage = ('dump [<OPTIONS>] [<FILE>]',)
     examples = ('dump rc.current    # Write %s' % (string.tildify(os.path.join(
-                                                   os.path.dirname(defaults.DEFAULT_RCFILE), 'rc.current')),),
+                os.path.dirname(defaults.DEFAULT_RCFILE), 'rc.current')),),
                 'dump .%src.current  # Write rc.current in current working directory' % (os.sep,))
     argspecs = (
         {'names': ('FILE',), 'nargs': '?', 'default': objects.main_rcfile,
          'description': ('Path to rc file or "-" to print to stdout; if FILE does not exist and '
                          'does not start with "{sep}", ".{sep}" or "~", "{dir}" is prepended'.format(
-                             sep=os.sep, dir=string.tildify(os.path.dirname(defaults.DEFAULT_RCFILE)))) },
-        { 'names': ('--force', '-f'), 'action': 'store_true',
-          'description': 'Overwrite FILE if it exists' },
+                             sep=os.sep, dir=string.tildify(os.path.dirname(defaults.DEFAULT_RCFILE))))},
+        {'names': ('--force', '-f'), 'action': 'store_true',
+         'description': 'Overwrite FILE if it exists'},
     )
 
     DUMP_WIDTH = 79
@@ -68,8 +68,8 @@ class DumpCmdbase(mixin.get_rc_filepath,
 
     @classmethod
     def _make_header_regex(cls):
-        lines = cls._make_header(appname=r'\S+', version=r'\S+', timestamp='\S+ \S+')
-        lines = (l.replace('.', '\.') for l in lines)
+        lines = cls._make_header(appname=r'\S+', version=r'\S+', timestamp=r'\S+ \S+')
+        lines = (l.replace('.', r'\.') for l in lines)
         x = re.compile('^' + '\n'.join(lines) + '\n', flags=re.DOTALL)
         log.debug(x)
         return x
@@ -165,7 +165,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
         # First line must always contain the beginning of the default value, even if it is
         # too long
         if len(lines) >= 2 and lines[0].strip() == prefix.strip():
-            lines[0] = lines[0] + lines[1][len(subseqind)-1:]
+            lines[0] = lines[0] + lines[1][len(subseqind) - 1:]
             del lines[1]
         return lines
 
@@ -187,7 +187,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
             del lines[1]
 
         # Escape line breaks of multi-line commands
-        for i in range(len(lines)-1):
+        for i in range(len(lines) - 1):
             lines[i] += ' \\'
 
         if escape:
@@ -378,14 +378,14 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
          'description': ('New value or shell command that prints the new value to stdout; '
                          "numerical values can be adjusted by prepending '+=' or '-='")},
 
-        { 'names': ('--sort', '-s'),
-          'description': ('Comma-separated list of sort orders when listing settings '
-                          '(see SORT ORDERS section)') },
+        {'names': ('--sort', '-s'),
+         'description': ('Comma-separated list of sort orders when listing settings '
+                         '(see SORT ORDERS section)')},
 
-        { 'names': ('--columns', '-c'),
-          'default_description': "current value of 'columns.settings' setting",
-          'description': ('Comma-separated list of column names when listing settings '
-                          '(see COLUMNS section)') },
+        {'names': ('--columns', '-c'),
+         'default_description': "current value of 'columns.settings' setting",
+         'description': ('Comma-separated list of column names when listing settings '
+                         '(see COLUMNS section)')},
     )
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.settings'),
@@ -596,8 +596,8 @@ class RateLimitCmdbase(metaclass=CommandMeta):
                                       "srv.limit.rate.<DIRECTION>); may be omitted in CLI mode "
                                       'for the same effect as specifying "global"')),
 
-        { 'names': ('--quiet','-q'), 'action': 'store_true',
-          'description': 'Do not show new bandwidth rate(s)' },
+        {'names': ('--quiet','-q'), 'action': 'store_true',
+         'description': 'Do not show new bandwidth rate(s)'},
     )
 
     async def run(self, DIRECTION, LIMIT, TORRENT_FILTER, quiet):

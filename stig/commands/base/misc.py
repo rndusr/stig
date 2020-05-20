@@ -31,11 +31,11 @@ class HelpCmdbase(metaclass=CommandMeta):
     examples = ('help',
                 'help help')
     argspecs = (
-        { 'names': ('TOPIC',), 'nargs': '*',
-          'description': 'Name of command, setting or category' },
+        {'names': ('TOPIC',), 'nargs': '*',
+         'description': 'Name of command, setting or category'},
     )
 
-    TOPIC_DELIMITER = ['', '-  '*20, '']
+    TOPIC_DELIMITER = ('', '-  ' * 20, '')
 
     def run(self, TOPIC):
         topics = TOPIC
@@ -48,12 +48,12 @@ class HelpCmdbase(metaclass=CommandMeta):
         else:
             for topic in topics:
                 try:
-                    l = objects.helpmgr.find(topic)
+                    line = objects.helpmgr.find(topic)
                 except ValueError as e:
                     self.error(e)
                     success = False
                 else:
-                    lines.extend(l)
+                    lines.extend(line)
                     lines.extend(self.TOPIC_DELIMITER)
                     existing_topics.append(topic)
 
@@ -96,18 +96,18 @@ class LogCmdbase(metaclass=CommandMeta):
                 'log scroll page down',
                 'log error Holy crap, Batman!')
     argspecs = (
-        { 'names': ('ACTION',), 'nargs': 'REMAINDER',
-          'description': ('"clear", "scroll", "info" or "error" '
-                          '(see the sections below for more information)') },
+        {'names': ('ACTION',), 'nargs': 'REMAINDER',
+         'description': ('"clear", "scroll", "info" or "error" '
+                         '(see the sections below for more information)')},
     )
 
-    more_sections = { 'clear': ('Remove all previously logged messages in the TUI.  '
-                                'This action ignores all PARAMETERs.',),
-                      'scroll': ('Scroll the log messages up or down in the TUI.  '
-                                 'Valid PARAMETERs are "up", "down", "page up", "page down", '
-                                 '"top" and "bottom".',),
-                      'info': ('Join all PARAMETERs and display them as a normal message.',),
-                      'error': ('Join all PARAMETERs and display them as an error message.',) }
+    more_sections = {'clear': ('Remove all previously logged messages in the TUI.  '
+                               'This action ignores all PARAMETERs.',),
+                     'scroll': ('Scroll the log messages up or down in the TUI.  '
+                                'Valid PARAMETERs are "up", "down", "page up", "page down", '
+                                '"top" and "bottom".',),
+                     'info': ('Join all PARAMETERs and display them as a normal message.',),
+                     'error': ('Join all PARAMETERs and display them as an error message.',)}
 
     def run(self, ACTION):
         if len(ACTION) < 1:
