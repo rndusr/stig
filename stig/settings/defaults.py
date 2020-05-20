@@ -11,7 +11,6 @@
 
 import os
 
-from xdg.BaseDirectory import xdg_cache_home as XDG_CACHE_HOME
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_data_home as XDG_DATA_HOME
 
@@ -45,6 +44,7 @@ def init_defaults(localcfg):
     class SortOrder(str):
         """String that is equal to the same string with '!' or '.' prepended"""
         _invert_chars = ''.join(TorrentSorter.INVERT_CHARS)
+
         def __eq__(self, other):
             return self.lstrip(self._invert_chars) == other.lstrip(self._invert_chars)
 

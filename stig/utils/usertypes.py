@@ -139,7 +139,7 @@ def multitype(*constructors):
                     return const(*value)
                 except ValueError as e:
                     errors.append(str(e))
-                except TypeError as e:
+                except TypeError:
                     errors.append('Not a %s' % const.typename)
             raise ValueError('; '.join(errors))
 
@@ -210,7 +210,6 @@ class String(str, UsertypeMixin):
         elif maxlen < _INFINITY:
             specs.append('at most %s %s' % (maxlen, chrstr))
 
-        parts = []
         if specs:
             return 'string (%s)' % (', '.join(specs),)
         else:
@@ -488,8 +487,8 @@ class _NumberBase(UsertypeMixin):
                      for prefix,size in chain.from_iterable(zip(_prefixes_binary,
                                                                 _prefixes_metric))}
     _regex = re.compile(r'^\s*([-+]?(?:\d+\.\d+|\d+|\.\d+|inf)) ?(' +
-                        r'|'.join(p[0] for p in chain.from_iterable(zip(_prefixes_binary,
-                                                                       _prefixes_metric))) +
+                        r'|'.join(p[0] for p in chain.from_iterable(
+                            zip(_prefixes_binary, _prefixes_metric))) +
                         r'|)([^\s0-9]*?)\s*$',
                         flags=re.IGNORECASE)
 

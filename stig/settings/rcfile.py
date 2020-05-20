@@ -56,7 +56,7 @@ def read(filepath=DEFAULT_RCFILE):
         else:
             raise RcFileError('File not found: {}'.format(string.tildify(filepath)))
 
-    except PermissionError as e:
+    except PermissionError:
         raise RcFileError('No read permission for rc file: {}'.format(string.tildify(filepath)))
 
     return _unescape_linebreaks(cmdstrs)

@@ -30,7 +30,7 @@ def _explode(lines, indent):
             line = line[1:]
         splitline = line.split('\t')
         for i in range(indentions):
-            splitline.insert(0, ' '*indent)
+            splitline.insert(0, ' ' * indent)
         exploded.append(splitline)
     return exploded
 
@@ -70,8 +70,8 @@ def _join_line(parts, widths, maxwidth):
 
 def _wrapindent(text, prefix, width):
     """Prepend `prefix` to text and wrap the result if longer than `width`"""
-    indent = ' '*len(prefix)
-    parts = wrap(prefix+text, width=width, subsequent_indent=indent)
+    indent = ' ' * len(prefix)
+    parts = wrap(prefix + text, width=width, subsequent_indent=indent)
     return '\n'.join(parts)
 
 def expand(lines, indent=4, maxwidth=100):

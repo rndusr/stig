@@ -145,7 +145,7 @@ def _on_any_substr(string, pos, substrs):
         substr_pos = pos
         found_substr = ''
         for _ in range(len_substr):
-            maybe_substr = string[substr_pos:substr_pos+len_substr]
+            maybe_substr = string[substr_pos : substr_pos + len_substr]
             if maybe_substr == substr:
                 found_substr = maybe_substr
                 break
@@ -161,7 +161,7 @@ def _on_any_substr(string, pos, substrs):
         first_substr_pos = substr_pos
         while first_substr_pos > 0:
             first_substr_pos -= 1
-            if string[first_substr_pos:first_substr_pos+len_substr] != found_substr:
+            if string[first_substr_pos : first_substr_pos + len_substr] != found_substr:
                 first_substr_pos += 1
                 break
 
@@ -171,7 +171,7 @@ def _on_any_substr(string, pos, substrs):
         diff = pos - first_substr_pos
         len_found_substr = len(found_substr)
         substr_pos = first_substr_pos + (int(diff / len_found_substr) * len_found_substr)
-        if string[substr_pos:substr_pos+len_found_substr] == found_substr:
+        if string[substr_pos : substr_pos + len_found_substr] == found_substr:
             return True, found_substr, substr_pos, diff % len_found_substr
 
     return False, '', None, None
@@ -197,7 +197,6 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
     """
     # log.debug('Parsing %r', string)
     state = {'escape': '', 'quote': '', 'closing_quote_end_index': -1}
-    i_max = len(string) - 1
     for i,char in enumerate(string):
         # log.debug('<%s>', string[:i] + '[' + string[i] + ']' + string[i+1:])
         is_delim, delim, delim_index, delim_offset = _on_any_substr(string, i, delims)
@@ -208,8 +207,8 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
         # if is_escape: log.debug('    Escape at %r: %r', escape_index, escape)
 
         if not state['escape']:
-            next_is_quote, next_quote, next_quote_index, next_quote_offset = _on_any_substr(string, i+1, quotes)
-            next_is_escape, next_escape, next_escape_index, next_escape_offset = _on_any_substr(string, i+1, escapes)
+            next_is_quote, next_quote, next_quote_index, next_quote_offset = _on_any_substr(string, i + 1, quotes)
+            next_is_escape, next_escape, next_escape_index, next_escape_offset = _on_any_substr(string, i + 1, escapes)
 
             # Backslash is plain text between quotes except when it escapes the
             # enclosing quote (e.g. "foo \" bar" -> [foo " bar])
@@ -219,9 +218,9 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
                            escape=escape, quote=state['quote'])
                 # Enable escaping state if this is the last character of the
                 # escape string (escape characters are not marked as escaped)
-                if i >= escape_index + len(escape)-1:
+                if i >= escape_index + len(escape) - 1:
                     # Only mark escape characters that nned it
-                    next_is_delim, _, _, _ = _on_any_substr(string, i+1, delims)
+                    next_is_delim, _, _, _ = _on_any_substr(string, i + 1, delims)
                     if next_is_delim or next_is_quote or next_is_escape:
                         # log.debug('    Enabling escape state')
                         state['escape'] = escape
@@ -240,7 +239,7 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
                                is_special=True, is_escaped=state['escape'], is_quoted=state['quote'],
                                quote=quote, escape=state['escape'])
                     # The next character might still be part of the closing quote
-                    state['closing_quote_end_index'] = i + len(quote)-1
+                    state['closing_quote_end_index'] = i + len(quote) - 1
                     continue
 
                 elif not state['quote']:
@@ -330,7 +329,7 @@ def quote(string, curpos=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, q
 
         # Use the first quote that doesn't exist in `string`
         for quote in quotes:
-            if not quote in string:
+            if quote not in string:
                 return ''.join((quote, string, quote)), quote, ''
 
         # All quotes exist somewhere in `string` - use the first quoting style
@@ -431,7 +430,6 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
     tokens = []
     token = []
     chars = tuple(_parse(cmdline, delims=delims, escapes=escapes, quotes=quotes))
-    i_max = len(chars) - 1
     maxdelims = float('inf') if maxdelims is None else maxdelims
 
     def get_token_and_delim_from_end(token_and_delim, delim):
@@ -447,8 +445,7 @@ def tokenize(cmdline, maxdelims=None, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESC
         curdelims = int(len(tokens) / 2)
         if char.is_delim and char.is_special and curdelims < maxdelims:
             # Character is part of a delimiter string that is not escaped or quoted
-            prev_char = chars[i-1] if i > 0 else Char('')
-            next_char = chars[i+1] if i < i_max else Char('')
+            prev_char = chars[i - 1] if i > 0 else Char('')
 
             if not prev_char.is_delim or not prev_char.is_special:
                 # This is the first character of a delimiter.  Append the
@@ -545,7 +542,7 @@ def remove_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
 
         elif i == curtok_index:
             # Cursor is on a delimiter
-            next_token = tokens[i+1] if i+1 < len(tokens) else None
+            next_token = tokens[i + 1] if i + 1 < len(tokens) else None
             cursor_after_last_char = curtok_curpos >= len(tokens[curtok_index])
             if next_token is not None and next_token not in delims and cursor_after_last_char:
                 # Move to to first character of next token
@@ -554,7 +551,7 @@ def remove_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
             else:
                 # Move to to last character of previous token
                 if new_tokens:
-                    new_curtok_index = max(0, new_curtok_index-1)
+                    new_curtok_index = max(0, new_curtok_index - 1)
                     new_curtok_curpos = len(new_tokens[new_curtok_index])
                     # log.debug('    Token %r: %r: Moved cursor to previous token: %r', i, token, new_tokens[new_curtok_index])
                 else:
@@ -587,10 +584,10 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
 
         def forward():
             # log.debug('      Finding first non-delimiter token in %r', tokens[curtok_index+1:])
-            for i,tok in enumerate(tokens[curtok_index+1:], start=1):
+            for i,tok in enumerate(tokens[curtok_index + 1:], start=1):
                 if tok not in delims:
                     # log.debug('      Avoiding delimiter - moving %d tokens forward', i)
-                    return curtok_index+i, 0
+                    return curtok_index + i, 0
             raise ImpossibleMove()
 
         def backward():
@@ -598,7 +595,7 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
             for i,tok in enumerate(reversed(tokens[:curtok_index]), start=1):
                 if tok not in delims:
                     # log.debug('      Avoiding delimiter - moving %d tokens backward', i)
-                    return curtok_index-i, len(tokens[curtok_index-i])
+                    return curtok_index - i, len(tokens[curtok_index - i])
             raise ImpossibleMove()
 
         def move(*movements):
@@ -611,10 +608,7 @@ def avoid_delims(tokens, curtok_index, curtok_curpos, delims=DEFAULT_DELIMS):
                     pass
             return curtok_index, curtok_curpos
 
-        curtok_index_max = len(tokens) - 1
-        curtok_curpos_max = len(curtok)
-        prev_token = tokens[curtok_index-1] if curtok_index > 0 else None
-        next_token = tokens[curtok_index+1] if curtok_index < curtok_index_max else None
+        prev_token = tokens[curtok_index - 1] if curtok_index > 0 else None
         # log.debug('  Input: %r, %r, %r', tokens, curtok_index, curtok_curpos)
 
         # Move to previous token if we're on the first character of a delimiter
@@ -659,8 +653,8 @@ def maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims=DEFAULT
     if curtok in delims:
         on_first_char = curtok_curpos == 0
         on_last_char = curtok_curpos == curtok_curpos_max
-        prevtok = tokens[curtok_index-1] if curtok_index >= 1 else None
-        nexttok = tokens[curtok_index+1] if curtok_index < curtok_index_max else None
+        prevtok = tokens[curtok_index - 1] if curtok_index >= 1 else None
+        nexttok = tokens[curtok_index + 1] if curtok_index < curtok_index_max else None
 
         if curtok_index == 0:
             # log.debug('    Inserting empty token before the first')
@@ -691,7 +685,7 @@ def maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims=DEFAULT
             # log.debug('    Inserting empty token in multi-char delimiter')
             subtoks = (curtok[:curtok_curpos], '', curtok[curtok_curpos:])
             # log.debug('    Replacing %r with %r', curtok, subtoks)
-            tokens = [*tokens[:curtok_index], *subtoks, *tokens[curtok_index+1:]]
+            tokens = [*tokens[:curtok_index], *subtoks, *tokens[curtok_index + 1:]]
             curtok_index += 1
             curtok_curpos = 0
     #     else:
@@ -816,7 +810,7 @@ def get_nth_posarg_index(n, args, options={}):
             is_posarg = True
             posargs_found += 1
 
-        if is_posarg and posargs_found == n-1:
+        if is_posarg and posargs_found == n - 1:
             return i
     return None
 
@@ -840,7 +834,7 @@ def get_current_cmd(tokens, curtok_index, ops):
         last_tok = len(tokens) - 1
 
         # Find operator before focused token
-        for i in range(curtok_index-1, 0, -1):
+        for i in range(curtok_index - 1, 0, -1):
             token = tokens[i]
             if is_op(token):
                 first_tok = i + 1
@@ -853,7 +847,7 @@ def get_current_cmd(tokens, curtok_index, ops):
                 break
 
     sub_curtok_index = curtok_index - first_tok
-    return (tokens[first_tok:last_tok+1], sub_curtok_index)
+    return (tokens[first_tok : last_tok + 1], sub_curtok_index)
 
 
 class Arg(str):
@@ -876,6 +870,7 @@ class Arg(str):
     def curpos(self):
         """Cursor position in argument"""
         return self._curpos
+
     @curpos.setter
     def curpos(self, curpos):
         self._curpos = int(curpos)
@@ -961,7 +956,6 @@ class Args(tuple):
         # Ensure at least one empty string
         if not tokens:
             tokens = ('',)
-            curarg_index = curarg_curpos = 0
 
         tokens, curtok_index, curtok_curpos = maybe_insert_empty_token(tokens, curtok_index, curtok_curpos, delims)
         # log.debug('Maybe inserted empty token: %r, %r, %r', tokens, curtok_index, curtok_curpos)
@@ -1010,6 +1004,7 @@ class Args(tuple):
     def curarg_index(self):
         """Index of currently focused argument"""
         return self._curarg_index
+
     @curarg_index.setter
     def curarg_index(self, index):
         self._curarg_index = index
@@ -1020,6 +1015,7 @@ class Args(tuple):
         curarg = self.curarg
         if curarg is not None:
             return curarg.curpos
+
     @curarg_curpos.setter
     def curarg_curpos(self, curpos):
         curarg = self.curarg
@@ -1066,8 +1062,8 @@ class Args(tuple):
         curarg_index = None
         curarg_curpos = None
         if option_index is not None:
-            stop = option_index+maxparams+1 if maxparams is not None else len(self)
-            for i in range(option_index+1, stop):
+            stop = option_index + maxparams + 1 if maxparams is not None else len(self)
+            for i in range(option_index + 1, stop):
                 try:
                     arg = self[i]
                 except IndexError:
@@ -1102,7 +1098,7 @@ class Args(tuple):
             elif self.curarg_index > i:
                 new_curarg_index -= 1
         return Args(new_args,
-                    curarg_index=min(new_curarg_index, len(new_args)-1),
+                    curarg_index=min(new_curarg_index, len(new_args) - 1),
                     curarg_curpos=new_curarg_curpos)
 
     def __getitem__(self, item):
@@ -1125,7 +1121,7 @@ class Args(tuple):
                     # Cursor is between `start` and `stop` or on `start`
                     curarg_index = self.curarg_index - start
                     curarg_curpos = self.curarg_curpos
-                elif self.curarg_index == start-1 and self.curarg_curpos == len(self.curarg):
+                elif self.curarg_index == start - 1 and self.curarg_curpos == len(self.curarg):
                     # Cursor is after the last character of the argument before
                     # `start`, i.e. just before our slice.  This is essentially
                     # the same position as on the first character of the

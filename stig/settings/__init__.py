@@ -14,7 +14,7 @@ from collections import abc
 
 from blinker import Signal
 
-from .defaults import init_defaults
+from .defaults import init_defaults  # noqa: F401
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -181,7 +181,7 @@ class RemoteSettings(abc.Mapping):
 
     @property
     def as_dict(self):
-        return {'srv.'+name: {**setting, 'id': 'srv.'+name}
+        return {'srv.' + name: {**setting, 'id': 'srv.' + name}
                 for name,setting in self._cfg.as_dict.items()}
 
     def __getitem__(self, name):

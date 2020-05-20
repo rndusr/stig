@@ -95,9 +95,9 @@ def stralign(string, width, side='left'):
 
     if fill > 0:
         if side == 'left':
-            string = string + ' '*fill
+            string = string + ' ' * fill
         elif side == 'right':
-            string = ' '*fill + string
+            string = ' ' * fill + string
         else:
             raise TypeError("side argument must be 'left' or 'right', not {!r}".format(side))
     return string
@@ -118,7 +118,7 @@ def crop_and_align(string, width, align, has_wide_chars=True):
         string_len = len(string)
         if string_len > width:
             if align == 'right':
-                string = string[string_len-width:]
+                string = string[string_len - width:]
             elif align == 'left':
                 string = string[:width]
             else:
