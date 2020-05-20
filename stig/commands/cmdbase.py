@@ -238,7 +238,7 @@ class _CommandBase():
             argstr = ', '.join(repr(arg) for arg in self._args)
         elif isinstance(self._args, abc.Mapping):
             argstr = ', '.join('%s=%r' % (k,v)
-                                for k,v in self._args.items())
+                               for k,v in self._args.items())
         provides = '/'.join(interface for interface in self.provides)
         string = '<Command [{}] {}({})'.format(provides, self.name, argstr)
         if self.finished:

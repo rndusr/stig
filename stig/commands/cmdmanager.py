@@ -379,7 +379,7 @@ class CommandManager():
     def _validate_cmdchain_item(self, item):
         # item must be operator or a command line in list form
         if not (utils.is_op(item) or (isinstance(item, abc.Sequence) and not isinstance(item, str) and
-                                all(isinstance(arg, str) for arg in item))):
+                                      all(isinstance(arg, str) for arg in item))):
             raise RuntimeError('Invalid type for command chain item: %r' % (item,))
 
         # Test if item is an operator after another operator
@@ -404,6 +404,7 @@ class CommandManager():
             category = 'dummies'
             provides = set()
             description = 'Dummy command'
+
             def run(self):
                 if info:
                     self.info(info)

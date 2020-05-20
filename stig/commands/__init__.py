@@ -69,6 +69,8 @@ are exceptions:
   argparse.REMAINDER.
 """
 
+# flake8: noqa
+
 OPS_AND = ('&', 'and')
 OPS_OR  = ('|', 'or')
 OPS_SEQ = (';', 'also')
