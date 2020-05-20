@@ -54,7 +54,7 @@ class Completer():
                         raise RuntimeError('Not a Candidates object or iterable of Candidates objects: %r' % (item,))
             cats = tuple(flatten(cands))
         else:
-            raise RuntimeError('Invalid candidates: %r' % (item,))
+            raise RuntimeError('Invalid candidates: %r' % (cands,))
 
         # Include current user input (this is filled in later when the current
         # command line is parsed)
@@ -161,7 +161,7 @@ class Completer():
             curtok_parts, curpart_index, curpart_curpos = \
                 cliparser.avoid_delims(curtok_parts, curpart_index, curpart_curpos, curarg_seps)
             # log.debug('Separated current token: %r', curtok_parts)
-            self._tokens[self._curtok_index:self._curtok_index+1] = curtok_parts
+            self._tokens[self._curtok_index : self._curtok_index + 1] = curtok_parts
             self._curtok_index += curpart_index
             self._curtok_curpos = curpart_curpos
             # log.debug('Tokens with separated argument: %r', self._tokens)

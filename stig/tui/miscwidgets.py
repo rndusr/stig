@@ -11,7 +11,6 @@
 
 import urwid
 
-from . import main as tui
 from .. import objects, utils
 from ..client import constants as const
 
@@ -51,7 +50,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
                 key_col_widths[colnum] = max(key_col_widths[colnum], width)
         # Total key chain column width is:
         # max(len(key) for each key) + (1 space between keys)
-        key_col_width = sum(key_col_widths) + key_col_num-1
+        key_col_width = sum(key_col_widths) + key_col_num - 1
 
         # Create list of rows
         keychain_col_width = max(len(self._headers[0]), key_col_width)
@@ -84,7 +83,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
                     row.append(('pack', urwid.Text((attrs, keytext))))
 
                 # Add space between this key cell and the next unless this is the last column
-                if colnum < key_col_num-1:
+                if colnum < key_col_num - 1:
                     row.append(('pack', urwid.Text(('keychains.keys', ' '))))
 
             # Fill remaining space if 'Key Chain' header is longer than all key chains
@@ -114,7 +113,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
         # Becomes: <a> <b> …   command with argument …
         reduced = {}
         for kc,action in keychains:
-            key = kc[:next_key_index+1]
+            key = kc[:next_key_index + 1]
             if key != kc:
                 subkeychains = (action for kc,action in keychains
                                 if kc.startswith(key))
@@ -250,8 +249,9 @@ class BandwidthStatusWidget(urwid.Widget):
         dn = settings['limit.rate.down']
 
         # Empty display if DISCONNECTED or UNLIMITED
-        as_str = lambda rate: '' if rate in (const.DISCONNECTED, const.UNLIMITED) \
-                              else '/%s' % rate.without_unit
+        def as_str(rate):
+            return ('' if rate in (const.DISCONNECTED, const.UNLIMITED)
+                    else '/%s' % rate.without_unit)
         self._text_up_limit.set_text(as_str(up))
         self._text_dn_limit.set_text(as_str(dn))
 
@@ -302,9 +302,9 @@ class BandwidthStatusWidget(urwid.Widget):
         return 1
 
     def pack(self, size, focus=False):
-        cols = (self._RATE_WIDTH*2) + (self._TAIL_WIDTH*2) + \
-               self._dn_limit_width + self._up_limit_width + \
-               self._SPACER_WIDTH
+        cols = ((self._RATE_WIDTH * 2) + (self._TAIL_WIDTH * 2) +
+                self._dn_limit_width + self._up_limit_width +
+                self._SPACER_WIDTH)
         return (cols, 1)
 
 

@@ -33,7 +33,7 @@ def run(command_runner):
     tuiobjects.theme.init(objects.localcfg.default('tui.theme'), tuiobjects.urwidscreen)
 
     # Load tui-specific hooks before commands run (commands may trigger hooks)
-    from . import hooks
+    from . import hooks  # noqa
 
     try:
         if not command_runner():

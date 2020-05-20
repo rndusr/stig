@@ -143,12 +143,10 @@ class Group(urwid.WidgetWrap):
             raise ValueError('Already added: {!r}'.format(name))
         else:
             options = self._parse_options(options)
-            item = dict(
-                name = name,            # Descriptive, unique handle
-                widget = widget,        # Bare widget
-                options = options,      # urwid options tuple, e.g. ('given',10) or ('weight',50)
-                removable = removable,  # Wether this item can be deleted
-            )
+            item = dict(name=name,            # Descriptive, unique handle
+                        widget=widget,        # Bare widget
+                        options=options,      # urwid options tuple, e.g. ('given',10) or ('weight',50)
+                        removable=removable)  # Wether this item can be deleted
 
             if position == 'start':
                 position = 0
@@ -364,7 +362,7 @@ class Group(urwid.WidgetWrap):
         Returns True if focus was changed, False otherwise.
         """
         op = operator.add if forward else operator.sub
-        max_pos = len(self._main.contents)-1
+        max_pos = len(self._main.contents) - 1
         new_pos = None
         pos = self.focus_position
         while 0 < pos < max_pos:

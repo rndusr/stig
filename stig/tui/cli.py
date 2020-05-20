@@ -11,7 +11,6 @@
 
 import asyncio
 import os
-import time
 
 import blinker
 import urwid
@@ -144,6 +143,7 @@ class CLIEditWidget(urwid.WidgetWrap):
     def edit_text(self):
         """Current editable text"""
         return self._editw.edit_text
+
     @edit_text.setter
     def edit_text(self, cmd):
         self._editw.edit_text = str(cmd)
@@ -152,10 +152,10 @@ class CLIEditWidget(urwid.WidgetWrap):
     def edit_pos(self):
         """Current cursor position in the editable text"""
         return self._editw.edit_pos
+
     @edit_pos.setter
     def edit_pos(self, pos):
         self._editw.edit_pos = int(pos)
-
 
     # Completion
 
@@ -217,14 +217,13 @@ class CLIEditWidget(urwid.WidgetWrap):
                 log.debug('Hiding completion menu')
                 self._groupw.hide('candidates')
 
-
     # History
 
     def _set_history_prev(self):
         # Remember whatever is currently in line when user starts exploring history
         if self._history_pos == -1:
             self._edit_text_cache = self._editw.edit_text
-        if self._history_pos+1 < len(self._history):
+        if self._history_pos + 1 < len(self._history):
             self._history_pos += 1
             self._editw.edit_text = self._history[self._history_pos]
 
@@ -264,7 +263,7 @@ class CLIEditWidget(urwid.WidgetWrap):
             flines = _read_lines(self._history_file)
             if len(flines) > max_size:
                 # Trim more than necessary to reduce number of writes
-                overtrim = max(0, min(int(self._history_size/2), 10))
+                overtrim = max(0, min(int(self._history_size / 2), 10))
                 flines = flines[overtrim:]
                 _write_lines(self._history_file, flines)
 
@@ -318,6 +317,7 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
             self.reset()
         else:
             cats = self._completer.categories
+
             def cat_widget_cols(cands):
                 column_titles = []
                 column_titles.append(cands.label)

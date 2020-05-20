@@ -106,7 +106,7 @@ class LogWidget(urwid.WidgetWrap):
             # the user has scrolled up manually.
             curpos = self._scrollable.get_scrollpos()
             maxpos = self._scrollable.rows_max()
-            scroll_to_bottom = curpos+self._height >= maxpos
+            scroll_to_bottom = curpos + self._height >= maxpos
             new_content = (LogEntry(msg, style), self._pile_options)
             self._pile.contents.append(new_content)
             if scroll_to_bottom:
@@ -123,9 +123,11 @@ class LogWidget(urwid.WidgetWrap):
             if self._autohide_handle is not None:
                 self._autohide_handle.cancel()
             widgets.show('log')
+
             def hide():
                 widgets.hide('log')
                 self._autohide_handle = None
+
             self._autohide_handle = asyncio.get_event_loop().call_later(self.autohide_delay, hide)
 
     def rows(self, size, focus=False):
@@ -157,6 +159,7 @@ class LogWidget(urwid.WidgetWrap):
         scrl.set_scrollpos(pos)
 
     _WHERE = {'top': 0, 'bottom': -1}
+
     def scroll_to(self, where):
         """Scroll to top or bottom of log
 
@@ -212,7 +215,7 @@ class LogEntry(urwid.WidgetWrap):
             ('pack', urwid.AttrMap(urwid.Text(' '),               'log')),
             ('pack', urwid.AttrMap(self._widgets['dupes'],        'log.dupecount')),
             ('pack', urwid.AttrMap(self._widgets['dupes_spacer'], 'log')),
-            urwid.AttrMap(self._widgets['message'], 'log.'+style),
+            urwid.AttrMap(self._widgets['message'], 'log.' + style),
         ], dividechars=0))
 
     @property
@@ -228,7 +231,7 @@ class LogEntry(urwid.WidgetWrap):
         self._dupes = dupes
         self._widgets['timestamp'].set_text(self._make_timestamp())
         if dupes > 0:
-            self._widgets['dupes'].set_text('x' + str(dupes+1))
+            self._widgets['dupes'].set_text('x' + str(dupes + 1))
             self._widgets['dupes_spacer'].set_text(' ')
         else:
             self._widgets['dupes'].set_text('')

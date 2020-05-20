@@ -37,7 +37,7 @@ class Key(str):
         # The first part in key combos must always be the same, but the part
         # after must be preserved. <alt-l> is not the same as <alt-L>.
         (re.compile(r'^(\w+)-(\S+)$'),
-         lambda m: m.group(1).lower()+'-'+m.group(2)),
+         lambda m: m.group(1).lower() + '-' + m.group(2)),
     )
 
     _MODS = ('shift', 'alt', 'ctrl')
@@ -272,7 +272,7 @@ class KeyMap():
             key = key[0]
         try:
             del urwid.command_map[key]
-        except KeyError as e:
+        except KeyError:
             return False
         else:
             return True
@@ -518,6 +518,7 @@ class KeyMap():
                      '_Keymapped__callback': staticmethod(callback)})
 
     _KEY_SPLIT_SPACE = re.compile(r' +')
+
     def mkkey(self, string):
         """
         Create Key or KeyChain instance from `string`

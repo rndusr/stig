@@ -196,9 +196,9 @@ class Scrollable(urwid.WidgetDecoration):
             self._trim_top = ensure_bounds(trim_top + 1)
 
         elif action == SCROLL_PAGE_UP:
-            self._trim_top = ensure_bounds(trim_top - maxrow+1)
+            self._trim_top = ensure_bounds(trim_top - maxrow + 1)
         elif action == SCROLL_PAGE_DOWN:
-            self._trim_top = ensure_bounds(trim_top + maxrow-1)
+            self._trim_top = ensure_bounds(trim_top + maxrow - 1)
 
         elif action == SCROLL_TO_TOP:
             self._trim_top = 0
@@ -330,7 +330,7 @@ class ScrollBar(urwid.WidgetDecoration):
 
         # Thumb may only touch top/bottom if the first/last row is visible
         top_weight = float(pos) / max(1, posmax)
-        top_height = int((maxrow-thumb_height) * top_weight)
+        top_height = int((maxrow - thumb_height) * top_weight)
         if top_height == 0 and top_weight > 0:
             top_height = 1
 

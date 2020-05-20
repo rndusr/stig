@@ -29,7 +29,7 @@ def _find_unused_id(existing_ids):
     if not existing_ids:
         return TabID(0)
     else:
-        for id_candidate in range(0, max(existing_ids)+2):
+        for id_candidate in range(0, max(existing_ids) + 2):
             if id_candidate not in existing_ids:
                 return TabID(id_candidate)
 
@@ -228,7 +228,7 @@ class Tabs(urwid.Widget):
         """
         curpos = self.focus_position
         if position == 'right':
-            newpos = (curpos+1) if curpos is not None else 0
+            newpos = (curpos + 1) if curpos is not None else 0
         elif position == 'left':
             newpos = max(curpos, 0) if curpos is not None else 0
         elif isinstance(position, int):
@@ -291,7 +291,7 @@ class Tabs(urwid.Widget):
                 l.append(item)
             elif new_index < -1:
                 # First negative index is -1
-                l.insert(new_index+1, item)
+                l.insert(new_index + 1, item)
             else:
                 l.insert(new_index, item)
 
@@ -527,7 +527,7 @@ class Tabs(urwid.Widget):
             if cmd == urwid.CURSOR_LEFT and focus_pos > 0:
                 self.focus_position -= 1
                 key = None
-            elif cmd == urwid.CURSOR_RIGHT and focus_pos < len(self._contents)-1:
+            elif cmd == urwid.CURSOR_RIGHT and focus_pos < len(self._contents) - 1:
                 self.focus_position += 1
                 key = None
         return key

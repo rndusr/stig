@@ -29,7 +29,7 @@ urwid.COMPLETE_PREV            = 'complete previous'
 for key in tuple(urwid.command_map._command):
     del urwid.command_map._command[key]
 
-from .keymap import Key  # isort:skip
+from .keymap import Key  # noqa isort:skip
 urwid.command_map[Key('pgup')]           = urwid.CURSOR_PAGE_UP
 urwid.command_map[Key('pgdn')]           = urwid.CURSOR_PAGE_DOWN
 urwid.command_map[Key('ctrl-b')]         = urwid.CURSOR_PAGE_UP
@@ -65,8 +65,8 @@ urwid.command_map[Key('tab')]            = urwid.COMPLETE_NEXT
 urwid.command_map[Key('shift-tab')]      = urwid.COMPLETE_PREV
 
 
-import re        # isort:skip
-import operator  # isort:skip
+import re        # noqa isort:skip
+import operator  # noqa isort:skip
 class Edit_readline(urwid.Edit):
     def keypress(self, size, key):
         def move_to_next_word(forward=True):
@@ -148,7 +148,7 @@ urwid.Text = Text_patched
 # Limit the impact of the high CPU load bug
 # https://github.com/urwid/urwid/pull/86
 # https://github.com/urwid/urwid/issues/90
-urwid.AsyncioEventLoop._idle_emulation_delay = 1/25
+urwid.AsyncioEventLoop._idle_emulation_delay = 1 / 25
 
 
 # urwid uses sys.exc_info() to get `(type, value, traceback)`, which is needed
@@ -232,7 +232,7 @@ urwid.ListBox = ListBox_patched
 
 # Don't use deprecated inspect.getargspect()
 # https://github.com/urwid/urwid/pull/311
-from inspect import getfullargspec  # isort:skip
+from inspect import getfullargspec  # noqa isort:skip
 def remove_defaults(d, fn):
     args, varargs, varkw, defaults, _, _, _ = getfullargspec(fn)
 
