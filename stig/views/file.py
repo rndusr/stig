@@ -20,12 +20,12 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
-ALIASES = { 'n'    : 'name', 'filename': 'name',
-            'sz'   : 'size',
-            'dn'   : 'downloaded',
-            '%dn'  : '%downloaded',
-            'prio' : 'priority',
-            'mark' : 'marked' }
+ALIASES = {'n'    : 'name', 'filename': 'name',
+           'sz'   : 'size',
+           'dn'   : 'downloaded',
+           '%dn'  : '%downloaded',
+           'prio' : 'priority',
+           'mark' : 'marked'}
 
 
 class Filename(ColumnBase):

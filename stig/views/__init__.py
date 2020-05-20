@@ -11,11 +11,11 @@
 
 """Display specifications for tables and such"""
 
-from ..logging import make_logger  # isort:skip
-log = make_logger(__name__)
-
 from collections import defaultdict
 from time import time
+
+from ..logging import make_logger  # isort:skip
+log = make_logger(__name__)
 
 
 class ColumnBase():
@@ -34,6 +34,7 @@ class ColumnBase():
     # _cache = defaultdict(lambda: {'value': None, 'last_hit': time(), 'hits': 0})
     _cache = defaultdict(lambda: {'value': None, 'last_hit': time()})
     _last_cache_prune = 0
+
     def _from_cache(self, create_value, *args):
         cache_id = (create_value, args)
         if cache_id not in self._cache:
@@ -47,12 +48,12 @@ class ColumnBase():
 
             # Remove any cached items that haven't been used recently
             now = time()
-            if now-ColumnBase._last_cache_prune > 60:
+            if now - ColumnBase._last_cache_prune > 60:
                 ColumnBase._last_cache_prune = now
 
                 # prune_counter = 0
                 for cid,citem in tuple(self._cache.items()):
-                    if now-citem['last_hit'] > 600:
+                    if now - citem['last_hit'] > 600:
                         del self._cache[cid]
                         # prune_counter += 1
 

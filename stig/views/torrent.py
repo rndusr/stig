@@ -20,30 +20,30 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
-ALIASES = { 'mark'     : 'marked',
-            'n'        : 'name',
-            'dir'      : 'path',
-            'st'       : 'status',
-            'err'      : 'error',
-            'up'       : 'uploaded',
-            'dn'       : 'downloaded',
-            '%dn'      : '%downloaded',
-            'av'       : 'available',
-            '%av'      : '%available',
-            'sz'       : 'size',
-            'prs'      : 'peers',
-            'sds'      : 'seeds',
-            'rto'      : 'ratio',
-            'rup'      : 'rate-up',
-            'rdn'      : 'rate-down',
-            'lrup'     : 'limit-rate-up',
-            'lrdn'     : 'limit-rate-down',
-            'trk'      : 'tracker',
-            'tcrt'     : 'created',
-            'tadd'     : 'added',
-            'tsta'     : 'started',
-            'tact'     : 'activity',
-            'tcmp'     : 'completed' }
+ALIASES = {'mark'     : 'marked',
+           'n'        : 'name',
+           'dir'      : 'path',
+           'st'       : 'status',
+           'err'      : 'error',
+           'up'       : 'uploaded',
+           'dn'       : 'downloaded',
+           '%dn'      : '%downloaded',
+           'av'       : 'available',
+           '%av'      : '%available',
+           'sz'       : 'size',
+           'prs'      : 'peers',
+           'sds'      : 'seeds',
+           'rto'      : 'ratio',
+           'rup'      : 'rate-up',
+           'rdn'      : 'rate-down',
+           'lrup'     : 'limit-rate-up',
+           'lrdn'     : 'limit-rate-down',
+           'trk'      : 'tracker',
+           'tcrt'     : 'created',
+           'tadd'     : 'added',
+           'tsta'     : 'started',
+           'tact'     : 'activity',
+           'tcmp'     : 'completed'}
 
 
 class Marked(ColumnBase):
@@ -106,8 +106,10 @@ class Path(ColumnBase):
         #    /t/pat/to/your/torrents
 
         dirs = [d for d in path.split(PATHSEP) if d]
-        calc_cur_len = lambda dirs: (sum(map(len, dirs)) +  # combined dir names
-                                     len(dirs))             # path separators
+
+        def calc_cur_len(dirs):
+            return (sum(map(len, dirs)) +  # combined dir names
+                    len(dirs))             # path separators
 
         cur_len = calc_cur_len(dirs)
         while cur_len > width:
@@ -117,7 +119,7 @@ class Path(ColumnBase):
                     break
 
             # Stop when every dir is one character long
-            if cur_len <= len(dirs)*2:
+            if cur_len <= len(dirs) * 2:
                 break
 
             cur_len = calc_cur_len(dirs)

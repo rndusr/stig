@@ -26,7 +26,7 @@ class SearchableText(urwid.WidgetWrap):
         super().__init__(self._make_content([urwid.Text(line) for line in lines]))
 
     def _make_content(self, text_widgets):
-         return Scrollable(urwid.Pile(text_widgets))
+        return Scrollable(urwid.Pile(text_widgets))
 
     @property
     def original_widget(self):
@@ -212,7 +212,6 @@ class SearchableText(urwid.WidgetWrap):
         full_canv = self._w.base_widget.render((size[0],), False)
         indexes = []
         for i,row in enumerate(full_canv.content()):
-            text = ''.join(p[2].decode() for p in row).strip()
             if row_matches(row):
                 indexes.append(i)
         self._match_indexes = indexes

@@ -18,20 +18,20 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
-ALIASES = { 'dom'   : 'domain',
-            'an'    : 'url-announce',
-            'sc'    : 'url-scrape',
-            'st'    : 'status',
-            'err'   : 'err',
-            'erran' : 'error-announce',
-            'errsc' : 'error-scrape',
-            'dns'   : 'downloads',
-            'lcs'   : 'leeches',
-            'sds'   : 'seeds',
-            'lan'   : 'last-announce',
-            'nan'   : 'next-announce',
-            'lsc'   : 'last-scrape',
-            'nsc'   : 'next-scrape' }
+ALIASES = {'dom'   : 'domain',
+           'an'    : 'url-announce',
+           'sc'    : 'url-scrape',
+           'st'    : 'status',
+           'err'   : 'err',
+           'erran' : 'error-announce',
+           'errsc' : 'error-scrape',
+           'dns'   : 'downloads',
+           'lcs'   : 'leeches',
+           'sds'   : 'seeds',
+           'lan'   : 'last-announce',
+           'nan'   : 'next-announce',
+           'lsc'   : 'last-scrape',
+           'nsc'   : 'next-scrape'}
 
 
 class Torrent(ColumnBase):

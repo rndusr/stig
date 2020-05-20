@@ -19,11 +19,11 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
-ALIASES = { 'cl'   : 'client',
-            '%dn'  : '%downloaded',
-            'rup'  : 'rate-up',
-            'rdn'  : 'rate-down',
-            're'   : 'rate-est' }
+ALIASES = {'cl'   : 'client',
+           '%dn'  : '%downloaded',
+           'rup'  : 'rate-up',
+           'rdn'  : 'rate-down',
+           're'   : 'rate-est'}
 
 
 class Torrent(ColumnBase):

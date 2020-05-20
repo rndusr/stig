@@ -92,14 +92,14 @@ class Name(_COLUMNS['name'], CellWidgetBase):
         name = normalize_unicode(name)
         name = name[:maxcol].ljust(maxcol, ' ')  # Expand/Shrink name to full width
         if progress == 100:
-            attrs = self.style.attrs(mode+'.complete', focused=focus)
+            attrs = self.style.attrs(mode + '.complete', focused=focus)
             self.text.set_text((attrs, name))
         else:
             completed_col = int(maxcol * progress / 100)  # Width of first part of progress bar
             name1 = name[:completed_col]
             name2 = name[completed_col:]
-            attrs1 = self.style.attrs(mode+'.progress1', focused=focus)
-            attrs2 = self.style.attrs(mode+'.progress2', focused=focus)
+            attrs1 = self.style.attrs(mode + '.progress1', focused=focus)
+            attrs2 = self.style.attrs(mode + '.progress2', focused=focus)
             self.text.set_text([(attrs1, name1),
                                 (attrs2, name2)])
         return super().render(size, focus)
@@ -141,6 +141,7 @@ class Status(_COLUMNS['status'], CellWidgetBase):
         ttypes.Status.VERIFY    : 'verifying',
         ttypes.Status.INIT      : 'discovering',
     }
+
     def get_mode(self):
         return self.MODE_MAP[self.value]
 
