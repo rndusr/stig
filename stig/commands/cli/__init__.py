@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+# flake8: noqa
+
 from .config import *
 from .file import *
 from .misc import *

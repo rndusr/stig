@@ -33,9 +33,11 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
             raise CmdError()
 
         if trkfilter is None:
-            filter_trackers = lambda trackers: trackers
+            def filter_trackers(trackers):
+                return trackers
         else:
-            filter_trackers = lambda trackers: trkfilter.apply(trackers)
+            def filter_trackers(trackers):
+                return trkfilter.apply(trackers)
 
         trklist = []
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
@@ -47,7 +49,8 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
             from ...views.tracker import COLUMNS as TRACKER_COLUMNS
             print_table(trklist, columns, TRACKER_COLUMNS)
         else:
-            filter_is_relevant = lambda f: f and str(f) != 'all'
+            def filter_is_relevant(f):
+                return f and str(f) != 'all'
 
             if filter_is_relevant(trkfilter):
                 errmsg = 'No matching trackers'

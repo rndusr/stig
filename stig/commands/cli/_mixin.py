@@ -65,7 +65,9 @@ class ask_yes_no():
             func_or_coro()
 
     async def _get_answer(self, question):
-        import sys, tty, termios
+        import sys
+        import tty
+        import termios
 
         if not sys.stdout.isatty():
             # We can't ask the user - default to None (which evaluates to False)

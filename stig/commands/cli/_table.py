@@ -66,7 +66,7 @@ def _assemble_row(table, line_index, pretty=True):
             cell_lines = len(cell)
             empty_space = ' ' * len(cell[0])
             line.append(cell[i] if i < cell_lines else empty_space)
-        line = table.delimiter.join(line)
+        line = delimiter.join(line)
         lines.append(line)
     return lines
 
@@ -80,7 +80,7 @@ def _assemble_headers(table):
         header_items = table.colspecs[colname].header
         left  = header_items.get('left', '')
         right = header_items.get('right', '')
-        space = ' '*(width - len(left) - len(right))
+        space = ' ' * (width - len(left) - len(right))
         header = ''.join((left, space, right))[:width]
         headers.append(header)
     return table.delimiter.join(headers)
@@ -184,8 +184,8 @@ def _shrink_by_removing_columns(table):
             # Find non-fixed-width columns that could use more width
             candidates = [(colname,table.colwidths[colname])
                           for colname in table.colorder
-                          if _column_has_variable_width(table, colname) and
-                             _column_could_use_more_width(table, colname)]
+                          if (_column_has_variable_width(table, colname) and
+                              _column_could_use_more_width(table, colname))]
             if not candidates:
                 # We have space left, but no column wants it
                 break
@@ -248,7 +248,7 @@ def print_table(items, order, column_specs):
 
         for line_index in range(len(table.rows)):
             # Print column headers after every screen full
-            if pretty_output and line_index % (TERMSIZE.lines-2) == 0:
+            if pretty_output and line_index % (TERMSIZE.lines - 2) == 0:
                 print(headerstr)
             for row in _assemble_row(table, line_index, pretty=pretty_output):
                 print(row)

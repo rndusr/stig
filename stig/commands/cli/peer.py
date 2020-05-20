@@ -33,9 +33,11 @@ class ListPeersCmd(base.ListPeersCmdbase,
             raise CmdError()
 
         if pfilter is None:
-            filter_peers = lambda peers: peers
+            def filter_peers(peers):
+                return peers
         else:
-            filter_peers = lambda peers: pfilter.apply(peers)
+            def filter_peers(peers):
+                return pfilter.apply(peers)
 
         peerlist = []
         for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
@@ -52,7 +54,8 @@ class ListPeersCmd(base.ListPeersCmdbase,
             from ...views.peer import COLUMNS as PEER_COLUMNS
             print_table(peerlist, columns, PEER_COLUMNS)
         else:
-            filter_is_relevant = lambda f: f and str(f) != 'all'
+            def filter_is_relevant(f):
+                return f and str(f) != 'all'
 
             if filter_is_relevant(pfilter):
                 errmsg = 'No matching peers'
