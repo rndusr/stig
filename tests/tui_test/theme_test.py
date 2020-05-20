@@ -1,8 +1,9 @@
-import unittest
-from stig.tui import theme
 import io
-
 import logging
+import unittest
+
+from stig.tui import theme
+
 log = logging.getLogger(__name__)
 
 
