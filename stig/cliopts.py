@@ -16,10 +16,12 @@ from .commands import is_op
 
 DESCRIPTIONS = OrderedDict()
 
+
 # This is a function so all the objects get garbage collected after
 # parsing finished
 def parse():
     _parser = argparse.ArgumentParser(add_help=False)
+
     def _add_arg(*args, section='OPTIONS', description=None, varname=None, **kwargs):
         if description is not None:
             optstr = ','.join(args)
@@ -31,16 +33,14 @@ def parse():
             DESCRIPTIONS[section][optstr] = description
         _parser.add_argument(*args, **kwargs)
 
-
-    _add_arg('--help','-h', nargs='*', default=None,
+    _add_arg('--help', '-h', nargs='*', default=None,
              section='OPTIONS',
              description="Display help about TOPIC",
              varname='[TOPIC]')
 
-    _add_arg('--version','-v', action='store_true',
+    _add_arg('--version', '-v', action='store_true',
              section='OPTIONS',
              description="Display version number and exit")
-
 
     _add_arg('--tui', '-t', action='store_true',
              section='OPTIONS',
@@ -48,7 +48,6 @@ def parse():
     _add_arg('--notui', '--no-tui', '-T', action='store_true',
              section='OPTIONS',
              description='Inhibit the TUI')
-
 
     _add_arg('--rcfile', '--rc-file', '-c',
              section='OPTIONS',
@@ -58,16 +57,17 @@ def parse():
              section='OPTIONS',
              description='Do not run commands from any rc file')
 
-
     _add_arg('--debug', type=lambda mods: mods.split(','), default=[],
              section='DEVELOPER OPTIONS',
              description=('Log debug messages from comma-separated list of MODULES'
                           ' (e.g. "client,commands.tui")'),
              varname='MODULES')
+
     _add_arg('--debug-file', default=None,
              section='DEVELOPER OPTIONS',
              description='Log debug messages to FILE',
              varname='FILE')
+
     _add_arg('--profile-file', default=None,
              section='DEVELOPER OPTIONS',
              description='Write cProfile statistics to FILE',
@@ -87,7 +87,6 @@ def parse():
     if args['version']:
         _subcmds.append('version')
 
-
     # Assemble commands into a command sequence (see CommandManager.split_cmdchain)
     _cmds = [[]]
     for arg in _subcmds:
@@ -98,4 +97,4 @@ def parse():
             _cmds[-1].append(arg)  # Append arg to current command
     cmds = [cmd for cmd in _cmds if cmd]
 
-    return args,cmds
+    return args, cmds

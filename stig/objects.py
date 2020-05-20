@@ -14,7 +14,7 @@ Application-wide instances that are always needed, regardless of interface
 or features
 """
 
-from . import cliopts, logging, settings
+from . import logging, settings
 from .client import API
 from .commands import CommandManager
 from .helpmgr import HelpManager

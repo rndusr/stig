@@ -13,6 +13,7 @@ __version__ = '0.11.0a'
 __appname__ = __name__.split('.')[0]
 __url__ = 'https://github.com/rndusr/stig'
 
+
 def run():
     try:
         from . import main

@@ -14,7 +14,7 @@ import os
 import sys
 
 from . import cliopts, logging, objects, settings
-from .objects import cmdmgr, log, main_rcfile, srvapi
+from .objects import cmdmgr, log, srvapi
 
 # Remove python from process name when running inside tmux
 if 'TMUX' in os.environ:
@@ -32,12 +32,13 @@ objects.main_rcfile = cliargs['rcfile'] or settings.defaults.DEFAULT_RCFILE
 logging.setup(debugmods=cliargs['debug'], filepath=cliargs['debug_file'])
 logging.redirect_level('INFO', sys.stdout)
 
+
 def run():
     cmdmgr.load_cmds_from_module('stig.commands.cli', 'stig.commands.tui')
 
     from .commands.guess_ui import (guess_ui, UIGuessError)
     from .commands import CmdError
-    from . import hooks
+    from . import hooks  # noqa: F401
 
     # Read commands from rc file
     rclines = ()
@@ -57,7 +58,7 @@ def run():
     else:
         try:
             cmdmgr.active_interface = guess_ui(clicmds, cmdmgr)
-        except UIGuessError as e:
+        except UIGuessError:
             log.error('Unable to guess user interface')
             log.error('Provide one of these options: --tui/-t or --no-tui/-T')
             sys.exit(1)

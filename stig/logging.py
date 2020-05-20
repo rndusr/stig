@@ -19,9 +19,9 @@ def make_logger(modname=None):
         # Default logger, for which debugging is always enabled if it is for
         # any other modules
         return logging.getLogger(MAIN_PACKAGE_NAME)
-    elif modname.startswith(MAIN_PACKAGE_NAME+'.'):
+    elif modname.startswith(MAIN_PACKAGE_NAME + '.'):
         # Remove main package name from logger name ('foo.bar.baz' -> 'bar.baz')
-        loggername = modname[len(MAIN_PACKAGE_NAME)+1:]
+        loggername = modname[len(MAIN_PACKAGE_NAME) + 1:]
     else:
         loggername = modname
     return logging.getLogger(loggername)

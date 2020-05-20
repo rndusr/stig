@@ -282,7 +282,7 @@ class HelpManager():
                     cmds[cmd.name] = cmd
 
             for cmdname,cmd in sorted(cmds.items()):
-                lines.append('\t{}  \t{}'.format(', '.join((cmd.name,)+cmd.aliases),
+                lines.append('\t{}  \t{}'.format(', '.join((cmd.name,) + cmd.aliases),
                                                  cmd.description))
             lines.append('')
         return finalize_lines(lines)
@@ -500,13 +500,13 @@ class HelpManager():
 
             lines.append('\tBOOLEAN FILTERS')
             for fname,f in sorted(filt.BOOLEAN_FILTERS.items()):
-                lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+                lines.append('\t\t{} \t{}'.format(', '.join((fname,) + f.aliases), f.description))
 
             lines += ['', '\tCOMPARATIVE FILTERS']
             for fname,f in sorted(filt.COMPARATIVE_FILTERS.items()):
                 if fname == filt.DEFAULT_FILTER:
-                    lines.append('\t\t{} \t{} (default)'.format(', '.join((fname,)+f.aliases), f.description))
+                    lines.append('\t\t{} \t{} (default)'.format(', '.join((fname,) + f.aliases), f.description))
                 else:
-                    lines.append('\t\t{} \t{}'.format(', '.join((fname,)+f.aliases), f.description))
+                    lines.append('\t\t{} \t{}'.format(', '.join((fname,) + f.aliases), f.description))
 
         return finalize_lines(lines)
