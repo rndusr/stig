@@ -63,7 +63,7 @@ class TestPalette(unittest.TestCase):
                  '$var2 = white',
                  'statusbar $var1 on $var2',
                  'loginform $var2 on $var1',
-                 '$var1 = brown',
+                 '$var1\t= brown',
                  'something $var1 on $var2')
         self.assertEqual(theme.Palette(lines), [('statusbar', 'black', 'white'),
                                                 ('loginform', 'white', 'black'),

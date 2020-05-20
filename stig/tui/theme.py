@@ -167,8 +167,8 @@ class Palette(abc.Sequence):
     Raises ParseError on errors during parsing (duh).
     """
 
-    VAR_REGEX = re.compile(r'^\$(?P<var>\S+) *= *(?P<val>.*?) *$')
-    ATTR_REGEX = re.compile(r'^(?P<name>\S+) *(?P<fg>.*?) +on +(?P<bg>.*) *$')
+    VAR_REGEX = re.compile(r'^\$(?P<var>\S+)\s*=\s*(?P<val>.*?)\s*$')
+    ATTR_REGEX = re.compile(r'^(?P<name>\S+)\s*(?P<fg>.*?)\s+on\s+(?P<bg>.*)\s*$')
 
     def __init__(self, lines):
         def apply_variables(string, variables):
