@@ -29,10 +29,10 @@ class _SingleFilter(Filter):
 
     BOOLEAN_FILTERS = FilterSpecDict({
         'all'   : _BoolFilterSpec(None,
-                                 aliases=('*',),
-                                 description='All trackers'),
+                                  aliases=('*',),
+                                  description='All trackers'),
         'alive' : _BoolFilterSpec(lambda trk: trk['status'] != 'stopped',
-                                 description='Trackers we are trying to connect to'),
+                                  description='Trackers we are trying to connect to'),
     })
 
     COMPARATIVE_FILTERS = FilterSpecDict({

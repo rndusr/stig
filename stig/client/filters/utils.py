@@ -46,7 +46,7 @@ def cmp_timestamp_or_timdelta(item_value, op, user_value):
     if (item_value in Timestamp.CONSTANTS and
         isinstance(user_value, Timedelta) and
         op in _lgfilters):
-            return False
+        return False
     elif item_value in Timedelta.CONSTANTS and op in _lgfilters:
         return False
 

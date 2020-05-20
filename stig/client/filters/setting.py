@@ -30,7 +30,7 @@ def _match_coerced_value(setting, key, op, value):
     if validate is not None:
         try:
             value = validate(value)
-        except ValueError as e:
+        except ValueError:
             return False
 
     # Sequence matches if all its items are in `setting['value']`

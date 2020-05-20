@@ -144,7 +144,7 @@ class Filter():
         '=~' : lambda a, b: re.search(b, a),
     }
     INVERT_CHAR = '!'
-    POSSIBLE_OPERATORS = tuple(itertools.chain.from_iterable((op, '!'+op)
+    POSSIBLE_OPERATORS = tuple(itertools.chain.from_iterable((op, '!' + op)
                                                              for op in OPERATORS))
     DEFAULT_FILTER = None
     DEFAULT_OPERATOR = '~'
@@ -261,7 +261,7 @@ class Filter():
                 log.debug('Trying %r(%r [%r], %r [%r])',
                           cls.OPERATORS[op], user_value, type(user_value), user_value, type(user_value))
                 cls.OPERATORS[op](user_value, user_value)
-            except TypeError as e:
+            except TypeError:
                 raise ValueError('Invalid operator for filter %r: %s' % (name, op))
 
         return user_value
@@ -334,7 +334,7 @@ class Filter():
             log.debug('  Getting filter spec: name=%r, op=%r, user_value=%r', name, op, user_value)
             # Get filter spec by `name`
             filter_func, needed_keys, invert = self._make_filter(name, op, user_value, invert)
-        except ValueError as e:
+        except ValueError:
             # Filter spec lookup failed
             if self.DEFAULT_FILTER and user_value is op is None:
                 # No `user_value` or `op` given - use the first part of the
@@ -502,7 +502,7 @@ class FilterChain(metaclass=_forward_attrs):
                         ops.append(part)
                         expect = 'filter'
                         continue
-                raise ValueError('Consecutive operators: {!r}'.format(''.join(parts[i-2:i+2])))
+                raise ValueError('Consecutive operators: {!r}'.format(''.join(parts[i - 2 : i + 2])))
 
             fchain = [[]]
             for filter,op in itertools.zip_longest(filters, ops):
