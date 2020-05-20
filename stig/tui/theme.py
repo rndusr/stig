@@ -139,7 +139,7 @@ def set_default(palette):
 
 def validate(palette):
     """
-    Validate palette (`set_default` must be called before)
+    Validate palette (`set_default` must be called first)
 
     Raise ValidationError if any attribute name in `palette` is not in
     `DEFAULT_NAMES`.
