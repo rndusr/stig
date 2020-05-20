@@ -39,8 +39,8 @@ class Style():
             self._attribs['focused'] = self.dotify(prefix, 'focused')
 
         for mode in modes:
-            self._attribs[mode+'.focused'] = self.dotify(prefix, mode, 'focused')
-            self._attribs[mode+'.unfocused'] = self.dotify(prefix, mode, 'unfocused')
+            self._attribs[mode + '.focused'] = self.dotify(prefix, mode, 'focused')
+            self._attribs[mode + '.unfocused'] = self.dotify(prefix, mode, 'unfocused')
 
     def attrs(self, mode=None, focused=False):
         """Get attributes as specified in the urwid palette
@@ -158,6 +158,7 @@ class ItemWidgetBase(urwid.WidgetWrap):
             return self._cells.marked.is_marked
         else:
             return False
+
     @is_marked.setter
     def is_marked(self, is_marked):
         if self._cells.exists('marked'):
@@ -289,7 +290,7 @@ class ListWidgetBase(urwid.WidgetWrap):
                 self._sort.apply(walker,
                                  item_getter=lambda w: w.data,
                                  inplace=True)
-            except KeyError as e:
+            except KeyError:
                 # This happens when adding a new sort order that needs
                 # previously unneeded keys (e.g. "started" needs "time-started",
                 # which is normally not used).  The new request is correctly
@@ -304,7 +305,6 @@ class ListWidgetBase(urwid.WidgetWrap):
     def _hide_or_unhide_widgets(self):
         walker = self._listbox.body
         existing_widgets = self._existing_widgets
-        hidden_widgets = self._hidden_widgets
         hidden_ids = tuple(w.id for w in self._limit_items(existing_widgets))
         for w in existing_widgets:
             widget_is_visible = w in walker
@@ -484,4 +484,4 @@ class ListWidgetBase(urwid.WidgetWrap):
 
     @focus_position.setter
     def focus_position(self, focus_position):
-        self._listbox.focus_position = min(focus_position, len(self._listbox.body)-1)
+        self._listbox.focus_position = min(focus_position, len(self._listbox.body) - 1)

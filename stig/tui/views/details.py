@@ -23,6 +23,7 @@ def mksection(title, width, items):
     # Setting class variable 'title = title' below produces "NameError: name
     # 'title' is not defined"
     title_, width_ = title, width
+
     class Section(urwid.WidgetWrap):
         title = title_
         width = width_

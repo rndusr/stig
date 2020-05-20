@@ -175,7 +175,7 @@ class Palette(abc.Sequence):
             for name,value in sorted(variables.items(), key=lambda k: len(k[0]), reverse=True):
                 while value[0] == '$':
                     value = variables[value[1:]]
-                string = string.replace('$'+name, value)
+                string = string.replace('$' + name, value)
             return string
 
         def check_color(string):

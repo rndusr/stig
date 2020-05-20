@@ -18,7 +18,6 @@ from ...client import SettingFilter
 from ...utils.usertypes import Bool, Option
 from .base import ItemWidgetBase, ListWidgetBase
 from .setting import TUICOLUMNS
-from .utils import stringify_torrent_filter
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -113,7 +112,7 @@ class SettingItemWidget(ItemWidgetBase):
             current_value = self.current_value
             options = current_value.options
             index = options.index(current_value)
-            if index < len(options)-1:
+            if index < len(options) - 1:
                 index += 1
             else:
                 index = 0

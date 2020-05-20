@@ -37,6 +37,7 @@ class MarkedBase(_COLUMNS['marked'], CellWidgetBase):
     @property
     def is_marked(self):
         return self._is_marked
+
     @is_marked.setter
     def is_marked(self, is_marked):
         if is_marked:

@@ -130,8 +130,6 @@ class FileTreeDecorator(ArrowTree):
     def update(self, torrents):
         widgets = self._widgets
         for t in torrents:
-            tid = t['id']
-
             # Update file nodes
             for f in t['files'].files:
                 node_id = f['id']
@@ -283,7 +281,7 @@ class FileListWidget(ListWidgetBase):
     @focus_position.setter
     def focus_position(self, focus_position):
         positions = tuple(self._filetree.positions())
-        i = min(focus_position, len(positions)-1)
+        i = min(focus_position, len(positions) - 1)
         try:
             self._listbox.focus_position = positions[i]
         except KeyError:
@@ -315,6 +313,7 @@ class FileListWidget(ListWidgetBase):
         """Yield (position, widget) tuples of all sub-nodes (leaves and parents)"""
         ft = self._filetree
         lb = self._listbox
+
         def recurse(subpos):
             widget = lb.body[subpos]
             if ft.is_leaf(subpos):
