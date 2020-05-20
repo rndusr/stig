@@ -20,7 +20,7 @@ class TestTabCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
-    @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
+    @patch('stig.commands.cmdbase._CompletionCandidatesMixin.completion_candidates_opts')
     async def test_completion_candidates__own_options(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('--foo', '--bar', '--baz'))
         for args in (Args(('tab', '-', 'a', '-b', 'c'), curarg_index=1, curarg_curpos=1),
@@ -32,7 +32,7 @@ class TestTabCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
-    @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
+    @patch('stig.commands.cmdbase._CompletionCandidatesMixin.completion_candidates_opts')
     async def test_completion_candidates__subcmd_options(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_for_args.return_value = Candidates(('--foo', '--bar', '--baz'))
         args = Args(('tab', '--bar', 'a', '-b', 'c'), curarg_index=3, curarg_curpos=1)
@@ -43,7 +43,7 @@ class TestTabCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
-    @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
+    @patch('stig.commands.cmdbase._CompletionCandidatesMixin.completion_candidates_opts')
     async def test_completion_candidates__own_parameters(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('foo', 'bar', 'baz'))
         for args in (Args(('tab', '-c', 'foo', '-t', '', 'a', '-b', 'c'), curarg_index=4),
@@ -81,7 +81,7 @@ class TestBindCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
-    @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
+    @patch('stig.commands.cmdbase._CompletionCandidatesMixin.completion_candidates_opts')
     async def test_completion_candidates__own_options(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('--context', '--description'))
         for args in (Args(('bind', '-c', 'foo', 'alt-x', 'a', '-b', 'c'), curarg_index=1),
@@ -110,7 +110,7 @@ class TestBindCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
-    @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
+    @patch('stig.commands.cmdbase._CompletionCandidatesMixin.completion_candidates_opts')
     async def test_completion_candidates__own_parameters(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('foo', 'bar', 'baz'))
         for args in (Args(('bind', '-c', 'foo', 'alt-x', 'a', '-b', 'c'), curarg_index=2),
@@ -136,7 +136,7 @@ class TestBindCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.for_args')
     @patch('stig.completion.candidates.commands')
-    @patch('stig.commands._CompletionCandidatesMixin.completion_candidates_opts')
+    @patch('stig.commands.cmdbase._CompletionCandidatesMixin.completion_candidates_opts')
     async def test_completion_candidates__no_subcmd(self, mock_completion_candidates_opts, mock_commands, mock_for_args):
         mock_completion_candidates_opts.return_value = Candidates(('foo', 'bar', 'baz'))
         for args in (Args(('bind',), curarg_index=0),

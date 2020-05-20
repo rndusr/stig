@@ -11,6 +11,20 @@
 
 from collections import abc
 
+from . import OPS
+from .cmdbase import _CommandBase
+
+
+def is_op(string):
+    return string in OPS
+
+
+def is_cmdcls(obj):
+    """Whether `obj` is a command class"""
+    return isinstance(obj, type) and \
+        obj is not _CommandBase and \
+        issubclass(obj, _CommandBase)
+
 
 class CallbackDict(dict):
     """Mapping that runs a callback on every change"""
