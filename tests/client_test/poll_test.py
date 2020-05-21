@@ -57,15 +57,16 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         await rp.start()
         await self.advance(0)
         self.assertEqual(self.mock_request_calls, 1)
-        await self.advance(rp.interval*2)
+        await self.advance(rp.interval * 2)
         self.assertEqual(self.mock_request_calls, 3)
-        await self.advance(rp.interval*3)
+        await self.advance(rp.interval * 3)
         self.assertEqual(self.mock_request_calls, 6)
         await rp.stop()
 
     async def test_callbacks(self):
         rp = self.make_poller(self.mock_request)
         status = None
+
         def cb1(calls):
             nonlocal status
             if calls is None:
@@ -104,6 +105,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
     async def test_callback_gets_None_when_stopped(self):
         rp = self.make_poller(self.mock_request)
         status = None
+
         def cb(calls):
             nonlocal status
             status = '%s calls' % calls
@@ -124,6 +126,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         requests_before_failure = 3
         requests_before_different_failure = 6
         requests = 0
+
         async def mock_request():
             nonlocal requests
             requests += 1
@@ -133,25 +136,30 @@ class TestRequestPoller(asynctest.ClockedTestCase):
                 raise ConnectionError('Server unreachable')
             else:
                 return requests
+
         rp = RequestPoller(mock_request)
 
         # Collect responses
         responses = []
+
         def handle_response(response):
             if response is None:
                 responses.append('no response')
             else:
                 responses.append('response #%d' % response)
+
         rp.on_response(handle_response)
 
         # Collect exceptions
         errors = []
+
         def handle_error(exc):
             errors.append(exc)
+
         rp.on_error(handle_error)
 
         await rp.start()
-        await self.advance(rp.interval * (requests_before_failure+5))
+        await self.advance(rp.interval * (requests_before_failure + 5))
         self.assertEqual(rp.running, True)
         self.assertEqual(len(responses), 9)
         self.assertEqual(responses, ['response #1',
@@ -173,8 +181,10 @@ class TestRequestPoller(asynctest.ClockedTestCase):
 
     async def test_changing_request(self):
         status = []
+
         async def request1():
             status.append('{}: request1() called'.format(asyncio.get_event_loop().time()))
+
         async def request2(a, b):
             status.append('{}: request2({}, {}) called'.format(asyncio.get_event_loop().time(), a, b))
 
@@ -188,9 +198,9 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         rp.set_request(request2, 'one', 2)
         await self.advance(rp.interval * 3)
         self.assertEqual(status, ['%d: request1() called' % 0,
-                                  '%d: request2(one, 2) called' % (rp.interval*1),
-                                  '%d: request2(one, 2) called' % (rp.interval*2),
-                                  '%d: request2(one, 2) called' % (rp.interval*3)])
+                                  '%d: request2(one, 2) called' % (rp.interval * 1),
+                                  '%d: request2(one, 2) called' % (rp.interval * 2),
+                                  '%d: request2(one, 2) called' % (rp.interval * 3)])
         await rp.stop()
 
     async def test_manual_polling(self):
