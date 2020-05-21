@@ -40,6 +40,8 @@ DEFAULT_TAB_COMMANDS = (
 
 def init_defaults(localcfg):
     from ..utils.usertypes import (String, Int, Float, Bool, Path, Tuple, Option)
+    from .. import objects
+
 
     class SortOrder(str):
         """String that is equal to the same string with '!' or '.' prepended"""
@@ -61,33 +63,53 @@ def init_defaults(localcfg):
         return Tuple.partial(options=tuple(options), aliases=aliases, dedup=True)
 
     localcfg.add('connect.host',
-                 constructor=String.partial(),
+                 String.partial(),
+                 getter=lambda: objects.srvapi.rpc.host,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'host', v),
                  default='localhost',
                  description='Hostname or IP of Transmission RPC interface')
     localcfg.add('connect.port',
                  Int.partial(min=1, max=65535, prefix='none'),
+                 getter=lambda: objects.srvapi.rpc.port,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'port', v),
                  default=9091,
                  description='Port of Transmission RPC interface')
     localcfg.add('connect.path',
                  String.partial(),
+                 getter=lambda: objects.srvapi.rpc.path,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'path', v),
                  default='/transmission/rpc',
                  description='Path of Transmission RPC interface')
     localcfg.add('connect.user',
                  String.partial(),
+                 getter=lambda: objects.srvapi.rpc.user,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'user', v),
                  default='',
                  description='Username to use for authentication with Transmission RPC interface')
     localcfg.add('connect.password',
                  String.partial(),
+                 getter=lambda: objects.srvapi.rpc.password,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'password', v),
                  default='',
                  description='Password to use for authentication with Transmission RPC interface')
     localcfg.add('connect.timeout',
                  Float.partial(min=0),
+                 getter=lambda: objects.srvapi.rpc.timeout,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'timeout', v),
                  default=10,
                  description='Number of seconds before connecting to Transmission RPC interface fails')
     localcfg.add('connect.tls',
                  Bool.partial(),
+                 getter=lambda: objects.srvapi.rpc.tls,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'tls', v),
                  default='off',
                  description='Whether to connect via HTTPS to the Transmission RPC interface')
+    localcfg.add('connect.url',
+                 String.partial(),
+                 getter=lambda: objects.srvapi.rpc.url,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'url', v),
+                 default='http://localhost:9091/transmission/rpc',
+                 description='URL of the Transmission RPC interface')
 
     localcfg.add('columns.torrents',
                  Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),
