@@ -43,12 +43,12 @@ class TransmissionRPC():
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user='',
                  password='', path='/transmission/rpc', enabled=True):
-        self._host = host
-        self._port = port
-        self._path = path
-        self._tls = tls
-        self._user = user
-        self._password = password
+        self.host = host
+        self.port = port
+        self.path = path
+        self.tls = tls
+        self.user = user
+        self.password = password
         self._headers = {'content-type': 'application/json'}
         self._session = None
         self._enabled_event = asyncio.Event()
