@@ -17,7 +17,7 @@ venv:
 
 test: venv
 	. "$(VENV_PATH)"/bin/activate ; \
-	"$(VENV_PATH)"/bin/pytest --exitfirst tests
+	  "$(VENV_PATH)"/bin/pytest --exitfirst tests
 	# Check if README.org converts correctly to rst for PyPI
 	python3 setup.py check -r -s >/dev/null
 
