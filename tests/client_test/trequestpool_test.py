@@ -98,15 +98,15 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
         self.rp.register('bar', bar.callback, keys=bar.keys, tfilter=bar.tfilter)
         await self.advance(self.rp.interval)
         self.assert_api_request(calls=2,
-                                tfilter=(foo+bar).tfilter,
-                                keys=(foo+bar).keys_needed)
+                                tfilter=(foo + bar).tfilter,
+                                keys=(foo + bar).keys_needed)
 
         baz = Subscriber('private', 'id', 'size-total')
         self.rp.register('baz', baz.callback, keys=baz.keys, tfilter=baz.tfilter)
         await self.advance(self.rp.interval)
         self.assert_api_request(calls=3,
-                                tfilter=(foo+bar+baz).tfilter,
-                                keys=(foo+bar+baz).keys_needed)
+                                tfilter=(foo + bar + baz).tfilter,
+                                keys=(foo + bar + baz).keys_needed)
 
         # no filter
         for f in (None, TorrentFilter('all')):
@@ -114,11 +114,11 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
             self.rp.register('all', thelot.callback, keys=thelot.keys, tfilter=thelot.tfilter)
             await self.advance(self.rp.interval)
             self.assert_api_request(tfilter=None,
-                                    keys=(foo+bar+baz+thelot).keys_needed)
+                                    keys=(foo + bar + baz + thelot).keys_needed)
             self.rp.remove('all')
             await self.advance(self.rp.interval)
-            self.assert_api_request(tfilter=(foo+bar+baz).tfilter,
-                                    keys=(foo+bar+baz).keys_needed)
+            self.assert_api_request(tfilter=(foo + bar + baz).tfilter,
+                                    keys=(foo + bar + baz).keys_needed)
 
         await self.rp.stop()
 
@@ -134,20 +134,20 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
         self.rp.register('bar', bar.callback, keys=bar.keys, tfilter=bar.tfilter)
         self.rp.register('baz', baz.callback, keys=baz.keys, tfilter=baz.tfilter)
         await self.advance(self.rp.interval)
-        self.assert_api_request(tfilter=(foo+bar+baz).tfilter,
-                                keys=(foo+bar+baz).keys_needed)
+        self.assert_api_request(tfilter=(foo + bar + baz).tfilter,
+                                keys=(foo + bar + baz).keys_needed)
         del foo
         # Wait one interval to detect `del foo`, and another interval for the
         # new request to happen.
-        await self.advance(self.rp.interval*2)
-        self.assert_api_request(tfilter=(bar+baz).tfilter,
-                                keys=(bar+baz).keys_needed)
+        await self.advance(self.rp.interval * 2)
+        self.assert_api_request(tfilter=(bar + baz).tfilter,
+                                keys=(bar + baz).keys_needed)
         del bar
-        await self.advance(self.rp.interval*2)
+        await self.advance(self.rp.interval * 2)
         self.assert_api_request(tfilter=baz.tfilter,
                                 keys=baz.keys_needed)
         del baz
-        await self.advance(self.rp.interval*2)
+        await self.advance(self.rp.interval * 2)
         # No subscribers left
         self.assertEqual(self.rp._tfilters, {})
         self.assertEqual(self.rp._keys, {})
@@ -222,11 +222,11 @@ class TestTorrentRequestPool(asynctest.ClockedTestCase):
         self.assertEqual(cb3.args, FAKE_TORRENTS)
 
         # Remove all callbacks at once
-        del cb1 ; del cb2 ; del cb3
+        del cb1 ; del cb2 ; del cb3  # noqa: E702
         apicalls = self.api.calls
-        await self.advance(self.api.delay+20)
+        await self.advance(self.api.delay + 20)
 
         # One extra apicall was made before the poller detected the dead callbacks
-        self.assertEqual(self.api.calls, apicalls+1)
+        self.assertEqual(self.api.calls, apicalls + 1)
 
         await self.rp.stop()
