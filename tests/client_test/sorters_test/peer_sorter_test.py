@@ -1,7 +1,7 @@
-from stig.client.sorters import PeerSorter
-
 from unittest.mock import patch
+
 from sorter_helpers import TestSorterBase
+from stig.client.sorters import PeerSorter
 
 
 class TestPeerSorter(TestSorterBase):

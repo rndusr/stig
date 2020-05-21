@@ -1,6 +1,5 @@
-from stig.client.sorters import SettingSorter
-
 from sorter_helpers import TestSorterBase
+from stig.client.sorters import SettingSorter
 
 
 class TestSettingSorter(TestSorterBase):

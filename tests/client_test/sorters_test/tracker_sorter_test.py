@@ -1,6 +1,5 @@
-from stig.client.sorters import TrackerSorter
-
 from sorter_helpers import TestSorterBase
+from stig.client.sorters import TrackerSorter
 
 
 class TestTrackerSorter(TestSorterBase):

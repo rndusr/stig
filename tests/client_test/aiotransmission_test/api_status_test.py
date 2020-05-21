@@ -1,14 +1,11 @@
-from stig.client.aiotransmission.api_status import StatusAPI
-from stig.client.utils import (convert, const)
-from stig.client.ttypes import Status
-
-import resources_aiotransmission as rsrc
-
-import asynctest
 from types import SimpleNamespace
 
-import logging
-log = logging.getLogger(__name__)
+import asynctest
+import resources_aiotransmission as rsrc
+from stig.client.aiotransmission import api_status
+from stig.client.aiotransmission.api_status import StatusAPI
+from stig.client.ttypes import Status
+from stig.client.utils import const, convert
 
 
 class FakeTransmissionRPC():
@@ -38,7 +35,6 @@ class FakeRequestPoller():
     async def stop(self):
         pass
 
-from stig.client.aiotransmission import api_status
 api_status.RequestPoller = FakeRequestPoller
 
 class FakeTorrentAPI():

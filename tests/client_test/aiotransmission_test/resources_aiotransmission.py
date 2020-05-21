@@ -1,12 +1,13 @@
+import asyncio
+import logging
+import os.path
 from base64 import b64decode
 
-from stig.client.aiotransmission.rpc import (CSRF_ERROR_CODE, CSRF_HEADER, AUTH_ERROR_CODE)
 from aiohttp import web
 from aiohttp.test_utils import unused_port
-import asyncio
-import os.path
 
-import logging
+from stig.client.aiotransmission.rpc import AUTH_ERROR_CODE, CSRF_ERROR_CODE, CSRF_HEADER
+
 log = logging.getLogger(__name__)
 
 TORRENTFILE = os.path.dirname(__file__) + '/test.torrent'

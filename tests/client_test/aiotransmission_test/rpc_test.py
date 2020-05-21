@@ -1,11 +1,11 @@
-from stig.client.aiotransmission.rpc import TransmissionRPC
-from stig.client import (ConnectionError, TimeoutError, RPCError, AuthError)
+import asyncio
 
-import resources_aiotransmission as rsrc
+from aiohttp import web
 
 import asynctest
-import asyncio
-from aiohttp import web
+import resources_aiotransmission as rsrc
+from stig.client import AuthError, ConnectionError, RPCError, TimeoutError
+from stig.client.aiotransmission.rpc import TransmissionRPC
 
 
 class TestTransmissionRPC(asynctest.ClockedTestCase):

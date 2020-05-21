@@ -1,6 +1,6 @@
-from stig.client import filters
-
 import unittest
+
+from stig.client import filters
 
 
 class FilterSpecTests(unittest.TestCase):

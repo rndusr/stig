@@ -1,5 +1,5 @@
-import unittest
 import random
+import unittest
 
 
 class TestSorterBase(unittest.TestCase):

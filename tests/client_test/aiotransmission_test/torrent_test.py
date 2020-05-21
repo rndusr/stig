@@ -1,6 +1,6 @@
-from stig.client.aiotransmission import torrent
-
 import unittest
+
+from stig.client.aiotransmission import torrent
 
 
 def test_all_dependencies_are_standard_keys():

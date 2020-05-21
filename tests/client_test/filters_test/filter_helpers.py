@@ -1,7 +1,7 @@
+import contextlib
 from datetime import datetime
 from unittest.mock import patch
 
-import contextlib
 
 @contextlib.contextmanager
 def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):

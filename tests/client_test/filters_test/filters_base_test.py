@@ -1,6 +1,6 @@
-from stig.client.filters.base import (Filter, FilterChain, BoolFilterSpec, CmpFilterSpec)
-
 import unittest
+
+from stig.client.filters.base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain
 
 
 class TestFilterParser(unittest.TestCase):

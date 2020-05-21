@@ -1,16 +1,11 @@
-from stig.client.trequestpool import TorrentRequestPool
-from stig.client.aiotransmission.torrent import Torrent
-from stig.client.filters.torrent import TorrentFilter
-from stig.client.utils import Response
-
-import asynctest
 import asyncio
 from types import SimpleNamespace
 
-import logging
-log = logging.getLogger(__name__)
-
-
+import asynctest
+from stig.client.aiotransmission.torrent import Torrent
+from stig.client.filters.torrent import TorrentFilter
+from stig.client.trequestpool import TorrentRequestPool
+from stig.client.utils import Response
 
 FAKE_TORRENTS = (
     Torrent({'id': 1, 'name': 'foo', 'rateDownload': 50, 'rateUpload': 100, 'totalSize': 10e3, 'isPrivate': False}),

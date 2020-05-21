@@ -1,11 +1,8 @@
-from stig.client.poll import RequestPoller
-from stig.client.errors import (ConnectionError, AuthError)
-
 import asyncio
-import asynctest
 
-import logging
-log = logging.getLogger(__name__)
+import asynctest
+from stig.client.errors import AuthError, ConnectionError
+from stig.client.poll import RequestPoller
 
 
 class TestRequestPoller(asynctest.ClockedTestCase):

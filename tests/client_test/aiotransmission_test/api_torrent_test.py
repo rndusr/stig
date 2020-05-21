@@ -1,13 +1,13 @@
+import os.path
+
+import asynctest
+import resources_aiotransmission as rsrc
+from stig.client import errors
 from stig.client.aiotransmission.api_torrent import TorrentAPI
 from stig.client.aiotransmission.rpc import TransmissionRPC
 from stig.client.aiotransmission.torrent import Torrent
-from stig.client import errors
 from stig.client.filters.torrent import TorrentFilter
 
-import resources_aiotransmission as rsrc
-
-import asynctest
-import os.path
 assert os.path.exists(rsrc.TORRENTFILE)
 assert not os.path.exists(rsrc.TORRENTFILE_NOEXIST)
 

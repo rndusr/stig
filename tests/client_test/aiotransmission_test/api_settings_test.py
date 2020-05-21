@@ -1,13 +1,11 @@
-from stig.client.aiotransmission.api_settings import SettingsAPI
-
-from stig.client.utils import (convert, const, Bool, Int, Path, Bandwidth)
-from stig.client import ClientError
-
-import resources_aiotransmission as rsrc
+from copy import deepcopy
+from types import SimpleNamespace
 
 import asynctest
-from types import SimpleNamespace
-from copy import deepcopy
+import resources_aiotransmission as rsrc
+from stig.client import ClientError
+from stig.client.aiotransmission.api_settings import SettingsAPI
+from stig.client.utils import Bandwidth, Bool, Int, Path, const, convert
 
 
 class FakeTransmissionRPC():

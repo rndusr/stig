@@ -1,7 +1,7 @@
-from stig.client.filters.tracker import _SingleFilter as TrackerFilter
-
 import unittest
+
 from filter_helpers import HelpersMixin
+from stig.client.filters.tracker import _SingleFilter as TrackerFilter
 
 
 class TestTrackerFilter(unittest.TestCase, HelpersMixin):

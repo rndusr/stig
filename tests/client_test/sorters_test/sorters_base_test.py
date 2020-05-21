@@ -1,7 +1,7 @@
-from stig.client.sorters.base import SorterBase, SortSpec
-
-import unittest
 import random
+import unittest
+
+from stig.client.sorters.base import SorterBase, SortSpec
 
 
 class TestSorterBase(unittest.TestCase):

@@ -1,5 +1,6 @@
 from stig.client.constants import get_constant
 
+
 def test_simple():
     c = get_constant('foo')
     assert str(c) == 'foo'
