@@ -2,6 +2,7 @@ from copy import deepcopy
 from types import SimpleNamespace
 
 import asynctest
+
 import resources_aiotransmission as rsrc
 from stig.client import ClientError
 from stig.client.aiotransmission.api_settings import SettingsAPI

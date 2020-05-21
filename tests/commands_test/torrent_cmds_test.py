@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import asynctest
 from asynctest import CoroutineMock
 from asynctest.mock import MagicMock, call, patch
+
 from resources_cmd import (CommandTestCase, MockTorrent, mock_get_torrent_sorter,
                            mock_select_torrents)
 from stig.client.utils import Response

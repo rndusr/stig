@@ -2,6 +2,7 @@ import os
 import sys
 
 from asynctest.mock import CoroutineMock, MagicMock, call, mock_open, patch
+
 from resources_cmd import CommandTestCase
 from stig import objects
 from stig.commands.cli import DumpCmd, RateLimitCmd, RcCmd, ResetCmd, SetCmd

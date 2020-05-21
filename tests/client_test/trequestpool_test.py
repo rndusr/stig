@@ -2,6 +2,7 @@ import asyncio
 from types import SimpleNamespace
 
 import asynctest
+
 from stig.client.aiotransmission.torrent import Torrent
 from stig.client.filters.torrent import TorrentFilter
 from stig.client.trequestpool import TorrentRequestPool

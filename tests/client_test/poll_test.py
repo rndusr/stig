@@ -1,6 +1,7 @@
 import asyncio
 
 import asynctest
+
 from stig.client.errors import AuthError, ConnectionError
 from stig.client.poll import RequestPoller
 

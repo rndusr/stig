@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, call
 
 import asynctest
+
 from stig.completion import Candidates, Categories, SingleCandidate
 from stig.tui.completer import Completer
 

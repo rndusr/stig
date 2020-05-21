@@ -4,6 +4,7 @@ import tempfile
 from unittest.mock import MagicMock
 
 import asynctest
+
 from stig.tui.cli import CLIEditWidget
 
 from ._handle_urwidpatches import setUpModule, tearDownModule  # noqa: F401
