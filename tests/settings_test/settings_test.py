@@ -1,8 +1,9 @@
-from stig.settings import LocalSettings, RemoteSettings, CombinedSettings
-
 import unittest
 from unittest.mock import MagicMock, call
+
 import asynctest
+
+from stig.settings import CombinedSettings, LocalSettings, RemoteSettings
 
 
 class TestLocalSettings(unittest.TestCase):
