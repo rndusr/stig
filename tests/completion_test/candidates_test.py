@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, call, patch
 
 import asynctest
-
 from stig.completion import Candidates, candidates
 from stig.utils import usertypes
 from stig.utils.cliparser import Arg, Args
@@ -348,7 +347,7 @@ class Test_filter_values(asynctest.TestCase):
                         {'list': ({'x': 5, 'y': 6},
                                   {'x': 7, 'y': 8})})
         mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
-        mock_items_getter = lambda obj: obj['list']
+        def mock_items_getter(obj): return obj['list']
         mock_value_type = mock_get_filter_spec.return_value.value_type
         delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
@@ -370,7 +369,7 @@ class Test_filter_values(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
     @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_valid_values(self, mock_filter_takes_completable_values,
-                                   mock_get_filter_spec, mock_get_filter_cls):
+                                mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
         mock_objects_getter = asynctest.CoroutineMock()
         mock_value_type = mock_get_filter_spec.return_value.value_type
@@ -548,7 +547,7 @@ class Test_torrent_path(asynctest.TestCase):
     @asynctest.patch('stig.completion.candidates.torrent_filter')
     @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_path_given_completes_torrent_path(self, mock_torrents, mock_torrent_filter):
-        cands = await candidates.torrent_path(Arg('id=foo/a/b/c', curpos=7))
+        await candidates.torrent_path(Arg('id=foo/a/b/c', curpos=7))
         mock_torrent_filter.assert_not_called()
         mock_torrents.assert_called_once_with('id=foo', keys=('files',), from_cache=True)
 

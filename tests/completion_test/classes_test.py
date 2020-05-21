@@ -211,10 +211,12 @@ class TestCategories(unittest.TestCase):
     def test_no_lists(self):
         cats = Categories()
         self.reduce(cats, 'x')
+
         def assert_state():
             self.assertEqual(len(cats), 0)
             self.assertEqual(cats.current_index, None)
             self.assertEqual(cats.current, None)
+
         cats.next()
         assert_state()
         cats.prev()
@@ -225,10 +227,12 @@ class TestCategories(unittest.TestCase):
                           Candidates(('bar', 'far')),
                           Candidates(('faz', 'naz')))
         self.reduce(cats, 'x')
+
         def assert_state():
             self.assertEqual(len(cats), 0)
             self.assertEqual(cats.current_index, None)
             self.assertEqual(cats.current, None)
+
         cats.next()
         assert_state()
         cats.prev()
