@@ -34,6 +34,7 @@ localcfg.on_change(_reconnect, name='connect.path')
 localcfg.on_change(_reconnect, name='connect.user')
 localcfg.on_change(_reconnect, name='connect.password')
 localcfg.on_change(_reconnect, name='connect.tls')
+localcfg.on_change(_reconnect, name='connect.url')
 
 
 def _update_pollers(rpc):
