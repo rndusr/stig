@@ -61,6 +61,27 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
                 for k,v in kw_cb.items():
                     self.assertEqual(v, kw_exp[k])
 
+    def test_setting_connection_credentials_to_None(self):
+        self.client.url = 'https://foo:bar@foo:123/path'
+        self.client.host = None
+        self.assertEqual(self.client.url, 'https://localhost:123/path')
+        self.assertEqual((self.client.user, self.client.password), ('foo', 'bar'))
+        self.client.port = None
+        self.assertEqual(self.client.url, 'https://localhost:9091/path')
+        self.assertEqual((self.client.user, self.client.password), ('foo', 'bar'))
+        self.client.path = None
+        self.assertEqual(self.client.url, 'https://localhost:9091/transmission/rpc')
+        self.assertEqual((self.client.user, self.client.password), ('foo', 'bar'))
+        self.client.tls = None
+        self.assertEqual(self.client.url, 'http://localhost:9091/transmission/rpc')
+        self.assertEqual((self.client.user, self.client.password), ('foo', 'bar'))
+        self.client.user = None
+        self.assertEqual(self.client.url, 'http://localhost:9091/transmission/rpc')
+        self.assertEqual((self.client.user, self.client.password), ('', 'bar'))
+        self.client.password = None
+        self.assertEqual(self.client.url, 'http://localhost:9091/transmission/rpc')
+        self.assertEqual((self.client.user, self.client.password), ('', ''))
+
     def test_getting_url_property(self):
         self.client.host = 'foo'
         self.client.port = 123

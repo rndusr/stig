@@ -120,7 +120,7 @@ class TransmissionRPC():
 
     @host.setter
     def host(self, host):
-        self._host = str(host)
+        self._host = str(host) if host is not None else 'localhost'
         asyncio.ensure_future(self.disconnect('Changing host: %r' % self._host))
 
     @property
@@ -134,7 +134,9 @@ class TransmissionRPC():
 
     @path.setter
     def path(self, path):
-        if not path or path[0] != '/':
+        if path is None:
+            path = '/transmission/rpc'
+        elif not path or path[0] != '/':
             path = '/' + path
         self._path = path
         asyncio.ensure_future(self.disconnect('Changing path: %r' % self._path))
@@ -150,7 +152,7 @@ class TransmissionRPC():
 
     @port.setter
     def port(self, port):
-        self._port = int(port)
+        self._port = int(port) if port is not None else 9091
         asyncio.ensure_future(self.disconnect('Changing port: %r' % self._port))
 
     @property
@@ -164,7 +166,7 @@ class TransmissionRPC():
 
     @user.setter
     def user(self, user):
-        self._user = str(user)
+        self._user = str(user) if user is not None else ''
         asyncio.ensure_future(self.disconnect('Changing user: %r' % self._user))
 
     @property
@@ -178,7 +180,7 @@ class TransmissionRPC():
 
     @password.setter
     def password(self, password):
-        self._password = str(password)
+        self._password = str(password) if password is not None else ''
         asyncio.ensure_future(self.disconnect('Changing password: %r' % self._password))
 
     @property
@@ -192,7 +194,7 @@ class TransmissionRPC():
 
     @tls.setter
     def tls(self, tls):
-        self._tls = bool(tls)
+        self._tls = bool(tls) if tls is not None else False
         asyncio.ensure_future(self.disconnect('Changing tls: %r' % self._tls))
 
     @property
