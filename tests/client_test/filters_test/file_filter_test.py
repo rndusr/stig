@@ -46,7 +46,7 @@ class TestFileFilter(unittest.TestCase, HelpersMixin):
 
     def test_path(self):
         self.check_str_filter(FileFilter,
-                          filter_names=('path', 'dir'),
+                              filter_names=('path', 'dir'),
                               key='path-absolute')
 
     def test_size(self):

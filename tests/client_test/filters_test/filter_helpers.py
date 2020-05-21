@@ -6,10 +6,12 @@ from unittest.mock import patch
 @contextlib.contextmanager
 def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):
     dt = datetime(year, month, day, hour, minute, second)
+
     class Mock_datetime(datetime):
         @classmethod
         def now(cls, *args, **kwargs):
             return dt
+
     patchers = (patch('time.time', lambda *args, **kwargs: dt.timestamp()),
                 patch('time.localtime', lambda s: datetime.fromtimestamp(s).timetuple() if s else dt.timestamp()),
                 patch('datetime.datetime', Mock_datetime))

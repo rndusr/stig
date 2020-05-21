@@ -6,8 +6,8 @@ from stig.client.filters.base import BoolFilterSpec, CmpFilterSpec, Filter, Filt
 class TestFilterParser(unittest.TestCase):
     def setUp(self):
         class FooFilter(Filter):
-            BOOLEAN_FILTERS = {'b1': BoolFilterSpec(lambda i: bool(x), aliases=('b1a', 'b1A')),
-                               'b2': BoolFilterSpec(lambda i: bool(x), aliases=('b2a', 'b2A'))}
+            BOOLEAN_FILTERS = {'b1': BoolFilterSpec(lambda i: bool(i), aliases=('b1a', 'b1A')),
+                               'b2': BoolFilterSpec(lambda i: bool(i), aliases=('b2a', 'b2A'))}
             COMPARATIVE_FILTERS = {'c1': CmpFilterSpec(value_type=str, value_getter=NotImplemented, aliases=('c1a', 'c1A')),
                                    'c2': CmpFilterSpec(value_type=str, value_getter=NotImplemented, aliases=('c2a', 'c2A'))}
             DEFAULT_FILTER = 'c1'
@@ -48,10 +48,11 @@ class TestFilterParser(unittest.TestCase):
 
     def test_aliases(self):
         class FooFilter(Filter):
-            BOOLEAN_FILTERS = {'b': BoolFilterSpec(lambda i: bool(x),
+            BOOLEAN_FILTERS = {'b': BoolFilterSpec(lambda i: bool(i),
                                                    aliases=('foo',))}
             COMPARATIVE_FILTERS = {'c': CmpFilterSpec(value_type=str, value_getter=NotImplemented,
-                                                       aliases=('bar', 'baz'))}
+                                                      aliases=('bar', 'baz'))}
+
         self.assertEqual(str(FooFilter('foo')), 'b')
         self.assertEqual(str(FooFilter('bar')), 'c')
         self.assertEqual(str(FooFilter('bar~x')), 'c~x')
@@ -60,7 +61,7 @@ class TestFilterParser(unittest.TestCase):
 
     def test_alias_collision(self):
         class FooFilter(Filter):
-            BOOLEAN_FILTERS = {'b': BoolFilterSpec(lambda i: bool(x),
+            BOOLEAN_FILTERS = {'b': BoolFilterSpec(lambda i: bool(i),
                                                    aliases=('foo',))}
             COMPARATIVE_FILTERS = {'c': CmpFilterSpec(value_type=str, value_getter=NotImplemented,
                                                       aliases=('bar', 'foo'))}
@@ -383,8 +384,10 @@ class TestFilterChain_parser(unittest.TestCase):
                                    'ci': CmpFilterSpec(value_type=str, value_getter=lambda i: i['v'].casefold(),
                                                        needed_keys=('b', 'd'))}
             DEFAULT_FILTER = 'c'
+
         class FooFilterChain(FilterChain):
             filterclass = FooFilter
+
         self.f = FooFilterChain
 
     def test_no_filterclass_attribute_set_by_child_class(self):
@@ -523,11 +526,13 @@ class TestFilterChain_apply(unittest.TestCase):
                                    'n_int': CmpFilterSpec(value_type=int, value_getter=lambda i: int(i['v'])),
                                    'n_abs': CmpFilterSpec(value_type=int, value_getter=lambda i: abs(i['v']))}
             DEFAULT_FILTER = 'c'
+
         class FooFilterChain(FilterChain):
             filterclass = FooFilter
+
         self.f = FooFilterChain
         # range() only supports integers
-        self.items = tuple({'v': i/10} for i in range(-100, 105, 5))
+        self.items = tuple({'v': i / 10} for i in range(-100, 105, 5))
 
     def do(self, filter_str, exp_values):
         self.assertEqual(tuple(item['v'] for item in self.f(filter_str).apply(self.items)),
