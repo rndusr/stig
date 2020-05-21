@@ -24,7 +24,7 @@ test: venv
 fulltest: venv
 	. "$(VENV_PATH)"/bin/activate ; \
 	  tox
-	flake8 stig
+	flake8 stig tests
 
 release:
 	pyrelease CHANGELOG ./stig/__version__.py
