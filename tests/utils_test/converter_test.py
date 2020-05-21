@@ -1,7 +1,8 @@
+import unittest
+
 from stig.utils._converter import DataSizeConverter
 from stig.utils.usertypes import Float
 
-import unittest
 
 class TestDataSizeConverter(unittest.TestCase):
     def setUp(self):

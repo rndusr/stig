@@ -1,6 +1,6 @@
-from stig.utils.string import (strwidth, strcrop, stralign)
-
 import unittest
+
+from stig.utils.string import stralign, strcrop, strwidth
 
 
 class Test_strwidth(unittest.TestCase):

@@ -1,12 +1,12 @@
-from stig.utils.usertypes import (String, Bool, Path, Tuple, Option, Float,
-                                  Percent, Int, UsertypeMixin, multitype)
-
-import unittest
-from unittest.mock import patch
 import os
-
-
+import unittest
 from contextlib import contextmanager
+from unittest.mock import patch
+
+from stig.utils.usertypes import (Bool, Float, Int, Option, Path, Percent, String, Tuple,
+                                  UsertypeMixin, multitype)
+
+
 class _TestBase(unittest.TestCase):
     @contextmanager
     def assert_raises(self, exccls, msg=None):

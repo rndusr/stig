@@ -1,6 +1,6 @@
-from stig.utils import cliparser
-
 import unittest
+
+from stig.utils import cliparser
 
 
 class Test_on_any_substr(unittest.TestCase):
