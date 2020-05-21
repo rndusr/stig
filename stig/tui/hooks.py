@@ -37,10 +37,11 @@ localcfg.on_change(_reconnect, name='connect.tls')
 localcfg.on_change(_reconnect, name='connect.url')
 
 
-def _update_pollers(rpc):
-    srvapi.poll()
-srvapi.rpc.on('connected', _update_pollers)
-srvapi.rpc.on('disconnected', _update_pollers)
+# TODO: These are probably not needed?
+# def _update_pollers(rpc):
+#     srvapi.poll()
+# srvapi.rpc.on('connected', _update_pollers)
+# srvapi.rpc.on('disconnected', _update_pollers)
 
 
 def _refresh_lists(settings, name, value):
