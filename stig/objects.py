@@ -27,13 +27,8 @@ main_rcfile = None
 localcfg = settings.LocalSettings()
 settings.init_defaults(localcfg)
 
-srvapi = API(host=localcfg['connect.host'],
-             port=localcfg['connect.port'],
-             path=localcfg['connect.path'],
-             user=localcfg['connect.user'],
-             password=localcfg['connect.password'],
-             tls=localcfg['connect.tls'],
-             interval=localcfg['tui.poll'])
+srvapi = API(interval=localcfg['tui.poll'])
+
 remotecfg = settings.RemoteSettings(srvapi.settings)
 
 cfg = settings.CombinedSettings(localcfg, remotecfg)
