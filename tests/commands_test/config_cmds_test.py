@@ -1,12 +1,9 @@
 import os
-import re
 import sys
 
-from asynctest import CoroutineMock
 from asynctest.mock import CoroutineMock, MagicMock, call, mock_open, patch
-
 from resources_cmd import CommandTestCase
-from stig import __appname__, __version__, objects
+from stig import objects
 from stig.commands.cli import DumpCmd, RateLimitCmd, RcCmd, ResetCmd, SetCmd
 from stig.completion import Candidates
 from stig.utils.cliparser import Args
@@ -171,7 +168,7 @@ class TestRcCmd(CommandTestCase):
         self.mock_path_exists = self.patch('os.path.exists')
         self.mock_rcfile = self.patch('stig.commands.base.config.rcfile')
         self.mock_rcfile.RcFileError = Exception
-        self.mock_default_rcfile ='/home/mock/config/default_rcfile'
+        self.mock_default_rcfile = '/home/mock/config/default_rcfile'
         self.patch('stig.settings.defaults',
                    DEFAULT_RCFILE=self.mock_default_rcfile)
 
@@ -402,7 +399,7 @@ class TestSetCmd(CommandTestCase):
         self.cfg['some.string'] = 'foo'
         with patch('stig.objects.cfg.set') as mock_set:
             mock_set.side_effect = ValueError('I hate your values!')
-            process = await self.execute(SetCmd, 'some.string', 'bar')
+            await self.execute(SetCmd, 'some.string', 'bar')
         self.assert_stderr('set: some.string = bar: I hate your values!')
 
     async def test_no_completion_candidates_if_sort_or_columns_options_given(self):
@@ -495,22 +492,22 @@ class TestRateLimitCmd(CommandTestCase):
         await self.execute(RateLimitCmd, 'up', '1Mb', 'limit-rate-up<1k')
         _set_limits.assert_awaited_once_with(['limit-rate-up<1k'], ('up',), '1Mb', adjust=False, quiet=False)
         _show_limits.assert_not_awaited()
-        _set_limits.reset_mock() ; _show_limits.reset_mock()
+        _set_limits.reset_mock() ; _show_limits.reset_mock()  # noqa: E702
 
         await self.execute(RateLimitCmd, 'up', '1Mb')
         _set_limits.assert_awaited_once_with([], ('up',), '1Mb', adjust=False, quiet=False)
         _show_limits.assert_not_awaited()
-        _set_limits.reset_mock() ; _show_limits.reset_mock()
+        _set_limits.reset_mock() ; _show_limits.reset_mock()  # noqa: E702
 
         await self.execute(RateLimitCmd, 'up')
         _set_limits.assert_not_awaited()
         _show_limits.assert_awaited_once_with([], ('up',))
-        _set_limits.reset_mock() ; _show_limits.reset_mock()
+        _set_limits.reset_mock() ; _show_limits.reset_mock()  # noqa: E702
 
         await self.execute(RateLimitCmd, 'up', 'show', 'limit-rate-up<1k')
         _set_limits.assert_not_awaited()
         _show_limits.assert_awaited_once_with(['limit-rate-up<1k'], ('up',))
-        _set_limits.reset_mock() ; _show_limits.reset_mock()
+        _set_limits.reset_mock() ; _show_limits.reset_mock()  # noqa: E702
 
     async def test_setting_global_limits(self):
         for direction in ('up', 'dn', 'down'):
@@ -524,7 +521,7 @@ class TestRateLimitCmd(CommandTestCase):
             self.srvapi.settings.assert_called(1, set_method, ('1Mb',), {})
             self.assert_stdout('ratelimit: Global %sload rate limit: None' % real_dir)
             self.assert_stderr()
-            self.clear_stdout(); self.clear_stderr()
+            self.clear_stdout() ; self.clear_stderr()  # noqa: E702
 
             self.srvapi.settings.forget_calls()
             process = await self.execute(RateLimitCmd, direction, '+=2MB', 'global')
@@ -532,7 +529,7 @@ class TestRateLimitCmd(CommandTestCase):
             self.srvapi.settings.assert_called(1, adjust_method, ('+2MB',), {})
             self.assert_stdout('ratelimit: Global %sload rate limit: None' % real_dir)
             self.assert_stderr()
-            self.clear_stdout(); self.clear_stderr()
+            self.clear_stdout() ; self.clear_stderr()  # noqa: E702
 
             self.srvapi.settings.forget_calls()
             process = await self.execute(RateLimitCmd, direction, '--', '-=10Mb', 'global')
@@ -540,7 +537,7 @@ class TestRateLimitCmd(CommandTestCase):
             self.srvapi.settings.assert_called(1, adjust_method, ('-10Mb',), {})
             self.assert_stdout('ratelimit: Global %sload rate limit: None' % real_dir)
             self.assert_stderr()
-            self.clear_stdout(); self.clear_stderr()
+            self.clear_stdout() ; self.clear_stderr()  # noqa: E702
 
             self.srvapi.settings.forget_calls()
             self.srvapi.settings.raises = ValueError('bad value')
@@ -548,37 +545,37 @@ class TestRateLimitCmd(CommandTestCase):
             self.assertEqual(process.success, False)
             self.assert_stdout()
             self.assert_stderr("ratelimit: bad value: 'fooo'")
-            self.clear_stdout(); self.clear_stderr()
+            self.clear_stdout() ; self.clear_stderr()  # noqa: E702
 
     async def test_completion_candidates_directions(self):
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', ''), curarg_index=1),
-                                          exp_cands=('up', 'down'), exp_curarg_seps=(',',))
+                                                exp_cands=('up', 'down'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up,'), curarg_index=1),
-                                          exp_cands=('down',), exp_curarg_seps=(',',))
+                                                exp_cands=('down',), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'down,'), curarg_index=1),
-                                          exp_cands=('up',), exp_curarg_seps=(',',))
+                                                exp_cands=('up',), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'dn,'), curarg_index=1),
-                                          exp_cands=('up',), exp_curarg_seps=(',',))
+                                                exp_cands=('up',), exp_curarg_seps=(',',))
 
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', ''), curarg_index=1),
-                                          exp_cands=('up', 'down'), exp_curarg_seps=(',',))
+                                                exp_cands=('up', 'down'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '', '--quiet'), curarg_index=1),
-                                          exp_cands=('up', 'down'), exp_curarg_seps=(',',))
+                                                exp_cands=('up', 'down'), exp_curarg_seps=(',',))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '--quiet', ''), curarg_index=2),
-                                          exp_cands=('up', 'down'), exp_curarg_seps=(',',))
+                                                exp_cands=('up', 'down'), exp_curarg_seps=(',',))
 
     @patch('stig.commands.base.config.candidates')
     async def test_completion_candidates_torrent_filter(self, mock_candidates):
         mock_candidates.torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_'), curarg_index=3),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_', '_'), curarg_index=4),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '_', '_'), curarg_index=3),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', '-q', 'up', '10MB', '_', '_'), curarg_index=4),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '-q', '10MB', '_', '_'), curarg_index=5),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(RateLimitCmd, Args(('ratelimit', 'up', '10MB', '-q', '_', '_'), curarg_index=4),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))

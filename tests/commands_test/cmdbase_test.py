@@ -1,7 +1,6 @@
 import asyncio
 
 import asynctest
-
 from resources_cmd import Callback, make_cmdcls
 from stig.commands import CmdArgError, _CommandBase
 
@@ -84,8 +83,7 @@ class TestCommandBase(asynctest.TestCase):
         self.assertEqual(self.error_handler.args, list(errors))
         self.assertEqual(self.info_handler.args, list(infos))
 
-
-    ### Test running commands with stopped asyncio loop
+    # Test running commands with stopped asyncio loop
 
     def test_run_does_not_raise_exception_in_sync_context(self):
         process = self.div_sync(['10', '2'],
@@ -136,8 +134,7 @@ class TestCommandBase(asynctest.TestCase):
         self.assertEqual(self.info_handler.args, [])
         self.assertEqual(self.error_handler.args, [])
 
-
-    ### Test running commands with running asyncio loop
+    # Test running commands with running asyncio loop
 
     async def test_run_does_not_raise_exception_in_async_context(self):
         process = self.div_sync(['10', '2'],
@@ -149,8 +146,8 @@ class TestCommandBase(asynctest.TestCase):
         self.error_handler.reset()
 
         process = self.div_async(['10', '5'],
-                                info_handler=self.info_handler,
-                                error_handler=self.error_handler)
+                                 info_handler=self.info_handler,
+                                 error_handler=self.error_handler)
         await process.wait_async()
         self.check(process, success=True, infos=[('div: 2',)])
 

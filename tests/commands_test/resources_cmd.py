@@ -7,10 +7,9 @@ from unittest.mock import MagicMock, patch
 
 import asynctest
 from asynctest import CoroutineMock
-
 from stig.client.base import TorrentBase
 from stig.client.utils import Response
-from stig.commands import CmdError, CommandMeta, _CommandBase
+from stig.commands import CommandMeta, _CommandBase
 
 
 def make_cmdcls(defaults=True, **clsattrs):
@@ -27,7 +26,7 @@ def make_cmdcls(defaults=True, **clsattrs):
             clsattrs['run'] = lambda self: self.retval
 
     if 'name' in clsattrs:
-        clsname = clsattrs['name'].capitalize()+'Command'
+        clsname = clsattrs['name'].capitalize() + 'Command'
     else:
         clsname = 'MockCommand'
 

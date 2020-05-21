@@ -4,12 +4,9 @@ from types import SimpleNamespace
 import asynctest
 from asynctest import CoroutineMock
 from asynctest.mock import MagicMock, call, patch
-
 from resources_cmd import (CommandTestCase, MockTorrent, mock_get_torrent_sorter,
                            mock_select_torrents)
-from stig.client.errors import ClientError
 from stig.client.utils import Response
-from stig.commands import CmdError
 from stig.commands.cli import (ListTorrentsCmd, RemoveTorrentsCmd, StartTorrentsCmd,
                                StopTorrentsCmd, TorrentDetailsCmd, VerifyTorrentsCmd)
 from stig.completion import Candidates
@@ -241,11 +238,11 @@ class TestTorrentDetailsCmd(CommandTestCase):
     async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
         mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
         await self.assert_completion_candidates(TorrentDetailsCmd, Args(('details', 'foo'), curarg_index=1),
-                                          exp_cands=('a', 'b', 'c'))
+                                                exp_cands=('a', 'b', 'c'))
         mock_torrent_filter.assert_called_once_with('foo')
         mock_torrent_filter.reset_mock()
         await self.assert_completion_candidates(TorrentDetailsCmd, Args(('details', 'foo', 'bar'), curarg_index=2),
-                                          exp_cands=None)
+                                                exp_cands=None)
         mock_torrent_filter.assert_not_called()
 
 
@@ -287,7 +284,7 @@ class TestListTorrentsCmd(CommandTestCase):
                            process.mock_tfilter.needed_keys +
                            ('name',))  # columns
             self.srvapi.torrent.assert_called(1, 'torrents', (process.mock_tfilter,),
-                                           {'keys': keys_exp})
+                                              {'keys': keys_exp})
             self.assertEqual(process.mock_tsorter.applied, tlist)
 
     async def test_filter(self):
@@ -484,7 +481,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
-            await yes() ; return True
+            await yes() ; return True  # noqa: E702
+
         RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no
 
         await self.do(['all'], tlist=tlist, remove_called=True, success_exp=True,
@@ -501,7 +499,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
         RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
-            await no() ; return False
+            await no() ; return False  # noqa: E702
+
         RemoveTorrentsCmd.ask_yes_no = mock_ask_yes_no
 
         await self.do(['seeds>50'], tlist=tlist, remove_called=False, success_exp=False,

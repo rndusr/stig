@@ -2,12 +2,8 @@ import asyncio
 
 import asynctest
 from asynctest.mock import call
-
 from resources_cmd import Callback, make_cmdcls
 from stig.commands import CmdError, CommandManager, _CommandBase
-
-#import unittest
-# from unittest.mock import call
 
 
 class TestCommandManagerManagement(asynctest.TestCase):
@@ -115,7 +111,6 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
             make_cmdcls(name='div', run=run_async, argspecs=argspecs, provides=('async',))
         )
 
-
         def run_sync_CmdError(self_, msg):
             raise CmdError(msg)
 
@@ -131,12 +126,13 @@ class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
             make_cmdcls(name='error', run=run_async_CmdError, argspecs=argspecs, provides=('async',))
         )
 
-
         def run_sync_Exception(self_):
-            1/0
+            1 / 0
+
         async def run_async_Exception(self_):
             await asyncio.sleep(0)
-            1/0
+            1 / 0
+
         self.cmdmgr.register(
             make_cmdcls(name='raise', run=run_sync_Exception, argspecs=(), provides=('sync',))
         )
@@ -257,6 +253,7 @@ class TestCommandManagerCalls_UnknownCommand(TestCommandManagerCallsBase):
 class TestCommandManagerCalls_OtherTests(TestCommandManagerCallsBase):
     def test_kwargs_are_forwarded_to_cmd_instance(self):
         kwargs = {'foo': 'bar', 'one': 1}
+
         def run(self_cmd):
             for k,v in kwargs.items():
                 self.assertEqual(getattr(self_cmd, k), v)
@@ -286,12 +283,14 @@ class TestCommandManagerCalls_RunIgnoredCalls(TestCommandManagerCallsBase):
         def run_add(self_, A, B, _gui=self.mock_gui):
             print('add called with %r, %r' % (A, B))
             _gui.display('Result: %d' % (int(A) + int(B),))
+
         self.cmdmgr.register(make_cmdcls(name='add', run=run_add, argspecs=argspecs, provides=('gui',)))
 
         async def run_sub(self_, A, B, _gui=self.mock_gui):
             print('sub called with %r, %r' % (A, B))
             _gui.display('Result: %d' % (int(A) - int(B),))
             await asyncio.sleep(0)
+
         self.cmdmgr.register(make_cmdcls(name='sub', run=run_sub, argspecs=argspecs, provides=('tui',)))
 
     def test_run_ignored_sync_calls_sync(self):
@@ -469,14 +468,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
 
     async def test_nonexisting_cmd_in_cmdchain(self):
         async def do_test(cmdchain, success, true_calls=0, false_calls=0, errors=()):
-            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()  # noqa: E702
             result = self.cmdmgr.run_sync(cmdchain)
             self.assertEqual(result, success)
             self.assertEqual(self.true_cb.calls, true_calls)
             self.assertEqual(self.false_cb.calls, false_calls)
             self.assertEqual(self.error_handler.args, list(errors))
 
-            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()  # noqa: E702
             result = await self.cmdmgr.run_async(cmdchain)
             self.assertEqual(result, success)
             self.assertEqual(self.true_cb.calls, true_calls)
@@ -505,14 +504,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
 
     async def test_cmd_from_inactive_interface_in_cmdchain(self):
         async def do_test(cmdchain, success, true_calls=0, false_calls=0, errors=()):
-            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()  # noqa: E702
             result = self.cmdmgr.run_sync(cmdchain)
             self.assertEqual(result, success)
             self.assertEqual(self.true_cb.calls, true_calls)
             self.assertEqual(self.false_cb.calls, false_calls)
             self.assertEqual(self.error_handler.args, list(errors))
 
-            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()  # noqa: E702
             result = await self.cmdmgr.run_async(cmdchain)
             self.assertEqual(result, success)
             self.assertEqual(self.true_cb.calls, true_calls)
@@ -546,14 +545,14 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
 
     async def test_cmdchain_with_arguments(self):
         async def do_test(cmdchain, success, true_args=(), false_args=(), errors=()):
-            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()  # noqa: E702
             result = self.cmdmgr.run_sync(cmdchain)
             self.assertEqual(result, success)
             self.assertEqual(self.true_cb.kwargs, list(true_args))
             self.assertEqual(self.false_cb.kwargs, list(false_args))
             self.assertEqual(self.error_handler.args, list(errors))
 
-            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()
+            self.error_handler.reset() ; self.true_cb.reset() ; self.false_cb.reset()  # noqa: E702
             result = await self.cmdmgr.run_async(cmdchain)
             self.assertEqual(result, success)
             self.assertEqual(self.true_cb.kwargs, list(true_args))
