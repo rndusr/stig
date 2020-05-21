@@ -86,12 +86,6 @@ class TestTorrentSorter(TestSorterBase):
                  {'id': 3, 'name': 'baz', 'size-downloaded': 70}]
         self.assert_sorted_ids('downloaded', items, (1, 2, 3))
 
-    def test_downloaded(self):
-        items = [{'id': 1, 'name': 'foo', 'size-downloaded': 50},
-                 {'id': 2, 'name': 'bar', 'size-downloaded': 60},
-                 {'id': 3, 'name': 'baz', 'size-downloaded': 70}]
-        self.assert_sorted_ids('downloaded', items, (1, 2, 3))
-
     def test_percent_downloaded(self):
         items = [{'id': 1, 'name': 'foo', '%downloaded':   0, '%verified':   0, '%metadata': 100},
                  {'id': 2, 'name': 'bar', '%downloaded': 100, '%verified':  30, '%metadata': 100},

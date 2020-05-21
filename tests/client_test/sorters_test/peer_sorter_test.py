@@ -63,8 +63,10 @@ class TestPeerSorter(TestSorterBase):
         items = [{'id': 1, 'tname': 'foo', 'ip': '1.2.3.2'},
                  {'id': 2, 'tname': 'bar', 'ip': '3.4.5.1'},
                  {'id': 3, 'tname': 'baz', 'ip': '2.3.4.3'}]
+
         def mock_rdns(addr):
             return ''.join(reversed(addr))
+
         mock_gethostbyaddr_from_cache.side_effect = mock_rdns
         self.assert_sorted_ids('host', items, (2, 1, 3))
 

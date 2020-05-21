@@ -97,9 +97,6 @@ class TestSorterBase(unittest.TestCase):
         self.assert_sorted(items, ('!B',), (1, 2, 3))
 
     def test___str__(self):
-        items = [{'id': 1, 'foo': 'a', 'bar': 'z'},
-                 {'id': 2, 'foo': 'b', 'bar': 'y'},
-                 {'id': 3, 'foo': 'c', 'bar': 'x'}]
         self.assertEqual(str(self.sortercls(('foo', 'bar'))), 'foo,bar')
         self.assertEqual(str(self.sortercls(('bar', 'foo'))), 'bar,foo')
         self.assertEqual(str(self.sortercls(('!foo', 'bar'))), '!foo,bar')
@@ -130,10 +127,10 @@ class TestSorterBase(unittest.TestCase):
             self.assertEqual(str(self.sortercls(('F', fstr))), 'foo')
             self.assertEqual(str(self.sortercls(('f', 'bar', fstr))), 'bar,foo')
             self.assertEqual(str(self.sortercls(('F', 'bar', fstr))), 'bar,foo')
-            self.assertEqual(str(self.sortercls(('!'+fstr, fstr))), 'foo')
-            self.assertEqual(str(self.sortercls((fstr, '!'+fstr))), '!foo')
-            self.assertEqual(str(self.sortercls(('!'+fstr, 'bar', fstr))), 'bar,foo')
-            self.assertEqual(str(self.sortercls((fstr, 'bar', '!'+fstr))), 'bar,!foo')
+            self.assertEqual(str(self.sortercls(('!' + fstr, fstr))), 'foo')
+            self.assertEqual(str(self.sortercls((fstr, '!' + fstr))), '!foo')
+            self.assertEqual(str(self.sortercls(('!' + fstr, 'bar', fstr))), 'bar,foo')
+            self.assertEqual(str(self.sortercls((fstr, 'bar', '!' + fstr))), 'bar,!foo')
 
     def test_apply_inplace(self):
         items = [{'id': 1, 'foo': 'a', 'bar': 'z'},
