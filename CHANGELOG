@@ -35,6 +35,7 @@
     * Added "hash" filter to find torrents by info hash.
     * Peer download rate estimates are now always calculated, not just when a peer list is
       focused.
+    * New 'connect.url' setting allows you to set host, port, etc with a single command.
 
   Fixed bugs:
     * File filters caused a crash when applied to single-file torrents.
