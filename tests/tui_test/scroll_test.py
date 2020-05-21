@@ -1,7 +1,8 @@
-from stig.tui.scroll import (Scrollable, ScrollBar)
-
 import unittest
+
 import urwid
+
+from stig.tui.scroll import Scrollable, ScrollBar
 
 from .resources_tui import get_canvas_text
 

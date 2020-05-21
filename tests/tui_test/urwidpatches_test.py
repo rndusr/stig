@@ -1,7 +1,8 @@
-import urwid
 import unittest
 
-from . _handle_urwidpatches import (setUpModule, tearDownModule)
+import urwid
+
+from ._handle_urwidpatches import setUpModule, tearDownModule
 
 
 class TestListBox_scrolling_API(unittest.TestCase):

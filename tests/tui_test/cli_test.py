@@ -1,13 +1,14 @@
-from stig.tui.cli import CLIEditWidget
-
+import asyncio
+import os
+import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
-import tempfile
-import os
-import asynctest
-import asyncio
 
-from . _handle_urwidpatches import (setUpModule, tearDownModule)
+import asynctest
+
+from stig.tui.cli import CLIEditWidget
+
+from ._handle_urwidpatches import setUpModule, tearDownModule
 
 
 class TestCLIEditWidget(asynctest.TestCase):

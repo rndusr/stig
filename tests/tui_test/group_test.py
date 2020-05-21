@@ -1,7 +1,8 @@
-from stig.tui.group import Group
-
 import unittest
+
 import urwid
+
+from stig.tui.group import Group
 
 from .resources_tui import get_canvas_text
 

@@ -1,7 +1,8 @@
-from stig.tui.keymap import (Key, KeyChain, KeyMap)
-
 import unittest
+
 import urwid
+
+from stig.tui.keymap import Key, KeyChain, KeyMap
 
 from .resources_tui import get_canvas_text
 
