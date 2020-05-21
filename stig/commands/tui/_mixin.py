@@ -64,7 +64,7 @@ class ask_yes_no():
         coroutines. They don't get any arguments and their return value is
         ignored.
         """
-        from ...tui import tuiobjects  # isort:skip
+        from ...tui import tuiobjects
 
         def run_func_or_coro(func_or_coro):
             if asyncio.iscoroutinefunction(func_or_coro):
@@ -184,7 +184,7 @@ class select_torrents():
         Return 'torrent', 'file' or 'directory' depending on what is currently
         focused
         """
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         return _deep_getattr(tabs, 'focus', 'focused_widget', 'data')
 
     @classmethod
@@ -193,25 +193,25 @@ class select_torrents():
         Return 'torrent', 'file' or 'directory' depending on what is currently
         focused
         """
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         focused_widget = _deep_getattr(tabs, 'focus', 'focused_widget')
         focused_data = _deep_getattr(focused_widget, 'data')
 
         if isinstance(focused_data, client.Torrent):
             return 'torrent'
-        from ...views.file import TorrentFileDirectory  # isort:skip
+        from ...views.file import TorrentFileDirectory
         if isinstance(focused_data, TorrentFileDirectory):
             return 'directory'
         if isinstance(focused_data, client.TorrentFile):
             return 'file'
-        from ...tui.views import SettingItemWidget  # isort:skip
+        from ...tui.views import SettingItemWidget
         if isinstance(focused_widget, SettingItemWidget):
             return 'setting'
 
     @classmethod
     def _get_current_or_previous_tab(cls):
         """Return currently focused tab content if not empty, the previous one or None"""
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         widget = tabs.focus
         if widget is not None:
             return widget
@@ -237,7 +237,7 @@ class select_files():
         'id=<TORRENT ID>' to make this path unique to this torrent even if there
         are multiple torrents with the same name.
         """
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         focused_widget = tabs.focus
         if hasattr(focused_widget, 'focused_file_ids'):
             data = focused_widget.focused_widget.data
@@ -283,7 +283,7 @@ class select_files():
                 raise ValueError('No torrent file specified')
 
     def _find_file_ids(self):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         focused_widget = tabs.focus
         # Get marked file IDs
         if hasattr(focused_widget, 'marked'):
@@ -316,11 +316,11 @@ class create_list_widget():
 
         # Create list widget
         log.debug('Creating %s(%s, %s)', list_cls.__name__, args, kwargs)
-        from ...tui.tuiobjects import keymap  # isort:skip
+        from ...tui.tuiobjects import keymap
         listw = list_cls(objects.srvapi, keymap, *args, **kwargs)
 
         # Add list to tabs
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         tabid = tabs.load(make_titlew(listw.title), listw)
         tabs.set_info(command=self.command)
 
@@ -452,8 +452,8 @@ class placeholders(make_request):
 
     async def _get_placeholder_map(self):
         if not hasattr(self, '_placeholders'):
-            from ...tui.views import TorrentListWidget, FileListWidget  # isort:skip
-            from ...tui.tuiobjects import tabs                          # isort:skip
+            from ...tui.views import TorrentListWidget, FileListWidget
+            from ...tui.tuiobjects import tabs
             focused_list = tabs.focus
             if focused_list is None:
                 raise CmdError(self._RESOLVE_ERROR % 'No tab opened')

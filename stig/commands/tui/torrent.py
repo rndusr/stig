@@ -55,8 +55,8 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                                         attr_unfocused='tabs.torrentdetails.unfocused',
                                         attr_focused='tabs.torrentdetails.focused')
 
-        from ...tui.views import TorrentDetailsWidget  # isort:skip
-        from ...tui.tuiobjects import keymap, tabs     # isort:skip
+        from ...tui.views import TorrentDetailsWidget
+        from ...tui.tuiobjects import keymap, tabs
         TorrentDetailsWidget_keymapped = keymap.wrap(TorrentDetailsWidget,
                                                      context='torrent')
         title_str = self.title if hasattr(self, 'title') else None
@@ -81,7 +81,7 @@ class ListTorrentsCmd(base.ListTorrentsCmdbase,
     provides = {'tui'}
 
     def make_torrent_list(self, tfilter, sort, columns):
-        from ...tui.views import TorrentListWidget  # isort:skip
+        from ...tui.views import TorrentListWidget
         self.create_list_widget(TorrentListWidget, theme_name='torrentlist',
                                 tfilter=tfilter, sort=sort, columns=columns,
                                 markable_items=True)

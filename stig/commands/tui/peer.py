@@ -20,7 +20,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
     provides = {'tui'}
 
     def make_peer_list(self, tfilter, pfilter, sort, columns):
-        from ...tui.views import PeerListWidget  # isort:skip
+        from ...tui.views import PeerListWidget
         self.create_list_widget(PeerListWidget, theme_name='peerlist',
                                 tfilter=tfilter, pfilter=pfilter,
                                 sort=sort, columns=columns,

@@ -20,7 +20,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
     provides = {'tui'}
 
     def make_file_list(self, tfilter, ffilter, columns):
-        from ...tui.views import FileListWidget  # isort:skip
+        from ...tui.views import FileListWidget
         self.create_list_widget(FileListWidget, theme_name='filelist',
                                 tfilter=tfilter, ffilter=ffilter,
                                 columns=columns,

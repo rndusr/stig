@@ -28,7 +28,7 @@ log = make_logger(__name__)
 
 # Import tui.main module only on demand
 def _get_keymap_contexts():
-    from ...tui.tuiobjects import keymap  # isort:skip
+    from ...tui.tuiobjects import keymap
     return tuple(keymap.contexts)
 
 
@@ -96,7 +96,7 @@ class BindCmd(metaclass=CommandMeta):
     }
 
     def run(self, context, description, KEY, ACTION):
-        from ...tui.tuiobjects import keymap  # isort:skip
+        from ...tui.tuiobjects import keymap
         key = KEY
         if len(ACTION) == 1 and ACTION[0][0] == '<' and ACTION[0][-1] == '>':
             # ACTION is another key (e.g. 'j' -> 'down')
@@ -175,7 +175,7 @@ class UnbindCmd(metaclass=CommandMeta):
     )
 
     def run(self, context, all, KEY):
-        from ...tui.tuiobjects import keymap  # isort:skip
+        from ...tui.tuiobjects import keymap
         if all:
             keymap.clear(context=context)
         if context is None:
@@ -246,7 +246,7 @@ class SetCommandCmd(mixin.placeholders, metaclass=CommandMeta):
             cmdstr = ' '.join(shlex.quote(str(arg)) for arg in args)
             if trailing_space:
                 cmdstr += ' '
-            from ...tui.tuiobjects import widgets  # isort:skip
+            from ...tui.tuiobjects import widgets
             widgets.show('cli')
             widgets.cli.base_widget.edit_text = cmdstr
             widgets.cli.base_widget.edit_pos = len(cmdstr)
@@ -395,8 +395,8 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
     _MAX_EDIT_WIDTH = 50
 
     def _open_dialog(self, cmd, on_change=None, on_accept=None, on_cancel=None, on_close=None):
-        import urwid                          # isort:skip
-        from ...tui.cli import CLIEditWidget  # isort:skip
+        import urwid
+        from ...tui.cli import CLIEditWidget
 
         def accept_cb(widget):
             # CLIEditWidget only automatically appends to history when it gets
@@ -474,7 +474,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
         columns_widget = MyColumns(columns_args)
 
         # Close any previously opened dialog
-        from ...tui.tuiobjects import widgets  # isort:skip
+        from ...tui.tuiobjects import widgets
         if widgets.exists(self._WIDGET_NAME):
             self._close_dialog()
 
@@ -493,7 +493,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
                     options='pack')
 
     def _close_dialog(self):
-        from ...tui.tuiobjects import widgets  # isort:skip
+        from ...tui.tuiobjects import widgets
         widgets.remove(self._WIDGET_NAME)
         widgets.focus_name = 'main'
 
@@ -573,7 +573,7 @@ class MarkCmd(metaclass=CommandMeta):
     }
 
     def run(self, focus_next, toggle, all):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         widget = tabs.focus
         if not widget.has_marked_column:
             raise CmdError('Nothing to mark here.')
@@ -600,7 +600,7 @@ class UnmarkCmd(metaclass=CommandMeta):
     more_sections = MarkCmd.more_sections
 
     def run(self, focus_next, toggle, all):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         widget = tabs.focus
         if not widget.has_marked_column:
             raise CmdError('Nothing to unmark here.')
@@ -617,7 +617,7 @@ class QuitCmd(metaclass=CommandMeta):
     description = 'Terminate the TUI'
 
     def run(self):
-        import urwid  # isort:skip
+        import urwid
         raise urwid.ExitMainLoop()
 
 
@@ -640,7 +640,7 @@ class FindCmd(metaclass=CommandMeta):
     )
 
     def run(self, clear, next, previous, PHRASE):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         content = tabs.focus.base_widget
         if not hasattr(content, 'search_phrase'):
             raise CmdError('This tab does not support finding.')
@@ -681,7 +681,7 @@ class LimitCmd(metaclass=CommandMeta):
     )
 
     def run(self, clear, FILTER):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         content = tabs.focus.base_widget
         if not hasattr(content, 'secondary_filter'):
             raise CmdError('This tab does not support limiting.')
@@ -697,8 +697,8 @@ class LimitCmd(metaclass=CommandMeta):
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        from ...tui.tuiobjects import tabs                            # isort:skip
-        from ...tui.views import (TorrentListWidget, FileListWidget,  # isort:skip
+        from ...tui.tuiobjects import tabs
+        from ...tui.views import (TorrentListWidget, FileListWidget,
                                   PeerListWidget, TrackerListWidget,
                                   SettingListWidget)
         widget = tabs.focus.base_widget
@@ -755,7 +755,7 @@ class SortCmd(metaclass=CommandMeta):
     }
 
     async def run(self, add, reset, none, ORDER):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         current_tab = tabs.focus.base_widget
 
         if reset:
@@ -781,7 +781,7 @@ class SortCmd(metaclass=CommandMeta):
 
     @staticmethod
     def _widget2sortcls(list_widget):
-        from ...tui.views import (TorrentListWidget, PeerListWidget,  # isort:skip
+        from ...tui.views import (TorrentListWidget, PeerListWidget,
                                   TrackerListWidget, SettingListWidget)
         if isinstance(list_widget, TorrentListWidget):
             return client.TorrentSorter
@@ -795,7 +795,7 @@ class SortCmd(metaclass=CommandMeta):
     @classmethod
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         sortcls = cls._widget2sortcls(tabs.focus.base_widget)
         if sortcls is not None:
             return candidates.sort_orders(sortcls.__name__)
@@ -846,7 +846,7 @@ class TabCmd(mixin.select_torrents, metaclass=CommandMeta):
     }
 
     async def run(self, background, close_all, close, focus, move, title, COMMAND):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         tabid_old = tabs.get_id()
 
         # Find relevant tab IDs and fail immediately if unsuccessful
@@ -907,13 +907,13 @@ class TabCmd(mixin.select_torrents, metaclass=CommandMeta):
         else:
             content = tabs.focus
             if content is not None and hasattr(content, 'marked_count'):
-                from ...tui.tuiobjects import bottombar  # isort:skip
+                from ...tui.tuiobjects import bottombar
                 bottombar.marked.update(content.marked_count)
 
         return success
 
     def _get_tab_id(self, pos):
-        from ...tui.tuiobjects import tabs  # isort:skip
+        from ...tui.tuiobjects import tabs
         if len(tabs) == 0:
             return None
 
@@ -1054,7 +1054,7 @@ class TUICmd(metaclass=CommandMeta):
                                                ', '.join(_tui_element_names()),)}
 
     def run(self, ACTION, ELEMENT):
-        from ...tui.tuiobjects import widgets  # isort:skip
+        from ...tui.tuiobjects import widgets
         widget = None
         success = True
         for element in utils.listify_args(ELEMENT):
@@ -1103,5 +1103,5 @@ class TUICmd(metaclass=CommandMeta):
 # Lazily load element names from tui module to avoid importing TUI stuff if possible
 @functools.lru_cache()
 def _tui_element_names():
-    from ...tui import tuiobjects  # isort:skip
+    from ...tui import tuiobjects
     return tuple(str(name) for name in sorted(tuiobjects.widgets.names_recursive))
