@@ -1,7 +1,7 @@
 from resources_cmd import CommandTestCase
-
-
 from stig.commands.cli import HelpCmd
+
+
 class TestHelpCmd(CommandTestCase):
     def setUp(self):
         super().setUp()

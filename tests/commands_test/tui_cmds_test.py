@@ -1,4 +1,5 @@
 from asynctest.mock import patch
+
 from resources_cmd import CommandTestCase
 from stig.commands.tui import BindCmd, TabCmd
 from stig.completion import Candidates

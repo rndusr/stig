@@ -1,17 +1,19 @@
-from stig.commands import CmdError
-from resources_cmd import (CommandTestCase, MockTorrent, mock_select_torrents,
-                           mock_get_torrent_sorter)
-
-from stig.client.utils import Response
-from stig.client.errors import ClientError
-from stig.utils.cliparser import Arg, Args
-from stig.completion import Candidates
+import os
+from types import SimpleNamespace
 
 import asynctest
 from asynctest import CoroutineMock
-from asynctest.mock import (patch, MagicMock, call)
-from types import SimpleNamespace
-import os
+from asynctest.mock import MagicMock, call, patch
+
+from resources_cmd import (CommandTestCase, MockTorrent, mock_get_torrent_sorter,
+                           mock_select_torrents)
+from stig.client.errors import ClientError
+from stig.client.utils import Response
+from stig.commands import CmdError
+from stig.commands.cli import (ListTorrentsCmd, RemoveTorrentsCmd, StartTorrentsCmd,
+                               StopTorrentsCmd, TorrentDetailsCmd, VerifyTorrentsCmd)
+from stig.completion import Candidates
+from stig.utils.cliparser import Arg, Args
 
 
 class TestAddTorrentsCmd(CommandTestCase):
@@ -198,7 +200,6 @@ class TestAddTorrentsCmd(CommandTestCase):
         mock_fs_path.assert_called_once_with('foo', base='/bar/baz', directories_only=True)
 
 
-from stig.commands.cli import TorrentDetailsCmd
 class TestTorrentDetailsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -248,7 +249,6 @@ class TestTorrentDetailsCmd(CommandTestCase):
         mock_torrent_filter.assert_not_called()
 
 
-from stig.commands.cli import ListTorrentsCmd
 class TestListTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -430,7 +430,6 @@ class TestMoveTorrentsCmd(CommandTestCase):
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
 
 
-from stig.commands.cli import RemoveTorrentsCmd
 class TestRemoveTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -886,7 +885,6 @@ class TestRenameCmd(CommandTestCase):
         self.assertEqual(cands, "mock torrent_path('foo') candidates")
 
 
-from stig.commands.cli import StartTorrentsCmd
 class TestStartTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -949,7 +947,6 @@ class TestStartTorrentsCmd(CommandTestCase):
                                                 exp_cands=('a', 'b', 'c'))
 
 
-from stig.commands.cli import StopTorrentsCmd
 class TestStopTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()
@@ -1003,7 +1000,6 @@ class TestStopTorrentsCmd(CommandTestCase):
                                                 exp_cands=('a', 'b', 'c'))
 
 
-from stig.commands.cli import VerifyTorrentsCmd
 class TestVerifyTorrentsCmd(CommandTestCase):
     def setUp(self):
         super().setUp()

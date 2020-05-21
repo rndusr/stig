@@ -1,8 +1,8 @@
 import unittest
 
-from stig.commands.guess_ui import (guess_ui, UIGuessError)
-from stig.commands import CommandManager
 from resources_cmd import make_cmdcls
+from stig.commands import CommandManager
+from stig.commands.guess_ui import UIGuessError, guess_ui
 
 
 class Test_guess_ui(unittest.TestCase):

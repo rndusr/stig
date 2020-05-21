@@ -1,6 +1,6 @@
-from stig.commands import utils
-
 import unittest
+
+from stig.commands import utils
 
 
 class Test_listify_args(unittest.TestCase):

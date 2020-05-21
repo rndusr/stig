@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import asynctest
 from asynctest import CoroutineMock
+
 from stig.client.base import TorrentBase
 from stig.client.utils import Response
 from stig.commands import CmdError, CommandMeta, _CommandBase
