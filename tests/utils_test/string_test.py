@@ -60,8 +60,8 @@ class Test_stralign(unittest.TestCase):
     def test_empty_string(self):
         self.assertEqual(stralign('', 0, 'left'), '')
         self.assertEqual(stralign('', 0, 'right'), '')
-        self.assertEqual(stralign('', 10, 'left'), ' '*10)
-        self.assertEqual(stralign('', 10, 'right'), ' '*10)
+        self.assertEqual(stralign('', 10, 'left'), ' ' * 10)
+        self.assertEqual(stralign('', 10, 'right'), ' ' * 10)
 
     def test_ascii_string(self):
         self.assertEqual(stralign('123', 1, 'left'), '1')

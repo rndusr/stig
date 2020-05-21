@@ -340,25 +340,25 @@ class Test_quote(unittest.TestCase):
     def test_space(self):
         self.assertEqual(cliparser.quote('foo bar baz'), '"foo bar baz"')
         for i in range(11):
-            self.assertEqual(cliparser.quote('foo bar baz', curpos=i),  ('"foo bar baz"', i+1))
+            self.assertEqual(cliparser.quote('foo bar baz', curpos=i), ('"foo bar baz"', i + 1))
         self.assertEqual(cliparser.quote('foo bar baz', curpos=11), ('"foo bar baz"', 13))
 
     def test_backslash(self):
         self.assertEqual(cliparser.quote(r'foo\bar\baz'), r'"foo\bar\baz"')
         for i in range(11):
-            self.assertEqual(cliparser.quote(r'foo\bar\baz', curpos=i), (r'"foo\bar\baz"', i+1))
+            self.assertEqual(cliparser.quote(r'foo\bar\baz', curpos=i), (r'"foo\bar\baz"', i + 1))
         self.assertEqual(cliparser.quote(r'foo\bar\baz', curpos=11), (r'"foo\bar\baz"', 13))
 
     def test_single_quote(self):
         self.assertEqual(cliparser.quote("foo'bar'baz"), '''"foo'bar'baz"''')
         for i in range(11):
-            self.assertEqual(cliparser.quote("foo'bar'baz", curpos=i), ('''"foo'bar'baz"''', i+1))
+            self.assertEqual(cliparser.quote("foo'bar'baz", curpos=i), ('''"foo'bar'baz"''', i + 1))
         self.assertEqual(cliparser.quote("foo'bar'baz", curpos=11), ('''"foo'bar'baz"''', 13))
 
     def test_double_quote(self):
         self.assertEqual(cliparser.quote('''foo"bar"baz'''), """'foo"bar"baz'""")
         for i in range(11):
-            self.assertEqual(cliparser.quote('''foo"bar"baz''', curpos=i), ("""'foo"bar"baz'""", i+1))
+            self.assertEqual(cliparser.quote('''foo"bar"baz''', curpos=i), ("""'foo"bar"baz'""", i + 1))
         self.assertEqual(cliparser.quote('''foo"bar"baz''', curpos=11), ("""'foo"bar"baz'""", 13))
 
     def test_mixed_quotes(self):
@@ -545,14 +545,14 @@ class Test_plaintext(unittest.TestCase):
         self.assertEqual(cliparser.plaintext("""'"foo" "bar" "baz"'"""), '"foo" "bar" "baz"')
         self.assertEqual(cliparser.plaintext("""'"foo" "bar" "baz"'""", curpos=0), ('"foo" "bar" "baz"', 0))
         for i in range(1, 19):
-            self.assertEqual(cliparser.plaintext("""'"foo" "bar" "baz"'""", curpos=i), ('"foo" "bar" "baz"', i-1))
+            self.assertEqual(cliparser.plaintext("""'"foo" "bar" "baz"'""", curpos=i), ('"foo" "bar" "baz"', i - 1))
         self.assertEqual(cliparser.plaintext("""'"foo" "bar" "baz"'""", curpos=19), ('"foo" "bar" "baz"', 17))
 
     def test_single_quotes_in_double_quotes(self):
         self.assertEqual(cliparser.plaintext('''"'foo' 'bar' 'baz'"'''), "'foo' 'bar' 'baz'")
         self.assertEqual(cliparser.plaintext('''"'foo' 'bar' 'baz'"''', curpos=0), ("'foo' 'bar' 'baz'", 0))
         for i in range(1, 19):
-            self.assertEqual(cliparser.plaintext('''"'foo' 'bar' 'baz'"''', curpos=i), ("'foo' 'bar' 'baz'", i-1))
+            self.assertEqual(cliparser.plaintext('''"'foo' 'bar' 'baz'"''', curpos=i), ("'foo' 'bar' 'baz'", i - 1))
         self.assertEqual(cliparser.plaintext('''"'foo' 'bar' 'baz'"''', curpos=19), ("'foo' 'bar' 'baz'", 17))
 
     def test_mixed_quotes(self):

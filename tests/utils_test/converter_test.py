@@ -116,15 +116,15 @@ class TestDataSizeConverter(unittest.TestCase):
     def test_prefix_property(self):
         self.conv.unit = 'B'
         self.conv.prefix = 'metric'
-        self.assertEqual(self.conv(10*1000).with_unit, '10kB')
+        self.assertEqual(self.conv(10 * 1000).with_unit, '10kB')
         self.conv.prefix = 'binary'
-        self.assertEqual(self.conv(10*1024).with_unit, '10KiB')
+        self.assertEqual(self.conv(10 * 1024).with_unit, '10KiB')
 
         self.conv.unit = 'b'
         self.conv.prefix = 'metric'
-        self.assertEqual(self.conv(10*1000).with_unit, '10kb')
+        self.assertEqual(self.conv(10 * 1000).with_unit, '10kb')
         self.conv.prefix = 'binary'
-        self.assertEqual(self.conv(10*1024).with_unit, '10Kib')
+        self.assertEqual(self.conv(10 * 1024).with_unit, '10Kib')
 
     def test_chained_calls(self):
         self.conv.unit = 'B'

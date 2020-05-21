@@ -20,6 +20,7 @@ class TestUsertypeMixin(_TestBase):
     def test_partial(self):
         class X(int, UsertypeMixin):
             defaults = {'min': 0, 'max': 10}
+
             def __new__(cls, i, min=defaults['min'], max=defaults['max']):
                 self = super().__new__(cls, i)
                 self.min = min
@@ -40,6 +41,7 @@ class TestUsertypeMixin(_TestBase):
     def test_partial_syntax(self):
         class X(int, UsertypeMixin):
             defaults = {'min': 0, 'max': 10}
+
             def __new__(cls, i, min=defaults['min'], max=defaults['max']):
                 return super().__new__(cls, i)
 
@@ -54,6 +56,7 @@ class TestUsertypeMixin(_TestBase):
     def test_copy(self):
         class X(int, UsertypeMixin):
             defaults = {'a': 1, 'b': 2, 'c': 3}
+
             def __new__(cls, i, a=defaults['a'], b=defaults['b'], c=defaults['c']):
                 inst = super().__new__(cls, i)
                 inst.a = a
@@ -83,15 +86,15 @@ class Test_multitype(_TestBase):
         mt = multitype(Float.partial(min=10), String)
         x = mt(15)
         self.assertEqual(x, 15.0)
-        self.assertEqual(x+5, 20.0)
+        self.assertEqual(x + 5, 20.0)
         with self.assert_raises(TypeError):
-            x+'!'
+            x + '!'
 
         x = mt('hello')
         self.assertEqual(x, 'hello')
-        self.assertEqual(x+'!', 'hello!')
+        self.assertEqual(x + '!', 'hello!')
         with self.assert_raises(TypeError):
-            x+5
+            x + 5
 
     def test_invalid_type(self):
         mt = multitype(Bool.partial(true=('yes',), false=('no',)),
@@ -283,7 +286,6 @@ class TestPath(_TestBase):
         self.assertIsInstance(p.full_path, type(p))
 
     def test_path_with_current_directory_ignores_base(self):
-        import os
         p = Path('./bar/baz', base='/foo')
         self.assertEqual(p, 'bar/baz')
         self.assertEqual(p.base_path, '/foo')
@@ -588,8 +590,8 @@ class TestFloat(_TestBase):
     def test_arithmetic_operation_copies_from_first_value(self):
         for prfx,exp_string in (('metric', '1.25M'),
                                 ('binary', '1.19Mi')):
-            n = Float(1e6, prefix=prfx, hide_unit=False) \
-              + Float(250e3, prefix='metric', hide_unit=True)
+            n = (Float(1e6, prefix=prfx, hide_unit=False) +
+                 Float(250e3, prefix='metric', hide_unit=True))
             self.assertEqual(n, 1.25e6)
             self.assertEqual(str(n), exp_string)
 
@@ -605,9 +607,9 @@ class TestFloat(_TestBase):
 
     def test_arithmetic_operation_ensures_common_unit(self):
         a = Float(10e3, unit='B', prefix='metric')
-        b = Float(1024*10, unit='b', prefix='binary')
+        b = Float(1024 * 10, unit='b', prefix='binary')
         c = a + b
-        self.assertEqual(c, 10e3 + (10240/8))
+        self.assertEqual(c, 10e3 + (10240 / 8))
         self.assertEqual(c.unit, 'B')
         self.assertEqual(c.prefix, 'metric')
         self.assertEqual(str(c), '11.3kB')

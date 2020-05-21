@@ -7,6 +7,7 @@ from stig import utils
 class Test_cached_property(unittest.TestCase):
     def test_no_arguments(self):
         foo = MagicMock(return_value='bar')
+
         class X:
             @utils.cached_property
             def foo(self):
@@ -19,6 +20,7 @@ class Test_cached_property(unittest.TestCase):
     def test_after_creation(self):
         foo = MagicMock(return_value='bar')
         callback = MagicMock()
+
         class X:
             @utils.cached_property(after_creation=callback)
             def foo(self):
