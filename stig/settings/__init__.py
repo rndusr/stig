@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import itertools
-from collections import abc
+from collections import abc, defaultdict
 
 from blinker import Signal
 
@@ -27,11 +27,13 @@ class LocalSettings(abc.Mapping):
         self._defaults = {}
         self._values = {}
         self._constructors = {}
+        self._getters = defaultdict(lambda: None)
+        self._setters = defaultdict(lambda: None)
         self._descriptions = {}
         self._signals = {}
         self._global_signal = Signal()
 
-    def add(self, name, constructor, default, description=None):
+    def add(self, name, constructor, default, description=None, getter=None, setter=None):
         """
         Add new setting
 
@@ -40,13 +42,20 @@ class LocalSettings(abc.Mapping):
                      for this setting
         default:     Initial and default value
         description: What the setting does
+        getter:      Callable with no arguments that returns the value
+        setter:      Callable with one argument that sets the value
         """
         self._constructors[name] = constructor
         self._signals[name] = Signal()
         self._descriptions[name] = description
-        self[name] = default
-        self._defaults[name] = self[name]
-        self._global_signal.send(self, name=name, value=self[name])
+        value_ = self.validate(name, default)
+        self._values[name] = value_
+        self._defaults[name] = value_
+        if getter:
+            self._getters[name] = getter
+        if setter:
+            self._setters[name] = setter
+        self._global_signal.send(self, name=name, value=value_)
 
     def reset(self, name):
         """Reset setting `name` to default/initial value"""
@@ -104,11 +113,19 @@ class LocalSettings(abc.Mapping):
                 for name,value in self.items()}
 
     def __getitem__(self, name):
-        return self._values[name]
+        getter = self._getters[name]
+        if getter is not None:
+            return self.validate(name, getter())
+        else:
+            return self._values[name]
 
     def __setitem__(self, name, value):
         value_ = self.validate(name, value)
-        self._values[name] = value_
+        setter = self._setters[name]
+        if setter is not None:
+            setter(value_)
+        else:
+            self._values[name] = value_
         self._global_signal.send(self, name=name, value=value_)
         self._signals[name].send(self, name=name, value=value_)
 

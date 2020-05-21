@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import MagicMock, call
 
 import asynctest
-
 from stig.settings import CombinedSettings, LocalSettings, RemoteSettings
 
 
@@ -54,6 +53,26 @@ class TestLocalSettings(unittest.TestCase):
         self.assertEqual(self.s['one'], 'X')
         self.s.reset('one')
         self.assertEqual(self.s['one'], 'FOO')
+
+    def test_value_getters(self):
+        getter = MagicMock(return_value=23)
+        self.s.add('foo', int, default=20, getter=getter)
+        self.assertEqual(self.s['foo'], 23)
+        getter.return_value = 24
+        self.assertEqual(self.s['foo'], 24)
+        getter.return_value = 'foo'
+        with self.assertRaises(ValueError):
+            self.s['foo']
+
+    def test_value_setters(self):
+        setter = MagicMock()
+        self.s.add('foo', int, default=20, setter=setter)
+        self.s['foo'] = 23
+        self.assertEqual(setter.call_args_list, [call(23)])
+        self.s['foo'] = 24
+        self.assertEqual(setter.call_args_list, [call(23), call(24)])
+        with self.assertRaises(ValueError):
+            self.s['foo'] = 'bar'
 
     def test_on_change_global(self):
         # spec={} to work around issue with blinker
