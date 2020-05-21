@@ -1,4 +1,5 @@
 import contextlib
+import random
 import time
 import unittest
 from datetime import datetime
@@ -10,10 +11,12 @@ from stig.client import ttypes
 @contextlib.contextmanager
 def mock_time(year=0, month=0, day=0, hour=0, minute=0, second=0):
     dt = datetime(year, month, day, hour, minute, second)
+
     class Mock_datetime(datetime):
         @classmethod
         def now(cls, *args, **kwargs):
             return dt
+
     patchers = (patch('time.time', lambda *args, **kwargs: dt.timestamp()),
                 patch('time.localtime', lambda s: datetime.fromtimestamp(s).timetuple() if s else dt.timestamp()),
                 patch('datetime.datetime', Mock_datetime))
@@ -138,43 +141,43 @@ class TestTimedelta(unittest.TestCase):
     def test_from_string__no_unit(self):
         self.assertEqual(ttypes.Timedelta.from_string('0'), 0)
         self.assertEqual(ttypes.Timedelta.from_string('60'), MIN)
-        self.assertEqual(ttypes.Timedelta.from_string('600'), 10*MIN)
+        self.assertEqual(ttypes.Timedelta.from_string('600'), 10 * MIN)
 
     def test_from_string__single_unit(self):
         self.assertEqual(ttypes.Timedelta.from_string('0s'), 0)
         self.assertEqual(ttypes.Timedelta.from_string('1s'), 1)
-        self.assertEqual(ttypes.Timedelta.from_string('2m'), 2*MIN)
-        self.assertEqual(ttypes.Timedelta.from_string('3h'), 3*HOUR)
-        self.assertEqual(ttypes.Timedelta.from_string('4d'), 4*DAY)
-        self.assertEqual(ttypes.Timedelta.from_string('2w'), 2*7*DAY)
-        self.assertEqual(ttypes.Timedelta.from_string('6M'), 6*MONTH)
-        self.assertEqual(ttypes.Timedelta.from_string('7y'), 7*YEAR)
+        self.assertEqual(ttypes.Timedelta.from_string('2m'), 2 * MIN)
+        self.assertEqual(ttypes.Timedelta.from_string('3h'), 3 * HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('4d'), 4 * DAY)
+        self.assertEqual(ttypes.Timedelta.from_string('2w'), 2 * 7 * DAY)
+        self.assertEqual(ttypes.Timedelta.from_string('6M'), 6 * MONTH)
+        self.assertEqual(ttypes.Timedelta.from_string('7y'), 7 * YEAR)
 
     def test_from_string__multiple_units(self):
-        self.assertEqual(ttypes.Timedelta.from_string('1d2h3m4s'), DAY + (2*HOUR) + (3*MIN) + 4)
-        self.assertEqual(ttypes.Timedelta.from_string('4s1d2h3m'), DAY + (2*HOUR) + (3*MIN) + 4)
+        self.assertEqual(ttypes.Timedelta.from_string('1d2h3m4s'), DAY + (2 * HOUR) + (3 * MIN) + 4)
+        self.assertEqual(ttypes.Timedelta.from_string('4s1d2h3m'), DAY + (2 * HOUR) + (3 * MIN) + 4)
 
     def test_from_string__fractions(self):
-        self.assertEqual(ttypes.Timedelta.from_string('2.5h.2m'), (2*HOUR) + (30*MIN) + 12)
+        self.assertEqual(ttypes.Timedelta.from_string('2.5h.2m'), (2 * HOUR) + (30 * MIN) + 12)
 
     def test_from_string__too_large_numbers(self):
-        self.assertEqual(ttypes.Timedelta.from_string('600'), 10*MIN)
-        self.assertEqual(ttypes.Timedelta.from_string('600m'), 10*HOUR)
-        self.assertEqual(ttypes.Timedelta.from_string('30h'), DAY + (6*HOUR))
+        self.assertEqual(ttypes.Timedelta.from_string('600'), 10 * MIN)
+        self.assertEqual(ttypes.Timedelta.from_string('600m'), 10 * HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('30h'), DAY + (6 * HOUR))
 
     def test_from_string__signs(self):
-        self.assertEqual(ttypes.Timedelta.from_string('-3h'), -3*HOUR)
-        self.assertEqual(ttypes.Timedelta.from_string('+3h'), 3*HOUR)
-        self.assertEqual(ttypes.Timedelta.from_string('-3h5s'), (-3*HOUR) - 5)
-        self.assertEqual(ttypes.Timedelta.from_string('+3h5s'), (3*HOUR) + 5)
+        self.assertEqual(ttypes.Timedelta.from_string('-3h'), -3 * HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('+3h'), 3 * HOUR)
+        self.assertEqual(ttypes.Timedelta.from_string('-3h5s'), (-3 * HOUR) - 5)
+        self.assertEqual(ttypes.Timedelta.from_string('+3h5s'), (3 * HOUR) + 5)
 
     def test_from_string__in_ago_notation(self):
-        self.assertEqual(ttypes.Timedelta.from_string('in 1h30m20s'),  HOUR + (30*MIN) + 20)
-        self.assertEqual(ttypes.Timedelta.from_string('-1.5h20s ago'), -HOUR - (30*MIN) - 20)
+        self.assertEqual(ttypes.Timedelta.from_string('in 1h30m20s'),  HOUR + (30 * MIN) + 20)
+        self.assertEqual(ttypes.Timedelta.from_string('-1.5h20s ago'), -HOUR - (30 * MIN) - 20)
 
     def test_from_string__contradicting_signs(self):
         for string in ('in -1h', 'in 1h ago'):
-            with self.assertRaises(ValueError) as exc:
+            with self.assertRaises(ValueError):
                 ttypes.Timedelta.from_string(string)
 
     def test_special_values(self):
@@ -185,13 +188,13 @@ class TestTimedelta(unittest.TestCase):
         self.assertEqual(str(ttypes.Timedelta(ttypes.Timedelta.UNKNOWN)), '?')
 
     def test_added_subunits_for_small_numbers(self):
-        self.assertEqual(str(ttypes.Timedelta(9*HOUR + 59*MIN + 59)), '9h59m')
-        self.assertEqual(str(ttypes.Timedelta(10*HOUR + 59*MIN + 59)), '10h')
+        self.assertEqual(str(ttypes.Timedelta(9 * HOUR + 59 * MIN + 59)), '9h59m')
+        self.assertEqual(str(ttypes.Timedelta(10 * HOUR + 59 * MIN + 59)), '10h')
 
     def test_negative_delta(self):
         self.assertEqual(str(ttypes.Timedelta(-10)), '-10s')
-        self.assertEqual(str(ttypes.Timedelta(-1*60 - 45)), '-1m45s')
-        self.assertEqual(str(ttypes.Timedelta(-3*DAY - 2*HOUR)), '-3d2h')
+        self.assertEqual(str(ttypes.Timedelta(-1 * 60 - 45)), '-1m45s')
+        self.assertEqual(str(ttypes.Timedelta(-3 * DAY - 2 * HOUR)), '-3d2h')
 
     def test_preposition_string(self):
         self.assertEqual(ttypes.Timedelta(6 * DAY).with_preposition, 'in 6d')
@@ -208,7 +211,6 @@ class TestTimedelta(unittest.TestCase):
                ttypes.Timedelta(ttypes.Timedelta.UNKNOWN),
                ttypes.Timedelta(ttypes.Timedelta.NOT_APPLICABLE)]
 
-        import random
         def shuffle(l):
             return random.sample(l, k=len(l))
 
@@ -216,7 +218,6 @@ class TestTimedelta(unittest.TestCase):
             self.assertEqual(sorted(shuffle(lst)), lst)
 
     def test_bool(self):
-        import random
         for td in (ttypes.Timedelta(random.randint(-1e5, 1e5) * MIN),
                    ttypes.Timedelta(random.randint(-1e5, 1e5) * HOUR),
                    ttypes.Timedelta(random.randint(-1e5, 1e5) * DAY)):
@@ -339,7 +340,7 @@ class TestTimestamp(unittest.TestCase):
             ts = ttypes.Timestamp.from_string('10-20 05:03:14')
             self.assertEqual(int(ts), mktime('2010-10-20 05:03:14'))
 
-    def test_string__hour_minute(self):
+    def test_string__hour_minute_second(self):
         with mock_time(2034, 11, 30, 11, 31, 22):
             ts = ttypes.Timestamp.from_string('12:32:23')
             self.assertEqual(int(ts), mktime('2034-11-30 12:32:23'))
@@ -359,10 +360,10 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(str(ttypes.Timestamp(time.time())), '05:38:12')
             self.assertEqual(str(ttypes.Timestamp(time.time() - 60)), '05:37:12')
             self.assertEqual(str(ttypes.Timestamp(time.time() + 60)), '05:39:12')
-            self.assertEqual(str(ttypes.Timestamp(time.time() - 3*60*60)), '02:38')
-            self.assertEqual(str(ttypes.Timestamp(time.time() + 3*60*60)), '08:38')
-            self.assertEqual(str(ttypes.Timestamp(time.time() - 7*24*60*60)), '1993-02-07')
-            self.assertEqual(str(ttypes.Timestamp(time.time() + 7*24*60*60)), '1993-02-21')
+            self.assertEqual(str(ttypes.Timestamp(time.time() - 3 * 60 * 60)), '02:38')
+            self.assertEqual(str(ttypes.Timestamp(time.time() + 3 * 60 * 60)), '08:38')
+            self.assertEqual(str(ttypes.Timestamp(time.time() - 7 * 24 * 60 * 60)), '1993-02-07')
+            self.assertEqual(str(ttypes.Timestamp(time.time() + 7 * 24 * 60 * 60)), '1993-02-21')
         self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.NOW)), 'now')
         self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.SOON)), 'soon')
         self.assertEqual(str(ttypes.Timestamp(ttypes.Timestamp.UNKNOWN)), '?')
@@ -418,8 +419,8 @@ class TestTimestamp(unittest.TestCase):
             self.assertEqual(ttypes.Timestamp.from_string('00:00:00').timedelta, ttypes.Timedelta(0))
             self.assertEqual(ttypes.Timestamp.from_string('00:00:01').timedelta, ttypes.Timedelta(1))
             self.assertEqual(ttypes.Timestamp.from_string('00:05:00').timedelta, ttypes.Timedelta(300))
-            self.assertEqual(ttypes.Timestamp.from_string('01-02 00:00:00').timedelta, ttypes.Timedelta(3600*24))
-            self.assertEqual(ttypes.Timestamp.from_string('02-01 00:00:00').timedelta, ttypes.Timedelta(3600*24*31))
+            self.assertEqual(ttypes.Timestamp.from_string('01-02 00:00:00').timedelta, ttypes.Timedelta(3600 * 24))
+            self.assertEqual(ttypes.Timestamp.from_string('02-01 00:00:00').timedelta, ttypes.Timedelta(3600 * 24 * 31))
 
     def test_accuracy__year_eq(self):
         ts = ttypes.Timestamp.from_string('2005')
@@ -577,7 +578,6 @@ class TestTimestamp(unittest.TestCase):
         self.assertFalse(ts >= mktime('2005-06-15 12:31:00'))
 
     def test_bool(self):
-        import random
         for td in (ttypes.Timestamp(random.randint(-1000, 1000) * MIN),
                    ttypes.Timestamp(random.randint(-1000, 1000) * HOUR),
                    ttypes.Timestamp(random.randint(-1000, 1000) * DAY),
@@ -606,7 +606,6 @@ class TestTimestamp(unittest.TestCase):
                ttypes.Timestamp(ttypes.Timestamp.UNKNOWN),
                ttypes.Timestamp(ttypes.Timestamp.NOT_APPLICABLE)]
 
-        import random
         def shuffle(l):
             return random.sample(l, k=len(l))
 
@@ -647,7 +646,6 @@ class TestTorrentFilePriority(unittest.TestCase):
             ttypes.TorrentFilePriority(1),
         ]
 
-        import random
         def shuffle(l):
             return random.sample(l, k=len(l))
 
