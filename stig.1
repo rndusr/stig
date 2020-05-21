@@ -1,0 +1,359 @@
+.TH STIG 1 "May 2020" " " "User Commands"
+.SH NAME
+stig \-  TUI and CLI for the BitTorrent client Transmission
+.SH SYNOPSIS
+.B stig
+.RI [ OPTIONS ]...
+.RI [ COMMAND " ; " COMMAND ]
+.SH DESCRIPTION
+.B stig
+is a TUI (text user interface) and CLI (command line interface) client for
+the BitTorrent client Transmission.
+.SH OPTIONS
+.SS General
+.TP
+\fB\-h\fR, \fB\-\-help \fITOPIC\/\fR
+Display help about TOPIC and exit.
+.TP
+\fB\-v\fR, \fB\-\-version
+Display version number and exit.
+.TP
+\fB\-t\fR, \fB\-\-tui
+Enforce the TUI.
+.TP
+\fB-T\fR, \fB\-\-notui\fR, \fB-\-no\-tui
+Inhibit the TUI.
+.TP
+\fB-c\fR, \fB\-\-rcfile\fR, \fB-\-rc\-file \fIFILE\/\fR
+Run commands from FILE upon startup.
+.TP
+\fB-C\fR, \fB\-\-norcfile\fR, \fB-\-no\-rc\-file
+Do not run commands from any rc file.
+.SS Commands
+.EX
+Commands can be called
+	- by providing them as command line arguments,
+	- via the internal command line (hit \fB:\fR to open it),
+	- by binding them to keys (see \fBhelp bind\fR),
+	- by listing them in an rc file (see \fBhelp rcfile\fR) and loading it with
+	the \fB\-\-rcfile\fR option or the \fBrc\fR command.
+.EE
+.SS Chaining commands
+Combining commands with operators makes it possible to run a command based on
+the previous command's success.
+.PP
+Available command operators are:
+  &/and  - Run the next command if the previous command succeeded.
+  |/or   - Run the next command if the previous command failed.
+  ;/also - Run the next command in any case.
+.PP
+Command operators must be enclosed by spaces.
+.PP
+.EE
+For example, \fBls foo & ls bar\fR would list all 'foo' torrents and, if any where
+found, continue to list all 'bar' torrents.  However, \fBls foo | ls bar\fR would
+list 'bar' torrents only if there are no 'foo' torrents.
+.EX
+.SS Guessing the user interface (CLI/TUI)
+If commands are given as command line arguments and neither \fB--tui\fR nor \fB--
+notui\fR are provided, stig tries to guess whether it makes sense to
+start the TUI or just run the commands and exit.  For example, if you run
+\fBstig stop foo\fR, it is reasonable to assume that you want to run
+\fBstop foo\fR and get your shell prompt back.  But if you run \fBstig set
+connect.host foo.bar\fR, you probably expect the TUI to pop up.
+
+This is how this works basically:
+  - Without CLI commands, the TUI is loaded.
+  - Commands in the TORRENT category (see below) prevent the TUI.
+  - Changing TUI settings ('(re)set tui.*') enforces the TUI.
+  - Changing remote settings ('set srv.*') prevents the TUI.
+  - Commands that are exclusive to TUI or CLI (e.g. 'tab') enforce their
+    interface.  Providing both TUI- and CLI-only commands produces an error.
+.SS Configuration commands
+.TP
+\fBratelimit\fR, \fBrate\fR, \fBrl
+Limit transfer rates per torrent or globally.
+.TP
+\fBrc\fR, \fBsource
+Run commands in rc file.
+.TP
+\fBreset
+Reset settings to their default values.
+.TP
+\fBset
+Change stig settings.
+.SS File commands
+.TP
+\fBfilelist\fR, \fBfls\fR, \fBlsf
+List files of torrent(s).
+.TP
+\fBpriority\fR, \fBprio
+Change download priority of files.
+.SS Miscellaneous commands
+.TP
+\fBhelp\fR, \fBman
+List of explain commands and settings.
+.TP
+\fBlog
+Clear, add or scroll through log messages.
+.TP
+\fBversion
+Show stig version
+.TP
+.SS Peer commands
+.TP
+\fBpeerlist\fR, \fBpls\fR, \fBlsp
+List connected peers of torrent(s).
+.SS Tracker commands
+.TP
+\fBannounce\fR, \fBan
+Announce torrents to their trackers now if posible.
+.TP
+\fBtracker\fR, \fBtrk
+Add/remove trackers to/from torrents.
+.TP
+\fBtrackerlist\fR, trkls\fR, \fBlstrk
+List trakcer(s) of torrent(s).
+.SS TUI commands
+.TP
+\fBbind
+Bind keys to commands or other keys.
+.TP
+\fBfind
+Find text in the content of the focused tab.
+.TP
+\fBinteractive
+Complete partial command with user input from a dialog.
+.TP
+\fBlimit
+Limit contents of the focused tab by applying more filters.
+.TP
+\fBmark
+Select torrents or files for an action.
+.TP
+\fBquit
+Terminate the TUI.
+.TP
+\fBsetcommand\fR, \fBsetcmd
+Open the command line and insert a command.
+.TP
+\fBsort
+Sort lists of torrents/peers/trackers/etc.
+.TP
+\fBtab
+Open, close and focus tabs.
+.TP
+\fBtui
+Show or hide parts of the text user interface.
+.TP
+\fBunbind
+Unbind keys so pressing them has no effect.
+.TP
+\fBunmark
+Deselect torrents or files for an action.
+.SS Settings
+Settings can be changed with the commands 'set' and 'reset'.
+
+Use an rc file (see 'help rcfile') to specify your custom defaults.
+.SS Local settings
+.TP
+.I columns.files
+Default columns in file lists.
+.TP
+.I columns.peers
+Default columns in peer lists.
+.TP
+.I columns.settings
+Default columns in setting lists.
+.TP
+.I columns.torrents
+Default columns in torrent lists.
+.TP
+.I columns.trackers
+Default columns in tracker lists.
+.TP
+.I connect.host
+Hostname or IP of Transmission RPC interface.
+.TP
+.I connect.password
+Password to use for authentication with Transmission interface.
+.TP
+.I connect.path
+Path of Transmission RPC interface.
+.TP
+.I connect.port
+Port of Transmission RPC interface.
+.TP
+.I connect.timeout
+Number of seconds before connecting to Transmission interface fails.
+.TP
+.I connect.tls
+Whether to connect via HTTPS to the Transmission interface.
+.TP
+.I connect.user
+Username to use for authentication with Transmission interface.
+.TP
+.I geoip
+Whether to lookup peers' country codes.
+.TP
+.I geoip.dir
+Where to cache the downloaded geolocation database.
+.TP
+.I remove.max-hits
+Maximum number of torrents to remove without confirmation; negative numbers mean "unlimited".
+.TP
+.I reverse-dns
+Whether to lookup peers' host names.
+.TP
+.I sort.peers
+List of sort orders in peer lists.
+.TP
+.I sort.settings
+List of sort orders in setting lists.
+.TP
+.I sort.torrents
+List of sort orders in torrent lists.
+.TP
+.I sort.trackers
+List of sort orders in tracker lists.
+.TP
+.I tui.cli.history-dir
+Directory where histories of user input are stored.
+.TP
+.I tui.cli.history-size
+Maximum number of lines to keep in history files.
+.TP
+.I tui.log.autohide
+If the log is hidden, show it for this many seconds new log entries before hiding it again.
+.TP
+.I tui.log.height
+Maximum height of the log section.
+.TP
+.I tui.marked.off
+Character displayed in 'marked' column for unmarked items (see 'mark' command).
+.TP
+.I tui.marked.on
+Character displayed in 'marked' column for marked items (see 'mark' command).
+tui.poll
+Interval in seconds between TUI updates.
+.TP
+.I tui.theme
+Path to theme file.
+.TP
+.I unit.bandwidth
+Unit for bandwidth rates ('bit' or 'byte').
+.TP
+.I unit.size
+Unit for file sizes ('bit' or 'byte').
+.TP
+.I unitprefix.bandwidth
+Unit prefix for bandwidth rates ('metric' or 'binary').
+.TP
+.I unitprefix.size
+Unit prefix for file sizes ('metric' or 'binary').
+.SS Remote settings
+.TP
+.I srv.autostart
+Whether added torrents are started automatically.
+.TP
+.I srv.dht
+Whether to use DHT to discover peers for torrents.
+.TP
+.I srv.encryption
+Protocol encryption policy; "required", "preferredor "tolerated".
+.TP
+.I srv.files.part
+Whether ".part" is appended to incomplete files.
+.TP
+.I srv.limit.peers.global
+Maximum number of connections for all combined.
+.TP
+.I srv.limit.peers.torrent
+Maximum number of connections per torrent.
+.TP
+.I srv.limit.rate.alt.down
+Alternative global download rate limit.
+.TP
+.I srv.limit.rate.alt.up
+Alternative global upload rate limit.
+.TP
+.I srv.limit.rate.down
+Global download rate limit.
+.TP
+.I srv.limit.rate.up
+Global upload rate limit.
+.TP
+.I srv.lpd
+Whether to use LPD to discover peers for torrents.
+.TP
+.I srv.path.complete
+Where to put downloaded files.
+.TP
+.I srv.path.incomplete
+Where to put partially downloaded files.
+.TP
+.I srv.pex
+Whether to use PEX to discover peers for torrents.
+.TP
+.I srv.port
+Port used to communicate with peers.
+.TP
+.I srv.port.forwarding
+Whether to autoconfigure port-forwarding UPnP/NAT-PMP.
+.TP
+.I srv.port.random
+Whether to pick a random port when the daemon starts.
+.TP
+.I srv.utp
+Whether to use µTP to mitigate latency issues.
+.SS Keybindings
+Look at \fBstig --help keymap\fR.
+.SS Keybindings
+Look at \fBstig --help filters\fR.
+.SS RC files
+.PP
+An rc file is a script that contains a list of arbitrary commands. Commands can
+span multiple lines by escaping linebreaks with "\\". Lines starting with "#"
+(optionally preceded by spaces) are ignored.
+
+The default rc file path is "$XDG_CONFIG_HOME/stig/rc", where
+XDG_CONFIG_HOME defaults to "~/.config" if it is not set.
+
+A different path can be provided with the \fB--rcfile\fR option. An existing rc
+file at the default path can be ignored with the \fB--norcfile\fR option.
+
+To permanently change the default config file, create an alias:
+
+\fBalias stig="command stig --rcfile ~/.stigrc"\fR
+
+To load an additional rc file after the default one, use the \fBrc\fR command.
+Note that this will prevent the TUI from being loaded unless you provide the
+\fB--tui\fR option. See the GUESSING THE USER INTERFACE section in the "commands"
+help for more information.
+
+Commands in an rc file are called during startup before the commands given on
+the command line.
+
+TUI commands (e.g. "tab" or "bind") in an rc file are ignored in CLI mode.
+
+
+.SH DEVELOPER OPTIONS
+.TP
+\fB\-\-debug \fIMODULES\/\fR
+Log debug messages from comma-separated list of MODULES.
+.EX
+e.g. "client,commands,tui"
+.EE
+.TP
+\fB\-\-debug\-file \fIFILE\/\fR
+Log debug messages to FILE.
+.TP
+\fB\-\-profile\-file \fIFILE\/\fR
+Write cProfile statistics to FILE.
+.SH REPORTING BUGS
+stig is still in alpha state, which means breaking changes will be introduced in
+new releases without increasing the major version number. You shouldn’t accept
+bugs, though; please report them.
+Report bugs to <https://github.com/rndusr/stig>
+.SH LICENSE
+Licensed under GNU GPL v3.0.
