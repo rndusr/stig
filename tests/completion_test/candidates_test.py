@@ -1,11 +1,12 @@
-from stig.completion import (candidates, Candidates)
-from stig.utils.cliparser import (Args, Arg)
-from stig.utils import usertypes
-
 import unittest
-import asynctest
-from unittest.mock import patch, MagicMock, call
 from types import SimpleNamespace
+from unittest.mock import MagicMock, call, patch
+
+import asynctest
+
+from stig.completion import Candidates, candidates
+from stig.utils import usertypes
+from stig.utils.cliparser import Arg, Args
 
 
 class Test_setting_names(unittest.TestCase):

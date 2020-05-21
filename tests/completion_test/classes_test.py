@@ -1,6 +1,7 @@
-from stig.completion import Categories, Candidates, Candidate, SingleCandidate
-
 import unittest
+
+from stig.completion import Candidate, Candidates, Categories, SingleCandidate
+
 
 class TestCandidates(unittest.TestCase):
     def assert_focus(self, cands, exp_current_index, exp_current):
