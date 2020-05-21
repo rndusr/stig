@@ -22,7 +22,8 @@ test: venv
 	python3 setup.py check -r -s >/dev/null
 
 fulltest: venv
-	tox
+	. "$(VENV_PATH)"/bin/activate ; \
+	  tox
 	flake8 stig
 
 release:
