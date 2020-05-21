@@ -1,8 +1,8 @@
 import asyncio
 
-import asynctest
 from aiohttp import web
 
+import asynctest
 import resources_aiotransmission as rsrc
 from stig.client import AuthError, ConnectionError, RPCError, TimeoutError
 from stig.client.aiotransmission.rpc import TransmissionRPC
@@ -61,7 +61,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
                 for k,v in kw_cb.items():
                     self.assertEqual(v, kw_exp[k])
 
-    def test_url_property(self):
+    def test_getting_url_property(self):
         self.client.host = 'foo'
         self.client.port = 123
         self.client.tls = True
@@ -74,6 +74,32 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertEqual(self.client.url, 'http://fuu:1724/transmission/rpc')
         self.client.path = 'user/transmission/rpc'
         self.assertEqual(self.client.url, 'http://fuu:1724/user/transmission/rpc')
+
+    def test_setting_url_property(self):
+        self.client.url = 'some.host'
+        self.assertEqual(self.client.url, 'http://some.host:9091/transmission/rpc')
+        self.client.url = 'some.host:1234'
+        self.assertEqual(self.client.url, 'http://some.host:1234/transmission/rpc')
+        self.client.url = 'some.host/other/path'
+        self.assertEqual(self.client.url, 'http://some.host:9091/other/path')
+        self.client.url = 'https://some.host'
+        self.assertEqual(self.client.url, 'https://some.host:9091/transmission/rpc')
+        self.client.url = 'foo:bar@some.host'
+        self.assertEqual(self.client.url, 'http://some.host:9091/transmission/rpc')
+        self.assertEqual(self.client.user, 'foo')
+        self.assertEqual(self.client.password, 'bar')
+        self.client.url = 'foo@some.host:555'
+        self.assertEqual(self.client.url, 'http://some.host:555/transmission/rpc')
+        self.assertEqual(self.client.user, 'foo')
+        self.assertEqual(self.client.password, '')
+        self.client.url = 'https://:bar@some.host'
+        self.assertEqual(self.client.url, 'https://some.host:9091/transmission/rpc')
+        self.assertEqual(self.client.user, '')
+        self.assertEqual(self.client.password, 'bar')
+        self.client.url = None
+        self.assertEqual(self.client.url, 'http://localhost:9091/transmission/rpc')
+        self.assertEqual(self.client.user, '')
+        self.assertEqual(self.client.password, '')
 
     async def test_connect_to_good_url(self):
         # TransmissionRPC requests 'session-get' to test the connection and

@@ -19,6 +19,7 @@ import async_timeout
 from blinker import Signal
 
 from ..errors import AuthError, ClientError, ConnectionError, RPCError, TimeoutError
+from ..utils import URL
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -196,9 +197,36 @@ class TransmissionRPC():
 
     @property
     def url(self):
-        """Schema, host, port, and path combined as a string"""
+        """
+        URL of the Transmission RPC interface
+
+        Setting or getting this property sets or gets the following properties:
+        tls, user, password, host, port, path
+
+        Missing parts are filled in with defaults, e.g. "user:password@localhost" results
+        in "http://user:password@localhost:9091/transmission/rpc".
+        """
         return '%s://%s:%d%s' % (
             'https' if self.tls else 'http', self.host, self.port, self.path)
+
+    @url.setter
+    def url(self, url):
+        if url is None:
+            url = URL('http://localhost:9091/transmission/rpc')
+        else:
+            url = URL(url)
+        self._user = url.user or ''
+        self._password = url.password or ''
+        if url.scheme == 'https':
+            self._tls = True
+        elif url.scheme == 'http':
+            self._tls = False
+        else:
+            raise ValueError('Invalid scheme: %r' % (url.scheme,))
+        self._host = url.host
+        self._port = int(url.port) if url.port is not None else 9091
+        self._path = url.path if url.path is not None else '/transmission/rpc'
+        asyncio.ensure_future(self.disconnect('Changing url: %r' % self._url))
 
     @property
     def timeout(self):
