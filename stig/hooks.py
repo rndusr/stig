@@ -48,20 +48,6 @@ def _pre_run_hook(cmdline):
 cmdmgr.pre_run_hook = _pre_run_hook
 
 
-def _make_connection_callback(attr):
-    def on_set(settings, name, value):
-        log.debug('Setting rpc.%s=%r', attr, value)
-        setattr(srvapi.rpc, attr, value)
-    return on_set
-localcfg.on_change(_make_connection_callback('host'),     name='connect.host',     autoremove=False)
-localcfg.on_change(_make_connection_callback('port'),     name='connect.port',     autoremove=False)
-localcfg.on_change(_make_connection_callback('path'),     name='connect.path',     autoremove=False)
-localcfg.on_change(_make_connection_callback('user'),     name='connect.user',     autoremove=False)
-localcfg.on_change(_make_connection_callback('password'), name='connect.password', autoremove=False)
-localcfg.on_change(_make_connection_callback('tls'),      name='connect.tls',      autoremove=False)
-localcfg.on_change(_make_connection_callback('timeout'),  name='connect.timeout',  autoremove=False)
-
-
 _BANDWIDTH_COLUMNS = (TORRENT_COLUMNS['rate-up'], TORRENT_COLUMNS['rate-down'],
                       TORRENT_COLUMNS['limit-rate-up'], TORRENT_COLUMNS['limit-rate-down'],
                       PEER_COLUMNS['rate-up'], PEER_COLUMNS['rate-down'], PEER_COLUMNS['rate-est'])
