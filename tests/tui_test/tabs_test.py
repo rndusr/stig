@@ -25,6 +25,7 @@ tabs._find_unused_id = make_large_id
 
 class SelectableText(urwid.Text):
     _selectable = True
+
     def keypress(self, size, key):
         return key
 

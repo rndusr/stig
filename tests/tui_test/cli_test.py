@@ -1,14 +1,12 @@
 import asyncio
 import os
 import tempfile
-import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import asynctest
-
 from stig.tui.cli import CLIEditWidget
 
-from ._handle_urwidpatches import setUpModule, tearDownModule
+from ._handle_urwidpatches import setUpModule, tearDownModule  # noqa: F401
 
 
 class TestCLIEditWidget(asynctest.TestCase):

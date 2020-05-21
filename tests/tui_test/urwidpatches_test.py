@@ -2,7 +2,7 @@ import unittest
 
 import urwid
 
-from ._handle_urwidpatches import setUpModule, tearDownModule
+from ._handle_urwidpatches import setUpModule, tearDownModule  # noqa: F401
 
 
 class TestListBox_scrolling_API(unittest.TestCase):

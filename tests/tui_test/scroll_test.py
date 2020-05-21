@@ -54,8 +54,8 @@ class TestScrollable(unittest.TestCase):
     def test_empty_widget(self):
         for w in (Scrollable(urwid.Text('')),
                   Scrollable(urwid.Pile([]))):
-            self.check(w, size=(5, 10), text=(' '*5,)*10)
-            self.check(w, size=(5, 10), text=(' '*5,)*10)
+            self.check(w, size=(5, 10), text=(' ' * 5,) * 10)
+            self.check(w, size=(5, 10), text=(' ' * 5,) * 10)
             self.assertEqual(w.get_scrollpos((5, 10), focus=True), 0)
             self.assertEqual(w.get_scrollpos((5, 10), focus=False), 0)
 
@@ -72,7 +72,7 @@ class TestScrollable(unittest.TestCase):
     def test_vertical_padding(self):
         for w in self._test_widgets:
             self.check(w, size=(10, 15),
-                       text=(l.ljust(10) for l in TEXT+('',)*5))
+                       text=(l.ljust(10) for l in TEXT + ('',) * 5))
 
     def test_horizontal_trimming(self):
         for w in self._test_widgets:
@@ -88,18 +88,18 @@ class TestScrollable(unittest.TestCase):
     def test_set_position_positive(self):
         size = (10, 3)
         for w in self._test_widgets:
-            for i in range(len(TEXT)*2):
+            for i in range(len(TEXT) * 2):
                 w.set_scrollpos(i)
-                start = min(len(TEXT)-size[1], i)
-                end   = min(len(TEXT),         i+size[1])
+                start = min(len(TEXT) - size[1], i)
+                end   = min(len(TEXT),           i + size[1])
                 self.check(w, size,
                            text=(l.ljust(size[0]) for l in TEXT[start:end]))
 
     def test_set_position_negative(self):
         size = (10, 3)
         for w in self._test_widgets:
-            for i in range(len(TEXT)*2):
-                pos = -i-1
+            for i in range(len(TEXT) * 2):
+                pos = -i - 1
                 w.set_scrollpos(pos)
                 start = max(0, -i + len(TEXT) - size[1])
                 end   = start + size[1]
@@ -111,8 +111,8 @@ class TestScrollable(unittest.TestCase):
         size = (10, 3)
         for w in self._test_widgets:
             for i in range(21):
-                x = min(len(TEXT)-size[1], i)
-                y = min(len(TEXT),         i+size[1])
+                x = min(len(TEXT) - size[1], i)
+                y = min(len(TEXT),           i + size[1])
                 self.check(w, size,
                            text=(l.ljust(10) for l in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
@@ -121,10 +121,10 @@ class TestScrollable(unittest.TestCase):
     def test_scroll_line_up(self):
         size = (10, 3)
         for w in self._test_widgets:
-            w.set_scrollpos(len(TEXT)-1)  # jump to end
+            w.set_scrollpos(len(TEXT) - 1)  # jump to end
             for i in reversed(range(21)):
                 i -= 10
-                x = max(0, i-size[1])
+                x = max(0, i - size[1])
                 y = max(size[1], i)
                 self.check(w, size,
                            text=(l.ljust(10) for l in TEXT[x:y]))
@@ -134,9 +134,9 @@ class TestScrollable(unittest.TestCase):
     def test_scroll_page_down(self):
         size = (10, 3)
         for w in self._test_widgets:
-            for i in range(0, 21, size[1]-1):
-                x = min(len(TEXT)-size[1], i)
-                y = min(len(TEXT),         i+size[1])
+            for i in range(0, 21, size[1] - 1):
+                x = min(len(TEXT) - size[1], i)
+                y = min(len(TEXT),           i + size[1])
                 self.check(w, size,
                            text=(l.ljust(10) for l in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
@@ -145,10 +145,10 @@ class TestScrollable(unittest.TestCase):
     def test_scroll_page_up(self):
         size = (10, 3)
         for w in self._test_widgets:
-            w.set_scrollpos(len(TEXT)-1)  # jump to end
-            for i in reversed(range(0, 21, size[1]-1)):
+            w.set_scrollpos(len(TEXT) - 1)  # jump to end
+            for i in reversed(range(0, 21, size[1] - 1)):
                 i -= 10
-                x = max(0, i-size[1])
+                x = max(0, i - size[1])
                 y = max(size[1], i)
                 self.check(w, size,
                            text=(l.ljust(10) for l in TEXT[x:y]))
@@ -318,22 +318,22 @@ class TestScrollBarWithScrollable(unittest.TestCase):
     def test_empty_widget(self):
         for w in (ScrollBar(Scrollable(urwid.Text(''))),
                   ScrollBar(Scrollable(urwid.Pile([])))):
-            self.check(w, size=(5, 10), text=(' '*5,)*10)
+            self.check(w, size=(5, 10), text=(' ' * 5,) * 10)
 
     def test_scrollbar_grows_and_shrinks(self):
         size = (10, 3)
         self.check(self.scrollbar, size,
-                   text=('one'.ljust(size[0]-1)   + '#',
-                         'two'.ljust(size[0]-1)   + '|',
-                         'three'.ljust(size[0]-1) + '|'))
+                   text=('one'.ljust(size[0] - 1)   + '#',
+                         'two'.ljust(size[0] - 1)   + '|',
+                         'three'.ljust(size[0] - 1) + '|'))
         size = (10, 6)
         self.check(self.scrollbar, size,
-                   text=('one'.ljust(size[0]-1)   + '#',
-                         'two'.ljust(size[0]-1)   + '#',
-                         'three'.ljust(size[0]-1) + '#',
-                         'four'.ljust(size[0]-1)  + '#',
-                         'five'.ljust(size[0]-1)  + '|',
-                         'six'.ljust(size[0]-1)   + '|'))
+                   text=('one'.ljust(size[0] - 1)   + '#',
+                         'two'.ljust(size[0] - 1)   + '#',
+                         'three'.ljust(size[0] - 1) + '#',
+                         'four'.ljust(size[0] - 1)  + '#',
+                         'five'.ljust(size[0] - 1)  + '|',
+                         'six'.ljust(size[0] - 1)   + '|'))
 
     def test_scrollbar_disappears_if_not_needed(self):
         size = (10, 10)
@@ -344,49 +344,49 @@ class TestScrollBarWithScrollable(unittest.TestCase):
     def test_big_scrollbar_moves_up_and_down(self):
         size = (10, 6)
         self.check(self.scrollbar, size,
-                   text=('one'.ljust(size[0]-1)     + '#',
-                         'two'.ljust(size[0]-1)     + '#',
-                         'three'.ljust(size[0]-1)   + '#',
-                         'four'.ljust(size[0]-1)    + '#',
-                         'five'.ljust(size[0]-1)    + '|',
-                         'six'.ljust(size[0]-1)     + '|'))
+                   text=('one'.ljust(size[0] - 1)     + '#',
+                         'two'.ljust(size[0] - 1)     + '#',
+                         'three'.ljust(size[0] - 1)   + '#',
+                         'four'.ljust(size[0] - 1)    + '#',
+                         'five'.ljust(size[0] - 1)    + '|',
+                         'six'.ljust(size[0] - 1)     + '|'))
 
-        self.scrollable.set_scrollpos(len(self.pile.contents)-1)
+        self.scrollable.set_scrollpos(len(self.pile.contents) - 1)
         self.check(self.scrollbar, size,
-                   text=('five'.ljust(size[0]-1)    + '|',
-                         'six'.ljust(size[0]-1)     + '|',
-                         'seven'.ljust(size[0]-1)   + '#',
-                         'eight'.ljust(size[0]-1)   + '#',
-                         'nine'.ljust(size[0]-1)    + '#',
-                         'ten'.ljust(size[0]-1)     + '#'))
+                   text=('five'.ljust(size[0] - 1)    + '|',
+                         'six'.ljust(size[0] - 1)     + '|',
+                         'seven'.ljust(size[0] - 1)   + '#',
+                         'eight'.ljust(size[0] - 1)   + '#',
+                         'nine'.ljust(size[0] - 1)    + '#',
+                         'ten'.ljust(size[0] - 1)     + '#'))
 
-        self.scrollable.set_scrollpos(int((len(self.pile.contents)-size[1])/2))
+        self.scrollable.set_scrollpos(int((len(self.pile.contents) - size[1]) / 2))
         self.check(self.scrollbar, size,
-                   text=('three'.ljust(size[0]-1)   + '|',
-                         'four'.ljust(size[0]-1)    + '#',
-                         'five'.ljust(size[0]-1)    + '#',
-                         'six'.ljust(size[0]-1)     + '#',
-                         'seven'.ljust(size[0]-1)   + '#',
-                         'eight'.ljust(size[0]-1)   + '|'))
+                   text=('three'.ljust(size[0] - 1)   + '|',
+                         'four'.ljust(size[0] - 1)    + '#',
+                         'five'.ljust(size[0] - 1)    + '#',
+                         'six'.ljust(size[0] - 1)     + '#',
+                         'seven'.ljust(size[0] - 1)   + '#',
+                         'eight'.ljust(size[0] - 1)   + '|'))
 
     def test_small_scrollbar_moves_up_and_down(self):
         size = (10, 3)
         self.check(self.scrollbar, size,
-                   text=('one'.ljust(size[0]-1)     + '#',
-                         'two'.ljust(size[0]-1)     + '|',
-                         'three'.ljust(size[0]-1)   + '|'))
+                   text=('one'.ljust(size[0] - 1)     + '#',
+                         'two'.ljust(size[0] - 1)     + '|',
+                         'three'.ljust(size[0] - 1)   + '|'))
 
-        self.scrollable.set_scrollpos(len(self.pile.contents)-1)
+        self.scrollable.set_scrollpos(len(self.pile.contents) - 1)
         self.check(self.scrollbar, size,
-                   text=('eight'.ljust(size[0]-1)   + '|',
-                         'nine'.ljust(size[0]-1)    + '|',
-                         'ten'.ljust(size[0]-1)     + '#'))
+                   text=('eight'.ljust(size[0] - 1)   + '|',
+                         'nine'.ljust(size[0] - 1)    + '|',
+                         'ten'.ljust(size[0] - 1)     + '#'))
 
-        self.scrollable.set_scrollpos(int((len(self.pile.contents)-size[1])/2))
+        self.scrollable.set_scrollpos(int((len(self.pile.contents) - size[1]) / 2))
         self.check(self.scrollbar, size,
-                   text=('four'.ljust(size[0]-1)    + '|',
-                         'five'.ljust(size[0]-1)    + '#',
-                         'six'.ljust(size[0]-1)     + '|'))
+                   text=('four'.ljust(size[0] - 1)    + '|',
+                         'five'.ljust(size[0] - 1)    + '#',
+                         'six'.ljust(size[0] - 1)     + '|'))
 
 
     def test_mouse_event(self):
@@ -402,32 +402,32 @@ class TestScrollBarWithScrollable(unittest.TestCase):
         sb = ScrollBar(scrl, thumb_char='#', trough_char='|')
 
         size = (10, 5)
-        self.check(sb, size, cursor_pos=(4, 2), text=('t1'.ljust(size[0]-1)   + '#',
-                                                      't2'.ljust(size[0]-1)   + '#',
-                                                      'eXXX'.ljust(size[0]-1) + '#',
-                                                      't3'.ljust(size[0]-1)   + '#',
-                                                      'eYYY'.ljust(size[0]-1) + '|'))
+        self.check(sb, size, cursor_pos=(4, 2), text=('t1'.ljust(size[0] - 1)   + '#',
+                                                      't2'.ljust(size[0] - 1)   + '#',
+                                                      'eXXX'.ljust(size[0] - 1) + '#',
+                                                      't3'.ljust(size[0] - 1)   + '#',
+                                                      'eYYY'.ljust(size[0] - 1) + '|'))
 
         sb.mouse_event(size, 'mouse press', button=1, col=1, row=4, focus=True)
-        self.check(sb, size, cursor_pos=(1, 4), text=('t1'.ljust(size[0]-1)   + '#',
-                                                      't2'.ljust(size[0]-1)   + '#',
-                                                      'eXXX'.ljust(size[0]-1) + '#',
-                                                      't3'.ljust(size[0]-1)   + '#',
-                                                      'eYYY'.ljust(size[0]-1) + '|'))
+        self.check(sb, size, cursor_pos=(1, 4), text=('t1'.ljust(size[0] - 1)   + '#',
+                                                      't2'.ljust(size[0] - 1)   + '#',
+                                                      'eXXX'.ljust(size[0] - 1) + '#',
+                                                      't3'.ljust(size[0] - 1)   + '#',
+                                                      'eYYY'.ljust(size[0] - 1) + '|'))
 
         scrl.set_scrollpos(2)
-        self.check(sb, size, cursor_pos=(1, 2), text=('eXXX'.ljust(size[0]-1) + '|',
-                                                      't3'.ljust(size[0]-1)   + '#',
-                                                      'eYYY'.ljust(size[0]-1) + '#',
-                                                      't4'.ljust(size[0]-1)   + '#',
-                                                      't5'.ljust(size[0]-1)   + '#'))
+        self.check(sb, size, cursor_pos=(1, 2), text=('eXXX'.ljust(size[0] - 1) + '|',
+                                                      't3'.ljust(size[0] - 1)   + '#',
+                                                      'eYYY'.ljust(size[0] - 1) + '#',
+                                                      't4'.ljust(size[0] - 1)   + '#',
+                                                      't5'.ljust(size[0] - 1)   + '#'))
 
         sb.mouse_event(size, 'mouse press', button=1, col=3, row=0, focus=True)
-        self.check(sb, size, cursor_pos=(3, 0), text=('eXXX'.ljust(size[0]-1) + '|',
-                                                      't3'.ljust(size[0]-1)   + '#',
-                                                      'eYYY'.ljust(size[0]-1) + '#',
-                                                      't4'.ljust(size[0]-1)   + '#',
-                                                      't5'.ljust(size[0]-1)   + '#'))
+        self.check(sb, size, cursor_pos=(3, 0), text=('eXXX'.ljust(size[0] - 1) + '|',
+                                                      't3'.ljust(size[0] - 1)   + '#',
+                                                      'eYYY'.ljust(size[0] - 1) + '#',
+                                                      't4'.ljust(size[0] - 1)   + '#',
+                                                      't5'.ljust(size[0] - 1)   + '#'))
 
     # https://github.com/urwid/urwid/issues/226#issuecomment-437176837
     def test_shards_bug(self):

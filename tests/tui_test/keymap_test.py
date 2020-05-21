@@ -378,7 +378,7 @@ class TestKeyMap_with_keychains(unittest.TestCase):
 
 
     def test_any_keychain_started(self):
-        cb = lambda _, __: None
+        def cb(*args, **kwargs): pass
         self.km.bind(key='a+b+c', action='foo')
         self.assertFalse(self.km.any_keychain_started)
         self.km.evaluate('a', callback=cb)
@@ -799,6 +799,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.mainw.focus_position = 1
 
         text = ''
+
         def press_key(key):
             nonlocal text
             text += key
@@ -824,7 +825,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.mainw.focus_position = 1
 
         text = ''
-        def press_key(key):
+        def press_key(key):  # noqa: E306
             nonlocal text
             text += key
             self.press_key(key)

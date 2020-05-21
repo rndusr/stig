@@ -1,8 +1,6 @@
-import unittest
 from unittest.mock import MagicMock, call
 
 import asynctest
-
 from stig.completion import Candidates, Categories, SingleCandidate
 from stig.tui.completer import Completer
 
@@ -30,30 +28,38 @@ class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
 
     async def test_get_candidates_returns_single_Candidates(self):
         test_value = Candidates(('fooo', 'barrr', 'bazzz'))
+
         def get_cands(args):
             return test_value
+
         await self.do(get_cands, (test_value,))
 
         async def get_cands(args):
             return test_value
+
         await self.do(get_cands, (test_value,))
 
     async def test_get_candidates_returns_multiple_Candidates(self):
         test_value = (Candidates(('fooo', 'barrr', 'bazzz')),
                       Candidates(('a', 'b', 'c')))
+
         def get_cands(args):
             return test_value
+
         await self.do(get_cands, test_value)
 
         async def get_cands(args):
             return test_value
+
         await self.do(get_cands, test_value)
 
     async def test_get_candidates_returns_nested_iterables_and_iterators_of_Candidates(self):
         cands = Candidates(('a', 'b', 'c'))
         cands_iter = iter((cands, Candidates(('d', 'e', 'f'))))
+
         def get_cands(args):
             yield from (cands_iter, Candidates(('g', 'h', 'i')))
+
         await self.do(get_cands, (('a', 'b', 'c'), ('d', 'e', 'f'), ('g', 'h', 'i')))
 
     async def test_get_candidates_returns_iterator_that_contains_None(self):
@@ -62,6 +68,7 @@ class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
                           None,
                           Candidates(('a', 'b', 'c'))):
                 yield cands
+
         await self.do(get_cands, (('bar', 'baz', 'foo'),
                                   ('a', 'b', 'c')))
 
@@ -117,8 +124,10 @@ class TestCompleter_current_user_input(asynctest.TestCase):
 class TestCompleter_update(asynctest.TestCase):
     def init(self, get_cands):
         self.mock_get_cands = MagicMock(side_effect=get_cands)
+
         def get_cands(args):
             return self.mock_get_cands(args)
+
         self.completer = Completer(get_cands, operators=('&', 'and', '|', 'or'))
 
     async def update(self, cmdline, curpos, exp_get_cands_args,
