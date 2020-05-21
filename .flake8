@@ -8,6 +8,8 @@ ignore =
     E221,
     # missing whitespace after ','
     E231,
+    # multiple spaces after keyword
+    E271,
     # multiple spaces before keyword
     E272,
     # line too long
