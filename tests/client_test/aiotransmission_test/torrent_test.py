@@ -49,8 +49,8 @@ class TestTorrentFields(unittest.TestCase):
         fields = torrent.TorrentFields._ALL_FIELDS
         from random import shuffle
         for _ in range(10):
-            f1 = list(fields) ; shuffle(f1)
-            f2 = list(fields) ; shuffle(f2)
+            f1 = list(fields) ; shuffle(f1)  # noqa: E702
+            f2 = list(fields) ; shuffle(f2)  # noqa: E702
             self.assertEqual(torrent.TorrentFields(*f1),
                              torrent.TorrentFields(*f2))
 
@@ -58,10 +58,10 @@ class TestTorrentFields(unittest.TestCase):
         f1 = torrent.TorrentFields('name', 'path')
         f2 = torrent.TorrentFields('name', 'ratio')
         f3 = torrent.TorrentFields('hash', 'status')
-        self.assertEqual(f1+f2, torrent.TorrentFields('name', 'path', 'ratio'))
-        self.assertEqual(f1+f3, torrent.TorrentFields('name', 'path', 'hash', 'status'))
-        self.assertEqual(f2+f3, torrent.TorrentFields('name', 'ratio', 'hash', 'status'))
-        self.assertEqual(f1+f2+f3, torrent.TorrentFields('name', 'path', 'ratio', 'hash', 'status'))
+        self.assertEqual(f1 + f2, torrent.TorrentFields('name', 'path', 'ratio'))
+        self.assertEqual(f1 + f3, torrent.TorrentFields('name', 'path', 'hash', 'status'))
+        self.assertEqual(f2 + f3, torrent.TorrentFields('name', 'ratio', 'hash', 'status'))
+        self.assertEqual(f1 + f2 + f3, torrent.TorrentFields('name', 'path', 'ratio', 'hash', 'status'))
 
 
 class TestTorrent(unittest.TestCase):

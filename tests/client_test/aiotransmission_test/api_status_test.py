@@ -11,6 +11,7 @@ from stig.client.utils import const, convert
 class FakeTransmissionRPC():
     connected = True
     fake_stats = None
+
     async def session_stats(self):
         return self.fake_stats
 
@@ -39,6 +40,7 @@ api_status.RequestPoller = FakeRequestPoller
 
 class FakeTorrentAPI():
     fake_tlist = ()
+
     async def torrents(self, *args, **kwargs):
         return self.fake_tlist
 

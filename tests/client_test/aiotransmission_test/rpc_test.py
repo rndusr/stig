@@ -232,7 +232,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.daemon.response = {'result': msg}
         with self.assertRaises(RPCError) as cm:
             await self.client.invalid_rpc_method()
-        self.assertEqual(str(cm.exception), 'Invalid RPC response: '+msg)
+        self.assertEqual(str(cm.exception), 'Invalid RPC response: ' + msg)
         self.assertEqual(self.client.connected, True)
 
         self.assert_cb_disconnected_called(calls=0)
@@ -246,7 +246,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         await self.daemon.stop()
         with self.assertRaises(ConnectionError) as cm:
             await self.client.connect()
-        self.assertEqual(str(cm.exception), 'Failed to connect: '+self.client.url)
+        self.assertEqual(str(cm.exception), 'Failed to connect: ' + self.client.url)
         self.assertEqual(self.client.connected, False)
         self.assert_cb_connected_called(calls=0)
         self.assert_cb_disconnected_called(calls=0)
@@ -261,7 +261,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         await self.daemon.stop()
         with self.assertRaises(ConnectionError) as cm:
             await self.client.torrent_get()
-        self.assertEqual(str(cm.exception), 'Failed to connect: '+self.client.url)
+        self.assertEqual(str(cm.exception), 'Failed to connect: ' + self.client.url)
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
         self.assert_cb_error_called(calls=1,
@@ -272,7 +272,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.daemon.response = web.Response(status=rsrc.AUTH_ERROR_CODE)
         with self.assertRaises(AuthError) as cm:
             await self.client.connect()
-        self.assertEqual(str(cm.exception), 'Authentication failed: '+self.client.url)
+        self.assertEqual(str(cm.exception), 'Authentication failed: ' + self.client.url)
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
         self.assert_cb_connected_called(calls=0)
         self.assert_cb_disconnected_called(calls=0)
@@ -287,7 +287,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.daemon.response = web.Response(status=rsrc.AUTH_ERROR_CODE)
         with self.assertRaises(AuthError) as cm:
             await self.client.any_method()
-        self.assertEqual(str(cm.exception), 'Authentication failed: '+self.client.url)
+        self.assertEqual(str(cm.exception), 'Authentication failed: ' + self.client.url)
         self.assert_not_connected_to(self.daemon.host, self.daemon.port)
         self.assert_cb_connected_called(calls=1, args=[(self.client,)])
         self.assert_cb_disconnected_called(calls=1, args=[(self.client,)])
@@ -314,7 +314,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
                                     kwargs=[{'error': cm.exception}])
 
     async def test_timeout_minus_one(self):
-        delay = self.client.timeout-1
+        delay = self.client.timeout - 1
         await asyncio.gather(self.advance(delay),
                              self.client.connect())
         await self.client.disconnect()
@@ -323,7 +323,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assert_cb_error_called(calls=0)
 
     async def test_timeout_plus_one(self):
-        delay = self.client.timeout+1
+        delay = self.client.timeout + 1
 
         # NOTE: This function is only called sometimes, probably depending on
         # which task finishes first, advance() or client.connect().

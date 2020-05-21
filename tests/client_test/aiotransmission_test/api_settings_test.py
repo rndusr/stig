@@ -50,8 +50,10 @@ class TestSettingsAPI(asynctest.TestCase):
         class UnreachableRPC(FakeTransmissionRPC):
             async def session_get(self):
                 raise ClientError('Something went wrong.')
+
             async def session_set(self, settings):
                 raise ClientError('Nah.')
+
         self.rpc = UnreachableRPC()
         self.api = SettingsAPI(SimpleNamespace(rpc=self.rpc))
         self.rpc.fake_settings = {}

@@ -131,7 +131,7 @@ class FakeTransmissionDaemon:
                     creds_str = b64decode(creds_b64).decode()
                     user, password = creds_str.split(':')
                     return user, password
-                except:
+                except Exception:
                     raise ValueError("Wrong 'Authorization' header format: %s" % (basic_auth_str,))
 
             if not self.auth:

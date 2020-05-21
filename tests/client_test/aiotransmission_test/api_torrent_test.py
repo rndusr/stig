@@ -2,7 +2,6 @@ import os.path
 
 import asynctest
 import resources_aiotransmission as rsrc
-from stig.client import errors
 from stig.client.aiotransmission.api_torrent import TorrentAPI
 from stig.client.aiotransmission.rpc import TransmissionRPC
 from stig.client.aiotransmission.torrent import Torrent
@@ -40,9 +39,9 @@ class TestConnection(TorrentAPITestCase):
 class TestAddingTorrents(TorrentAPITestCase):
     async def test_add_torrent_by_local_file(self):
         self.daemon.response = rsrc.response_success(
-            {'torrent-added': { 'id': 1,
-                                'name': 'Test Torrent',
-                                'hashString': rsrc.TORRENTHASH}}
+            {'torrent-added': {'id': 1,
+                               'name': 'Test Torrent',
+                               'hashString': rsrc.TORRENTHASH}}
         )
         response = await self.api.add(rsrc.TORRENTFILE)
         self.assertEqual(response.success, True)
@@ -63,9 +62,9 @@ class TestAddingTorrents(TorrentAPITestCase):
 
     async def test_add_torrent_by_hash(self):
         self.daemon.response = rsrc.response_success(
-            {'torrent-added': { 'id': 1,
-                                'name': rsrc.TORRENTHASH,
-                                'hashString': rsrc.TORRENTHASH}}
+            {'torrent-added': {'id': 1,
+                               'name': rsrc.TORRENTHASH,
+                               'hashString': rsrc.TORRENTHASH}}
         )
         response = await self.api.add(rsrc.TORRENTHASH)
         self.assertEqual(response.success, True)
@@ -221,6 +220,7 @@ class TestManipulatingTorrents(TorrentAPITestCase):
 
     async def test_check_function(self):
         wanted_keys = ('id', 'name')
+
         def check_func(torrent):
             self.assertEqual(set(torrent), set(wanted_keys))
 
