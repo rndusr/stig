@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import MagicMock, call
 
 import asynctest
-
 from stig.settings import CombinedSettings, LocalSettings, RemoteSettings
 
 
@@ -84,9 +83,11 @@ class TestLocalSettings(unittest.TestCase):
 
     def test_on_change_autoremove(self):
         x = 0
+
         def cb(settings, name, value):
             nonlocal x
             x += 1
+
         self.s.on_change(cb, name='three', autoremove=True)
         self.s['three'] = 'foo'
         self.assertEqual(x, 1)
@@ -132,25 +133,29 @@ class TestRemoteSettings(asynctest.TestCase):
 
     def test_as_dict(self):
         self.api.as_dict = {'foo': {'id': 'foo', 'value': 1},
-                                  'bar': {'id': 'bar', 'value': 'asdf'}}
+                            'bar': {'id': 'bar', 'value': 'asdf'}}
         self.assertEqual(self.remotecfg.as_dict, {'srv.foo': {'id': 'srv.foo', 'value': 1},
-                                            'srv.bar': {'id': 'srv.bar', 'value': 'asdf'}})
+                                                  'srv.bar': {'id': 'srv.bar', 'value': 'asdf'}})
 
     def test_getitem(self):
         with self.assertRaises(KeyError):
             self.remotecfg['foo']
+
         def mock_getitem(name):
             if name == 'foo': return 1
             if name == 'bar': return 'asdf'
+
         self.api.__getitem__.side_effect = mock_getitem
         self.assertEqual(self.remotecfg['srv.foo'], 1)
         self.assertEqual(self.remotecfg['srv.bar'], 'asdf')
 
     def test_contains(self):
         self.assertNotIn('foo', self.remotecfg)
+
         def mock_contains(name):
             if name == 'foo': return True
             if name == 'bar': return False
+
         self.api.__contains__.side_effect = mock_contains
         self.assertTrue('srv.foo' in self.remotecfg)
         self.assertFalse('srv.bar' in self.remotecfg)
@@ -180,7 +185,7 @@ class TestRemoteSettings(asynctest.TestCase):
         self.api.set.assert_called_once_with('foo', 'bar')
 
     def test_on_update(self):
-        cb = lambda: None
+        def cb(): pass
         self.remotecfg.on_update(cb, autoremove=False)
         self.api.on_update.assert_called_once_with(cb, autoremove=False)
 
