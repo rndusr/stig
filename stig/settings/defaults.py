@@ -14,8 +14,9 @@ import os
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_data_home as XDG_DATA_HOME
 
-from .. import __appname__
+from .. import __appname__, objects
 from ..client.sorters import PeerSorter, SettingSorter, TorrentSorter, TrackerSorter
+from ..utils.usertypes import Bool, Float, Int, Option, Path, String, Tuple
 from ..views import file, peer, setting, torrent, tracker
 
 from ..logging import make_logger  # isort:skip
@@ -38,30 +39,46 @@ DEFAULT_TAB_COMMANDS = (
 )
 
 
-def init_defaults(localcfg):
-    from ..utils.usertypes import (String, Int, Float, Bool, Path, Tuple, Option)
-    from .. import objects
+def partial_sort_order(sortercls):
+    # Because sort orders have aliases and can be inverted by prepending "!", we have to
+    # smarten up.
 
-
+    # The SortOrder class makes sort orders compare equal to their aliases with or without
+    # any of the inverter chars prepended, e.g. "name" == "!n".
     class SortOrder(str):
-        """String that is equal to the same string with '!' or '.' prepended"""
         _invert_chars = ''.join(TorrentSorter.INVERT_CHARS)
 
+        def __new__(cls, name, aliases):
+            self = super().__new__(cls, name)
+            self._aliases = tuple(aliases)
+            self._hash = hash((name,) + self._aliases)
+            return self
+
         def __eq__(self, other):
-            return self.lstrip(self._invert_chars) == other.lstrip(self._invert_chars)
+            other_ = other.lstrip(self._invert_chars)
+            return (self.lstrip(self._invert_chars) == other_ or
+                    any(a.lstrip(self._invert_chars) == other_ for a in self._aliases))
 
-        # An overloaded __eq__() obligates an overloaded __hash__(), or
-        # instances won't be hashable.
+        # An overloaded __eq__() obligates an overloaded __hash__(), or instances won't be
+        # hashable.
         def __hash__(self):
-            return super().__hash__()
+            return self._hash
 
-    def partial_sort_order(sortercls):
-        options = (SortOrder(name) for name in sortercls.SORTSPECS)
-        aliases = {alias:SortOrder(name)
-                   for name,spec in sortercls.SORTSPECS.items()
-                   for alias in spec.aliases}
-        return Tuple.partial(options=tuple(options), aliases=aliases, dedup=True)
+        def __repr__(self):
+            return '%s(%r, aliases=%r)' % (type(self).__name__, str(self), self._aliases)
 
+    # Wrap available sort orders in a Tuple, which also must know the aliases for each
+    # sort order so it can generate the syntax string for the help output.
+    sort_orders = []
+    aliases = {}  # Mapping (alias -> realname)
+    for name,spec in sortercls.SORTSPECS.items():
+        sort_orders.append(SortOrder(name, spec.aliases))
+        for alias in spec.aliases:
+            aliases[alias] = name
+    return Tuple.partial(options=sort_orders, aliases=aliases, dedup=True)
+
+
+def init_defaults(localcfg):
     localcfg.add('connect.host',
                  String.partial(),
                  getter=lambda: objects.srvapi.rpc.host,
