@@ -735,7 +735,7 @@ class SortCmd(metaclass=CommandMeta):
          'description': 'Append ORDERs to current list of sort orders instead of replacing it'},
 
         {'names': ('--reset', '-r'), 'action': 'store_true',
-         'description': 'Go back to sort order that was used when list was created'},
+         'description': 'Go back to sort order that was used when the list was created'},
 
         {'names': ('--none', '-n'), 'action': 'store_true',
          'description': 'Remove all sort orders from the list'},
