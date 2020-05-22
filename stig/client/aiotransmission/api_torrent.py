@@ -17,8 +17,9 @@ from string import hexdigits as HEXDIGITS
 
 from .. import ClientError
 from ..base import TorrentAPIBase
+from ..constants import MAX_TORRENT_FILE_SIZE
 from ..filters import FileFilter, TorrentFilter
-from ..ttypes import Path
+from ..ttypes import Path, SizeInBytes
 from ..utils import URL, Bandwidth, Bool, BoolOrBandwidth, Response
 from .torrent import Torrent, TorrentFields
 
@@ -157,19 +158,28 @@ class TorrentAPI(TorrentAPIBase):
                 args['download-dir'] = response.path
 
         # Check if torrent_str is path to local torrent file
-        torrent_str_path = os.path.expanduser(torrent_str)
-        if os.path.exists(torrent_str_path):
-            torrent_str = torrent_str_path
-            del torrent_str_path
+        torrent_path = os.path.expanduser(torrent_str)
+        if os.path.exists(torrent_path):
+            try:
+                torrent_file_size = os.path.getsize(torrent_path)
+            except OSError:
+                return Response(success=False, torrent=None,
+                                errors=('Torrent file vanished: %r' % (torrent_str,)))
+            else:
+                if torrent_file_size > MAX_TORRENT_FILE_SIZE:
+                    e = '%s is bigger than %s: %s (%s bytes)' % (
+                        torrent_str, MAX_TORRENT_FILE_SIZE,
+                        SizeInBytes(torrent_file_size), torrent_file_size)
+                    return Response(success=False, torrent=None, errors=(e,))
 
             # Read local file
             try:
-                with open(torrent_str, 'rb') as f:
-                    args['metainfo'] = str(base64.b64encode(f.read()),
+                with open(torrent_path, 'rb') as f:
+                    args['metainfo'] = str(base64.b64encode(f.read(MAX_TORRENT_FILE_SIZE)),
                                            encoding='ascii')
             except OSError as e:
                 return Response(success=False, torrent=None,
-                                errors=('%s: %s' % (e.strerror, torrent_str),))
+                                errors=('%s: %s' % (e.strerror, torrent_path),))
         elif len(torrent_str) == 40 and all(c in HEXDIGITS for c in torrent_str):
             # Convert hash to magnet link
             args['filename'] = 'magnet:?xt=urn:btih:' + torrent_str
