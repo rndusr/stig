@@ -76,7 +76,9 @@ class SettingItemWidget(ItemWidgetBase):
     def current_value(self):
         if self._cells.exists('value'):
             value_widget = self.value_widget
-            if isinstance(value_widget, urwid.Edit):
+            if hasattr(value_widget, 'get_edit_value'):
+                return value_widget.get_edit_value()
+            elif isinstance(value_widget, urwid.Edit):
                 return value_widget.edit_text
             elif hasattr(value_widget, 'get_tui_value'):
                 return value_widget.get_tui_value()

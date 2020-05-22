@@ -46,6 +46,16 @@ class Value(ColumnBase):
         else:
             return value
 
+    def get_edit_value(self):
+        if self.data['id'] == 'connect.password':
+            from ..objects import srvapi
+            return srvapi.rpc.password
+        elif self.data['id'] == 'connect.url':
+            from ..objects import srvapi
+            return srvapi.rpc.url_unsafe
+        else:
+            return super().get_edit_value()
+
 COLUMNS['value'] = Value
 
 
