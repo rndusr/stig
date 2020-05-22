@@ -543,7 +543,7 @@ class VerifyTorrentsCmdbase(metaclass=CommandMeta):
             raise CmdError(e)
         else:
             response = await self.make_request(objects.srvapi.torrent.verify(tfilter),
-                                               polling_frenzy=False)
+                                               polling_frenzy=True)
             if not response.success:
                 raise CmdError()
 
