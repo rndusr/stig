@@ -36,6 +36,7 @@
     * Peer download rate estimates are now always calculated, not just when a peer list is
       focused.
     * New 'connect.url' setting allows you to set host, port, etc with a single command.
+    * The 'sort' command's --delete argument removes sort orders from the current list.
 
   Fixed bugs:
     * File filters caused a crash when applied to single-file torrents.

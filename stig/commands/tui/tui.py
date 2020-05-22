@@ -734,6 +734,9 @@ class SortCmd(metaclass=CommandMeta):
         {'names': ('--add', '-a'), 'action': 'store_true',
          'description': 'Append ORDERs to current list of sort orders instead of replacing it'},
 
+        {'names': ('--delete', '-d'), 'action': 'store_true',
+         'description': 'Delete ORDERs from current list of sort orders instead of replacing it'},
+
         {'names': ('--reset', '-r'), 'action': 'store_true',
          'description': 'Go back to sort order that was used when the list was created'},
 
@@ -754,7 +757,7 @@ class SortCmd(metaclass=CommandMeta):
                         _list_sort_orders('TRACKER LISTS', client.TrackerSorter))
     }
 
-    async def run(self, add, reset, none, ORDER):
+    async def run(self, add, delete, reset, none, ORDER):
         from ...tui.tuiobjects import tabs
         current_tab = tabs.focus.base_widget
 
@@ -776,6 +779,8 @@ class SortCmd(metaclass=CommandMeta):
 
             if add and current_tab.sort is not None:
                 current_tab.sort += new_sort
+            elif delete and current_tab.sort is not None:
+                current_tab.sort -= new_sort
             else:
                 current_tab.sort = new_sort
 
