@@ -41,6 +41,8 @@ class Value(ColumnBase):
         value = self.data['value']
         if hasattr(value, 'prettified'):
             return value.prettified
+        elif self.data['id'] == 'connect.password':
+            return '*' * len(value)
         else:
             return value
 
