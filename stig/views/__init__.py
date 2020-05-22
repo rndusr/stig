@@ -83,15 +83,24 @@ class ColumnBase():
         cls._cache.clear()
 
     def get_value(self):
+        # Return pretty, user-readable value
         raise NotImplementedError()
 
     def get_cli_value(self):
+        # Return pretty, user-readable value especially for the CLI
         return self.get_value()
 
     def get_tui_value(self):
+        # Return pretty, user-readable value especially for the TUI
+        return self.get_value()
+
+    def get_edit_value(self):
+        # Return pretty, user-readable value for editing (e.g. you don't want to display
+        # the password, but you may want to when editing it.
         return self.get_value()
 
     def get_raw_value(self):
+        # Return machine-readable value
         value = self.get_value()
         if isinstance(value, int):
             return int(value)
