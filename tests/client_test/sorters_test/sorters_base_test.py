@@ -115,6 +115,13 @@ class TestSorterBase(unittest.TestCase):
         self.assertEqual(str(foo + Bar), 'foo,!bar')
         self.assertEqual(str(bar + Foo), 'bar,!foo')
 
+    def test_subtracting_sorters(self):
+        self.assertEqual(str(self.sortercls(('foo', '!bar')) - self.sortercls(('foo',))), '!bar')
+        self.assertEqual(str(self.sortercls(('foo', '!bar')) - self.sortercls(('!bar',))), 'foo')
+        self.assertEqual(str(self.sortercls(('foo', 'bar')) - self.sortercls(('!bar',))), 'foo')
+        self.assertEqual(str(self.sortercls(('foo', '!bar')) - self.sortercls(('bar',))), 'foo')
+        self.assertEqual(str(self.sortercls(('foo',)) - self.sortercls(('bar',))), 'foo')
+
     def test_sorters_are_deduplicated(self):
         for fstr in ('foo', 'f', 'F'):
             self.assertEqual(str(self.sortercls((fstr, fstr))), 'foo')

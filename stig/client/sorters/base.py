@@ -126,6 +126,16 @@ class SorterBase(metaclass=_SorterBaseMeta):
         else:
             return cls(self._strings + other._strings)
 
+    def __sub__(self, other):
+        cls = type(self)
+        if not isinstance(other, cls):
+            return NotImplemented
+        else:
+            invchars = ''.join(self.INVERT_CHARS)
+            other_strings = tuple(s.lstrip(invchars) for s in other._strings)
+            return cls(tuple(s for s in self._strings
+                             if s.lstrip(invchars) not in other_strings))
+
     def __str__(self):
         return ','.join(self._strings)
 
