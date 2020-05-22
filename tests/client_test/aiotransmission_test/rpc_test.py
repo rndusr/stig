@@ -122,6 +122,18 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.assertEqual(self.client.user, '')
         self.assertEqual(self.client.password, '')
 
+    def test_url_unsafe_property(self):
+        self.client.url = 'some.host'
+        self.assertEqual(self.client.url_unsafe, self.client.url)
+        self.client.user = 'foo'
+        self.assertEqual(self.client.url_unsafe, 'http://foo:@some.host:9091/transmission/rpc')
+        self.client.password = 'bar'
+        self.assertEqual(self.client.url_unsafe, 'http://foo:bar@some.host:9091/transmission/rpc')
+        self.client.user = None
+        self.assertEqual(self.client.url_unsafe, 'http://:bar@some.host:9091/transmission/rpc')
+        with self.assertRaises(AttributeError):
+            self.client.url_unsafe = 'something'
+
     async def test_connect_to_good_url(self):
         # TransmissionRPC requests 'session-get' to test the connection and
         # set version properties.

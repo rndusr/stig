@@ -202,14 +202,18 @@ class TransmissionRPC():
         """
         URL of the Transmission RPC interface
 
-        Setting or getting this property sets or gets the following properties:
-        tls, user, password, host, port, path
+        Setting or getting this property sets or gets the following properties: tls, user,
+        password, host, port, path
 
-        Missing parts are filled in with defaults, e.g. "user:password@localhost" results
-        in "http://user:password@localhost:9091/transmission/rpc".
+        Missing parts are filled in with defaults, e.g. "example.org:1234" results in
+        "http://example.org:1234/transmission/rpc".
+
+        While user and password are supported when setting ("user:password@localhost"),
+        they are not included in the return value for security reasons.  See the
+        url_unsafe property.
         """
-        return '%s://%s:%d%s' % (
-            'https' if self.tls else 'http', self.host, self.port, self.path)
+        return '%s://%s:%d%s' % ('https' if self.tls else 'http',
+                                 self.host, self.port, self.path)
 
     @url.setter
     def url(self, url):
@@ -229,6 +233,15 @@ class TransmissionRPC():
         self._port = int(url.port) if url.port is not None else 9091
         self._path = url.path if url.path is not None else '/transmission/rpc'
         asyncio.ensure_future(self.disconnect('Changing url: %r' % self._url))
+
+    @property
+    def url_unsafe(self):
+        """URL of the Transmission RPC interface with user and password if given"""
+        if self.user or self.password:
+            return '%s://%s:%s@%s:%d%s' % ('https' if self.tls else 'http', self.user,
+                                           self.password, self.host, self.port, self.path)
+        else:
+            return self.url
 
     @property
     def timeout(self):
