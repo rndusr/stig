@@ -203,7 +203,7 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
 class BandwidthStatusWidget(urwid.Widget):
     _RATE_WIDTH = 6
     _SPACER_WIDTH = 1
-    _TAIL_WIDTH = 4
+    _TAIL_WIDTH = 5
 
     def __init__(self):
         self._text_up = urwid.Text('', align='right')
@@ -261,7 +261,7 @@ class BandwidthStatusWidget(urwid.Widget):
 
     def _mk_tail_canv(self, direction, icon):
         unit = {'bit': 'b', 'byte': 'B'}[objects.localcfg['unit.bandwidth']]
-        text = urwid.Text('%s/s%s' % (unit, icon))
+        text = urwid.Text('%s/s %s' % (unit, icon))
         attr_text = urwid.AttrMap(text, 'bottombar.bandwidth.%s' % direction)
         return attr_text.render((self._TAIL_WIDTH,))
 
