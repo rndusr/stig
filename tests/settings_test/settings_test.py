@@ -2,12 +2,12 @@ import unittest
 from unittest.mock import MagicMock, call
 
 import asynctest
-from stig.settings import CombinedSettings, LocalSettings, RemoteSettings
+from stig.settings.settings import CombinedSettings, RemoteSettings, Settings
 
 
-class TestLocalSettings(unittest.TestCase):
+class TestSettings(unittest.TestCase):
     def setUp(self):
-        self.s = LocalSettings()
+        self.s = Settings()
         def one(value): return str(value).upper()
         def two(value): return str(value).lower()
         def three(value): return '(%s)' % value

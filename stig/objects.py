@@ -24,7 +24,7 @@ log = logging.make_logger()
 # Set by main.run()
 main_rcfile = None
 
-localcfg = settings.LocalSettings()
+localcfg = settings.Settings()
 settings.init_defaults(localcfg)
 
 srvapi = API(interval=localcfg['tui.poll'])
