@@ -14,6 +14,7 @@ from collections import abc
 
 import urwid
 import urwidtrees
+from natsort import humansorted
 from urwidtrees.decoration import ArrowTree
 
 from ...client import FileFilter
@@ -65,7 +66,8 @@ class FileTreeDecorator(ArrowTree):
                 # Recurse into directory entries (files and subdirectories)
                 tree = []
                 filtered_count = 0
-                for k,v in sorted(content.items(), key=lambda pair: pair[0].lower()):
+                content_sorted = humansorted(content.items())
+                for k,v in content_sorted:
                     if v.nodetype == 'leaf':
                         if not self._file_is_filtered(v):
                             tree.append((v, None))
@@ -83,7 +85,7 @@ class FileTreeDecorator(ArrowTree):
 
         fcount = 0
         forest = []  # Multiple trees as siblings
-        for t in sorted(torrents, key=lambda t: t['name'].lower()):
+        for t in humansorted(torrents, key=lambda t: t['name']):
             filetree = t['files']
             filecount = len(tuple(filetree.files))
             if filecount > 0:
