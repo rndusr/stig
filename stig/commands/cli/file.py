@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from natsort import humansorted
+
 from . import _mixin as mixin
 from .. import CmdError
 from ... import objects
@@ -34,7 +36,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
             raise CmdError()
 
         filelist = []
-        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+        for torrent in humansorted(torrents, key=lambda t: t['name']):
             files, filtered_count = self._flatten_tree(torrent['files'], ffilter)
             filelist.extend(files)
 
@@ -66,7 +68,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
         from ...views.file import TorrentFileDirectory
         flist = []
         filtered_count = 0
-        for key,value in sorted(files.items(), key=lambda pair: pair[0].lower()):
+        for key,value in humansorted(files.items(), key=lambda pair: pair[0]):
             if value.nodetype == 'leaf':
                 if ffilter is None or ffilter.match(value):
                     filenode = dict(value)  # Copy original TorrentFile
