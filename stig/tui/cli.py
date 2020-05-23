@@ -57,7 +57,7 @@ class CLIEditWidget(urwid.WidgetWrap):
         self._history_size = history_size
         self._history_pos = -1
         self.history_file = history_file
-        self._edit_text_cache = ''
+        self._current_edit_text = ''
 
         # Internal callbacks
         self.on_cancel(lambda _: self.reset(), autoremove=False)
@@ -222,7 +222,7 @@ class CLIEditWidget(urwid.WidgetWrap):
     def _set_history_prev(self):
         # Remember whatever is currently in line when user starts exploring history
         if self._history_pos == -1:
-            self._edit_text_cache = self._editw.edit_text
+            self._current_edit_text = self._editw.edit_text
         if self._history_pos + 1 < len(self._history):
             self._history_pos += 1
             self._editw.edit_text = self._history[self._history_pos]
@@ -233,7 +233,7 @@ class CLIEditWidget(urwid.WidgetWrap):
         if self._history_pos > -1:
             self._history_pos -= 1
         if self._history_pos == -1:
-            self._editw.edit_text = self._edit_text_cache  # Restore current line
+            self._editw.edit_text = self._current_edit_text  # Restore current line
         else:
             self._editw.edit_text = self._history[self._history_pos]
 
