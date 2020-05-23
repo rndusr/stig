@@ -399,9 +399,8 @@ class HelpManager():
             km = ((key, stringify(action)) for key,action in keymap.map(context))
 
             # Sort by command
-            from natsort import (natsort_keygen, natsorted, ns)
-            get_cmd = natsort_keygen(key=lambda pair: pair[1], alg=ns.IGNORECASE)
-            for key,action in natsorted(km, key=get_cmd):
+            from natsort import natsorted, ns
+            for key,action in natsorted(km, key=lambda pair: pair[1], alg=ns.IGNORECASE):
                 if len(action) < 40:
                     lines.append('\t%s  \t%s  \t%s' % (key, action, keymap.get_description(key, context)))
                 else:
