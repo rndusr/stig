@@ -36,7 +36,7 @@ logging.redirect_level('INFO', sys.stdout)
 def run():
     cmdmgr.load_cmds_from_module('stig.commands.cli', 'stig.commands.tui')
 
-    from .commands.guess_ui import (guess_ui, UIGuessError)
+    from .commands.guess_ui import guess_ui, UIGuessError
     from .commands import CmdError
     from . import hooks  # noqa: F401
 
