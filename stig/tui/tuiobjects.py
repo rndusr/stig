@@ -24,7 +24,8 @@ from .group import Group
 from .keymap import KeyMap
 from .logger import LogWidget
 from .miscwidgets import (BandwidthStatusWidget, ConnectionStatusWidget, KeyChainsWidget,
-                          MarkedItemsWidget, QuickHelpWidget, TorrentCountersWidget)
+                          MarkedItemsWidget, QuickHelpWidget, TorrentCountersWidget,
+                          AvailableDiskSpaceWidget)
 from .tabs import TabBar, Tabs
 
 from ..logging import make_logger  # isort:skip
@@ -91,9 +92,12 @@ tabs = keymap.wrap(Tabs, context='tabs')(
 
 bottombar = Group(cls=urwid.Columns)
 bottombar.add(name='counters', widget=TorrentCountersWidget(), options='pack')
-bottombar.add(name='_spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
-bottombar.add(name='marked', widget=MarkedItemsWidget(), options='pack')
+bottombar.add(name='_spacer1', widget=urwid.AttrMap(urwid.Text(' '), 'bottombar'),
+              options='pack')
+bottombar.add(name='diskspace', widget=AvailableDiskSpaceWidget(), options='pack')
 bottombar.add(name='_spacer2', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
+bottombar.add(name='marked', widget=MarkedItemsWidget(), options='pack')
+bottombar.add(name='_spacer3', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
 bottombar.add(name='bandwidth', widget=BandwidthStatusWidget(), options='pack')
 
 cli = urwid.AttrMap(_create_cli_widget(), 'cli')
