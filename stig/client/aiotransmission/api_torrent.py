@@ -15,6 +15,8 @@ import time
 from collections import abc
 from string import hexdigits as HEXDIGITS
 
+from natsort import humansorted
+
 from .. import ClientError
 from ..base import TorrentAPIBase
 from ..constants import MAX_TORRENT_FILE_SIZE
@@ -776,7 +778,7 @@ class TorrentAPI(TorrentAPIBase):
             torrent_ids = []
             msgs = []
             errors = []
-            for t in sorted(response.torrents, key=lambda t: t['name'].lower()):
+            for t in humansort(response.torrents, key=lambda t: t['name']):
                 # Filter torrent's files
                 flist = filter_files(t['files'])
                 if files is None:
