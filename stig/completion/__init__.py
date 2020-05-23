@@ -13,6 +13,8 @@ import re
 from collections import abc
 from typing import Pattern
 
+from natsort import humansorted
+
 
 class Categories(abc.Sequence):
     """Iterable over non-empty Candidates objects with selection tracking"""
@@ -116,7 +118,7 @@ class Candidates(abc.Sequence):
                        for cand in candidates)
         cands_deduped = (cand for cand in dict.fromkeys(cands_typed))
         cands_noempty = (cand for cand in cands_deduped if cand != '')
-        cands_sorted = sorted(cands_noempty, key=str.casefold)
+        cands_sorted = humansorted(cands_noempty)
         self._candidates = tuple(cands_sorted)
         self._matches = self._candidates
         self._curarg_seps = tuple(sorted(curarg_seps))
