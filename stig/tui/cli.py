@@ -219,8 +219,10 @@ class CLIEditWidget(urwid.WidgetWrap):
 
     # History
 
+    # The most recent history entry is at index 0; -1 used to represent the current line
+    # that is not yet in history and stored outside of self._history.
+
     def _set_history_prev(self):
-        # Remember whatever is currently in line when user starts exploring history
         if self._history_pos == -1:
             self._current_edit_text = self._editw.edit_text
         if self._history_pos + 1 < len(self._history):
@@ -228,14 +230,12 @@ class CLIEditWidget(urwid.WidgetWrap):
             self._editw.edit_text = self._history[self._history_pos]
 
     def _set_history_next(self):
-        # The most recent history entry is at index 0; -1 is the current line
-        # that is not yet in history.
         if self._history_pos > -1:
             self._history_pos -= 1
-        if self._history_pos == -1:
-            self._editw.edit_text = self._current_edit_text  # Restore current line
-        else:
-            self._editw.edit_text = self._history[self._history_pos]
+            if self._history_pos == -1:
+                self._editw.edit_text = self._current_edit_text
+            else:
+                self._editw.edit_text = self._history[self._history_pos]
 
     def _read_history(self):
         if self._history_file:
