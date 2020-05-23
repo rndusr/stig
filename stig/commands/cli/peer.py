@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from natsort import humansorted
+
 from . import _mixin as mixin
 from .. import CmdError
 from ... import objects
@@ -40,7 +42,7 @@ class ListPeersCmd(base.ListPeersCmdbase,
                 return pfilter.apply(peers)
 
         peerlist = []
-        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+        for torrent in humansorted(torrents, key=lambda t: t['name']):
             peerlist.extend(filter_peers(torrent['peers']))
 
         # Pre-lookup peers' IPs
