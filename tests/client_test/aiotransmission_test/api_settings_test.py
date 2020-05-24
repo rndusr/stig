@@ -2,7 +2,6 @@ from copy import deepcopy
 from types import SimpleNamespace
 
 import asynctest
-
 import resources_aiotransmission as rsrc
 from stig.client import ClientError
 from stig.client.aiotransmission.api_settings import SettingsAPI
@@ -75,9 +74,21 @@ class TestSettingsAPI(asynctest.TestCase):
             await self.api.get('foo')
 
     async def test_set_method(self):
+        # We need a spec from a callable because blinker does some weird stuff and we get
+        # an AttributeError for '__self__' without the spec.
+        cb_any = asynctest.MagicMock(spec=lambda self: None)
+        self.api.on_set(cb_any)
+        cb = asynctest.MagicMock(spec=lambda self: None)
+        self.api.on_set(cb, key='limit.rate.down')
+
         await self.api.set('limit.rate.down', 555e3)
+
         self.assertEqual(self.rpc.fake_settings['speed-limit-down'], 555)
         self.assertEqual(self.rpc.fake_settings['speed-limit-down-enabled'], True)
+
+        cb_any.assert_called_once_with(self.api)
+        cb.assert_called_once_with(self.api)
+
         with self.assertRaises(ValueError):
             await self.api.set('foo', 'bar')
 

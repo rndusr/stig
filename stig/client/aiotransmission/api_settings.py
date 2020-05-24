@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import os
-from collections import abc
+from collections import abc, defaultdict
 from types import SimpleNamespace
 
 import blinker
@@ -101,6 +101,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         self._raw = None    # Raw dict from 'session-get' or None if not connected
         self._srvapi = srvapi
         self._on_update = blinker.Signal()
+        self._on_set = defaultdict(lambda: blinker.Signal())
 
         super().__init__(self._srvapi.rpc.session_get, interval=interval)
         self.on_response(self._handle_session_get)
@@ -180,6 +181,26 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         log.debug('Registering %r to receive settings updates', callback)
         self._on_update.connect(callback, weak=autoremove)
 
+    def on_set(self, callback, key=None, autoremove=True):
+        """
+        Register `callback` to be called after settings are set
+
+        `callback` gets the instance of this class.
+
+        If `key` is None, `callback` is called for every setting.  If `key` is the name of
+        a setting, `callback` is only called for that setting.
+
+        If `autoremove` is True, `callback` is removed automatically when it is
+        deleted.
+        """
+        log.debug('Registering %r to be called after setting changes: %r', callback, key)
+        if key is not None and key not in self:
+            raise ValueError(key)
+        else:
+            log.debug(self._on_set[key])
+            log.debug('%r.connect(%r, weak=%r)', self._on_set[key], callback, autoremove)
+            self._on_set[key].connect(callback, weak=autoremove)
+
     async def get(self, key):
         """Same as __getitem__ but refresh cache first"""
         if key not in self:
@@ -207,11 +228,13 @@ class SettingsAPI(abc.Mapping, RequestPoller):
                 self._cache[key] = self._converters[key](self._raw[field_or_callable])
         return self._cache[key]
 
-    async def _set(self, request):
+    async def _set(self, key, request):
         """Send 'session-set' request with dictionary `request` and call `update`"""
         log.debug('Sending session-set request: %r', request)
         await self._srvapi.rpc.session_set(request)
         await self.update()
+        self._on_set[key].send(self)
+        self._on_set[None].send(self)
 
 
     @_setting(Bool)
@@ -227,7 +250,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_autostart(self, enabled):
         """See `autostart`"""
         value = self._converters['autostart'](enabled)
-        await self._set({'start-added-torrents': bool(value)})
+        await self._set('autostart', {'start-added-torrents': bool(value)})
 
 
     # Network settings
@@ -245,8 +268,8 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_port(self, port):
         """See `port`"""
         value = self._converters['port'](port)
-        await self._set({'peer-port': value,
-                         'peer-port-random-on-start': False})
+        await self._set('port', {'peer-port': value,
+                                 'peer-port-random-on-start': False})
 
 
     @_setting(Bool)
@@ -262,7 +285,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_port_random(self, port_random):
         """See `port_random`"""
         value = self._converters['port.random'](port_random)
-        await self._set({'peer-port-random-on-start': bool(value)})
+        await self._set('port.random', {'peer-port-random-on-start': bool(value)})
 
 
     @_setting(Bool)
@@ -278,7 +301,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_port_forwarding(self, enabled):
         """See `port_forwarding`"""
         value = self._converters['port.forwarding'](enabled)
-        await self._set({'port-forwarding-enabled': bool(value)})
+        await self._set('port.forwarding', {'port-forwarding-enabled': bool(value)})
 
 
     @_setting(Int, min=1, max=65535)
@@ -294,7 +317,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_limit_peers_global(self, limit):
         """See `limit_peers_global`"""
         value = self._converters['limit.peers.global'](limit)
-        await self._set({'peer-limit-global': value})
+        await self._set('limit.peers.global', {'peer-limit-global': value})
 
 
     @_setting(Int, min=1, max=65535)
@@ -310,7 +333,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_limit_peers_torrent(self, limit):
         """See `limit_peers_torrent`"""
         value = self._converters['limit.peers.torrent'](limit)
-        await self._set({'peer-limit-per-torrent': value})
+        await self._set('limit.peers.torrent', {'peer-limit-per-torrent': value})
 
 
     @_setting(Option, options=('required', 'preferred', 'tolerated'),
@@ -331,7 +354,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_encryption(self, encryption):
         """See `encryption`"""
         value = self._converters['encryption'](encryption)
-        await self._set({'encryption': value})
+        await self._set('encryption', {'encryption': value})
 
 
     @_setting(Bool)
@@ -347,7 +370,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_utp(self, enabled):
         """See `utp`"""
         value = self._converters['utp'](enabled)
-        await self._set({'utp-enabled': bool(value)})
+        await self._set('utp', {'utp-enabled': bool(value)})
 
 
     @_setting(Bool)
@@ -363,7 +386,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_dht(self, enabled):
         """See `dht`"""
         value = self._converters['dht'](enabled)
-        await self._set({'dht-enabled': bool(value)})
+        await self._set('dht', {'dht-enabled': bool(value)})
 
 
     @_setting(Bool)
@@ -379,7 +402,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_pex(self, enabled):
         """See `pex`"""
         value = self._converters['pex'](enabled)
-        await self._set({'pex-enabled': bool(value)})
+        await self._set('pex', {'pex-enabled': bool(value)})
 
 
     @_setting(Bool)
@@ -395,7 +418,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_lpd(self, enabled):
         """See `lpd`"""
         value = self._converters['lpd'](enabled)
-        await self._set({'lpd-enabled': bool(value)})
+        await self._set('lpd', {'lpd-enabled': bool(value)})
 
 
     # Local Filesystem settings
@@ -421,7 +444,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         if not value.startswith(os.sep):
             current_path = await self.get_path_complete()
             value = os.path.join(current_path, value)
-        await self._set({'download-dir': value})
+        await self._set('path.complete', {'download-dir': value})
 
 
     @_setting(BoolOrPath,
@@ -459,7 +482,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
                 current_path = await self.get_path_incomplete()
                 value = os.path.join(current_path, value)
             request['incomplete-dir'] = str(value)
-        await self._set(request)
+        await self._set('path.incomplete', request)
 
 
     @_setting(Bool)
@@ -475,7 +498,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
     async def set_files_part(self, enabled):
         """See `files_part`"""
         value = self._converters['files.part'](enabled)
-        await self._set({'rename-partial-files': bool(value)})
+        await self._set('files.part', {'rename-partial-files': bool(value)})
 
 
     # Rate limits
@@ -516,13 +539,13 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         field_value, field_enabled = self._limit_rate_fields(direction, alt)
         limit = self._converters[key](limit)
         if isinstance(limit, Bool):
-            await self._set({field_enabled: bool(limit)})
+            await self._set(key, {field_enabled: bool(limit)})
         elif 0 <= limit < float('inf'):
             raw_limit = round(round(limit.copy(convert_to='B')) / 1000)
-            await self._set({field_enabled: True,
-                             field_value: raw_limit})
+            await self._set(key, {field_enabled: True,
+                                  field_value: raw_limit})
         else:
-            await self._set({field_enabled: False})
+            await self._set(key, {field_enabled: False})
 
     async def _adjust_limit_rate(self, adjustment, direction, alt=False):
         key = self._limit_rate_key(direction, alt)
