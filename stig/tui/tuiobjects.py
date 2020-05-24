@@ -92,8 +92,7 @@ tabs = keymap.wrap(Tabs, context='tabs')(
 
 bottombar = Group(cls=urwid.Columns)
 bottombar.add(name='counters', widget=TorrentCountersWidget(), options='pack')
-bottombar.add(name='_spacer1', widget=urwid.AttrMap(urwid.Text(' '), 'bottombar'),
-              options='pack')
+bottombar.add(name='_spacer1', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
 bottombar.add(name='diskspace', widget=AvailableDiskSpaceWidget(), options='pack')
 bottombar.add(name='_spacer2', widget=urwid.AttrMap(_greedy_spacer(), 'bottombar'))
 bottombar.add(name='marked', widget=MarkedItemsWidget(), options='pack')
