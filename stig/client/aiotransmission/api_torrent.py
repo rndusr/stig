@@ -778,7 +778,7 @@ class TorrentAPI(TorrentAPIBase):
             torrent_ids = []
             msgs = []
             errors = []
-            for t in humansort(response.torrents, key=lambda t: t['name']):
+            for t in humansorted(response.torrents, key=lambda t: t['name']):
                 # Filter torrent's files
                 flist = filter_files(t['files'])
                 if files is None:
