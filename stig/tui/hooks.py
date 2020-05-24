@@ -13,7 +13,7 @@ import os
 from functools import partial
 
 from . import tuiobjects
-from ..objects import localcfg, srvapi
+from ..objects import localcfg, remotecfg, srvapi
 from .views.file import TUICOLUMNS as FILE_COLUMNS
 from .views.file_list import FileListWidget
 from .views.peer_list import PeerListWidget
@@ -59,6 +59,13 @@ localcfg.on_change(_refresh_lists, name='reverse-dns')
 def _set_poll_interval(settings, name, value):
     srvapi.interval = value
 localcfg.on_change(_set_poll_interval, name='tui.poll')
+
+
+def _refresh_free_space(settingsapi):
+    log.debug('Refreshing free space info')
+    srvapi.freespace.poll()
+remotecfg.on_change(_refresh_free_space, name='path.complete')
+remotecfg.on_change(_refresh_free_space, name='path.incomplete')
 
 
 def _set_cli_history_dir(settings, name, value):
