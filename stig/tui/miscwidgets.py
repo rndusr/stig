@@ -10,6 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import urwid
+from natsort import humansorted
 
 from .. import objects, utils
 from ..client import constants as const
@@ -68,7 +69,7 @@ class KeyChainsWidget(urwid.WidgetWrap):
         next_key_index = len(keys_given)
         if len(active_keychains) > 10:
             active_keychains = self._compress_keychains(active_keychains, next_key_index)
-        for kc,action in sorted(active_keychains, key=lambda x: str(x[0]).lower()):
+        for kc,action in humansorted(active_keychains, key=lambda x: str(x[0])):
             row = []
             for colnum in range(key_col_num):
                 colwidth = key_col_widths[colnum]
