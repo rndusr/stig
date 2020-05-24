@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+import os
+
 import urwid
 from natsort import humansorted
 
@@ -345,19 +347,26 @@ class AvailableDiskSpaceWidget(urwid.WidgetWrap):
         objects.srvapi.freespace.on_update(self._update_diskspace)
 
     def _update_diskspace(self, freespace):
-        text = []
+        text = ['Free: ']
+
+        complete_text = '%s %s' % (os.path.basename(freespace.complete_info.path),
+                                   freespace.complete_info.size)
         if freespace.complete_info.size < 1024:
-            text.append(('bottombar.important', '%s' % freespace.complete_info.size))
+            complete_attr = 'bottombar.important'
         else:
-            text.append('%s' % freespace.complete_info.size)
+            complete_attr = 'bottombar'
+        text.append((complete_attr, complete_text))
 
         if freespace.incomplete_info.size is not None \
            and freespace.complete_info.path != freespace.incomplete_info.path:
-            text[-1] += '/'
+            text.append(('bottombar', '  '))
+            incomplete_text = '%s %s' % (os.path.basename(freespace.incomplete_info.path),
+                                         freespace.incomplete_info.size)
             if freespace.incomplete_info.size < 1024:
-                text.append(('bottombar.important', '%s' % freespace.incomplete_info.size))
+                incomplete_attr = 'bottombar.important'
             else:
-                text.append('%s' % freespace.incomplete_info.size)
+                incomplete_attr = 'bottombar'
+            text.append((incomplete_attr, incomplete_text))
 
         self._text.set_text(text)
 
