@@ -13,9 +13,10 @@ from types import SimpleNamespace
 
 import blinker
 
-from stig.utils.usertypes import Int
-from ..poll import RequestPoller
+from stig.utils import convert
+
 from ..errors import TimeoutError
+from ..poll import RequestPoller
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
