@@ -97,7 +97,7 @@ class DirectorySpaceWatcher():
 
     def on_update(self, callback, autoremove=True):
         """
-        Register `callback` to be called when settings have changed
+        Register `callback` to be called when free space has changed
 
         `callback` gets the instance of this class.
 
@@ -167,7 +167,7 @@ class FreeSpaceAPI():
 
     def on_update(self, callback, autoremove=True):
         """
-        Register `callback` to be called when settings have changed
+        Register `callback` to be called when free space has changed
 
         `callback` gets the instance of this class.
 
