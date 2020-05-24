@@ -23,9 +23,9 @@ from ..settings.defaults import DEFAULT_KEYMAP
 from .group import Group
 from .keymap import KeyMap
 from .logger import LogWidget
-from .miscwidgets import (BandwidthStatusWidget, ConnectionStatusWidget, KeyChainsWidget,
-                          MarkedItemsWidget, QuickHelpWidget, TorrentCountersWidget,
-                          AvailableDiskSpaceWidget)
+from .miscwidgets import (AvailableDiskSpaceWidget, BandwidthStatusWidget,
+                          ConnectionStatusWidget, KeyChainsWidget, MarkedItemsWidget,
+                          QuickHelpWidget, TorrentCountersWidget)
 from .tabs import TabBar, Tabs
 
 from ..logging import make_logger  # isort:skip
