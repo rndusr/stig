@@ -174,6 +174,7 @@ class RequestPoller():
 
         Do nothing if this poller is not started.
         """
+        self.skip_ongoing_request()
         if self.running:
             self._sleep.interrupt()
 
