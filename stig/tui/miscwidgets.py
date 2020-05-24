@@ -338,6 +338,30 @@ class TorrentCountersWidget(urwid.WidgetWrap):
         self._text.set_text(text)
 
 
+class AvailableDiskSpaceWidget(urwid.WidgetWrap):
+    def __init__(self):
+        self._text = urwid.Text(EMPTY_TEXT)
+        super().__init__(urwid.AttrMap(self._text, 'bottombar'))
+        objects.srvapi.freespace.on_update(self._update_diskspace)
+
+    def _update_diskspace(self, freespace):
+        text = []
+        if freespace.complete_info.size < 1024:
+            text.append(('bottombar.important', '%sB' % freespace.complete_info.size))
+        else:
+            text.append('%sB' % freespace.complete_info.size)
+
+        if freespace.incomplete_info.size is not None \
+           and freespace.complete_info.path != freespace.incomplete_info.path:
+            text[-1] += '/'
+            if freespace.incomplete_info.size < 1024:
+                text.append(('bottombar.important', '%sB' % freespace.incomplete_info.size))
+            else:
+                text.append('%sB' % freespace.incomplete_info.size)
+
+        self._text.set_text(text)
+
+
 class MarkedItemsWidget(urwid.WidgetWrap):
     def __init__(self):
         self._text = urwid.Text(('bottombar', ' '))

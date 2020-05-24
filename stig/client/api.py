@@ -14,6 +14,7 @@ import asyncio
 from . import errors
 from .aiotransmission.api_settings import SettingsAPI
 from .aiotransmission.api_status import StatusAPI
+from .aiotransmission.api_freespace import FreeSpaceAPI
 from .aiotransmission.api_torrent import TorrentAPI
 from .aiotransmission.rpc import TransmissionRPC
 from .poll import RequestPoller
@@ -29,9 +30,9 @@ class API():
     Provide and manage *API classes as singletons
 
     A convenience class that provides instances of TransmissionRPC, TorrentAPI,
-    StatusAPI, TorrentRequestPool and TorrentCounters and all ClientError
-    exceptions in one object. All instances except TransmissionRPC are created
-    lazily on demand.
+    StatusAPI, FreeSpaceAPI, TorrentRequestPool and TorrentCounters and all
+    ClientError exceptions in one object. All instances except TransmissionRPC
+    are created lazily on demand.
     """
 
     # Make errors available without having to import them everywhere
@@ -80,6 +81,12 @@ class API():
         """StatusAPI singleton"""
         log.debug('Creating StatusAPI singleton')
         return StatusAPI(self, interval=self._interval)
+
+    @cached_property(after_creation=lambda self: setattr(self, 'freespace_created', True))
+    def freespace(self):
+        """FreeSpaceAPI singleton"""
+        log.debug('Creating FreeSpaceAPI singleton')
+        return FreeSpaceAPI(self, interval=self._interval)
 
     @cached_property(after_creation=lambda self: setattr(self, 'settings_created', True))
     def settings(self):
@@ -160,7 +167,7 @@ class API():
         self._manage_pollers_interval.interrupt()
 
     # Standard pollers accessible through properties
-    _STD_POLLERS = ('status', 'settings', 'treqpool')
+    _STD_POLLERS = ('status', 'freespace', 'settings', 'treqpool')
     @property
     def _existing_pollers(self):
         for pname in self._STD_POLLERS:
