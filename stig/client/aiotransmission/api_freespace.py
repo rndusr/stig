@@ -15,6 +15,7 @@ import blinker
 
 from stig.utils.usertypes import Int
 from ..poll import RequestPoller
+from ..errors import TimeoutError
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -87,7 +88,8 @@ class DirectorySpaceWatcher():
             self._on_update.send(self.space_info)
 
     def _handle_size_error(self, error):
-        if not self.space_info.path:
+        if not self.space_info.path \
+           or isinstance(error, TimeoutError):
             log.debug('Ignoring exception: %r', error)
         else:
             raise error
