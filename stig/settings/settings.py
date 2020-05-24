@@ -165,6 +165,19 @@ class RemoteSettings(abc.Mapping):
         """Run `callback` after settings are updated"""
         return self._cfg.on_update(callback, autoremove=autoremove)
 
+    def on_change(self, callback, name=None, autoremove=True):
+        """
+        Run `callback` every time a value is changed
+
+        If `name` is None, run `callback` after every change.
+
+        The signature of `callback` must be: (settings, name, value)
+
+        If `autoremove` is True, stop calling `callback` once it is garbage
+        collected.
+        """
+        self._cfg.on_set(callback, key=name, autoremove=autoremove)
+
     # Settings class protocol
 
     def reset(self, name):
