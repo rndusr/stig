@@ -2,8 +2,9 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, call, patch
 
-import asynctest
+from natsort import humansorted
 
+import asynctest
 from stig.completion import Candidates, candidates
 from stig.utils import usertypes
 from stig.utils.cliparser import Arg, Args
@@ -110,7 +111,7 @@ class Test_setting_values(unittest.TestCase):
 class Test_fs_path(unittest.TestCase):
     def do(self, *args, exp_cands, **kwargs):
         cands = candidates.fs_path(*args, **kwargs)
-        self.assertEqual(tuple(cands), tuple(sorted(exp_cands)))
+        self.assertEqual(tuple(cands), tuple(humansorted(exp_cands)))
         self.assertEqual(cands.curarg_seps, ('/',))
 
     @patch('os.scandir')
@@ -169,16 +170,16 @@ class Test_fs_path(unittest.TestCase):
             SimpleNamespace(name='.baz', is_dir=lambda *a, **k: False)
         ]
         self.do('x', base='/', exp_cands=('bar',))
-        self.do('.', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('.', base='/', exp_cands=('bar', '.baz', '.foo'))
         self.do('./', base='/', exp_cands=('bar',))
-        self.do('./.', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('./.', base='/', exp_cands=('bar', '.baz', '.foo'))
         self.do('/a/b/c/', base='/', exp_cands=('bar',))
-        self.do('/a/b/c/.', base='/', exp_cands=('.foo', 'bar', '.baz'))
-        self.do('/a/b/c/.def', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('/a/b/c/.', base='/', exp_cands=('bar', '.baz', '.foo'))
+        self.do('/a/b/c/.def', base='/', exp_cands=('bar', '.baz', '.foo'))
         self.do('/a/b/c/def', base='/', exp_cands=('bar',))
         self.do('~abc/', base='/', exp_cands=('bar',))
-        self.do('~abc/.', base='/', exp_cands=('.foo', 'bar', '.baz'))
-        self.do('~abc/.def', base='/', exp_cands=('.foo', 'bar', '.baz'))
+        self.do('~abc/.', base='/', exp_cands=('bar', '.baz', '.foo'))
+        self.do('~abc/.def', base='/', exp_cands=('bar', '.baz', '.foo'))
         self.do('~abc/def', base='/', exp_cands=('bar',))
 
     @patch('os.scandir')
