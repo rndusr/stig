@@ -9,6 +9,8 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+from natsort import humansorted
+
 from . import _mixin as mixin
 from .. import CmdError
 from ... import objects
@@ -40,7 +42,7 @@ class ListTrackersCmd(base.ListTrackersCmdbase,
                 return trkfilter.apply(trackers)
 
         trklist = []
-        for torrent in sorted(torrents, key=lambda t: t['name'].lower()):
+        for torrent in humansorted(torrents, key=lambda t: t['name']):
             trklist.extend(filter_trackers(torrent['trackers']))
 
         sort.apply(trklist, inplace=True)
