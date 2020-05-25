@@ -127,8 +127,8 @@ class FreeSpaceAPI():
 
     @property
     def running(self):
-        return self._watcher_incomplete.running \
-               and self._watcher_incomplete.running
+        return (self._watcher_incomplete.running
+                and self._watcher_incomplete.running)
 
     @property
     def interval(self):

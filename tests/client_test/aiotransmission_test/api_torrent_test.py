@@ -63,14 +63,14 @@ class TestAddingTorrents(TorrentAPITestCase):
                          ('Torrent file is corrupt or doesn\'t exist: %r' % rsrc.TORRENTFILE_NOEXIST,))
 
     @asynctest.patch('os.path.exists', return_value=True)
-    @asynctest.patch('os.path.getsize', return_value=int(MAX_TORRENT_FILE_SIZE)+1)
+    @asynctest.patch('os.path.getsize', return_value=int(MAX_TORRENT_FILE_SIZE) + 1)
     async def test_add_torrent_by_giant_file(self, _, __):
         response = await self.api.add('some.torrent')
         self.assertEqual(response.success, False)
         self.assertEqual(response.torrent, None)
         self.assertEqual(response.msgs, ())
         e = 'some.torrent is bigger than %s: %s (%s bytes)' % (
-            MAX_TORRENT_FILE_SIZE, MAX_TORRENT_FILE_SIZE+1, int(MAX_TORRENT_FILE_SIZE)+1)
+            MAX_TORRENT_FILE_SIZE, MAX_TORRENT_FILE_SIZE + 1, int(MAX_TORRENT_FILE_SIZE) + 1)
         self.assertEqual(response.errors, (e,))
 
     async def test_add_torrent_by_hash(self):

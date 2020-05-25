@@ -9,5 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
+# flake8: noqa
+
 from .defaults import init_defaults
 from .settings import CombinedSettings, RemoteSettings, Settings
