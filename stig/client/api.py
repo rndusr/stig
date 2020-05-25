@@ -12,9 +12,9 @@
 import asyncio
 
 from . import errors
+from .aiotransmission.api_freespace import FreeSpaceAPI
 from .aiotransmission.api_settings import SettingsAPI
 from .aiotransmission.api_status import StatusAPI
-from .aiotransmission.api_freespace import FreeSpaceAPI
 from .aiotransmission.api_torrent import TorrentAPI
 from .aiotransmission.rpc import TransmissionRPC
 from .poll import RequestPoller
