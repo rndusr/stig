@@ -1,5 +1,6 @@
 from copy import deepcopy
 from types import SimpleNamespace
+from unittest.mock import Mock, call
 
 import asynctest
 import resources_aiotransmission as rsrc
@@ -76,9 +77,9 @@ class TestSettingsAPI(asynctest.TestCase):
     async def test_set_method(self):
         # We need a spec from a callable because blinker does some weird stuff and we get
         # an AttributeError for '__self__' without the spec.
-        cb_any = asynctest.MagicMock(spec=lambda self: None)
+        cb_any = Mock(spec=lambda self: None)
         self.api.on_set(cb_any)
-        cb = asynctest.MagicMock(spec=lambda self: None)
+        cb = Mock(spec=lambda self: None)
         self.api.on_set(cb, key='limit.rate.down')
 
         await self.api.set('limit.rate.down', 555e3)
@@ -110,12 +111,17 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['autostart'], value)
 
     async def test_set_autostart(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='autostart')
+
         await self.api.set_autostart(True)
         self.assertEqual(self.rpc.fake_settings['start-added-torrents'], True)
         await self.api.set_autostart(False)
         self.assertEqual(self.rpc.fake_settings['start-added-torrents'], False)
         with self.assertRaises(ValueError):
             await self.api.set_autostart('hello?')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_port(self):
@@ -129,13 +135,16 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['port'], value)
 
     async def test_set_port(self):
-        self.rpc.fake_settings['peer-port'] = 123
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='port')
 
+        self.rpc.fake_settings['peer-port'] = 123
         await self.api.set_port(456)
         self.assertEqual(self.rpc.fake_settings['peer-port'], 456)
-
         with self.assertRaises(ValueError):
             await self.api.set_port('Pick one!')
+
+        self.assertEqual(cb.call_args_list, [call(self.api)])
 
 
     async def test_get_port_random(self):
@@ -149,6 +158,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['port.random'], value)
 
     async def test_set_port_random(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='port.random')
+
         self.rpc.fake_settings['peer-port-random-on-start'] = True
 
         await self.api.set_port_random(False)
@@ -159,6 +171,8 @@ class TestSettingsAPI(asynctest.TestCase):
 
         with self.assertRaises(ValueError):
             await self.api.set_port_random('For sure!')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_port_forwarding(self):
@@ -173,6 +187,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertFalse(value)
 
     async def test_set_port_forwarding(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='port.forwarding')
+
         self.rpc.fake_settings['port-forwarding-enabled'] = False
 
         await self.api.set_port_forwarding('on')
@@ -183,6 +200,8 @@ class TestSettingsAPI(asynctest.TestCase):
 
         with self.assertRaises(ValueError):
             await self.api.set_port_forwarding('over my dead body')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_limit_peers_global(self):
@@ -200,6 +219,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(str(value), '17k')
 
     async def test_set_limit_peers_global(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='limit.peers.global')
+
         self.assertIs(self.api['limit.peers.global'], const.DISCONNECTED)
 
         self.assertNotEqual(self.rpc.fake_settings['peer-limit-global'], 58329)
@@ -211,6 +233,8 @@ class TestSettingsAPI(asynctest.TestCase):
 
         with self.assertRaises(ValueError):
             await self.api.set_limit_peers_global('all of them')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_limit_peers_torrent(self):
@@ -228,6 +252,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(str(value), '17k')
 
     async def test_set_limit_peers_torrent(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='limit.peers.torrent')
+
         self.assertIs(self.api['limit.peers.torrent'], const.DISCONNECTED)
 
         self.assertNotEqual(self.rpc.fake_settings['peer-limit-per-torrent'], 58329)
@@ -239,6 +266,8 @@ class TestSettingsAPI(asynctest.TestCase):
 
         with self.assertRaises(ValueError):
             await self.api.set_limit_peers_global('all of them')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_encryption(self):
@@ -260,6 +289,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['encryption'], value)
 
     async def test_set_encryption(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='encryption')
+
         self.rpc.fake_settings['encryption'] = 'required'
         await self.api.set_encryption('preferred')
         self.assertEqual(self.rpc.fake_settings['encryption'], 'preferred')
@@ -269,6 +301,8 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['encryption'], 'required')
         with self.assertRaises(ValueError):
             await self.api.set_encryption('AES256')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api), call(self.api)])
 
 
     async def test_get_utp(self):
@@ -287,12 +321,17 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['utp'], value)
 
     async def test_set_utp(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='utp')
+
         await self.api.set_utp(True)
         self.assertEqual(self.rpc.fake_settings['utp-enabled'], True)
         await self.api.set_utp(False)
         self.assertEqual(self.rpc.fake_settings['utp-enabled'], False)
         with self.assertRaises(ValueError):
             await self.api.set_utp('a fishy value')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_dht(self):
@@ -311,12 +350,17 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['dht'], value)
 
     async def test_set_dht(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='dht')
+
         await self.api.set_dht(True)
         self.assertEqual(self.rpc.fake_settings['dht-enabled'], True)
         await self.api.set_dht(False)
         self.assertEqual(self.rpc.fake_settings['dht-enabled'], False)
         with self.assertRaises(ValueError):
             await self.api.set_dht('not a boolean')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_pex(self):
@@ -335,12 +379,17 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['pex'], value)
 
     async def test_set_pex(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='pex')
+
         await self.api.set_pex(True)
         self.assertEqual(self.rpc.fake_settings['pex-enabled'], True)
         await self.api.set_pex(False)
         self.assertEqual(self.rpc.fake_settings['pex-enabled'], False)
         with self.assertRaises(ValueError):
             await self.api.set_pex('not a boolean')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_lpd(self):
@@ -359,12 +408,17 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertIs(self.api['lpd'], value)
 
     async def test_set_lpd(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='lpd')
+
         await self.api.set_lpd(True)
         self.assertEqual(self.rpc.fake_settings['lpd-enabled'], True)
         await self.api.set_lpd(False)
         self.assertEqual(self.rpc.fake_settings['lpd-enabled'], False)
         with self.assertRaises(ValueError):
             await self.api.set_lpd('One ValueError, please.')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_path_complete(self):
@@ -376,6 +430,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(value, '/foo/bar')
 
     async def test_set_path_complete(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='path.complete')
+
         self.rpc.fake_settings['download-dir'] = '/foo/bar'
         await self.api.set_path_complete('/bar/baz')
         self.assertEqual(self.rpc.fake_settings['download-dir'], '/bar/baz')
@@ -385,6 +442,8 @@ class TestSettingsAPI(asynctest.TestCase):
 
         await self.api.set_path_complete('////bli/bloop///di/blop//')
         self.assertEqual(self.rpc.fake_settings['download-dir'], '/bli/bloop/di/blop')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api), call(self.api)])
 
 
     async def test_get_path_incomplete(self):
@@ -403,6 +462,9 @@ class TestSettingsAPI(asynctest.TestCase):
 
 
     async def test_set_path_incomplete(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='path.incomplete')
+
         self.rpc.fake_settings['incomplete-dir-enabled'] = False
         self.rpc.fake_settings['incomplete-dir'] = '/foo'
 
@@ -422,6 +484,8 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(self.rpc.fake_settings['incomplete-dir-enabled'], True)
         self.assertEqual(self.rpc.fake_settings['incomplete-dir'], '/baa/boo/relative/path')
 
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api), call(self.api), call(self.api)])
+
 
     async def test_get_files_part(self):
         self.assertEqual(self.api['files.part'], const.DISCONNECTED)
@@ -437,6 +501,9 @@ class TestSettingsAPI(asynctest.TestCase):
         self.assertEqual(value, True)
 
     async def test_set_files_part(self):
+        cb = Mock(spec=lambda self: None)
+        self.api.on_set(cb, key='files.part')
+
         self.rpc.fake_settings['rename-partial-files'] = False
         await self.api.set_files_part(True)
         self.assertEqual(self.rpc.fake_settings['rename-partial-files'], True)
@@ -446,6 +513,8 @@ class TestSettingsAPI(asynctest.TestCase):
 
         with self.assertRaises(ValueError):
             await self.api.set_files_part('foo')
+
+        self.assertEqual(cb.call_args_list, [call(self.api), call(self.api)])
 
 
     async def test_get_limit_rate(self):
@@ -481,6 +550,10 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_set_limit_rate(self):
         for direction in ('up', 'down'):
+            cb = Mock(spec=lambda self: None)
+            self.api.on_set(cb, key='limit.rate.' + direction)
+            exp_cb_calls = 0
+
             convert.bandwidth.unit = 'byte'
 
             method = getattr(self.api, 'set_limit_rate_' + direction)
@@ -488,49 +561,65 @@ class TestSettingsAPI(asynctest.TestCase):
             enabled_field = 'speed-limit-' + direction + '-enabled'
 
             await method(80e3)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 80)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(0)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(-1)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
             convert.bandwidth.unit = 'bit'
             await method(80e3)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 10)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             convert.bandwidth.unit = 'byte'
             await method('100k')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(False)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
             await method(True)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method('off')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
             await method('on')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(const.UNLIMITED)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
+            self.assertEqual(cb.call_args_list, [call(self.api)] * exp_cb_calls)
+
     async def test_adjust_limit_rate(self):
         for direction in ('up', 'down'):
+            cb = Mock(spec=lambda self: None)
+            self.api.on_set(cb, key='limit.rate.' + direction)
+            exp_cb_calls = 0
+
             convert.bandwidth.unit = 'byte'
 
             method = getattr(self.api, 'adjust_limit_rate_' + direction)
@@ -541,34 +630,43 @@ class TestSettingsAPI(asynctest.TestCase):
             self.rpc.fake_settings[enabled_field] = True
 
             await method(-30e3)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 50)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(50e3)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(-101e3)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(-1)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
             convert.bandwidth.unit = 'bit'
             await method(800e3)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             convert.bandwidth.unit = 'byte'
             await method('400k')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 500)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method('-800kb')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 400)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+            self.assertEqual(cb.call_args_list, [call(self.api)] * exp_cb_calls)
 
     async def test_get_limit_rate_alt(self):
         for direction in ('up', 'down'):
@@ -593,6 +691,10 @@ class TestSettingsAPI(asynctest.TestCase):
 
     async def test_set_limit_rate_alt(self):
         for direction in ('up', 'down'):
+            cb = Mock(spec=lambda self: None)
+            self.api.on_set(cb, key='limit.rate.alt.' + direction)
+            exp_cb_calls = 0
+
             convert.bandwidth.unit = 'byte'
             self.api.clearcache()
 
@@ -606,23 +708,33 @@ class TestSettingsAPI(asynctest.TestCase):
             self.rpc.fake_settings[value_field] = 1000
             self.rpc.fake_settings[enabled_field] = True
             await method('100k')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method('off')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
             await method('on')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method(const.UNLIMITED)
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 100)
             self.assertEqual(self.rpc.fake_settings[enabled_field], False)
 
+            self.assertEqual(cb.call_args_list, [call(self.api)] * exp_cb_calls)
+
     async def test_adjust_limit_rate_alt(self):
         for direction in ('up', 'down'):
+            cb = Mock(spec=lambda self: None)
+            self.api.on_set(cb, key='limit.rate.alt.' + direction)
+            exp_cb_calls = 0
+
             convert.bandwidth.unit = 'byte'
             self.api.clearcache()
 
@@ -633,13 +745,18 @@ class TestSettingsAPI(asynctest.TestCase):
             self.rpc.fake_settings[value_field] = 1000
             self.rpc.fake_settings[enabled_field] = True
             await method('1000k')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 2000)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method('-500k')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 1500)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
 
             await method('-5000k')
+            exp_cb_calls += 1
             self.assertEqual(self.rpc.fake_settings[value_field], 0)
             self.assertEqual(self.rpc.fake_settings[enabled_field], True)
+
+            self.assertEqual(cb.call_args_list, [call(self.api)] * exp_cb_calls)
