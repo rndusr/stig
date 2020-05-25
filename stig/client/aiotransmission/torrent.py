@@ -375,7 +375,7 @@ class TrackerList(tuple):
         )
 
 
-# Map our keys to tuples of needed RPC field names for those keys
+# Map abstracted keys to tuples of needed RPC field names
 DEPENDENCIES = {
     'id'                           : ('id',),
     'hash'                         : ('hashString',),
@@ -436,7 +436,8 @@ class Torrent(base.TorrentBase):
     """
     Information about a torrent as a mapping
 
-    The available keys are specified in DEPENDENCIES and ttypes.TYPES.
+    The available keys are specified in DEPENDENCIES, which must have the same keys as
+    TorrentBase.TYPES.
     """
 
     # Map our keys to callables that adjust the raw RPC values or create values
@@ -520,7 +521,7 @@ class Torrent(base.TorrentBase):
                 value = self._raw[fields[0]]
 
             # Maybe change the value's type
-            type = ttypes.TYPES.get(key)
+            type = base.TorrentBase.TYPES.get(key)
             if type is not None:
                 value = type(value)
             cache[key] = value

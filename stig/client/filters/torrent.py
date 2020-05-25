@@ -11,7 +11,7 @@
 
 """Filtering Torrents by their values"""
 
-from ..ttypes import TYPES as VALUETYPES
+from ..base import TorrentBase
 from ..utils import Bandwidth, BoolOrBandwidth, Status, convert
 from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
 from .utils import cmp_timestamp_or_timdelta, limit_rate_filter, timestamp_or_timedelta
@@ -90,90 +90,90 @@ class _SingleFilter(Filter):
 
     COMPARATIVE_FILTERS = FilterSpecDict({
         'id'              : CmpFilterSpec(value_getter=lambda t: t['id'],
-                                          value_type=VALUETYPES['id'],
+                                          value_type=TorrentBase.TYPES['id'],
                                           needed_keys=('id',),
                                           description=_desc('... torrent ID')),
 
         'hash'            : CmpFilterSpec(value_getter=lambda t: t['hash'],
-                                          value_type=VALUETYPES['hash'],
+                                          value_type=TorrentBase.TYPES['hash'],
                                           needed_keys=('hash',),
                                           description=_desc('... torrent SHA1 hash')),
 
         'name'            : CmpFilterSpec(value_getter=lambda t: t['name'],
-                                          value_type=VALUETYPES['name'],
+                                          value_type=TorrentBase.TYPES['name'],
                                           needed_keys=('name',),
                                           aliases=('n',),
                                           description=_desc('... name')),
 
         'comment'         : CmpFilterSpec(value_getter=lambda t: t['comment'],
-                                          value_type=VALUETYPES['comment'],
+                                          value_type=TorrentBase.TYPES['comment'],
                                           needed_keys=('comment',),
                                           aliases=('cmnt',),
                                           description=_desc('... comment')),
 
         'path'            : CmpFilterSpec(value_getter=lambda t: t['path'],
-                                          value_type=VALUETYPES['path'],
+                                          value_type=TorrentBase.TYPES['path'],
                                           needed_keys=('path',),
                                           description=_desc('... absolute path to download directory')),
 
         'error'           : CmpFilterSpec(value_getter=lambda t: t['error'],
-                                          value_type=VALUETYPES['error'],
+                                          value_type=TorrentBase.TYPES['error'],
                                           needed_keys=('error',),
                                           aliases=('err',),
                                           description=_desc('... error message')),
 
         'uploaded'        : CmpFilterSpec(value_getter=lambda t: t['size-uploaded'],
-                                          value_type=VALUETYPES['size-uploaded'],
+                                          value_type=TorrentBase.TYPES['size-uploaded'],
                                           needed_keys=('size-uploaded',),
                                           aliases=('up',),
                                           description=_desc('... number of uploaded bytes')),
 
         'downloaded'      : CmpFilterSpec(value_getter=lambda t: t['size-downloaded'],
-                                          value_type=VALUETYPES['size-downloaded'],
+                                          value_type=TorrentBase.TYPES['size-downloaded'],
                                           needed_keys=('size-downloaded',),
                                           aliases=('dn',),
                                           description=_desc('... number of downloaded bytes')),
 
         '%downloaded'     : CmpFilterSpec(value_getter=lambda t: t['%downloaded'],
-                                          value_type=VALUETYPES['%downloaded'],
+                                          value_type=TorrentBase.TYPES['%downloaded'],
                                           needed_keys=('%downloaded',),
                                           aliases=('%dn',),
                                           description=_desc('... percentage of downloaded bytes')),
 
         'size'            : CmpFilterSpec(value_getter=lambda t: t['size-final'],
-                                          value_type=VALUETYPES['size-final'],
+                                          value_type=TorrentBase.TYPES['size-final'],
                                           value_convert=convert.size,
                                           needed_keys=('size-final',),
                                           aliases=('sz',),
                                           description=_desc('... combined size of all wanted files')),
 
         'peers'           : CmpFilterSpec(value_getter=lambda t: t['peers-connected'],
-                                          value_type=VALUETYPES['peers-connected'],
+                                          value_type=TorrentBase.TYPES['peers-connected'],
                                           needed_keys=('peers-connected',),
                                           aliases=('prs',),
                                           description=_desc('... number of connected peers')),
 
         'seeds'           : CmpFilterSpec(value_getter=lambda t: t['peers-seeding'],
-                                          value_type=VALUETYPES['peers-seeding'],
+                                          value_type=TorrentBase.TYPES['peers-seeding'],
                                           needed_keys=('peers-seeding',),
                                           aliases=('sds',),
                                           description=_desc('... largest number of seeds reported by any tracker')),
 
         'ratio'           : CmpFilterSpec(value_getter=lambda t: t['ratio'],
-                                          value_type=VALUETYPES['ratio'],
+                                          value_type=TorrentBase.TYPES['ratio'],
                                           needed_keys=('ratio',),
                                           aliases=('rto',),
                                           description=_desc('... uploaded/downloaded ratio')),
 
         'rate-up'         : CmpFilterSpec(value_getter=lambda t: t['rate-up'],
-                                          value_type=VALUETYPES['rate-up'],
+                                          value_type=TorrentBase.TYPES['rate-up'],
                                           value_convert=Bandwidth,
                                           needed_keys=('rate-up',),
                                           aliases=('rup',),
                                           description=_desc('... upload rate')),
 
         'rate-down'       : CmpFilterSpec(value_getter=lambda t: t['rate-down'],
-                                          value_type=VALUETYPES['rate-down'],
+                                          value_type=TorrentBase.TYPES['rate-down'],
                                           value_convert=Bandwidth,
                                           needed_keys=('rate-down',),
                                           aliases=('rdn',),
@@ -205,14 +205,14 @@ class _SingleFilter(Filter):
 
         'eta'             : CmpFilterSpec(value_getter=lambda t: t['timespan-eta'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['timespan-eta'], op, v),
-                                          value_type=VALUETYPES['timespan-eta'],
+                                          value_type=TorrentBase.TYPES['timespan-eta'],
                                           value_convert=timestamp_or_timedelta,
                                           needed_keys=('timespan-eta',),
                                           description=_desc('... estimated time to finish downloading')),
 
         'created'         : CmpFilterSpec(value_getter=lambda t: t['time-created'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-created'], op, v),
-                                          value_type=VALUETYPES['time-created'],
+                                          value_type=TorrentBase.TYPES['time-created'],
                                           value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
                                           needed_keys=('time-created',),
                                           aliases=('tcrt',),
@@ -220,7 +220,7 @@ class _SingleFilter(Filter):
 
         'added'           : CmpFilterSpec(value_getter=lambda t: t['time-added'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-added'], op, v),
-                                          value_type=VALUETYPES['time-added'],
+                                          value_type=TorrentBase.TYPES['time-added'],
                                           value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
                                           needed_keys=('time-added',),
                                           aliases=('tadd',),
@@ -228,7 +228,7 @@ class _SingleFilter(Filter):
 
         'started'         : CmpFilterSpec(value_getter=lambda t: t['time-started'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-started'], op, v),
-                                          value_type=VALUETYPES['time-started'],
+                                          value_type=TorrentBase.TYPES['time-started'],
                                           value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
                                           needed_keys=('time-started',),
                                           aliases=('tsta',),
@@ -236,7 +236,7 @@ class _SingleFilter(Filter):
 
         'activity'        : CmpFilterSpec(value_getter=lambda t: t['time-activity'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-activity'], op, v),
-                                          value_type=VALUETYPES['time-activity'],
+                                          value_type=TorrentBase.TYPES['time-activity'],
                                           value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
                                           needed_keys=('time-activity',),
                                           aliases=('tact',),
@@ -244,7 +244,7 @@ class _SingleFilter(Filter):
 
         'completed'       : CmpFilterSpec(value_getter=lambda t: t['time-completed'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['time-completed'], op, v),
-                                          value_type=VALUETYPES['time-completed'],
+                                          value_type=TorrentBase.TYPES['time-completed'],
                                           value_convert=lambda v: timestamp_or_timedelta(v, default_sign=-1),
                                           needed_keys=('time-completed',),
                                           aliases=('tcmp',),

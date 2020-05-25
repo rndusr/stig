@@ -12,7 +12,7 @@
 from collections import abc
 from urllib.parse import quote_plus as urlquote
 
-from . import ClientError
+from . import ClientError, utils
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -26,6 +26,59 @@ class TorrentBase(abc.Mapping):
     Derivatives of this base class must add the methods 'update',
     '__getitem__' and '__iter__'.
     """
+
+    TYPES = {
+        'id'                           : int,
+        'hash'                         : utils.SHA1,
+        'name'                         : utils.SmartCmpStr,
+        'ratio'                        : utils.Ratio,
+        'status'                       : utils.Status,
+        'path'                         : utils.SmartCmpPath,
+        'private'                      : bool,
+        'comment'                      : utils.SmartCmpStr,
+        'creator'                      : utils.SmartCmpStr,
+        'magnetlink'                   : str,
+        'count-pieces'                 : utils.Int,
+
+        '%downloaded'                  : utils.Percent,
+        '%uploaded'                    : utils.Percent,
+        '%metadata'                    : utils.Percent,
+        '%verified'                    : utils.Percent,
+        '%available'                   : utils.Percent,
+
+        'peers-connected'              : utils.Int,
+        'peers-uploading'              : utils.Int,
+        'peers-downloading'            : utils.Int,
+        'peers-seeding'                : utils.Count,
+
+        'timespan-eta'                 : utils.Timedelta,
+        'timespan-seeding'             : utils.Timedelta,
+        'timespan-downloading'         : utils.Timedelta,
+        'time-created'                 : utils.Timestamp,
+        'time-added'                   : utils.Timestamp,
+        'time-started'                 : utils.Timestamp,
+        'time-activity'                : utils.Timestamp,
+        'time-completed'               : utils.Timestamp,
+        'time-manual-announce-allowed' : utils.Timestamp,
+
+        'rate-down'                    : utils.BandwidthInBytes,
+        'rate-up'                      : utils.BandwidthInBytes,
+        'limit-rate-down'              : utils.BandwidthInBytesOrNone,
+        'limit-rate-up'                : utils.BandwidthInBytesOrNone,
+        'size-final'                   : utils.SizeInBytes,
+        'size-total'                   : utils.SizeInBytes,
+        'size-downloaded'              : utils.SizeInBytes,
+        'size-uploaded'                : utils.SizeInBytes,
+        'size-available'               : utils.SizeInBytes,
+        'size-left'                    : utils.SizeInBytes,
+        'size-corrupt'                 : utils.SizeInBytes,
+        'size-piece'                   : utils.SizeInBytes,
+
+        'error'                        : str,
+        'trackers'                     : tuple,
+        'peers'                        : tuple,
+        'files'                        : None,
+    }
 
     def update(self, raw_torrent):
         raise NotImplementedError()

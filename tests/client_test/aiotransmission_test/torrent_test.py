@@ -4,8 +4,8 @@ from stig.client.aiotransmission import torrent
 
 
 def test_all_dependencies_are_standard_keys():
-    from stig.client.ttypes import TYPES
-    assert set(torrent.DEPENDENCIES) == set(TYPES)
+    from stig.client.base import TorrentBase
+    assert set(torrent.DEPENDENCIES) == set(TorrentBase.TYPES)
 
 
 class Test_is_isolated(unittest.TestCase):

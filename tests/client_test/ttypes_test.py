@@ -6,7 +6,7 @@ from stig.client import ttypes
 
 class TestValueTypes(unittest.TestCase):
     def test_Torrent_types(self):
-        for t in ttypes.TYPES.values():
+        for t in ttypes.TorrentBase.TYPES.values():
             self.assertTrue(isinstance(t, type) or t is None)
 
     def test_TorrentPeer_types(self):

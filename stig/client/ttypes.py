@@ -9,19 +9,14 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-"""Value types used in Torrent classes"""
-
-# The TYPES dictionary at the end of this file maps Torrent key names to types.
-# Types must derive from `type` or be None.  Every Torrent key must have a type.
-#
-# Types are used to convert values from the server (e.g. `Float(1234567)`) and
-# for some types from the user as strings (e.g. `Float('1.3GB')`).
+"""More complex types for torrent data, e.g. lists of peers or a file tree"""
 
 import os
 import time
 from collections import abc, defaultdict, deque
 
 from . import utils
+from .base import TorrentBase  # noqa: F401
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -323,57 +318,3 @@ class TorrentTracker(abc.Mapping):
     def __repr__(self): return '<%s %s>' % (type(self).__name__, self['url-announce'])
     def __iter__(self): return iter(self.TYPES)
     def __len__(self): return len(self.TYPES)
-
-
-TYPES = {
-    'id'                           : int,
-    'hash'                         : utils.SHA1,
-    'name'                         : utils.SmartCmpStr,
-    'ratio'                        : utils.Ratio,
-    'status'                       : utils.Status,
-    'path'                         : utils.SmartCmpPath,
-    'private'                      : bool,
-    'comment'                      : utils.SmartCmpStr,
-    'creator'                      : utils.SmartCmpStr,
-    'magnetlink'                   : str,
-    'count-pieces'                 : utils.Int,
-
-    '%downloaded'                  : utils.Percent,
-    '%uploaded'                    : utils.Percent,
-    '%metadata'                    : utils.Percent,
-    '%verified'                    : utils.Percent,
-    '%available'                   : utils.Percent,
-
-    'peers-connected'              : utils.Int,
-    'peers-uploading'              : utils.Int,
-    'peers-downloading'            : utils.Int,
-    'peers-seeding'                : utils.Count,
-
-    'timespan-eta'                 : utils.Timedelta,
-    'timespan-seeding'             : utils.Timedelta,
-    'timespan-downloading'         : utils.Timedelta,
-    'time-created'                 : utils.Timestamp,
-    'time-added'                   : utils.Timestamp,
-    'time-started'                 : utils.Timestamp,
-    'time-activity'                : utils.Timestamp,
-    'time-completed'               : utils.Timestamp,
-    'time-manual-announce-allowed' : utils.Timestamp,
-
-    'rate-down'                    : utils.BandwidthInBytes,
-    'rate-up'                      : utils.BandwidthInBytes,
-    'limit-rate-down'              : utils.BandwidthInBytesOrNone,
-    'limit-rate-up'                : utils.BandwidthInBytesOrNone,
-    'size-final'                   : utils.SizeInBytes,
-    'size-total'                   : utils.SizeInBytes,
-    'size-downloaded'              : utils.SizeInBytes,
-    'size-uploaded'                : utils.SizeInBytes,
-    'size-available'               : utils.SizeInBytes,
-    'size-left'                    : utils.SizeInBytes,
-    'size-corrupt'                 : utils.SizeInBytes,
-    'size-piece'                   : utils.SizeInBytes,
-
-    'error'                        : str,
-    'trackers'                     : tuple,
-    'peers'                        : tuple,
-    'files'                        : None,
-}
