@@ -25,6 +25,7 @@
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
     * Move tabs with <H> and <L>.
+    * Display free space in the bottom bar.
     * The command 'dump' collects settings, keybindings and open tabs, translates them
       into commands and writes them to a file or stdout.  It is bound to <alt-S> by
       default.
