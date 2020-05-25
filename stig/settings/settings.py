@@ -28,7 +28,7 @@ class Settings(abc.Mapping):
         self._getters = defaultdict(lambda: None)
         self._setters = defaultdict(lambda: None)
         self._descriptions = {}
-        self._signals = {}
+        self._signals = defaultdict(lambda: Signal())
         self._global_signal = Signal()
 
     def add(self, name, constructor, default, description=None, getter=None, setter=None):
@@ -44,7 +44,6 @@ class Settings(abc.Mapping):
         setter:      Callable with one argument that sets the value
         """
         self._constructors[name] = constructor
-        self._signals[name] = Signal()
         self._descriptions[name] = description
         value_ = self.validate(name, default)
         self._values[name] = value_
