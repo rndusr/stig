@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, call
 
 import asynctest
+
 from stig.settings.settings import CombinedSettings, RemoteSettings, Settings
 
 

@@ -2,9 +2,9 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, call, patch
 
+import asynctest
 from natsort import humansorted
 
-import asynctest
 from stig.completion import Candidates, candidates
 from stig.utils import usertypes
 from stig.utils.cliparser import Arg, Args

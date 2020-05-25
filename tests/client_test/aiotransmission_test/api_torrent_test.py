@@ -1,6 +1,7 @@
 import os.path
 
 import asynctest
+
 import resources_aiotransmission as rsrc
 from stig.client import MAX_TORRENT_FILE_SIZE
 from stig.client.aiotransmission.api_torrent import TorrentAPI

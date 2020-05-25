@@ -1,8 +1,8 @@
 import asyncio
 
+import asynctest
 from aiohttp import web
 
-import asynctest
 import resources_aiotransmission as rsrc
 from stig.client import AuthError, ConnectionError, RPCError, TimeoutError
 from stig.client.aiotransmission.rpc import TransmissionRPC
