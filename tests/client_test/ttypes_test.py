@@ -1,7 +1,7 @@
 import random
 import unittest
 
-from stig.client import ttypes, utils
+from stig.client import ttypes
 
 
 class TestValueTypes(unittest.TestCase):
