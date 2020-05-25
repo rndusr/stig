@@ -46,14 +46,29 @@ class TorrentFilePriority(str):
         else:
             return False
 
-    def __ne__(self, other): return not self.__eq__(other)
-    def __lt__(self, other): return self.as_int < int(other)
-    def __gt__(self, other): return self.as_int > int(other)
-    def __le__(self, other): return self.as_int <= int(other)
-    def __ge__(self, other): return self.as_int >= int(other)
-    def __int__(self): return self.as_int
-    def __repr__(self): return '%s(%r)' % (type(self).__name__, str(self))
-    def __hash__(self): return super().__hash__()
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        return self.as_int < int(other)
+
+    def __gt__(self, other):
+        return self.as_int > int(other)
+
+    def __le__(self, other):
+        return self.as_int <= int(other)
+
+    def __ge__(self, other):
+        return self.as_int >= int(other)
+
+    def __int__(self):
+        return self.as_int
+
+    def __repr__(self):
+        return '%s(%r)' % (type(self).__name__, str(self))
+
+    def __hash__(self):
+        return super().__hash__()
 
 def _calc_percent(a, b):
     try:
@@ -127,10 +142,14 @@ class TorrentFile(abc.Mapping):
             except KeyError:
                 pass
 
-    def __repr__(self): return '<{} {!r}>'.format(type(self).__name__, self['name'])
-    def __iter__(self): return iter(self.TYPES)
-    def __len__(self): return len(self.TYPES)
+    def __repr__(self):
+        return '<{} {!r}>'.format(type(self).__name__, self['name'])
 
+    def __iter__(self):
+        return iter(self.TYPES)
+
+    def __len__(self):
+        return len(self.TYPES)
 
 
 class TorrentPeer(abc.Mapping):
@@ -242,10 +261,14 @@ class TorrentPeer(abc.Mapping):
     def clearcache(self):
         self._cache.clear()
 
-    def __repr__(self): return '<{} #{}, {}>'.format(type(self).__name__, self['tid'], self['ip'])
-    def __iter__(self): return iter(self.TYPES)
-    def __len__(self): return len(self.TYPES)
+    def __repr__(self):
+        return '<{} #{}, {}>'.format(type(self).__name__, self['tid'], self['ip'])
 
+    def __iter__(self):
+        return iter(self.TYPES)
+
+    def __len__(self):
+        return len(self.TYPES)
 
 
 class TrackerStatus(utils.SmartCmpStr):
@@ -315,6 +338,11 @@ class TorrentTracker(abc.Mapping):
                 cache[key] = val
         return cache[key]
 
-    def __repr__(self): return '<%s %s>' % (type(self).__name__, self['url-announce'])
-    def __iter__(self): return iter(self.TYPES)
-    def __len__(self): return len(self.TYPES)
+    def __repr__(self):
+        return '<%s %s>' % (type(self).__name__, self['url-announce'])
+
+    def __iter__(self):
+        return iter(self.TYPES)
+
+    def __len__(self):
+        return len(self.TYPES)
