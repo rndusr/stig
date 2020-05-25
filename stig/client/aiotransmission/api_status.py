@@ -14,7 +14,7 @@ from collections import namedtuple
 import blinker
 
 from ..poll import RequestPoller
-from ..utils import const, convert
+from ..utils import Status, const, convert
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -128,7 +128,6 @@ class StatusAPI():
                 active=stats['activeTorrentCount']
             )
         if tlist is not None:
-            from ..ttypes import Status
             ISOLATED = Status.ISOLATED
             tc_args.update(
                 isolated=len(tuple(filter(lambda t: ISOLATED in t['status'], tlist))),

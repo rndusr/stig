@@ -5,8 +5,7 @@ import asynctest
 import resources_aiotransmission as rsrc
 from stig.client.aiotransmission import api_status
 from stig.client.aiotransmission.api_status import StatusAPI
-from stig.client.ttypes import Status
-from stig.client.utils import const, convert
+from stig.client.utils import Status, const, convert
 
 
 class FakeTransmissionRPC():

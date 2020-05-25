@@ -21,8 +21,8 @@ from .. import ClientError
 from ..base import TorrentAPIBase
 from ..constants import MAX_TORRENT_FILE_SIZE
 from ..filters import FileFilter, TorrentFilter
-from ..ttypes import Path, SizeInBytes
-from ..utils import URL, Bandwidth, Bool, BoolOrBandwidth, Response
+from ..utils import (URL, Bandwidth, Bool, BoolOrBandwidth, Response, SizeInBytes,
+                     SmartCmpPath)
 from .torrent import Torrent, TorrentFields
 
 from ...logging import make_logger  # isort:skip
@@ -129,8 +129,8 @@ class TorrentAPI(TorrentAPIBase):
             else:
                 download_dir = response.result['download-dir']
                 abs_path = os.path.normpath(os.path.join(download_dir, path))
-                return Response(success=True, path=Path(abs_path))
-        return Response(success=True, path=Path(path))
+                return Response(success=True, path=SmartCmpPath(abs_path))
+        return Response(success=True, path=SmartCmpPath(path))
 
     async def add(self, torrent, stopped=False, path=None):
         """

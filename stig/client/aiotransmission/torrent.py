@@ -14,7 +14,7 @@
 import os
 import time
 
-from .. import base, ttypes
+from .. import base, ttypes, utils
 from ..utils import LazyDict
 
 from ...logging import make_logger  # isort:skip
@@ -28,9 +28,9 @@ def _modify_ratio(t):
     # #define TR_RATIO_INF -2
     ratio = t['uploadRatio']
     if ratio == -1:
-        return ttypes.Ratio.NOT_APPLICABLE
+        return utils.Ratio.NOT_APPLICABLE
     elif ratio == -2:
-        return ttypes.Ratio.INFINITE
+        return utils.Ratio.INFINITE
     else:
         return ratio
 
@@ -40,14 +40,14 @@ def _modify_eta(t):
     # #define TR_ETA_UNKNOWN -2
     seconds = t['eta']
     if seconds == -1:
-        return ttypes.Timedelta.NOT_APPLICABLE
+        return utils.Timedelta.NOT_APPLICABLE
     elif seconds == -2:
-        return ttypes.Timedelta.UNKNOWN
+        return utils.Timedelta.UNKNOWN
     else:
         return seconds
 
 
-def _modify_timestamp(t, key, zero_means=ttypes.Timestamp.UNKNOWN):
+def _modify_timestamp(t, key, zero_means=utils.Timestamp.UNKNOWN):
     # I couldn't find any documentation on this, but 0 seems to mean "not applicable"?
     seconds = t[key]
     if seconds == 0:
@@ -64,7 +64,7 @@ def _modify_timestamp_completed(t):
         else:
             return doneDate                  # Torrent has been completed in the past
     elif t['eta'] <= 0:
-        return ttypes.Timestamp.UNKNOWN      # Torrent is incomplete + paused
+        return utils.Timestamp.UNKNOWN       # Torrent is incomplete + paused
     else:
         return time.time() + t['eta']        # Torrent is downloading
 
@@ -74,7 +74,7 @@ def _count_seeds(t):
     if trackerStats:
         return max(t['seederCount'] for t in trackerStats)
     else:
-        return ttypes.Count.UNKNOWN
+        return utils.Count.UNKNOWN
 
 
 def _bytes_available(t):
@@ -136,7 +136,7 @@ def _find_error(t):
 
 
 def _status(t):
-    Status = ttypes.Status
+    Status = utils.Status
     statuses = []
 
     # RPC values for 'status' field:
@@ -323,11 +323,11 @@ class TrackerList(tuple):
         if state == 1:    # TR_TRACKER_WAITING = 1
             return tracker['next%sTime' % which]
         elif state == 0:  # Torrent is paused
-            return ttypes.Timestamp.NOT_APPLICABLE
+            return utils.Timestamp.NOT_APPLICABLE
         elif state == 2:  # Announce/scrape is queued
-            return ttypes.Timestamp.SOON
+            return utils.Timestamp.SOON
         else:
-            return ttypes.Timestamp.NOW
+            return utils.Timestamp.NOW
 
     @staticmethod
     def _last_time(tracker, which):
@@ -343,7 +343,7 @@ class TrackerList(tuple):
         if tracker['has%sd' % which]:
             return tracker['last%sTime' % which]
         else:
-            return ttypes.Timestamp.NEVER
+            return utils.Timestamp.NEVER
 
     def __new__(cls, raw_torrent):
         return super().__new__(cls,
@@ -458,16 +458,16 @@ class Torrent(base.TorrentBase):
 
         'timespan-eta'       : _modify_eta,
         'time-created'       : lambda raw: _modify_timestamp(raw, 'dateCreated',
-                                                             zero_means=ttypes.Timestamp.UNKNOWN),
+                                                             zero_means=utils.Timestamp.UNKNOWN),
         'time-added'         : lambda raw: _modify_timestamp(raw, 'addedDate',
-                                                             zero_means=ttypes.Timestamp.UNKNOWN),
+                                                             zero_means=utils.Timestamp.UNKNOWN),
         'time-started'       : lambda raw: _modify_timestamp(raw, 'startDate',
-                                                             zero_means=ttypes.Timestamp.NOT_APPLICABLE),
+                                                             zero_means=utils.Timestamp.NOT_APPLICABLE),
         'time-activity'      : lambda raw: _modify_timestamp(raw, 'activityDate',
-                                                             zero_means=ttypes.Timestamp.NEVER),
+                                                             zero_means=utils.Timestamp.NEVER),
         'time-completed'     : lambda raw: _modify_timestamp_completed(raw),
         'time-manual-announce-allowed' : lambda raw: _modify_timestamp(raw, 'manualAnnounceTime',
-                                                                       zero_means=ttypes.Timestamp.NEVER),
+                                                                       zero_means=utils.Timestamp.NEVER),
 
         'error'              : _find_error,
         'trackers'           : TrackerList,

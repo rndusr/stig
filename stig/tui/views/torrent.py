@@ -11,7 +11,7 @@
 
 import urwid
 
-from ...client import ttypes
+from ... import client
 from ...utils.string import normalize_unicode
 from ...views.torrent import COLUMNS as _COLUMNS
 from ..table import ColumnHeaderWidget
@@ -130,16 +130,16 @@ class Status(_COLUMNS['status'], CellWidgetBase):
                            style.attrs('header'))
 
     MODE_MAP = {
-        ttypes.Status.IDLE      : 'idle',
-        ttypes.Status.DOWNLOAD  : 'downloading',
-        ttypes.Status.UPLOAD    : 'uploading',
-        ttypes.Status.CONNECTED : 'connected',
-        ttypes.Status.SEED      : 'seeding',
-        ttypes.Status.STOPPED   : 'stopped',
-        ttypes.Status.QUEUED    : 'queued',
-        ttypes.Status.ISOLATED  : 'isolated',
-        ttypes.Status.VERIFY    : 'verifying',
-        ttypes.Status.INIT      : 'discovering',
+        client.utils.Status.IDLE      : 'idle',
+        client.utils.Status.DOWNLOAD  : 'downloading',
+        client.utils.Status.UPLOAD    : 'uploading',
+        client.utils.Status.CONNECTED : 'connected',
+        client.utils.Status.SEED      : 'seeding',
+        client.utils.Status.STOPPED   : 'stopped',
+        client.utils.Status.QUEUED    : 'queued',
+        client.utils.Status.ISOLATED  : 'isolated',
+        client.utils.Status.VERIFY    : 'verifying',
+        client.utils.Status.INIT      : 'discovering',
     }
 
     def get_mode(self):

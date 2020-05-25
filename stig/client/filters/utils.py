@@ -11,8 +11,7 @@
 
 import operator
 
-from ..ttypes import Timedelta, Timestamp
-from ..utils import const
+from ..utils import Timedelta, Timestamp, const
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)

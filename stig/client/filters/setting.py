@@ -13,7 +13,7 @@ import operator
 from collections import abc
 
 from .. import constants as const
-from ..ttypes import SmartCmpStr
+from ..utils import SmartCmpStr
 from .base import BoolFilterSpec, CmpFilterSpec, Filter, FilterChain, FilterSpecDict
 
 

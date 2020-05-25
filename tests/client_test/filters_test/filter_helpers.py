@@ -155,7 +155,7 @@ class HelpersMixin():
                                       ('{name}>=unlimited', (3,))))
 
     def check_timestamp_filter(self, filter_cls, filter_names, key, default_sign):
-        from stig.client.ttypes import Timestamp
+        from stig.client.utils import Timestamp
         items = ({'id': 1, key: Timestamp.from_string('2001-01-01')},
                  {'id': 2, key: Timestamp.from_string('2002-01-01')},
                  {'id': 3, key: Timestamp.from_string('2003-01-01')},
@@ -317,7 +317,7 @@ class HelpersMixin():
 
 
     def check_timedelta_filter(self, filter_cls, filter_names, key, default_sign):
-        from stig.client.ttypes import Timedelta
+        from stig.client.utils import Timedelta
         items = ({'id': 1, key: Timedelta.from_string('1h ago')},
                  {'id': 2, key: Timedelta.from_string('0s')},
                  {'id': 3, key: Timedelta.from_string('in 1h')},

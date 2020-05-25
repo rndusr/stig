@@ -9,8 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .ttypes import SizeInBytes
-from .utils import Float
+from . import utils
 
 
 class ConstantBase():
@@ -46,5 +45,5 @@ def get_constant(name, repr=None, bases=(), init_value=None, attrs={}):
     return _constants_cache[name]
 
 DISCONNECTED = get_constant('disconnected', repr='<disconnected>')
-UNLIMITED = get_constant('unlimited', bases=(Float,), init_value='inf')
-MAX_TORRENT_FILE_SIZE = SizeInBytes(10e6)
+UNLIMITED = get_constant('unlimited', bases=(utils.Float,), init_value='inf')
+MAX_TORRENT_FILE_SIZE = utils.SizeInBytes(10e6)
