@@ -21,7 +21,8 @@ log = make_logger(__name__)
 
 
 class TorrentRequestPool(RequestPoller):
-    """Combine multiple `TorrentAPI.torrents` requests into one
+    """
+    Combine multiple `TorrentAPI.torrents` requests into one
 
     The wanted Torrent keys from all subscribers are combined and added to the
     needed keys for TorrentFilter from all subscribers.

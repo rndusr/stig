@@ -42,7 +42,8 @@ def _func_call_str(func, *posargs, **kwargs):
 
 
 class RequestPoller():
-    """Continuously send request and publish the response
+    """
+    Continuously send request and publish the response
 
     request: Coroutine that is called at intervals
     interval: Delay between calls
@@ -101,10 +102,10 @@ class RequestPoller():
             await self._sleep.sleep(self._interval)
 
     async def _do_poll(self):
-        """Send request and send response or error
+        """
+        Send request and send response or error
 
-        The return value from the request is passed to the 'response' event
-        handlers.
+        The return value from the request is passed to the 'response' event handlers.
 
         Exceptions raised by the request are passed to the 'error' handlers,
         and, except for `ConnectionError`, `stop` is called.
@@ -167,7 +168,8 @@ class RequestPoller():
             raise RuntimeError('You forgot to call stop() on %r' % self)
 
     def poll(self):
-        """Poll immediately instead of waiting for next interval
+        """
+        Poll immediately instead of waiting for next interval
 
         This also resets the interval - the next request is made `interval`
         seconds after this method is called.
@@ -184,11 +186,12 @@ class RequestPoller():
         return self._poll_loop_task is not None
 
     def set_request(self, request, *args, **kwargs):
-        """Set request to coroutine `request`
-
-        Any positional or keyword arguments are passed to `request` at each
-        call.
         """
+        Set request to coroutine `request`
+
+        Any positional or keyword arguments are passed to `request` at each call.
+        """
+        # TODO: Call skip_ongoing_request() here?
         self._debug_info['request'] = _func_call_str(request, *args, **kwargs)
         log.debug('Setting new request: %s', self)
         if args or kwargs:
@@ -198,19 +201,20 @@ class RequestPoller():
 
     @property
     def request(self):
-        """The request coroutine called every interval
+        """
+        The request coroutine called every interval
 
         If any arguments were given, this is a partial object.
         """
         return self._request
 
     def on_response(self, callback, autoremove=True):
-        """Register `callback` to receive responses
+        """
+        Register `callback` to receive responses
 
-        callback: Any callable that gets the return value from the request
-        autoremove: Store callback as weak reference and remove it
-                    automatically once there are no other references to it
-                    left
+        callback: Any callable that gets the return value from the request autoremove:
+        Store callback as weak reference and remove it automatically once there are no
+        other references to it left
 
         If the request raises an exception, 'response' callbacks are called
         with `None` and 'error' callbacks are called with the exception.
