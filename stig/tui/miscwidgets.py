@@ -349,14 +349,21 @@ class AvailableDiskSpaceWidget(urwid.WidgetWrap):
     def _update_diskspace(self, freespace):
         parts = []
         for path,info in freespace.info.items():
-            if None not in (info.path, info.free):
-                text = '%s %s' % (os.path.basename(info.path), info.free)
-                if info.free < 1024:
+            if info.path is not None:
+                if info.error is not None:
+                    errmsg = getattr(info.error, 'message', info.error)
+                    text = '%s: %s' % (os.path.basename(info.path), errmsg)
                     attr = 'bottombar.important'
-                else:
-                    attr = 'bottombar'
-                parts.append((attr, text))
-                parts.append(('bottombar', '  '))
+                    parts.append((attr, text))
+                    parts.append(('bottombar', '  '))
+                elif info.free is not None:
+                    text = '%s %s' % (os.path.basename(info.path), info.free)
+                    if info.free < 1024:
+                        attr = 'bottombar.important'
+                    else:
+                        attr = 'bottombar'
+                    parts.append((attr, text))
+                    parts.append(('bottombar', '  '))
         if parts:
             parts.insert(0, 'Free: ')
             self._text.set_text(parts[:-1])
