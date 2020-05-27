@@ -13,8 +13,15 @@ import textwrap
 
 
 class ClientError(Exception):
-    def __init__(self, message):
-        super().__init__(str(message))
+    def __init__(self, prefix, message=''):
+        if message:
+            self.prefix = str(prefix)
+            self.message = str(message)
+            super().__init__('%s: %s' % (self.prefix, self.message))
+        else:
+            self.prefix = ''
+            self.message = str(prefix)
+            super().__init__(self.message)
 
     # Making exceptions with the same arguments equal helps in the tests
     def __eq__(self, other):
@@ -28,17 +35,17 @@ class ClientError(Exception):
 
 class ConnectionError(ClientError):
     def __init__(self, url):
-        super().__init__('Failed to connect: %s' % url)
+        super().__init__('Failed to connect', url)
 
 class TimeoutError(ClientError):
     def __init__(self, timeout, url):
-        super().__init__('Timeout after %ss: %s' % (timeout, url))
+        super().__init__('Timeout after %ss' % (timeout,), url)
 
 class RPCError(ClientError):
     def __init__(self, response):
-        super().__init__('Invalid RPC response: %s' %
+        super().__init__('Invalid RPC response',
                          textwrap.shorten(response, 100, placeholder='...'))
 
 class AuthError(ClientError):
     def __init__(self, url):
-        super().__init__('Authentication failed: %s' % url)
+        super().__init__('Authentication failed', url)
