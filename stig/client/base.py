@@ -9,8 +9,12 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from collections import abc
+import asyncio
+from collections import abc, defaultdict
+from types import SimpleNamespace
 from urllib.parse import quote_plus as urlquote
+
+import blinker
 
 from . import ClientError, utils
 
@@ -196,3 +200,59 @@ class TorrentFileTreeBase(abc.Mapping):
 
     def __len__(self):
         return len(self._items)
+
+
+class FreeSpaceAPIBase():
+    """
+    Gather available storage space for multiple directories
+    """
+    @property
+    def info(self):
+        return self._info
+
+    def __init__(self, path_getters, space_getter, settings):
+        self._path_getters = path_getters
+        self._space_getter = space_getter
+        self._on_update = blinker.Signal()
+        self._info = defaultdict(lambda: SimpleNamespace(path=None, free=None, error=None))
+        settings.on_update(self._gather_info_wrapper)
+
+    def _gather_info_wrapper(self, settings):
+        asyncio.ensure_future(self._gather_info_wrapper_coro())
+
+    async def _gather_info_wrapper_coro(self):
+        infos = {}
+        for path_getter in self._path_getters:
+            try:
+                path = path_getter()
+            except ClientError as e:
+                log.debug('Exception from %r: %r', path_getter, e)
+            else:
+                if not path:
+                    log.debug('Ignoring false path: %r: %r', path, bool(path))
+                else:
+                    try:
+                        free = await self._get_free_space(path)
+                    except ClientError as e:
+                        infos[path] = SimpleNamespace(path=path, free=None, error=e)
+                    else:
+                        infos[path] = SimpleNamespace(path=path,
+                                                      free=utils.convert.size(free, unit='byte'),
+                                                      error=None)
+        if self._info != infos:
+            self._info = infos
+            self._on_update.send(self)
+
+    async def _get_free_space(self, path):
+        raise NotImplementedError()
+
+    def on_update(self, callback, autoremove=True):
+        """
+        Register `callback` to be called when free space has changed
+
+        `callback` gets the instance of this class.
+
+        If `autoremove` is True, `callback` is removed automatically when it is deleted.
+        """
+        log.debug('Registering %r to receive free space updates', callback)
+        self._on_update.connect(callback, weak=autoremove)

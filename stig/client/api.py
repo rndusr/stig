@@ -82,11 +82,15 @@ class API():
         log.debug('Creating StatusAPI singleton')
         return StatusAPI(self, interval=self._interval)
 
-    @cached_property(after_creation=lambda self: setattr(self, 'freespace_created', True))
+    @cached_property
     def freespace(self):
         """FreeSpaceAPI singleton"""
         log.debug('Creating FreeSpaceAPI singleton')
-        return FreeSpaceAPI(self, interval=self._interval)
+        path_getters = (lambda: self.settings['path.complete'],
+                        lambda: self.settings['path.incomplete'])
+        return FreeSpaceAPI(path_getters,
+                            space_getter=self.rpc.free_space,
+                            settings=self.settings)
 
     @cached_property(after_creation=lambda self: setattr(self, 'settings_created', True))
     def settings(self):

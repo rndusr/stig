@@ -347,28 +347,21 @@ class AvailableDiskSpaceWidget(urwid.WidgetWrap):
         objects.srvapi.freespace.on_update(self._update_diskspace)
 
     def _update_diskspace(self, freespace):
-        text = ['Free: ']
-
-        complete_text = '%s %s' % (os.path.basename(freespace.complete_info.path),
-                                   freespace.complete_info.size)
-        if freespace.complete_info.size < 1024:
-            complete_attr = 'bottombar.important'
+        parts = []
+        for path,info in freespace.info.items():
+            if None not in (info.path, info.free):
+                text = '%s %s' % (os.path.basename(info.path), info.free)
+                if info.free < 1024:
+                    attr = 'bottombar.important'
+                else:
+                    attr = 'bottombar'
+                parts.append((attr, text))
+                parts.append(('bottombar', '  '))
+        if parts:
+            parts.insert(0, 'Free: ')
+            self._text.set_text(parts[:-1])
         else:
-            complete_attr = 'bottombar'
-        text.append((complete_attr, complete_text))
-
-        if freespace.incomplete_info.size is not None \
-           and freespace.complete_info.path != freespace.incomplete_info.path:
-            text.append(('bottombar', '  '))
-            incomplete_text = '%s %s' % (os.path.basename(freespace.incomplete_info.path),
-                                         freespace.incomplete_info.size)
-            if freespace.incomplete_info.size < 1024:
-                incomplete_attr = 'bottombar.important'
-            else:
-                incomplete_attr = 'bottombar'
-            text.append((incomplete_attr, incomplete_text))
-
-        self._text.set_text(text)
+            self._text.set_text('')
 
 
 class MarkedItemsWidget(urwid.WidgetWrap):
