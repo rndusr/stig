@@ -73,11 +73,12 @@ class DirectorySpaceWatcher():
                                           size=None)
 
     def _handle_dirname(self, path):
-        if path is not None and path != "disabled":
+        if path is not None:
             self.space_info.path = path
-            self._poller_size.skip_ongoing_request()
-            self._poller_size.set_request(self._srvapi.rpc.free_space,
-                                          path=path)
+            if path and path != 'disabled':
+                self._poller_size.set_request(self._srvapi.rpc.free_space,
+                                              path=path)
+                self._poller_size.skip_ongoing_request()
 
     def _handle_dirname_error(self, error):
         log.debug('Ignoring exception: %r', error)
