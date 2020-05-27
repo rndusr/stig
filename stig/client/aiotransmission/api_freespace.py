@@ -168,7 +168,8 @@ class FreeSpaceAPI():
     def _send_update(self, *args):
         log.debug('Free space: %r / %r',
                   self.complete_info, self.incomplete_info)
-        self._on_update.send(self)
+        if self.complete_info.path and self.complete_info.size is not None:
+            self._on_update.send(self)
 
     def on_update(self, callback, autoremove=True):
         """
