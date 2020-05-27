@@ -87,7 +87,11 @@ class DirectorySpaceWatcher():
         if response is not None \
            and self.space_info.path == response['path']:
             self.space_info.size = convert.size(response['size-bytes'], unit='byte')
-            self._on_update.send(self.space_info)
+        else:
+            self.space_info.path = ''
+            self.space_info.size = None
+
+        self._on_update.send(self.space_info)
 
     def _handle_size_error(self, error):
         if not self.space_info.path \
