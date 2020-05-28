@@ -360,7 +360,7 @@ class AvailableDiskSpaceWidget(urwid.WidgetWrap):
                     parts.append(('bottombar', '  '))
                 elif info.free is not None:
                     text = '%s %s' % (os.path.basename(info.path), info.free)
-                    if info.free < 1024:
+                    if info.free <= objects.localcfg['tui.free-space.low']:
                         attr = 'bottombar.important'
                     else:
                         attr = 'bottombar'
