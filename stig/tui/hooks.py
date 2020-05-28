@@ -44,6 +44,11 @@ localcfg.on_change(_reconnect, name='connect.url')
 # srvapi.rpc.on('disconnected', _update_pollers)
 
 
+def _refresh_diskspace(settings, name, value):
+    tuiobjects.bottombar.diskspace.refresh()
+localcfg.on_change(_refresh_diskspace, name='tui.free-space.low')
+
+
 def _refresh_lists(settings, name, value):
     for widget in tuiobjects.tabs:
         if isinstance(widget, (TorrentListWidget, FileListWidget, PeerListWidget)):
