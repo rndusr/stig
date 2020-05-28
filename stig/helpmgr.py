@@ -19,6 +19,7 @@ from . import __appname__, __version__, objects
 from .cliopts import DESCRIPTIONS as CLI_DESCRIPTIONS
 from .utils import expandtabs
 from .utils.string import striplines
+from .utils.usertypes import Float, Int
 
 from .logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -193,15 +194,17 @@ class HelpManager():
             raise ValueError('Unknown help topic: %r' % name)
         value = cfg[name]
 
-        def maybe_quote(value):
+        def pretty_string(value):
             if isinstance(value, str) and re.match(r'^\s+$', value):
                 return repr(value)
+            elif isinstance(value, (Float, Int)):
+                return value.with_unit
             else:
                 return str(value)
 
         lines = ['%s - \t%s' % (name, cfg.description(name)),
-                 '\tValue: \t' + maybe_quote(cfg[name]),
-                 '\tDefault: \t' + maybe_quote(cfg.default(name))]
+                 '\tValue: \t' + pretty_string(cfg[name]),
+                 '\tDefault: \t' + pretty_string(cfg.default(name))]
 
         if hasattr(value, 'options'):
             opt_strs = []
