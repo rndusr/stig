@@ -16,6 +16,7 @@ from xdg.BaseDirectory import xdg_data_home as XDG_DATA_HOME
 
 from .. import __appname__, objects
 from ..client.sorters import PeerSorter, SettingSorter, TorrentSorter, TrackerSorter
+from ..utils import convert
 from ..utils.usertypes import Bool, Float, Int, Option, Path, String, Tuple
 from ..views import file, peer, setting, torrent, tracker
 
@@ -76,6 +77,11 @@ def partial_sort_order(sortercls):
         for alias in spec.aliases:
             aliases[alias] = name
     return Tuple.partial(options=sort_orders, aliases=aliases, dedup=True)
+
+
+class Bytes(Int):
+    def __new__(cls, num, unit='B', **kwargs):
+        return convert.size(super().__new__(cls, num, unit=unit, **kwargs), unit='byte')
 
 
 def init_defaults(localcfg):
@@ -181,10 +187,18 @@ def init_defaults(localcfg):
                  default=SettingSorter.DEFAULT_SORT,
                  description='List of sort orders in setting lists')
 
-    localcfg.add('tui.theme',
-                 Path.partial(base=os.path.dirname(DEFAULT_RCFILE)),
-                 default=DEFAULT_THEME_FILE,
-                 description='Path to theme file'),
+    localcfg.add('tui.cli.history-dir',
+                 Path.partial(base=os.path.expanduser('~')),
+                 default=DEFAULT_HISTORY_DIR,
+                 description='Directory where histories of user input are stored')
+    localcfg.add('tui.cli.history-size',
+                 Int.partial(min=0),
+                 default=10000,
+                 description='Maximum number of lines to keep in history files')
+    localcfg.add('tui.free-space.low',
+                 Bytes.partial(min=0),
+                 default='10GB',
+                 description='Minimum amount of free space before highlighting the display')
     localcfg.add('tui.log.height',
                  Int.partial(min=1),
                  default=10,
@@ -194,18 +208,14 @@ def init_defaults(localcfg):
                  default=10,
                  description=('If the log is hidden, show it for this many seconds '
                               'for new log entries before hiding it again'))
-    localcfg.add('tui.cli.history-dir',
-                 Path.partial(base=os.path.expanduser('~')),
-                 default=DEFAULT_HISTORY_DIR,
-                 description='Directory where histories of user input are stored')
-    localcfg.add('tui.cli.history-size',
-                 Int.partial(min=0),
-                 default=10000,
-                 description='Maximum number of lines to keep in history files')
     localcfg.add('tui.poll',
                  Float.partial(min=0.1),
                  default=5,
                  description='Interval in seconds between TUI updates')
+    localcfg.add('tui.theme',
+                 Path.partial(base=os.path.dirname(DEFAULT_RCFILE)),
+                 default=DEFAULT_THEME_FILE,
+                 description='Path to theme file'),
 
     localcfg.add('unit.bandwidth',
                  Option.partial(options=('bit', 'byte'), aliases={'b': 'bit', 'B': 'byte'}),
