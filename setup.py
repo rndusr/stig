@@ -52,7 +52,7 @@ setup(
         'setproctitle': ['setproctitle'],
     },
     tests_require = [
-        'pytest==5.3.5',
+        'pytest>=5,<6',
         'asynctest>=0.11',
     ],
 
