@@ -343,10 +343,12 @@ class TorrentCountersWidget(urwid.WidgetWrap):
 class AvailableDiskSpaceWidget(urwid.WidgetWrap):
     def __init__(self):
         self._text = urwid.Text(EMPTY_TEXT)
+        self._cached_freespace = None
         super().__init__(urwid.AttrMap(self._text, 'bottombar'))
         objects.srvapi.freespace.on_update(self._update_diskspace)
 
     def _update_diskspace(self, freespace):
+        self._cached_freespace = freespace
         parts = []
         for path,info in freespace.info.items():
             if isinstance(info.path, str):
@@ -369,6 +371,10 @@ class AvailableDiskSpaceWidget(urwid.WidgetWrap):
             self._text.set_text(parts[:-1])
         else:
             self._text.set_text('')
+
+    def refresh(self):
+        if self._cached_freespace is not None:
+            self._update_diskspace(self._cached_freespace)
 
 
 class MarkedItemsWidget(urwid.WidgetWrap):
