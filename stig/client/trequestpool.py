@@ -51,14 +51,17 @@ class TorrentRequestPool(RequestPoller):
         self._keys[event] = set(keys)
         self._tfilters[event] = tfilter
 
-        # It's possible that a currently ongoing request doesn't collect the
-        # keys this new callback needs.  In that case, the request is finished
-        # AFTER we added the callback, and the callback would be called with
-        # lacking keys, resuling in a KeyError.
-        # Therefore we ask the poller to dump the result of a currently
-        # ongoing request to prevent this.
-        if self.running:
-            self.skip_ongoing_request()
+        # TODO issue #163: Enable call to skip_ongoing_request() if calling in
+        # RequestPoller.set_request() doesn't help.
+
+        # # It's possible that a currently ongoing request doesn't collect the
+        # # keys this new callback needs.  In that case, the request is finished
+        # # AFTER we added the callback, and the callback would be called with
+        # # lacking keys, resuling in a KeyError.
+        # # Therefore we ask the poller to dump the result of a currently
+        # # ongoing request to prevent this.
+        # if self.running:
+        #     self.skip_ongoing_request()
 
         self._combine_requests()
 

@@ -176,7 +176,9 @@ class RequestPoller():
 
         Do nothing if this poller is not started.
         """
+        # TODO issue #163: Remove call to skip_ongoing_request() if it doesn't help.
         self.skip_ongoing_request()
+
         if self.running:
             self._sleep.interrupt()
 
@@ -191,7 +193,9 @@ class RequestPoller():
 
         Any positional or keyword arguments are passed to `request` at each call.
         """
-        # TODO: Call skip_ongoing_request() here?
+        # TODO issue #163: Remove call to skip_ongoing_request() if it doesn't help.
+        self.skip_ongoing_request()
+
         self._debug_info['request'] = _func_call_str(request, *args, **kwargs)
         log.debug('Setting new request: %s', self)
         if args or kwargs:
