@@ -212,7 +212,7 @@ class FreeSpaceAPIBase():
               path changes
     """
     def __init__(self, path_getters, rpc, settings):
-        self._path_getters = path_getters
+        self._path_getters = tuple(path_getters)
         self._rpc = rpc
         self._on_update = blinker.Signal()
         self._info = defaultdict(lambda: SimpleNamespace(path=None, free=None, error=None))
