@@ -16,9 +16,9 @@ log = make_logger(__name__)
 
 
 class FreeSpaceAPI(FreeSpaceAPIBase):
-    async def _get_free_space(self, path):
+    async def get_free_space(self, path):
         """Return free space in directory `path` in bytes"""
-        response = await self._space_getter(path=path)
+        response = await self._rpc.free_space(path=path)
         log.debug('Free space in %r: %r', path, response)
         if path == response['path']:
             return response['size-bytes']

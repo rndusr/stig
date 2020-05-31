@@ -13,13 +13,13 @@ class TestFreeSpaceAPI(asynctest.ClockedTestCase):
         self.get_free_space = CoroutineMock()
 
         class FreeSpaceAPI(FreeSpaceAPIBase):
-            _get_free_space = self.get_free_space
+            get_free_space = self.get_free_space
 
         self.path_getters = (Mock(return_value='/foo', name='Mock for /foo'),
                              Mock(return_value='/bar', name='Mock for /bar'))
-        space_getter = None  # Should not be used in these tests
+        rpc = None  # Should not be used in these tests
         self.mock_settings = Mock()
-        self.freespace = FreeSpaceAPI(self.path_getters, space_getter, self.mock_settings)
+        self.freespace = FreeSpaceAPI(self.path_getters, rpc, self.mock_settings)
         # We need a spec from a callable because blinker does some weird stuff and we get
         # an AttributeError for '__self__' without the spec.  Also, RequestPoller
         # prettifies function calls in the logs, so we need the __qualname__.
@@ -79,7 +79,7 @@ class TestFreeSpaceAPI(asynctest.ClockedTestCase):
         self.assertEqual(self.freespace.info, {})
         self.assertEqual(self.update_cb.call_args_list, [])
 
-    async def test_free_space_getter_raises_expected_error(self):
+    async def test_get_free_space_raises_expected_error(self):
         self.get_free_space.side_effect = (123, ClientError('Nah'))
         await self.freespace._gather_info_wrapper_coro()
         self.assertEqual(self.freespace.info['/foo'], SimpleNamespace(path='/foo', free=123, error=None))
@@ -96,7 +96,7 @@ class TestFreeSpaceAPI(asynctest.ClockedTestCase):
         self.assertEqual(self.freespace.info['/bar'], SimpleNamespace(path='/bar', free=456, error=None))
         self.assertEqual(self.update_cb.call_args_list, [call(self.freespace), call(self.freespace)])
 
-    async def test_free_space_getter_raises_unexpected_error(self):
+    async def test_get_free_space_raises_unexpected_error(self):
         self.get_free_space.side_effect = (123, RuntimeError('Nah'))
         with self.assertRaises(RuntimeError):
             await self.freespace._gather_info_wrapper_coro()

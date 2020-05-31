@@ -206,13 +206,9 @@ class FreeSpaceAPIBase():
     """
     Gather available storage space for multiple directories
     """
-    @property
-    def info(self):
-        return self._info
-
-    def __init__(self, path_getters, space_getter, settings):
+    def __init__(self, path_getters, rpc, settings):
         self._path_getters = path_getters
-        self._space_getter = space_getter
+        self._rpc = rpc
         self._on_update = blinker.Signal()
         self._info = defaultdict(lambda: SimpleNamespace(path=None, free=None, error=None))
         settings.on_update(self._gather_info_wrapper)
@@ -232,7 +228,7 @@ class FreeSpaceAPIBase():
                     log.debug('Ignoring false path: %r: %r', path, bool(path))
                 else:
                     try:
-                        free = await self._get_free_space(path)
+                        free = await self.get_free_space(path)
                     except ClientError as e:
                         infos[path] = SimpleNamespace(path=path, free=None, error=e)
                     else:
@@ -243,7 +239,25 @@ class FreeSpaceAPIBase():
             self._info = infos
             self._on_update.send(self)
 
-    async def _get_free_space(self, path):
+    @property
+    def info(self):
+        """
+        Dictionary that maps paths to namespaces
+
+        Each namespace has these attributes:
+
+          path:  Directory returned by one of the path_getters or None if the path_getter
+                 failed
+          free:  Available space in path or None if get_free_space() or the path_getter
+                 failed
+          error: Exception object raised by the path_getter or get_free_space()
+        """
+        return self._info
+
+    async def get_free_space(self, path):
+        """
+        Return the available space in directory `path` in bytes
+        """
         raise NotImplementedError()
 
     def on_update(self, callback, autoremove=True):

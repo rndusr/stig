@@ -89,7 +89,7 @@ class API():
         path_getters = (lambda: self.settings['path.complete'],
                         lambda: self.settings['path.incomplete'])
         return FreeSpaceAPI(path_getters,
-                            space_getter=self.rpc.free_space,
+                            rpc=self.rpc,
                             settings=self.settings)
 
     @cached_property(after_creation=lambda self: setattr(self, 'settings_created', True))
