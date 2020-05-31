@@ -455,8 +455,12 @@ class TransmissionRPC():
                     await self.connect()
 
                 arguments.update(**kwargs)
-                rpc_request = json.dumps({'method'    : method.replace('_', '-'),
-                                          'arguments' : arguments})
+                data = {'method'    : method.replace('_', '-'),
+                        'arguments' : arguments}
+                try:
+                    rpc_request = json.dumps(data)
+                except Exception as e:
+                    raise RuntimeError('Invalid JSON data: %s: %r' % (e, data)) from None
 
                 try:
                     return await self._send_request(rpc_request)
