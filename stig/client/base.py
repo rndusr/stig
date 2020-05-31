@@ -231,6 +231,8 @@ class FreeSpaceAPIBase():
             else:
                 if not path:
                     log.debug('Ignoring false path: %r: %r', path, bool(path))
+                elif not isinstance(path, str):
+                    log.debug('Ignoring invalid path: %r: %r', type(path), path)
                 else:
                     try:
                         free = await self.get_free_space(path)
