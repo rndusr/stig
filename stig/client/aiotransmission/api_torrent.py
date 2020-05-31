@@ -672,18 +672,6 @@ class TorrentAPI(TorrentAPIBase):
         if not path:
             path = torrent['name']
 
-            # Check if new_name already exists at torrent's path
-            download_path = torrent['path']
-            response = await self.torrents('path=%s' % download_path, keys=('name',))
-            if not response.success:
-                return Response(success=False, torrent=None, errors=response.errors)
-            else:
-                for t in response.torrents:
-                    if t['name'] == new_name:
-                        return Response(success=False, torrent=None,
-                                        errors=('Torrent already exists in %s: %s' %
-                                                (download_path, new_name),))
-
         # Rename a file or directory in the torrent
         else:
             # Prepend torrent name to path
