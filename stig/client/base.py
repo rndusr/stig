@@ -205,6 +205,11 @@ class TorrentFileTreeBase(abc.Mapping):
 class FreeSpaceAPIBase():
     """
     Gather available storage space for multiple directories
+
+    path_getters: Iterable of callables that must return a path (str) or None
+    rpc: Object that can be used by the implementation of get_free_space()
+    settings: Object with an on_update() method that allows us to register a callback for
+              path changes
     """
     def __init__(self, path_getters, rpc, settings):
         self._path_getters = path_getters
