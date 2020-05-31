@@ -21,7 +21,7 @@
      * GeoIP support was dropped[1] and the peer list filter, column and sorter "country"
        as well as the settings "geoip" and "geoip.dir" were removed. If you use a custom
        theme, you also need to remove the "country" parts from it.
-     * Some default keybindings for sorting lists were changed.
+     * Some default keybindings for sorting lists have changed.
 
   Other changes:
     * Press <tab> in the built-in CLI to complete commands and arguments.
