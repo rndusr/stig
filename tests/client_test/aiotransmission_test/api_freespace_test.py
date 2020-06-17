@@ -1,6 +1,7 @@
+from types import SimpleNamespace
+
 import asynctest
 from asynctest import CoroutineMock, Mock, call
-from types import SimpleNamespace
 
 from stig.client.aiotransmission.api_freespace import FreeSpaceAPI
 
