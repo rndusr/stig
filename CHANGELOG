@@ -1,3 +1,8 @@
+2020-??-?? 0.11.1a
+  Fixed bugs:
+    * Fix help for remote settings, e.g. "help srv.path.incomplete".
+
+
 2020-06-05 0.11.0a
   Breaking changes:
     * The 'scrollbar' palette in themes was removed and the following palettes were added:
