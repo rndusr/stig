@@ -1,14 +1,16 @@
 # Create long_description from README.org if possible
 long_description = ''
 try:
-    import pypandoc
     import os
+    import pypandoc
+    import restructuredtext_lint as rst
     if os.path.exists('README.org'):
-        long_description = pypandoc.convert('README.org', 'rst')
-        import restructuredtext_lint as rst
+        long_description = pypandoc.convert_file('README.org', 'rst')
         rst.lint(long_description)
-except ImportError:
-    pass
+except ImportError as e:
+    import warnings
+    warnings.warn(str(e))
+    warnings.warn('long_description is empty.', stacklevel=2)
 
 # Load __version__ variable without importing the whole stig module
 import re
