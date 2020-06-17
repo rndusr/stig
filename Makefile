@@ -11,10 +11,10 @@ clean:
 
 venv:
 	"$(PYTHON)" -m venv "$(VENV_PATH)"
-	# Docutils is needed for `setup.py check -r -s`
-	"$(VENV_PATH)"/bin/pip install --upgrade wheel docutils
 	"$(VENV_PATH)"/bin/pip install --upgrade pytest tox asynctest
 	"$(VENV_PATH)"/bin/pip install --editable .
+	# Needed for setup.py
+	"$(VENV_PATH)"/bin/pip install --upgrade wheel docutils pypandoc restructuredtext_lint pygments
 
 test: venv
 	. "$(VENV_PATH)"/bin/activate ; \
