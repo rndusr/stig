@@ -81,7 +81,7 @@ class HelpManager():
             return getattr(self, 'topic_' + topic)
         elif topic in objects.cmdmgr:
             return self.command(topic)
-        elif topic in objects.localcfg or topic[4:] in objects.remotecfg:
+        elif topic in objects.cfg:
             return self.setting(topic)
 
         raise ValueError('Unknown help topic: %r' % topic)
