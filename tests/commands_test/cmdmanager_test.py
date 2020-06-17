@@ -350,11 +350,11 @@ class TestCommandManagerChainedCalls(TestCommandManagerCallsBase):
         self.false_cb = Callback()
 
         def true_run(self_, *args, **kwargs):
-            assert args is ()
+            assert args == ()
             self.true_cb(**kwargs)
 
         def false_run(self_, *args, **kwargs):
-            assert args is ()
+            assert args == ()
             self.false_cb(**kwargs)
             raise CmdError()
 
