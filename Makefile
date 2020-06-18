@@ -27,6 +27,7 @@ fulltest: venv
 	  tox
 	flake8 stig tests
 	isort --check-only stig/**/*.py tests/**/*.py
+	"$(PYTHON)" setup.py check -r -s >/dev/null
 
 release:
 	pyrelease CHANGELOG ./stig/__version__.py
