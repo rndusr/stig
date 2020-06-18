@@ -412,10 +412,12 @@ class TransmissionRPC():
         try:
             answer = await self._post(post_data)
 
-        # CancelledError is raised when we're writing on a "closing
-        # transport". Not sure if this happens in the real world, but it happens
-        # in the tests for some reason.
-        except (aiohttp.ClientError, asyncio.CancelledError) as e:
+        # NOTE #163: Letting asyncio.CancelledError bubble up seems to fix the issue that
+        #            causes empty torrent lists in new tabs until the next poll iteration.
+        #            But I've seen this error pop up in the TUI log: "Unclosed client
+        #            session client_session: <aiohttp.client.ClientSession object at
+        #            0x7f35d98d1be0>" This may or may not be related.
+        except aiohttp.ClientError as e:
             log.debug('Caught during POST request: %r', e)
             raise ConnectionError(self.url)
 
