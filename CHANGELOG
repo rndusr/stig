@@ -1,6 +1,8 @@
 2020-??-?? 0.11.1a
   Fixed bugs:
     * Fix help for remote settings, e.g. "help srv.path.incomplete".
+    * Possibly fixed a race condition that resulted in new torrent lists being empty until
+      the next poll iteration.
 
 
 2020-06-05 0.11.0a
