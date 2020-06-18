@@ -115,9 +115,6 @@ class RequestPoller():
             log.debug('Polling: %s', self._debug_info['request'])
             try:
                 response = await self._request()
-            except asyncio.CancelledError:
-                # In _poll_loop(), abort waiting for poll_task.
-                raise
             except errors.ClientError as e:
                 # Report error but keep trying to connect
                 self._run_callbacks(error=e)
