@@ -103,12 +103,11 @@ class RequestPoller():
 
     async def _do_poll(self):
         """
-        Send request and send response or error
+        Send request and send response or error to callbacks
 
         The return value from the request is passed to the 'response' event handlers.
 
-        Exceptions raised by the request are passed to the 'error' handlers,
-        and, except for `ConnectionError`, `stop` is called.
+        ClientErrors raised by the request are passed to the 'error' handlers.
         """
         if self._request is None:
             log.debug('No request: %s', self._debug_info)
