@@ -8,6 +8,8 @@ ignore =
     E221,
     # missing whitespace after ','
     E231,
+    # too many leading '#' for block comment
+    E266,
     # multiple spaces after keyword
     E271,
     # multiple spaces before keyword
@@ -30,3 +32,5 @@ ignore =
     W503,
     # line break after binary operator
     W504,
+    # invalid escape sequence '\ '
+    W605,
