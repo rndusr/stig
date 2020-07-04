@@ -129,7 +129,7 @@ def init_defaults(localcfg):
                  description='Whether to connect via HTTPS to the Transmission RPC interface')
     localcfg.add('connect.url',
                  String.partial(),
-                 getter=lambda: objects.srvapi.rpc.url,
+                 getter=lambda: objects.srvapi.rpc.url_unsafe,
                  setter=lambda v: setattr(objects.srvapi.rpc, 'url', v),
                  default='http://localhost:9091/transmission/rpc',
                  description='URL of the Transmission RPC interface')
