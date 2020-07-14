@@ -45,7 +45,6 @@ setup(
         'urwid>=2.0',
         'urwidtrees>=1.0.3dev0',
         'aiohttp>=3,<4',
-        'aiohttp-socks',
         'async_timeout',
         'pyxdg',
         'blinker',
@@ -53,6 +52,7 @@ setup(
     ],
     extras_require = {
         'setproctitle': ['setproctitle'],
+        'proxy': ['aiohttp-socks'],
     },
     tests_require = [
         'pytest>=5,<6',

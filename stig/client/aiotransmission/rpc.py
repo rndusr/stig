@@ -250,6 +250,14 @@ class TransmissionRPC():
 
     @proxy.setter
     def proxy(self, proxy):
+        if proxy:
+            try:
+                import aiohttp_socks
+            except ImportError:
+                raise ValueError('Proxy support requires aiohttp_socks')
+            self._connector = aiohttp_socks.ProxyConnector.from_url(proxy)
+        else:
+            self._connector = None
         self._proxy = proxy
         asyncio.ensure_future(self.disconnect('Changing proxy: %r' % self._proxy))
 
@@ -331,13 +339,12 @@ class TransmissionRPC():
             await self._enabled_event.wait()
 
             import aiohttp
-            import aiohttp_socks
             session_args = {}
             if self.user or self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')
-            if self._proxy:
-                session_args['connector'] = aiohttp_socks.ProxyConnector.from_url(self._proxy)
+            if self._connector is not None:
+                session_args['connector'] = self._connector
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works
