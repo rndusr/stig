@@ -35,6 +35,7 @@ localcfg.on_change(_reconnect, name='connect.user')
 localcfg.on_change(_reconnect, name='connect.password')
 localcfg.on_change(_reconnect, name='connect.tls')
 localcfg.on_change(_reconnect, name='connect.url')
+localcfg.on_change(_reconnect, name='connect.proxy')
 
 
 # TODO: These are probably not needed?

@@ -42,13 +42,14 @@ class TransmissionRPC():
     """
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user='',
-                 password='', path='/transmission/rpc', enabled=True):
+                 password='', proxy='', path='/transmission/rpc', enabled=True):
         self.host = host
         self.port = port
         self.path = path
         self.tls = tls
         self.user = user
         self.password = password
+        self.proxy = proxy
         self._headers = {'content-type': 'application/json'}
         self._session = None
         self._enabled_event = asyncio.Event()
@@ -244,6 +245,15 @@ class TransmissionRPC():
             return self.url
 
     @property
+    def proxy(self):
+        return self._proxy
+
+    @proxy.setter
+    def proxy(self, proxy):
+        self._proxy = proxy
+        asyncio.ensure_future(self.disconnect('Changing proxy: %r' % self._proxy))
+
+    @property
     def timeout(self):
         """Number of seconds to try to connect before giving up"""
         return self._timeout
@@ -321,10 +331,13 @@ class TransmissionRPC():
             await self._enabled_event.wait()
 
             import aiohttp
+            import aiohttp_socks
             session_args = {}
             if self.user or self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
                                                          encoding='utf-8')
+            if self._proxy:
+                session_args['connector'] = aiohttp_socks.ProxyConnector.from_url(self._proxy)
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works

@@ -133,6 +133,12 @@ def init_defaults(localcfg):
                  setter=lambda v: setattr(objects.srvapi.rpc, 'url', v),
                  default='http://localhost:9091/transmission/rpc',
                  description='URL of the Transmission RPC interface')
+    localcfg.add('connect.proxy',
+                 String.partial(),
+                 getter=lambda: objects.srvapi.rpc.proxy,
+                 setter=lambda v: setattr(objects.srvapi.rpc, 'proxy', v),
+                 default='',
+                 description='Proxy URL')
 
     localcfg.add('columns.torrents',
                  Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),

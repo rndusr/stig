@@ -45,6 +45,7 @@ setup(
         'urwid>=2.0',
         'urwidtrees>=1.0.3dev0',
         'aiohttp>=3,<4',
+        'aiohttp-socks',
         'async_timeout',
         'pyxdg',
         'blinker',
