@@ -138,7 +138,7 @@ def init_defaults(localcfg):
                  getter=lambda: objects.srvapi.rpc.proxy,
                  setter=lambda v: setattr(objects.srvapi.rpc, 'proxy', v),
                  default='',
-                 description='Proxy URL')
+                 description='SOCKS5, SOCKS4 or HTTP proxy URL to tunnel RPC communication through')
 
     localcfg.add('columns.torrents',
                  Tuple.partial(options=torrent.COLUMNS, aliases=torrent.ALIASES),
