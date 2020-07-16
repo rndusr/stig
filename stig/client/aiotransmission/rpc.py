@@ -257,9 +257,10 @@ class TransmissionRPC():
             except ImportError:
                 raise ValueError('Missing extra: proxy (aiohttp_socks)')
             self._connector = aiohttp_socks.ProxyConnector.from_url(proxy)
+            self._proxy = URL(proxy)
         else:
             self._connector = None
-        self._proxy = proxy
+            self._proxy = URL('')
         asyncio.ensure_future(self.disconnect('Changing proxy: %r' % self._proxy))
 
     @property
