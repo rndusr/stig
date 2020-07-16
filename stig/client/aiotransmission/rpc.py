@@ -246,6 +246,7 @@ class TransmissionRPC():
 
     @property
     def proxy(self):
+        """URL of a SOCKS5, SOCKS4 or HTTP proxy"""
         return self._proxy
 
     @proxy.setter
