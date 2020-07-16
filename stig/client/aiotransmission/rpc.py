@@ -347,6 +347,7 @@ class TransmissionRPC():
                                                          encoding='utf-8')
             if self._connector is not None:
                 session_args['connector'] = self._connector
+                session_args['connector_owner'] = False
             self._session = aiohttp.ClientSession(**session_args)
 
             # Check if connection works
