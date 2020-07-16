@@ -430,21 +430,37 @@ class TransmissionRPC():
 
         Raises ClientError.
         """
-        import aiohttp
-        try:
-            answer = await self._post(post_data)
-
         # NOTE #163: Letting asyncio.CancelledError bubble up seems to fix the issue that
         #            causes empty torrent lists in new tabs until the next poll iteration.
         #            But I've seen this error pop up in the TUI log: "Unclosed client
         #            session client_session: <aiohttp.client.ClientSession object at
         #            0x7f35d98d1be0>" This may or may not be related.
+        import aiohttp
+        try:
+            from aiohttp_socks import (ProxyError,
+                                       ProxyConnectionError,
+                                       ProxyTimeoutError)
+        except ImportError:
+            class ProxyError(Exception): pass
+            class ProxyConnectionError(Exception): pass
+            class ProxyTimeoutError(Exception): pass
+        try:
+            answer = await self._post(post_data)
         except aiohttp.ClientError as e:
             log.debug('Caught during POST request: %r', e)
             raise ConnectionError(self.url)
 
-        except asyncio.TimeoutError:
+        except (ProxyError,ProxyConnectionError) as e:
+            log.debug('Caught during POST request: %r', e)
+            raise ConnectionError(self.proxy)
+
+        except asyncio.TimeoutError as e:
+            log.debug('Caught during POST request: %r', e)
             raise TimeoutError(self.timeout, self.url)
+
+        except ProxyTimeoutError as e:
+            log.debug('Caught during POST request: %r', e)
+            raise TimeoutError(self.timeout, self.proxy)
 
         else:
             if answer['result'] != 'success':
