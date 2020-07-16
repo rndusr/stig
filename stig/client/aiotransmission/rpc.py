@@ -255,7 +255,7 @@ class TransmissionRPC():
             try:
                 import aiohttp_socks
             except ImportError:
-                raise ValueError('Proxy support requires aiohttp_socks')
+                raise ValueError('Missing extra: proxy (aiohttp_socks)')
             self._connector = aiohttp_socks.ProxyConnector.from_url(proxy)
         else:
             self._connector = None
