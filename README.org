@@ -139,11 +139,13 @@
     - ~setproctitle~ :: Strip arguments from process title when running in tmux
                         session (this requires Python headers; e.g.
                         ~apt-get install libpython3-dev~)
+    - ~proxy~ :: Tunnel the connection to the Transmission daemon through a
+                 SOCKS5, SOCKS4 or HTTP proxy
 
     To install stig with dependencies for an extra:
     #+BEGIN_SRC sh
-    $ pipx install 'stig[setproctitle]'              # For pipx version>=0.15.0.0
-    $ pipx install stig --spec 'stig[setproctitle]'  # For pipx version<0.15.0.0
+    $ pipx install 'stig[setproctitle,proxy]'              # For pipx version>=0.15.0.0
+    $ pipx install stig --spec 'stig[setproctitle,proxy]'  # For pipx version<0.15.0.0
     #+END_SRC
 
 *** Development version
