@@ -1,3 +1,9 @@
+2020-??-?? 0.??.??
+  Other changes:
+    * New "connect.proxy" setting that specifies a SOCKS tunnel for RPC
+      communication.
+
+
 2020-07-04 0.11.2a0
   Fixed bugs:
     * Include user and password in "connect.url" setting.  This fixes a bug where the
