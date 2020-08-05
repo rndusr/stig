@@ -3,6 +3,10 @@
     * New "connect.proxy" setting that specifies a SOCKS tunnel for RPC
       communication.
 
+  Fixed bugs:
+    * Re-add "paused" alias for "stopped" filter to make the keybinding <f> <p>
+      working again.
+
 
 2020-07-04 0.11.2a0
   Fixed bugs:

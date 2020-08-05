@@ -48,7 +48,7 @@ class _SingleFilter(Filter):
                                        description='Torrents with all wanted files downloaded'),
         'stopped'     : BoolFilterSpec(lambda t: _STATUS_STOPPED in t['status'],
                                        needed_keys=('status',),
-                                       aliases=('stp',),
+                                       aliases=('stp', 'paused'),
                                        description='Torrents that are not allowed to up- or download'),
         'active'      : BoolFilterSpec(lambda t: _STATUS_CONNECTED in t['status'] or _STATUS_VERIFY in t['status'],
                                        needed_keys=('peers-connected', 'status'),
