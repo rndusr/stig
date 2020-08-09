@@ -228,6 +228,7 @@ class CLIEditWidget(urwid.WidgetWrap):
         if self._history_pos + 1 < len(self._history):
             self._history_pos += 1
             self._editw.edit_text = self._history[self._history_pos]
+            self._editw.set_edit_pos(len(self._editw.edit_text))
 
     def _set_history_next(self):
         if self._history_pos > -1:
@@ -236,6 +237,7 @@ class CLIEditWidget(urwid.WidgetWrap):
                 self._editw.edit_text = self._current_edit_text
             else:
                 self._editw.edit_text = self._history[self._history_pos]
+            self._editw.set_edit_pos(len(self._editw.edit_text))
 
     def _read_history(self):
         if self._history_file:
