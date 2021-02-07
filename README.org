@@ -178,7 +178,7 @@
 **** Run tests with all supported Python versions
      1. Install and set up [[https://github.com/pyenv/pyenv#table-of-contents][pyenv]].
      2. With pyenv, install the supported Python versions listed in
-        ~.python-version~.
+        ~.setup.py~.
      3. In stig's project directory, create a virtual environment with all
         dependencies: ~make venv~
      4. Activate the virtual environment:
