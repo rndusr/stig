@@ -102,8 +102,6 @@ def run():
         if not tui.run(run_commands):
             exit_code = 1
 
-    asyncio.get_event_loop().run_until_complete(srvapi.rpc.disconnect('Quit'))
-
     # We're not closing the AsyncIO event loop here because it sometimes
     # complains about unfinished tasks and not calling it seems to work fine.
     sys.exit(exit_code)
