@@ -8,6 +8,8 @@
   Fixed bugs:
     * Re-add "paused" alias for "stopped" filter to make the keybinding <f> <p>
       working again.
+    * Fix "RuntimeError: Event loop stopped before Future completed." when
+      exiting the TUI.
 
 
 2020-07-04 0.11.2a0
