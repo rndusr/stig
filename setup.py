@@ -33,6 +33,7 @@ setup(
 
     description      = 'TUI and CLI client for the Transmission daemon',
     long_description = long_description,
+    long_description_content_type = 'text/x-rst',
 
     url              = 'https://github.com/rndusr/stig',
     keywords         = 'bittorrent torrent transmission',
