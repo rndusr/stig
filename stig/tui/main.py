@@ -61,6 +61,5 @@ def run(command_runner):
     finally:
         tuiobjects.urwidscreen.tty_signal_keys(*old)
         tuiobjects.logwidget.disable()
-        asyncio.get_event_loop().run_until_complete(objects.srvapi.stop_polling())
 
     return True
