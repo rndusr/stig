@@ -1,3 +1,8 @@
+2021-02-09 0.12.1a0
+  Fixed bugs:
+    * Fix "Unclosed client session" error when not using the TUI
+
+
 2021-02-07 0.12.0a0
   Other changes:
     * New "connect.proxy" setting that specifies a SOCKS tunnel for RPC
