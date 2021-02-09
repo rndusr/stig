@@ -67,11 +67,6 @@ class TransmissionRPC():
         self._on_disconnected = Signal()
         self._on_error = Signal()
 
-    def __del__(self, _warnings=warnings):
-        if self._session is not None and not self._session.closed:
-            _warnings.warn('disconnect() wasn\'t called', ResourceWarning)
-            asyncio.ensure_future(self._session.close())
-
     def on(self, signal, callback, autoremove=True):
         """
         Register `callback` for `signal`
