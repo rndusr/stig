@@ -30,4 +30,4 @@ fulltest: venv
 	"$(PYTHON)" setup.py check -r -s >/dev/null
 
 release:
-	pyrelease CHANGELOG ./stig/__version__.py
+	pyrelease CHANGELOG ./stig/__init__.py
