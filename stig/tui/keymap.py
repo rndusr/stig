@@ -241,7 +241,7 @@ class KeyMap():
     """
 
     NO_CONTEXT      = object()
-    ALL_CONTEXTS    = object()
+    ALL_CONTEXTS    = 'all'
     DEFAULT_CONTEXT = 'default'
 
     def __init__(self, callback=None):
@@ -308,24 +308,31 @@ class KeyMap():
         Key chains starting with `key` are also removed.
         """
         key = self.mkkey(key)
-        if context not in self._actions:
-            raise ValueError('Unknown context: {!r}'.format(context))
-        elif key in self._actions[context]:
-            del self._actions[context][key]
-            log.debug('%s: Unmapped %r', context, key)
-        else:
-            if context == self.DEFAULT_CONTEXT:
-                key_removed = self._unbind_from_urwid_command_map(key)
+        def _unbind(key, context):
+            key_removed = False
+            if key in self._actions[context]:
+                del self._actions[context][key]
+                key_removed = True
+                log.debug('%s: Unmapped %r', context, key)
             else:
-                key_removed = False
+                if context == self.DEFAULT_CONTEXT:
+                    key_removed = self._unbind_from_urwid_command_map(key)
+                for k in tuple(self._actions[context]):
+                    if isinstance(k, KeyChain) and k.startswith(key):
+                        del self._actions[context][k]
+                        log.debug('%s: Unmapped %r', context, k)
+                        key_removed = True
+            return key_removed
 
-            for k in tuple(self._actions[context]):
-                if isinstance(k, KeyChain) and k.startswith(key):
-                    del self._actions[context][k]
-                    log.debug('%s: Unmapped %r', context, k)
-                    key_removed = True
-            if not key_removed:
-                raise ValueError('Key not mapped in context %r: %s' % (context, key))
+        if context == self.ALL_CONTEXTS:
+            if not any([_unbind(key, context) for context in self._actions]):
+                raise ValueError('Key %s not mapped in any context.' % key)
+        elif context not in self._actions:
+            raise ValueError('Unknown context: {!r}'.format(context))
+        else:
+            if not _unbind(key, context):
+                raise ValueError('Key not mapped in context %r: %s' % (context,
+                    key))
         self._bindunbind_callbacks.send(self)
 
     def get_description(self, key, context=DEFAULT_CONTEXT):
@@ -443,7 +450,7 @@ class KeyMap():
                 if isinstance(kc, KeyChain):
                     yield (kc, action)
 
-        if context is self.ALL_CONTEXTS:
+        if context == self.ALL_CONTEXTS:
             for cntxt in self.contexts:
                 yield from keychains_from(cntxt)
         else:

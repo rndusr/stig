@@ -174,13 +174,22 @@ class UnbindCmd(metaclass=CommandMeta):
          'description': 'Keys or key combinations (see "bind" command)'},
     )
 
+    more_sections = {
+        'COMPLETE UNBINDING': (
+            ('For this command there is a special context called \'all\' that '
+            'unbinds the key for every context.'),
+            '',
+            'Note that \'unbind --all\' is very different from \'unbind --context all\''
+        )
+    }
+
     def run(self, context, all, KEY):
         from ...tui.tuiobjects import keymap
         if all:
             keymap.clear(context=context)
         if context is None:
             context = keymap.DEFAULT_CONTEXT
-        elif context not in _get_keymap_contexts():
+        elif context not in _get_keymap_contexts() and context != keymap.ALL_CONTEXTS:
             raise CmdError('Invalid context: %r' % (context,))
 
         success = True
