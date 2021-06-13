@@ -278,6 +278,19 @@ class TestKeyMap_with_single_keys(unittest.TestCase):
         self.assertIn("Key not mapped in context 'default'", str(cm.exception))
         self.assertIn(str(Key('e')), str(cm.exception))
 
+        self.km.bind(key='f', action='foo')
+        self.km.bind(key='f', action='foo', context='fubar')
+        self.km.bind(key='f', action='food', context='imhungry')
+        self.km.unbind(key='f')
+        self.assertIn(Key('f'), self.km.keys())
+        self.km.unbind(key='f', context='all')
+        self.assertNotIn(Key('f'), self.km.keys())
+        
+        with self.assertRaises(ValueError) as cm:
+            self.km.unbind(key='f', context='all')
+        self.assertIn("not mapped in any context", str(cm.exception))
+        self.assertIn(str(Key('f')), str(cm.exception))
+
     def test_mkkey(self):
         self.assertEqual(self.km.mkkey(Key('x')), Key('x'))
         self.assertEqual(self.km.mkkey(KeyChain('1', '2', '3')),
