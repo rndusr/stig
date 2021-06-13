@@ -307,7 +307,6 @@ class KeyMap():
 
         Key chains starting with `key` are also removed.
         """
-        key = self.mkkey(key)
         def _unbind(key, context):
             key_removed = False
             if key in self._actions[context]:
@@ -324,15 +323,16 @@ class KeyMap():
                         key_removed = True
             return key_removed
 
+        key = self.mkkey(key)
         if context == self.ALL_CONTEXTS:
-            if not any([_unbind(key, context) for context in self._actions]):
+            keys_removed = [_unbind(key, context) for context in self._actions]
+            if not any(keys_removed):
                 raise ValueError('Key %s not mapped in any context.' % key)
         elif context not in self._actions:
             raise ValueError('Unknown context: {!r}'.format(context))
         else:
             if not _unbind(key, context):
-                raise ValueError('Key not mapped in context %r: %s' % (context,
-                    key))
+                raise ValueError('Key not mapped in context %r: %s' % (context, key))
         self._bindunbind_callbacks.send(self)
 
     def get_description(self, key, context=DEFAULT_CONTEXT):
