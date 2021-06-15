@@ -288,7 +288,7 @@ class TestKeyMap_with_single_keys(unittest.TestCase):
 
         with self.assertRaises(ValueError) as cm:
             self.km.unbind(key='f', context=self.km.ALL_CONTEXTS)
-        self.assertEqual(f"Key {str(Key('f'))} not mapped in any context.", str(cm.exception))
+        self.assertEqual('Key ' + str(Key('f')) + ' not mapped in any context.', str(cm.exception))
 
     def test_mkkey(self):
         self.assertEqual(self.km.mkkey(Key('x')), Key('x'))
