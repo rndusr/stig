@@ -1,3 +1,8 @@
+????-??-?? ?.??.??
+  Other changes:
+    * "unbind --all t" now unbinds "t" in all keybinding contexts.
+
+
 2021-02-09 0.12.1a0
   Fixed bugs:
     * Fix "Unclosed client session" error when not using the TUI
