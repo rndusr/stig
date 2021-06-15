@@ -2,6 +2,9 @@
   Other changes:
     * "unbind --all t" now unbinds "t" in all keybinding contexts.
 
+  Fixed bugs:
+    * Removed tilde expansion from completion candidates for the :move command
+
 
 2021-02-09 0.12.1a0
   Fixed bugs:
