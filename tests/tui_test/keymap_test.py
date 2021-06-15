@@ -285,7 +285,7 @@ class TestKeyMap_with_single_keys(unittest.TestCase):
         self.assertIn(Key('f'), self.km.keys())
         self.km.unbind(key='f', context='all')
         self.assertNotIn(Key('f'), self.km.keys())
-        
+
         with self.assertRaises(ValueError) as cm:
             self.km.unbind(key='f', context='all')
         self.assertIn("not mapped in any context", str(cm.exception))
