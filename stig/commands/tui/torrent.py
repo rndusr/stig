@@ -106,7 +106,8 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
         def dest_path_candidates(curarg):
             return candidates.fs_path(curarg.before_cursor,
                                       base=objects.cfg['srv.path.complete'],
-                                      directories_only=True)
+                                      directories_only=True,
+                                      expand_home_directory=False)
 
         curarg = args.curarg
         if len(args) >= 3:

@@ -183,18 +183,19 @@ def keybinding_keys(args):
     return Candidates(keys, label=label)
 
 
-def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
+def fs_path(path, base='.', directories_only=False, expand_home_directory=True, glob=None, regex=None):
     """
     File system path entries
 
     path: Path to get entries from
     base: Absolute path that is prepended to `path` if `path` is not absolute
     directories_only: Whether to include only directories
+    expand_home_directory: Whether to interpret "~"
     glob: Unix shell pattern
     regex: Regular expression that is matched against each name in `path`
     """
     log.debug('Getting path candidates for %r', path)
-    if path.startswith('~') and os.sep not in path:
+    if path.startswith('~') and os.sep not in path and expand_home_directory:
         # Complete home dirs in "~<user>" style
         import pwd
         users = pwd.getpwall()
@@ -202,7 +203,10 @@ def fs_path(path, base='.', directories_only=False, glob=None, regex=None):
         label = 'Home directories'
     else:
         include_hidden = os.path.basename(path).startswith('.')
-        dirpath = os.path.expanduser(path)
+        if expand_home_directory:
+            dirpath = os.path.expanduser(path)
+        else:
+            dirpath = path
         if not os.path.isabs(dirpath):
             dirpath = os.path.join(base, dirpath)
         dirpath = os.path.dirname(dirpath)
