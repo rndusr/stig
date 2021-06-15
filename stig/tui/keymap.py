@@ -241,7 +241,7 @@ class KeyMap():
     """
 
     NO_CONTEXT      = object()
-    ALL_CONTEXTS    = 'all'
+    ALL_CONTEXTS    = object()
     DEFAULT_CONTEXT = 'default'
 
     def __init__(self, callback=None):
@@ -324,7 +324,7 @@ class KeyMap():
             return key_removed
 
         key = self.mkkey(key)
-        if context == self.ALL_CONTEXTS:
+        if context is self.ALL_CONTEXTS:
             keys_removed = [_unbind(key, context) for context in self._actions]
             if not any(keys_removed):
                 raise ValueError('Key %s not mapped in any context.' % (key,))
@@ -450,7 +450,7 @@ class KeyMap():
                 if isinstance(kc, KeyChain):
                     yield (kc, action)
 
-        if context == self.ALL_CONTEXTS:
+        if context is self.ALL_CONTEXTS:
             for cntxt in self.contexts:
                 yield from keychains_from(cntxt)
         else:
