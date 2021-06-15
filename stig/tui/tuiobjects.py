@@ -32,6 +32,9 @@ from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 
+urwidpatches.apply_patches()
+
+
 keymap = KeyMap(callback=lambda cmd,widget: objects.cmdmgr.run_task(cmd, on_error=log.error))
 for args in DEFAULT_KEYMAP:
     if args['action'][0] == '<' and args['action'][-1] == '>':

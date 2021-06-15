@@ -11,58 +11,76 @@
 
 """Monkey patches that should be removed when they are resolved upstream"""
 
+import importlib
 import urwid
 
-# Add more actions for key bindings
-urwid.CURSOR_WORD_LEFT         = 'cursor word left'
-urwid.CURSOR_WORD_RIGHT        = 'cursor word right'
-urwid.DELETE_TO_EOL            = 'delete to end of line'
-urwid.DELETE_LINE              = 'delete line'
-urwid.DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
-urwid.DELETE_WORD_LEFT         = 'delete word left'
-urwid.DELETE_WORD_RIGHT        = 'delete word right'
-urwid.CANCEL                   = 'cancel'
-urwid.COMPLETE_NEXT            = 'complete next'
-urwid.COMPLETE_PREV            = 'complete previous'
+# Map class name to patched class
+_patched_classes = {}
+_unpatched_classes = {}
 
-# Remove urwid's default keybindings and create our own built-in command_map
-for key in tuple(urwid.command_map._command):
-    del urwid.command_map._command[key]
+def apply_patches():
+    importlib.reload(urwid)
 
-from .keymap import Key  # noqa isort:skip
-urwid.command_map[Key('pgup')]           = urwid.CURSOR_PAGE_UP
-urwid.command_map[Key('pgdn')]           = urwid.CURSOR_PAGE_DOWN
-urwid.command_map[Key('ctrl-b')]         = urwid.CURSOR_PAGE_UP
-urwid.command_map[Key('ctrl-f')]         = urwid.CURSOR_PAGE_DOWN
-urwid.command_map[Key('b')]              = urwid.CURSOR_PAGE_UP
-urwid.command_map[Key('space')]          = urwid.CURSOR_PAGE_DOWN
+    for cls_name,cls_patched in _patched_classes.items():
+        _unpatched_classes[cls_name] = getattr(urwid, cls_name)
+        setattr(urwid, cls_name, cls_patched)
 
-urwid.command_map[Key('up')]             = urwid.CURSOR_UP
-urwid.command_map[Key('down')]           = urwid.CURSOR_DOWN
-urwid.command_map[Key('left')]           = urwid.CURSOR_LEFT
-urwid.command_map[Key('right')]          = urwid.CURSOR_RIGHT
-urwid.command_map[Key('meta-b')]         = urwid.CURSOR_WORD_LEFT
-urwid.command_map[Key('meta-f')]         = urwid.CURSOR_WORD_RIGHT
+    # Add more actions for key bindings
+    urwid.CURSOR_WORD_LEFT         = 'cursor word left'
+    urwid.CURSOR_WORD_RIGHT        = 'cursor word right'
+    urwid.DELETE_TO_EOL            = 'delete to end of line'
+    urwid.DELETE_LINE              = 'delete line'
+    urwid.DELETE_CHAR_UNDER_CURSOR = 'delete char under cursor'
+    urwid.DELETE_WORD_LEFT         = 'delete word left'
+    urwid.DELETE_WORD_RIGHT        = 'delete word right'
+    urwid.CANCEL                   = 'cancel'
+    urwid.COMPLETE_NEXT            = 'complete next'
+    urwid.COMPLETE_PREV            = 'complete previous'
 
-urwid.command_map[Key('home')]           = urwid.CURSOR_MAX_LEFT
-urwid.command_map[Key('end')]            = urwid.CURSOR_MAX_RIGHT
-urwid.command_map[Key('ctrl-a')]         = urwid.CURSOR_MAX_LEFT
-urwid.command_map[Key('ctrl-e')]         = urwid.CURSOR_MAX_RIGHT
+    # Remove urwid's default keybindings and create our own built-in command_map
+    for key in tuple(urwid.command_map._command):
+        del urwid.command_map._command[key]
 
-urwid.command_map[Key('ctrl-k')]         = urwid.DELETE_TO_EOL
-urwid.command_map[Key('ctrl-u')]         = urwid.DELETE_LINE
-urwid.command_map[Key('ctrl-d')]         = urwid.DELETE_CHAR_UNDER_CURSOR
-urwid.command_map[Key('meta-d')]         = urwid.DELETE_WORD_LEFT
-urwid.command_map[Key('meta-backspace')] = urwid.DELETE_WORD_RIGHT
-urwid.command_map[Key('ctrl-w')]         = urwid.DELETE_WORD_RIGHT
+    from .keymap import Key  # noqa isort:skip
+    urwid.command_map[Key('pgup')]           = urwid.CURSOR_PAGE_UP
+    urwid.command_map[Key('pgdn')]           = urwid.CURSOR_PAGE_DOWN
+    urwid.command_map[Key('ctrl-b')]         = urwid.CURSOR_PAGE_UP
+    urwid.command_map[Key('ctrl-f')]         = urwid.CURSOR_PAGE_DOWN
+    urwid.command_map[Key('b')]              = urwid.CURSOR_PAGE_UP
+    urwid.command_map[Key('space')]          = urwid.CURSOR_PAGE_DOWN
 
-urwid.command_map[Key('enter')]          = urwid.ACTIVATE
-urwid.command_map[Key('escape')]         = urwid.CANCEL
-urwid.command_map[Key('ctrl-g')]         = urwid.CANCEL
-urwid.command_map[Key('ctrl-c')]         = urwid.CANCEL
-urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
-urwid.command_map[Key('tab')]            = urwid.COMPLETE_NEXT
-urwid.command_map[Key('shift-tab')]      = urwid.COMPLETE_PREV
+    urwid.command_map[Key('up')]             = urwid.CURSOR_UP
+    urwid.command_map[Key('down')]           = urwid.CURSOR_DOWN
+    urwid.command_map[Key('left')]           = urwid.CURSOR_LEFT
+    urwid.command_map[Key('right')]          = urwid.CURSOR_RIGHT
+    urwid.command_map[Key('meta-b')]         = urwid.CURSOR_WORD_LEFT
+    urwid.command_map[Key('meta-f')]         = urwid.CURSOR_WORD_RIGHT
+
+    urwid.command_map[Key('home')]           = urwid.CURSOR_MAX_LEFT
+    urwid.command_map[Key('end')]            = urwid.CURSOR_MAX_RIGHT
+    urwid.command_map[Key('ctrl-a')]         = urwid.CURSOR_MAX_LEFT
+    urwid.command_map[Key('ctrl-e')]         = urwid.CURSOR_MAX_RIGHT
+
+    urwid.command_map[Key('ctrl-k')]         = urwid.DELETE_TO_EOL
+    urwid.command_map[Key('ctrl-u')]         = urwid.DELETE_LINE
+    urwid.command_map[Key('ctrl-d')]         = urwid.DELETE_CHAR_UNDER_CURSOR
+    urwid.command_map[Key('meta-d')]         = urwid.DELETE_WORD_LEFT
+    urwid.command_map[Key('meta-backspace')] = urwid.DELETE_WORD_RIGHT
+    urwid.command_map[Key('ctrl-w')]         = urwid.DELETE_WORD_RIGHT
+
+    urwid.command_map[Key('enter')]          = urwid.ACTIVATE
+    urwid.command_map[Key('escape')]         = urwid.CANCEL
+    urwid.command_map[Key('ctrl-g')]         = urwid.CANCEL
+    urwid.command_map[Key('ctrl-c')]         = urwid.CANCEL
+    urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
+    urwid.command_map[Key('tab')]            = urwid.COMPLETE_NEXT
+    urwid.command_map[Key('shift-tab')]      = urwid.COMPLETE_PREV
+
+def revert_patches():
+    for cls_name in _patched_classes:
+        cls_unpatched = _unpatched_classes[cls_name]
+        setattr(urwid, cls_name, cls_unpatched)
+    urwid.command_map.restore_defaults()
 
 
 import re        # noqa isort:skip
@@ -116,7 +134,7 @@ class Edit_readline(urwid.Edit):
         else:
             return super().keypress(size, key)
 
-urwid.Edit = Edit_readline
+_patched_classes['Edit'] = Edit_readline
 
 
 # Remove Text._calc_line_translation() to fix rare crash on peer lists.
@@ -142,7 +160,7 @@ class Text_patched(urwid.Text):
         self._cache_translation = self.layout.layout(
             text, maxcol, self._align_mode, self._wrap_mode)
 
-urwid.Text = Text_patched
+_patched_classes['Text'] = Text_patched
 
 
 # Limit the impact of the high CPU load bug
@@ -174,7 +192,7 @@ class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
         if self._exc_info:
             raise self._exc_info
 
-urwid.AsyncioEventLoop = AsyncioEventLoop_patched
+_patched_classes['AsyncioEventLoop'] = AsyncioEventLoop_patched
 
 
 # Add support for ScrollBar class (see stig.tui.scroll)
@@ -227,7 +245,7 @@ class ListBox_patched(urwid.ListBox):
                 self._rows_max = sum(w.rows(flow_size) for w in self.body)
         return self._rows_max
 
-urwid.ListBox = ListBox_patched
+_patched_classes['ListBox'] = ListBox_patched
 
 
 # Don't use deprecated inspect.getargspect()
