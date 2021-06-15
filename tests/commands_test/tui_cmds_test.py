@@ -1,7 +1,7 @@
-from asynctest.mock import patch
+from asynctest.mock import call, patch, Mock
 
 from resources_cmd import CommandTestCase
-from stig.commands.tui import BindCmd, TabCmd
+from stig.commands.tui import BindCmd, TabCmd, UnbindCmd
 from stig.completion import Candidates
 from stig.utils.cliparser import Args
 
@@ -147,3 +147,131 @@ class TestBindCmd(CommandTestCase):
             mock_completion_candidates_opts.assert_called_with(args)
             mock_for_args.assert_not_called()
             mock_commands.assert_not_called()
+
+
+class TestUnbindCmd(CommandTestCase):
+    @patch('stig.tui.tuiobjects.keymap', create=True)
+    async def test_unbind_bound_keys_in_default_context(self, mock_keymap):
+        cb = Mock()
+        process = UnbindCmd(['a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [call('a', context=mock_keymap.DEFAULT_CONTEXT),
+                                                             call('b', context=mock_keymap.DEFAULT_CONTEXT),
+                                                             call('c', context=mock_keymap.DEFAULT_CONTEXT)])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, True)
+        cb.info.assert_not_called()
+        cb.error.assert_not_called()
+
+    @patch('stig.tui.tuiobjects.keymap', create=True)
+    async def test_unbind_unbound_keys_in_default_context(self, mock_keymap):
+        mock_keymap.unbind.side_effect = (None, ValueError('key not bound: b'), None)
+        cb = Mock()
+        process = UnbindCmd(['a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [call('a', context=mock_keymap.DEFAULT_CONTEXT),
+                                                             call('b', context=mock_keymap.DEFAULT_CONTEXT),
+                                                             call('c', context=mock_keymap.DEFAULT_CONTEXT)])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, False)
+        cb.info.assert_not_called()
+        cb.error.assert_called_once_with('unbind: key not bound: b')
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_bound_keys_in_all_contexts(self, mock_keymap):
+        cb = Mock()
+        process = UnbindCmd(['--all', 'a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [call('a', context=mock_keymap.ALL_CONTEXTS),
+                                                             call('b', context=mock_keymap.ALL_CONTEXTS),
+                                                             call('c', context=mock_keymap.ALL_CONTEXTS)])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, True)
+        cb.info.assert_not_called()
+        cb.error.assert_not_called()
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_unbound_keys_in_all_contexts(self, mock_keymap):
+        mock_keymap.unbind.side_effect = (None, ValueError('key not bound: b'), None)
+        cb = Mock()
+        process = UnbindCmd(['--all', 'a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [call('a', context=mock_keymap.ALL_CONTEXTS),
+                                                             call('b', context=mock_keymap.ALL_CONTEXTS),
+                                                             call('c', context=mock_keymap.ALL_CONTEXTS)])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, False)
+        cb.info.assert_not_called()
+        cb.error.assert_called_once_with('unbind: key not bound: b')
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_bound_keys_in_specific_context(self, mock_keymap):
+        cb = Mock()
+        process = UnbindCmd(['--context', 'foo', 'a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [call('a', context='foo'),
+                                                             call('b', context='foo'),
+                                                             call('c', context='foo')])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, True)
+        cb.info.assert_not_called()
+        cb.error.assert_not_called()
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_unbound_keys_in_specifc_context(self, mock_keymap):
+        mock_keymap.unbind.side_effect = (None, ValueError('key not bound: b'), None)
+        cb = Mock()
+        process = UnbindCmd(['--context', 'foo', 'a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [call('a', context='foo'),
+                                                             call('b', context='foo'),
+                                                             call('c', context='foo')])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, False)
+        cb.info.assert_not_called()
+        cb.error.assert_called_once_with('unbind: key not bound: b')
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_unbound_keys_in_unknown_context(self, mock_keymap):
+        mock_keymap.unbind.side_effect = (None, ValueError('key not bound: b'), None)
+        cb = Mock()
+        process = UnbindCmd(['--context', 'not_foo', 'a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, False)
+        cb.info.assert_not_called()
+        cb.error.assert_called_once_with("unbind: Invalid context: 'not_foo'")
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_all_keys_in_all_contexts(self, mock_keymap):
+        cb = Mock()
+        process = UnbindCmd(['--all'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [])
+        self.assertEqual(mock_keymap.clear.call_args_list, [call()])
+        self.assertEqual(process.success, True)
+        cb.info.assert_not_called()
+        cb.error.assert_not_called()
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_all_keys_in_known_contexts(self, mock_keymap):
+        cb = Mock()
+        process = UnbindCmd(['--all', '--context', 'bar'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [])
+        self.assertEqual(mock_keymap.clear.call_args_list, [call(context='bar')])
+        self.assertEqual(process.success, True)
+        cb.info.assert_not_called()
+        cb.error.assert_not_called()
+
+    @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
+    async def test_unbind_all_keys_in_unknown_contexts(self, mock_keymap):
+        cb = Mock()
+        process = UnbindCmd(['--all', '--context', 'asdf'], info_handler=cb.info, error_handler=cb.error)
+        await process.wait_async()
+        self.assertEqual(mock_keymap.unbind.call_args_list, [])
+        self.assertEqual(mock_keymap.clear.call_args_list, [])
+        self.assertEqual(process.success, False)
+        cb.info.assert_not_called()
+        cb.error.assert_called_once_with("unbind: Invalid context: 'asdf'")

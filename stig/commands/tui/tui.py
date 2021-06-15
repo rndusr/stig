@@ -185,24 +185,41 @@ class UnbindCmd(metaclass=CommandMeta):
 
     def run(self, context, all, KEY):
         from ...tui.tuiobjects import keymap
-        if all:
-            keymap.clear(context=context)
-        if context is None:
-            context = keymap.DEFAULT_CONTEXT
-        elif context not in _get_keymap_contexts() and context != keymap.ALL_CONTEXTS:
+
+        if context is not None and context not in _get_keymap_contexts():
             raise CmdError('Invalid context: %r' % (context,))
 
+        if KEY:
+            if context:
+                success = self._unbind_keys(keys=KEY, context=context)
+            elif all:
+                success = self._unbind_keys(keys=KEY, context=keymap.ALL_CONTEXTS)
+            else:
+                success = self._unbind_keys(keys=KEY, context=keymap.DEFAULT_CONTEXT)
+        else:
+            success = self._unbind_all_keys(context=context)
+
+        if not success:
+            raise CmdError()
+
+    def _unbind_keys(self, keys, context):
+        from ...tui.tuiobjects import keymap
         success = True
-        for key in KEY:
+        for key in keys:
             try:
                 keymap.unbind(key, context=context)
             except ValueError as e:
                 self.error(e)
                 success = False
-            else:
-                success = success and True
-        if not success:
-            raise CmdError()
+        return success
+
+    def _unbind_all_keys(self, context):
+        from ...tui.tuiobjects import keymap
+        if context is None:
+            keymap.clear()
+        else:
+            keymap.clear(context=context)
+        return True
 
     @classmethod
     def completion_candidates_posargs(cls, args):
