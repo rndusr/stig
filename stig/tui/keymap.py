@@ -327,7 +327,7 @@ class KeyMap():
         if context == self.ALL_CONTEXTS:
             keys_removed = [_unbind(key, context) for context in self._actions]
             if not any(keys_removed):
-                raise ValueError('Key %s not mapped in any context.' % key)
+                raise ValueError('Key %s not mapped in any context.' % (key,))
         elif context not in self._actions:
             raise ValueError('Unknown context: {!r}'.format(context))
         else:
