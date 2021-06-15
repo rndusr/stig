@@ -14,7 +14,7 @@ import os
 from xdg.BaseDirectory import xdg_config_home as XDG_CONFIG_HOME
 from xdg.BaseDirectory import xdg_data_home as XDG_DATA_HOME
 
-from .. import __appname__, objects
+from .. import __appname__
 from ..client.sorters import PeerSorter, SettingSorter, TorrentSorter, TrackerSorter
 from ..utils import convert
 from ..utils.usertypes import Bool, Float, Int, Option, Path, String, Tuple
@@ -85,6 +85,8 @@ class Bytes(Int):
 
 
 def init_defaults(localcfg):
+    from .. import objects
+
     localcfg.add('connect.host',
                  String.partial(),
                  getter=lambda: objects.srvapi.rpc.host,
