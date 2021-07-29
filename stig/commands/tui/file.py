@@ -30,3 +30,10 @@ class ListFilesCmd(base.ListFilesCmdbase,
 class PriorityCmd(base.PriorityCmdbase,
                   mixin.polling_frenzy, mixin.make_request, mixin.select_torrents, mixin.select_files):
     provides = {'tui'}
+class FOpenCmd(base.FOpenCmdbase,
+                  mixin.polling_frenzy, mixin.make_request,
+               mixin.select_torrents, mixin.select_files):
+    provides = {'tui'}
+    # Ugly hack to make the command behave as expected in the tui
+    async def run(self, COMMAND, TORRENT_FILTER, FILE_FILTER, OPTS):
+        await base.FOpenCmdbase.run(self, TORRENT_FILTER=COMMAND, FILE_FILTER=FILE_FILTER, COMMAND=TORRENT_FILTER, OPTS=OPTS)

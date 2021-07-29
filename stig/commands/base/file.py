@@ -11,11 +11,14 @@
 
 import asyncio
 
+from subprocess import Popen, DEVNULL
+
 from . import _mixin as mixin
 from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
 from ._common import make_COLUMNS_doc, make_SCRIPTING_doc, make_X_FILTER_spec
+from natsort import humansorted
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -166,3 +169,120 @@ class PriorityCmdbase(metaclass=CommandMeta):
         elif args.curarg_index == 3:
             torrent_filter = args[2]
             return candidates.file_filter(args.curarg, torrent_filter)
+
+class FOpenCmdbase(metaclass=CommandMeta):
+    name = 'fileopen'
+    aliases = ('fopen',)
+    provides = set()
+    category = 'file'
+    description = 'Open files using an external command'
+    examples = ('fileopen "that torrent" *.mkv',
+                'fileopen "that torrent" *.mkv mpv'
+                'fileopen "that torrent" *.mkv mpv --fullscreen',)
+    argspecs = (
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+        make_X_FILTER_spec('FILE', or_focused=True, nargs='?'),
+        {"names": ('COMMAND',),
+         'description': "Command to use to open files. Default: xdg-open",
+         'nargs': '?'
+        },
+        {"names": ('OPTS',),
+         'description': "Options for the external command.",
+         'nargs': 'REMAINDER'
+        },
+    )
+    async def run(self, TORRENT_FILTER, FILE_FILTER, COMMAND, OPTS):
+        default_command = 'xdg-open'
+        if COMMAND is None:
+            command = default_command
+        else:
+            command = COMMAND
+        opts = []
+        if not OPTS is None:
+            opts = OPTS
+        utilize_tui = not bool(TORRENT_FILTER)
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+
+            # If the user specified a filter instead of selecting via the TUI,
+            # ignore focused/marked files.
+            log.debug('%sdiscovering file(s)', '' if utilize_tui else 'Not ')
+            ffilter = self.select_files(FILE_FILTER,
+                                        allow_no_filter=True,
+                                        discover_file=utilize_tui)
+        except ValueError as e:
+            raise CmdError(e)
+
+        if not utilize_tui:
+            self.info('Opening %s from torrents %s with %s %s' %
+                      ('all files' if ffilter is None else ffilter, tfilter,
+                       command, opts))
+            quiet = False
+        else:
+            # We're operating on focused or marked files and changes are
+            # indiciated by the updated file list, so no info messages
+            # necessary.
+            quiet = True
+
+        self.info('Opening %s from torrents %s with %s %s' %
+                  ('all files' if ffilter is None else ffilter, tfilter,
+                   command, opts))
+        files = await self.make_file_list(tfilter, ffilter)
+        if command == default_command:
+            for f in files:
+                Popen([default_command, f], stdout=DEVNULL, stderr=DEVNULL)
+        else:
+            Popen([command] + opts + files, stdout=DEVNULL, stderr=DEVNULL)
+
+        return None
+
+    async def make_file_list(self, tfilter, ffilter):
+        response = await self.make_request(
+            objects.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
+            quiet=True)
+        torrents = response.torrents
+
+        if len(torrents) < 1:
+            raise CmdError()
+
+        filelist = []
+        for torrent in humansorted(torrents, key=lambda t: t['name']):
+            files, filtered_count = self._flatten_tree(torrent['files'], ffilter)
+            filelist.extend(files)
+
+        if filelist:
+            return filelist
+        else:
+            if str(tfilter) != 'all':
+                raise CmdError('No matching files in %s torrents: %s' % (tfilter, ffilter))
+            else:
+                raise CmdError('No matching files: %s' % (ffilter))
+    def _flatten_tree(self, files, ffilter=None):
+        flist = []
+        filtered_count = 0
+        def _match(ffilter, value):
+            if ffilter is None:
+                return True
+            try:
+               return ffilter.match(value)
+            except AttributeError:
+                pass
+            try:
+                return value['id'] in ffilter
+            except (KeyError, TypeError):
+                pass
+            return False
+        for key,value in humansorted(files.items(), key=lambda pair: pair[0]):
+            if value.nodetype == 'leaf':
+                if _match(ffilter, value) and value['size-downloaded'] == value['size-total']:
+                    flist.append(value['path-absolute'])
+                else:
+                    filtered_count += 1
+
+            elif value.nodetype == 'parent':
+                sub_flist, sub_filtered_count = self._flatten_tree(value, ffilter)
+                flist.extend(sub_flist)
+
+        return flist, filtered_count
