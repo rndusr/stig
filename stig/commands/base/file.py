@@ -12,6 +12,7 @@
 import asyncio
 
 from subprocess import Popen, DEVNULL
+from subprocess import run as subprocessrun
 
 from . import _mixin as mixin
 from .. import CmdError, CommandMeta
@@ -230,12 +231,24 @@ class FOpenCmdbase(metaclass=CommandMeta):
                   ('all files' if ffilter is None else ffilter, tfilter,
                    command, opts))
         files = await self.make_file_list(tfilter, ffilter)
-        if command == default_command:
-            for f in files:
-                Popen([default_command, f], stdout=DEVNULL, stderr=DEVNULL)
+        stdoutbuffer = DEVNULL
+        stderrbuffer = DEVNULL
+        # TODO separate options for stdout/stderr
+        try:
+            if command == default_command:
+                for f in files:
+                    result = subprocessrun([default_command, f], capture_output = True, text = True)
+            else:
+                result = subprocessrun([command] + opts + files, capture_output = True, text = True)
+        except FileNotFoundError as e:
+            self.error("Command not found: %s" % command)
         else:
-            Popen([command] + opts + files, stdout=DEVNULL, stderr=DEVNULL)
-
+            stdout = result.stdout.rstrip('\r\n')
+            stderr = result.stderr.rstrip('\r\n')
+            if len(stdout):
+                self.info(stdout)
+            if len(stderr):
+                self.error(stderr)
         return None
 
     async def make_file_list(self, tfilter, ffilter):
