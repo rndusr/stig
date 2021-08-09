@@ -427,6 +427,27 @@ class RenameCmdbase(metaclass=CommandMeta):
                 log.debug('Using torrent names as destination candidates')
                 return await candidates.torrent_filter(args.curarg, filter_names=False)
 
+class SetTorrentSeedRatioLimit(metaclass=CommandMeta):
+    name = 'setseedratiolimit'
+    aliases = ()
+    provides = set()
+    category = 'torrent'
+    description = 'Set the seed ratio limit for a torrent'
+    usage = ('setseedratiolimit <LIMIT>',
+             'setseedratiolimit <TORRENT> <LIMIT>)')
+    examples = ('setseedratiolimit 2',
+                "start 'night of the living dead' Metropolis",
+                'start ubuntu --force')
+    argspecs = (
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
+
+        {'names': ('LIMIT',),
+         'description': 'New seed limit ratio '
+        }
+    )
+
+    async def run(self, TORRENT_FILTER, LIMIT):
+        response = await self.make_request(objects.srvapi.torrent.set_seed_ratio_limit(TORRENT_FILTER, LIMIT))
 
 # Argument definitions that are shared between commands
 ARGSPEC_TOGGLE = {

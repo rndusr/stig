@@ -145,6 +145,15 @@ class Ratio(Float):
         else:
             return super().without_unit
 
+class RatioLimitMode:
+    """A Torrent's ratio limit mode as a string"""
+    GLOBAL = "default"
+    SINGLE = "override"
+    UNLIMITED = "unlimited"
+    DISABLED = "disabled"
+
+    pass
+
 
 class Status(tuple):
     """A Torrent's status as a tuple of strings"""
