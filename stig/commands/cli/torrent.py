@@ -158,6 +158,8 @@ class StartTorrentsCmd(base.StartTorrentsCmdbase,
                        mixin.make_request, mixin.select_torrents):
     provides = {'cli'}
 
+class SetTorrentSeedRatioLimit(base.SetTorrentSeedRatioLimit, mixin.make_request):
+    provides = {'cli'}
 
 class StopTorrentsCmd(base.StopTorrentsCmdbase,
                       mixin.make_request, mixin.select_torrents):

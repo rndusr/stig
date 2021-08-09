@@ -12,7 +12,10 @@
 """TUI and CLI specs for torrent details sections"""
 
 from functools import partial
+import sys
 
+from ..client.utils import RatioLimitMode
+from ..objects import remotecfg
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
@@ -63,7 +66,6 @@ def _private_hr(t):
 def _private_mr(t):
     return 'yes' if t['private'] else 'no'
 
-
 def _status_hr(t):
     return ', '.join(t['status'])
 
@@ -102,6 +104,22 @@ def _ratio_hr(t):
     else:
         return '%g' % ratio
 _ratio_mr = _ratio_hr
+
+def _seed_ratio_limit_hr(t):
+    limit = t['seed-ratio-limit']
+    mode  = t['seed-ratio-mode']
+    default = remotecfg['srv.limit.ratio']
+    enabled = remotecfg['srv.limit.ratio.enabled']
+    if mode == RatioLimitMode.GLOBAL:
+        if enabled:
+            return RatioLimitMode.DISABLED
+        limit = default
+    return '%g (%s)' % (limit, mode)
+def _seed_ratio_limit_mr(t):
+    return _seed_ratio_limit_hr(t)
+    ratio = t['seed-ratio-limit']
+    mode  = t['seed-ratio-mode']
+    return '%g (%s)' % (ratio, mode)
 
 
 def _available_hr(t):
@@ -214,6 +232,10 @@ SECTIONS = (
              needed_keys=('ratio',),
              human_readable=_ratio_hr,
              machine_readable=_ratio_mr),
+        Item('Ratio limit',
+             needed_keys=('seed-ratio-limit',),
+             human_readable=_seed_ratio_limit_hr,
+             machine_readable=_seed_ratio_limit_mr),
         Item('Isolated',
              needed_keys=('status',),
              human_readable=_isolated_hr,

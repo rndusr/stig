@@ -14,6 +14,8 @@
 import os
 
 from . import ColumnBase, _ensure_hide_unit
+from ..client.utils import RatioLimitMode
+# from ..objects import remotecfg
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -320,6 +322,34 @@ class Ratio(ColumnBase):
         return self.data['ratio']
 
 COLUMNS['ratio'] = Ratio
+
+class SeedRatioLimit(ColumnBase):
+    header = {'left': 'Ratio limit'}
+    width = 5
+    min_width = 5
+    needed_keys = ('seed-ratio-limit',)
+
+    def get_value(self):
+        limit = self.data['seed-ratio-limit']
+        mode = self.data['seed-ratio-mode']
+        # default = remotecfg['srv.limit.ratio']
+        # enabled = remotecfg['srv.limit.ratio.enabled']
+        if mode == RatioLimitMode.UNLIMITED:
+            limit = 'unlimited'
+        return limit
+
+COLUMNS['seed-ratio-limit'] = SeedRatioLimit
+
+class SeedRatioMode(ColumnBase):
+    header = {'left': 'Ratio limit mode'}
+    width = 5
+    min_width = 5
+    needed_keys = ('seed-ratio-mode',)
+
+    def get_value(self):
+        return self.data['seed-ratio-mode']
+
+COLUMNS['seed-ratio-mode'] = SeedRatioMode
 
 
 class RateUp(ColumnBase):

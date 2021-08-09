@@ -800,6 +800,40 @@ class TorrentAPI(TorrentAPIBase):
                 torrents = response.torrents
         return Response(success=success, torrents=torrents, msgs=msgs, errors=errors)
 
+    async def set_seed_ratio_limit(self, torrents, limit):
+        """
+        Set the seed limit ratio of individual torrents
+
+        torrents: See `torrents` method
+        limit: The new limit, double
+
+        Return Response with the following properties:
+            torrents: Tuple of matching Torrents with matching files with the
+                      keys 'id', 'name' and 'seed-ratio-limit'
+            success:  True if any file priorities were changed, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
+        """
+        response = await self.torrents(torrents, keys=('name', 'seed-ratio-limit'))
+        if not response.success:
+            return Response(success=False, torrents=(), errors=response.errors)
+        try:
+            limit = float(limit)
+            if limit < 0: raise ValueError
+        except ValueError:
+            raise ValueError('Invalid ratio specification: %s (must be non-negative number)' % limit)
+        await self._torrent_action(self.rpc.torrent_set, torrents, method_args={
+            'seedRatioLimit': limit,
+            # Set the seed ratio mode to OVERRIDE
+            'seedRatioMode': 1}
+        )
+
+        response = await self.torrents(torrents, keys=('id', 'name', 'seed-ratio-limit'))
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=response.msgs, errors=response.errors)
+        else:
+            return response
+
     async def _set_files_priority(self, priority, torrent_id, file_indexes):
         fi = tuple(file_indexes)
         log.debug('Setting priority of torrent #%d: %r: %s', torrent_id, priority, file_indexes)

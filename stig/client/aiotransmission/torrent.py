@@ -15,7 +15,7 @@ import os
 import time
 
 from .. import base, ttypes, utils
-from ..utils import LazyDict
+from ..utils import LazyDict, RatioLimitMode
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -179,6 +179,14 @@ def _status(t):
 
     return statuses
 
+def _ratio_limit_mode(t):
+    # RPC values for 'seedRatioMode' field:
+    # TR_RATIOLIMIT_GLOBAL      = 0 /* follow the global settings */
+    # TR_RATIOLIMIT_SINGLE      = 1 /* override the global settings, seeding until a certain ratio */
+    # TR_RATIOLIMIT_UNLIMITED   = 2 /* override the global settings, seeding regardless of ratio */
+    RLM = RatioLimitMode
+    t_ratiolimit = t['seedRatioMode']
+    return [RLM.GLOBAL, RLM.SINGLE, RLM.UNLIMITED][t_ratiolimit]
 
 class TorrentFileID(tuple):
     def __new__(cls, torrent_id, file_id):
@@ -381,6 +389,8 @@ DEPENDENCIES = {
     'hash'                         : ('hashString',),
     'name'                         : ('name',),
     'ratio'                        : ('uploadRatio',),
+    'seed-ratio-limit'             : ('seedRatioLimit','seedRatioMode'),
+    'seed-ratio-mode'              : ('seedRatioMode',),
     'status'                       : ('status', 'percentDone', 'metadataPercentComplete', 'rateDownload',
                                       'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'                         : ('downloadDir',),
@@ -451,6 +461,7 @@ class Torrent(base.TorrentBase):
         'status'             : _status,
         'peers-seeding'      : _count_seeds,
         'ratio'              : _modify_ratio,
+        'seed-ratio-mode'    : _ratio_limit_mode,
         'size-available'     : _bytes_available,
 
         # Transmission provides rate limits in kilobytes - we want bytes
