@@ -229,7 +229,7 @@ class FOpenCmdbase(metaclass=CommandMeta):
 
         self.info('Opening %s from torrents %s with %s %s' %
                   ('all files' if ffilter is None else ffilter, tfilter,
-                   command, opts))
+                   command, " ".join(opts)))
         files = await self.make_file_list(tfilter, ffilter)
         stdoutbuffer = DEVNULL
         stderrbuffer = DEVNULL
