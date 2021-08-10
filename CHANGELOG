@@ -1,4 +1,4 @@
-????-??-?? ?.??.??
+2021-08-10 0.12.2a0
   Other changes:
     * "unbind --all t" now unbinds "t" in all keybinding contexts.
 
