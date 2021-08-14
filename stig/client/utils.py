@@ -145,13 +145,13 @@ class Ratio(Float):
         else:
             return super().without_unit
 
-class RatioLimitMode:
-    """A Torrent's ratio limit mode as a string"""
-    GLOBAL = "default"
-    SINGLE = "override"
-    UNLIMITED = "unlimited"
-    DISABLED = "disabled"
+class RatioLimit(multitype(Float.partial(min=0))):
+    pass
 
+class RatioLimitMode(multitype(Bool, Option.partial(options=('default',)))):
+    pass
+
+class RatioLimitOrMode(multitype(RatioLimit, RatioLimitMode)):
     pass
 
 

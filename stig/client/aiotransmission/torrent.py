@@ -179,14 +179,20 @@ def _status(t):
 
     return statuses
 
-def _ratio_limit_mode(t):
+
+def _limit_ratio_mode(t):
     # RPC values for 'seedRatioMode' field:
-    # TR_RATIOLIMIT_GLOBAL      = 0 /* follow the global settings */
-    # TR_RATIOLIMIT_SINGLE      = 1 /* override the global settings, seeding until a certain ratio */
-    # TR_RATIOLIMIT_UNLIMITED   = 2 /* override the global settings, seeding regardless of ratio */
-    RLM = RatioLimitMode
-    t_ratiolimit = t['seedRatioMode']
-    return [RLM.GLOBAL, RLM.SINGLE, RLM.UNLIMITED][t_ratiolimit]
+    # 0 = /* follow the global settings */
+    # 1 = /* override the global settings, seeding until a certain ratio */
+    # 2 = /* override the global settings, seeding regardless of ratio */
+    t_limit_ratio_mode = t['seedRatioMode']
+    if t_limit_ratio_mode == 0:
+        return RatioLimitMode('default')
+    elif t_limit_ratio_mode == 1:
+        return RatioLimitMode('enabled')
+    elif t_limit_ratio_mode == 2:
+        return RatioLimitMode('disabled')
+
 
 class TorrentFileID(tuple):
     def __new__(cls, torrent_id, file_id):
@@ -389,8 +395,8 @@ DEPENDENCIES = {
     'hash'                         : ('hashString',),
     'name'                         : ('name',),
     'ratio'                        : ('uploadRatio',),
-    'seed-ratio-limit'             : ('seedRatioLimit','seedRatioMode'),
-    'seed-ratio-mode'              : ('seedRatioMode',),
+    'limit-ratio'                  : ('seedRatioLimit','seedRatioMode'),
+    'limit-ratio-mode'             : ('seedRatioMode',),
     'status'                       : ('status', 'percentDone', 'metadataPercentComplete', 'rateDownload',
                                       'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'                         : ('downloadDir',),
@@ -458,11 +464,11 @@ class Torrent(base.TorrentBase):
         '%metadata'          : lambda raw: raw['metadataPercentComplete'] * 100,
         '%verified'          : lambda raw: raw['recheckProgress'] * 100,
         '%available'         : _percent_available,
+        'size-available'     : _bytes_available,
         'status'             : _status,
         'peers-seeding'      : _count_seeds,
         'ratio'              : _modify_ratio,
-        'seed-ratio-mode'    : _ratio_limit_mode,
-        'size-available'     : _bytes_available,
+        'limit-ratio-mode'   : _limit_ratio_mode,
 
         # Transmission provides rate limits in kilobytes - we want bytes
         'limit-rate-down'    : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,

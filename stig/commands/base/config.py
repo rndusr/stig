@@ -22,6 +22,7 @@ from . import _mixin as mixin
 from .. import CmdError, CommandMeta, utils
 from ... import __appname__, __version__, objects
 from ...client import ClientError
+from ...client.utils import RatioLimitOrMode
 from ...completion import candidates
 from ...settings import defaults, rcfile
 from ...utils import cached_property, cliparser, string, usertypes
@@ -696,3 +697,77 @@ class RateLimitCmdbase(metaclass=CommandMeta):
             return candidates.Candidates(cands, label='Direction', curarg_seps=(',',))
         elif posargs.curarg_index >= 3:
             return candidates.torrent_filter(args.curarg)
+
+
+class RatioLimitCmd(metaclass=CommandMeta):
+    name = 'ratiolimit'
+    aliases = ('ratio',)
+    provides = set()
+    category = 'configuration'
+    description = 'Set the ratio limit globally or for specific torrents'
+    usage = ('ratiolimit <LIMIT>',
+             'ratiolimit <LIMIT> <TORRENT FILTER> <TORRENT FILTER> ...')
+    examples = ('ratiolimit 5',
+                'ratiolimit 10 "this torrent" the.other.torrent',
+                'ratiolimit disabled "my precious torrent"')
+    argspecs = (
+        {'names': ('LIMIT',),
+         'description': ('Maximum ratio or one of the values for '
+                         'the "srv.limit.ratio.enabled" setting')},
+
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+
+        {'names': ('--quiet','-q'), 'action': 'store_true',
+         'description': 'Do not show new limit(s)'},
+    )
+
+    async def run(self, LIMIT, TORRENT_FILTER, quiet):
+        try:
+            limit = RatioLimitOrMode(LIMIT)
+        except ValueError as e:
+            raise CmdError('%s: %r' % (e, LIMIT))
+
+        if TORRENT_FILTER:
+            log.debug('Limiting ratio of torrents: %r: %r', TORRENT_FILTER, limit)
+            await self._set_torrent_limit(limit, TORRENT_FILTER, quiet)
+        else:
+            log.debug('Limiting global ratio: %r', limit)
+            await self._set_global_limit(limit, quiet)
+
+    async def _set_global_limit(self, limit, quiet):
+        if isinstance(limit, float):
+            enabled, ratio = True, limit
+        elif limit:
+            enabled, ratio = True, None
+        else:
+            enabled, ratio = False, None
+
+        try:
+            try:
+                await objects.srvapi.settings.set_limit_ratio_enabled(enabled)
+                if ratio is not None:
+                    await objects.srvapi.settings.set_limit_ratio(ratio)
+            except ValueError as e:
+                raise CmdError('%s: %r' % (e, limit))
+            if not quiet:
+                new_enabled = await objects.srvapi.settings.get_limit_ratio_enabled()
+                if new_enabled:
+                    new_limit = await objects.srvapi.settings.get_limit_ratio()
+                    self.info('Global ratio limit: %s' % (new_limit,))
+                else:
+                    self.info('Global ratio limit disabled')
+        except ClientError as e:
+            raise CmdError(e)
+
+    async def _set_torrent_limit(self, limit, TORRENT_FILTER, quiet):
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+
+        response = await self.make_request(objects.srvapi.torrent.set_limit_ratio(tfilter, limit),
+                                           polling_frenzy=True, quiet=quiet)
+        if not response.success:
+            raise CmdError()

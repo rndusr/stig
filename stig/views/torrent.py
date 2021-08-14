@@ -14,8 +14,7 @@
 import os
 
 from . import ColumnBase, _ensure_hide_unit
-from ..client.utils import RatioLimitMode
-# from ..objects import remotecfg
+from .. import client
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -323,33 +322,39 @@ class Ratio(ColumnBase):
 
 COLUMNS['ratio'] = Ratio
 
-class SeedRatioLimit(ColumnBase):
+
+class LimitRatio(ColumnBase):
     header = {'left': 'Ratio limit'}
-    width = 5
-    min_width = 5
-    needed_keys = ('seed-ratio-limit',)
+    width = 11
+    min_width = 11
+    needed_keys = ('limit-ratio',)
 
     def get_value(self):
-        limit = self.data['seed-ratio-limit']
-        mode = self.data['seed-ratio-mode']
-        # default = remotecfg['srv.limit.ratio']
-        # enabled = remotecfg['srv.limit.ratio.enabled']
-        if mode == RatioLimitMode.UNLIMITED:
-            limit = 'unlimited'
-        return limit
+        mode = self.data['limit-ratio-mode']
+        if mode == client.utils.RatioLimitMode('default'):
+            from ..objects import remotecfg
+            if remotecfg['srv.limit.ratio.enabled']:
+                return remotecfg['srv.limit.ratio']
+            else:
+                return 'unlimited'
+        elif mode:
+            return self.data['limit-ratio']
+        else:
+            return 'unlimited'
 
-COLUMNS['seed-ratio-limit'] = SeedRatioLimit
+COLUMNS['limit-ratio'] = LimitRatio
 
-class SeedRatioMode(ColumnBase):
+
+class LimitRatioMode(ColumnBase):
     header = {'left': 'Ratio limit mode'}
-    width = 5
-    min_width = 5
-    needed_keys = ('seed-ratio-mode',)
+    width = 16
+    min_width = 16
+    needed_keys = ('limit-ratio-mode',)
 
     def get_value(self):
-        return self.data['seed-ratio-mode']
+        return self.data['limit-ratio-mode']
 
-COLUMNS['seed-ratio-mode'] = SeedRatioMode
+COLUMNS['limit-ratio-mode'] = LimitRatioMode
 
 
 class RateUp(ColumnBase):

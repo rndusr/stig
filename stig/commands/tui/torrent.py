@@ -188,8 +188,6 @@ class StartTorrentsCmd(base.StartTorrentsCmdbase,
                        mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
 
-class SetTorrentSeedRatioLimit(base.SetTorrentSeedRatioLimit, mixin.make_request):
-    provides = {'tui'}
 
 class StopTorrentsCmd(base.StopTorrentsCmdbase,
                       mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):

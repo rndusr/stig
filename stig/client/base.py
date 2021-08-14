@@ -36,6 +36,8 @@ class TorrentBase(abc.Mapping):
         'hash'                         : utils.SHA1,
         'name'                         : utils.SmartCmpStr,
         'ratio'                        : utils.Ratio,
+        'limit-ratio'                  : utils.RatioLimit,
+        'limit-ratio-mode'             : utils.RatioLimitMode,
         'status'                       : utils.Status,
         'path'                         : utils.SmartCmpPath,
         'private'                      : bool,
