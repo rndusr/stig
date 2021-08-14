@@ -354,24 +354,6 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
                                     args=[(self.client,)],
                                     kwargs=[{'error': cm.exception}])
 
-    async def test_malformed_json(self):
-        # The daemon redirects some requests to the web interface in some
-        # error cases like 404.
-        html = '<html><body>Fake Web Interface</body></html>'
-        self.daemon.response = web.Response(text=html)
-        self.client._RPC_PATH = '/wrong/path'
-
-        with self.assertRaises(RPCError) as cm:
-            await self.client.connect()
-        self.assertEqual(str(cm.exception),
-                         'Invalid RPC response: Server sent malformed JSON: %s' % html)
-        self.assert_not_connected_to(self.daemon.host, self.daemon.port)
-        self.assert_cb_connected_called(calls=0)
-        self.assert_cb_disconnected_called(calls=0)
-        self.assert_cb_error_called(calls=1,
-                                    args=[(self.client,)],
-                                    kwargs=[{'error': cm.exception}])
-
     async def test_timeout_minus_one(self):
         delay = self.client.timeout - 1
         await asyncio.gather(self.advance(delay),
