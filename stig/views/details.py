@@ -14,8 +14,7 @@
 from functools import partial
 import sys
 
-from ..client.utils import RatioLimitMode
-from ..objects import remotecfg
+from .. import client
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
@@ -120,6 +119,25 @@ def _seed_ratio_limit_mr(t):
     ratio = t['seed-ratio-limit']
     mode  = t['seed-ratio-mode']
     return '%g (%s)' % (ratio, mode)
+
+
+def _limit_ratio_hr(t):
+    ratio = t['limit-ratio']
+    if isinstance(ratio, float):
+        return '%g' % (ratio,)
+    else:
+        return str(ratio)
+_limit_ratio_mr = _limit_ratio_hr
+
+
+def _limit_ratio_mode_hr(t):
+    mode = t['limit-ratio-mode']
+    if mode == client.utils.RatioLimitMode('default'):
+        from ..objects import remotecfg
+        return str(remotecfg['srv.limit.ratio.enabled'])
+    else:
+        return str(mode)
+_limit_ratio_mode_mr = _limit_ratio_mode_hr
 
 
 def _available_hr(t):
@@ -244,7 +262,7 @@ SECTIONS = (
              needed_keys=('error',)),
     )},
 
-    {'title': 'Limits', 'width': 24, 'items': (
+    {'title': 'Limits', 'width': 27, 'items': (
         Item('Upload rate',
              needed_keys=('limit-rate-up',),
              human_readable=partial(_limit_rate_hr, 'up'),
@@ -253,6 +271,14 @@ SECTIONS = (
              needed_keys=('limit-rate-down',),
              human_readable=partial(_limit_rate_hr, 'down'),
              machine_readable=partial(_limit_rate_mr, 'down')),
+        Item('Ratio Limit',
+             needed_keys=('limit-ratio',),
+             human_readable=_limit_ratio_hr,
+             machine_readable=_limit_ratio_mr),
+        Item('Ratio Limit Mode',
+             needed_keys=('limit-ratio-mode',),
+             human_readable=_limit_ratio_mode_hr,
+             machine_readable=_limit_ratio_mode_mr),
     )},
 
     {'title': 'Peers', 'width': 18, 'items': (

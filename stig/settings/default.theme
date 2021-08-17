@@ -226,6 +226,22 @@ torrentlist.ratio.focused                          $ratio_fg           on $tlist
 torrentlist.ratio.highlighted.unfocused            $ratio_hl           on $tlist_bg.uf
 torrentlist.ratio.highlighted.focused              $ratio_hl           on $tlist_bg.f
 
+$limit-ratio_fg = dark blue
+$limit-ratio_hl = light blue
+torrentlist.limit-ratio.header                     $limit-ratio_fg,underline on $tlist_bg.uf
+torrentlist.limit-ratio.unfocused                  $limit-ratio_fg           on $tlist_bg.uf
+torrentlist.limit-ratio.focused                    $limit-ratio_fg           on $tlist_bg.f
+torrentlist.limit-ratio.highlighted.unfocused      $limit-ratio_hl           on $tlist_bg.uf
+torrentlist.limit-ratio.highlighted.focused        $limit-ratio_hl           on $tlist_bg.f
+
+$limit-ratio-mode_fg = dark blue
+$limit-ratio-mode_hl = light blue
+torrentlist.limit-ratio-mode.header                $limit-ratio-mode_fg,underline on $tlist_bg.uf
+torrentlist.limit-ratio-mode.unfocused             $limit-ratio-mode_fg           on $tlist_bg.uf
+torrentlist.limit-ratio-mode.focused               $limit-ratio-mode_fg           on $tlist_bg.f
+torrentlist.limit-ratio-mode.highlighted.unfocused $limit-ratio-mode_hl           on $tlist_bg.uf
+torrentlist.limit-ratio-mode.highlighted.focused   $limit-ratio-mode_hl           on $tlist_bg.f
+
 $size_fg = dark magenta
 torrentlist.size.header                            $size_fg,underline on $tlist_bg.uf
 torrentlist.size.unfocused                         $size_fg           on $tlist_bg.uf

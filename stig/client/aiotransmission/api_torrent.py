@@ -21,8 +21,8 @@ from .. import ClientError
 from ..base import TorrentAPIBase
 from ..constants import MAX_TORRENT_FILE_SIZE
 from ..filters import FileFilter, TorrentFilter
-from ..utils import (URL, Bandwidth, Bool, BoolOrBandwidth, Response, SizeInBytes,
-                     SmartCmpPath)
+from ..utils import (URL, Bandwidth, Bool, BoolOrBandwidth, RatioLimitOrMode,
+                     Response, SizeInBytes, SmartCmpPath)
 from .torrent import Torrent, TorrentFields
 
 from ...logging import make_logger  # isort:skip
@@ -971,6 +971,59 @@ class TorrentAPI(TorrentAPIBase):
     async def adjust_limit_rate_down(self, torrents, adjustment):
         """See `adjust_limit_rate_up`"""
         return await self._limit_rate_relative(torrents, 'down', adjustment)
+
+
+    async def set_limit_ratio(self, torrents, limit):
+        """
+        Set the ratio limit of individual torrents
+
+        torrents: See `torrents` method
+        limit:    `float, "default" or boolean string (e.g. "disabled", "true",
+                  "no", etc)
+
+        Return Response with the following properties:
+            torrents: Tuple of matching Torrents with matching files with the
+                      keys 'id', 'name' and 'limit-ratio'
+            success:  True if any file priorities were changed, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
+        """
+        response = await self.torrents(torrents, keys=('name', 'limit-ratio'))
+        if not response.success:
+            return Response(success=False, torrents=(), errors=response.errors)
+
+        try:
+            limit_or_mode = RatioLimitOrMode(limit)
+        except ValueError as e:
+            return Response(success=False, torrents=(), errors=('%s: %r' % (e, limit),))
+
+        # RPC values for 'seedRatioMode' field:
+        # 0 = /* follow the global settings */
+        # 1 = /* override the global settings, seeding until a certain ratio */
+        # 2 = /* override the global settings, seeding regardless of ratio */
+        if isinstance(limit_or_mode, float):
+            method_args = {'seedRatioLimit': limit, 'seedRatioMode': 1}
+        elif limit_or_mode == 'default':
+            method_args = {'seedRatioMode': 0}
+        elif limit_or_mode:
+            method_args = {'seedRatioMode': 1}
+        else:
+            method_args = {'seedRatioMode': 2}
+
+        log.debug('Setting ratio limit: %r', method_args)
+
+        def create_info_msg(t):
+            if limit_or_mode == t['limit-ratio-mode']:
+                return (False, 'Already set to %s: %s' % (limit_or_mode, t['name']))
+            elif isinstance(limit_or_mode, float):
+                return (True, 'Ratio limited to %s: %s' % (limit_or_mode, t['name']))
+            elif limit_or_mode:
+                return (True, 'Ratio limited to %s: %s' % (t['limit-ratio'], t['name']))
+            else:
+                return (True, 'Ratio limit disabled: %s' % (t['name'],))
+
+        return await self._torrent_action(self.rpc.torrent_set, torrents, method_args=method_args,
+                                          check=create_info_msg, check_keys=('limit-ratio', 'limit-ratio-mode',))
 
 
     async def tracker_add(self, torrents, urls):

@@ -410,8 +410,8 @@ class TransmissionRPC():
                 import aiohttp
                 try:
                     answer = await response.json()
-                except aiohttp.ClientResponseError:
-                    raise RPCError('Server sent malformed JSON: %s' % await response.text())
+                except json.JSONDecodeError as e:
+                    raise RPCError('Server sent malformed JSON: %s: %s' % (e, await response.text()))
                 else:
                     return answer
 
