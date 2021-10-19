@@ -111,6 +111,7 @@
 *** Packages
     - Arch (AUR): [[https://aur.archlinux.org/packages/stig][stig]], [[https://aur.archlinux.org/packages/stig-git][stig-git]]
     - NixOS: [[https://nixos.org/nixos/packages.html?attr=stig&query=stig][stig]]
+    - Alpine Linux: [[https://pkgs.alpinelinux.org/packages?name=stig&branch=edge][stig]]
 
 *** Pipx (recommended)
     [[https://github.com/pipxproject/pipx][Pipx]] installs applications in self-contained virtual environments in
