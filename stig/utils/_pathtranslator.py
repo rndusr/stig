@@ -28,6 +28,10 @@ class PathTranslator:
         local =  Path(local)
         if not local.exists():
             raise ValueError("Local path %s does not exist." % local)
+        if not local.is_absolute():
+            raise ValueError("Local path %s must be absolute." % local)
+        if not remote.is_absolute():
+            raise ValueError("Local path %s must be absolute." % remote)
         if force:
             self.links.forceput(remote, local)
         if remote in self.links.keys():
