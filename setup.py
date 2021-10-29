@@ -50,6 +50,7 @@ setup(
         'pyxdg',
         'blinker',
         'natsort',
+        'bidict',
     ],
     extras_require = {
         'setproctitle': ['setproctitle'],

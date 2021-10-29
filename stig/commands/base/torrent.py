@@ -11,6 +11,7 @@
 
 import asyncio
 import os
+from pathlib import Path
 
 from . import _mixin as mixin
 from .. import CmdError, CommandMeta
@@ -250,6 +251,7 @@ class MoveTorrentsCmdbase(metaclass=CommandMeta):
         except ValueError as e:
             raise CmdError(e)
         else:
+            PATH = objects.pathtranslator.to_remote(Path(PATH)).as_posix()
             response = await self.make_request(objects.srvapi.torrent.move(tfilter, PATH),
                                                polling_frenzy=True)
             if not response.success:

@@ -65,3 +65,6 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
     def _output(self, msg):
         print(msg)
+
+class LinkPathCmd(base.LinkPathCmd):
+    provides = {'cli'}
