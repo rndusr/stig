@@ -18,6 +18,7 @@ from . import logging, settings
 from .client import API
 from .commands import CommandManager
 from .helpmgr import HelpManager
+from .utils._pathtranslator import PathTranslator
 
 log = logging.make_logger()
 
@@ -26,6 +27,7 @@ main_rcfile = None
 
 localcfg = settings.Settings()
 settings.init_defaults(localcfg)
+pathtranslator = PathTranslator()
 
 srvapi = API(interval=localcfg['tui.poll'])
 
