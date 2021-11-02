@@ -264,7 +264,10 @@ class FOpenCmdbase(metaclass=CommandMeta):
         for torrent in humansorted(torrents, key=lambda t: t['name']):
             files, filtered_count = self._flatten_tree(torrent['files'], ffilter)
             filelist.extend(files)
-
+        filelist = map(
+            lambda f: objects.pathtranslator.to_local( str(f) ),
+            filelist
+        )
         if filelist:
             return filelist
         else:
