@@ -49,6 +49,10 @@ class PathTranslator:
         log.debug("Linked remote path %s to local path %s" % (remote, local))
 
     def _translate_path(self, path, links):
+        try:
+            path = Path(path)
+        except Exception:
+            raise ValueError("Could not convert %s to Path" % path)
         for roots in links.items():
             try:
                 return roots[1] / path.relative_to(roots[0])
