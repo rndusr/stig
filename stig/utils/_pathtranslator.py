@@ -31,7 +31,7 @@ class PathTranslator:
         if not local.is_absolute():
             raise ValueError("Local path %s must be absolute." % local)
         if not remote.is_absolute():
-            raise ValueError("Local path %s must be absolute." % remote)
+            raise ValueError("Remote path %s must be absolute." % remote)
         if force:
             self.links.forceput(remote, local)
         if remote in self.links.keys():
