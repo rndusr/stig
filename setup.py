@@ -41,7 +41,7 @@ setup(
     packages         = find_packages(),
     package_data     = {'stig': ['settings/default.theme']},
 
-    python_requires  = '>=3.5',
+    python_requires  = '>=3.6',
     install_requires = [
         'urwid>=2.0',
         'urwidtrees>=1.0.3dev0',
@@ -64,7 +64,6 @@ setup(
 
     classifiers = [
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
