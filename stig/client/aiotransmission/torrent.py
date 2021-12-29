@@ -72,9 +72,11 @@ def _modify_timestamp_completed(t):
 def _count_seeds(t):
     trackerStats = t['trackerStats']
     if trackerStats:
-        return max(t['seederCount'] for t in trackerStats)
-    else:
-        return utils.Count.UNKNOWN
+        m = max(t.get('seederCount', -1) for t in trackerStats)
+        if m != -1:
+            return m
+
+    return utils.Count.UNKNOWN
 
 
 def _bytes_available(t):
@@ -128,7 +130,7 @@ def _find_error(t):
     # setting a tracker domain to 127.0.0.1 in /etc/hosts to provoke an error.)
     trackerStats = t['trackerStats']
     for tracker in trackerStats:
-        msg = tracker['lastAnnounceResult']
+        msg = tracker.get('lastAnnounceResult')
         if msg != 'Success':
             return msg
 
@@ -300,12 +302,12 @@ class TrackerList(tuple):
 
     @staticmethod
     def _error_announce(tracker):
-        msg = tracker['lastAnnounceResult'] if tracker['hasAnnounced'] else ''
+        msg = tracker['lastAnnounceResult'] if tracker.get('hasAnnounced') else ''
         return '' if msg == 'Success' else msg
 
     @staticmethod
     def _error_scrape(tracker):
-        msg = tracker['lastScrapeResult'] if tracker['hasScraped'] else ''
+        msg = tracker['lastScrapeResult'] if tracker.get('hasScraped') else ''
         return '' if msg == 'Success' else msg
 
     @staticmethod
@@ -319,9 +321,9 @@ class TrackerList(tuple):
             /* when the next periodic (announce|scrape) message will be sent out.
                if (announce|scrape)State isn't TR_TRACKER_WAITING, this field is undefined */
         """
-        state = tracker['%sState' % which.lower()]
+        state = tracker.get('%sState' % which.lower())
         if state == 1:    # TR_TRACKER_WAITING = 1
-            return tracker['next%sTime' % which]
+            return tracker.get('next%sTime' % which)
         elif state == 0:  # Torrent is paused
             return utils.Timestamp.NOT_APPLICABLE
         elif state == 2:  # Announce/scrape is queued
@@ -340,12 +342,17 @@ class TrackerList(tuple):
             /* when the last (announce|scrape) was completed.
                if "has(Announced|Scraped)" is false, this field is undefined */
         """
-        if tracker['has%sd' % which]:
+        if tracker.get('has%sd' % which):
             return tracker['last%sTime' % which]
         else:
             return utils.Timestamp.NEVER
 
     def __new__(cls, raw_torrent):
+        def fix(l, x):
+            if x is not None:
+                return l[x]
+            return 'uncnown'
+
         return super().__new__(cls,
             (ttypes.TorrentTracker(
                 (LazyDict({  # noqa: E128
@@ -357,15 +364,15 @@ class TrackerList(tuple):
                     'url-announce'       : raw_tracker['announce'],
                     'url-scrape'         : raw_tracker['scrape'],
 
-                    'status-announce'    : cls._STATES_ANNOUNCE[raw_tracker['announceState']],
-                    'status-scrape'      : cls._STATES_SCRAPE[raw_tracker['scrapeState']],
+                    'status-announce'    : fix(cls._STATES_ANNOUNCE, raw_tracker.get('announceState')),
+                    'status-scrape'      : fix(cls._STATES_SCRAPE, raw_tracker.get('scrapeState')),
 
                     'error-announce'     : lambda: cls._error_announce(raw_tracker),
                     'error-scrape'       : lambda: cls._error_scrape(raw_tracker),
 
-                    'count-downloads'    : raw_tracker['downloadCount'],
-                    'count-leeches'      : raw_tracker['leecherCount'],
-                    'count-seeds'        : raw_tracker['seederCount'],
+                    'count-downloads'    : raw_tracker.get('downloadCount', -1),
+                    'count-leeches'      : raw_tracker.get('leecherCount', -1),
+                    'count-seeds'        : raw_tracker.get('seederCount', -1),
 
                     'time-last-announce' : lambda: cls._last_time(raw_tracker, 'Announce'),
                     'time-last-scrape'   : lambda: cls._last_time(raw_tracker, 'Scrape'),
