@@ -26,6 +26,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
                    mixin.only_supported_columns):
     provides = {'cli'}
 
+
     async def make_file_list(self, tfilter, ffilter, columns):
         response = await self.make_request(
             objects.srvapi.torrent.torrents(tfilter, keys=('name', 'files')),
@@ -90,4 +91,9 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
 class PriorityCmd(base.PriorityCmdbase,
                   mixin.make_request, mixin.select_torrents, mixin.select_files):
+    provides = {'cli'}
+
+class FOpenCmd(base.FOpenCmdbase,
+                  mixin.make_request, mixin.select_torrents,
+               mixin.select_files):
     provides = {'cli'}
