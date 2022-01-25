@@ -267,32 +267,6 @@ class Ratio(_COLUMNS['ratio'], CellWidgetBase):
 TUICOLUMNS['ratio'] = Ratio
 
 
-class LimitRatio(_COLUMNS['limit-ratio'], CellWidgetBase):
-    style = Style(prefix='torrentlist.limit-ratio', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-ratio'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        if self.data['limit-ratio-mode'] != 'default':
-            return 'highlighted'
-
-TUICOLUMNS['limit-ratio'] = LimitRatio
-
-
-class LimitRatioMode(_COLUMNS['limit-ratio-mode'], CellWidgetBase):
-    style = Style(prefix='torrentlist.limit-ratio-mode', focusable=True,
-                  extras=('header',), modes=('highlighted',))
-    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-ratio-mode'].header),
-                           style.attrs('header'))
-
-    def get_mode(self):
-        if self.data['limit-ratio-mode'] != 'default':
-            return 'highlighted'
-
-TUICOLUMNS['limit-ratio-mode'] = LimitRatioMode
-
-
 class RateUp(_COLUMNS['rate-up'], CellWidgetBase):
     style = Style(prefix='torrentlist.rate-up', focusable=True,
                   extras=('header',), modes=('highlighted',))
@@ -340,6 +314,21 @@ class LimitRateDown(_COLUMNS['limit-rate-down'], CellWidgetBase):
 
 TUICOLUMNS['limit-rate-down'] = LimitRateDown
 
+class LimitRatio(_COLUMNS['limit-ratio'], CellWidgetBase):
+    style = Style(prefix='torrentlist.limit-ratio', focusable=True,
+                  extras=('header',), )
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-ratio'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['limit-ratio'] = LimitRatio
+
+class LimitRatioMode(_COLUMNS['limit-ratio-mode'], CellWidgetBase):
+    style = Style(prefix='torrentlist.limit-ratio-mode', focusable=True,
+                  extras=('header',), )
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['limit-ratio-mode'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['limit-ratio-mode'] = LimitRatioMode
 
 class Tracker(_COLUMNS['tracker'], CellWidgetBase):
     style = Style(prefix='torrentlist.tracker', focusable=True,
