@@ -48,7 +48,8 @@ class Name(_COLUMNS['name'], CellWidgetBase):
                          'downloading.progress1', 'downloading.progress2', 'downloading.complete',
                          'uploading.progress1', 'uploading.progress2', 'uploading.complete',
                          'queued.progress1', 'queued.progress2', 'queued.complete',
-                         'connected.progress1', 'connected.progress2', 'connected.complete'))
+                         'connected.progress1', 'connected.progress2', 'connected.complete',
+                         'seeding.complete'))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
     needed_keys = ('name', 'status', '%downloaded', '%verified', '%metadata',
@@ -79,6 +80,8 @@ class Name(_COLUMNS['name'], CellWidgetBase):
             mode = 'queued'
         elif Status.CONNECTED in torrent['status']:
             mode = 'connected'
+        elif Status.SEED in torrent['status']:
+            mode = 'seeding'
         else:
             mode = 'idle'
         new_status = (torrent['name'], mode, progress)
