@@ -331,6 +331,11 @@ torrentlist.name.idle.progress2.focused            $name.idle_fg           on $t
 torrentlist.name.idle.complete.unfocused           $name.idle_fg           on $tlist_bg.uf
 torrentlist.name.idle.complete.focused             $name.idle_fg           on $tlist_bg.f
 
+$name.seeding_fg = $status.seeding_fg
+torrentlist.name.seeding.complete.unfocused           $name.seeding_fg           on $tlist_bg.uf
+torrentlist.name.seeding.complete.focused             $name.seeding_fg           on $tlist_bg.f
+
+
 $name.uploading_fg = $status.uploading_fg
 torrentlist.name.uploading.progress1.unfocused     $name.uploading_fg,underline on $tlist_bg.uf
 torrentlist.name.uploading.progress1.focused       $name.uploading_fg,underline on $tlist_bg.f
