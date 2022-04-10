@@ -2,6 +2,7 @@ import random
 from types import SimpleNamespace
 
 from sorter_helpers import TestSorterBase
+
 from stig.client.sorters import TorrentSorter
 
 

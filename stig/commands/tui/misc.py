@@ -23,9 +23,9 @@ class HelpCmd(base.HelpCmdbase):
     provides = {'tui'}
 
     def display_help(self, topics, lines):
+        from ...tui import tuiobjects
         from ...tui.scroll import ScrollBar
         from ...tui.views import SearchableText
-        from ...tui import tuiobjects
 
         if hasattr(self, 'title'):
             titlew = make_tab_title_widget(str(self.title),

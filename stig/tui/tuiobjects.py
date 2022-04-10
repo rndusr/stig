@@ -17,9 +17,9 @@ import asyncio
 
 import urwid
 
-from . import theme, urwidpatches  # noqa
 from .. import objects
 from ..settings.defaults import DEFAULT_KEYMAP
+from . import theme, urwidpatches  # noqa
 from .group import Group
 from .keymap import KeyMap
 from .logger import LogWidget
@@ -53,8 +53,8 @@ def _create_cli_widget():
         objects.cmdmgr.run_task(cli.edit_text, on_error=log.error)
         reset_cli(cli)
 
-    from .completer import Completer
     from ..completion import candidates
+    from .completer import Completer
 
     def get_candidates(args):
         log.debug('Getting candidates for %r', args)

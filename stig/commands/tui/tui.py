@@ -16,10 +16,10 @@ import os
 import shlex
 from functools import partial
 
-from . import _mixin as mixin
-from .. import CmdError, CommandMeta, utils
 from ... import client, objects
 from ...completion import candidates
+from .. import CmdError, CommandMeta, utils
+from . import _mixin as mixin
 from ._common import make_tab_title_widget
 
 from ...logging import make_logger  # isort:skip
@@ -177,7 +177,7 @@ class UnbindCmd(metaclass=CommandMeta):
     more_sections = {
         'COMPLETE UNBINDING': (
             ('For this command there is a special context called \'all\' that '
-            'unbinds the key for every context.'),
+             'unbinds the key for every context.'),
             '',
             'Note that \'unbind --all\' is very different from \'unbind --context all\''
         )
@@ -422,6 +422,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
 
     def _open_dialog(self, cmd, on_change=None, on_accept=None, on_cancel=None, on_close=None):
         import urwid
+
         from ...tui.cli import CLIEditWidget
 
         def accept_cb(widget):
@@ -724,9 +725,8 @@ class LimitCmd(metaclass=CommandMeta):
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         from ...tui.tuiobjects import tabs
-        from ...tui.views import (TorrentListWidget, FileListWidget,
-                                  PeerListWidget, TrackerListWidget,
-                                  SettingListWidget)
+        from ...tui.views import (FileListWidget, PeerListWidget, SettingListWidget,
+                                  TorrentListWidget, TrackerListWidget)
         widget = tabs.focus.base_widget
         if hasattr(widget, 'secondary_filter'):
             if isinstance(widget, TorrentListWidget):
@@ -812,8 +812,8 @@ class SortCmd(metaclass=CommandMeta):
 
     @staticmethod
     def _widget2sortcls(list_widget):
-        from ...tui.views import (TorrentListWidget, PeerListWidget,
-                                  TrackerListWidget, SettingListWidget)
+        from ...tui.views import (PeerListWidget, SettingListWidget, TorrentListWidget,
+                                  TrackerListWidget)
         if isinstance(list_widget, TorrentListWidget):
             return client.TorrentSorter
         elif isinstance(list_widget, PeerListWidget):

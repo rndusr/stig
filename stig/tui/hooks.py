@@ -12,8 +12,8 @@
 import os
 from functools import partial
 
-from . import tuiobjects
 from ..objects import localcfg, srvapi
+from . import tuiobjects
 from .views.file import TUICOLUMNS as FILE_COLUMNS
 from .views.file_list import FileListWidget
 from .views.peer_list import PeerListWidget

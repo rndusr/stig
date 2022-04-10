@@ -17,10 +17,10 @@ import os
 import re
 from collections import abc
 
-from . import _utils
 from .. import objects
 from ..completion import Candidate, Candidates
 from ..utils import usertypes
+from . import _utils
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)

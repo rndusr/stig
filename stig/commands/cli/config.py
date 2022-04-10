@@ -9,9 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import _mixin as mixin
 from ... import objects
 from ..base import config as base
+from . import _mixin as mixin
 from ._table import print_table
 
 
@@ -39,6 +39,7 @@ class SetCmd(base.SetCmdbase,
 
     def make_setting_list(self, sort, columns):
         from ...views.setting import COLUMNS as SETTING_COLUMNS
+
         # Remove columns that aren't supported by CLI interface (e.g. 'marked')
         columns = self.only_supported_columns(columns, SETTING_COLUMNS)
         settings = sort.apply(objects.cfg.as_dict.values())

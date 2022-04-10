@@ -1,6 +1,7 @@
 import unittest
 
 from filter_helpers import HelpersMixin
+
 from stig.client.filters.file import _SingleFilter as FileFilter
 
 

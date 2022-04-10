@@ -291,8 +291,8 @@ class TestTimedelta(unittest.TestCase):
                utils.Timedelta(utils.Timedelta.UNKNOWN),
                utils.Timedelta(utils.Timedelta.NOT_APPLICABLE)]
 
-        def shuffle(l):
-            return random.sample(l, k=len(l))
+        def shuffle(lst):
+            return random.sample(lst, k=len(lst))
 
         for _ in range(10):
             self.assertEqual(sorted(shuffle(lst)), lst)
@@ -686,8 +686,8 @@ class TestTimestamp(unittest.TestCase):
                utils.Timestamp(utils.Timestamp.UNKNOWN),
                utils.Timestamp(utils.Timestamp.NOT_APPLICABLE)]
 
-        def shuffle(l):
-            return random.sample(l, k=len(l))
+        def shuffle(lst):
+            return random.sample(lst, k=len(lst))
 
         for _ in range(10):
             self.assertEqual(sorted(shuffle(lst)), lst)

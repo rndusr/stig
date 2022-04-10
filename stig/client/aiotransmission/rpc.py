@@ -13,7 +13,6 @@
 
 import asyncio
 import json
-import warnings
 
 import async_timeout
 from blinker import Signal
@@ -407,7 +406,6 @@ class TransmissionRPC():
                 raise AuthError(self.url)
 
             else:
-                import aiohttp
                 try:
                     answer = await response.json()
                 except json.JSONDecodeError as e:
@@ -433,9 +431,7 @@ class TransmissionRPC():
         #            0x7f35d98d1be0>" This may or may not be related.
         import aiohttp
         try:
-            from aiohttp_socks import (ProxyError,
-                                       ProxyConnectionError,
-                                       ProxyTimeoutError)
+            from aiohttp_socks import ProxyConnectionError, ProxyError, ProxyTimeoutError
         except ImportError:
             class ProxyError(Exception): pass
             class ProxyConnectionError(Exception): pass

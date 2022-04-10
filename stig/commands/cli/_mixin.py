@@ -13,8 +13,8 @@
 
 import asyncio
 
-from .. import utils
 from ... import objects
+from .. import utils
 from ._common import clear_line
 
 from ...logging import make_logger  # isort:skip
@@ -66,8 +66,8 @@ class ask_yes_no():
 
     async def _get_answer(self, question):
         import sys
-        import tty
         import termios
+        import tty
 
         if not sys.stdout.isatty():
             # We can't ask the user - default to None (which evaluates to False)

@@ -1,4 +1,5 @@
 from resources_cmd import CommandTestCase
+
 from stig.commands.cli import HelpCmd
 
 

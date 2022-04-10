@@ -12,11 +12,11 @@
 import functools
 import os
 
-from . import _mixin as mixin
 from ... import objects
 from ...completion import candidates
 from ...utils.cliparser import Arg
 from ..base import torrent as base
+from . import _mixin as mixin
 from ._common import make_tab_title_widget
 
 from ...logging import make_logger  # isort:skip
@@ -55,8 +55,8 @@ class TorrentDetailsCmd(base.TorrentDetailsCmdbase,
                                         attr_unfocused='tabs.torrentdetails.unfocused',
                                         attr_focused='tabs.torrentdetails.focused')
 
-        from ...tui.views import TorrentDetailsWidget
         from ...tui.tuiobjects import keymap, tabs
+        from ...tui.views import TorrentDetailsWidget
         TorrentDetailsWidget_keymapped = keymap.wrap(TorrentDetailsWidget,
                                                      context='torrent')
         title_str = self.title if hasattr(self, 'title') else None

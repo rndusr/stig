@@ -1,6 +1,7 @@
 import unittest
 
 from filter_helpers import HelpersMixin
+
 from stig.client.filters.tracker import _SingleFilter as TrackerFilter
 
 

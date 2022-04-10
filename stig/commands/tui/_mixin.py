@@ -15,8 +15,8 @@ import asyncio
 import functools
 import os
 
-from .. import CmdError, utils
 from ... import client, objects
+from .. import CmdError, utils
 from ._common import make_tab_title_widget
 
 from ...logging import make_logger  # isort:skip
@@ -452,8 +452,8 @@ class placeholders(make_request):
 
     async def _get_placeholder_map(self):
         if not hasattr(self, '_placeholders'):
-            from ...tui.views import TorrentListWidget, FileListWidget
             from ...tui.tuiobjects import tabs
+            from ...tui.views import FileListWidget, TorrentListWidget
             focused_list = tabs.focus
             if focused_list is None:
                 raise CmdError(self._RESOLVE_ERROR % 'No tab opened')

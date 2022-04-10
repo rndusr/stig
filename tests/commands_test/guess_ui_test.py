@@ -1,6 +1,7 @@
 import unittest
 
 from resources_cmd import make_cmdcls
+
 from stig.commands import CommandManager
 from stig.commands.guess_ui import UIGuessError, guess_ui
 

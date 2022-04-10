@@ -1,5 +1,3 @@
-import sys
-
 
 def setUpModule():
     # Monkey-patch stuff in the urwid module in-place

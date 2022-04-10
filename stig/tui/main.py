@@ -26,7 +26,7 @@ def run(command_runner):
     Return False if any of the commands failed, True otherwise.
     """
     from .. import objects
-    from .import tuiobjects
+    from . import tuiobjects
 
     # Don't catch theme.ParserError - a broken default theme should make us
     # croak obviously and horribly

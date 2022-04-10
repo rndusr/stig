@@ -2,8 +2,8 @@ import os
 import sys
 
 from asynctest.mock import CoroutineMock, MagicMock, call, mock_open, patch
-
 from resources_cmd import CommandTestCase
+
 from stig import objects
 from stig.commands.cli import DumpCmd, RateLimitCmd, RcCmd, ResetCmd, SetCmd
 from stig.completion import Candidates
@@ -102,8 +102,8 @@ class TestDumpCmd(CommandTestCase):
             mock_datetime.now().isoformat = MagicMock(return_value='mock_date mock_time')
         process = await self.execute(DumpCmd, '-')
         self.assert_stderr()
-        header_regex = ['^' + l + '$'
-                        for l in DumpCmd._make_header_regex().pattern.split('\n')]
+        header_regex = ['^' + line + '$'
+                        for line in DumpCmd._make_header_regex().pattern.split('\n')]
         lines_regex = header_regex + \
             ['^$',
              '^### TABS$', '^$', '^mock tabs$',

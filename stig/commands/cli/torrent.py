@@ -9,11 +9,11 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import _mixin as mixin
-from .. import CmdError
 from ... import objects
 from ...completion import candidates
+from .. import CmdError
 from ..base import torrent as base
+from . import _mixin as mixin
 from ._table import TERMSIZE, print_table
 
 from ...logging import make_logger  # isort:skip

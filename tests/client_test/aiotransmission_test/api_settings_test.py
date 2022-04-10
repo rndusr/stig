@@ -3,8 +3,8 @@ from types import SimpleNamespace
 from unittest.mock import Mock, call
 
 import asynctest
-
 import resources_aiotransmission as rsrc
+
 from stig.client import ClientError
 from stig.client.aiotransmission.api_settings import SettingsAPI
 from stig.client.utils import Bandwidth, Bool, Int, Path, const, convert

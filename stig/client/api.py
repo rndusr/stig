@@ -172,6 +172,7 @@ class API():
 
     # Standard pollers accessible through properties
     _STD_POLLERS = ('status', 'freespace', 'settings', 'treqpool')
+
     @property
     def _existing_pollers(self):
         for pname in self._STD_POLLERS:

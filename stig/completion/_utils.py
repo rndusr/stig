@@ -12,9 +12,9 @@
 import functools
 import itertools
 
-from . import Candidate, Candidates
 from ..client import filters as filter_clses
 from ..client import sorters as sorter_clses
+from . import Candidate, Candidates
 
 columns_labels = {'torrents' : 'Torrent List Column',
                   'files'    : 'File List Column',

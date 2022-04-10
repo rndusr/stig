@@ -11,10 +11,10 @@
 
 from natsort import humansorted
 
-from . import _mixin as mixin
-from .. import CmdError
 from ... import objects
+from .. import CmdError
 from ..base import peer as base
+from . import _mixin as mixin
 from ._table import print_table
 
 from ...logging import make_logger  # isort:skip

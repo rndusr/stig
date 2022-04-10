@@ -13,10 +13,10 @@ import asyncio
 
 from subprocess import Popen, PIPE
 
-from . import _mixin as mixin
-from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
+from .. import CmdError, CommandMeta
+from . import _mixin as mixin
 from ._common import make_COLUMNS_doc, make_SCRIPTING_doc, make_X_FILTER_spec
 from natsort import humansorted
 

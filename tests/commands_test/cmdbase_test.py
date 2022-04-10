@@ -1,8 +1,8 @@
 import asyncio
 
 import asynctest
-
 from resources_cmd import Callback, make_cmdcls
+
 from stig.commands import CmdArgError, _CommandBase
 
 

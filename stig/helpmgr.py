@@ -222,7 +222,7 @@ class HelpManager():
 
     @property
     def topic_commandsmanual(self):
-        from .commands import (OPS_AND, OPS_OR, OPS_SEQ)
+        from .commands import OPS_AND, OPS_OR, OPS_SEQ
         lines = [
             'COMMANDS',
             '\tCommands can be called:',
@@ -486,9 +486,8 @@ class HelpManager():
     @property
     def topic_filters(self):
         """Provide help text for arguments to TorrentFilter"""
-        from .client import (TorrentFilter, FileFilter,
-                             PeerFilter, TrackerFilter,
-                             SettingFilter)
+        from .client import (FileFilter, PeerFilter, SettingFilter, TorrentFilter,
+                             TrackerFilter)
         lines = []
         for caption,filt in (('TORRENT FILTERS', TorrentFilter),
                              ('FILE FILTERS', FileFilter),
