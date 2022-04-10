@@ -1,4 +1,5 @@
 from sorter_helpers import TestSorterBase
+
 from stig.client.sorters import SettingSorter
 
 

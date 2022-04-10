@@ -20,10 +20,10 @@ from types import SimpleNamespace
 
 from async_timeout import timeout as async_timeout
 
-from . import constants as const
 from ..utils import cached_property, convert  # noqa: F401
 from ..utils.usertypes import (Bool, Float, Int, Option, Path, Percent,  # noqa: F401
                                String, multitype)
+from . import constants as const
 
 
 class SHA1(String):

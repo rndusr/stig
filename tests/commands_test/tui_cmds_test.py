@@ -1,6 +1,6 @@
-from asynctest.mock import call, patch, Mock
-
+from asynctest.mock import Mock, call, patch
 from resources_cmd import CommandTestCase
+
 from stig.commands.tui import BindCmd, TabCmd, UnbindCmd
 from stig.completion import Candidates
 from stig.utils.cliparser import Args

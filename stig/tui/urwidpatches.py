@@ -12,6 +12,7 @@
 """Monkey patches that should be removed when they are resolved upstream"""
 
 import importlib
+
 import urwid
 
 # Map class name to patched class

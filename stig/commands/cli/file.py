@@ -11,10 +11,10 @@
 
 from natsort import humansorted
 
-from . import _mixin as mixin
-from .. import CmdError
 from ... import objects
+from .. import CmdError
 from ..base import file as base
+from . import _mixin as mixin
 from ._table import TERMSIZE, print_table
 
 from ...logging import make_logger  # isort:skip
@@ -42,6 +42,7 @@ class ListFilesCmd(base.ListFilesCmdbase,
 
         if filelist:
             from ...views.file import COLUMNS as FILE_COLUMNS
+
             # Remove columns that aren't supported by CLI interface (e.g. 'marked')
             columns = self.only_supported_columns(columns, FILE_COLUMNS)
             print_table(filelist, columns, FILE_COLUMNS)

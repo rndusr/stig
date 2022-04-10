@@ -2,8 +2,8 @@ import asyncio
 
 import asynctest
 from asynctest.mock import call
-
 from resources_cmd import Callback, make_cmdcls
+
 from stig.commands import CmdError, CommandManager, _CommandBase
 
 

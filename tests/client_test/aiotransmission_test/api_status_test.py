@@ -1,8 +1,8 @@
 from types import SimpleNamespace
 
 import asynctest
-
 import resources_aiotransmission as rsrc
+
 from stig.client.aiotransmission import api_status
 from stig.client.aiotransmission.api_status import StatusAPI
 from stig.client.utils import Status, const, convert

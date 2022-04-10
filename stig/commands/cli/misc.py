@@ -11,8 +11,8 @@
 
 """Documentation commands"""
 
-from .. import CmdError
 from ... import objects
+from .. import CmdError
 from ..base import misc as base
 
 from ...logging import make_logger  # isort:skip

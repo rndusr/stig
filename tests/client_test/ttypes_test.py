@@ -55,8 +55,8 @@ class TestTorrentFilePriority(unittest.TestCase):
             ttypes.TorrentFilePriority(1),
         ]
 
-        def shuffle(l):
-            return random.sample(l, k=len(l))
+        def shuffle(lst):
+            return random.sample(lst, k=len(lst))
 
         for _ in range(10):
             self.assertEqual(sorted(shuffle(prios)), prios)

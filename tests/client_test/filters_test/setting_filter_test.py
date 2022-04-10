@@ -1,6 +1,7 @@
 import unittest
 
 from filter_helpers import HelpersMixin
+
 from stig.client.filters.setting import _SingleFilter as SettingFilter
 
 
@@ -41,7 +42,7 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
                                       ('{name}!~ba', ('foo',))))
 
     def test_value_filter_with_strings(self):
-        from stig.utils.usertypes import Bool, String, Float
+        from stig.utils.usertypes import Bool, Float, String
         self.check_filter(filter_cls=SettingFilter,
                           filter_names=('value', 'v'),
                           items=({'id': 'a', 'value': 'asdfoo', 'validate': String},
@@ -61,7 +62,7 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
                               ('{name}!~foo', ('b', 'c', 'd'))))
 
     def test_default_filter_with_strings(self):
-        from stig.utils.usertypes import Bool, String, Float
+        from stig.utils.usertypes import Bool, Float, String
         self.check_filter(filter_cls=SettingFilter,
                           filter_names=('default', 'def'),
                           items=({'id': 'a', 'default': 'asdfoo', 'validate': String},
@@ -81,7 +82,7 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
                               ('{name}!~foo', ('b', 'c', 'd'))))
 
     def test_value_filter_with_numbers(self):
-        from stig.utils.usertypes import Bool, Int, Float
+        from stig.utils.usertypes import Bool, Float, Int
         self.check_filter(filter_cls=SettingFilter,
                           filter_names=('value', 'v'),
                           items=({'id': 'a', 'value': 17, 'validate': Int},
@@ -108,7 +109,7 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
                               ('{name}!~foo', ('a', 'b', 'c', 'd'))))
 
     def test_default_filter_with_numbers(self):
-        from stig.utils.usertypes import Bool, Int, Float
+        from stig.utils.usertypes import Bool, Float, Int
         self.check_filter(filter_cls=SettingFilter,
                           filter_names=('default', 'def'),
                           items=({'id': 'a', 'default': 17, 'validate': Int},
@@ -135,7 +136,7 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
                               ('{name}!~foo', ('a', 'b', 'c', 'd'))))
 
     def test_value_filter_with_iterables(self):
-        from stig.utils.usertypes import Tuple, Bool
+        from stig.utils.usertypes import Bool, Tuple
         self.check_filter(filter_cls=SettingFilter,
                           filter_names=('value', 'v'),
                           items=({'id': 'a',
@@ -161,7 +162,7 @@ class TestSettingFilter(unittest.TestCase, HelpersMixin):
                                       ('{name}!~y,x', ('b', 'c', 'd', 'e'))))
 
     def test_default_filter_with_iterables(self):
-        from stig.utils.usertypes import Tuple, Bool
+        from stig.utils.usertypes import Bool, Tuple
         self.check_filter(filter_cls=SettingFilter,
                           filter_names=('default', 'def'),
                           items=({'id': 'a',

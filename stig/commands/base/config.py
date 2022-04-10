@@ -18,13 +18,13 @@ import sys
 import textwrap
 from collections import abc
 
-from . import _mixin as mixin
-from .. import CmdError, CommandMeta, utils
 from ... import __appname__, __version__, objects
 from ...client import ClientError
 from ...completion import candidates
 from ...settings import defaults, rcfile
 from ...utils import cached_property, cliparser, string, usertypes
+from .. import CmdError, CommandMeta, utils
+from . import _mixin as mixin
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 
@@ -69,7 +69,7 @@ class DumpCmdbase(mixin.get_rc_filepath,
     @classmethod
     def _make_header_regex(cls):
         lines = cls._make_header(appname=r'\S+', version=r'\S+', timestamp=r'\S+ \S+')
-        lines = (l.replace('.', r'\.') for l in lines)
+        lines = (line.replace('.', r'\.') for line in lines)
         x = re.compile('^' + '\n'.join(lines) + '\n', flags=re.DOTALL)
         log.debug(x)
         return x
@@ -368,8 +368,8 @@ class SetCmdbase(mixin.get_setting_sorter, mixin.get_setting_columns,
                 'set connect.user jonny_sixpack',
                 'set connect.password:eval getpw --id transmission',
                 'set tui.log.height +=10')
-    from ...views.setting import COLUMNS
     from ...client.sorters import SettingSorter
+    from ...views.setting import COLUMNS
     argspecs = (
         {'names': ('NAME',), 'nargs': '?',
          'description': "Name of setting; append ':eval' to turn VALUE into a shell command"},

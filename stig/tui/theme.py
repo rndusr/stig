@@ -117,7 +117,7 @@ def read(source):
         lines = source
     else:
         raise TypeError('Invalid source: {!r}'.format(source))
-    return [l.rstrip('\n') for l in lines]
+    return [line.rstrip('\n') for line in lines]
 
 
 def register(screen, palette):

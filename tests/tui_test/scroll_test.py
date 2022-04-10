@@ -62,27 +62,27 @@ class TestScrollable(unittest.TestCase):
     def test_perfect_fit(self):
         for w in self._test_widgets:
             self.check(w, size=(5, 10),
-                       text=(l.ljust(5) for l in TEXT))
+                       text=(line.ljust(5) for line in TEXT))
 
     def test_horizontal_padding(self):
         for w in self._test_widgets:
             self.check(w, size=(15, 10),
-                       text=(l.ljust(15) for l in TEXT))
+                       text=(line.ljust(15) for line in TEXT))
 
     def test_vertical_padding(self):
         for w in self._test_widgets:
             self.check(w, size=(10, 15),
-                       text=(l.ljust(10) for l in TEXT + ('',) * 5))
+                       text=(line.ljust(10) for line in TEXT + ('',) * 5))
 
     def test_horizontal_trimming(self):
         for w in self._test_widgets:
             self.check(w, size=(3, 10),
-                       text=(l[:3].ljust(3) for l in TEXT))
+                       text=(line[:3].ljust(3) for line in TEXT))
 
     def test_vertical_trimming(self):
         for w in self._test_widgets:
             self.check(w, size=(10, 3),
-                       text=(l.ljust(10) for l in TEXT[:3]))
+                       text=(line.ljust(10) for line in TEXT[:3]))
 
 
     def test_set_position_positive(self):
@@ -93,7 +93,7 @@ class TestScrollable(unittest.TestCase):
                 start = min(len(TEXT) - size[1], i)
                 end   = min(len(TEXT),           i + size[1])
                 self.check(w, size,
-                           text=(l.ljust(size[0]) for l in TEXT[start:end]))
+                           text=(line.ljust(size[0]) for line in TEXT[start:end]))
 
     def test_set_position_negative(self):
         size = (10, 3)
@@ -104,7 +104,7 @@ class TestScrollable(unittest.TestCase):
                 start = max(0, -i + len(TEXT) - size[1])
                 end   = start + size[1]
                 self.check(w, size,
-                           text=(l.ljust(size[0]) for l in TEXT[start:end]))
+                           text=(line.ljust(size[0]) for line in TEXT[start:end]))
 
 
     def test_scroll_line_down(self):
@@ -114,7 +114,7 @@ class TestScrollable(unittest.TestCase):
                 x = min(len(TEXT) - size[1], i)
                 y = min(len(TEXT),           i + size[1])
                 self.check(w, size,
-                           text=(l.ljust(10) for l in TEXT[x:y]))
+                           text=(line.ljust(10) for line in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
                 w.keypress(size, 'down')
 
@@ -127,7 +127,7 @@ class TestScrollable(unittest.TestCase):
                 x = max(0, i - size[1])
                 y = max(size[1], i)
                 self.check(w, size,
-                           text=(l.ljust(10) for l in TEXT[x:y]))
+                           text=(line.ljust(10) for line in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
                 w.keypress(size, 'up')
 
@@ -138,7 +138,7 @@ class TestScrollable(unittest.TestCase):
                 x = min(len(TEXT) - size[1], i)
                 y = min(len(TEXT),           i + size[1])
                 self.check(w, size,
-                           text=(l.ljust(10) for l in TEXT[x:y]))
+                           text=(line.ljust(10) for line in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
                 w.keypress(size, 'page down')
 
@@ -151,7 +151,7 @@ class TestScrollable(unittest.TestCase):
                 x = max(0, i - size[1])
                 y = max(size[1], i)
                 self.check(w, size,
-                           text=(l.ljust(10) for l in TEXT[x:y]))
+                           text=(line.ljust(10) for line in TEXT[x:y]))
                 self.assertEqual(w.get_scrollpos(size), x)
                 w.keypress(size, 'page up')
 
@@ -297,7 +297,7 @@ class TestScrollable(unittest.TestCase):
 class TestScrollBarWithScrollable(unittest.TestCase):
     def setUp(self):
         self.pile = urwid.Pile([
-            urwid.Text(l) for l in TEXT
+            urwid.Text(line) for line in TEXT
         ])
         self.scrollable = Scrollable(self.pile)
         self.scrollbar = ScrollBar(self.scrollable,

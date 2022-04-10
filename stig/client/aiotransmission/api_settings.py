@@ -255,7 +255,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Network settings
 
-    @_setting(Int, min=0, max=65535, prefix='none')
+    @_setting(Int, min=0, max=65535, prefix='none')  # noqa: E301
     def port(self):
         """Port used to communicate with peers"""
         return self._get('port', 'peer-port')
@@ -423,7 +423,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Local Filesystem settings
 
-    @_setting(Path)
+    @_setting(Path)  # noqa: E301
     def path_complete(self):
         """Where to put downloaded files"""
         return self._get('path.complete', 'download-dir')
@@ -503,7 +503,7 @@ class SettingsAPI(abc.Mapping, RequestPoller):
 
     # Rate limits
 
-    @staticmethod
+    @staticmethod  # noqa: E301
     def _limit_rate_fields(direction, alt):
         if alt:
             field_value = 'alt-speed-' + direction

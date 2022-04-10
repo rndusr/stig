@@ -118,8 +118,8 @@ class HelpersMixin():
 
 
     def check_limit_rate_filter(self, filter_cls, filter_names, key):
-        from stig.client.utils import BoolOrBandwidth
         from stig.client.constants import UNLIMITED
+        from stig.client.utils import BoolOrBandwidth
         self.check_filter(filter_cls,
                           filter_names=filter_names,
                           items=({'id': 1, key: BoolOrBandwidth(1000)},

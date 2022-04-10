@@ -12,10 +12,10 @@
 import asyncio
 from collections import abc
 
-from . import _mixin as mixin
-from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
+from .. import CmdError, CommandMeta
+from . import _mixin as mixin
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 
@@ -51,8 +51,8 @@ class ListPeersCmdbase(mixin.get_peer_sorter, mixin.get_peer_columns,
                          "(see COLUMNS section)")},
     )
 
-    from ...views.peer import COLUMNS
     from ...client.sorters import PeerSorter
+    from ...views.peer import COLUMNS
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.peers', append=(
             '',

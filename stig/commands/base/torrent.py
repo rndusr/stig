@@ -12,11 +12,11 @@
 import asyncio
 import os
 
-from . import _mixin as mixin
-from .. import CmdError, CommandMeta
 from ... import objects
 from ...completion import candidates
 from ...utils.cliparser import Arg
+from .. import CmdError, CommandMeta
+from . import _mixin as mixin
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
 
@@ -147,8 +147,8 @@ class ListTorrentsCmdbase(mixin.get_torrent_sorter, mixin.get_torrent_columns,
                          "(see COLUMNS section)")},
     )
 
-    from ...views.torrent import COLUMNS
     from ...client.sorters import TorrentSorter
+    from ...views.torrent import COLUMNS
     more_sections = {
         'COLUMNS': make_COLUMNS_doc(COLUMNS, '--columns', 'columns.torrents'),
         'SORT ORDERS': make_SORT_ORDERS_doc(TorrentSorter, '--sort', 'sort.torrents'),

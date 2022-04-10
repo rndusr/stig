@@ -11,10 +11,10 @@
 
 """Base classes for documentation commands"""
 
-from .. import CmdError, CommandMeta
 from ... import __appname__, __version__, objects
 from ...completion import candidates
 from ...logging import make_logger
+from .. import CmdError, CommandMeta
 
 log = make_logger(__name__)
 

@@ -9,9 +9,9 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from . import _mixin as mixin
 from .. import CmdError
 from ..base import config as base
+from . import _mixin as mixin
 
 
 class DumpCmd(base.DumpCmdbase):
