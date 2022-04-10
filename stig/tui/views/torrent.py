@@ -41,6 +41,7 @@ class Name(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),
                   modes=('idle.progress1', 'idle.progress2', 'idle.complete',
+                         'seeding.progress1', 'seeding.progress2', 'seeding.complete',
                          'stopped.progress1', 'stopped.progress2', 'stopped.complete',
                          'isolated.progress1', 'isolated.progress2', 'isolated.complete',
                          'discovering.progress1', 'discovering.progress2', 'discovering.complete',
@@ -48,8 +49,7 @@ class Name(_COLUMNS['name'], CellWidgetBase):
                          'downloading.progress1', 'downloading.progress2', 'downloading.complete',
                          'uploading.progress1', 'uploading.progress2', 'uploading.complete',
                          'queued.progress1', 'queued.progress2', 'queued.complete',
-                         'connected.progress1', 'connected.progress2', 'connected.complete',
-                         'seeding.complete'))
+                         'connected.progress1', 'connected.progress2', 'connected.complete'))
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['name'].header),
                            style.attrs('header'))
     needed_keys = ('name', 'status', '%downloaded', '%verified', '%metadata',
