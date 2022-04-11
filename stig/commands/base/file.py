@@ -222,12 +222,6 @@ class FOpenCmdbase(metaclass=CommandMeta):
             self.info('Opening %s from torrents %s with %s %s' %
                       ('all files' if ffilter is None else ffilter, tfilter,
                        command, opts))
-            quiet = False
-        else:
-            # We're operating on focused or marked files and changes are
-            # indiciated by the updated file list, so no info messages
-            # necessary.
-            quiet = True
 
         self.info('Opening %s from torrents %s with %s %s' %
                   ('all files' if ffilter is None else ffilter, tfilter,
