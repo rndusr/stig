@@ -35,5 +35,5 @@ class FOpenCmd(base.FOpenCmdbase, mixin.make_request, mixin.select_torrents, mix
     # When files are selected in the tui, the two first arguments, the torrent
     # and the file(s) need to be filled in.  That is, `fopen mpv` should mean
     # `fopen torrent file mpv`
-    async def run(self, COMMAND, TORRENT_FILTER, FILE_FILTER, OPTS):
-        await base.FOpenCmdbase.run(self, TORRENT_FILTER=COMMAND, FILE_FILTER=FILE_FILTER, COMMAND=TORRENT_FILTER, OPTS=OPTS)
+    async def run(self, quiet, COMMAND, TORRENT_FILTER, FILE_FILTER, OPTS):
+        await base.FOpenCmdbase.run(self, quiet, TORRENT_FILTER=COMMAND, FILE_FILTER=FILE_FILTER, COMMAND=TORRENT_FILTER, OPTS=OPTS)

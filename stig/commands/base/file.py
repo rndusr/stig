@@ -12,8 +12,6 @@
 import asyncio
 
 from subprocess import Popen, DEVNULL, PIPE
-from threading import Thread
-from time import sleep
 
 from . import _mixin as mixin
 from .. import CmdError, CommandMeta
@@ -183,18 +181,21 @@ class FOpenCmdbase(metaclass=CommandMeta):
                 'fileopen "that torrent" *.mkv mpv'
                 'fileopen "that torrent" *.mkv mpv --fullscreen',)
     argspecs = (
+        {'names': ('--quiet', '-q'),
+         'description': 'Suppress stdout from the external command. Pass twice to also suppress stderr',
+         'action': 'count', 'default': 0},
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
         make_X_FILTER_spec('FILE', or_focused=True, nargs='?'),
-        {"names": ('COMMAND',),
-         'description': "Command to use to open files. Default: xdg-open",
+        {'names': ('COMMAND',),
+         'description': 'Command to use to open files. Default: xdg-open',
          'nargs': '?'
         },
-        {"names": ('OPTS',),
+        {'names': ('OPTS',),
          'description': "Options for the external command.",
          'nargs': 'REMAINDER'
         },
     )
-    async def run(self, TORRENT_FILTER, FILE_FILTER, COMMAND, OPTS):
+    async def run(self, quiet, TORRENT_FILTER, FILE_FILTER, COMMAND, OPTS):
         default_command = 'xdg-open'
         if COMMAND is None:
             command = default_command
@@ -244,7 +245,11 @@ class FOpenCmdbase(metaclass=CommandMeta):
 
         # TODO separate options for stdout/stderr
         stdoutlogger = lambda s: self.info(command + ": " + s)
+        if quiet >= 1:
+            stdoutlogger = lambda s: None
         stderrlogger = lambda s: self.error(command + ": " + s)
+        if quiet >= 2:
+            stderrlogger = lambda s: None
         loop = asyncio.get_running_loop()
         try:
             if command == default_command:
