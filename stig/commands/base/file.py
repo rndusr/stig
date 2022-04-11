@@ -11,8 +11,9 @@
 
 import asyncio
 
-from subprocess import Popen, DEVNULL
-from subprocess import run as subprocessrun
+from subprocess import Popen, DEVNULL, PIPE
+from threading import Thread
+from time import sleep
 
 from . import _mixin as mixin
 from .. import CmdError, CommandMeta
@@ -171,6 +172,7 @@ class PriorityCmdbase(metaclass=CommandMeta):
             torrent_filter = args[2]
             return candidates.file_filter(args.curarg, torrent_filter)
 
+
 class FOpenCmdbase(metaclass=CommandMeta):
     name = 'fileopen'
     aliases = ('fopen',)
@@ -231,24 +233,45 @@ class FOpenCmdbase(metaclass=CommandMeta):
                   ('all files' if ffilter is None else ffilter, tfilter,
                    command, " ".join(opts)))
         files = await self.make_file_list(tfilter, ffilter)
-        stdoutbuffer = DEVNULL
-        stderrbuffer = DEVNULL
+
+        def pipelog(pipe, logger):
+            s = pipe.readline()
+            for l in s.split("\n"):
+                if len(l):
+                    logger(l)
+        def closepipes(proc):
+            loop = asyncio.get_running_loop()
+            if proc.poll() is None:
+                loop.call_later(0.1, lambda: closepipes(proc))
+                return
+            loop.remove_reader(proc.stdout)
+            loop.remove_reader(proc.stderr)
+
+
         # TODO separate options for stdout/stderr
+        stdoutlogger = lambda s: self.info(command + ": " + s)
+        stderrlogger = lambda s: self.error(command + ": " + s)
+        loop = asyncio.get_running_loop()
         try:
             if command == default_command:
                 for f in files:
-                    result = subprocessrun([default_command, f], capture_output = True, text = True)
+                    result = Popen([default_command, f],
+                                   stdout = PIPE,
+                                   stderr = PIPE,
+                                   text = True)
+                    loop.add_reader(result.stdout, pipelog, result.stdout, stdoutlogger)
+                    loop.add_reader(result.stderr, pipelog, result.stderr, stderrlogger)
+                    loop.call_soon(lambda: closepipes(result))
             else:
-                result = subprocessrun([command] + opts + files, capture_output = True, text = True)
+                result = Popen([command] + opts + list(files),
+                               stdout = PIPE,
+                               stderr = PIPE,
+                               text = True)
+                loop.add_reader(result.stdout, pipelog, result.stdout, stdoutlogger)
+                loop.add_reader(result.stderr, pipelog, result.stderr, stderrlogger)
+                loop.call_soon(lambda: closepipes(result))
         except FileNotFoundError as e:
             self.error("Command not found: %s" % command)
-        else:
-            stdout = result.stdout.rstrip('\r\n')
-            stderr = result.stderr.rstrip('\r\n')
-            if len(stdout):
-                self.info(stdout)
-            if len(stderr):
-                self.error(stderr)
         return None
 
     async def make_file_list(self, tfilter, ffilter):
