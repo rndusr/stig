@@ -12,6 +12,7 @@ clean:
 venv:
 	"$(PYTHON)" -m venv "$(VENV_PATH)"
 	"$(VENV_PATH)"/bin/pip install --upgrade pytest tox asynctest
+	"$(VENV_PATH)"/bin/pip install --upgrade flake8 isort
 	"$(VENV_PATH)"/bin/pip install --editable .
 	# Needed for setup.py
 	"$(VENV_PATH)"/bin/pip install --upgrade wheel docutils pypandoc restructuredtext_lint pygments
