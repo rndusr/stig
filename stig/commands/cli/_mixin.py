@@ -13,7 +13,6 @@
 
 import asyncio
 
-from ... import objects
 from .. import utils
 from ._common import clear_line
 
@@ -90,7 +89,7 @@ class ask_yes_no():
         answer = None
         while answer is None:
             print(question, end=' [y|n] ', flush=True)
-            key = await aiogetch(objects.aioloop)
+            key = await aiogetch(asyncio.get_event_loop())
             clear_line()
             answer = self.ANSWERS.get(key, None)
         return answer
