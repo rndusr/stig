@@ -1,3 +1,9 @@
+2022-04-13 0.12.3a0
+  Fixed bugs:
+    * Fix AttributeError: module 'stig.objects' has no attribute 'aioloop'
+      when removing 10 or more torrents via the CLI
+
+
 2021-08-10 0.12.2a0
   Other changes:
     * "unbind --all t" now unbinds "t" in all keybinding contexts.
