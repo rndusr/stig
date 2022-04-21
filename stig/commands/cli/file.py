@@ -94,6 +94,6 @@ class PriorityCmd(base.PriorityCmdbase,
     provides = {'cli'}
 
 class FOpenCmd(base.FOpenCmdbase,
-                  mixin.make_request, mixin.select_torrents,
+               mixin.make_request, mixin.select_torrents,
                mixin.select_files):
     provides = {'cli'}

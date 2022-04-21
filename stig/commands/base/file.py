@@ -11,7 +11,7 @@
 
 import asyncio
 
-from subprocess import Popen, DEVNULL, PIPE
+from subprocess import Popen, PIPE
 
 from . import _mixin as mixin
 from .. import CmdError, CommandMeta
@@ -189,12 +189,13 @@ class FOpenCmdbase(metaclass=CommandMeta):
         {'names': ('COMMAND',),
          'description': 'Command to use to open files. Default: xdg-open',
          'nargs': '?'
-        },
+         },
         {'names': ('OPTS',),
          'description': "Options for the external command.",
          'nargs': 'REMAINDER'
-        },
+         },
     )
+
     async def run(self, quiet, TORRENT_FILTER, FILE_FILTER, COMMAND, OPTS):
         default_command = 'xdg-open'
         if COMMAND is None:
@@ -202,7 +203,7 @@ class FOpenCmdbase(metaclass=CommandMeta):
         else:
             command = COMMAND
         opts = []
-        if not OPTS is None:
+        if OPTS is not None:
             opts = OPTS
         utilize_tui = not bool(TORRENT_FILTER)
         try:
@@ -231,9 +232,10 @@ class FOpenCmdbase(metaclass=CommandMeta):
 
         def pipelog(pipe, logger):
             s = pipe.readline()
-            for l in s.split("\n"):
-                if len(l):
-                    logger(l)
+            for ln in s.split("\n"):
+                if len(ln):
+                    logger(ln)
+
         def closepipes(proc):
             loop = asyncio.get_running_loop()
             if proc.poll() is None:
@@ -255,21 +257,21 @@ class FOpenCmdbase(metaclass=CommandMeta):
             if command == default_command:
                 for f in files:
                     result = Popen([default_command, f],
-                                   stdout = PIPE,
-                                   stderr = PIPE,
-                                   text = True)
+                                   stdout=PIPE,
+                                   stderr=PIPE,
+                                   text=True)
                     loop.add_reader(result.stdout, pipelog, result.stdout, stdoutlogger)
                     loop.add_reader(result.stderr, pipelog, result.stderr, stderrlogger)
                     loop.call_soon(lambda: closepipes(result))
             else:
                 result = Popen([command] + opts + list(files),
-                               stdout = PIPE,
-                               stderr = PIPE,
-                               text = True)
+                               stdout=PIPE,
+                               stderr=PIPE,
+                               text=True)
                 loop.add_reader(result.stdout, pipelog, result.stdout, stdoutlogger)
                 loop.add_reader(result.stderr, pipelog, result.stderr, stderrlogger)
                 loop.call_soon(lambda: closepipes(result))
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             self.error("Command not found: %s" % command)
         return None
 
@@ -287,7 +289,7 @@ class FOpenCmdbase(metaclass=CommandMeta):
             files, filtered_count = self._flatten_tree(torrent['files'], ffilter)
             filelist.extend(files)
         filelist = map(
-            lambda f: objects.pathtranslator.to_local( str(f) ),
+            lambda f: objects.pathtranslator.to_local(str(f)),
             filelist
         )
         if filelist:
@@ -297,14 +299,16 @@ class FOpenCmdbase(metaclass=CommandMeta):
                 raise CmdError('No matching files in %s torrents: %s' % (tfilter, ffilter))
             else:
                 raise CmdError('No matching files: %s' % (ffilter))
+
     def _flatten_tree(self, files, ffilter=None):
         flist = []
         filtered_count = 0
+
         def _match(ffilter, value):
             if ffilter is None:
                 return True
             try:
-               return ffilter.match(value)
+                return ffilter.match(value)
             except AttributeError:
                 pass
             try:
