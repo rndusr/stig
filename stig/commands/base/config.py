@@ -697,14 +697,13 @@ class RateLimitCmdbase(metaclass=CommandMeta):
         elif posargs.curarg_index >= 3:
             return candidates.torrent_filter(args.curarg)
 
-class LinkPathCmd(metaclass = CommandMeta):
+class LinkPathCmd(metaclass=CommandMeta):
     name = 'link'
     aliases = ()
     category = 'configuration'
     provides = set()
     description = textwrap.dedent(
-    """
-        Links remote and local paths. Call with no arguments to list existing links.
+        """Links remote and local paths. Call with no arguments to list existing links.
 
         Example use case: a remote daemon downloads to
         /var/transmission/downloads/, but this is mounted on the local client
@@ -714,10 +713,10 @@ class LinkPathCmd(metaclass = CommandMeta):
 
         Links must be bijective; as a consequence the --force flag must be
         passed to ensure that clobbering is intentional.
-    """)
+        """)
     usage = ('link [<OPTIONS>] REMOTE LOCAL',)
     examples = ('link /var/transmission/downloads/ /mnt/nfs/seedbox/',
-               'link')
+                'link')
     argspecs = (
         {'names': ('--force', '-f'),
          'description': 'Overwrite existing links involving REMOTE or LOCAL.'},
@@ -732,7 +731,7 @@ class LinkPathCmd(metaclass = CommandMeta):
     DUMP_WIDTH = 79
 
     async def run(self, REMOTE, LOCAL, force):
-        log.debug("%s %s %s" % (REMOTE, LOCAL, force) )
+        log.debug("%s %s %s" % (REMOTE, LOCAL, force))
         if not (REMOTE or LOCAL):
             log.debug('Listing links')
             for link in objects.pathtranslator.links.items():

@@ -9,7 +9,6 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-from .. import __appname__, __version__, objects
 from pathlib import Path
 from bidict import bidict, ValueDuplicationError
 
@@ -25,7 +24,7 @@ class PathTranslator:
 
     def link(self, remote, local, force=False):
         remote = Path(remote)
-        local =  Path(local)
+        local = Path(local)
         if not local.exists():
             raise ValueError("Local path %s does not exist." % local)
         if not local.is_absolute():
