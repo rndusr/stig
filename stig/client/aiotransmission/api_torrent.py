@@ -1153,13 +1153,8 @@ class TorrentAPI(TorrentAPIBase):
             msgs:     List of info messages
             errors:   List of error messages
         """
-        response = await self.torrents(torrents, keys=('id', 'name',))
-        if not response.success:
-            return Response(success=False, torrents=(), errors=response.errors)
 
         msgs = []
-        errors = []
-        tids = [t['id']  for t in response.torrents]
         args = {'labels': []}
         response = await self._torrent_action(self.rpc.torrent_set, torrents, method_args=args)
         if not response.success:
