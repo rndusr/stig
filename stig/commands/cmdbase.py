@@ -142,7 +142,7 @@ class _CommandBase():
             kwargs = {}
             for argspec in self.argspecs:
                 # First name is the kwarg for run()
-                key = argspec['names'][0].lstrip('-').replace('-', '_')
+                key = argspec.get('dest') or argspec['names'][0].lstrip('-').replace('-', '_')
                 value = getattr(args_parsed, key)
                 kwargs[key.replace(' ', '_')] = value
             self._args = kwargs

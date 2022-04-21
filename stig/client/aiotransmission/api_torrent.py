@@ -14,6 +14,7 @@ import os
 import time
 from collections import abc
 from string import hexdigits as HEXDIGITS
+from enum import Enum
 
 from natsort import humansorted
 
@@ -1099,3 +1100,140 @@ class TorrentAPI(TorrentAPIBase):
         return await self._torrent_action(self.rpc.torrent_reannounce, torrents,
                                           check=check, check_keys=('status', 'trackers',
                                                                    'time-manual-announce-allowed'))
+
+    label_manage_mode = Enum('label_manage_mode', 'ADD SET REMOVE')
+
+    async def labels_add(self, torrents, labels):
+        """
+        Add labels(s) to torrents
+
+        See '_labels_manage' method
+        """
+        return await self._labels_manage(torrents, labels, self.label_manage_mode.ADD)
+
+    async def labels_remove(self, torrents, labels):
+        """
+        Add labels(s) to torrents
+
+        See '_labels_manage' method
+        """
+        return await self._labels_manage(torrents, labels,
+                                         self.label_manage_mode.REMOVE)
+
+    async def labels_set(self, torrents, labels):
+        """
+        Add labels(s) to torrents
+
+        See '_labels_manage' method
+        """
+        return await self._labels_manage(torrents, labels, self.label_manage_mode.SET)
+
+    async def labels_clear(self, torrents):
+        """
+        Clear labels(s) from torrents
+
+        torrents: See `torrents` method
+
+        Return Response with the following properties:
+            torrents: Tuple of Torrents with the keys 'id' and 'name'
+            success:  True if all RPC requests returned successfully
+            msgs:     List of info messages
+            errors:   List of error messages
+        """
+        response = await self.torrents(torrents, keys=('id', 'name',))
+        if not response.success:
+            return Response(success=False, torrents=(), errors=response.errors)
+
+        msgs = []
+        errors = []
+        tids = [t['id']  for t in response.torrents]
+        args = {'labels': []}
+        print(tids, args)
+        response = await self._torrent_action(self.rpc.torrent_set, torrents, method_args=args)
+        if not response.success:
+            return Response(success=False, torrents=(), msgs=[], errors=response.errors)
+        else:
+            for t in response.torrents:
+                msgs.append('%s: Cleared labels' % t['name'])
+            return Response(success=True, torrents=response.torrents,
+                            msgs=msgs, errors=[])
+
+    async def _labels_manage(self, torrents, labels, mode):
+        """
+        Set/add/remove torrent labels(s)
+
+        torrents: See `torrents` method
+        labels:     Iterable of labels
+        mode:       set/add/remove
+
+        Return Response with the following properties:
+            torrents: Tuple of Torrents with the keys 'id', 'name' and 'labels'
+            success:  True if any labels were added/removed/set, False if no labels were
+                      added or if new label lists could not be retrieved
+            msgs:     List of info messages
+            errors:   List of error messages
+        """
+        if not labels:
+            return Response(success=False, torrents=(), errors=('No labels given',))
+        labels = set(labels)
+
+        # Transmission only allows *setting* the label list, so first we get
+        # any existing labels
+        response = await self.torrents(torrents, keys=('id', 'name', 'labels',))
+        if not response.success:
+            return Response(success=False, torrents=(), errors=response.errors)
+
+        # Map torrent IDs to that torrent's current labels
+        tor_dict = {t['id']:t for t in response.torrents}
+        set_funcs = {
+            self.label_manage_mode.ADD: lambda x, y: x.union(y),
+            self.label_manage_mode.REMOVE: lambda x, y: x.difference(y),
+            self.label_manage_mode.SET: lambda x, y: y,
+        }
+        label_dict = {
+            t['id']: frozenset( set_funcs[mode](t['labels'], labels) )
+            for t in response.torrents
+        }
+        # Collating by label set reduces the number of requests we need to send
+        # to one per label set
+        inv_label_dict = {}
+        for tid, ls in label_dict.items():
+            inv_label_dict.setdefault(ls, []).append(tid)
+
+        # Add/remove/set labels
+        modded_any = False
+        msgs = []
+        errors = []
+        verbs = {
+            self.label_manage_mode.ADD: 'Adding',
+            self.label_manage_mode.REMOVE: 'Removing',
+            self.label_manage_mode.SET: 'Setting',
+        }
+        for ls, tids in inv_label_dict.items():
+            args = {'labels': list(ls)}
+            response = await self._torrent_action(self.rpc.torrent_set, tids, method_args=args)
+            if not response.success:
+                errors.extend(response.errors)
+                continue
+            for t in tids:
+                if mode == self.label_manage_mode.ADD:
+                    mod_labels = labels.difference(tor_dict[t]['labels'])
+                elif mode == self.label_manage_mode.REMOVE:
+                    mod_labels = tor_dict[t]['labels'].intersection(labels)
+                elif mode == self.label_manage_mode.SET:
+                    mod_labels = tor_dict[t]['labels'].symmetric_difference(labels)
+                if mod_labels:
+                    if mode == self.label_manage_mode.SET:
+                        mod_labels = labels
+                    msgs.append('%s: %s labels: %s' % (
+                            tor_dict[t]['name'], verbs[mode], ', '.join(mod_labels)))
+                    modded_any = True
+
+        response = await self.torrents(torrents, keys=('id', 'name', 'labels',))
+        if not modded_any:
+            errors.append('No labels were changed')
+        if not response.success:
+            errors.append('Failed to read new labels from transmission')
+
+        return Response(success=response.success and modded_any,
+                        torrents=response.torrents, msgs=msgs, errors=errors)

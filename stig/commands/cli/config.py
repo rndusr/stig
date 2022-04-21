@@ -66,3 +66,6 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
     def _output(self, msg):
         print(msg)
+
+class LabelCmd(base.LabelCmd, mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}

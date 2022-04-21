@@ -74,3 +74,6 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
     def _output(self, msg):
         self.info(msg)
+
+class LabelCmd(base.LabelCmd, mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
+    provides = {'tui'}
