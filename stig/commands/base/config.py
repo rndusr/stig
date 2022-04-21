@@ -23,7 +23,7 @@ from ...client import ClientError
 from ...completion import candidates
 from ...settings import defaults, rcfile
 from ...utils import cached_property, cliparser, string, usertypes
-from .. import CmdError, CommandMeta, _CommandBase, utils
+from .. import CmdError, CommandMeta, utils
 from . import _mixin as mixin
 from ._common import (make_COLUMNS_doc, make_SCRIPTING_doc, make_SORT_ORDERS_doc,
                       make_X_FILTER_spec)
@@ -706,27 +706,29 @@ class LabelCmd(metaclass=CommandMeta):
                 'label -r iso,linux id=34',
                 'label -c id=34')
     argspecs = (
-         {'names': ('LABELS',),
-          'description': ('Comma-separated list of labels to add/remove'),
-          'nargs': '?', 'default': ''},
-         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
-         {'names': ('--clear','-c'), 'action': 'store_true',
+        {'names': ('LABELS',),
+         'description': ('Comma-separated list of labels to add/remove'),
+         'nargs': '?', 'default': ''},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+        {'names': ('--clear','-c'), 'action': 'store_true',
          'description': 'Clear all labels'},
-         {'names': ('--remove','-r'), 'action': 'store_true',
+        {'names': ('--remove','-r'), 'action': 'store_true',
          'description': 'Remove labels rather than adding them'},
-         {'names': ('--set','-s'), 'action': 'store_true',
+        {'names': ('--set','-s'), 'action': 'store_true',
          'description': 'Set labels to exactly the LABELS argument',
-          'dest': '_set'},
-         {'names': ('--quiet','-q'), 'action': 'store_true',
+         'dest': '_set'},
+        {'names': ('--quiet','-q'), 'action': 'store_true',
          'description': 'Do not show new label(s)'},
     )
+
     async def run(self, LABELS, TORRENT_FILTER, _set, remove, clear, quiet):
         if not (_set ^ remove ^ clear) and (_set or remove or clear):
             raise CmdError('At most one of --set/s, --remove/r, --clear,-c can be present.')
             return
 
         if clear:
-            handler = lambda tfilter, labels: objects.srvapi.torrent.labels_clear(tfilter)
+            def handler(tfilter, labels):
+                return objects.srvapi.torrent.labels_clear(tfilter)
         elif _set:
             handler = objects.srvapi.torrent.labels_set
         elif remove:
