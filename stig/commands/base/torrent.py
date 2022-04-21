@@ -49,7 +49,8 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
     async def run(self, TORRENT, stopped, path):
         success = True
         force_torrentlist_update = False
-        path = objects.pathtranslator.to_remote(path)
+        if path:
+            path = objects.pathtranslator.to_remote(path)
         for source in TORRENT:
             source_abs_path = self.make_path_absolute(source)
             response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
