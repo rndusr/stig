@@ -10,9 +10,11 @@
   stig is a TUI (text user interface) and CLI (command line interface) client
   for the [[http://www.transmissionbt.com/][BitTorrent client Transmission]].
 
-  stig is still in alpha state, which means breaking changes will be introduced
-  in new releases without increasing the major version number.  You shouldn't
-  accept bugs, though; please report them.
+  *stig is in maintenance mode.* The code needs to be split it into multiple
+  projects and the current client doesn't really support more clients besides
+  Transmission. *Please don't make any feature PRs.* The more time I invest in
+  reviewing and testing code that is going to be dead, the less time I have for
+  future-proofing stig.
 
 ** Features
    - *Filters* are used to select torrents for listing, starting/stopping,
