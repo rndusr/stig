@@ -419,6 +419,7 @@ class Labels(ColumnBase):
     min_width = 5
     needed_keys = ('labels',)
     align = 'left'
+
     def get_value(self):
         ls = list(self.data['labels'])
         ls.sort()

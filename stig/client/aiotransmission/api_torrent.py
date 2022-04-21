@@ -214,7 +214,7 @@ class TorrentAPI(TorrentAPIBase):
                 success = False
             elif 'torrent-added' in result:
                 info = result['torrent-added']
-                msgs = [ 'Added %s' % info['name'], ]
+                msgs = ['Added %s' % info['name']]
                 # TODO when transmission releases this logic will be
                 # unnecessary
                 success = True
@@ -1198,7 +1198,7 @@ class TorrentAPI(TorrentAPIBase):
             self.label_manage_mode.SET: lambda x, y: y,
         }
         label_dict = {
-            t['id']: frozenset( set_funcs[mode](t['labels'], labels) )
+            t['id']: frozenset(set_funcs[mode](t['labels'], labels))
             for t in response.torrents
         }
         # Collating by label set reduces the number of requests we need to send
@@ -1233,7 +1233,8 @@ class TorrentAPI(TorrentAPIBase):
                     if mode == self.label_manage_mode.SET:
                         mod_labels = labels
                     msgs.append('%s: %s labels: %s' % (
-                            tor_dict[t]['name'], verbs[mode], ', '.join(mod_labels)))
+                        tor_dict[t]['name'], verbs[mode], ', '.join(mod_labels))
+                    )
                     modded_any = True
 
         response = await self.torrents(torrents, keys=('id', 'name', 'labels',))
