@@ -133,13 +133,14 @@ class TorrentAPI(TorrentAPIBase):
                 return Response(success=True, path=SmartCmpPath(abs_path))
         return Response(success=True, path=SmartCmpPath(path))
 
-    async def add(self, torrent, stopped=False, path=None):
+    async def add(self, torrent, stopped=False, path=None, labels=[]):
         """
         Add torrent from file, URL or hash
 
         torrent: Path to local file, web/magnet link or hash
         stopped: False to start downloading immediately, True otherwise
         path:    Download directory or `None` for default directory
+        labels:  List of labels
 
         Return Response with the following properties:
             torrent: Torrent object with the keys 'id' and 'name' if the
@@ -151,7 +152,10 @@ class TorrentAPI(TorrentAPIBase):
             errors:  List of error messages
         """
         torrent_str = torrent
-        args = {'paused': bool(stopped)}
+        # TODO adding labels to the arguments will work when transmission
+        # updates; for now we need a work-around below. See
+        # https://github.com/transmission/transmission/pull/2539
+        args = {'paused': bool(stopped), 'labels': labels}
 
         if path is not None:
             response = await self._abs_download_path(path)
@@ -210,8 +214,17 @@ class TorrentAPI(TorrentAPIBase):
                 success = False
             elif 'torrent-added' in result:
                 info = result['torrent-added']
-                msgs = ('Added %s' % info['name'],)
+                msgs = [ 'Added %s' % info['name'], ]
+                # TODO when transmission releases this logic will be
+                # unnecessary
                 success = True
+                if labels:
+                    response = await self.labels_add((info['id'],), labels)
+                    success = response.success
+                    if response.success:
+                        msgs.append('Labeled %s with %s' % (info['name'], ', '.join(labels)))
+                    else:
+                        errors = ('Could not label added torrents: ' + response.errors,)
             else:
                 raise RuntimeError('Malformed response: %r' % (result,))
             torrent = Torrent({'id': info['id'], 'name': info['name']})
@@ -1148,7 +1161,6 @@ class TorrentAPI(TorrentAPIBase):
         errors = []
         tids = [t['id']  for t in response.torrents]
         args = {'labels': []}
-        print(tids, args)
         response = await self._torrent_action(self.rpc.torrent_set, torrents, method_args=args)
         if not response.success:
             return Response(success=False, torrents=(), msgs=[], errors=response.errors)
