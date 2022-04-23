@@ -224,7 +224,7 @@ class TorrentAPI(TorrentAPIBase):
                     if response.success:
                         msgs.append('Labeled %s with %s' % (info['name'], ', '.join(labels)))
                     else:
-                        errors = ('Could not label added torrents: ' + response.errors,)
+                        errors = ('Could not label added torrents: %s' % response.errors,)
             else:
                 raise RuntimeError('Malformed response: %r' % (result,))
             torrent = Torrent({'id': info['id'], 'name': info['name']})

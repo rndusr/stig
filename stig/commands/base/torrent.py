@@ -45,14 +45,15 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
          'description': ('Custom download directory for added torrent(s) '
                          'relative to "srv.path.complete" setting')},
 
-        {'names': ('--labels','-l'), 'default': '',
+        {'names': ('--labels','-l'),
          'description': 'Comma-separated list of labels'},
     )
 
     async def run(self, TORRENT, stopped, path, labels):
         success = True
         force_torrentlist_update = False
-        labels = labels.split(',')
+        if labels:
+            labels = labels.split(',')
         for source in TORRENT:
             source_abs_path = self.make_path_absolute(source)
             response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
