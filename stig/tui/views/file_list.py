@@ -269,6 +269,16 @@ class FileListWidget(ListWidgetBase):
         self._table.clear()
         self._marked.clear()
 
+    def _items_slice(self, n, m=None, k=1):
+        """Yield every k:th non-hidden widget from list starting at position n"""
+        widgets = list(self._filetree.widgets)
+        yield from widgets[n:m:k]
+
+
+    def focus_match(self, FILTER, reverse):
+        ff = FileFilter(FILTER)
+        self._focus_match(ff, reverse)
+
     def refresh(self):
         self._poller.poll()
 

@@ -606,6 +606,47 @@ class MarkCmd(metaclass=CommandMeta):
             if focus_next:
                 widget.focus_position += 1
 
+class SearchCmd(metaclass=CommandMeta):
+    name = 'search'
+    provides ={'tui'}
+    category = 'tui'
+    description = 'Skip to the next entry in the focused tab that matches a filter'
+    usage = ('skip [<OPTIONS>] [<FILTER>]',)
+    argspecs = (
+        {'names': ('FILTER',), 'nargs': '*',
+         'description': 'Filter expression (see `help filters`)'},
+        {'names': ('--reverse', '-r'), 'action': 'store_const',
+         'const': True, 'default': False,
+         'description': 'Search bottom to top'},
+        {'names': ('--next','-n'), 'action': 'store_true',
+         'description': 'Jump to next match (call `search <PHRASE>` first)'},
+        {'names': ('--previous','-p'), 'action': 'store_true',
+         'description': 'Jump to previous match (call `search <PHRASE>` first)'},
+    )
+    def run(self, reverse, next, previous, FILTER):
+        k = reverse
+        from ...tui.tuiobjects import tabs
+        widget = tabs.focus.base_widget
+        if not hasattr(widget, 'focus_match'):
+            raise CmdError('This tab does not support finding.')
+        if next and previous:
+            raise CmdError('The options --next and --previous contradict each other.')
+        elif (next or previous) and widget.search_filter is None:
+            raise CmdError('Set a search phrase first with `search <PHRASE>`.')
+        if next:
+            self.info(widget.search_filter)
+            widget.focus_next_match()
+        elif previous:
+            widget.focus_prev_match()
+        else:
+            try:
+                widget.focus_match(FILTER, reverse)
+            except ValueError as v:
+                raise CmdError("Invalid search filter: %s" % v)
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        return LimitCmd.completion_candidates_posargs(args)
 
 class UnmarkCmd(metaclass=CommandMeta):
     name = 'unmark'
