@@ -78,6 +78,10 @@ class TrackerListWidget(ListWidgetBase):
             self._data_dict = {trk['id']:trk for trk in trackers_combined(response.torrents)}
         self._invalidate()
 
+    def focus_match(self, FILTER, reverse):
+        tf = TrackerFilter(FILTER)
+        self._focus_match(tf, reverse)
+
     def refresh(self):
         self._poller.poll()
 

@@ -182,6 +182,10 @@ class SettingListWidget(ListWidgetBase):
     def refresh(self):
         objects.remotecfg.poll()
 
+    def focus_match(self, FILTER, reverse):
+        sf = SettingFilter(FILTER)
+        self._focus_match(sf, reverse)
+
     @property
     def sort(self):
         return self._sort
