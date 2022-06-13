@@ -200,6 +200,9 @@ class ListWidgetBase(urwid.WidgetWrap):
         self._table = Table(**self.tuicolumns)
         self._table.columns = columns or ()
 
+        self._search_filter  = None
+        self._search_reverse = False
+
         if self.focusable_items:
             walker = urwid.SimpleFocusListWalker([])
         else:
@@ -214,6 +217,7 @@ class ListWidgetBase(urwid.WidgetWrap):
             ('pack', urwid.AttrMap(self._table.headers, self.palette_name + '.header')),
             listbox_sb
         ])
+
         super().__init__(pile)
 
     def __repr__(self):
@@ -323,6 +327,46 @@ class ListWidgetBase(urwid.WidgetWrap):
     def _limit_items(self, existing_widgets):
         """Iterate over filtered widgets"""
         return ()
+
+    def _iterate_items(self, start, reverse):
+        k = -1 if reverse else 1
+        end = 0 if reverse else None
+        start += k
+        start = 0 if start > self.count else start
+        cur = start
+        for item in self._items_slice(start, end, k):
+            yield (cur, item)
+            cur += k
+        if k == 1:
+            # search hit BOTTOM continuing from TOP
+            cur = 0
+        elif k == -1:
+            # search hit TOP continuing from BOTTOM
+            cur = self.count-1
+        for item in self._items_slice(cur, self.focus_position, k):
+            yield (cur, item)
+            cur += k
+
+    def _focus_match(self, f, reverse, new=True):
+        if new:
+            self._search_filter = f
+            self._search_reverse = reverse
+        start = self.focus_position
+        for pos, item in self._iterate_items(start, reverse):
+            if f.match(item.data):
+                self.focus_position = pos
+                return
+
+    def focus_next_match(self):
+        if self.search_filter is None:
+            raise ValueError('Cannot focus next match: no search filter set')
+        self._focus_match(self.search_filter, self.search_reverse, False)
+
+    def focus_prev_match(self):
+        if self.search_filter is None:
+            raise ValueError('Cannot focus previous match: no search filter set')
+        self._focus_match(self.search_filter, not self.search_reverse, False)
+
 
     def clear(self):
         """Remove all list items"""
@@ -466,6 +510,10 @@ class ListWidgetBase(urwid.WidgetWrap):
         for item in self._listbox.body:
             yield item
 
+    def _items_slice(self, n, m=None, k=1):
+        """Yield every k:th non-hidden widget from list starting at position n"""
+        yield from self._listbox.body[n:m:k]
+
     @property
     def focused_widget(self):
         """Currently focused widget in list"""
@@ -487,3 +535,11 @@ class ListWidgetBase(urwid.WidgetWrap):
     @focus_position.setter
     def focus_position(self, focus_position):
         self._listbox.focus_position = min(focus_position, len(self._listbox.body) - 1)
+
+    @property
+    def search_filter(self):
+        return self._search_filter
+
+    @property
+    def search_reverse(self):
+        return self._search_reverse

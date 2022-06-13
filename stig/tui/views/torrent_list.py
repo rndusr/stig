@@ -91,6 +91,10 @@ class TorrentListWidget(ListWidgetBase):
         self._data_dict = {t['id']:t for t in torrents}
         self._invalidate()
 
+    def focus_match(self, FILTER, reverse):
+        tf = TorrentFilter(FILTER)
+        self._focus_match(tf, reverse)
+
     def clear(self):
         for w in self._listbox.body:
             w.data.clearcache()
