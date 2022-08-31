@@ -219,7 +219,7 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
                 # Enable escaping state if this is the last character of the
                 # escape string (escape characters are not marked as escaped)
                 if i >= escape_index + len(escape) - 1:
-                    # Only mark escape characters that nned it
+                    # Only mark escape characters that need it
                     next_is_delim, _, _, _ = _on_any_substr(string, i + 1, delims)
                     if next_is_delim or next_is_quote or next_is_escape:
                         # log.debug('    Enabling escape state')
@@ -1111,7 +1111,7 @@ class Args(tuple):
             elif item.step is not None:
                 raise RuntimeError('Slicing with steps is not implemented yet')
             elif self.curarg_index is None or self.curarg_curpos is None:
-                # No cursor position specifed
+                # No cursor position specified
                 curarg_index = curarg_curpos = None
             else:
                 start = item.start if item.start is not None else 0

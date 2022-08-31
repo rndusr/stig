@@ -123,7 +123,7 @@ class TestRequestPoller(asynctest.ClockedTestCase):
         self.assertEqual(status, 'None calls')
 
     async def test_request_raises_ClientError(self):
-        # Connection fails after a few successfull requests
+        # Connection fails after a few successful requests
         requests_before_failure = 3
         requests_before_different_failure = 6
         requests = 0

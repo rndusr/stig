@@ -28,7 +28,7 @@ class _Fill(urwid.SolidFill):
 
 
 class Group(urwid.WidgetWrap):
-    """Wrapper aroung Pile or Columns widget
+    """Wrapper around Pile or Columns widget
 
     The purpose of this class it o make adding/removing, hiding/showing and
     accessing widgets simpler.
@@ -146,7 +146,7 @@ class Group(urwid.WidgetWrap):
             item = dict(name=name,            # Descriptive, unique handle
                         widget=widget,        # Bare widget
                         options=options,      # urwid options tuple, e.g. ('given',10) or ('weight',50)
-                        removable=removable)  # Wether this item can be deleted
+                        removable=removable)  # Whether this item can be deleted
 
             if position == 'start':
                 position = 0

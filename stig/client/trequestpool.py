@@ -57,7 +57,7 @@ class TorrentRequestPool(RequestPoller):
         # # It's possible that a currently ongoing request doesn't collect the
         # # keys this new callback needs.  In that case, the request is finished
         # # AFTER we added the callback, and the callback would be called with
-        # # lacking keys, resuling in a KeyError.
+        # # lacking keys, resulting in a KeyError.
         # # Therefore we ask the poller to dump the result of a currently
         # # ongoing request to prevent this.
         # if self.running:
