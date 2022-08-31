@@ -36,7 +36,7 @@ class Scrollable(urwid.WidgetDecoration):
 
         TODO: Focusable widgets are handled, including switching focus, but
         possibly not intuitively, depending on the arrangement of widgets.  When
-        switching focus to a widget that is ouside of the visible part of the
+        switching focus to a widget that is outside of the visible part of the
         original widget, the canvas scrolls up/down to the focused widget.  It
         would be better to scroll until the next focusable widget is in sight
         first.  But for that to work we must somehow obtain a list of focusable

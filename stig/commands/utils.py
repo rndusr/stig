@@ -61,7 +61,7 @@ def log_msgs(process, response, quiet=False):
     instance) that take a single string and report it to the user.
 
     `response` must be an object with the attributes `msgs` and `errors` (i.e. a
-    Reponse instance).
+    Response instance).
 
     If `quiet` evaluates to True, only errors are reported.
     """

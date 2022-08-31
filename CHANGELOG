@@ -183,7 +183,7 @@
 
   Other changes:
     * The 'set' command now shows a list of settings when called without
-      argments
+      arguments
     * The value of a setting can now come from shell command,
       e.g. `set connect.password:eval pass transmission`
     * Setting any list with a limited number of options to "*" sets it to all
@@ -406,7 +406,7 @@
       characters ('\t') as column delimiters in machine-readable output
 
   Other changes:
-    * New comand: 'peerlist'
+    * New command: 'peerlist'
     * New theme option 'bright_is_bold'
     * Paused torrents are blue instead of dark gray, which seems to have
       better contrast in most color schemes

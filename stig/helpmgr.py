@@ -352,7 +352,7 @@ class HelpManager():
 
                 if 'document_default' not in argspec or argspec['document_default']:
                     # Argument takes a value that may default to another value
-                    # if ommitted and we want to document that default value
+                    # if omitted and we want to document that default value
                     def stringify_default(default):
                         dflt = default() if callable(default) else default
 

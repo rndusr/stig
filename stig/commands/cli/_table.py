@@ -195,7 +195,7 @@ def _shrink_by_removing_columns(table):
             _set_colwidth(table, table.colorder.index(colname), new_width)
 
 def _fit_table_into_terminal(table):
-    # Expand all cells in each colum to the width of the widest cell
+    # Expand all cells in each column to the width of the widest cell
     # Keep track of each column width in table namespace
     for colindex,colname in enumerate(table.colorder):
         if _column_has_variable_width(table, colname):

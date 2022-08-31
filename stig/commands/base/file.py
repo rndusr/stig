@@ -142,7 +142,7 @@ class PriorityCmdbase(metaclass=CommandMeta):
             quiet = False
         else:
             # We're operating on focused or marked files and changes are
-            # indiciated by the updated file list, so no info messages
+            # indicated by the updated file list, so no info messages
             # necessary.
             quiet = True
 
