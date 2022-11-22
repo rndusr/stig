@@ -303,6 +303,11 @@ torrentlist.started.header                         $started_fg,underline on $tli
 torrentlist.started.unfocused                      $started_fg           on $tlist_bg.uf
 torrentlist.started.focused                        $started_fg           on $tlist_bg.f
 
+$labels_fg = light gray
+torrentlist.labels.header                          $labels_fg,underline on $tlist_bg.uf
+torrentlist.labels.unfocused                       $labels_fg           on $tlist_bg.uf
+torrentlist.labels.focused                         $labels_fg           on $tlist_bg.f
+
 
 $status.idle_fg        = light gray
 $status.downloading_fg = dark cyan
