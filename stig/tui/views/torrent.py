@@ -348,6 +348,14 @@ class Tracker(_COLUMNS['tracker'], CellWidgetBase):
 
 TUICOLUMNS['tracker'] = Tracker
 
+class Labels(_COLUMNS['labels'], CellWidgetBase):
+    width = ('weight', 20)
+    style = Style(prefix='torrentlist.labels', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['labels'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['labels'] = Labels
 
 class Eta(_COLUMNS['eta'], CellWidgetBase):
     style = Style(prefix='torrentlist.eta', focusable=True,
