@@ -51,10 +51,10 @@ class TestPalette(unittest.TestCase):
 
     def test_line_numbers_in_error_messages(self):
         with self.assertRaises(theme.ThemeError) as cm:
-            theme.Palette(('# coment',
-                           '# coment',
+            theme.Palette(('# comment',
+                           '# comment',
                            'statusbar white on black',
-                           '# coment',
+                           '# comment',
                            'loginform foo on black'))
         self.assertEqual(str(cm.exception), "Invalid color in line 5: 'foo'")
 
