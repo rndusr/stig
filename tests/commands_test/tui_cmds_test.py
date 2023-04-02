@@ -218,7 +218,7 @@ class TestUnbindCmd(CommandTestCase):
         cb.error.assert_not_called()
 
     @patch('stig.tui.tuiobjects.keymap', create=True, contexts=('foo', 'bar', 'baz'))
-    async def test_unbind_unbound_keys_in_specifc_context(self, mock_keymap):
+    async def test_unbind_unbound_keys_in_specific_context(self, mock_keymap):
         mock_keymap.unbind.side_effect = (None, ValueError('key not bound: b'), None)
         cb = Mock()
         process = UnbindCmd(['--context', 'foo', 'a', 'b', 'c'], info_handler=cb.info, error_handler=cb.error)

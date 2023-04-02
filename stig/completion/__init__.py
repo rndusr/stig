@@ -263,7 +263,7 @@ class Candidate(str):
 
 class SingleCandidate(Candidates):
     """
-    Dummy Candidates that contains only one replacable candidate
+    Dummy Candidates that contains only one replaceable candidate
 
     This is used to include current user input in its own category.
     """
