@@ -190,7 +190,7 @@ class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
     def run(self):
         self._loop.set_exception_handler(self._exception_handler)
         self._loop.run_forever()
-        if self._exc_info:
+        if getattr(self, '_exc_info', None):
             raise self._exc_info
 
 _patched_classes['AsyncioEventLoop'] = AsyncioEventLoop_patched
