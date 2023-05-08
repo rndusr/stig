@@ -13,6 +13,8 @@ import re
 
 import blinker
 
+from .main import redraw_screen
+
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
@@ -338,6 +340,7 @@ class KeyMap():
     def get_description(self, key, context=DEFAULT_CONTEXT):
         return self._descriptions.get((context, key), '')
 
+    @redraw_screen
     def evaluate(self, key, context=DEFAULT_CONTEXT, callback=None, widget=None):
         """
         Run action that is mapped to `key` in `context`
