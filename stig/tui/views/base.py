@@ -13,6 +13,7 @@ import collections
 
 import urwid
 
+from ..main import redraw_screen
 from ..scroll import ScrollBar
 from ..table import ColumnHeaderWidget, Table
 from ..tuiobjects import bottombar
@@ -218,6 +219,7 @@ class ListWidgetBase(urwid.WidgetWrap):
     def __repr__(self):
         return '<%s %s, #%s>' % (type(self).__name__, self.title, id(self))
 
+    @redraw_screen
     def _invalidate(self):
         if self.title_updater is not None:
             # First argument can be cropped if too long, second argument is fixed
