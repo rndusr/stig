@@ -10,6 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import asyncio
+import functools
 
 import urwid
 
@@ -63,3 +64,21 @@ def run(command_runner):
         tuiobjects.logwidget.disable()
 
     return True
+
+
+def redraw_screen(func):
+    """
+    Decorator for functions/methods that change screen contents
+
+    https://github.com/urwid/urwid/pull/541
+    https://github.com/urwid/urwid/pull/418
+    """
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        finally:
+            from .tuiobjects import urwidloop
+            asyncio.get_event_loop().call_soon(urwidloop.draw_screen)
+
+    return wrapper
