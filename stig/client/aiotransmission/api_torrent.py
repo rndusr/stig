@@ -152,9 +152,6 @@ class TorrentAPI(TorrentAPIBase):
             errors:  List of error messages
         """
         torrent_str = torrent
-        # TODO adding labels to the arguments will work when transmission
-        # updates; for now we need a work-around below. See
-        # https://github.com/transmission/transmission/pull/2539
         args = {'paused': bool(stopped), 'labels': labels}
 
         if path is not None:
@@ -215,10 +212,10 @@ class TorrentAPI(TorrentAPIBase):
             elif 'torrent-added' in result:
                 info = result['torrent-added']
                 msgs = ['Added %s' % info['name']]
-                # TODO when transmission releases this logic will be
-                # unnecessary
                 success = True
-                if labels:
+                # Before rpc version 17 torrent-add did not take the labels
+                # argument, so we have to send a follow-up request
+                if labels and self.rpc.rpcversion < 17:
                     response = await self.labels_add((info['id'],), labels)
                     success = response.success
                     if response.success:
