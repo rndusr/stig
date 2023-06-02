@@ -1,17 +1,3 @@
-# Create long_description from README.org if possible
-long_description = ''
-try:
-    import os
-    import pypandoc
-    import restructuredtext_lint as rst
-    if os.path.exists('README.org'):
-        long_description = pypandoc.convert_file('README.org', 'rst')
-        rst.lint(long_description)
-except ImportError as e:
-    import warnings
-    warnings.warn(str(e))
-    warnings.warn('long_description is empty.', stacklevel=2)
-
 # Load __version__ variable without importing the whole stig module
 import re
 
@@ -32,8 +18,7 @@ setup(
     author_email     = 'rndusr@posteo.de',
 
     description      = 'TUI and CLI client for the Transmission daemon',
-    long_description = long_description,
-    long_description_content_type = 'text/x-rst',
+    long_description = '',
 
     url              = 'https://github.com/rndusr/stig',
     keywords         = 'bittorrent torrent transmission',
