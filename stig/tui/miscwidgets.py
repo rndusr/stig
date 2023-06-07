@@ -16,6 +16,7 @@ from natsort import humansorted
 
 from .. import objects, utils
 from ..client import constants as const
+from .main import redraw_screen
 
 # Workaround for urwid bug: When a Text widget is initialized with an empty
 # string, subsequent set_text() calls have no effect.
@@ -184,18 +185,22 @@ class ConnectionStatusWidget(urwid.WidgetWrap):
             string = 'https://' + string
         return string
 
+    @redraw_screen
     def _handle_connecting(self, rpc):
         self._text.set_text('Connecting to %s' % self._connection_string(rpc))
         self._attrmap.set_attr_map({None: 'topbar.host.connecting'})
 
+    @redraw_screen
     def _handle_connected(self, rpc):
         self._text.set_text('%s Transmission %s' % (self._connection_string(rpc), rpc.version))
         self._attrmap.set_attr_map({None: 'topbar.host.connected'})
 
+    @redraw_screen
     def _handle_disconnected(self, rpc):
         self._text.set_text(self._connection_string(rpc))
         self._attrmap.set_attr_map({None: 'topbar.host.disconnected'})
 
+    @redraw_screen
     def _handle_error(self, rpc, error):
         from ..client import RPCError
         if not isinstance(error, RPCError):
@@ -231,6 +236,10 @@ class BandwidthStatusWidget(urwid.Widget):
 
         objects.srvapi.status.on_update(self._update_current_rates)
         objects.srvapi.settings.on_update(self._update_rate_limits)
+
+    @redraw_screen
+    def _invalidate(self):
+       super()._invalidate()
 
     def _update_current_rates(self, status):
         up = status.rate_up

@@ -14,6 +14,7 @@ from collections import abc, defaultdict
 import urwid
 
 from ..utils.string import strwidth
+from .main import redraw_screen
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -214,6 +215,7 @@ class Tabs(urwid.Widget):
             self.set_title(title)
             return self.get_id()
 
+    @redraw_screen
     def insert(self, title, widget=None, position=-1, focus=True):
         """
         Insert new tab
@@ -252,6 +254,7 @@ class Tabs(urwid.Widget):
             self.focus_position = newpos
         return this_id
 
+    @redraw_screen
     def move(self, position=None, destination='right', wrap=False):
         """
         Move tab at `position` to `where`
@@ -299,6 +302,7 @@ class Tabs(urwid.Widget):
         self.focus_id = focused_tab_id
         self._contents.set_focus_changed_callback(self._focus_changed_callback)
 
+    @redraw_screen
     def remove(self, position=None):
         """
         Remove tab `position`
