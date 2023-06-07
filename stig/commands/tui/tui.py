@@ -21,6 +21,7 @@ from ...completion import candidates
 from .. import CmdError, CommandMeta, utils
 from . import _mixin as mixin
 from ._common import make_tab_title_widget
+from ...tui.main import redraw_screen
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -376,6 +377,7 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
     import re
     _input_regex = re.compile(r'(?<!\\)(\[.*?\])')
 
+    @redraw_screen
     async def run(self, COMMAND, per_change, on_accept, on_cancel, on_close, ignore_errors):
         cmd = await self._parse_cmd(COMMAND)
         accept_cmd = await self._parse_cmd(on_accept) if on_accept else None
