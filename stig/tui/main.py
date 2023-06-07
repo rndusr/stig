@@ -10,6 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import asyncio
+from inspect import iscoroutinefunction
 import functools
 
 import urwid
@@ -73,12 +74,23 @@ def redraw_screen(func):
     https://github.com/urwid/urwid/pull/541
     https://github.com/urwid/urwid/pull/418
     """
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        finally:
-            from .tuiobjects import urwidloop
-            asyncio.get_event_loop().call_soon(urwidloop.draw_screen)
+    def redraw():
+        from .tuiobjects import urwidloop
+        asyncio.get_event_loop().call_soon(urwidloop.draw_screen)
+
+    if iscoroutinefunction(func):
+        @functools.wraps(func)
+        async def wrapper(self, *args, **kwargs):
+            try:
+                return await func(self, *args, **kwargs)
+            finally:
+                redraw()
+    else:
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            finally:
+                redraw()
 
     return wrapper
