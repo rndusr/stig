@@ -14,6 +14,7 @@ import urwid
 from ... import objects
 from ...views.details import SECTIONS
 from ..scroll import Scrollable, ScrollBar
+from ..main import redraw_screen
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -94,6 +95,7 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
         self._poller.on_response(self._handle_response)
         self._poller.on_error(self._handle_error)
 
+    @redraw_screen
     def _handle_response(self, response):
         if response is not None and response.success:
             self._torrent = response.torrents[0]
@@ -107,6 +109,7 @@ class TorrentDetailsWidget(urwid.WidgetWrap):
         elif response is not None:
             self._handle_error(*response.msgs)
 
+    @redraw_screen
     def _handle_error(self, *errors):
         self._torrent = {'name': None, 'id': None}
         pile = urwid.Pile(urwid.Text(('torrentdetails.error', str(e))) for e in errors)

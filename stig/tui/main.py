@@ -78,7 +78,14 @@ def redraw_screen(func):
         try:
             return func(self, *args, **kwargs)
         finally:
-            from .tuiobjects import urwidloop
-            asyncio.get_event_loop().call_soon(urwidloop.draw_screen)
+            asyncio.get_event_loop().call_soon(_redraw_screen)
 
     return wrapper
+
+def _redraw_screen():
+    try:
+        from .tuiobjects import urwidloop
+        urwidloop.draw_screen()
+    except AssertionError:
+        # catches trying to redraw the screen before urwidloop has started
+        pass

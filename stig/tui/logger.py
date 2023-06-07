@@ -15,6 +15,7 @@ import time
 
 import urwid
 
+from .main import redraw_screen
 from .scroll import Scrollable, ScrollBar
 
 from ..logging import make_logger  # isort:skip
@@ -86,6 +87,7 @@ class LogWidget(urwid.WidgetWrap):
         if self._autohide_handle is not None:
             self._autohide_handle.cancel()
 
+    @redraw_screen
     def add(self, record):
         msg = ''
         if record.levelno >= logging.WARNING:

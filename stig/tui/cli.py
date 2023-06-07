@@ -16,6 +16,7 @@ import blinker
 import urwid
 
 from .group import Group
+from .main import redraw_screen
 from .scroll import ScrollBar
 
 from ..logging import make_logger  # isort:skip
@@ -145,6 +146,7 @@ class CLIEditWidget(urwid.WidgetWrap):
         return self._editw.edit_text
 
     @edit_text.setter
+    @redraw_screen
     def edit_text(self, cmd):
         self._editw.edit_text = str(cmd)
 
