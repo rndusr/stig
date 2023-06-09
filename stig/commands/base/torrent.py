@@ -85,6 +85,9 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
             return candidates.fs_path(args.curarg.before_cursor,
                                       base=objects.cfg['srv.path.complete'],
                                       directories_only=True)
+        if option == '--labels':
+            curlbl = args.curarg.split(',')[-1]
+            return candidates.labels(curlbl)
 
 
 class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=CommandMeta):
