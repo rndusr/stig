@@ -316,6 +316,7 @@ class CompletionCandidatesWidget(urwid.WidgetWrap):
         # Always render as focused to highlight the focused candidate
         return super().render(size, focus=True)
 
+    @redraw_screen
     def update_candidates(self):
         if not self._completer.categories:
             self.reset()
