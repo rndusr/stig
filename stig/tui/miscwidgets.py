@@ -239,7 +239,7 @@ class BandwidthStatusWidget(urwid.Widget):
 
     @redraw_screen
     def _invalidate(self):
-       super()._invalidate()
+        super()._invalidate()
 
     def _update_current_rates(self, status):
         up = status.rate_up
