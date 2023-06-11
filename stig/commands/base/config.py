@@ -749,3 +749,9 @@ class LabelCmd(metaclass=CommandMeta):
                                            polling_frenzy=True, quiet=quiet)
         if not response.success:
             raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        curlbl = args.curarg.split(',')[-1]
+        return candidates.labels(curlbl)
