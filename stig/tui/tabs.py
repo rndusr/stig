@@ -471,6 +471,7 @@ class Tabs(urwid.Widget):
             return self._ids[i]
 
     @focus_id.setter
+    @redraw_screen
     def focus_id(self, tabid):
         i = self.get_index(tabid)
         if 0 <= i < len(self._contents):
