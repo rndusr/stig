@@ -18,7 +18,14 @@ setup(
     author_email     = 'rndusr@posteo.de',
 
     description      = 'TUI and CLI client for the Transmission daemon',
-    long_description = '',
+    long_description = (
+        "There is no `long_description` because PyPI doesn't support org-mode "
+        "conversion with `pandoc` is wonky and I can't be arsed to convert "
+        "the README by hand."
+        "\n\n"
+        "Please read the README in the [repo](https://github.com/rndusr/stig)."
+    ),
+    long_description_content_type='text/markdown',
 
     url              = 'https://github.com/rndusr/stig',
     keywords         = 'bittorrent torrent transmission',
