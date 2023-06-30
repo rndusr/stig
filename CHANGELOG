@@ -1,3 +1,9 @@
+2023-06-30 0.12.5a0
+  Fixed bugs:
+    * Further improvements for upcoming urwid release, making the TUI more
+      responsive (All thanks to @rsekman!)
+
+
 2023-06-02 0.12.4a0
   Fixed bugs:
     * Improve compatibility with upcoming urwid release
