@@ -154,7 +154,7 @@ class Path(ColumnBase):
 
     def get_value(self):
         return self._from_cache(self._shorten_path,
-                                self.data['path'].rstrip(PATHSEP),
+                                self.data['local-path'].rstrip(PATHSEP),
                                 self.width)
 
 COLUMNS['path'] = Path

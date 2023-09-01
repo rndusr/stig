@@ -179,6 +179,10 @@ def _status(t):
 
     return statuses
 
+def _local_path(t):
+    from ...objects import pathtranslator
+    return str(pathtranslator.to_local(t['downloadDir']))
+
 
 class TorrentFileID(tuple):
     def __new__(cls, torrent_id, file_id):
@@ -384,6 +388,7 @@ DEPENDENCIES = {
     'status'                       : ('status', 'percentDone', 'metadataPercentComplete', 'rateDownload',
                                       'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'                         : ('downloadDir',),
+    'local-path'                   : ('downloadDir',),
     'private'                      : ('isPrivate',),
     'comment'                      : ('comment',),
     'creator'                      : ('creator',),
@@ -461,6 +466,7 @@ class Torrent(base.TorrentBase):
         # these fields from 'torrent-get' requests without complaining
         'sequential'            : lambda raw: raw.get('sequential_download', False),
         'sequential-from-piece' : lambda raw: raw.get('sequential_download_from_piece', 0),
+        'local-path'         : _local_path,
 
         # Transmission provides rate limits in kilobytes - we want bytes
         'limit-rate-down'    : lambda raw: None if not raw['downloadLimited'] else raw['downloadLimit'] * 1000,

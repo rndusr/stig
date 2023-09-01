@@ -116,7 +116,7 @@ class _SingleFilter(Filter):
                                           aliases=('cmnt',),
                                           description=_desc('... comment')),
 
-        'path'            : CmpFilterSpec(value_getter=lambda t: t['path'],
+        'path'            : CmpFilterSpec(value_getter=lambda t: t['local-path'],
                                           value_type=TorrentBase.TYPES['path'],
                                           needed_keys=('path',),
                                           description=_desc('... absolute path to download directory')),
