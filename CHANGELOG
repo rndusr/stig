@@ -1,3 +1,9 @@
+2023-09-23 0.12.6a0
+  Fixed bugs:
+    * Remove urwid patch that became incompatible with urwid ~2.1.0
+      (Fixes AttributeError: module 'urwid' has no attribute 'decoration')
+
+
 2023-06-30 0.12.5a0
   Fixed bugs:
     * Further improvements for upcoming urwid release, making the TUI more
