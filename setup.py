@@ -35,7 +35,7 @@ setup(
 
     python_requires  = '>=3.6',
     install_requires = [
-        'urwid==2.*',
+        'urwid==2.2.*',
         'urwidtrees==1.0.3',
         'aiohttp==3.*',
         'async_timeout',
