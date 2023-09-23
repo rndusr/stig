@@ -247,31 +247,3 @@ class ListBox_patched(urwid.ListBox):
         return self._rows_max
 
 _patched_classes['ListBox'] = ListBox_patched
-
-
-# Don't use deprecated inspect.getargspect()
-# https://github.com/urwid/urwid/pull/311
-from inspect import getfullargspec  # noqa isort:skip
-def remove_defaults(d, fn):
-    args, varargs, varkw, defaults, _, _, _ = getfullargspec(fn)
-
-    # ignore *varargs and **kwargs
-    if varkw:
-        del args[-1]
-    if varargs:
-        del args[-1]
-
-    # create a dictionary of args with default values
-    ddict = dict(list(zip(args[len(args) - len(defaults):], defaults)))
-
-    for k in list(d.keys()):
-        if k in ddict:
-            # remove values that match their defaults
-            if ddict[k] == d[k]:
-                del d[k]
-
-    return d
-
-urwid.split_repr.remove_defaults = remove_defaults
-urwid.widget.remove_defaults = remove_defaults
-urwid.decoration.remove_defaults = remove_defaults
