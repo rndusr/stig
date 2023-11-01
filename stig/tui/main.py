@@ -86,6 +86,6 @@ def _redraw_screen():
     try:
         from .tuiobjects import urwidloop
         urwidloop.draw_screen()
-    except AssertionError:
+    except (AssertionError, RuntimeError):
         # catches trying to redraw the screen before urwidloop has started
         pass
