@@ -1,3 +1,8 @@
+2023-11-02 0.12.7a0
+  Fixed:
+    * Catch RuntimeError from urwid
+
+
 2023-09-23 0.12.6a0
   Fixed bugs:
     * Remove urwid patch that became incompatible with urwid ~2.1.0
