@@ -229,7 +229,10 @@ class TorrentPeer(abc.Mapping):
                     size_diff = torrent_size * p_diff
                     rate = size_diff / t_diff
                     size_remaining = torrent_size - (torrent_size * peer_progress)
-                    eta = size_remaining / rate
+                    try:
+                        eta = size_remaining / rate
+                    except ZeroDivisionError:
+                        eta = utils.Timedelta.UNKNOWN
 
         return rate, eta
 
