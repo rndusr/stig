@@ -1,3 +1,8 @@
+2023-12-21 0.12.8a0
+  Fixed:
+    * Catch ZeroDivisionError when estimating peer download rate
+
+
 2023-11-02 0.12.7a0
   Fixed:
     * Catch RuntimeError from urwid
