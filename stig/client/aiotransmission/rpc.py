@@ -410,6 +410,8 @@ class TransmissionRPC():
                     answer = await response.json()
                 except json.JSONDecodeError as e:
                     raise RPCError('Server sent malformed JSON: %s: %s' % (e, await response.text()))
+                except UnicodeDecodeError as e:
+                    raise RPCError('Server sent malformed UTF-8: %s' % e)
                 else:
                     return answer
 
