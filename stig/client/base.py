@@ -82,6 +82,8 @@ class TorrentBase(abc.Mapping):
         'trackers'                     : tuple,
         'peers'                        : tuple,
         'files'                        : None,
+
+        'labels'                       : set,
     }
 
     def update(self, raw_torrent):

@@ -429,6 +429,8 @@ DEPENDENCIES = {
     'trackers'                     : ('trackerStats', 'name', 'id'),
     'peers'                        : ('peers', 'totalSize', 'name'),
     'files'                        : ('files', 'fileStats', 'downloadDir'),
+
+    'labels'                       : ('labels',),
 }
 
 
@@ -577,7 +579,7 @@ class TorrentFields(tuple):
                    'downloadedEver', 'downloadLimit', 'downloadLimited',
                    'downloadLimitMode', 'error', 'errorString', 'eta', 'etaIdle',
                    'hashString', 'haveUnchecked', 'haveValid', 'honorsSessionLimits',
-                   'id', 'isFinished', 'isPrivate', 'isStalled', 'lastAnnounceTime',
+                   'id', 'isFinished', 'isPrivate', 'isStalled', 'labels', 'lastAnnounceTime',
                    'lastScrapeTime', 'leftUntilDone', 'magnetLink',
                    'manualAnnounceTime', 'maxConnectedPeers',
                    'metadataPercentComplete', 'name', 'nextAnnounceTime',
