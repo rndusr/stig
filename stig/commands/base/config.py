@@ -696,3 +696,51 @@ class RateLimitCmdbase(metaclass=CommandMeta):
             return candidates.Candidates(cands, label='Direction', curarg_seps=(',',))
         elif posargs.curarg_index >= 3:
             return candidates.torrent_filter(args.curarg)
+
+class LinkPathCmd(metaclass=CommandMeta):
+    name = 'link'
+    aliases = ()
+    category = 'configuration'
+    provides = set()
+    description = textwrap.dedent(
+        """Links remote and local paths. Call with no arguments to list existing links.
+
+        Example use case: a remote daemon downloads to
+        /var/transmission/downloads/, but this is mounted on the local client
+        as /mnt/nfs/seedbox/. Moving torrents with the move requires the remote
+        path, but tab completion works with the local filesystem. Path links
+        provide a transparent translation layer.
+
+        Links must be bijective; as a consequence the --force flag must be
+        passed to ensure that clobbering is intentional.
+        """)
+    usage = ('link [<OPTIONS>] REMOTE LOCAL',)
+    examples = ('link /var/transmission/downloads/ /mnt/nfs/seedbox/',
+                'link')
+    argspecs = (
+        {'names': ('--force', '-f'),
+         'description': 'Overwrite existing links involving REMOTE or LOCAL.'},
+        {'names': ('REMOTE',),
+         'nargs': '?',
+         'description': 'Remote path to link'},
+        {'names': ('LOCAL',),
+         'nargs': '?',
+         'description': 'Local path to link'}
+    )
+
+    DUMP_WIDTH = 79
+
+    async def run(self, REMOTE, LOCAL, force):
+        log.debug("%s %s %s" % (REMOTE, LOCAL, force))
+        if not (REMOTE or LOCAL):
+            log.debug('Listing links')
+            for link in objects.pathtranslator.links.items():
+                self.info('%s <-> %s' % link)
+            return
+        elif not (REMOTE and LOCAL):
+            self.error("Must specify both REMOTE and LOCAL paths.")
+            return
+        try:
+            objects.pathtranslator.link(REMOTE, LOCAL, force)
+        except Exception as e:
+            raise CmdError(e)
