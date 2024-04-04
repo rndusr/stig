@@ -358,7 +358,7 @@ class Timestamp(float):
     SOON           = -1 + 0.123456789
     UNKNOWN        = 1e10 + 0.123456789
     NOT_APPLICABLE = 1e11 + 0.123456789
-    NEVER          = 1e12 + 0.123456789
+    NEVER          = -1e12 + 0.123456789
     CONSTANTS = (NOW, SOON, UNKNOWN, NOT_APPLICABLE, NEVER)
     _CONSTANTS_MAP_STRINGS = {'now': NOW, 'soon': SOON, 'unknown': UNKNOWN,
                               'na': NOT_APPLICABLE, 'n/a': NOT_APPLICABLE, 'not applicable': NOT_APPLICABLE,
