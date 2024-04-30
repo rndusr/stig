@@ -17,7 +17,7 @@ import urwid
 
 from .group import Group
 from .main import redraw_screen
-from .scroll import ScrollBar
+from urwid import ScrollBar
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
