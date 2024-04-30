@@ -12,7 +12,7 @@
 import urwid
 
 from ...utils.string import strwidth
-from ..scroll import Scrollable
+from urwid import Scrollable
 
 
 class SearchableText(urwid.WidgetWrap):

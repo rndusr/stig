@@ -14,7 +14,7 @@ import collections
 import urwid
 
 from ..main import redraw_screen
-from ..scroll import ScrollBar
+from urwid import ScrollBar
 from ..table import ColumnHeaderWidget, Table
 from ..tuiobjects import bottombar
 

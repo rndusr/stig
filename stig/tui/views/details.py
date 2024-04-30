@@ -13,7 +13,7 @@ import urwid
 
 from ... import objects
 from ...views.details import SECTIONS
-from ..scroll import Scrollable, ScrollBar
+from urwid import Scrollable, ScrollBar
 from ..main import redraw_screen
 
 from ...logging import make_logger  # isort:skip
