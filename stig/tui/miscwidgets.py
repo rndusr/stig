@@ -24,7 +24,7 @@ EMPTY_TEXT = ' '
 
 
 class KeyChainsWidget(urwid.WidgetWrap):
-    _sizing = ['flow']
+    _sizing = frozenset(urwid.FLOW)
     _headers = ('Key Chain', 'Command', 'Description')
 
     def selectable(self):
@@ -308,7 +308,7 @@ class BandwidthStatusWidget(urwid.Widget):
 
         return urwid.CanvasJoin(combinelist)
 
-    _sizing = ['fixed']
+    _sizing = frozenset([urwid.FIXED])
 
     def rows(self, size, focus=False):
         return 1
