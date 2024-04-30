@@ -36,7 +36,13 @@ class UILogRecordHandler(logging.Handler):
 class LogWidget(urwid.WidgetWrap):
     """Present LogRecords from logging module in a ListBox Widget"""
 
+    # we can't just set _sizing directly. the call to super().__init__ in __init__ will make sizing() return ScrollBar._sizing, not LogWidget._sizing
+    def sizing(self):
+         return frozenset([urwid.FLOW])
+
     def __init__(self, height=10, autohide_delay=0):
+
+
         self._height = height
         self._autohide_delay = autohide_delay
         self._autohide_handle = None
@@ -143,6 +149,9 @@ class LogWidget(urwid.WidgetWrap):
             delattr(self, '_rows')
         except AttributeError:
             pass
+
+    def pack(self, size, focus=False):
+        return super().pack((size[0], self.rows(size, focus)), focus)
 
     def render(self, size, focus=False):
         return super().render((size[0], self.rows(size, focus)), focus)
