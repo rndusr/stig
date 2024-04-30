@@ -19,7 +19,7 @@ TEXT = ('one',
 
 
 class FixedText(urwid.Widget):
-    _sizing = frozenset(['fixed'])
+    _sizing = frozenset([urwid.FIXED])
 
     def __init__(self):
         self._canvas = urwid.Text('\n'.join(TEXT)).render((10,))
