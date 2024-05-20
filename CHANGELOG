@@ -1,6 +1,8 @@
-2023-??-?? 0.12.9a0
+2023-05-20 0.12.9a0
   Fixed:
     * Catch UnicodeDecodeError when decoding JSON from server response
+  * Use urwid-native scrolling widgets
+  (As always, many thanks to @rsekman for doing my work!)
 
 
 2023-12-21 0.12.8a0
