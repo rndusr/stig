@@ -41,8 +41,6 @@ class LogWidget(urwid.WidgetWrap):
          return frozenset([urwid.FLOW])
 
     def __init__(self, height=10, autohide_delay=0):
-
-
         self._height = height
         self._autohide_delay = autohide_delay
         self._autohide_handle = None
