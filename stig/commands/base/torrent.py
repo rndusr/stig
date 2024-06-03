@@ -11,6 +11,7 @@
 
 import asyncio
 import os
+from pathlib import Path
 
 from ... import objects
 from ...completion import candidates
@@ -48,6 +49,8 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
     async def run(self, TORRENT, stopped, path):
         success = True
         force_torrentlist_update = False
+        if path:
+            path = objects.pathtranslator.to_remote(path)
         for source in TORRENT:
             source_abs_path = self.make_path_absolute(source)
             response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
@@ -250,6 +253,7 @@ class MoveTorrentsCmdbase(metaclass=CommandMeta):
         except ValueError as e:
             raise CmdError(e)
         else:
+            PATH = objects.pathtranslator.to_remote(Path(PATH)).as_posix()
             response = await self.make_request(objects.srvapi.torrent.move(tfilter, PATH),
                                                polling_frenzy=True)
             if not response.success:
