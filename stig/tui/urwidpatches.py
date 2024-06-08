@@ -12,8 +12,16 @@
 """Monkey patches that should be removed when they are resolved upstream"""
 
 import importlib
+import warnings
 
 import urwid
+
+# FIXME: [...]/urwid/widget/grid_flow.py:81: GridFlowWarning: Size is smaller than cell width (-1 < 20)
+#          super().__init__(self.generate_display_widget((self._cache_maxcol,)))
+warnings.filterwarnings(
+    'ignore',
+    category=urwid.widget.grid_flow.GridFlowWarning,
+)
 
 # Map class name to patched class
 _patched_classes = {}
