@@ -1,3 +1,8 @@
+2024-06-08 0.12.10a0
+  Fixed:
+    * Ignore GridFlowWarning: Size is smaller than cell width
+
+
 2024-05-23 0.12.9a0
   Fixed:
     * Catch UnicodeDecodeError when decoding JSON from server response
