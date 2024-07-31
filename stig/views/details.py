@@ -88,6 +88,11 @@ def _uploaded_hr(t):
 def _uploaded_mr(t):
     return '%d\t%f' % (t['size-uploaded'], t['%uploaded'] / 100)
 
+def _rate_hr(direction, t):
+    return '%s/s' % t["rate-" + direction].with_unit
+def _rate_mr(direction, t):
+    return int(t["rate-" + direction])
+
 
 def _downloaded_hr(t):
     info = ['%.2f %%' % t['%downloaded']]
@@ -225,10 +230,18 @@ SECTIONS = (
              needed_keys=('size-downloaded', 'size-left', '%downloaded', 'timespan-eta'),
              human_readable=_downloaded_hr,
              machine_readable=_downloaded_mr),
+        Item('Dn',
+             needed_keys=('rate-up',),
+             human_readable=partial(_rate_hr, 'down'),
+             machine_readable=partial(_rate_mr, 'down')),
         Item('Uploaded',
              needed_keys=('size-uploaded', 'size-total', '%uploaded'),
              human_readable=_uploaded_hr,
              machine_readable=_uploaded_mr),
+        Item('Up',
+             needed_keys=('rate-up',),
+             human_readable=partial(_rate_hr, 'up'),
+             machine_readable=partial(_rate_mr, 'up')),
         Item('Ratio',
              needed_keys=('ratio',),
              human_readable=_ratio_hr,
