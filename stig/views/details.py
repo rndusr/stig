@@ -28,7 +28,8 @@ def _size_mr(t):
 
 
 def _limit_rate_hr(direction, t):
-    return str(t['limit-rate-' + direction])
+    limit = t['limit-rate-' + direction]
+    return '%s/s' % limit.with_unit if limit < float('inf') else str(limit)
 
 def _limit_rate_mr(direction, t):
     limit = t['limit-rate-' + direction]
