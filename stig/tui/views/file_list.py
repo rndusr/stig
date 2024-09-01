@@ -11,6 +11,7 @@
 
 import builtins
 from collections import abc
+from functools import lru_cache
 
 import urwid
 import urwidtrees
@@ -109,6 +110,7 @@ class FileTreeDecorator(ArrowTree):
         self.filecount = fcount
         return forest
 
+    @lru_cache(maxsize=1024)
     def decorate(self, pos, data, is_first=True):
         # We can use the tree position as table ID
         self._table.register(pos)
@@ -152,7 +154,6 @@ class FileTreeDecorator(ArrowTree):
     def widgets(self):
         """Yield all file and directory widgets in this tree"""
         yield from self._widgets.values()
-
 
 
 class FileItemWidget(ItemWidgetBase):
