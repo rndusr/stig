@@ -156,7 +156,7 @@ class TorrentFileDirectory(dict):
             return str(name)
 
     def __hash__(self):
-        return hash(self['path'])
+        return hash(self.get('path', ''))
 
     def __repr__(self):
         return '<%s %s>' % (type(self).__name__, self['path-absolute'])

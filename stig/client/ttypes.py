@@ -114,6 +114,8 @@ class TorrentFile(abc.Mapping):
         self._raw = {'tid': tid, 'id': id, 'name': name, 'path': path, 'location': location,
                      'is-wanted': is_wanted, 'priority': priority,
                      'size-total': size_total, 'size-downloaded': size_downloaded}
+        self._raw_keys = list(self._raw.keys())
+        self._raw_keys.sort()
         self._cache = {}
 
     def __getitem__(self, key):
@@ -144,6 +146,9 @@ class TorrentFile(abc.Mapping):
 
     def __repr__(self):
         return '<{} {!r}>'.format(type(self).__name__, self['name'])
+
+    def __hash__(self):
+        return hash(tuple([(self._raw[k]) for k in self._raw_keys]))
 
     def __iter__(self):
         return iter(self.TYPES)
