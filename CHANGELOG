@@ -1,3 +1,7 @@
+2024-09-01 0.12.11a0
+    * Improve file list performance (Many thanks to @rsekman)
+
+
 2024-06-08 0.12.10a0
   Fixed:
     * Ignore GridFlowWarning: Size is smaller than cell width
