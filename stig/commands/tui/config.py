@@ -74,3 +74,6 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
     def _output(self, msg):
         self.info(msg)
+
+class LinkPathCmd(base.LinkPathCmd):
+    provides = {'tui'}
