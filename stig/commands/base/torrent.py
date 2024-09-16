@@ -32,7 +32,8 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
     description = 'Download torrents'
     usage = ('add [<OPTIONS>] <TORRENT> <TORRENT> <TORRENT> ...',)
     examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
-                'add --stopped http://example.org/something.torrent')
+                'add --stopped http://example.org/something.torrent',
+                'add --labels linux,iso https://archlinux.org/releng/releases/2022.04.05/torrent/')
     argspecs = (
         {'names': ('TORRENT',), 'nargs': '+',
          'description': 'Link or path to torrent file, magnet link or info hash'},
@@ -43,16 +44,22 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
         {'names': ('--path','-p'),
          'description': ('Custom download directory for added torrent(s) '
                          'relative to "srv.path.complete" setting')},
+
+        {'names': ('--labels','-l'),
+         'description': 'Comma-separated list of labels'},
     )
 
-    async def run(self, TORRENT, stopped, path):
+    async def run(self, TORRENT, stopped, path, labels):
         success = True
         force_torrentlist_update = False
+        if labels:
+            labels = labels.split(',')
         for source in TORRENT:
             source_abs_path = self.make_path_absolute(source)
             response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
                                                                           stopped=stopped,
-                                                                          path=path))
+                                                                          path=path,
+                                                                          labels=labels))
             success = success and response.success
             force_torrentlist_update = force_torrentlist_update or success
 
@@ -78,6 +85,9 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
             return candidates.fs_path(args.curarg.before_cursor,
                                       base=objects.cfg['srv.path.complete'],
                                       directories_only=True)
+        if option == '--labels':
+            curlbl = args.curarg.split(',')[-1]
+            return candidates.labels(curlbl)
 
 
 class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=CommandMeta):
