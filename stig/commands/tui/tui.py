@@ -474,25 +474,22 @@ class InteractiveCmd(mixin.placeholders, metaclass=CommandMeta):
             """Use <tab> and <shift-tab> to move focus between input fields"""
             def keypress(self, size, key):
 
+                # We do not need to check for division by zero, because this
+                # widget is always constructed non-empty (the command exits
+                # before calling _open_dialog otherwise)
                 def move_right():
-                    if self.focus_position < len(self.contents) - 1:
-                        self.focus_position += 1
-                    else:
-                        self.focus_position = 0
+                    self.focus_position = (self.focus_position + 1) % len(self.contents)
 
                 def move_left():
-                    if self.focus_position > 0:
-                        self.focus_position -= 1
-                    else:
-                        self.focus_position = len(self.contents) - 1
+                    self.focus_position = (self.focus_position - 1) % len(self.contents)
 
                 if key == 'tab':
                     move_right()
-                    while not isinstance(self.focus.base_widget, urwid.Edit):
+                    while not isinstance(self.focus.base_widget, CLIEditWidget):
                         move_right()
                 elif key == 'shift-tab':
                     move_left()
-                    while not isinstance(self.focus.base_widget, urwid.Edit):
+                    while not isinstance(self.focus.base_widget, CLIEditWidget):
                         move_left()
                 else:
                     log.debug('focus pos: %r', self.focus_position)
