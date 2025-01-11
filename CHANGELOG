@@ -1,3 +1,7 @@
+2025-01-11 0.12.12a0
+    * Prevent infinite loop in `interactive` command (Many thanks to @rsekman)
+
+
 2024-09-01 0.12.11a0
     * Improve file list performance (Many thanks to @rsekman)
 
