@@ -197,3 +197,7 @@ class StopTorrentsCmd(base.StopTorrentsCmdbase,
 class VerifyTorrentsCmd(base.VerifyTorrentsCmdbase,
                         mixin.polling_frenzy, mixin.make_request, mixin.select_torrents):
     provides = {'tui'}
+
+
+class LabelCmd(base.LabelCmd, mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
+    provides = {'tui'}

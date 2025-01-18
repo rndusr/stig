@@ -561,3 +561,64 @@ class VerifyTorrentsCmdbase(metaclass=CommandMeta):
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         return candidates.torrent_filter(args.curarg)
+
+
+class LabelCmd(metaclass=CommandMeta):
+    name = 'label'
+    provides = set()
+    category = 'torrent'
+    description = 'Manipulate torrent labels'
+    usage = ('label [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER>... <[LABEL][,LABEL...]>',)
+    examples = ('label iso,linux id=34',
+                'label -r iso,linux id=34',
+                'label -c id=34')
+    argspecs = (
+        {'names': ('LABELS',),
+         'description': ('Comma-separated list of labels to add/remove'),
+         'nargs': '?', 'default': ''},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+        {'names': ('--clear','-c'), 'action': 'store_true',
+         'description': 'Clear all labels'},
+        {'names': ('--remove','-r'), 'action': 'store_true',
+         'description': 'Remove labels rather than adding them'},
+        {'names': ('--set','-s'), 'action': 'store_true',
+         'description': 'Set labels to exactly the LABELS argument',
+         'dest': '_set'},
+        {'names': ('--quiet','-q'), 'action': 'store_true',
+         'description': 'Do not show new label(s)'},
+    )
+
+    async def run(self, LABELS, TORRENT_FILTER, _set, remove, clear, quiet):
+        if not (_set ^ remove ^ clear) and (_set or remove or clear):
+            raise CmdError('At most one of --set/s, --remove/r, --clear,-c can be present.')
+            return
+
+        if clear:
+            def handler(tfilter, labels):
+                return objects.srvapi.torrent.labels_clear(tfilter)
+        elif _set:
+            handler = objects.srvapi.torrent.labels_set
+        elif remove:
+            handler = objects.srvapi.torrent.labels_remove
+        else:
+            handler = objects.srvapi.torrent.labels_add
+
+        labels = LABELS.split(',')
+
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+
+        response = await self.make_request(handler(tfilter, labels),
+                                           polling_frenzy=True, quiet=quiet)
+        if not response.success:
+            raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        curlbl = args.curarg.split(',')[-1]
+        return candidates.labels(curlbl)
