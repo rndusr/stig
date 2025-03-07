@@ -25,7 +25,7 @@ class ClientError(Exception):
 
     # Making exceptions with the same arguments equal helps in the tests
     def __eq__(self, other):
-        return type(self) == type(other) and self.args == other.args
+        return type(self) is type(other) and self.args == other.args
 
     def __ne__(self, other):
         return not self.__eq__(other)
