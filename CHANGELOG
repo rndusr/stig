@@ -1,3 +1,7 @@
+2025-03-07 0.13.0a0
+    * Added support for labels (Many thanks to @rsekman)
+
+
 2025-01-11 0.12.12a0
     * Prevent infinite loop in `interactive` command (Many thanks to @rsekman)
 
