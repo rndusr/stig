@@ -413,6 +413,19 @@ class Tracker(ColumnBase):
 
 COLUMNS['tracker'] = Tracker
 
+class Labels(ColumnBase):
+    header = {'left': 'Labels'}
+    width = 10
+    min_width = 5
+    needed_keys = ('labels',)
+    align = 'left'
+
+    def get_value(self):
+        ls = list(self.data['labels'])
+        ls.sort()
+        return ', '.join(ls)
+
+COLUMNS['labels'] = Labels
 
 class _TimeBase(ColumnBase):
     width = 10

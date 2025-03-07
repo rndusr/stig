@@ -202,6 +202,13 @@ class _SingleFilter(Filter):
                                           needed_keys=('trackers',),
                                           aliases=('trk',),
                                           description=_desc('... domain of the announce URL of trackers')),
+        'label'           : CmpFilterSpec(value_getter=lambda t: t['labels'],
+                                          value_matcher=lambda t, op, v:
+                                              any(op(lbl, v) for lbl in t['labels']),
+                                          value_type=str,
+                                          needed_keys=('labels',),
+                                          aliases=('lbl',),
+                                          description=_desc('... labels')),
 
         'eta'             : CmpFilterSpec(value_getter=lambda t: t['timespan-eta'],
                                           value_matcher=lambda t, op, v: cmp_timestamp_or_timdelta(t['timespan-eta'], op, v),

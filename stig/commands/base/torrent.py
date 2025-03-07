@@ -32,7 +32,8 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
     description = 'Download torrents'
     usage = ('add [<OPTIONS>] <TORRENT> <TORRENT> <TORRENT> ...',)
     examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
-                'add --stopped http://example.org/something.torrent')
+                'add --stopped http://example.org/something.torrent',
+                'add --labels linux,iso https://archlinux.org/releng/releases/2022.04.05/torrent/')
     argspecs = (
         {'names': ('TORRENT',), 'nargs': '+',
          'description': 'Link or path to torrent file, magnet link or info hash'},
@@ -43,16 +44,22 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
         {'names': ('--path','-p'),
          'description': ('Custom download directory for added torrent(s) '
                          'relative to "srv.path.complete" setting')},
+
+        {'names': ('--labels','-l'),
+         'description': 'Comma-separated list of labels'},
     )
 
-    async def run(self, TORRENT, stopped, path):
+    async def run(self, TORRENT, stopped, path, labels):
         success = True
         force_torrentlist_update = False
+        if labels:
+            labels = labels.split(',')
         for source in TORRENT:
             source_abs_path = self.make_path_absolute(source)
             response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
                                                                           stopped=stopped,
-                                                                          path=path))
+                                                                          path=path,
+                                                                          labels=labels))
             success = success and response.success
             force_torrentlist_update = force_torrentlist_update or success
 
@@ -78,6 +85,9 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
             return candidates.fs_path(args.curarg.before_cursor,
                                       base=objects.cfg['srv.path.complete'],
                                       directories_only=True)
+        if option == '--labels':
+            curlbl = args.curarg.split(',')[-1]
+            return candidates.labels(curlbl)
 
 
 class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=CommandMeta):
@@ -551,3 +561,64 @@ class VerifyTorrentsCmdbase(metaclass=CommandMeta):
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         return candidates.torrent_filter(args.curarg)
+
+
+class LabelCmd(metaclass=CommandMeta):
+    name = 'label'
+    provides = set()
+    category = 'torrent'
+    description = 'Manipulate torrent labels'
+    usage = ('label [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER>... <[LABEL][,LABEL...]>',)
+    examples = ('label iso,linux id=34',
+                'label -r iso,linux id=34',
+                'label -c id=34')
+    argspecs = (
+        {'names': ('LABELS',),
+         'description': ('Comma-separated list of labels to add/remove'),
+         'nargs': '?', 'default': ''},
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+        {'names': ('--clear','-c'), 'action': 'store_true',
+         'description': 'Clear all labels'},
+        {'names': ('--remove','-r'), 'action': 'store_true',
+         'description': 'Remove labels rather than adding them'},
+        {'names': ('--set','-s'), 'action': 'store_true',
+         'description': 'Set labels to exactly the LABELS argument',
+         'dest': '_set'},
+        {'names': ('--quiet','-q'), 'action': 'store_true',
+         'description': 'Do not show new label(s)'},
+    )
+
+    async def run(self, LABELS, TORRENT_FILTER, _set, remove, clear, quiet):
+        if not (_set ^ remove ^ clear) and (_set or remove or clear):
+            raise CmdError('At most one of --set/s, --remove/r, --clear,-c can be present.')
+            return
+
+        if clear:
+            def handler(tfilter, labels):
+                return objects.srvapi.torrent.labels_clear(tfilter)
+        elif _set:
+            handler = objects.srvapi.torrent.labels_set
+        elif remove:
+            handler = objects.srvapi.torrent.labels_remove
+        else:
+            handler = objects.srvapi.torrent.labels_add
+
+        labels = LABELS.split(',')
+
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+
+        response = await self.make_request(handler(tfilter, labels),
+                                           polling_frenzy=True, quiet=quiet)
+        if not response.success:
+            raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        curlbl = args.curarg.split(',')[-1]
+        return candidates.labels(curlbl)

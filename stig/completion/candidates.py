@@ -371,6 +371,17 @@ async def setting_filter(curarg, filter_names=True):
                          objects_getter=objects_getter,
                          items_getter=None,
                          filter_names=filter_names)
+async def labels(curarg):
+    """All labels"""
+    labels = set()
+    if curarg != "":
+        response = await objects.srvapi.torrent.torrents(None, ('labels', ), from_cache=True)
+        [
+            [labels.add(l) for l in t["labels"] if l.startswith(curarg)]
+            for t in response.torrents
+        ]
+    return Candidates(list(labels), label=curarg, curarg_seps=',')
+
 
 async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_names):
     """
