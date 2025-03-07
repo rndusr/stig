@@ -380,7 +380,7 @@ async def labels(curarg):
             [labels.add(l) for l in t["labels"] if l.startswith(curarg)]
             for t in response.torrents
         ]
-    return Candidates(list(labels), label=curarg,curarg_seps=',')
+    return Candidates(list(labels), label=curarg, curarg_seps=',')
 
 
 async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_names):

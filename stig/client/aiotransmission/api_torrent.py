@@ -13,8 +13,8 @@ import base64
 import os
 import time
 from collections import abc
-from string import hexdigits as HEXDIGITS
 from enum import Enum
+from string import hexdigits as HEXDIGITS
 
 from natsort import humansorted
 
@@ -1150,7 +1150,6 @@ class TorrentAPI(TorrentAPIBase):
             msgs:     List of info messages
             errors:   List of error messages
         """
-
         msgs = []
         args = {'labels': []}
         response = await self._torrent_action(self.rpc.torrent_set, torrents, method_args=args)
