@@ -54,7 +54,7 @@ COLUMNS['marked'] = Marked
 
 class Id(ColumnBase):
     header = {'left': 'ID'}
-    width = 4
+    width = 6
     needed_keys = ('id',)
     align = 'right'
 
