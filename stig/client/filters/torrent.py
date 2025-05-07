@@ -94,9 +94,10 @@ class _SingleFilter(Filter):
                                           needed_keys=('id',),
                                           description=_desc('... torrent ID')),
 
-        'hash'            : CmpFilterSpec(value_getter=lambda t: t['hash'],
+        'infohash'        : CmpFilterSpec(value_getter=lambda t: t['hash'],
                                           value_type=TorrentBase.TYPES['hash'],
                                           needed_keys=('hash',),
+                                          aliases=('hash',),
                                           description=_desc('... torrent SHA1 hash')),
 
         'name'            : CmpFilterSpec(value_getter=lambda t: t['name'],
