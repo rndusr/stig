@@ -22,6 +22,7 @@ log = make_logger(__name__)
 COLUMNS = {}
 ALIASES = {'mark'     : 'marked',
            'n'        : 'name',
+           'hash'     : 'infohash',
            'dir'      : 'path',
            'st'       : 'status',
            'err'      : 'error',
