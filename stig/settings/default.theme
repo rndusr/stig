@@ -120,6 +120,11 @@ torrentlist.id.header                              $id_fg,underline on $tlist_bg
 torrentlist.id.unfocused                           $id_fg           on $tlist_bg.uf
 torrentlist.id.focused                             $id_fg           on $tlist_bg.f
 
+$id_fg = white
+torrentlist.infohash.header                        $id_fg,underline on $tlist_bg.uf
+torrentlist.infohash.unfocused                     $id_fg           on $tlist_bg.uf
+torrentlist.infohash.focused                       $id_fg           on $tlist_bg.f
+
 $downloaded_fg = dark cyan
 $downloaded_hl = light cyan
 torrentlist.downloaded.header                      $downloaded_fg,underline on $tlist_bg.uf
