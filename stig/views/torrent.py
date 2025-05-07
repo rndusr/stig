@@ -64,6 +64,18 @@ class Id(ColumnBase):
 COLUMNS['id'] = Id
 
 
+class Infohash(ColumnBase):
+    header = {'left': 'Infohash'}
+    width = 40
+    needed_keys = ('hash',)
+    align = 'right'
+
+    def get_value(self):
+        return self.data['hash']
+
+COLUMNS['infohash'] = Infohash
+
+
 class Name(ColumnBase):
     header = {'left': 'Name'}
     width = None

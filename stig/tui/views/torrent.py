@@ -37,6 +37,15 @@ class Id(_COLUMNS['id'], CellWidgetBase):
 TUICOLUMNS['id'] = Id
 
 
+class Infohash(_COLUMNS['infohash'], CellWidgetBase):
+    style = Style(prefix='torrentlist.infohash', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['infohash'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['infohash'] = Infohash
+
+
 class Name(_COLUMNS['name'], CellWidgetBase):
     width = ('weight', 100)
     style = Style(prefix='torrentlist.name', focusable=True, extras=('header',),
