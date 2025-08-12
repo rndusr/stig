@@ -42,6 +42,7 @@ setup(
         'pyxdg',
         'blinker',
         'natsort',
+        'wcwidth',
     ],
     extras_require = {
         'setproctitle': ['setproctitle'],

@@ -10,6 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import os
+import wcwidth
 from unicodedata import east_asian_width as _east_asian_width
 from unicodedata import normalize as _normalize_unicode
 
@@ -34,9 +35,8 @@ def striplines(lines):
 
 
 def strwidth(string):
-    """Return displayed width of `string`, considering wide characters"""
-    return len(string) + sum(1 for char in string
-                             if _east_asian_width(char) in 'FW')
+    """Return displayed width of `string`, considering wide and zero-width characters"""
+    return wcwidth.wcswidth(string)
 
 
 def strcrop(string, width, tail=None):
