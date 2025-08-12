@@ -43,6 +43,7 @@ setup(
         'blinker',
         'natsort',
         'bidict',
+        'wcwidth',
     ],
     extras_require = {
         'setproctitle': ['setproctitle'],
