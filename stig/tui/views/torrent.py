@@ -10,9 +10,10 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import urwid
+from wcwidth import wcswidth
 
 from ... import client
-from ...utils.string import normalize_unicode
+from ...utils.string import wc_ljust
 from ...views.torrent import COLUMNS as _COLUMNS
 from ..table import ColumnHeaderWidget
 from .base import CellWidgetBase, Style
@@ -101,19 +102,22 @@ class Name(_COLUMNS['name'], CellWidgetBase):
     def render(self, size, focus=False):
         (maxcol,) = size
         name, mode, progress = self.status
-        name = normalize_unicode(name)
-        name = name[:maxcol].ljust(maxcol, ' ')  # Expand/Shrink name to full width
+        # Expand name to full width
+        name = wc_ljust(name, maxcol, ' ')
         if progress == 100:
             attrs = self.style.attrs(mode + '.complete', focused=focus)
             self.text.set_text((attrs, name))
         else:
-            completed_col = int(maxcol * progress / 100)  # Width of first part of progress bar
-            name1 = name[:completed_col]
-            name2 = name[completed_col:]
+            # Calculate width of left/underlined part of progress bar
+            split_index = int(maxcol * progress / 100)
+            # Consider characters with zero-width (e.g. U+200B ZERO WIDTH SPACE) and double-width
+            # (e.g. 中)
+            split_index = split_index + (len(name[:split_index]) - wcswidth(name[:split_index]))
+            name1 = name[:split_index]
+            name2 = name[split_index:]
             attrs1 = self.style.attrs(mode + '.progress1', focused=focus)
             attrs2 = self.style.attrs(mode + '.progress2', focused=focus)
-            self.text.set_text([(attrs1, name1),
-                                (attrs2, name2)])
+            self.text.set_text([(attrs1, name1), (attrs2, name2)])
         return super().render(size, focus)
 
     def get_mode(self):

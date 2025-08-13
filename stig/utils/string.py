@@ -10,7 +10,7 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import os
-import wcwidth
+from wcwidth import wcswidth
 from unicodedata import east_asian_width as _east_asian_width
 from unicodedata import normalize as _normalize_unicode
 
@@ -34,9 +34,15 @@ def striplines(lines):
     yield from lines
 
 
+def wc_ljust(text, length, padding=' '):
+    """Same as str.ljust() but consider zero-width and double-width characters"""
+    return text + padding * max(0, (length - wcswidth(text)))
+
+
 def strwidth(string):
     """Return displayed width of `string`, considering wide and zero-width characters"""
-    return wcwidth.wcswidth(string)
+    # wcswidth() returns -1 for control characters (e.g. \n).
+    return max(0, wcswidth(string))
 
 
 def strcrop(string, width, tail=None):
