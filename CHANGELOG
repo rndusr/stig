@@ -1,5 +1,6 @@
-????-?? 0.??.??
+????-?? 0.13.1a0
     * Added "infohash" column
+    * Fixed some display issues with zero-width and double-width characters in torrent name
 
 
 2025-03-07 0.13.0a0
