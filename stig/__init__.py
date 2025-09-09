@@ -9,7 +9,7 @@
 # GNU General Public License for more details
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
-__version__ = '0.13.0a0'
+__version__ = '0.14.0a0'
 __appname__ = __name__.split('.')[0]
 __url__ = 'https://github.com/rndusr/stig'
 
