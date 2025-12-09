@@ -31,8 +31,7 @@ class HelpCmd(base.HelpCmdbase):
                     await objects.srvapi.settings.update()
                 except objects.srvapi.ClientError as e:
                     self.error(e)
-                finally:
-                    break
+                break
         return super().run(TOPIC)
 
     def display_help(self, topics, lines):
