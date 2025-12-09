@@ -1,3 +1,7 @@
+2025-12-09 0.14.1a0
+    * Fix for Python >= 3.14: RuntimeError: There is no current event loop in thread 'MainThread'.
+
+
 2025-09-09 0.14.0a0
     * Added "infohash" column
     * Fixed some display issues with zero-width and double-width characters in torrent name
