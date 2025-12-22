@@ -105,7 +105,7 @@ class MoveTorrentsCmd(base.MoveTorrentsCmdbase,
         """Complete positional arguments"""
         def dest_path_candidates(curarg):
             return candidates.fs_path(curarg.before_cursor,
-                                      base=objects.cfg['srv.path.complete'],
+                                      base=objects.pathtranslator.to_local(objects.cfg['srv.path.complete']),
                                       directories_only=True,
                                       expand_home_directory=False)
 
