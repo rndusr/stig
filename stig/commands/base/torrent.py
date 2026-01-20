@@ -89,8 +89,7 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
                                       base=objects.cfg['srv.path.complete'],
                                       directories_only=True)
         if option == '--labels':
-            curlbl = args.curarg.split(',')[-1]
-            return candidates.labels(curlbl)
+            return candidates.labels()
 
 
 class TorrentDetailsCmdbase(mixin.get_single_torrent, metaclass=CommandMeta):
@@ -625,4 +624,4 @@ class LabelCmd(metaclass=CommandMeta):
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         curlbl = args.curarg.split(',')[-1]
-        return candidates.labels(curlbl)
+        return candidates.labels()
