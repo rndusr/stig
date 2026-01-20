@@ -105,9 +105,6 @@ class Char(str):
         else:
             return NotImplemented
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def __repr__(self):
         kwargs = {}
         if self._string: kwargs['string'] = self._string
@@ -930,9 +927,6 @@ class Arg(str):
         if not isinstance(other, type(self)):
             return NotImplemented
         return super().__eq__(other) and self.curpos == other.curpos
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def __hash__(self):
         return super().__hash__()
