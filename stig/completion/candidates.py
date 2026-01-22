@@ -375,12 +375,13 @@ async def setting_filter(curarg, filter_names=True):
 
 async def labels():
     """All labels"""
-    labels = set()
     response = await objects.srvapi.torrent.torrents(None, ('labels', ), from_cache=True)
-    [
-        [labels.add(l) for l in t["labels"]] for t in response.torrents
-    ]
-    return Candidates(list(labels), label="Labels", curarg_seps=',')
+    labels = {
+        label
+        for t in response.torrents
+        for label in t['labels']
+    }
+    return Candidates(labels, label="Labels", curarg_seps=',')
 
 
 async def _filter(curarg, filter_cls_name, objects_getter, items_getter, filter_names):
