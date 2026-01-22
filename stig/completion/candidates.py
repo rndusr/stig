@@ -371,6 +371,8 @@ async def setting_filter(curarg, filter_names=True):
                          objects_getter=objects_getter,
                          items_getter=None,
                          filter_names=filter_names)
+
+
 async def labels():
     """All labels"""
     labels = set()
