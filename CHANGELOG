@@ -1,3 +1,7 @@
+2026-01-24 0.14.2a0
+    * Fix for Python >= 3.14: TypeError: NotImplemented should not be used in a boolean context
+
+
 2025-12-09 0.14.1a0
     * Fix for Python >= 3.14: RuntimeError: There is no current event loop in thread 'MainThread'.
     * Fix for Python >= 3.14: SyntaxWarning: 'break' in a 'finally' block
