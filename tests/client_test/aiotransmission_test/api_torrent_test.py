@@ -15,8 +15,11 @@ assert not os.path.exists(rsrc.TORRENTFILE_NOEXIST)
 
 
 class TorrentAPITestCase(unittest.IsolatedAsyncioTestCase):
+    # Whether the fake daemon speaks JSON-RPC 2.0 (i.e. is Transmission >=4.1.0)
+    jsonrpc = False
+
     async def asyncSetUp(self):
-        self.daemon = rsrc.FakeTransmissionDaemon()
+        self.daemon = rsrc.FakeTransmissionDaemon(jsonrpc=self.jsonrpc)
         await self.daemon.start()
         self.rpc = TransmissionRPC(self.daemon.host, self.daemon.port)
         self.api = TorrentAPI(self.rpc)
@@ -349,3 +352,91 @@ class TestTorrentBandwidthLimit(TorrentAPITestCase):
         )
         await self.api.adjust_limit_rate_up(TorrentFilter('id=1|id=2'), -50e3)
         self.daemon.requests == ()  # Assert no requests were sent
+
+
+class TestSequentialDownload(TorrentAPITestCase):
+    jsonrpc = True
+
+    def assert_request(self, method, params):
+        """Assert that a request with `method` and exactly `params` was sent"""
+        sent = tuple((rq.get('method'), rq.get('params')) for rq in self.daemon.requests)
+        self.assertIn((method, params), sent)
+
+    async def test_enable(self):
+        self.daemon.response = rsrc.response_torrents_jsonrpc(
+            {'id': 1, 'name': 'Foo'},
+            {'id': 2, 'name': 'Bar'},
+        )
+        response = await self.api.set_sequential(TorrentFilter('id=1|id=2'), True)
+        self.assert_request('torrent_set', {'ids': [1, 2],
+                                            'sequential_download': True,
+                                            'sequential_download_from_piece': 0})
+        self.assertEqual(response.success, True)
+        self.assertEqual(response.errors, ())
+        self.assertIn('Foo: Sequential download from piece #0', response.msgs)
+        self.assertIn('Bar: Sequential download from piece #0', response.msgs)
+
+    async def test_enable_from_piece(self):
+        self.daemon.response = rsrc.response_torrents_jsonrpc({'id': 1, 'name': 'Foo'})
+        response = await self.api.set_sequential(TorrentFilter('id=1'), True, 1200)
+        self.assert_request('torrent_set', {'ids': [1],
+                                            'sequential_download': True,
+                                            'sequential_download_from_piece': 1200})
+        self.assertEqual(response.success, True)
+        self.assertIn('Foo: Sequential download from piece #1200', response.msgs)
+
+    async def test_disable_leaves_starting_piece_alone(self):
+        self.daemon.response = rsrc.response_torrents_jsonrpc({'id': 1, 'name': 'Foo'})
+        response = await self.api.set_sequential(TorrentFilter('id=1'), False, 1200)
+        self.assert_request('torrent_set', {'ids': [1], 'sequential_download': False})
+        self.assertEqual(response.success, True)
+        self.assertIn('Foo: Non-sequential download', response.msgs)
+
+    async def test_toggle_sends_one_request_per_mode(self):
+        self.daemon.response = rsrc.response_torrents_jsonrpc(
+            {'id': 1, 'name': 'Foo', 'sequential_download': True,
+             'sequential_download_from_piece': 0},
+            {'id': 2, 'name': 'Bar', 'sequential_download': False,
+             'sequential_download_from_piece': 0},
+            {'id': 3, 'name': 'Baz', 'sequential_download': True,
+             'sequential_download_from_piece': 0},
+        )
+        response = await self.api.toggle_sequential(TorrentFilter('id=1|id=2|id=3'), 500)
+        self.assert_request('torrent_set', {'ids': [2],
+                                            'sequential_download': True,
+                                            'sequential_download_from_piece': 500})
+        self.assert_request('torrent_set', {'ids': [1, 3], 'sequential_download': False})
+        self.assertEqual(response.success, True)
+
+    async def test_torrent_get_asks_for_sequential_fields(self):
+        self.daemon.response = rsrc.response_torrents_jsonrpc({'id': 1, 'name': 'Foo'})
+        await self.api.torrents(TorrentFilter('id=1'),
+                                keys=('sequential', 'sequential-from-piece'))
+        fields = set()
+        for rq in self.daemon.requests:
+            if rq.get('method') == 'torrent_get':
+                fields.update(rq['params']['fields'])
+        self.assertIn('sequential_download', fields)
+        self.assertIn('sequential_download_from_piece', fields)
+
+
+class TestSequentialDownloadUnsupported(TorrentAPITestCase):
+    # A daemon that only speaks the old protocol is older than 4.1.0
+    jsonrpc = False
+
+    async def test_set_sequential(self):
+        response = await self.api.set_sequential(TorrentFilter('id=1'), True)
+        self.assertEqual(response.success, False)
+        self.assertEqual(response.torrents, ())
+        self.assertEqual(response.errors, ('Daemon does not support sequential download (needs Transmission 4.1.0 or newer)',))
+        # Only the requests that established the connection were sent
+        self.assertNotIn('torrent-set',
+                         tuple(rq.get('method') for rq in self.daemon.requests))
+
+    async def test_toggle_sequential(self):
+        response = await self.api.toggle_sequential(TorrentFilter('id=1'))
+        self.assertEqual(response.success, False)
+        self.assertEqual(response.errors, ('Daemon does not support sequential download (needs Transmission 4.1.0 or newer)',))
+        # Only the requests that established the connection were sent
+        self.assertNotIn('torrent-set',
+                         tuple(rq.get('method') for rq in self.daemon.requests))

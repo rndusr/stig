@@ -43,6 +43,8 @@ class TorrentBase(abc.Mapping):
         'creator'                      : utils.SmartCmpStr,
         'magnetlink'                   : str,
         'count-pieces'                 : utils.Int,
+        'sequential'                   : bool,
+        'sequential-from-piece'        : utils.Int,
 
         '%downloaded'                  : utils.Percent,
         '%uploaded'                    : utils.Percent,

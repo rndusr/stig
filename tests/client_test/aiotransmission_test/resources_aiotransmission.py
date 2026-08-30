@@ -147,6 +147,10 @@ def response_torrents(*torrents):
     return {'result': 'success',
             'arguments': {'torrents': tlist}}
 
+def response_torrents_jsonrpc(*torrents):
+    return {'jsonrpc': '2.0',
+            'result': response_torrents(*torrents)['arguments']}
+
 
 class FakeTransmissionDaemon:
     def __init__(self, jsonrpc=False):

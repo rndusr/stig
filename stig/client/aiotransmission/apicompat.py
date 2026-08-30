@@ -190,6 +190,11 @@ _RPC_KEYS = (
     ('seed_ratio_limited',                   'seedRatioLimited'),
     ('seed_ratio_mode',                      'seedRatioMode'),
     ('seeder_count',                         'seederCount'),
+    # Sequential downloading was added in 4.1.0, so these never had a legacy
+    # name.  They are listed anyway to keep this table the one place to look up
+    # any RPC string stig uses.
+    ('sequential_download',                  'sequential_download'),
+    ('sequential_download_from_piece',       'sequential_download_from_piece'),
     ('session_close',                        'session-close'),
     ('session_count',                        'sessionCount'),
     ('session_get',                          'session-get'),

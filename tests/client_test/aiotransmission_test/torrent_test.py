@@ -73,6 +73,22 @@ class TestTorrent(unittest.TestCase):
         self.assertEqual(set(t), {'id', 'name', 'rate-down', 'hash',
                                   'time-created', '%verified'})
 
+class TestSequentialDownload(unittest.TestCase):
+    def test_values_from_daemon(self):
+        t = torrent.Torrent({'id': 1, 'name': 'Fake torrent',
+                             'sequential_download': True,
+                             'sequential_download_from_piece': 1200})
+        self.assertEqual(t['sequential'], True)
+        self.assertEqual(t['sequential-from-piece'], 1200)
+
+    def test_daemon_does_not_support_sequential_download(self):
+        # Daemons older than 4.1.0 drop these fields from 'torrent-get'
+        # requests without complaining
+        t = torrent.Torrent({'id': 1, 'name': 'Fake torrent'})
+        self.assertEqual(t['sequential'], False)
+        self.assertEqual(t['sequential-from-piece'], 0)
+
+
 class TestTorrentFileTree(unittest.TestCase):
     def test_update(self):
         raw = {'id': 1, 'name': 'Fake torrent', 'downloadDir': '/a/path',
