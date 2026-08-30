@@ -25,6 +25,7 @@ ALIASES = {'mark'     : 'marked',
            'hash'     : 'infohash',
            'dir'      : 'path',
            'st'       : 'status',
+           'seq'      : 'sequential',
            'err'      : 'error',
            'up'       : 'uploaded',
            'dn'       : 'downloaded',
@@ -169,6 +170,21 @@ class Status(ColumnBase):
         return self.data['status'][0]
 
 COLUMNS['status'] = Status
+
+
+class Sequential(ColumnBase):
+    header = {'left': 'Seq'}
+    width = 6
+    min_width = 6
+    needed_keys = ('sequential', 'sequential-from-piece')
+
+    def get_value(self):
+        if not self.data['sequential']:
+            return 'no'
+        from_piece = self.data['sequential-from-piece']
+        return 'yes' if from_piece == 0 else f'#{from_piece}'
+
+COLUMNS['sequential'] = Sequential
 
 
 class Error(ColumnBase):

@@ -114,6 +114,14 @@ class TestTorrentFilter(unittest.TestCase, HelpersMixin):
                                test_cases=(('{name}', (3,)),
                                            ('!{name}', (1, 2, 4))))
 
+    def test_sequential(self):
+        self.check_bool_filter(TorrentFilter,
+                               filter_names=('sequential', 'seq'),
+                               items=({'id': 1, 'sequential': True},
+                                      {'id': 2, 'sequential': False}),
+                               test_cases=(('{name}', (1,)),
+                                           ('!{name}', (2,))))
+
     def test_private(self):
         self.check_bool_filter(TorrentFilter,
                                filter_names=('private', 'prv'),

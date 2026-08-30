@@ -164,6 +164,15 @@ class Status(_COLUMNS['status'], CellWidgetBase):
 TUICOLUMNS['status'] = Status
 
 
+class Sequential(_COLUMNS['sequential'], CellWidgetBase):
+    style = Style(prefix='torrentlist.sequential', focusable=True,
+                  extras=('header',))
+    header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['sequential'].header),
+                           style.attrs('header'))
+
+TUICOLUMNS['sequential'] = Sequential
+
+
 class Error(_COLUMNS['error'], CellWidgetBase):
     style = Style(prefix='torrentlist.error', focusable=True,
                   extras=('header',))

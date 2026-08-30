@@ -69,6 +69,12 @@ class TestTorrentSorter(TestSorterBase):
                  {'id': 3, 'name': 'baz', 'status': 'b'}]
         self.assert_sorted_ids('status', items, (1, 3, 2))
 
+    def test_sequential(self):
+        items = [{'id': 1, 'name': 'foo', 'sequential': True, 'sequential-from-piece': 500},
+                 {'id': 2, 'name': 'bar', 'sequential': False, 'sequential-from-piece': 0},
+                 {'id': 3, 'name': 'baz', 'sequential': True, 'sequential-from-piece': 100}]
+        self.assert_sorted_ids('sequential', items, (2, 3, 1))
+
     def test_error(self):
         items = [{'id': 1, 'name': 'foo', 'error': 'no'},
                  {'id': 2, 'name': 'bar', 'error': 'nah'},
