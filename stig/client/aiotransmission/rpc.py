@@ -19,8 +19,10 @@ from blinker import Signal
 
 from ..errors import AuthError, ClientError, ConnectionError, RPCError, TimeoutError
 from ..utils import URL
+from . import apicompat
 
 from ...logging import make_logger  # isort:skip
+
 log = make_logger(__name__)
 
 
@@ -30,7 +32,133 @@ CSRF_HEADER = 'X-Transmission-Session-Id'
 TIMEOUT = 10
 
 
-class TransmissionRPC():
+class RPCProtocol:
+    """
+    One of the two RPC protocols spoken by the Transmission daemon
+
+    Subclasses translate method calls into requests, unpack responses and turn
+    errors reported by the daemon into RPCError exceptions.
+    """
+
+    name = NotImplemented
+
+    def encode(self, method, arguments):
+        """
+        Return request for `method`
+
+        method: Any method from the RPC specs with every '-' replaced with '_'
+        arguments: Dictionary of arguments for `method`
+        """
+        raise NotImplementedError()
+
+    def recognizes(self, answer):
+        """Whether `answer` is a response of this protocol"""
+        raise NotImplementedError()
+
+    def decode(self, method, answer):
+        """
+        Return the interesting part of `answer`
+
+        If applicable, this is the list of torrents or the arguments of the
+        response, otherwise the whole response.
+
+        Raises RPCError if the daemon reported an error.
+        """
+        raise NotImplementedError()
+
+    def __repr__(self):
+        t = type(self).__name__
+        return f'<{t} {self.name}>'
+
+
+class LegacyRPC(RPCProtocol):
+    """
+    Transmission's bespoke RPC protocol
+
+    This is the only protocol spoken by daemons older than 4.1.0, where it is
+    deprecated in favour of JSON-RPC 2.0.
+    """
+
+    name = 'RPC'
+
+    def encode(self, method, arguments):
+        return {'method': method.replace('_', '-'), 'arguments': arguments}
+
+    def recognizes(self, answer):
+        return isinstance(answer, dict) and 'result' in answer
+
+    def decode(self, method, answer):
+        if answer['result'] != 'success':
+            raise RPCError(answer['result'].capitalize())
+        elif 'arguments' in answer:
+            arguments = answer['arguments']
+            if 'torrents' in arguments:
+                return arguments['torrents']
+            else:
+                return arguments
+        else:
+            return answer
+
+
+class JSONRPC(RPCProtocol):
+    """
+    JSON-RPC 2.0 protocol
+
+    This protocol is only spoken by daemons since 4.1.0, which also renamed all
+    RPC strings to snake_case.  Requests and responses are translated by the
+    apicompat module so the rest of stig can keep using the old strings.
+    """
+
+    name = 'JSON-RPC 2.0'
+    version = '2.0'
+
+    def __init__(self):
+        self._prev_id = 0
+
+    def encode(self, method, arguments):
+        # Requests are sent one at a time (see TransmissionRPC._request_lock),
+        # so a simple counter is enough to match responses to requests.
+        self._prev_id += 1
+        return {
+            'jsonrpc': self.version,
+            'method': method,
+            'params': apicompat.request_to_current(method, arguments),
+            'id': self._prev_id,
+        }
+
+    def recognizes(self, answer):
+        return isinstance(answer, dict) and answer.get('jsonrpc') == self.version
+
+    def decode(self, method, answer):
+        if 'error' in answer:
+            raise RPCError(self._error_message(answer['error']))
+        else:
+            result = apicompat.response_to_legacy(method, answer.get('result', {}))
+            if isinstance(result, dict) and 'torrents' in result:
+                return result['torrents']
+            else:
+                return result
+
+    @staticmethod
+    def _error_message(error):
+        if not isinstance(error, dict):
+            return str(error)
+        message = str(error.get('message', 'Unknown error'))
+        data = error.get('data')
+        # The daemon may explain itself in more detail than the generic message
+        # of the error code does.
+        details = data.get('error_string') if isinstance(data, dict) else None
+        if details:
+            return f'{message}: {details}'
+        else:
+            return message
+
+
+# Preferred protocol first
+PROTOCOLS = (JSONRPC, LegacyRPC)
+
+
+class TransmissionRPC:
     """
     Low-level AsyncIO Transmission RPC communication
 
@@ -58,6 +186,7 @@ class TransmissionRPC():
         self._connection_tested = False
         self._connection_exception = None
         self._timeout = TIMEOUT
+        self._protocol = None
         self._version = None
         self._rpcversion = None
         self._rpcversionmin = None
@@ -88,6 +217,11 @@ class TransmissionRPC():
             else:
                 log.debug('Registering %r for %r event', callback, signal)
                 sig.connect(callback, weak=autoremove)
+
+    @property
+    def protocol(self):
+        """Name of the RPC protocol we're talking to the daemon or None if not connected"""
+        return self._protocol.name if self._protocol is not None else None
 
     @property
     def version(self):
@@ -335,6 +469,7 @@ class TransmissionRPC():
             await self._enabled_event.wait()
 
             import aiohttp
+
             session_args = {}
             if self.user or self.password:
                 session_args['auth'] = aiohttp.BasicAuth(self.user, self.password,
@@ -344,11 +479,10 @@ class TransmissionRPC():
                 session_args['connector_owner'] = False
             self._session = aiohttp.ClientSession(**session_args)
 
-            # Check if connection works
+            # Check if connection works and find out which protocol to speak
             log.debug('Testing connection to %s', self.url)
             try:
-                test_request = json.dumps({'method':'session-get'})
-                info = await self._send_request(test_request)
+                protocol, info = await self._negotiate_protocol()
             except ClientError as e:
                 self._connection_exception = e
                 log.debug('Caught during connection test: %r', e)
@@ -356,6 +490,7 @@ class TransmissionRPC():
                 self._on_error.send(self, error=e)
                 raise
             else:
+                self._protocol = protocol
                 self._version = info['version']
                 self._rpcversion = info['rpc-version']
                 self._rpcversionmin = info['rpc-version-minimum']
@@ -375,13 +510,38 @@ class TransmissionRPC():
         if self.connected:
             await self._reset()
             log.debug('Disconnecting from %s (%s)', self.url,
-                      reason if reason is not None else 'for no reason')
+                reason if reason is not None else 'for no reason',)
             self._on_disconnected.send(self)
+
+    async def _negotiate_protocol(self):
+        """
+        Find out which RPC protocol the daemon speaks
+
+        Return (protocol, session info) for the most modern protocol the daemon
+        understands.
+
+        Raises ClientError.
+        """
+        for cls in PROTOCOLS:
+            protocol = cls()
+            answer = await self._post_request(protocol, 'session_get', {})
+            if protocol.recognizes(answer):
+                log.debug('Daemon at %s speaks %s', self.url, protocol.name)
+                return protocol, protocol.decode('session_get', answer)
+            else:
+                log.debug(
+                    'Daemon at %s does not speak %s: %r',
+                    self.url,
+                    protocol.name,
+                    answer,
+                )
+        raise RPCError(f'Not a Transmission daemon: {self.url}')
 
     async def _reset(self):
         if self._session is not None:
             await self._session.close()
         self._session = None
+        self._protocol = None
         self._version = None
         self._rpcversion = None
         self._rpcversionmin = None
@@ -415,36 +575,42 @@ class TransmissionRPC():
                 else:
                     return answer
 
-    async def _send_request(self, post_data):
+    async def _post_request(self, protocol, method, arguments):
         """
-        Send RPC POST request to daemon
+        Send `method` as an RPC POST request and return the raw response
 
-        post_data: Any valid RPC request as JSON string
-
-        If applicable, returns response['arguments']['torrents'] or
-        response['arguments'], otherwise response.
+        protocol: RPCProtocol instance that encodes the request
+        method: Any method from the RPC specs with every '-' replaced with '_'
+        arguments: Dictionary of arguments for `method`
 
         Raises ClientError.
         """
+        request = protocol.encode(method, arguments)
+        try:
+            post_data = json.dumps(request)
+        except Exception as e:
+            raise RuntimeError(f'Invalid JSON data: {e}: {request:r}') from None
         # NOTE #163: Letting asyncio.CancelledError bubble up seems to fix the issue that
         #            causes empty torrent lists in new tabs until the next poll iteration.
         #            But I've seen this error pop up in the TUI log: "Unclosed client
         #            session client_session: <aiohttp.client.ClientSession object at
         #            0x7f35d98d1be0>" This may or may not be related.
         import aiohttp
+
         try:
-            from aiohttp_socks import ProxyConnectionError, ProxyError, ProxyTimeoutError
+            from aiohttp_socks import  ProxyConnectionError, ProxyError, ProxyTimeoutError
         except ImportError:
             class ProxyError(Exception): pass
             class ProxyConnectionError(Exception): pass
             class ProxyTimeoutError(Exception): pass
+
         try:
             answer = await self._post(post_data)
         except aiohttp.ClientError as e:
             log.debug('Caught during POST request: %r', e)
             raise ConnectionError(self.url)
 
-        except (ProxyError,ProxyConnectionError) as e:
+        except (ProxyError, ProxyConnectionError) as e:
             log.debug('Caught during POST request: %r', e)
             raise ConnectionError(self.proxy)
 
@@ -457,15 +623,25 @@ class TransmissionRPC():
             raise TimeoutError(self.timeout, self.proxy)
 
         else:
-            if answer['result'] != 'success':
-                raise RPCError(answer['result'].capitalize())
-            else:
-                if 'arguments' in answer:
-                    if 'torrents' in answer['arguments']:
-                        return answer['arguments']['torrents']
-                    else:
-                        return answer['arguments']
-                return answer
+            return answer
+
+    async def _send_request(self, method, arguments):
+        """
+        Send `method` as an RPC POST request and unpack the response
+
+        method: Any method from the RPC specs with every '-' replaced with '_'
+        arguments: Dictionary of arguments for `method`
+
+        If applicable, returns the list of torrents or the arguments of the
+        response, otherwise the whole response.
+
+        Raises ClientError.
+        """
+        protocol = self._protocol
+        if protocol is None:
+            raise ConnectionError(self.url)
+        answer = await self._post_request(protocol, method, arguments)
+        return protocol.decode(method, answer)
 
     def __getattr__(self, method):
         """
@@ -480,6 +656,7 @@ class TransmissionRPC():
 
         Raises RPCError, ConnectionError, AuthError
         """
+
         async def request(arguments=None, **kwargs):
             arguments = arguments or {}
 
@@ -489,15 +666,8 @@ class TransmissionRPC():
                     await self.connect()
 
                 arguments.update(**kwargs)
-                data = {'method'    : method.replace('_', '-'),
-                        'arguments' : arguments}
                 try:
-                    rpc_request = json.dumps(data)
-                except Exception as e:
-                    raise RuntimeError('Invalid JSON data: %s: %r' % (e, data)) from None
-
-                try:
-                    return await self._send_request(rpc_request)
+                    return await self._send_request(method, arguments)
                 except ClientError as e:
                     log.debug('Caught ClientError in %r request: %r', method, e)
 
