@@ -34,7 +34,8 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
     usage = ('add [<OPTIONS>] <TORRENT> <TORRENT> <TORRENT> ...',)
     examples = ('add 72d7a3179da3de7a76b98f3782c31843e3f818ee',
                 'add --stopped http://example.org/something.torrent',
-                'add --labels linux,iso https://archlinux.org/releng/releases/2022.04.05/torrent/')
+                'add --labels linux,iso https://archlinux.org/releng/releases/2022.04.05/torrent/',
+                'add --sequential some.torrent')
     argspecs = (
         {'names': ('TORRENT',), 'nargs': '+',
          'description': 'Link or path to torrent file, magnet link or info hash'},
@@ -48,21 +49,38 @@ class AddTorrentsCmdbase(metaclass=CommandMeta):
 
         {'names': ('--labels','-l'),
          'description': 'Comma-separated list of labels'},
+
+        {'names': ('--sequential','-S'), 'action': 'store_true',
+         'description': 'Download pieces in order',
+         'default_description': 'Enabled automatically when --sequential-from-piece is given'},
+
+        {'names': ('--sequential-from-piece',), 'type': int, 'default': None,
+         'metavar': 'PIECE',
+         'description': 'Download sequentially starting at this piece; implies --sequential',
+         'default_description': '0'},
     )
 
-    async def run(self, TORRENT, stopped, path, labels):
+    async def run(self, TORRENT, stopped, path, labels, sequential, sequential_from_piece):
         success = True
         force_torrentlist_update = False
         if path:
             path = objects.pathtranslator.to_remote(path)
         if labels:
             labels = labels.split(',')
+
+        # Naming a piece to start at means sequential downloading is wanted
+        if sequential or sequential_from_piece is not None:
+            from_piece = sequential_from_piece if sequential_from_piece is not None else 0
+        else:
+            from_piece = None
+
         for source in TORRENT:
             source_abs_path = self.make_path_absolute(source)
             response = await self.make_request(objects.srvapi.torrent.add(source_abs_path,
                                                                           stopped=stopped,
                                                                           path=path,
-                                                                          labels=labels))
+                                                                          labels=labels,
+                                                                          sequential=from_piece))
             success = success and response.success
             force_torrentlist_update = force_torrentlist_update or success
 

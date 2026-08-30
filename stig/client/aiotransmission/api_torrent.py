@@ -158,7 +158,7 @@ class TorrentAPI(TorrentAPIBase):
                 return Response(success=True, path=SmartCmpPath(abs_path))
         return Response(success=True, path=SmartCmpPath(path))
 
-    async def add(self, torrent, stopped=False, path=None, labels=[]):
+    async def add(self, torrent, stopped=False, path=None, labels=[], sequential=None):
         """
         Add torrent from file, URL or hash
 
@@ -166,6 +166,8 @@ class TorrentAPI(TorrentAPIBase):
         stopped: False to start downloading immediately, True otherwise
         path:    Download directory or `None` for default directory
         labels:  List of labels
+        sequential: Piece to start sequential downloading at or `None` to let
+                    the daemon decide the piece order
 
         Return Response with the following properties:
             torrent: Torrent object with the keys 'id' and 'name' if the
@@ -178,6 +180,15 @@ class TorrentAPI(TorrentAPIBase):
         """
         torrent_str = torrent
         args = {'paused': bool(stopped), 'labels': labels}
+
+        warnings = []
+        if sequential is not None:
+            if self._daemon_supports(SEQUENTIAL_SEMVER):
+                args['sequential_download'] = True
+                args['sequential_download_from_piece'] = sequential
+            else:
+                # Adding the torrent is more important than the piece order
+                warnings.append(SEQUENTIAL_UNSUPPORTED)
 
         if path is not None:
             response = await self._abs_download_path(path)
@@ -238,6 +249,7 @@ class TorrentAPI(TorrentAPIBase):
                 info = result['torrent-added']
                 msgs = ['Added %s' % info['name']]
                 success = True
+                errors = tuple(warnings)
                 # Before RPC version 5.3.0 torrent-add did not take the
                 # labels argument, so we have to send a follow-up request.
                 if labels and not self._daemon_supports(LABELS_SEMVER):
@@ -246,7 +258,8 @@ class TorrentAPI(TorrentAPIBase):
                     if response.success:
                         msgs.append('Labeled %s with %s' % (info['name'], ', '.join(labels)))
                     else:
-                        errors = ('Could not label added torrents: %s' % response.errors,)
+                        errors = (*errors,
+                                  'Could not label added torrents: %s' % response.errors)
             else:
                 raise RuntimeError('Malformed response: %r' % (result,))
             torrent = Torrent({'id': info['id'], 'name': info['name']})

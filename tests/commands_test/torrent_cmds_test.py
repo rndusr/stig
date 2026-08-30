@@ -96,7 +96,7 @@ class TestAddTorrentsCmd(CommandTestCase):
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': None, 'sequential': None})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
@@ -109,7 +109,7 @@ class TestAddTorrentsCmd(CommandTestCase):
             errors=('Bogus torrent',),
             torrent=None)
         process = await self.execute(AddTorrentsCmd, 'some.torrent')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': None, 'sequential': None})
         self.assertEqual(process.success, False)
         self.assert_stdout()
         self.assert_stderr('add: Bogus torrent')
@@ -127,8 +127,8 @@ class TestAddTorrentsCmd(CommandTestCase):
         ]
         process = await self.execute(AddTorrentsCmd, 'some.torrent', 'another.torrent')
         self.srvapi.torrent.assert_called(2, 'add',
-                                          ('some.torrent',), {'stopped': False, 'path': None, 'labels': None},
-                                          ('another.torrent',), {'stopped': False, 'path': None, 'labels': None})
+                                          ('some.torrent',), {'stopped': False, 'path': None, 'labels': None, 'sequential': None},
+                                          ('another.torrent',), {'stopped': False, 'path': None, 'labels': None, 'sequential': None})
         self.assertEqual(process.success, False)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr('add: Something went wrong')
@@ -141,7 +141,7 @@ class TestAddTorrentsCmd(CommandTestCase):
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent', '--stopped')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None, 'labels': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None, 'labels': None, 'sequential': None})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
@@ -154,10 +154,67 @@ class TestAddTorrentsCmd(CommandTestCase):
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent', '--labels', 'torrent')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': ['torrent']})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': ['torrent'], 'sequential': None})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
+
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_option_sequential(self, _mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
+        self.srvapi.torrent.response = Response(
+            success=True,
+            msgs=('Added Some Torrent',),
+            torrent=MockTorrent(id=1, name='Some Torrent'))
+        process = await self.execute(AddTorrentsCmd, 'some.torrent', '--sequential')
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',),
+                                          {'stopped': False, 'path': None,
+                                           'labels': None, 'sequential': 0})
+        self.assertEqual(process.success, True)
+        self.assert_stderr()
+
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_option_sequential_from_piece_implies_sequential(self, _mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
+        self.srvapi.torrent.response = Response(
+            success=True,
+            msgs=('Added Some Torrent',),
+            torrent=MockTorrent(id=1, name='Some Torrent'))
+        process = await self.execute(AddTorrentsCmd, 'some.torrent',
+                                     '--sequential-from-piece', '1200')
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',),
+                                          {'stopped': False, 'path': None,
+                                           'labels': None, 'sequential': 1200})
+        self.assertEqual(process.success, True)
+        self.assert_stderr()
+
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_option_sequential_and_from_piece(self, _mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
+        self.srvapi.torrent.response = Response(
+            success=True,
+            msgs=('Added Some Torrent',),
+            torrent=MockTorrent(id=1, name='Some Torrent'))
+        await self.execute(AddTorrentsCmd, 'some.torrent', '-S',
+                           '--sequential-from-piece', '1200')
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',),
+                                          {'stopped': False, 'path': None,
+                                           'labels': None, 'sequential': 1200})
+
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_daemon_does_not_support_sequential(self, _mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
+        # The torrent is still added, the piece order just isn't honoured
+        self.srvapi.torrent.response = Response(
+            success=True,
+            msgs=('Added Some Torrent',),
+            errors=('Daemon does not support sequential download (needs Transmission 4.1.0 or newer)',),
+            torrent=MockTorrent(id=1, name='Some Torrent'))
+        process = await self.execute(AddTorrentsCmd, 'some.torrent', '--sequential')
+        self.assertEqual(process.success, True)
+        self.assert_stdout('add: Added Some Torrent')
+        self.assert_stderr(r'^add: Daemon does not support sequential download '
+                           r'\(needs Transmission 4\.1\.0 or newer\)$')
 
     @patch('stig.completion.candidates.fs_path')
     async def test_CLI_completion_candidates_for_posargs(self, mock_fs_path):

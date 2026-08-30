@@ -440,3 +440,50 @@ class TestSequentialDownloadUnsupported(TorrentAPITestCase):
         # Only the requests that established the connection were sent
         self.assertNotIn('torrent-set',
                          tuple(rq.get('method') for rq in self.daemon.requests))
+
+
+class TestAddingTorrentsSequentially(TorrentAPITestCase):
+    jsonrpc = True
+
+    async def test_add_sequential(self):
+        self.daemon.response = rsrc.response_success_jsonrpc(
+            {'torrent_added': {'id': 1,
+                               'name': 'Test Torrent',
+                               'hash_string': rsrc.TORRENTHASH}}
+        )
+        response = await self.api.add(rsrc.TORRENTFILE, sequential=1200)
+        self.assertEqual(response.success, True)
+        self.assertEqual(response.errors, ())
+        params = self.daemon.requests[-1]['params']
+        self.assertEqual(params['sequential_download'], True)
+        self.assertEqual(params['sequential_download_from_piece'], 1200)
+
+    async def test_add_without_sequential(self):
+        self.daemon.response = rsrc.response_success_jsonrpc(
+            {'torrent_added': {'id': 1,
+                               'name': 'Test Torrent',
+                               'hash_string': rsrc.TORRENTHASH}}
+        )
+        await self.api.add(rsrc.TORRENTFILE)
+        params = self.daemon.requests[-1]['params']
+        self.assertNotIn('sequential_download', params)
+        self.assertNotIn('sequential_download_from_piece', params)
+
+
+class TestAddingTorrentsSequentiallyUnsupported(TorrentAPITestCase):
+    jsonrpc = False
+
+    async def test_torrent_is_added_with_a_warning(self):
+        self.daemon.response = rsrc.response_success(
+            {'torrent-added': {'id': 1,
+                               'name': 'Test Torrent',
+                               'hashString': rsrc.TORRENTHASH}}
+        )
+        response = await self.api.add(rsrc.TORRENTFILE, sequential=0)
+        self.assertEqual(response.success, True)
+        self.assertEqual(response.torrent, Torrent({'id': 1, 'name': 'Test Torrent'}))
+        self.assertEqual(response.msgs, ('Added Test Torrent',))
+        self.assertEqual(response.errors, ('Daemon does not support sequential download '
+                                           '(needs Transmission 4.1.0 or newer)',))
+        arguments = self.daemon.requests[-1]['arguments']
+        self.assertNotIn('sequential_download', arguments)
