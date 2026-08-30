@@ -6,8 +6,9 @@ from resources_cmd import (CommandTestCase, MockTorrent, mock_get_torrent_sorter
                            mock_select_torrents)
 
 from stig.client.utils import Response
-from stig.commands.cli import (ListTorrentsCmd, RemoveTorrentsCmd, StartTorrentsCmd,
-                               StopTorrentsCmd, TorrentDetailsCmd, VerifyTorrentsCmd)
+from stig.commands.cli import (ListTorrentsCmd, RemoveTorrentsCmd, SequentialCmd,
+                               StartTorrentsCmd, StopTorrentsCmd, TorrentDetailsCmd,
+                               VerifyTorrentsCmd)
 from stig.completion import Candidates
 from stig.utils.cliparser import Arg, Args
 
@@ -1049,4 +1050,87 @@ class TestVerifyTorrentsCmd(CommandTestCase):
         await self.assert_completion_candidates(VerifyTorrentsCmd, Args(('verify', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))
         await self.assert_completion_candidates(VerifyTorrentsCmd, Args(('verify', 'foo', 'bar'), curarg_index=2),
+                                                exp_cands=('a', 'b', 'c'))
+
+
+class TestSequentialCmd(CommandTestCase):
+    def setUp(self):
+        super().setUp()
+        self.patch('stig.objects',
+                   srvapi=self.srvapi)
+        self.patch('stig.commands.cli.SequentialCmd',
+                   select_torrents=mock_select_torrents)
+
+    async def do(self, args, success_exp, msgs=(), errors=()):
+        self.srvapi.torrent.response = Response(success=success_exp, msgs=msgs, errors=errors)
+
+        process = await self.execute(SequentialCmd, *args)
+        self.assertEqual(process.success, success_exp)
+
+        msgs_exp = tuple(f'^{SequentialCmd.name}: {msg}$' for msg in msgs)
+        errors_exp = tuple(f'^{SequentialCmd.name}: {err}$' for err in errors)
+        self.assert_stdout(*msgs_exp)
+        self.assert_stderr(*errors_exp)
+        return process
+
+    async def test_enable(self):
+        process = await self.do(['debian'], success_exp=True,
+                                msgs=('debian: Sequential download from piece #0',))
+        self.srvapi.torrent.assert_called(1, 'set_sequential',
+                                          (process.mock_tfilter, True, 0), {})
+
+    async def test_enable_from_piece(self):
+        process = await self.do(['debian', '--from-piece', '1200'], success_exp=True,
+                                msgs=('debian: Sequential download from piece #1200',))
+        self.srvapi.torrent.assert_called(1, 'set_sequential',
+                                          (process.mock_tfilter, True, 1200), {})
+
+    async def test_enable_from_piece_short(self):
+        process = await self.do(['debian', '-p', '1200'], success_exp=True)
+        self.srvapi.torrent.assert_called(1, 'set_sequential',
+                                          (process.mock_tfilter, True, 1200), {})
+
+    async def test_off(self):
+        process = await self.do(['debian', '--off'], success_exp=True,
+                                msgs=('debian: Non-sequential download',))
+        self.srvapi.torrent.assert_called(1, 'set_sequential',
+                                          (process.mock_tfilter, False, 0), {})
+
+    async def test_toggle(self):
+        process = await self.do(['debian', '--toggle'], success_exp=True)
+        self.srvapi.torrent.assert_called(1, 'toggle_sequential',
+                                          (process.mock_tfilter, 0), {})
+
+    async def test_toggle_from_piece(self):
+        process = await self.do(['debian', '-t', '-p', '500'], success_exp=True)
+        self.srvapi.torrent.assert_called(1, 'toggle_sequential',
+                                          (process.mock_tfilter, 500), {})
+
+    async def test_off_and_toggle_conflict(self):
+        process = await self.execute(SequentialCmd, 'debian', '--off', '--toggle')
+        self.assertEqual(process.success, False)
+        self.assert_stderr('sequential: Conflicting options: --off, --toggle')
+        self.srvapi.torrent.assert_called(0, 'set_sequential')
+        self.srvapi.torrent.assert_called(0, 'toggle_sequential')
+
+    async def test_off_and_from_piece_conflict(self):
+        process = await self.execute(SequentialCmd, 'debian', '--off', '--from-piece', '5')
+        self.assertEqual(process.success, False)
+        self.assert_stderr('sequential: Conflicting options: --off, --from-piece')
+        self.srvapi.torrent.assert_called(0, 'set_sequential')
+
+    async def test_unsupported_by_daemon(self):
+        self.srvapi.torrent.response = Response(
+            success=False,
+            errors=('Daemon does not support sequential download (needs Transmission 4.1.0 or newer)',))
+        process = await self.execute(SequentialCmd, 'debian')
+        self.assertEqual(process.success, False)
+        self.assert_stdout()
+        self.assert_stderr(r'^sequential: Daemon does not support sequential download '
+                           r'\(needs Transmission 4\.1\.0 or newer\)$')
+
+    @patch('stig.completion.candidates.torrent_filter')
+    async def test_completion_candidates_for_posargs(self, mock_torrent_filter):
+        mock_torrent_filter.return_value = Candidates(('a', 'b', 'c'))
+        await self.assert_completion_candidates(SequentialCmd, Args(('sequential', 'foo'), curarg_index=1),
                                                 exp_cands=('a', 'b', 'c'))

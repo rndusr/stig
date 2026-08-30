@@ -169,5 +169,10 @@ class VerifyTorrentsCmd(base.VerifyTorrentsCmdbase,
     provides = {'cli'}
 
 
+class SequentialCmd(base.SequentialCmdbase,
+                    mixin.make_request, mixin.select_torrents):
+    provides = {'cli'}
+
+
 class LabelCmd(base.LabelCmd, mixin.make_request, mixin.select_torrents):
     provides = {'cli'}

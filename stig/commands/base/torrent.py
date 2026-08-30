@@ -566,6 +566,57 @@ class VerifyTorrentsCmdbase(metaclass=CommandMeta):
         return candidates.torrent_filter(args.curarg)
 
 
+class SequentialCmdbase(metaclass=CommandMeta):
+    name = 'sequential'
+    aliases = ('seq',)
+    provides = set()
+    category = 'torrent'
+    description = 'Download torrent pieces in order'
+    usage = ('sequential [<OPTIONS>]',
+             'sequential [<OPTIONS>] <TORRENT FILTER> <TORRENT FILTER> ...')
+    examples = ('sequential',
+                'sequential --from-piece 1200 debian',
+                'sequential --off debian')
+    argspecs = (
+        make_X_FILTER_spec('TORRENT', or_focused=True, nargs='*'),
+
+        {'names': ('--from-piece','-p'), 'type': int, 'default': 0,
+         'description': 'Download sequentially starting at this piece'},
+
+        {'names': ('--off','-o'), 'action': 'store_true',
+         'description': 'Download pieces in the usual order again'},
+
+        {'names': ('--toggle','-t'), 'action': 'store_true',
+         'description': 'Download TORRENT sequentially if it isn\'t and vice versa'},
+    )
+
+    async def run(self, TORRENT_FILTER, from_piece, off, toggle):
+        if off and toggle:
+            raise CmdError('Conflicting options: --off, --toggle')
+        elif off and from_piece != 0:
+            raise CmdError('Conflicting options: --off, --from-piece')
+
+        try:
+            tfilter = self.select_torrents(TORRENT_FILTER,
+                                           allow_no_filter=False,
+                                           discover_torrent=True)
+        except ValueError as e:
+            raise CmdError(e)
+        else:
+            if toggle:
+                request = objects.srvapi.torrent.toggle_sequential(tfilter, from_piece)
+            else:
+                request = objects.srvapi.torrent.set_sequential(tfilter, not off, from_piece)
+            response = await self.make_request(request, polling_frenzy=True)
+            if not response.success:
+                raise CmdError()
+
+    @classmethod
+    def completion_candidates_posargs(cls, args):
+        """Complete positional arguments"""
+        return candidates.torrent_filter(args.curarg)
+
+
 class LabelCmd(metaclass=CommandMeta):
     name = 'label'
     provides = set()
