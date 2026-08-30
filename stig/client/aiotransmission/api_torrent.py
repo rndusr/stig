@@ -213,9 +213,12 @@ class TorrentAPI(TorrentAPIBase):
                 info = result['torrent-added']
                 msgs = ['Added %s' % info['name']]
                 success = True
-                # Before rpc version 17 torrent-add did not take the labels
-                # argument, so we have to send a follow-up request
-                if labels and self.rpc.rpcversion < 17:
+                # Before RPC version 5.3.0 torrent-add did not take the
+                # labels argument, so we have to send a follow-up request.
+                # Daemons that don't report 'rpc-version-semver' are older than
+                # 5.3.0, which is where it was introduced.
+                semver = self.rpc.rpcversion_semver
+                if labels and (semver is None or semver < (5, 3, 0)):
                     response = await self.labels_add((info['id'],), labels)
                     success = response.success
                     if response.success:

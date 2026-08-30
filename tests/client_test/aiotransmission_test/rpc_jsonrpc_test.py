@@ -5,7 +5,7 @@ import resources_aiotransmission as rsrc
 
 from stig.client import RPCError
 from stig.client.aiotransmission import apicompat
-from stig.client.aiotransmission.rpc import TransmissionRPC
+from stig.client.aiotransmission.rpc import SemVer, TransmissionRPC
 
 
 @asynccontextmanager
@@ -32,6 +32,7 @@ class TestProtocolNegotiation(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(client.version, '4.1.0 (1234567890)')
             self.assertEqual(client.rpcversion, 18)
             self.assertEqual(client.rpcversionmin, 1)
+            self.assertEqual(client.rpcversion_semver, (6, 0, 0))
             # The old protocol was never tried
             self.assertEqual(requests_for(daemon, 'session-get'), [])
 
@@ -42,8 +43,31 @@ class TestProtocolNegotiation(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(client.version, '2.84 (14307)')
             self.assertEqual(client.rpcversion, 15)
             self.assertEqual(client.rpcversionmin, 1)
+            # Daemons older than 5.3.0 don't report 'rpc-version-semver'
+            self.assertIs(client.rpcversion_semver, None)
             # JSON-RPC 2.0 was tried first and refused
             self.assertNotEqual(requests_for(daemon, 'session_get'), [])
+
+    async def test_deprecated_rpc_version_is_optional(self):
+        # 'rpc-version' is deprecated in favour of 'rpc-version-semver' and may
+        # be gone from future daemons
+        async with fake_daemon(jsonrpc=True) as (daemon, client):
+            session = {key: value
+                       for key, value in rsrc.SESSION_GET_RESPONSE_JSONRPC['result'].items()
+                       if key not in ('rpc_version', 'rpc_version_minimum')}
+            daemon.response = rsrc.response_success_jsonrpc(session)
+            await client.connect()
+            self.assertIs(client.connected, True)
+            self.assertIs(client.rpcversion, None)
+            self.assertIs(client.rpcversionmin, None)
+            self.assertEqual(client.rpcversion_semver, (6, 0, 0))
+
+    async def test_rpc_version_semver_is_forgotten_on_disconnect(self):
+        async with fake_daemon(jsonrpc=True) as (daemon, client):
+            await client.connect()
+            self.assertEqual(client.rpcversion_semver, (6, 0, 0))
+            await client.disconnect()
+            self.assertIs(client.rpcversion_semver, None)
 
     async def test_protocol_is_forgotten_on_disconnect(self):
         async with fake_daemon(jsonrpc=True) as (daemon, client):
@@ -233,3 +257,23 @@ class TestTorrentAPIOverJSONRPC(unittest.IsolatedAsyncioTestCase):
             request = requests_for(daemon, 'torrent_get')[-1]
             self.assertEqual(set(request['params']['fields']),
                              {'id', 'name', 'upload_ratio', 'download_dir'})
+
+
+class TestSemVer(unittest.TestCase):
+    def test_parsing(self):
+        self.assertEqual(SemVer.parse('5.3.0'), (5, 3, 0))
+        self.assertEqual(SemVer.parse('6.0.0-beta.1+42'), (6, 0, 0))
+        self.assertEqual(SemVer.parse('6.0'), (6, 0))
+
+    def test_parsing_garbage(self):
+        for string in (None, '', 'foo', '1.x.3'):
+            self.assertIs(SemVer.parse(string), None)
+
+    def test_comparison(self):
+        self.assertTrue(SemVer.parse('5.2.0') < (5, 3, 0))
+        self.assertFalse(SemVer.parse('5.3.0') < (5, 3, 0))
+        self.assertFalse(SemVer.parse('6.0.0') < (5, 3, 0))
+
+    def test_string_representation(self):
+        self.assertEqual(str(SemVer.parse('6.0.0')), '6.0.0')
+        self.assertEqual(repr(SemVer.parse('6.0.0')), "SemVer('6.0.0')")

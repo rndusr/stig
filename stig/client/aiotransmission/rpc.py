@@ -13,6 +13,7 @@
 
 import asyncio
 import json
+import re
 
 import async_timeout
 from blinker import Signal
@@ -30,6 +31,33 @@ AUTH_ERROR_CODE = 401
 CSRF_ERROR_CODE = 409
 CSRF_HEADER = 'X-Transmission-Session-Id'
 TIMEOUT = 10
+
+
+class SemVer(tuple):
+    """
+    Semantic version number that compares like a tuple of integers
+
+    Pre-release and build metadata are ignored, i.e. "1.2.3-rc1" and "1.2.3"
+    are the same version.
+    """
+
+    @classmethod
+    def parse(cls, string):
+        """Return SemVer or None if `string` is None or malformed"""
+        if string is None:
+            return None
+        core = re.split(r'[-+]', str(string), maxsplit=1)[0]
+        try:
+            return cls(int(part) for part in core.split('.'))
+        except ValueError:
+            log.debug('Malformed semantic version: %r', string)
+            return None
+
+    def __str__(self):
+        return '.'.join(str(part) for part in self)
+
+    def __repr__(self):
+        return f'{type(self).__name__}({str(self)!r})'
 
 
 class RPCProtocol:
@@ -190,6 +218,7 @@ class TransmissionRPC:
         self._version = None
         self._rpcversion = None
         self._rpcversionmin = None
+        self._rpcversion_semver = None
         self._on_connecting = Signal()
         self._on_connected = Signal()
         self._on_disconnected = Signal()
@@ -230,13 +259,32 @@ class TransmissionRPC:
 
     @property
     def rpcversion(self):
-        """RPC version of the Transmission daemon or None if not connected"""
+        """
+        Deprecated RPC version of the Transmission daemon
+
+        None if not connected or if the daemon doesn't report it anymore.  Use
+        `rpcversion_semver` instead.
+        """
         return self._rpcversion
 
     @property
     def rpcversionmin(self):
-        """Oldest RPC version supported by Transmission daemon or None if not connected"""
+        """
+        Oldest RPC version supported by Transmission daemon
+
+        None if not connected or if the daemon doesn't report it.
+        """
         return self._rpcversionmin
+
+    @property
+    def rpcversion_semver(self):
+        """
+        RPC version of the Transmission daemon as a SemVer
+
+        None if not connected or if the daemon doesn't report it, which means
+        it is older than 5.3.0, the version that introduced it.
+        """
+        return self._rpcversion_semver
 
     @property
     def host(self):
@@ -492,8 +540,9 @@ class TransmissionRPC:
             else:
                 self._protocol = protocol
                 self._version = info['version']
-                self._rpcversion = info['rpc-version']
-                self._rpcversionmin = info['rpc-version-minimum']
+                self._rpcversion = info.get('rpc-version')
+                self._rpcversionmin = info.get('rpc-version-minimum')
+                self._rpcversion_semver = SemVer.parse(info.get('rpc-version-semver'))
                 self._connection_tested = True
                 self._connection_exception = None
                 log.debug('Connection established: %s', self.url)
@@ -545,6 +594,7 @@ class TransmissionRPC:
         self._version = None
         self._rpcversion = None
         self._rpcversionmin = None
+        self._rpcversion_semver = None
         self._connection_tested = False
 
     async def _post(self, data):
