@@ -1,5 +1,6 @@
 import unittest
 
+import asyncio
 import urwid
 
 from stig.tui.keymap import Key, KeyChain, KeyMap
@@ -131,8 +132,13 @@ class FakeAction():
         if self.action is not None:
             return self.action()
 
+
 class TestKeyMapped(unittest.TestCase):
     def setUp(self):
+        try:
+            _ = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
         self.keymap = KeyMap()
 
     def mk_widget(self, subcls, *args, context=None, callback=None, **kwargs):

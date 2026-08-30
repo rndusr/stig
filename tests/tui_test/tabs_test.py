@@ -1,5 +1,6 @@
 import unittest
 
+import asyncio
 import urwid
 
 from stig.tui import tabs
@@ -32,6 +33,10 @@ class SelectableText(urwid.Text):
 
 class TestTabs(unittest.TestCase):
     def setUp(self):
+        try:
+            _ = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
         self.tabs = Tabs((urwid.Text('Tab1'), urwid.Text('Tab one')),
                          (urwid.Text('Tab2'), urwid.Text('Tab two')))
 
