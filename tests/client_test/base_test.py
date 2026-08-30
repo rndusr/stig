@@ -12,6 +12,14 @@ class TestFreeSpaceAPI(ClockedTestCase):
     async def asyncSetUp(self):
         self.get_free_space = AsyncMock()
 
+class Stub:
+    def __call__(self, sender, **kwargs):
+        pass
+
+class TestFreeSpaceAPI(asynctest.ClockedTestCase):
+    async def setUp(self):
+        self.get_free_space = CoroutineMock()
+
         class FreeSpaceAPI(FreeSpaceAPIBase):
             get_free_space = self.get_free_space
 
@@ -23,7 +31,7 @@ class TestFreeSpaceAPI(ClockedTestCase):
         # We need a spec from a callable because blinker does some weird stuff and we get
         # an AttributeError for '__self__' without the spec.  Also, RequestPoller
         # prettifies function calls in the logs, so we need the __qualname__.
-        self.update_cb = Mock(spec=lambda self: None, __qualname__='mock_callback')
+        self.update_cb = Mock(Stub, __qualname__='mock_callback')
         self.freespace.on_update(self.update_cb)
 
     async def test_hooks_into_settings_updates(self):

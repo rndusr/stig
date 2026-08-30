@@ -22,6 +22,9 @@ class FakeTransmissionRPC():
     async def session_set(self, settings):
         self.fake_settings.update(settings)
 
+class Stub:
+    def __call__(self, sender, **kwargs):
+        pass
 
 class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
@@ -78,9 +81,9 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
     async def test_set_method(self):
         # We need a spec from a callable because blinker does some weird stuff and we get
         # an AttributeError for '__self__' without the spec.
-        cb_any = Mock(spec=lambda self: None)
+        cb_any = Mock(spec=Stub)
         self.api.on_set(cb_any)
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='limit.rate.down')
 
         await self.api.set('limit.rate.down', 555e3)
@@ -112,7 +115,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['autostart'], value)
 
     async def test_set_autostart(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='autostart')
 
         await self.api.set_autostart(True)
@@ -136,7 +139,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['port'], value)
 
     async def test_set_port(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='port')
 
         self.rpc.fake_settings['peer-port'] = 123
@@ -159,7 +162,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['port.random'], value)
 
     async def test_set_port_random(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='port.random')
 
         self.rpc.fake_settings['peer-port-random-on-start'] = True
@@ -188,7 +191,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(value)
 
     async def test_set_port_forwarding(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='port.forwarding')
 
         self.rpc.fake_settings['port-forwarding-enabled'] = False
@@ -220,7 +223,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(str(value), '17k')
 
     async def test_set_limit_peers_global(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='limit.peers.global')
 
         self.assertIs(self.api['limit.peers.global'], const.DISCONNECTED)
@@ -253,7 +256,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(str(value), '17k')
 
     async def test_set_limit_peers_torrent(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='limit.peers.torrent')
 
         self.assertIs(self.api['limit.peers.torrent'], const.DISCONNECTED)
@@ -290,7 +293,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['encryption'], value)
 
     async def test_set_encryption(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='encryption')
 
         self.rpc.fake_settings['encryption'] = 'required'
@@ -322,7 +325,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['utp'], value)
 
     async def test_set_utp(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='utp')
 
         await self.api.set_utp(True)
@@ -351,7 +354,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['dht'], value)
 
     async def test_set_dht(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='dht')
 
         await self.api.set_dht(True)
@@ -380,7 +383,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['pex'], value)
 
     async def test_set_pex(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='pex')
 
         await self.api.set_pex(True)
@@ -409,7 +412,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertIs(self.api['lpd'], value)
 
     async def test_set_lpd(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='lpd')
 
         await self.api.set_lpd(True)
@@ -431,7 +434,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(value, '/foo/bar')
 
     async def test_set_path_complete(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='path.complete')
 
         self.rpc.fake_settings['download-dir'] = '/foo/bar'
@@ -463,7 +466,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
 
 
     async def test_set_path_incomplete(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='path.incomplete')
 
         self.rpc.fake_settings['incomplete-dir-enabled'] = False
@@ -502,7 +505,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(value, True)
 
     async def test_set_files_part(self):
-        cb = Mock(spec=lambda self: None)
+        cb = Mock(spec=Stub)
         self.api.on_set(cb, key='files.part')
 
         self.rpc.fake_settings['rename-partial-files'] = False
@@ -551,7 +554,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
 
     async def test_set_limit_rate(self):
         for direction in ('up', 'down'):
-            cb = Mock(spec=lambda self: None)
+            cb = Mock(spec=Stub)
             self.api.on_set(cb, key='limit.rate.' + direction)
             exp_cb_calls = 0
 
@@ -617,7 +620,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
 
     async def test_adjust_limit_rate(self):
         for direction in ('up', 'down'):
-            cb = Mock(spec=lambda self: None)
+            cb = Mock(spec=Stub)
             self.api.on_set(cb, key='limit.rate.' + direction)
             exp_cb_calls = 0
 
@@ -692,7 +695,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
 
     async def test_set_limit_rate_alt(self):
         for direction in ('up', 'down'):
-            cb = Mock(spec=lambda self: None)
+            cb = Mock(spec=Stub)
             self.api.on_set(cb, key='limit.rate.alt.' + direction)
             exp_cb_calls = 0
 
@@ -732,7 +735,7 @@ class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
 
     async def test_adjust_limit_rate_alt(self):
         for direction in ('up', 'down'):
-            cb = Mock(spec=lambda self: None)
+            cb = Mock(spec=Stub)
             self.api.on_set(cb, key='limit.rate.alt.' + direction)
             exp_cb_calls = 0
 
