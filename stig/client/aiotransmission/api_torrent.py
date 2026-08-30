@@ -76,6 +76,10 @@ class _TorrentCache():
                                         tlist=tlist or '(empty)')
 
 
+# Oldest 'rpc-version-semver' that understands the 'labels' argument of 'torrent-add'
+LABELS_SEMVER = (5, 3, 0)
+
+
 class TorrentAPI(TorrentAPIBase):
     """High-level abstraction of the Transmission RPC protocol"""
 
@@ -86,6 +90,16 @@ class TorrentAPI(TorrentAPIBase):
     def clearcache(self):
         """Remove all torrents from cache"""
         self._tcache.purge(existing_tids=())
+
+    def _daemon_supports(self, semver):
+        """
+        Whether the daemon's RPC version is at least `semver`
+
+        Daemons that don't report 'rpc-version-semver' are older than 5.3.0,
+        which is where it was introduced.
+        """
+        rpcversion = self.rpc.rpcversion_semver
+        return rpcversion is not None and rpcversion >= semver
 
     @staticmethod
     async def _request(method, *args, **kwargs):
@@ -215,10 +229,7 @@ class TorrentAPI(TorrentAPIBase):
                 success = True
                 # Before RPC version 5.3.0 torrent-add did not take the
                 # labels argument, so we have to send a follow-up request.
-                # Daemons that don't report 'rpc-version-semver' are older than
-                # 5.3.0, which is where it was introduced.
-                semver = self.rpc.rpcversion_semver
-                if labels and (semver is None or semver < (5, 3, 0)):
+                if labels and not self._daemon_supports(LABELS_SEMVER):
                     response = await self.labels_add((info['id'],), labels)
                     success = response.success
                     if response.success:
