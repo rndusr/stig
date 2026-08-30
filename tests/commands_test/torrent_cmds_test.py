@@ -97,7 +97,7 @@ class TestAddTorrentsCmd(CommandTestCase):
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': None})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
@@ -110,7 +110,7 @@ class TestAddTorrentsCmd(CommandTestCase):
             errors=('Bogus torrent',),
             torrent=None)
         process = await self.execute(AddTorrentsCmd, 'some.torrent')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': None})
         self.assertEqual(process.success, False)
         self.assert_stdout()
         self.assert_stderr('add: Bogus torrent')
@@ -128,8 +128,8 @@ class TestAddTorrentsCmd(CommandTestCase):
         ]
         process = await self.execute(AddTorrentsCmd, 'some.torrent', 'another.torrent')
         self.srvapi.torrent.assert_called(2, 'add',
-                                          ('some.torrent',), {'stopped': False, 'path': None},
-                                          ('another.torrent',), {'stopped': False, 'path': None})
+                                          ('some.torrent',), {'stopped': False, 'path': None, 'labels': None},
+                                          ('another.torrent',), {'stopped': False, 'path': None, 'labels': None})
         self.assertEqual(process.success, False)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr('add: Something went wrong')
@@ -142,7 +142,20 @@ class TestAddTorrentsCmd(CommandTestCase):
             msgs=('Added Some Torrent',),
             torrent=MockTorrent(id=1, name='Some Torrent'))
         process = await self.execute(AddTorrentsCmd, 'some.torrent', '--stopped')
-        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None})
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': True, 'path': None, 'labels': None})
+        self.assertEqual(process.success, True)
+        self.assert_stdout('add: Added Some Torrent')
+        self.assert_stderr()
+
+    @patch('stig.commands.cli.AddTorrentsCmd.make_path_absolute', side_effect=lambda path: path)
+    async def test_option_labels(self, _mock_make_path_absolute):
+        from stig.commands.cli import AddTorrentsCmd
+        self.srvapi.torrent.response = Response(
+            success=True,
+            msgs=('Added Some Torrent',),
+            torrent=MockTorrent(id=1, name='Some Torrent'))
+        process = await self.execute(AddTorrentsCmd, 'some.torrent', '--labels', 'torrent')
+        self.srvapi.torrent.assert_called(1, 'add', ('some.torrent',), {'stopped': False, 'path': None, 'labels': ['torrent']})
         self.assertEqual(process.success, True)
         self.assert_stdout('add: Added Some Torrent')
         self.assert_stderr()
