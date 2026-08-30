@@ -1,12 +1,12 @@
 import asyncio
+import unittest
 
-import asynctest
 from resources_cmd import Callback, make_cmdcls
 
 from stig.commands import CmdArgError, _CommandBase
 
 
-class TestCommandBase(asynctest.TestCase):
+class TestCommandBase(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         def run_sync(self_, A, B):
             assert isinstance(self_, _CommandBase)

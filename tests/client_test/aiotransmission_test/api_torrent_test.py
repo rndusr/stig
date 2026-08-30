@@ -1,6 +1,7 @@
 import os.path
+import unittest
+from unittest.mock import patch
 
-import asynctest
 import resources_aiotransmission as rsrc
 
 from stig.client import MAX_TORRENT_FILE_SIZE
@@ -13,8 +14,8 @@ assert os.path.exists(rsrc.TORRENTFILE)
 assert not os.path.exists(rsrc.TORRENTFILE_NOEXIST)
 
 
-class TorrentAPITestCase(asynctest.TestCase):
-    async def setUp(self):
+class TorrentAPITestCase(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
         self.daemon = rsrc.FakeTransmissionDaemon()
         await self.daemon.start()
         self.rpc = TransmissionRPC(self.daemon.host, self.daemon.port)
@@ -22,7 +23,7 @@ class TorrentAPITestCase(asynctest.TestCase):
         await self.rpc.connect()
         assert self.rpc.connected is True
 
-    async def tearDown(self):
+    async def asyncTearDown(self):
         await self.rpc.disconnect()
         await self.daemon.stop()
 
@@ -62,8 +63,8 @@ class TestAddingTorrents(TorrentAPITestCase):
         self.assertEqual(response.errors,
                          ('Torrent file is corrupt or doesn\'t exist: %r' % rsrc.TORRENTFILE_NOEXIST,))
 
-    @asynctest.patch('os.path.exists', return_value=True)
-    @asynctest.patch('os.path.getsize', return_value=int(MAX_TORRENT_FILE_SIZE) + 1)
+    @patch('os.path.exists', return_value=True)
+    @patch('os.path.getsize', return_value=int(MAX_TORRENT_FILE_SIZE) + 1)
     async def test_add_torrent_by_giant_file(self, _, __):
         response = await self.api.add('some.torrent')
         self.assertEqual(response.success, False)
@@ -162,8 +163,8 @@ class TestGettingTorrents(TorrentAPITestCase):
 
 
 class TestManipulatingTorrents(TorrentAPITestCase):
-    async def setUp(self):
-        await super().setUp()
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
         self.mock_method_args = None
         self.mock_method_kwargs = None
         self.daemon.response = rsrc.response_torrents(

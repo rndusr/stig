@@ -1,14 +1,14 @@
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock, call
 
-import asynctest
-from asynctest import CoroutineMock, Mock, call
+from testutils import ClockedTestCase
 
 from stig.client.aiotransmission.api_freespace import FreeSpaceAPI
 
 
-class TestFreeSpaceAPI(asynctest.ClockedTestCase):
-    async def setUp(self):
-        self.rpc = SimpleNamespace(free_space=CoroutineMock())
+class TestFreeSpaceAPI(ClockedTestCase):
+    async def asyncSetUp(self):
+        self.rpc = SimpleNamespace(free_space=AsyncMock())
         self.freespace = FreeSpaceAPI((), self.rpc, Mock())
 
     async def test_expected_path_matches(self):

@@ -1,13 +1,14 @@
 import asyncio
+import unittest
+from unittest.mock import MagicMock, call
 
-import asynctest
-from asynctest.mock import call
 from resources_cmd import Callback, make_cmdcls
+from testutils import ClockedTestCase
 
 from stig.commands import CmdError, CommandManager, _CommandBase
 
 
-class TestCommandManagerManagement(asynctest.TestCase):
+class TestCommandManagerManagement(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.cmdmgr = CommandManager()
         self.cmd_foo = make_cmdcls(name='foo', provides=('cli',))
@@ -87,7 +88,7 @@ class TestCommandManagerManagement(asynctest.TestCase):
         self.assertIn('interface', str(cm.exception).lower())
 
 
-class TestCommandManagerCallsBase(asynctest.ClockedTestCase):
+class TestCommandManagerCallsBase(ClockedTestCase):
     def setUp(self):
         self.info_handler = Callback()
         self.error_handler = Callback()
@@ -277,7 +278,7 @@ class TestCommandManagerCalls_RunIgnoredCalls(TestCommandManagerCallsBase):
     def setUp(self):
         super().setUp()
 
-        self.mock_gui = asynctest.mock.MagicMock()
+        self.mock_gui = MagicMock()
         argspecs = ({'names': ('A',), 'type': int, 'description': 'First number'},
                     {'names': ('B',), 'type': int, 'description': 'Second number'})
 

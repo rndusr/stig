@@ -1,9 +1,7 @@
 import os
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
-import asynctest
-from asynctest import CoroutineMock
-from asynctest.mock import MagicMock, call, patch
 from resources_cmd import (CommandTestCase, MockTorrent, mock_get_torrent_sorter,
                            mock_select_torrents)
 
@@ -176,7 +174,6 @@ class TestAddTorrentsCmd(CommandTestCase):
 
     @patch('stig.completion.candidates.fs_path')
     @patch.dict(os.environ, HOME='/mock/home/dir')
-    @asynctest.skip('https://github.com/Martiusweb/asynctest/issues/149')
     async def test_TUI_completion_candidates_for_posargs(self, mock_fs_path):
         from stig.commands.tui import AddTorrentsCmd
         mock_fs_path.return_value = Candidates(('a', 'b', 'c'))
@@ -495,7 +492,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         from stig import objects
         objects.cfg['remove.max-hits'] = 2
-        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
+        RemoveTorrentsCmd.show_list_of_hits = AsyncMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
             await yes() ; return True  # noqa: E702
@@ -513,7 +510,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         self.cfg['remove.max-hits'] = 2
-        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
+        RemoveTorrentsCmd.show_list_of_hits = AsyncMock()
 
         async def mock_ask_yes_no(self_, *args, yes, no, **kwargs):
             await no() ; return False  # noqa: E702
@@ -529,7 +526,7 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         self.cfg['remove.max-hits'] = -1
-        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
+        RemoveTorrentsCmd.show_list_of_hits = AsyncMock()
         await self.do(['all'], tlist=tlist, remove_called=True, success_exp=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
         self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
@@ -539,8 +536,8 @@ class TestRemoveTorrentsCmd(CommandTestCase):
                  MockTorrent(id=2, name='Torrent2', seeds='52'),
                  MockTorrent(id=3, name='Torrent3', seeds='53'))
         self.cfg['remove.max-hits'] = 2
-        RemoveTorrentsCmd.show_list_of_hits = CoroutineMock()
-        RemoveTorrentsCmd.ask_yes_no = CoroutineMock()
+        RemoveTorrentsCmd.show_list_of_hits = AsyncMock()
+        RemoveTorrentsCmd.ask_yes_no = AsyncMock()
         await self.do(['all', '--force'], tlist=tlist, remove_called=True, success_exp=True,
                       msgs=('Removed Torrent1', 'Removed Torrent2', 'Removed Torrent3'))
         self.assertFalse(RemoveTorrentsCmd.show_list_of_hits.called)
@@ -567,8 +564,8 @@ class TestRenameCmd(CommandTestCase):
         self.mock_get_relative_path_from_focused = MagicMock()
         self.mock_select_torrents = MagicMock()
         self.mock_srvapi = MagicMock()
-        self.mock_srvapi.torrent.torrents = CoroutineMock()
-        self.mock_srvapi.torrent.rename = CoroutineMock()
+        self.mock_srvapi.torrent.torrents = AsyncMock()
+        self.mock_srvapi.torrent.rename = AsyncMock()
         self.mock_srvapi.interval = 10
         self.patch('stig.objects',
                    srvapi=self.mock_srvapi)

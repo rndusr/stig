@@ -1,16 +1,15 @@
 import asyncio
 import os
 import tempfile
-from unittest.mock import MagicMock
-
-import asynctest
+import unittest
+from unittest.mock import AsyncMock, MagicMock
 
 from stig.tui.cli import CLIEditWidget
 
 from ._handle_urwidpatches import setUpModule, tearDownModule  # noqa: F401
 
 
-class TestCLIEditWidget(asynctest.TestCase):
+class TestCLIEditWidget(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         def on_accept(w):
             w.reset()
@@ -114,7 +113,7 @@ class TestCLIEditWidget(asynctest.TestCase):
 
     async def test_completer(self):
         class MockCompleter():
-            update = asynctest.CoroutineMock()
+            update = AsyncMock()
             complete_next = MagicMock()
             categories = ()
         self.w._completer = self.w._candsw._completer = MockCompleter()

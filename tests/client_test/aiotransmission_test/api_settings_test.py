@@ -1,8 +1,8 @@
+import unittest
 from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import Mock, call
 
-import asynctest
 import resources_aiotransmission as rsrc
 
 from stig.client import ClientError
@@ -23,8 +23,8 @@ class FakeTransmissionRPC():
         self.fake_settings.update(settings)
 
 
-class TestSettingsAPI(asynctest.TestCase):
-    async def setUp(self):
+class TestSettingsAPI(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
         self.rpc = FakeTransmissionRPC()
         srvapi = SimpleNamespace(rpc=self.rpc)
         self.api = SettingsAPI(srvapi)

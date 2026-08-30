@@ -2,11 +2,9 @@ import asyncio
 import io
 import re
 import sys
+import unittest
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
-
-import asynctest
-from asynctest import CoroutineMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from stig.client.base import TorrentBase
 from stig.client.utils import Response
@@ -139,13 +137,13 @@ class MockSettings(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.reset = MagicMock()
-        self.set = CoroutineMock(side_effect=lambda name, value: self.__setitem__(name, value))
-        self.update = CoroutineMock()
+        self.set = AsyncMock(side_effect=lambda name, value: self.__setitem__(name, value))
+        self.update = AsyncMock()
         self.is_local = lambda name: not name.startswith('srv.')
         self.is_remote = lambda name: name.startswith('srv.')
 
 
-class CommandTestCase(asynctest.TestCase):
+class CommandTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.srvapi = SimpleNamespace(torrent=MockAPI(),
                                       rpc=MockAPI(),
@@ -153,7 +151,7 @@ class CommandTestCase(asynctest.TestCase):
         self.cfg = MockSettings()
         self.helpmgr = MockHelpManager()
         self.cmdmgr = MagicMock()
-        self.cmdmgr.run_async = CoroutineMock()
+        self.cmdmgr.run_async = AsyncMock()
 
         self.stdout = sys.stdout = io.StringIO()
         def reset_stdout(): sys.stdout = sys.__stdout__

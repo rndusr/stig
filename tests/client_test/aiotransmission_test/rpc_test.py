@@ -1,15 +1,15 @@
 import asyncio
 
-import asynctest
 import resources_aiotransmission as rsrc
 from aiohttp import web
+from testutils import ClockedTestCase
 
 from stig.client import AuthError, ConnectionError, RPCError, TimeoutError
 from stig.client.aiotransmission.rpc import TransmissionRPC
 
 
-class TestTransmissionRPC(asynctest.ClockedTestCase):
-    async def setUp(self):
+class TestTransmissionRPC(ClockedTestCase):
+    async def asyncSetUp(self):
         self.daemon = rsrc.FakeTransmissionDaemon()
         self.daemon.response = rsrc.SESSION_GET_RESPONSE   # Default response
         await self.daemon.start()
@@ -22,7 +22,7 @@ class TestTransmissionRPC(asynctest.ClockedTestCase):
         self.client.on('disconnected', self.cb_disconnected)
         self.client.on('error', self.cb_error)
 
-    async def tearDown(self):
+    async def asyncTearDown(self):
         await self.client.disconnect()
         await self.daemon.stop()
 

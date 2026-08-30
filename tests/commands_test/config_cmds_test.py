@@ -1,7 +1,7 @@
 import os
 import sys
+from unittest.mock import AsyncMock, MagicMock, call, mock_open, patch
 
-from asynctest.mock import CoroutineMock, MagicMock, call, mock_open, patch
 from resources_cmd import CommandTestCase
 
 from stig import objects
@@ -486,8 +486,8 @@ class TestRateLimitCmd(CommandTestCase):
                    srvapi=self.srvapi)
 
     async def test_call_syntaxes(self):
-        _set_limits = CoroutineMock()
-        _show_limits = CoroutineMock()
+        _set_limits = AsyncMock()
+        _show_limits = AsyncMock()
         self.patch(RateLimitCmd, _set_limits=_set_limits, _show_limits=_show_limits)
 
         await self.execute(RateLimitCmd, 'up', '1Mb', 'limit-rate-up<1k')

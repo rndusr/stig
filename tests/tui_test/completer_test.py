@@ -1,6 +1,7 @@
-from unittest.mock import MagicMock, call
 
-import asynctest
+
+import unittest
+from unittest.mock import MagicMock, call
 
 from stig.completion import Candidates, Categories, SingleCandidate
 from stig.tui.completer import Completer
@@ -10,7 +11,7 @@ def tupleize(categories):
     return tuple(tuple(sorted(cands)) for cands in categories)
 
 
-class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
+class TestCompleter_get_candidates_wrapper(unittest.IsolatedAsyncioTestCase):
     async def do(self, get_cands, exp_cats):
         completer = Completer(get_cands)
         result = await completer._get_candidates_wrapper(('',))
@@ -74,7 +75,7 @@ class TestCompleter_get_candidates_wrapper(asynctest.TestCase):
                                   ('a', 'b', 'c')))
 
 
-class TestCompleter_current_user_input(asynctest.TestCase):
+class TestCompleter_current_user_input(unittest.IsolatedAsyncioTestCase):
     async def do(self, categories, cmdline, curpos, exp_cur_user_input):
         completer = Completer(lambda *args, **kwargs: categories)
         await completer.update(cmdline, curpos)
@@ -122,7 +123,7 @@ class TestCompleter_current_user_input(asynctest.TestCase):
         await self.do(cats, 'foo.bang', 8, 'bang')
 
 
-class TestCompleter_update(asynctest.TestCase):
+class TestCompleter_update(unittest.IsolatedAsyncioTestCase):
     def init(self, get_cands):
         self.mock_get_cands = MagicMock(side_effect=get_cands)
 
@@ -232,7 +233,7 @@ class TestCompleter_update(asynctest.TestCase):
         await self.update(r"""foo "a \\" 'a s""", 15, call(('foo', 'a \\', 'a s',)), 2, 3, (('a s',), ('a string',)), 0)
 
 
-class TestCompleter_complete_next_prev(asynctest.TestCase):
+class TestCompleter_complete_next_prev(unittest.IsolatedAsyncioTestCase):
     async def init(self, cmdline, curpos, get_cands):
         self.completer = Completer(get_cands, operators=('&', 'and', '|', 'or'))
         await self.completer.update(cmdline, curpos)

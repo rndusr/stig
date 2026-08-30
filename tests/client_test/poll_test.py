@@ -1,12 +1,12 @@
 import asyncio
 
-import asynctest
+from testutils import ClockedTestCase
 
 from stig.client.errors import AuthError, ConnectionError
 from stig.client.poll import RequestPoller
 
 
-class TestRequestPoller(asynctest.ClockedTestCase):
+class TestRequestPoller(ClockedTestCase):
     def setUp(self):
         self.mock_request_args = None
         self.mock_request_kwargs = None

@@ -1,16 +1,16 @@
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock, call
 
-import asynctest
-from asynctest import CoroutineMock, Mock, call
+from testutils import ClockedTestCase
 
 from stig.client.base import FreeSpaceAPIBase
 from stig.client.errors import ClientError
 from stig.utils.usertypes import Int
 
 
-class TestFreeSpaceAPI(asynctest.ClockedTestCase):
-    async def setUp(self):
-        self.get_free_space = CoroutineMock()
+class TestFreeSpaceAPI(ClockedTestCase):
+    async def asyncSetUp(self):
+        self.get_free_space = AsyncMock()
 
         class FreeSpaceAPI(FreeSpaceAPIBase):
             get_free_space = self.get_free_space

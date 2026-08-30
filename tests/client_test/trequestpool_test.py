@@ -1,7 +1,7 @@
 import asyncio
 from types import SimpleNamespace
 
-import asynctest
+from testutils import ClockedTestCase
 
 from stig.client.aiotransmission.torrent import Torrent
 from stig.client.filters.torrent import TorrentFilter
@@ -67,8 +67,8 @@ class Subscriber():
         return s
 
 
-class TestTorrentRequestPool(asynctest.ClockedTestCase):
-    async def setUp(self):
+class TestTorrentRequestPool(ClockedTestCase):
+    async def asyncSetUp(self):
         self.api = FakeTorrentAPI()
         srvapi = SimpleNamespace(torrent=self.api)
         self.rp = TorrentRequestPool(srvapi)

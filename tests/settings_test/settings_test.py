@@ -1,7 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, call
-
-import asynctest
+from unittest.mock import AsyncMock, MagicMock, call
 
 from stig.settings.settings import CombinedSettings, RemoteSettings, Settings
 
@@ -117,7 +115,7 @@ class TestSettings(unittest.TestCase):
         self.assertEqual(x, 1)
 
 
-class TestRemoteSettings(asynctest.TestCase):
+class TestRemoteSettings(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.api = MagicMock()
         self.remotecfg = RemoteSettings(self.api)
@@ -194,14 +192,14 @@ class TestRemoteSettings(asynctest.TestCase):
         self.api.poll.assert_called_once_with()
 
     async def test_update(self):
-        self.api.update = asynctest.CoroutineMock()
+        self.api.update = AsyncMock()
         await self.remotecfg.update()
         self.api.update.assert_called_once_with()
 
     async def test_set(self):
         with self.assertRaises(KeyError):
             await self.remotecfg.set('foo', 'bar')
-        self.api.set = asynctest.CoroutineMock()
+        self.api.set = AsyncMock()
         await self.remotecfg.set('srv.foo', 'bar')
         self.api.set.assert_called_once_with('foo', 'bar')
 
@@ -211,7 +209,7 @@ class TestRemoteSettings(asynctest.TestCase):
         self.api.on_update.assert_called_once_with(cb, autoremove=False)
 
 
-class TestCombinedSettings(asynctest.TestCase):
+class TestCombinedSettings(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.lcfg = MagicMock()
         self.rcfg = MagicMock()
@@ -224,14 +222,14 @@ class TestCombinedSettings(asynctest.TestCase):
         self.assertTrue(self.cfg.is_remote('srv.foo'))
 
     async def test_update(self):
-        self.rcfg.update = asynctest.CoroutineMock()
+        self.rcfg.update = AsyncMock()
         await self.cfg.update()
         self.rcfg.update.assert_called_once_with()
 
     async def test_set(self):
         self.lcfg.__contains__.side_effect = lambda name: name == 'foo'
         self.rcfg.__contains__.side_effect = lambda name: name == 'srv.foo'
-        self.rcfg.set = asynctest.CoroutineMock()
+        self.rcfg.set = AsyncMock()
         await self.cfg.set('foo', 'bar')
         self.lcfg.__setitem__.assert_called_once_with('foo', 'bar')
         self.rcfg.set.assert_not_called()

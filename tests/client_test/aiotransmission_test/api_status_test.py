@@ -1,6 +1,6 @@
+import unittest
 from types import SimpleNamespace
 
-import asynctest
 import resources_aiotransmission as rsrc
 
 from stig.client.aiotransmission import api_status
@@ -45,8 +45,8 @@ class FakeTorrentAPI():
         return self.fake_tlist
 
 
-class TestStatusAPI(asynctest.TestCase):
-    async def setUp(self):
+class TestStatusAPI(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
         self.rpc = FakeTransmissionRPC()
         self.torrent = FakeTorrentAPI()
         srvapi = SimpleNamespace(rpc=self.rpc,

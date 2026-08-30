@@ -1,8 +1,7 @@
 import unittest
 from types import SimpleNamespace
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
-import asynctest
 from natsort import humansorted
 
 from stig.completion import Candidates, candidates
@@ -204,18 +203,18 @@ class Test_fs_path(unittest.TestCase):
         self.do('x', base='/', glob=r'*r', exp_cands=('bar', 'baz'))
 
 
-class Test_filter_values(asynctest.TestCase):
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+class Test_filter_values(unittest.IsolatedAsyncioTestCase):
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_filter_takes_no_completable_values(self, mock_filter_takes_completable_values,
                                                       mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = False
         mock_get_filter_cls.return_value = 'mock filter class'
-        mock_objects_getter = asynctest.CoroutineMock()
+        mock_objects_getter = AsyncMock()
         mock_items_getter = MagicMock()
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
                                                 mock_objects_getter, mock_items_getter)
@@ -229,19 +228,19 @@ class Test_filter_values(asynctest.TestCase):
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_server_request_failed(self, mock_filter_takes_completable_values,
                                          mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
         mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1', 'mockkey2')
         mock_value_type = mock_get_filter_spec.return_value.value_type
         delattr(mock_value_type, 'valid_values')
-        mock_objects_getter = asynctest.CoroutineMock()
+        mock_objects_getter = AsyncMock()
         mock_items_getter = MagicMock()
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
                                                 mock_objects_getter, mock_items_getter)
@@ -253,19 +252,19 @@ class Test_filter_values(asynctest.TestCase):
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_item_value_is_string(self, mock_filter_takes_completable_values,
                                         mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
         mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey2',)
         mock_objects = ({'mockkey1': 'foo', 'mockkey2': 'bar'},
                         {'mockkey1': '123', 'mockkey2': '456'})
-        mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_objects_getter = AsyncMock(return_value=mock_objects)
         mock_value_type = mock_get_filter_spec.return_value.value_type
         delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
@@ -280,19 +279,19 @@ class Test_filter_values(asynctest.TestCase):
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_item_value_is_iterable(self, mock_filter_takes_completable_values,
                                           mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
         mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey1',)
         mock_objects = ({'mockkey1': ('a', 'b'), 'mockkey2': ('b', 'c')},
                         {'mockkey1': ('d', 'e'), 'mockkey2': ('f', 'g')})
-        mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_objects_getter = AsyncMock(return_value=mock_objects)
         mock_value_type = mock_get_filter_spec.return_value.value_type
         delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
@@ -307,19 +306,19 @@ class Test_filter_values(asynctest.TestCase):
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_item_value_is_mixed_string_and_iterable(self, mock_filter_takes_completable_values,
                                                            mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
         mock_get_filter_cls.return_value.return_value.needed_keys = ('mockkey2',)
         mock_objects = ({'mockkey1': ('a', 'b'), 'mockkey2': 'b'},
                         {'mockkey1': ('d', 'e'), 'mockkey2': ('f', 'g')})
-        mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_objects_getter = AsyncMock(return_value=mock_objects)
         mock_value_type = mock_get_filter_spec.return_value.value_type
         delattr(mock_value_type, 'valid_values')
         mock_value_getter = mock_get_filter_spec.return_value.value_getter
@@ -334,12 +333,12 @@ class Test_filter_values(asynctest.TestCase):
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_items_getter(self, mock_filter_takes_completable_values,
                                 mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
@@ -348,7 +347,7 @@ class Test_filter_values(asynctest.TestCase):
                                   {'x': 3, 'y': 4})},
                         {'list': ({'x': 5, 'y': 6},
                                   {'x': 7, 'y': 8})})
-        mock_objects_getter = asynctest.CoroutineMock(return_value=mock_objects)
+        mock_objects_getter = AsyncMock(return_value=mock_objects)
         def mock_items_getter(obj): return obj['list']
         mock_value_type = mock_get_filter_spec.return_value.value_type
         delattr(mock_value_type, 'valid_values')
@@ -364,16 +363,16 @@ class Test_filter_values(asynctest.TestCase):
                                label='Mock Filter Label: mock filter name')
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_spec')
-    @asynctest.patch('stig.completion.candidates._utils.filter_takes_completable_values')
+    @patch('stig.completion.candidates._utils.filter_labels', new={'MockFilter': 'Mock Filter Label'})
+    @patch('stig.completion.candidates._utils.filter_combine_ops', new=('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', new=('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.get_filter_spec')
+    @patch('stig.completion.candidates._utils.filter_takes_completable_values')
     async def test_valid_values(self, mock_filter_takes_completable_values,
                                 mock_get_filter_spec, mock_get_filter_cls):
         mock_filter_takes_completable_values.return_value = True
-        mock_objects_getter = asynctest.CoroutineMock()
+        mock_objects_getter = AsyncMock()
         mock_value_type = mock_get_filter_spec.return_value.value_type
         mock_value_type.valid_values = ('foo', 'bar', 'baz')
         cands = await candidates._filter_values('MockFilter', 'mock filter name',
@@ -387,12 +386,12 @@ class Test_filter_values(asynctest.TestCase):
         self.assertEqual(cands, exp_cands)
 
 
-class Test_filter(asynctest.TestCase):
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.filter_names')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+class Test_filter(unittest.IsolatedAsyncioTestCase):
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.filter_names')
+    @patch('stig.completion.candidates._filter_values')
     async def test_focusing_filter_name_with_filter_names(self, mock_filter_values, mock_filter_names, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -411,11 +410,11 @@ class Test_filter(asynctest.TestCase):
         )
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.filter_names')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.filter_names')
+    @patch('stig.completion.candidates._filter_values')
     async def test_focusing_filter_name_without_filter_names(self, mock_filter_values, mock_filter_names, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -431,11 +430,11 @@ class Test_filter(asynctest.TestCase):
         exp_cands = ('mock items values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._utils.filter_names')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._utils.filter_names')
+    @patch('stig.completion.candidates._filter_values')
     async def test_focusing_filter_value(self, mock_filter_values, mock_filter_names, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -451,10 +450,10 @@ class Test_filter(asynctest.TestCase):
         exp_cands = ('mock items values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._filter_values')
     async def test_operator_given_without_filter_name(self, mock_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -467,10 +466,10 @@ class Test_filter(asynctest.TestCase):
         exp_cands = ('mock items values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._filter_values')
     async def test_invert_char_is_first_char(self, mock_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -483,10 +482,10 @@ class Test_filter(asynctest.TestCase):
         exp_cands = ('mock items values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._filter_values')
     async def test_invert_char_in_operator(self, mock_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -499,10 +498,10 @@ class Test_filter(asynctest.TestCase):
         exp_cands = ('mock items values',)
         self.assertEqual(cands, exp_cands)
 
-    @asynctest.patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
-    @asynctest.patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
-    @asynctest.patch('stig.completion.candidates._utils.get_filter_cls')
-    @asynctest.patch('stig.completion.candidates._filter_values')
+    @patch('stig.completion.candidates._utils.filter_combine_ops', ('|', '&'))
+    @patch('stig.completion.candidates._utils.filter_compare_ops', ('=', '!='))
+    @patch('stig.completion.candidates._utils.get_filter_cls')
+    @patch('stig.completion.candidates._filter_values')
     async def test_cursor_is_on_leading_inverting_character(self, mock_filter_values, mock_get_filter_cls):
         mock_get_filter_cls.return_value.INVERT_CHAR = '!'
         mock_get_filter_cls.return_value.DEFAULT_FILTER = 'mock default filter'
@@ -523,7 +522,7 @@ class MockTree(dict):
     nodetype = 'parent'
     path = 'mock/path'
 
-class Test_torrent_path(asynctest.TestCase):
+class Test_torrent_path(unittest.IsolatedAsyncioTestCase):
     def assert_no_candidates(self, cands_or_cats):
         if not cands_or_cats:
             return True  # Must be something like None, (), []
@@ -534,8 +533,8 @@ class Test_torrent_path(asynctest.TestCase):
             for cands in cands_or_cats:
                 self.assertFalse(cands)
 
-    @asynctest.patch('stig.completion.candidates.torrent_filter')
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_no_path_given_completes_torrent_filter(self, mock_torrents, mock_torrent_filter):
         mock_torrent_filter.return_value = (Candidates(('mock torrent_filter() candidates',),
                                                        curarg_seps=('.', ',')),)
@@ -546,22 +545,22 @@ class Test_torrent_path(asynctest.TestCase):
         mock_torrent_filter.assert_called_once_with('id=foo')
         mock_torrents.assert_not_called()
 
-    @asynctest.patch('stig.completion.candidates.torrent_filter')
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates.torrent_filter')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_path_given_completes_torrent_path(self, mock_torrents, mock_torrent_filter):
         await candidates.torrent_path(Arg('id=foo/a/b/c', curpos=7))
         mock_torrent_filter.assert_not_called()
         mock_torrents.assert_called_once_with('id=foo', keys=('files',), from_cache=True)
 
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_no_success_when_requesting_torrents(self, mock_torrents):
         mock_torrents.return_value = SimpleNamespace(success=False)
         cands = await candidates.torrent_path(Arg('id=foo/bar/baz', curpos=8))
         self.assert_no_candidates(cands)
         mock_torrents.assert_called_once_with('id=foo', keys=('files',), from_cache=True)
 
-    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates._utils.find_subtree')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_single_file_in_torrent(self, mock_torrents, mock_find_subtree):
         mock_find_subtree.return_value = None
         mock_torrent_list = [{'name': 'Mock Torrent', 'files': MagicMock()}]
@@ -572,8 +571,8 @@ class Test_torrent_path(asynctest.TestCase):
         mock_find_subtree.assert_called_once_with(mock_torrent_list[0],
                                                   Args(('a', 'b'), curarg_index=1, curarg_curpos=1))
 
-    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates._utils.find_subtree')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_only_files(self, mock_torrents, mock_find_subtree):
         mock_files = MockTree(foo=MockTree(bar=MockTree(),
                                            ber=MockFile('ber'),
@@ -588,8 +587,8 @@ class Test_torrent_path(asynctest.TestCase):
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
 
-    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates._utils.find_subtree')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_only_directories(self, mock_torrents, mock_find_subtree):
         mock_files = MockTree(foo=MockTree(bar=MockTree(),
                                            ber=MockTree(),
@@ -604,8 +603,8 @@ class Test_torrent_path(asynctest.TestCase):
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
 
-    @asynctest.patch('stig.completion.candidates._utils.find_subtree')
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates._utils.find_subtree')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_only_any(self, mock_torrents, mock_find_subtree):
         mock_files = MockTree(foo=MockTree(bar=MockTree(),
                                            ber=MockTree(),
@@ -620,7 +619,7 @@ class Test_torrent_path(asynctest.TestCase):
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
         self.assertEqual(mock_find_subtree.call_args_list, [call(mock_torrent_list[0], ('',))])
 
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_only_auto_with_path_pointing_to_file(self, mock_torrents):
         mock_files = MockTree(foo=MockTree(bar=MockFile('bar'),
                                            ber=MockTree(),
@@ -633,7 +632,7 @@ class Test_torrent_path(asynctest.TestCase):
         self.assertEqual(cands, exp_cands)
         mock_torrents.assert_called_with('id=foo', keys=('files',), from_cache=True)
 
-    @asynctest.patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
+    @patch('stig.completion.candidates.objects.srvapi.torrent.torrents')
     async def test_only_auto_with_path_pointing_to_directory(self, mock_torrents):
         mock_files = MockTree(foo=MockTree(bar=MockFile('bar'),
                                            ber=MockTree(baz=MockFile('baz'),
