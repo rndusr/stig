@@ -16,9 +16,9 @@ class Stub:
     def __call__(self, sender, **kwargs):
         pass
 
-class TestFreeSpaceAPI(asynctest.ClockedTestCase):
-    async def setUp(self):
-        self.get_free_space = CoroutineMock()
+class TestFreeSpaceAPI(ClockedTestCase):
+    async def asyncSetUp(self):
+        self.get_free_space = AsyncMock()
 
         class FreeSpaceAPI(FreeSpaceAPIBase):
             get_free_space = self.get_free_space
