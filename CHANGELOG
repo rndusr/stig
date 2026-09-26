@@ -1,5 +1,7 @@
 2026-??-?? 0.??.??
     * Added support for JSON-RPC 2.0 protocol introduced by Transmission 4.1.0.
+    * New command: fileopen.
+    * Added support for sequential downloading.
 
 
 2026-01-24 0.14.2a0
