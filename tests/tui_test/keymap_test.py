@@ -37,6 +37,11 @@ class TestKey(unittest.TestCase):
         self.assertEqual(Key('alt-space'), Key('meta  '))
         self.assertEqual(Key('alt-pgup'), Key('meta page up'))
 
+        self.assertEqual(Key('focus in'), Key('focus:in'))
+        self.assertEqual(Key('focus out'), Key('focus:out'))
+        self.assertEqual(Key('begin paste'), Key('paste:begin'))
+        self.assertEqual(Key('end paste'), Key('paste:end'))
+
     def test_compare_Key_with_str(self):
         self.assertEqual(Key('enter'), '\n')
         self.assertEqual(Key('enter'), 'return')

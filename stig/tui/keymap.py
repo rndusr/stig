@@ -35,6 +35,8 @@ class Key(str):
         (re.compile(r'\bpage up$', flags=re.I),              r'pgup'),
         (re.compile(r'\bpage down$', flags=re.I),            r'pgdn'),
         (re.compile(r'\bpage dn$', flags=re.I),              r'pgdn'),
+        (re.compile(r'\bfocus (in|out)\b$', flags=re.I),     r'focus:\1'),
+        (re.compile(r'\b(begin|end) paste\b$', flags=re.I),  r'paste:\1'),
         (re.compile(r' '),                                   r'-'),
         # The first part in key combos must always be the same, but the part
         # after must be preserved. <alt-l> is not the same as <alt-L>.
@@ -46,7 +48,11 @@ class Key(str):
     _FKEYS = ('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
               'F13', 'F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20')
     _KEYNAMES = ('escape', 'space', 'home', 'end', 'tab', 'delete', 'backspace', 'insert',
-                 'enter', 'pgup', 'pgdn', 'left', 'right', 'up', 'down') + _FKEYS
+                 'enter', 'pgup', 'pgdn', 'left', 'right', 'up', 'down',
+                 # Keys containing ":" are pseudo keys that communicate non-keyboard events, like
+                 # the terminal getting (un)focused.
+                 'focus:in', 'focus:out', 'paste:begin', 'paste:end',
+                 ) + _FKEYS
     _cache = {}
 
     def __new__(cls, key):
