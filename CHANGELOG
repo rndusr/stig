@@ -1,7 +1,8 @@
-2026-??-?? 0.??.??
-    * Added support for JSON-RPC 2.0 protocol introduced by Transmission 4.1.0.
-    * New command: fileopen.
-    * Added support for sequential downloading.
+2026-??-?? 0.15.0a0
+    * Added support for JSON-RPC 2.0 protocol introduced by Transmission 4.1.0. (Thanks to @rsekman)
+    * New command: fileopen. (Thanks to @rsekman)
+    * Added support for sequential downloading. (Thanks to @rsekman)
+    * Fixed compatibility with newer urwid versions.
 
 
 2026-01-24 0.14.2a0
