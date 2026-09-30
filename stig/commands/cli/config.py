@@ -70,7 +70,3 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
 class LinkPathCmd(base.LinkPathCmd):
     provides = {'cli'}
-
-
-class LabelCmd(base.LabelCmd, mixin.make_request, mixin.select_torrents):
-    provides = {'cli'}
