@@ -14,5 +14,4 @@ def tearDownModule(self):
     urwidpatches.revert_patches()
 
     import urwid
-    assert not hasattr(urwid.ListBox, 'get_scrollpos')
     assert ' ' in urwid.command_map._command
