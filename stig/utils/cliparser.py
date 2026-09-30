@@ -928,6 +928,9 @@ class Arg(str):
             return NotImplemented
         return super().__eq__(other) and self.curpos == other.curpos
 
+    def __ne__(self, other):
+        return not self == other
+
     def __hash__(self):
         return super().__hash__()
 
