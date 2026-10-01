@@ -168,7 +168,7 @@ class TestTorrentFilter(unittest.TestCase, HelpersMixin):
     def test_path(self):
         self.check_str_filter(TorrentFilter,
                               filter_names=('path',),
-                              key='path')
+                              key='local-path')
 
     def test_error(self):
         self.check_str_filter(TorrentFilter,

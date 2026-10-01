@@ -298,9 +298,9 @@ class TestTimedelta(unittest.TestCase):
             self.assertEqual(sorted(shuffle(lst)), lst)
 
     def test_bool(self):
-        for td in (utils.Timedelta(random.randint(-1e5, 1e5) * MIN),
-                   utils.Timedelta(random.randint(-1e5, 1e5) * HOUR),
-                   utils.Timedelta(random.randint(-1e5, 1e5) * DAY)):
+        for td in (utils.Timedelta(random.randint(int(-1e5), int(1e5)) * MIN),
+                   utils.Timedelta(random.randint(int(-1e5), int(1e5)) * HOUR),
+                   utils.Timedelta(random.randint(int(-1e5), int(1e5)) * DAY)):
             self.assertEqual(bool(td), True)
 
         for td in (utils.Timedelta(utils.Timedelta.UNKNOWN),

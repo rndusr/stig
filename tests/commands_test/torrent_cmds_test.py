@@ -1,4 +1,5 @@
 import os
+import pathlib
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
@@ -468,8 +469,12 @@ class TestMoveTorrentsCmd(CommandTestCase):
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo'), curarg_index=1, curarg_curpos=3))
         mock_torrent_filter.assert_called_once_with('foo')
-        mock_fs_path.assert_called_once_with('foo', base=self.cfg['srv.path.complete'],
-                                             directories_only=True, expand_home_directory=False)
+        mock_fs_path.assert_called_once_with(
+            'foo',
+            base=pathlib.PurePath(self.cfg['srv.path.complete']),
+            directories_only=True,
+            expand_home_directory=False,
+        )
         self.assertEqual(cands, (Candidates(('d', 'e', 'f')),
                                  Candidates(('a', 'b', 'c'))))
 
@@ -493,8 +498,12 @@ class TestMoveTorrentsCmd(CommandTestCase):
 
         cands = await MoveTorrentsCmd.completion_candidates(Args(('move', 'foo', 'bar'), curarg_index=2, curarg_curpos=3))
         mock_torrent_filter.assert_not_called()
-        mock_fs_path.assert_called_once_with('bar', base=self.cfg['srv.path.complete'],
-                                             directories_only=True, expand_home_directory=False)
+        mock_fs_path.assert_called_once_with(
+            'bar',
+            base=pathlib.PurePath(self.cfg['srv.path.complete']),
+            directories_only=True,
+            expand_home_directory=False,
+        )
 
         self.assertEqual(cands, Candidates(('d', 'e', 'f')))
 
