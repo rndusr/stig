@@ -176,3 +176,56 @@ class AsyncioEventLoop_patched(urwid.AsyncioEventLoop):
             raise self._exc_info
 
 _patched_classes['AsyncioEventLoop'] = AsyncioEventLoop_patched
+
+
+# Add support for ScrollBar class (see stig.tui.scroll)
+# https://github.com/urwid/urwid/issues/226
+class ListBox_patched(urwid.ListBox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._rows_max = None
+
+    def _invalidate(self):
+        super()._invalidate()
+        self._rows_max = None
+
+    def get_scrollpos(self, size, focus=False):
+        """Current scrolling position
+
+        Lower limit is 0, upper limit is the highest index of `body`.
+        """
+        middle, top, bottom = self.calculate_visible(size, focus)
+        if middle is None:
+            return 0
+        else:
+            offset_rows, _, focus_pos, _, _ = middle
+            maxcol, maxrow = size
+            flow_size = (maxcol,)
+
+            body = self.body
+            if hasattr(body, 'positions'):
+                # For body[pos], pos can be anything, not just an int.  In that
+                # case, the positions() method returns an interable of valid
+                # positions.
+                positions = tuple(self.body.positions())
+                focus_index = positions.index(focus_pos)
+                widgets_above_focus = (body[pos] for pos in positions[:focus_index])
+            else:
+                # Treat body like a normal list
+                widgets_above_focus = (w for w in body[:focus_pos])
+
+            rows_above_focus = sum(w.rows(flow_size) for w in widgets_above_focus)
+            rows_above_top = rows_above_focus - offset_rows
+            return rows_above_top
+
+    def rows_max(self, size, focus=False):
+        if self._rows_max is None:
+            flow_size = (size[0],)
+            body = self.body
+            if hasattr(body, 'positions'):
+                self._rows_max = sum(body[pos].rows(flow_size) for pos in body.positions())
+            else:
+                self._rows_max = sum(w.rows(flow_size) for w in self.body)
+        return self._rows_max
+
+_patched_classes['ListBox'] = ListBox_patched
