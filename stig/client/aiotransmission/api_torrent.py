@@ -1119,6 +1119,89 @@ class TorrentAPI(TorrentAPIBase):
         else:
             return Response(success=True, torrents=response.torrents, msgs=msgs, errors=errors)
 
+    async def tracker_replace(self, torrents, old_url, new_url, partial_match=True):
+        """
+        Replace tracker announce URL with a new URL on torrents
+
+        torrents:      See `torrents` method
+        old_url:       Existing announce URL (exact or partial match)
+        new_url:       New announce URL to replace it with
+        partial_match: True if old_url matches existing URLs partially
+                       (e.g. 'example.org' matches 'http://tracker.example.org/')
+
+        Return Response with the following properties:
+            torrents: Tuple of Torrents with the keys 'id', 'name' and 'trackers'
+            success:  True if any trackers were replaced, False otherwise
+            msgs:     List of info messages
+            errors:   List of error messages
+        """
+        if not old_url or not new_url:
+            return Response(success=False, torrents=(), errors=('Old and new URL must be provided',))
+
+        if old_url == new_url:
+            return Response(success=False, torrents=(), errors=('Old and new URL are identical',))
+
+        # Get wanted torrent IDs
+        response = await self.torrents(torrents, keys=('id',))
+        if not response.success:
+            return Response(success=False, torrents=(), errors=response.errors)
+        elif len(response.torrents) <= 0:
+            return Response(success=False, torrents=(), errors=('No torrents matched',))
+        else:
+            torids = tuple(t['id'] for t in response.torrents)
+
+        # Get raw tracker lists for unaltered tracker IDs.
+        response = await self._request(self.rpc.torrent_get, ids=torids,
+                                       fields=('id', 'name', 'trackers'))
+        if not response.success or len(response.result) <= 0:
+            return Response(success=False, torrents=(), errors=response.errors)
+        else:
+            raw_tor_dict = {raw_tor['id']: raw_tor for raw_tor in response.result}
+
+        msgs = []
+        errors = []
+        replaced_torids = set()
+
+        for torid, raw_tor in raw_tor_dict.items():
+            matching_trk_ids = []
+            for raw_trk in raw_tor['trackers']:
+                existing_url = raw_trk['announce']
+                if old_url == existing_url or partial_match and old_url in existing_url:
+                    matching_trk_ids.append(raw_trk['id'])
+                    msgs.append('%s: Replacing tracker: %s -> %s' % (raw_tor['name'], existing_url, new_url))
+
+            if not matching_trk_ids:
+                continue
+
+            existing_announce_urls = tuple(trk['announce'] for trk in raw_tor['trackers'])
+            if str(new_url) not in existing_announce_urls:
+                add_resp = await self._torrent_action(self.rpc.torrent_set, (torid,),
+                                                      method_args={'trackerAdd': [str(new_url)]})
+                if not add_resp.success:
+                    errors.extend(add_resp.errors)
+                    continue
+
+            rem_resp = await self._torrent_action(self.rpc.torrent_set, (torid,),
+                                                  method_args={'trackerRemove': matching_trk_ids})
+            if not rem_resp.success:
+                errors.extend(rem_resp.errors)
+                continue
+
+            replaced_torids.add(torid)
+
+        if not replaced_torids:
+            if not errors:
+                errors.append('No matching trackers found: %r' % old_url)
+            return Response(success=False, torrents=(), msgs=msgs, errors=errors)
+
+        # Get new torrent list with updated trackers
+        response = await self.torrents(tuple(replaced_torids), keys=('id', 'name', 'trackers'))
+        if not response.success:
+            errors.extend(response.errors)
+            return Response(success=False, torrents=(), msgs=msgs, errors=errors)
+        else:
+            return Response(success=True, torrents=response.torrents, msgs=msgs, errors=errors)
+
     async def announce(self, torrents):
         """
         Announce torrents to their tracker(s)

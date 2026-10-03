@@ -487,3 +487,15 @@ class TestAddingTorrentsSequentiallyUnsupported(TorrentAPITestCase):
                                            '(needs Transmission 4.1.0 or newer)',))
         arguments = self.daemon.requests[-1]['arguments']
         self.assertNotIn('sequential_download', arguments)
+
+
+class TestTrackerReplace(TorrentAPITestCase):
+    async def test_empty_urls(self):
+        response = await self.api.tracker_replace(TorrentFilter('id=1'), '', 'http://new')
+        self.assertEqual(response.success, False)
+        self.assertEqual(response.errors, ('Old and new URL must be provided',))
+
+    async def test_identical_urls(self):
+        response = await self.api.tracker_replace(TorrentFilter('id=1'), 'http://same', 'http://same')
+        self.assertEqual(response.success, False)
+        self.assertEqual(response.errors, ('Old and new URL are identical',))

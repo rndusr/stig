@@ -238,7 +238,7 @@ class TestTorrentFilter(unittest.TestCase, HelpersMixin):
                 obj.domain = domain
                 return obj
         self.check_filter(TorrentFilter,
-                          filter_names=('tracker', 'trk'),
+                          filter_names=('tracker', 'trk', 'domain', 'dom'),
                           items=({'id': 1, 'trackers': []},
                                  {'id': 2, 'trackers': [{'url-announce': MockURL('example.org')}]},
                                  {'id': 3, 'trackers': [{'url-announce': MockURL('example.net')},
@@ -251,6 +251,25 @@ class TestTorrentFilter(unittest.TestCase, HelpersMixin):
                                       ('{name}!=example.net', (1, 2)),
                                       ('{name}~example', (2, 3)),
                                       ('{name}~net', (3,))))
+
+    def test_url_announce(self):
+        from stig.client.utils import URL
+        self.check_filter(TorrentFilter,
+                          filter_names=('url-announce', 'announce', 'an'),
+                          items=({'id': 1, 'trackers': []},
+                                 {'id': 2, 'trackers': [{'url-announce': URL('http://example.org:1234/announce')}]},
+                                 {'id': 3, 'trackers': [{'url-announce': URL('https://example.net:5678/announce')},
+                                                        {'url-announce': URL('http://example.org:1234/announce')}]}),
+                          test_cases=(('{name}', (2, 3)),
+                                      ('!{name}', (1,)),
+                                      ('{name}=http://example.org:1234/announce', (2, 3)),
+                                      ('{name}=https://example.net:5678/announce', (3,)),
+                                      ('{name}!=http://example.org:1234/announce', (1,)),
+                                      ('{name}!=https://example.net:5678/announce', (1, 2)),
+                                      ('{name}~http://', (2, 3)),
+                                      ('{name}~https://', (3,)),
+                                      ('{name}~:1234', (2, 3)),
+                                      ('{name}~:5678', (3,))))
 
     def test_eta(self):
         self.check_timedelta_filter(TorrentFilter, default_sign=1,

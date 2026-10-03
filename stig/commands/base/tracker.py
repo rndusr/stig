@@ -145,38 +145,72 @@ class TrackerCmdbase(metaclass=CommandMeta):
     aliases = ('trk',)
     provides = set()
     category = 'tracker'
-    description = 'Add/Remove trackers to/from torrents'
+    description = 'Add/Remove/Replace trackers to/from torrents'
     _ADD_ACTIONS = ('add',)
     _REMOVE_ACTIONS = ('remove', 'rm')
-    _ALL_ACTIONS = _ADD_ACTIONS + _REMOVE_ACTIONS
-    usage = ('tracker %s <URL>' % '|'.join(_ALL_ACTIONS),
-             'tracker %s <TORRENT FILTER> <URL> <URL> ...' % '|'.join(_ALL_ACTIONS))
+    _REPLACE_ACTIONS = ('replace',)
+    _ALL_ACTIONS = _ADD_ACTIONS + _REMOVE_ACTIONS + _REPLACE_ACTIONS
+    usage = ('tracker %s <URL>' % '|'.join(_ADD_ACTIONS + _REMOVE_ACTIONS),
+             'tracker %s <TORRENT FILTER> <URL> <URL> ...' % '|'.join(_ADD_ACTIONS + _REMOVE_ACTIONS),
+             'tracker %s <OLD URL> <NEW URL>' % '|'.join(_REPLACE_ACTIONS),
+             'tracker %s <TORRENT FILTER> <OLD URL> <NEW URL>' % '|'.join(_REPLACE_ACTIONS))
 
     examples = ('tracker add !tracker http://tracker3.example.org:12345/announce',
-                'tracker remove all tracker1.example tracker2.example ')
+                'tracker remove all tracker1.example tracker2.example ',
+                'tracker replace url-announce~old.example http://old.example/announce https://new.example/announce',
+                'tracker replace http://old.example/announce https://new.example/announce')
     argspecs = (
         {'names': ('ACTION',)},
 
         make_X_FILTER_spec('TORRENT', or_focused=True, nargs='?'),
 
         {'names': ('URL',), 'nargs': '+',
-         'description': ('Announce URL to add to or remove from matching torrents; '
-                         'may be partial (e.g. domain name) when removing trackers')},
+         'description': ('Announce URL(s) to add, remove, or replace (old and new URL for replace); '
+                         'may be partial (e.g. domain name) when removing or replacing trackers')},
     )
 
     async def run(self, ACTION, TORRENT_FILTER, URL):
-        urls = tuple(URL)
-        try:
-            tfilter = self.select_torrents(TORRENT_FILTER,
-                                           allow_no_filter=False,
-                                           discover_torrent=True)
-        except ValueError as e:
-            raise CmdError(e)
+        if any(ACTION == action for action in self._REPLACE_ACTIONS):
+            if len(URL) == 1 and TORRENT_FILTER is not None:
+                old_url = TORRENT_FILTER
+                new_url = URL[0]
+                filter_arg = None
+            elif len(URL) == 2:
+                old_url = URL[0]
+                new_url = URL[1]
+                filter_arg = TORRENT_FILTER
+            else:
+                raise CmdError('Usage: tracker replace [<TORRENT FILTER>] <OLD URL> <NEW URL>')
 
-        if any(ACTION == action for action in self._ADD_ACTIONS):
+            try:
+                tfilter = self.select_torrents(filter_arg,
+                                               allow_no_filter=False,
+                                               discover_torrent=True)
+            except ValueError as e:
+                raise CmdError(e)
+
+            request = objects.srvapi.torrent.tracker_replace(tfilter, old_url, new_url)
+            log.debug('Replacing tracker %r with %r in %s torrents', old_url, new_url, tfilter)
+        elif any(ACTION == action for action in self._ADD_ACTIONS):
+            urls = tuple(URL)
+            try:
+                tfilter = self.select_torrents(TORRENT_FILTER,
+                                               allow_no_filter=False,
+                                               discover_torrent=True)
+            except ValueError as e:
+                raise CmdError(e)
+
             request = objects.srvapi.torrent.tracker_add(tfilter, urls)
             log.debug('Adding trackers to %s torrents: %s', tfilter, ', '.join(urls))
         elif any(ACTION == action for action in self._REMOVE_ACTIONS):
+            urls = tuple(URL)
+            try:
+                tfilter = self.select_torrents(TORRENT_FILTER,
+                                               allow_no_filter=False,
+                                               discover_torrent=True)
+            except ValueError as e:
+                raise CmdError(e)
+
             request = objects.srvapi.torrent.tracker_remove(tfilter, urls, partial_match=True)
             log.debug('Removing trackers from %s torrents: %s', tfilter, ', '.join(urls))
         else:
@@ -190,6 +224,6 @@ class TrackerCmdbase(metaclass=CommandMeta):
     def completion_candidates_posargs(cls, args):
         """Complete positional arguments"""
         if args.curarg_index == 1:
-            return candidates.Candidates(('add', 'remove'), label='Action')
+            return candidates.Candidates(('add', 'remove', 'replace'), label='Action')
         elif args.curarg_index == 2:
             return candidates.torrent_filter(args.curarg)
