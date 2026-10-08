@@ -5,7 +5,7 @@ def setUpModule():
     urwidpatches.apply_patches()
 
     import urwid
-    assert hasattr(urwid.ListBox, 'get_scrollpos')
+    assert urwid.ListBox.__name__ == 'ListBox_patched', urwid.ListBox
     assert ' ' not in urwid.command_map._command
 
 def tearDownModule(self):
@@ -14,5 +14,5 @@ def tearDownModule(self):
     urwidpatches.revert_patches()
 
     import urwid
-    assert not hasattr(urwid.ListBox, 'get_scrollpos')
+    assert urwid.ListBox.__name__ != 'ListBox_patched', urwid.ListBox
     assert ' ' in urwid.command_map._command
