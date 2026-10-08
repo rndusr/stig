@@ -1,0 +1,57 @@
+[project]
+name = "stig"
+description = "TUI and CLI client for the Transmission daemon"
+keywords = ["bittorrent", "torrent", "transmission"]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Environment :: Console",
+    "Operating System :: Unix",
+    "Development Status :: 3 - Alpha",
+]
+license = {text = "GPL-3.0-or-later"}
+authors = [
+  { name="Random User", email="rndusr@posteo.de" },
+]
+dynamic = ["version"]
+
+requires-python = ">=3.10"
+
+dependencies = [
+    "urwid>=2.6.12",
+    "urwidtrees==1.0.3",
+    "aiohttp==3.*",
+    "async_timeout",
+    "pyxdg",
+    "blinker",
+    "natsort",
+    "bidict",
+    "wcwidth",
+]
+
+[project.optional-dependencies]
+setproctitle = ['setproctitle']
+proxy = ['aiohttp-socks']
+dev = ['pytest']
+
+[project.urls]
+Repository = "https://github.com/rndusr/stig"
+Issues = "https://github.com/rndusr/stig/issues"
+Changelog = "https://github.com/rndusr/stig/raw/branch/master/CHANGELOG"
+
+[project.scripts]
+stig = "stig:run"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "stig.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["stig*"]
