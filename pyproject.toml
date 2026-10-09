@@ -3,7 +3,6 @@ name = "stig"
 description = "TUI and CLI client for the Transmission daemon"
 keywords = ["bittorrent", "torrent", "transmission"]
 classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -13,7 +12,7 @@ classifiers = [
     "Operating System :: Unix",
     "Development Status :: 3 - Alpha",
 ]
-license = {text = "GPL-3.0-or-later"}
+license = "GPL-3.0-or-later"
 authors = [
   { name="Random User", email="rndusr@posteo.de" },
 ]
