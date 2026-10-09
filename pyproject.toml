@@ -41,7 +41,7 @@ dev = ['pytest', 'tox']
 [project.urls]
 Repository = "https://github.com/rndusr/stig"
 Issues = "https://github.com/rndusr/stig/issues"
-Changelog = "https://github.com/rndusr/stig/raw/branch/master/CHANGELOG"
+Changelog = "https://raw.githubusercontent.com/rndusr/stig/refs/heads/master/CHANGELOG"
 
 [project.scripts]
 stig = "stig:run"
