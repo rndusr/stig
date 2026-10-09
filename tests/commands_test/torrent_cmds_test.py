@@ -329,9 +329,8 @@ class TestListTorrentsCmd(CommandTestCase):
                    select_torrents=mock_select_torrents,
                    get_torrent_sorter=mock_get_torrent_sorter,
                    get_torrent_columns=lambda self, columns, interface=None: ('name',))
-
-        from stig.commands.cli import torrent
-        torrent.TERMSIZE = SimpleNamespace(columns=None, lines=None)
+        self.patch('stig.commands.cli._table',
+                   TERMSIZE=os.terminal_size((None, None)))
 
     async def do(self, args, errors):
         tlist = (
