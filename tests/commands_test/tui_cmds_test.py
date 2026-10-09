@@ -1,4 +1,3 @@
-
 from unittest.mock import Mock, call, patch
 
 from resources_cmd import CommandTestCase
