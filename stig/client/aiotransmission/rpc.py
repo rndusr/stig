@@ -648,7 +648,7 @@ class TransmissionRPC:
         import aiohttp
 
         try:
-            from aiohttp_socks import  ProxyConnectionError, ProxyError, ProxyTimeoutError
+            from aiohttp_socks import ProxyConnectionError, ProxyError, ProxyTimeoutError
         except ImportError:
             class ProxyError(Exception): pass
             class ProxyConnectionError(Exception): pass
