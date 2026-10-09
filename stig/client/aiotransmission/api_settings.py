@@ -16,7 +16,8 @@ from types import SimpleNamespace
 import blinker
 
 from ..poll import RequestPoller
-from ..utils import Bool, BoolOrBandwidth, BoolOrPath, Int, Option, Path, const, convert
+from ..utils import (Bool, BoolOrBandwidth, BoolOrPath, RatioLimit,
+                     RatioLimitMode, Float, Int, Option, Path, const, convert)
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -334,6 +335,34 @@ class SettingsAPI(abc.Mapping, RequestPoller):
         """See `limit_peers_torrent`"""
         value = self._converters['limit.peers.torrent'](limit)
         await self._set('limit.peers.torrent', {'peer-limit-per-torrent': value})
+
+
+    @_setting(RatioLimit)
+    def limit_ratio(self):
+        """Default seed ratio limit"""
+        return self._get('limit.ratio', 'seedRatioLimit')
+
+    async def get_limit_ratio(self):
+        await self.update()
+        return self.limit_ratio
+
+    async def set_limit_ratio(self, value):
+        value = self._converters['limit.ratio'](value)
+        await self._set('limit.ratio', {'seedRatioLimit': value})
+
+
+    @_setting(RatioLimitMode)
+    def limit_ratio_enabled(self):
+        """Whether global ratio limit is respected by default"""
+        return self._get('limit.ratio.enabled', 'seedRatioLimited')
+
+    async def get_limit_ratio_enabled(self):
+        await self.update()
+        return self.limit_ratio_enabled
+
+    async def set_limit_ratio_enabled(self, value):
+        value = self._converters['limit.ratio.enabled'](value)
+        await self._set('limit.ratio.enabled', {'seedRatioLimited': bool(value)})
 
 
     @_setting(Option, options=('required', 'preferred', 'tolerated'),

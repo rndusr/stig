@@ -13,6 +13,7 @@
 
 from functools import partial
 
+from ..client.utils import RatioLimitMode
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
@@ -118,6 +119,25 @@ def _ratio_hr(t):
     else:
         return '%g' % ratio
 _ratio_mr = _ratio_hr
+
+
+def _limit_ratio_hr(t):
+    ratio = t['limit-ratio']
+    if isinstance(ratio, float):
+        return '%g' % (ratio,)
+    else:
+        return str(ratio)
+_limit_ratio_mr = _limit_ratio_hr
+
+
+def _limit_ratio_mode_hr(t):
+    mode = t['limit-ratio-mode']
+    if mode == RatioLimitMode('default'):
+        from ..objects import remotecfg
+        return str(remotecfg['srv.limit.ratio.enabled'])
+    else:
+        return str(mode)
+_limit_ratio_mode_mr = _limit_ratio_mode_hr
 
 
 def _available_hr(t):
@@ -263,6 +283,14 @@ SECTIONS = (
              needed_keys=('limit-rate-down',),
              human_readable=partial(_limit_rate_hr, 'down'),
              machine_readable=partial(_limit_rate_mr, 'down')),
+        Item('Ratio Limit',
+             needed_keys=('limit-ratio',),
+             human_readable=_limit_ratio_hr,
+             machine_readable=_limit_ratio_mr),
+        Item('Ratio Limit Mode',
+             needed_keys=('limit-ratio-mode',),
+             human_readable=_limit_ratio_mode_hr,
+             machine_readable=_limit_ratio_mode_mr),
     )},
 
     {'title': 'Peers', 'width': 18, 'items': (
