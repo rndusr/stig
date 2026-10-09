@@ -36,7 +36,7 @@ dependencies = [
 [project.optional-dependencies]
 setproctitle = ['setproctitle']
 proxy = ['aiohttp-socks']
-dev = ['pytest']
+dev = ['pytest', 'tox']
 
 [project.urls]
 Repository = "https://github.com/rndusr/stig"
