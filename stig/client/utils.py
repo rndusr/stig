@@ -145,6 +145,15 @@ class Ratio(Float):
         else:
             return super().without_unit
 
+class RatioLimit(multitype(Float.partial(min=0))):
+    pass
+
+class RatioLimitMode(multitype(Bool, Option.partial(options=('default',)))):
+    pass
+
+class RatioLimitOrMode(multitype(RatioLimit, RatioLimitMode)):
+    pass
+
 
 class Status(tuple):
     """A Torrent's status as a tuple of strings"""

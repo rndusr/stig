@@ -14,6 +14,7 @@
 import os
 
 from . import ColumnBase, _ensure_hide_unit
+from ..client.utils import RatioLimitMode
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -349,6 +350,40 @@ class Ratio(ColumnBase):
         return self.data['ratio']
 
 COLUMNS['ratio'] = Ratio
+
+
+class LimitRatio(ColumnBase):
+    header = {'left': 'Ratio limit'}
+    width = 11
+    min_width = 11
+    needed_keys = ('limit-ratio',)
+
+    def get_value(self):
+        mode = self.data['limit-ratio-mode']
+        if mode == RatioLimitMode('default'):
+            from ..objects import remotecfg
+            if remotecfg['srv.limit.ratio.enabled']:
+                return remotecfg['srv.limit.ratio']
+            else:
+                return 'unlimited'
+        elif mode:
+            return self.data['limit-ratio']
+        else:
+            return 'unlimited'
+
+COLUMNS['limit-ratio'] = LimitRatio
+
+
+class LimitRatioMode(ColumnBase):
+    header = {'left': 'Ratio limit mode'}
+    width = 16
+    min_width = 16
+    needed_keys = ('limit-ratio-mode',)
+
+    def get_value(self):
+        return self.data['limit-ratio-mode']
+
+COLUMNS['limit-ratio-mode'] = LimitRatioMode
 
 
 class RateUp(ColumnBase):
