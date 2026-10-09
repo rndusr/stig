@@ -15,7 +15,7 @@ import os
 import time
 
 from .. import base, ttypes, utils
-from ..utils import LazyDict
+from ..utils import LazyDict, RatioLimitMode
 
 from ...logging import make_logger  # isort:skip
 log = make_logger(__name__)
@@ -182,6 +182,19 @@ def _status(t):
 def _local_path(t):
     from ...objects import pathtranslator
     return str(pathtranslator.to_local(t['downloadDir']))
+
+def _limit_ratio_mode(t):
+    # RPC values for 'seedRatioMode' field:
+    # 0 = /* follow the global settings */
+    # 1 = /* override the global settings, seeding until a certain ratio */
+    # 2 = /* override the global settings, seeding regardless of ratio */
+    t_limit_ratio_mode = t['seedRatioMode']
+    if t_limit_ratio_mode == 0:
+        return RatioLimitMode('default')
+    elif t_limit_ratio_mode == 1:
+        return RatioLimitMode('enabled')
+    elif t_limit_ratio_mode == 2:
+        return RatioLimitMode('disabled')
 
 
 class TorrentFileID(tuple):
@@ -385,6 +398,8 @@ DEPENDENCIES = {
     'hash'                         : ('hashString',),
     'name'                         : ('name',),
     'ratio'                        : ('uploadRatio',),
+    'limit-ratio'                  : ('seedRatioLimit','seedRatioMode'),
+    'limit-ratio-mode'             : ('seedRatioMode',),
     'status'                       : ('status', 'percentDone', 'metadataPercentComplete', 'rateDownload',
                                       'rateUpload', 'peersConnected', 'trackerStats', 'isPrivate'),
     'path'                         : ('downloadDir',),
@@ -457,10 +472,12 @@ class Torrent(base.TorrentBase):
         '%metadata'          : lambda raw: raw['metadataPercentComplete'] * 100,
         '%verified'          : lambda raw: raw['recheckProgress'] * 100,
         '%available'         : _percent_available,
+        'size-available'     : _bytes_available,
         'status'             : _status,
         'peers-seeding'      : _count_seeds,
         'ratio'              : _modify_ratio,
-        'size-available'     : _bytes_available,
+        'limit-ratio-mode'   : _limit_ratio_mode,
+        'local-path'         : _local_path,
 
         # Daemons older than 4.1.0 don't know sequential downloading and drop
         # these fields from 'torrent-get' requests without complaining

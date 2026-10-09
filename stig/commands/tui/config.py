@@ -78,3 +78,8 @@ class RateLimitCmd(base.RateLimitCmdbase,
 
 class LinkPathCmd(base.LinkPathCmd):
     provides = {'tui'}
+
+
+class RatioLimitCmd(base.RatioLimitCmd,
+                    mixin.make_request, mixin.select_torrents, mixin.polling_frenzy):
+    provides = {'tui'}
