@@ -20,6 +20,7 @@ class _SortSpec(SortSpec):
 
 class TrackerSorter(SorterBase):
     DEFAULT_SORT = 'domain'
+    # fmt: off
     SORTSPECS = {
         'torrent':         _SortSpec(lambda t: t['tname'].casefold(),
                                      description='torrent name'),
@@ -56,3 +57,4 @@ class TrackerSorter(SorterBase):
                                      aliases=('nsc',),
                                      description='next time the torrent will be scraped'),
     }
+    # fmt: on

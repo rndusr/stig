@@ -56,6 +56,7 @@ def _match_coerced_value(setting, key, op, value):
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
+    # fmt: off
     BOOLEAN_FILTERS = FilterSpecDict({
         'all'     : BoolFilterSpec(None,
                                    aliases=('*',),
@@ -85,6 +86,7 @@ class _SingleFilter(Filter):
                                       aliases=('desc',),
                                       description='Match VALUE against description'),
     })
+    # fmt: on
 
 
 class SettingFilter(FilterChain):

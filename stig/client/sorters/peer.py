@@ -27,6 +27,7 @@ def _get_hostname_or_ip(torrent):
 
 class PeerSorter(SorterBase):
     DEFAULT_SORT = 'torrent'
+    # fmt: off
     SORTSPECS = {
         'torrent'     : _SortSpec(lambda t: t['tname'].casefold(),
                                   description='torrent name'),
@@ -55,3 +56,4 @@ class PeerSorter(SorterBase):
         'port'        : _SortSpec(lambda t: t['port'],
                                   description='port number'),
     }
+    # fmt: on

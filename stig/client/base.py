@@ -31,6 +31,7 @@ class TorrentBase(abc.Mapping):
     '__getitem__' and '__iter__'.
     """
 
+    # fmt: off
     TYPES = {
         'id'                           : int,
         'hash'                         : utils.SHA1,
@@ -90,6 +91,7 @@ class TorrentBase(abc.Mapping):
 
         'labels'                       : set,
     }
+    # fmt: on
 
     def update(self, raw_torrent):
         raise NotImplementedError()

@@ -21,6 +21,7 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
+# fmt: off
 ALIASES = {'mark'     : 'marked',
            'n'        : 'name',
            'hash'     : 'infohash',
@@ -47,6 +48,7 @@ ALIASES = {'mark'     : 'marked',
            'tsta'     : 'started',
            'tact'     : 'activity',
            'tcmp'     : 'completed'}
+# fmt: on
 
 
 class Marked(ColumnBase):

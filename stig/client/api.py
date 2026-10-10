@@ -36,10 +36,12 @@ class API():
     """
 
     # Make errors available without having to import them everywhere
+    # fmt: off
     ClientError     = errors.ClientError
     ConnectionError = errors.ConnectionError
     RPCError        = errors.RPCError
     AuthError       = errors.AuthError
+    # fmt: on
 
     def __init__(self, host='localhost', port=9091, *, tls=False, user=None,
                  password=None, path='/transmission/rpc', interval=1):

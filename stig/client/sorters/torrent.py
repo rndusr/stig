@@ -21,6 +21,7 @@ class _SortSpec(SortSpec):
 
 class TorrentSorter(SorterBase):
     DEFAULT_SORT = 'name'
+    # fmt: off
     SORTSPECS = {
         'id':                _SortSpec(lambda t: t['id'],
                                        needed_keys=('id',),
@@ -128,6 +129,7 @@ class TorrentSorter(SorterBase):
                                        needed_keys=('time-completed',),
                                        description='time of completion'),
     }
+    # fmt: on
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
