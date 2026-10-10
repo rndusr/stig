@@ -18,6 +18,7 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
+# fmt: off
 ALIASES = {'dom'   : 'domain',
            'an'    : 'url-announce',
            'sc'    : 'url-scrape',
@@ -32,6 +33,7 @@ ALIASES = {'dom'   : 'domain',
            'nan'   : 'next-announce',
            'lsc'   : 'last-scrape',
            'nsc'   : 'next-scrape'}
+# fmt: on
 
 
 class Torrent(ColumnBase):
