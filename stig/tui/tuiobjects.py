@@ -85,9 +85,11 @@ def _greedy_spacer():
 # the output of "help tui".
 
 topbar = Group(cls=urwid.Columns)
+# fmt: off
 topbar.add(name='host',   widget=ConnectionStatusWidget(), options='pack')
 topbar.add(name='_spacer', widget=urwid.AttrMap(_greedy_spacer(), 'topbar'))
 topbar.add(name='help',   widget=QuickHelpWidget(), options='pack')
+# fmt: on
 
 tabs = keymap.wrap(Tabs, context='tabs')(
     tabbar=urwid.AttrMap(TabBar(), 'tabs.unfocused')
