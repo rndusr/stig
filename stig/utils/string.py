@@ -10,9 +10,10 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import os
-from wcwidth import wcswidth
 from unicodedata import east_asian_width as _east_asian_width
 from unicodedata import normalize as _normalize_unicode
+
+from wcwidth import wcswidth
 
 
 def normalize_unicode(string):

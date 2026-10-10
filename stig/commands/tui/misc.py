@@ -23,8 +23,9 @@ class HelpCmd(base.HelpCmdbase):
     provides = {'tui'}
 
     def display_help(self, topics, lines):
-        from ...tui import tuiobjects
         from urwid import ScrollBar
+
+        from ...tui import tuiobjects
         from ...tui.views import SearchableText
 
         if hasattr(self, 'title'):
