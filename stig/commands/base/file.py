@@ -99,10 +99,12 @@ class PriorityCmdbase(metaclass=CommandMeta):
              'priority <PRIORITY> <TORRENT FILTER> <FILE FILTER>')
     examples = ('priority low',
                 'priority high "that torrent" size>12M')
+    # fmt: off
     _PRIORITY = {'off'    : ('o', '0', 'off'),
                  'low'    : ('l', '-', 'low'),
                  'normal' : ('n', '=', 'normal'),
                  'high'   : ('h', '+', 'high')}
+    # fmt: on
     argspecs = (
         {'names': ('PRIORITY',),
          'description': 'File priority; must be %s, %s or %s' % (
