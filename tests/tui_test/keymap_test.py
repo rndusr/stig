@@ -1,6 +1,6 @@
+import asyncio
 import unittest
 
-import asyncio
 import urwid
 
 from stig.tui.keymap import Key, KeyChain, KeyMap
