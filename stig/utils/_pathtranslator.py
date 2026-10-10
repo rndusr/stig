@@ -10,7 +10,8 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 from pathlib import Path
-from bidict import bidict, ValueDuplicationError
+
+from bidict import ValueDuplicationError, bidict
 
 from ..logging import make_logger  # isort:skip
 

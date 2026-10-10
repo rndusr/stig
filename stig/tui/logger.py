@@ -14,9 +14,9 @@ import logging
 import time
 
 import urwid
+from urwid import Scrollable, ScrollBar
 
 from .main import redraw_screen
-from urwid import Scrollable, ScrollBar
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)

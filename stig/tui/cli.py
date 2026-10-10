@@ -14,10 +14,10 @@ import os
 
 import blinker
 import urwid
+from urwid import ScrollBar
 
 from .group import Group
 from .main import redraw_screen
-from urwid import ScrollBar
 
 from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)

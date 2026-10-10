@@ -10,10 +10,10 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import urwid
+from urwid import Scrollable, ScrollBar
 
 from ... import objects
 from ...views.details import SECTIONS
-from urwid import Scrollable, ScrollBar
 from ..main import redraw_screen
 
 from ...logging import make_logger  # isort:skip
