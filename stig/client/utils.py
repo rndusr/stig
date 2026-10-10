@@ -149,6 +149,7 @@ class Ratio(Float):
 class Status(tuple):
     """A Torrent's status as a tuple of strings"""
 
+    # fmt: off
     IDLE      = 'idle'
     DOWNLOAD  = 'downloading'
     UPLOAD    = 'uploading'
@@ -159,6 +160,7 @@ class Status(tuple):
     ISOLATED  = 'isolated'
     VERIFY    = 'verifying'
     INIT      = 'discovering'
+    # fmt: on
     ORDER = (VERIFY, DOWNLOAD, UPLOAD, INIT, CONNECTED,
              ISOLATED, QUEUED, IDLE, STOPPED, SEED)
 
@@ -175,6 +177,7 @@ class Status(tuple):
         return self.ORDER.index(self[0]) >= self.ORDER.index(other[0])
 
 
+# fmt: off
 SECONDS = (('y', 31557600),  # 365.25 days
            ('M',  2629800),  # 1 year / 12
            ('w',   604800),  # 7 days
@@ -182,13 +185,16 @@ SECONDS = (('y', 31557600),  # 365.25 days
            ('h',     3600),
            ('m',       60),
            ('s',        1))
+# fmt: on
 
 class Timedelta(int):
     # To sort unknown and not applicable Timedeltas below the rest, these
     # constants have large values that are very likely never encountered as
     # actual values.
+    # fmt: off
     UNKNOWN        = 1e10
     NOT_APPLICABLE = 1e11
+    # fmt: on
     CONSTANTS = (UNKNOWN, NOT_APPLICABLE)
     _CONSTANTS_MAP_STRINGS = {'unknown': UNKNOWN, 'na': NOT_APPLICABLE,
                               'n/a': NOT_APPLICABLE, 'not applicable': NOT_APPLICABLE}
@@ -354,16 +360,19 @@ class Timedelta(int):
 class Timestamp(float):
     # These constants get "random" fractions added to make it less likely that
     # any real-world value equals them.
+    # fmt: off
     NOW            = -2 + 0.123456789
     SOON           = -1 + 0.123456789
     UNKNOWN        = 1e10 + 0.123456789
     NOT_APPLICABLE = 1e11 + 0.123456789
     NEVER          = -1e12 + 0.123456789
+    # fmt: on
     CONSTANTS = (NOW, SOON, UNKNOWN, NOT_APPLICABLE, NEVER)
     _CONSTANTS_MAP_STRINGS = {'now': NOW, 'soon': SOON, 'unknown': UNKNOWN,
                               'na': NOT_APPLICABLE, 'n/a': NOT_APPLICABLE, 'not applicable': NOT_APPLICABLE,
                               'never': NEVER}
 
+    # fmt: off
     _FORMATS_DATE = (('%Y',       ('year',)),
                      ('%Y-%m',    ('year', 'month')),
                      ('%Y-%m-%d', ('year', 'month', 'day')),
@@ -371,6 +380,7 @@ class Timestamp(float):
                      ('%m-%d',    ('month', 'day')))
     _FORMATS_TIME = (('%H:%M',    ('hour', 'minute')),
                      ('%H:%M:%S', ('hour', 'minute', 'second')))
+    # fmt: on
 
     # Create all combinations of date, time and date+time formats, keeping track
     # of the values they specify
