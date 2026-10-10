@@ -71,9 +71,11 @@ are exceptions:
 
 # flake8: noqa
 
+# fmt: off
 OPS_AND = ('&', 'and')
 OPS_OR  = ('|', 'or')
 OPS_SEQ = (';', 'also')
+# fmt: on
 OPS = OPS_AND + OPS_OR + OPS_SEQ
 
 from .cmdbase import CommandMeta, _CommandBase
