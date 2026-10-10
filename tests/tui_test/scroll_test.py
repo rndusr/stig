@@ -1,7 +1,6 @@
 import unittest
 
 import urwid
-
 from urwid import Scrollable, ScrollBar
 
 from .resources_tui import get_canvas_text

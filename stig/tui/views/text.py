@@ -10,9 +10,9 @@
 # http://www.gnu.org/licenses/gpl-3.0.txt
 
 import urwid
+from urwid import Scrollable
 
 from ...utils.string import strwidth
-from urwid import Scrollable
 
 
 class SearchableText(urwid.WidgetWrap):
