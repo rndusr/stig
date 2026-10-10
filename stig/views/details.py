@@ -254,7 +254,7 @@ SECTIONS = (
              needed_keys=('error',)),
     )},
 
-    {'title': 'Limits', 'width': 24, 'items': (
+    {'title': 'Limits', 'width': 27, 'items': (
         Item('Upload rate',
              needed_keys=('limit-rate-up',),
              human_readable=partial(_limit_rate_hr, 'up'),
