@@ -154,10 +154,12 @@ class QuickHelpWidget(urwid.Text):
 
         def maybe_add_entry(items, label, key):
             if key is not None:
+                # fmt: off
                 items.append([('topbar.help.space',  '   '),
                               ('topbar.help.key',    str(key)),
                               ('topbar.help.equals', ' '),
                               ('topbar.help.label',  label)])
+                # fmt: on
 
         items = []
         maybe_add_entry(items, 'Settings', get_key('tab set', contexts=('main', None)))
