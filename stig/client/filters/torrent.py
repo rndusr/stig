@@ -38,6 +38,7 @@ _STATUS_STOPPED   = Status.STOPPED
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
+    # fmt: off
     BOOLEAN_FILTERS = FilterSpecDict({
         'all'         : BoolFilterSpec(None,
                                        aliases=('*',),
@@ -270,6 +271,7 @@ class _SingleFilter(Filter):
                                           aliases=('tcmp',),
                                           description=_desc('... time all wanted files where/will be downloaded')),
     })
+    # fmt: on
 
 
 class TorrentFilter(FilterChain):

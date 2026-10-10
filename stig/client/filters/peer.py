@@ -34,6 +34,7 @@ class _CmpFilterSpec(CmpFilterSpec):
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'host'
 
+    # fmt: off
     BOOLEAN_FILTERS = FilterSpecDict({
         'all'         : _BoolFilterSpec(None,
                                         aliases=('*',),
@@ -70,6 +71,7 @@ class _SingleFilter(Filter):
                                        value_type=TorrentPeer.TYPES['port'],
                                        description='Match VALUE against peer port'),
     })
+    # fmt: on
 
 
 class PeerFilter(FilterChain):
