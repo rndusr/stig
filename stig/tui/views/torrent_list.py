@@ -19,8 +19,10 @@ log = make_logger(__name__)
 
 
 class TorrentItemWidget(ItemWidgetBase):
+    # fmt: off
     palette_unfocused = 'torrentlist'
     palette_focused   = 'torrentlist.focused'
+    # fmt: on
     columns_focus_map = {}
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
@@ -35,11 +37,13 @@ class TorrentItemWidget(ItemWidgetBase):
 
 
 class TorrentListWidget(ListWidgetBase):
+    # fmt: off
     tuicolumns      = TUICOLUMNS
     ListItemClass   = TorrentItemWidget
     keymap_context  = 'torrent'
     palette_name    = 'torrentlist'
     focusable_items = True
+    # fmt: on
 
     def __init__(self, srvapi, keymap, tfilter=None, sort=None, columns=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)

@@ -19,8 +19,10 @@ log = make_logger(__name__)
 
 
 class TrackerItemWidget(ItemWidgetBase):
+    # fmt: off
     palette_unfocused = 'trackerlist'
     palette_focused   = 'trackerlist.focused'
+    # fmt: on
     columns_focus_map = {}
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
@@ -35,11 +37,13 @@ class TrackerItemWidget(ItemWidgetBase):
 
 
 class TrackerListWidget(ListWidgetBase):
+    # fmt: off
     tuicolumns      = TUICOLUMNS
     ListItemClass   = TrackerItemWidget
     keymap_context  = 'tracker'
     palette_name    = 'trackerlist'
     focusable_items = True
+    # fmt: on
 
     def __init__(self, srvapi, keymap, torfilter, trkfilter, columns=None, sort=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)

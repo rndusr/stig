@@ -157,8 +157,10 @@ class FileTreeDecorator(ArrowTree):
 
 
 class FileItemWidget(ItemWidgetBase):
+    # fmt: off
     palette_unfocused = 'filelist'
     palette_focused   = 'filelist.focused'
+    # fmt: on
     columns_focus_map = {}
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
@@ -178,11 +180,13 @@ class FileItemWidget(ItemWidgetBase):
 
 
 class FileListWidget(ListWidgetBase):
+    # fmt: off
     tuicolumns      = TUICOLUMNS
     ListItemClass   = FileItemWidget
     keymap_context  = 'file'
     palette_name    = 'filelist'
     focusable_items = True
+    # fmt: on
 
     def __init__(self, srvapi, keymap, tfilter, ffilter, columns=None, title=None):
         super().__init__(srvapi, keymap, columns=columns, title=title)
