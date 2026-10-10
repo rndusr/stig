@@ -946,6 +946,7 @@ class Test_get_position(unittest.TestCase):
         self.assertEqual(cliparser.get_position(*input), output)
 
     def test_everything(self):
+        # fmt: off
         self.do((['foo', '|', 'bar', '|', 'baz'],  0), (0, 0))
         self.do((['foo', '|', 'bar', '|', 'baz'],  1), (0, 1))
         self.do((['foo', '|', 'bar', '|', 'baz'],  2), (0, 2))
@@ -958,6 +959,7 @@ class Test_get_position(unittest.TestCase):
         self.do((['foo', '|', 'bar', '|', 'baz'],  9), (4, 1))
         self.do((['foo', '|', 'bar', '|', 'baz'], 10), (4, 2))
         self.do((['foo', '|', 'bar', '|', 'baz'], 11), (4, 3))
+        # fmt: on
 
 
 class Test_remove_delims(unittest.TestCase):
@@ -1347,6 +1349,7 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz', None, ('/',), None, False, ('foo', 'bar', 'baz'), None, None, None)
 
     def test_separate_at_singlechar_separator_including_separators(self):
+        # fmt: off
         self.do('foo/bar/baz',  0, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'foo', 0, 0)
         self.do('foo/bar/baz',  1, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'foo', 0, 1)
         self.do('foo/bar/baz',  2, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'foo', 0, 2)
@@ -1359,8 +1362,10 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz',  9, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'baz', 4, 1)
         self.do('foo/bar/baz', 10, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'baz', 4, 2)
         self.do('foo/bar/baz', 11, ('/',), None, True, ('foo', '/', 'bar', '/', 'baz'), 'baz', 4, 3)
+        # fmt: on
 
     def test_separate_at_multichar_separator_including_separators(self):
+        # fmt: off
         self.do('foo//bar/.baz',  0, ('//', './', '/.'), None, True, ('foo', '//', 'bar', '/.', 'baz'), 'foo', 0, 0)
         self.do('foo./bar//baz',  1, ('//', './', '/.'), None, True, ('foo', './', 'bar', '//', 'baz'), 'foo', 0, 1)
         self.do('foo/.bar./baz',  2, ('//', './', '/.'), None, True, ('foo', '/.', 'bar', './', 'baz'), 'foo', 0, 2)
@@ -1375,8 +1380,10 @@ class TestArg(unittest.TestCase):
         self.do('foo/.bar./baz', 11, ('//', './', '/.'), None, True, ('foo', '/.', 'bar', './', 'baz'), 'baz', 4, 1)
         self.do('foo/.bar./baz', 12, ('//', './', '/.'), None, True, ('foo', '/.', 'bar', './', 'baz'), 'baz', 4, 2)
         self.do('foo/.bar./baz', 13, ('//', './', '/.'), None, True, ('foo', '/.', 'bar', './', 'baz'), 'baz', 4, 3)
+        # fmt: on
 
     def test_separate_at_singlechar_separator_removing_separators(self):
+        # fmt: off
         self.do('foo/bar/baz',  0, ('/',), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 0)
         self.do('foo/bar/baz',  1, ('/',), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 1)
         self.do('foo/bar/baz',  2, ('/',), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 2)
@@ -1389,8 +1396,10 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz',  9, ('/',), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 1)
         self.do('foo/bar/baz', 10, ('/',), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 2)
         self.do('foo/bar/baz', 11, ('/',), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 3)
+        # fmt: on
 
     def test_separate_at_multichar_separator_removing_separators(self):
+        # fmt: off
         self.do('foo//bar/.baz',  0, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 0)
         self.do('foo./bar//baz',  1, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 1)
         self.do('foo/.bar./baz',  2, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'foo', 0, 2)
@@ -1405,8 +1414,10 @@ class TestArg(unittest.TestCase):
         self.do('foo/.bar./baz', 11, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 1)
         self.do('foo//bar/.baz', 12, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 2)
         self.do('foo./bar//baz', 13, ('//', './', '/.'), None, False, ('foo', 'bar', 'baz'), 'baz', 2, 3)
+        # fmt: on
 
     def test_maxseps_zero(self):
+        # fmt: off
         self.do('foo/bar/baz',  0, ('/',), 0, False, ('foo/bar/baz',), 'foo/bar/baz', 0,  0)
         self.do('foo/bar/baz',  1, ('/',), 0, False, ('foo/bar/baz',), 'foo/bar/baz', 0,  1)
         self.do('foo/bar/baz',  2, ('/',), 0, False, ('foo/bar/baz',), 'foo/bar/baz', 0,  2)
@@ -1419,8 +1430,10 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz',  9, ('/',), 0, False, ('foo/bar/baz',), 'foo/bar/baz', 0,  9)
         self.do('foo/bar/baz', 10, ('/',), 0, False, ('foo/bar/baz',), 'foo/bar/baz', 0, 10)
         self.do('foo/bar/baz', 11, ('/',), 0, False, ('foo/bar/baz',), 'foo/bar/baz', 0, 11)
+        # fmt: on
 
     def test_maxseps_one(self):
+        # fmt: off
         self.do('foo/bar/baz',  0, ('/',), 1, False, ('foo', 'bar/baz'), 'foo', 0,  0)
         self.do('foo/bar/baz',  1, ('/',), 1, False, ('foo', 'bar/baz'), 'foo', 0,  1)
         self.do('foo/bar/baz',  2, ('/',), 1, False, ('foo', 'bar/baz'), 'foo', 0,  2)
@@ -1433,8 +1446,10 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz',  9, ('/',), 1, False, ('foo', 'bar/baz'), 'bar/baz', 1, 5)
         self.do('foo/bar/baz', 10, ('/',), 1, False, ('foo', 'bar/baz'), 'bar/baz', 1, 6)
         self.do('foo/bar/baz', 11, ('/',), 1, False, ('foo', 'bar/baz'), 'bar/baz', 1, 7)
+        # fmt: on
 
     def test_maxseps_two(self):
+        # fmt: off
         self.do('foo/bar/baz/bax',  0, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'foo', 0,  0)
         self.do('foo/bar/baz/bax',  1, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'foo', 0,  1)
         self.do('foo/bar/baz/bax',  2, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'foo', 0,  2)
@@ -1451,6 +1466,7 @@ class TestArg(unittest.TestCase):
         self.do('foo/bar/baz/bax', 13, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 5)
         self.do('foo/bar/baz/bax', 14, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 6)
         self.do('foo/bar/baz/bax', 15, ('/',), 2, False, ('foo', 'bar', 'baz/bax'), 'baz/bax', 2, 7)
+        # fmt: on
 
 
 class TestArgs(unittest.TestCase):
