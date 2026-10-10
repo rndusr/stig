@@ -23,6 +23,7 @@ def _desc(text):
     return text
 
 
+# fmt: off
 _STATUS_VERIFY    = Status.VERIFY
 _STATUS_DOWNLOAD  = Status.DOWNLOAD
 _STATUS_UPLOAD    = Status.UPLOAD
@@ -33,6 +34,7 @@ _STATUS_QUEUED    = Status.QUEUED
 _STATUS_SEED      = Status.SEED
 _STATUS_IDLE      = Status.IDLE
 _STATUS_STOPPED   = Status.STOPPED
+# fmt: on
 
 
 class _SingleFilter(Filter):
