@@ -49,8 +49,10 @@ def _change_setting(name, new_value, on_success=None):
 
 
 class SettingItemWidget(ItemWidgetBase):
+    # fmt: off
     palette_unfocused = 'settinglist'
     palette_focused   = 'settinglist.focused'
+    # fmt: on
     columns_focus_map = {}
     for col in TUICOLUMNS.values():
         columns_focus_map.update(col.style.focus_map)
@@ -161,11 +163,13 @@ class SettingItemWidget(ItemWidgetBase):
 
 
 class SettingListWidget(ListWidgetBase):
+    # fmt: off
     tuicolumns      = TUICOLUMNS
     ListItemClass   = SettingItemWidget
     keymap_context  = 'setting'
     palette_name    = 'settinglist'
     focusable_items = True
+    # fmt: on
 
     def __init__(self, srvapi, keymap, sort=None, columns=None, title='Settings'):
         super().__init__(srvapi, keymap, columns=columns, sort=sort, title=title)

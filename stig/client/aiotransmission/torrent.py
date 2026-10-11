@@ -363,6 +363,7 @@ class TrackerList(tuple):
             return utils.Timestamp.NEVER
 
     def __new__(cls, raw_torrent):
+        # fmt: off
         return super().__new__(cls, (
             ttypes.TorrentTracker(
                 LazyDict({
@@ -390,9 +391,11 @@ class TrackerList(tuple):
                     'time-next-scrape'   : lambda: cls._next_time(raw_tracker, 'Scrape'),
                 })) for raw_tracker in raw_torrent['trackerStats']
         ))
+        # fmt: on
 
 
 # Map abstracted keys to tuples of needed RPC field names
+# fmt: off
 DEPENDENCIES = {
     'id'                           : ('id',),
     'hash'                         : ('hashString',),
@@ -454,6 +457,7 @@ DEPENDENCIES = {
 
     'labels'                       : ('labels',),
 }
+# fmt: on
 
 
 class Torrent(base.TorrentBase):
@@ -466,6 +470,7 @@ class Torrent(base.TorrentBase):
 
     # Map our keys to callables that adjust the raw RPC values or create values
     # from multiple RPC values
+    # fmt: off
     _MODIFIERS = {
         '%downloaded'        : lambda raw: raw['percentDone'] * 100,
         '%uploaded'          : _percent_uploaded,
@@ -507,6 +512,7 @@ class Torrent(base.TorrentBase):
         'peers'              : PeerList,
         'files'              : TorrentFileTree.create,
     }
+    # fmt: on
 
     def __init__(self, raw_torrent):
         self._raw = raw_torrent

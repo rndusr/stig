@@ -137,12 +137,14 @@ class FilterSpecDict(abc.Mapping):
 class Filter():
     """Match sequences of objects against a single filter"""
 
+    # fmt: off
     OPERATORS = {
         '='  : operator.__eq__, '~'  : operator.__contains__,
         '>'  : operator.__gt__, '<'  : operator.__lt__,
         '>=' : operator.__ge__, '<=' : operator.__le__,
         '=~' : lambda a, b: re.search(b, a),
     }
+    # fmt: on
     INVERT_CHAR = '!'
     POSSIBLE_OPERATORS = tuple(itertools.chain.from_iterable((op, '!' + op)
                                                              for op in OPERATORS))

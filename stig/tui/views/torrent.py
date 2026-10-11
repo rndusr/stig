@@ -145,6 +145,7 @@ class Status(_COLUMNS['status'], CellWidgetBase):
     header = urwid.AttrMap(ColumnHeaderWidget(**_COLUMNS['status'].header),
                            style.attrs('header'))
 
+    # fmt: off
     MODE_MAP = {
         client.utils.Status.IDLE      : 'idle',
         client.utils.Status.DOWNLOAD  : 'downloading',
@@ -157,6 +158,7 @@ class Status(_COLUMNS['status'], CellWidgetBase):
         client.utils.Status.VERIFY    : 'verifying',
         client.utils.Status.INIT      : 'discovering',
     }
+    # fmt: on
 
     def get_mode(self):
         return self.MODE_MAP[self.value]

@@ -43,16 +43,21 @@ class TestTransmissionRPC(ClockedTestCase):
         self.assertNotEqual(self.client.rpcversionmin, None)
 
     def assert_cb_connected_called(self, calls=None, args=None, kwargs=None):
+        # fmt: off
         if  calls is not None: self.assertEqual(self.cb_connected.calls, calls)
         if   args is not None: self.assertEqual(self.cb_connected.args, list(args))
         if kwargs is not None: self.assertEqual(self.cb_connected.kwargs, list(kwargs))
+        # fmt: on
 
     def assert_cb_disconnected_called(self, calls, args=None, kwargs=None):
+        # fmt: off
         if  calls is not None: self.assertEqual(self.cb_disconnected.calls, calls)
         if   args is not None: self.assertEqual(self.cb_disconnected.args, list(args))
         if kwargs is not None: self.assertEqual(self.cb_disconnected.kwargs, list(kwargs))
+        # fmt: on
 
     def assert_cb_error_called(self, calls, args=None, kwargs=None):
+        # fmt: off
         if  calls is not None: self.assertEqual(self.cb_error.calls, calls)
         if   args is not None: self.assertEqual(self.cb_error.args, list(args))
         if kwargs is not None:
@@ -60,6 +65,7 @@ class TestTransmissionRPC(ClockedTestCase):
                 self.assertEqual(set(kw_cb), set(kw_exp))
                 for k,v in kw_cb.items():
                     self.assertEqual(v, kw_exp[k])
+        # fmt: on
 
     def test_setting_connection_credentials_to_None(self):
         self.client.url = 'https://foo:bar@foo:123/path'

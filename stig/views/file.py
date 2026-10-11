@@ -20,12 +20,14 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
+# fmt: off
 ALIASES = {'n'    : 'name', 'filename': 'name',
            'sz'   : 'size',
            'dn'   : 'downloaded',
            '%dn'  : '%downloaded',
            'prio' : 'priority',
            'mark' : 'marked'}
+# fmt: on
 
 
 class Filename(ColumnBase):
@@ -114,6 +116,7 @@ class TorrentFileDirectory(dict):
 
     def __init__(self, name, tree, filtered_count=0):
         tfiles = tuple(tree.files)
+        # fmt: off
         self.update({
             'id'              : tree.id,
             'tid'             : tfiles[0]['tid'],
@@ -126,6 +129,7 @@ class TorrentFileDirectory(dict):
             'is-wanted'       : True,
             'priority'        : self._sum_priority(tfiles),
         })
+        # fmt: on
         perc_dl_cls = type(tfiles[0]['%downloaded'])
         try:
             self['%downloaded'] = perc_dl_cls(self['size-downloaded'] / self['size-total'] * 100)

@@ -143,10 +143,12 @@ class Group(urwid.WidgetWrap):
             raise ValueError('Already added: {!r}'.format(name))
         else:
             options = self._parse_options(options)
+            # fmt: off
             item = dict(name=name,            # Descriptive, unique handle
                         widget=widget,        # Bare widget
                         options=options,      # urwid options tuple, e.g. ('given',10) or ('weight',50)
                         removable=removable)  # Whether this item can be deleted
+            # fmt: on
 
             if position == 'start':
                 position = 0

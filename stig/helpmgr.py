@@ -47,6 +47,7 @@ finalize_lines = ForgivingFormatter()
 class HelpManager():
     """Provide help texts for CommandManager, Settings and KeyMap objects"""
 
+    # fmt: off
     MAIN_TOPICS = {
         'commandsmanual' : 'Describes how to call and chain commands',
         'commands'       : 'Lists commands',
@@ -68,6 +69,7 @@ class HelpManager():
         'keymap'      : 'keybindings',
         'keys'        : 'keybindings',
     }
+    # fmt: on
 
     def find(self, topic=None):
         """Find help topic and return lines"""

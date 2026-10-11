@@ -24,9 +24,11 @@ from ..logging import make_logger  # isort:skip
 log = make_logger(__name__)
 
 
+# fmt: off
 DEFAULT_RCFILE      = os.path.join(XDG_CONFIG_HOME, __appname__, 'rc')
 DEFAULT_HISTORY_DIR = os.path.join(XDG_DATA_HOME, __appname__, 'histories')
 DEFAULT_THEME_FILE  = os.path.join(os.path.dirname(__file__), 'default.theme')
+# fmt: on
 
 DEFAULT_TAB_COMMANDS = (
     'tab ls active|!complete',
@@ -256,6 +258,7 @@ def init_defaults(localcfg):
 
 
 
+# fmt: off
 DEFAULT_KEYMAP = (
     # Some vi and emacs key translations
     {'key': 'h',      'action': '<left>'},
@@ -655,3 +658,4 @@ DEFAULT_KEYMAP = (
     {'context': 'helptext', 'key': 'ctrl-p', 'action': 'find --previous',
      'description': 'Find previous occurrence of search string'},
 )
+# fmt: on

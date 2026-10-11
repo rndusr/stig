@@ -605,6 +605,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         )
         self.mainw = self.km.wrap(urwid.Pile, context='main')([self.listw1, self.listw2])
 
+        # fmt: off
         self.km.bind('A',     'A in main',   context='main')
         self.km.bind('B',     'B in main',   context='main')
         self.km.bind('1 2 A', '12A in main', context='main')
@@ -629,6 +630,7 @@ class TestKeyMap_with_nested_widgets(unittest.TestCase):
         self.km.bind('F',     'F in item2',   context='item2')
         self.km.bind('3 4 A', '34A in item2', context='item2')
         self.km.bind('3 4 B', '34B in item2', context='item2')
+        # fmt: on
 
 
     def handle_action(self, action, widget):
