@@ -102,13 +102,16 @@ class TorrentAPI(TorrentAPIBase):
         """Remove all torrents from cache"""
         self._tcache.purge(existing_tids=())
 
-    def _daemon_supports(self, semver):
+    async def _daemon_supports(self, semver):
         """
         Whether the daemon's RPC version is at least `semver`
 
         Daemons that don't report 'rpc-version-semver' are older than 5.3.0,
         which is where it was introduced.
         """
+        if not self.rpc.connected:
+            log.debug("Autoconnecting to determine daemon RPC version")
+            await self.rpc.connect()
         rpcversion = self.rpc.rpcversion_semver
         return rpcversion is not None and rpcversion >= semver
 
@@ -183,7 +186,7 @@ class TorrentAPI(TorrentAPIBase):
 
         warnings = []
         if sequential is not None:
-            if self._daemon_supports(SEQUENTIAL_SEMVER):
+            if await self._daemon_supports(SEQUENTIAL_SEMVER):
                 args['sequential_download'] = True
                 args['sequential_download_from_piece'] = sequential
             else:
@@ -252,7 +255,7 @@ class TorrentAPI(TorrentAPIBase):
                 errors = tuple(warnings)
                 # Before RPC version 5.3.0 torrent-add did not take the
                 # labels argument, so we have to send a follow-up request.
-                if labels and not self._daemon_supports(LABELS_SEMVER):
+                if labels and not await self._daemon_supports(LABELS_SEMVER):
                     response = await self.labels_add((info['id'],), labels)
                     success = response.success
                     if response.success:
@@ -1246,7 +1249,7 @@ class TorrentAPI(TorrentAPIBase):
             msgs:     List of info messages
             errors:   List of error messages
         """
-        if not self._daemon_supports(SEQUENTIAL_SEMVER):
+        if not await self._daemon_supports(SEQUENTIAL_SEMVER):
             return Response(success=False, torrents=(), errors=(SEQUENTIAL_UNSUPPORTED,))
 
         if enabled:
@@ -1281,7 +1284,7 @@ class TorrentAPI(TorrentAPIBase):
             msgs:     List of info messages
             errors:   List of error messages
         """
-        if not self._daemon_supports(SEQUENTIAL_SEMVER):
+        if not await self._daemon_supports(SEQUENTIAL_SEMVER):
             return Response(success=False, torrents=(), errors=(SEQUENTIAL_UNSUPPORTED,))
 
         response = await self.torrents(torrents, keys=('id', 'name', 'sequential'))
