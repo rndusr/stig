@@ -546,6 +546,7 @@ class TransmissionRPC:
                 self._connection_tested = True
                 self._connection_exception = None
                 log.debug('Connection established: %s', self.url)
+                log.debug(f"RPC version: {self._rpcversion}, RPC semver: {self._rpcversion_semver}")
                 self._on_connected.send(self)
 
             log.debug('Releasing connect() lock')
