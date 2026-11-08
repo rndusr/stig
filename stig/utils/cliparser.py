@@ -135,20 +135,20 @@ def _on_any_substr(string, pos, substrs):
     if pos >= len(string):
         return False, '', None, None
 
+    char = string[pos]
     # Match the longest substrings before the shorter ones
     for substr in sorted(substrs, key=len, reverse=True):
+        # `substr` can't cover `pos` if it doesn't contain the character there
+        if char not in substr:
+            continue
+
         # Move position backwards until we find `substr`
         len_substr = len(substr)
-        substr_pos = pos
-        found_substr = ''
-        for _ in range(len_substr):
-            maybe_substr = string[substr_pos : substr_pos + len_substr]
-            if maybe_substr == substr:
-                found_substr = maybe_substr
+        for substr_pos in range(pos, max(pos - len_substr, -1), -1):
+            if string.startswith(substr, substr_pos):
+                found_substr = string[substr_pos : substr_pos + len_substr]
                 break
-            else:
-                substr_pos -= 1
-        if not found_substr:
+        else:
             continue
 
         # Find non-overlapping start position in case there are multiple
@@ -194,18 +194,28 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
     """
     # log.debug('Parsing %r', string)
     state = {'escape': '', 'quote': '', 'closing_quote_end_index': -1}
+
+    def on_special_substrs(pos):
+        return (_on_any_substr(string, pos, delims),
+                _on_any_substr(string, pos, quotes),
+                _on_any_substr(string, pos, escapes))
+
+    # Lookups for the next character are reused in the following iteration
+    next_special_substrs = on_special_substrs(0)
     for i,char in enumerate(string):
         # log.debug('<%s>', string[:i] + '[' + string[i] + ']' + string[i+1:])
-        is_delim, delim, delim_index, delim_offset = _on_any_substr(string, i, delims)
+        ((is_delim, delim, delim_index, delim_offset),
+         (is_quote, quote, quote_index, quote_offset),
+         (is_escape, escape, escape_index, escape_offset)) = next_special_substrs
         # if is_delim: log.debug('    Delimiter at %r: %r', delim_index, delim)
-        is_quote, quote, quote_index, quote_offset = _on_any_substr(string, i, quotes)
         # if is_quote: log.debug('    Quote at %r: %r', quote_index, quote)
-        is_escape, escape, escape_index, escape_offset = _on_any_substr(string, i, escapes)
         # if is_escape: log.debug('    Escape at %r: %r', escape_index, escape)
+        next_special_substrs = on_special_substrs(i + 1)
 
         if not state['escape']:
-            next_is_quote, next_quote, next_quote_index, next_quote_offset = _on_any_substr(string, i + 1, quotes)
-            next_is_escape, next_escape, next_escape_index, next_escape_offset = _on_any_substr(string, i + 1, escapes)
+            ((next_is_delim, _, _, _),
+             (next_is_quote, next_quote, _, _),
+             (next_is_escape, _, _, _)) = next_special_substrs
 
             # Backslash is plain text between quotes except when it escapes the
             # enclosing quote (e.g. "foo \" bar" -> [foo " bar])
@@ -217,7 +227,6 @@ def _parse(string, delims=DEFAULT_DELIMS, escapes=DEFAULT_ESCAPES, quotes=DEFAUL
                 # escape string (escape characters are not marked as escaped)
                 if i >= escape_index + len(escape) - 1:
                     # Only mark escape characters that need it
-                    next_is_delim, _, _, _ = _on_any_substr(string, i + 1, delims)
                     if next_is_delim or next_is_quote or next_is_escape:
                         # log.debug('    Enabling escape state')
                         state['escape'] = escape
