@@ -23,6 +23,7 @@ class Key(str):
     """Key or key combination as string"""
 
     # Convert some urwid key names and some other stuff
+    # fmt: off
     _INIT = (
         (re.compile(r'^<(.+)>$'),                            r'\1'),
         (re.compile(r'^(.*) $'),                             r'\1space'),
@@ -43,6 +44,7 @@ class Key(str):
         (re.compile(r'^(\w+)-(\S+)$'),
          lambda m: m.group(1).lower() + '-' + m.group(2)),
     )
+    # fmt: on
 
     _MODS = ('shift', 'alt', 'ctrl')
     _FKEYS = ('F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
@@ -134,10 +136,12 @@ class Key(str):
 
 
 class KeyChain(tuple):
+    # fmt: off
     ADVANCE = '<ADVANCE>'
     REDUCE  = '<REDUCE>'
     REJECT  = '<REJECT>'
     ABORT   = '<ABORT>'
+    # fmt: on
 
     def __new__(cls, *keys):
         obj = super().__new__(cls, (Key(k) for k in keys))
@@ -248,9 +252,11 @@ class KeyMap():
     >>> pw = Password('', 'Enter password or <Alt-g> to generate one')
     """
 
+    # fmt: off
     NO_CONTEXT      = object()
     ALL_CONTEXTS    = object()
     DEFAULT_CONTEXT = 'default'
+    # fmt: on
 
     def __init__(self, callback=None):
         self._default_callback = callback

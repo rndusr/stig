@@ -16,17 +16,21 @@ from ..client import filters as filter_clses
 from ..client import sorters as sorter_clses
 from . import Candidate, Candidates
 
+# fmt: off
 columns_labels = {'torrents' : 'Torrent List Column',
                   'files'    : 'File List Column',
                   'peers'    : 'Peer List Column',
                   'trackers' : 'Tracker List Column',
                   'settings' : 'Setting List Column'}
+# fmt: on
 
 
+# fmt: off
 sorters_labels = {'TorrentSorter' : 'Torrent Sort Order',
                   'PeerSorter'    : 'Peer Sort Order',
                   'TrackerSorter' : 'Tracker Sort Order',
                   'SettingSorter' : 'Setting Sort Order'}
+# fmt: on
 
 
 @functools.lru_cache(maxsize=None)
@@ -37,11 +41,13 @@ def get_sorter_cls(clsname):
 # All filters use the same operators
 filter_compare_ops = filter_clses.TorrentFilter.POSSIBLE_OPERATORS
 filter_combine_ops = ('&', '|')
+# fmt: off
 filter_labels = {'TorrentFilter'  : 'Torrent Filter',
                  'FileFilter'    : 'File Filter',
                  'PeerFilter'    : 'Peer Filter',
                  'TrackerFilter' : 'Tracker Filter',
                  'SettingFilter' : 'Setting Filter'}
+# fmt: on
 
 @functools.lru_cache(maxsize=None)
 def filter_names(filter_cls_name):

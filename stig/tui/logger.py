@@ -213,6 +213,7 @@ class LogEntry(urwid.WidgetWrap):
 
     def __init__(self, message, style):
         self._dupes = 0
+        # fmt: off
         self._widgets = {
             'timestamp':    urwid.Text(self._make_timestamp()),
             'dupes':        urwid.Text(''),
@@ -226,6 +227,7 @@ class LogEntry(urwid.WidgetWrap):
             ('pack', urwid.AttrMap(self._widgets['dupes_spacer'], 'log')),
             urwid.AttrMap(self._widgets['message'], 'log.' + style),
         ], dividechars=0))
+        # fmt: on
 
     @property
     def text(self):

@@ -82,6 +82,7 @@ class TorrentFile(abc.Mapping):
     # Distinguish subtrees from files without comparing classes everywhere
     nodetype = 'leaf'
 
+    # fmt: off
     TYPES = {
         'id'              : None,
         'tid'             : None,
@@ -109,6 +110,7 @@ class TorrentFile(abc.Mapping):
         'priority'        : lambda raw: 'off' if not raw['is-wanted'] else raw['priority'],
         '%downloaded'     : lambda raw: _calc_percent(raw['size-downloaded'], raw['size-total']),
     }
+    # fmt: on
 
     def __init__(self, tid, id, name, path, location, size_total, size_downloaded, is_wanted, priority):
         self._raw = {'tid': tid, 'id': id, 'name': name, 'path': path, 'location': location,
@@ -158,6 +160,7 @@ class TorrentFile(abc.Mapping):
 
 
 class TorrentPeer(abc.Mapping):
+    # fmt: off
     TYPES = {
         'id'          : None,
         'tid'         : None,
@@ -177,6 +180,7 @@ class TorrentPeer(abc.Mapping):
     _MODIFIERS = {
         'id'      : lambda p: (p['tid'], p['ip'], p['port']),
     }
+    # fmt: on
 
     _MAX_PEER_PROGRESS_SAMPLE_AGE = 1800  # 30 minutes
     _PEER_PROGRESS_DATA = defaultdict(lambda: deque(maxlen=10))
@@ -287,6 +291,7 @@ class TrackerStatus(utils.SmartCmpStr):
             return super().__new__(cls, status)
 
 class TorrentTracker(abc.Mapping):
+    # fmt: off
     TYPES = {
         'id'                 : None,
         'tid'                : int,
@@ -325,6 +330,7 @@ class TorrentTracker(abc.Mapping):
                                  'Scrape error: %s' % self['error-scrape']
                                  if self['error-scrape'] else '')
     }
+    # fmt: on
 
     def __init__(self, trkdict):
         self._dct = trkdict

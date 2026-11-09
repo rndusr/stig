@@ -115,9 +115,11 @@ class ItemWidgetBase(urwid.WidgetWrap):
     # Derived classes must set these class attributes; lists with unfocusable
     # items (e.g. peer lists) don't have to set palette_focused and
     # columns_focus_map.
+    # fmt: off
     columns_focus_map = NotImplemented
     palette_unfocused = NotImplemented
     palette_focused   = NotImplemented
+    # fmt: on
 
     def __init__(self, data, cells):
         self._data = data    # Info of torrent/tracker/file/peer/... as mapping
@@ -170,11 +172,13 @@ class ListWidgetBase(urwid.WidgetWrap):
     """Base class for Torrent/File/Peer/... lists"""
 
     # Derived classes must set these class attributes
+    # fmt: off
     tuicolumns      = NotImplemented
     ListItemClass   = NotImplemented
     keymap_context  = NotImplemented
     palette_name    = NotImplemented
     focusable_items = False
+    # fmt: on
 
     def __init__(self, srvapi, keymap, columns=None, sort=None, title=None):
         self._srvapi = srvapi

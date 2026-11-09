@@ -27,6 +27,7 @@ class _CmpFilterSpec(CmpFilterSpec):
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'domain'
 
+    # fmt: off
     BOOLEAN_FILTERS = FilterSpecDict({
         'all'   : _BoolFilterSpec(None,
                                   aliases=('*',),
@@ -98,6 +99,7 @@ class _SingleFilter(Filter):
                                          aliases=('nsc',),
                                          description='Match VALUE against time of next scrape'),
     })
+    # fmt: on
 
 
 class TrackerFilter(FilterChain):

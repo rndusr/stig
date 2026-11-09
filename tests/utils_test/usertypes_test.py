@@ -175,6 +175,7 @@ class Test_multitype(_TestBase):
 
 class TestString(_TestBase):
     def test_syntax(self):
+        # fmt: off
         self.assertEqual(String('foo').syntax, 'string')
         self.assertEqual(String('foo', minlen=1).syntax, 'string (at least 1 character)')
         self.assertEqual(String('foo', minlen=2).syntax, 'string (at least 2 characters)')
@@ -186,6 +187,7 @@ class TestString(_TestBase):
         self.assertEqual(String('f', regex=r'fo*', minlen=1).syntax, "string (pattern=fo*, at least 1 character)")
         self.assertEqual(String('f', regex=r'fo*', maxlen=3).syntax, "string (pattern=fo*, at most 3 characters)")
         self.assertEqual(String('f', regex=r'fo*', minlen=1, maxlen=3).syntax, "string (pattern=fo*, 1-3 characters)")
+        # fmt: on
 
     def test_regex(self):
         assert String('f', regex='fo*') == 'f'

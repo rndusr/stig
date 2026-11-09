@@ -320,6 +320,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
             self.check(w, size=(5, 10), text=(' ' * 5,) * 10)
 
     def test_scrollbar_grows_and_shrinks(self):
+        # fmt: off
         size = (10, 3)
         self.check(self.scrollbar, size,
                    text=('one'.ljust(size[0] - 1)   + '#',
@@ -333,6 +334,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                          'four'.ljust(size[0] - 1)  + '#',
                          'five'.ljust(size[0] - 1)  + '|',
                          'six'.ljust(size[0] - 1)   + '|'))
+        # fmt: on
 
     def test_scrollbar_disappears_if_not_needed(self):
         size = (10, 10)
@@ -341,6 +343,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                          for t in TEXT))
 
     def test_big_scrollbar_moves_up_and_down(self):
+        # fmt: off
         size = (10, 6)
         self.check(self.scrollbar, size,
                    text=('one'.ljust(size[0] - 1)     + '#',
@@ -367,8 +370,10 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                          'six'.ljust(size[0] - 1)     + '#',
                          'seven'.ljust(size[0] - 1)   + '#',
                          'eight'.ljust(size[0] - 1)   + '|'))
+        # fmt: on
 
     def test_small_scrollbar_moves_up_and_down(self):
+        # fmt: off
         size = (10, 3)
         self.check(self.scrollbar, size,
                    text=('one'.ljust(size[0] - 1)     + '#',
@@ -386,6 +391,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                    text=('four'.ljust(size[0] - 1)    + '|',
                          'five'.ljust(size[0] - 1)    + '#',
                          'six'.ljust(size[0] - 1)     + '|'))
+        # fmt: on
 
 
     def test_mouse_event(self):
@@ -400,6 +406,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
         )
         sb = ScrollBar(scrl, thumb_char='#', trough_char='|')
 
+        # fmt: off
         size = (10, 5)
         self.check(sb, size, cursor_pos=(4, 2), text=('t1'.ljust(size[0] - 1)   + '#',
                                                       't2'.ljust(size[0] - 1)   + '#',
@@ -427,6 +434,7 @@ class TestScrollBarWithScrollable(unittest.TestCase):
                                                       'eYYY'.ljust(size[0] - 1) + '#',
                                                       't4'.ljust(size[0] - 1)   + '#',
                                                       't5'.ljust(size[0] - 1)   + '#'))
+        # fmt: on
 
     # https://github.com/urwid/urwid/issues/226#issuecomment-437176837
     def test_shards_bug(self):

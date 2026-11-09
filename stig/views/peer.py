@@ -19,11 +19,13 @@ log = make_logger(__name__)
 
 
 COLUMNS = {}
+# fmt: off
 ALIASES = {'cl'   : 'client',
            '%dn'  : '%downloaded',
            'rup'  : 'rate-up',
            'rdn'  : 'rate-down',
            're'   : 'rate-est'}
+# fmt: on
 
 
 class Torrent(ColumnBase):

@@ -201,6 +201,7 @@ class TestCompleter_update(unittest.IsolatedAsyncioTestCase):
             else: return Candidates()
         cmdline = 'foo -10 & bar - | baz -31'
         self.init(get_cands)
+        # fmt: off
         await self.update(cmdline,  6, call(('foo', '-10',)), 1, 2, (('-1',), ('-10', '-11', '-110')), 0)
         await self.update(cmdline,  7, call(('foo', '-10',)), 1, 3, (('-10',), ('-10',)), 0)
         await self.update(cmdline,  8, None, None, None, (), None)
@@ -221,6 +222,7 @@ class TestCompleter_update(unittest.IsolatedAsyncioTestCase):
         await self.update(cmdline, 23, call(('baz', '-31',)), 1, 1, (('-',), ('-30', '-31', '-310')), 0)
         await self.update(cmdline, 24, call(('baz', '-31',)), 1, 2, (('-3',), ('-30', '-31', '-310')), 0)
         await self.update(cmdline, 25, call(('baz', '-31',)), 1, 3, (('-31',), ('-31', '-310')), 0)
+        # fmt: on
 
     async def test_argument_without_closing_quote(self):
         def get_cands(args):

@@ -235,8 +235,10 @@ class Bool(str, UsertypeMixin):
       false: Sequence of falsy values
     """
     typename = 'boolean'
+    # fmt: off
     defaults = {'true'  : ('enabled', 'yes', 'on', 'true', '1'),
                 'false' : ('disabled', 'no', 'off', 'false', '0')}
+    # fmt: on
 
     def __new__(cls, value, *, true=defaults['true'], false=defaults['false']):
         if isinstance(value, str):
@@ -361,10 +363,12 @@ class Tuple(tuple, UsertypeMixin):
       dedup:   Whether to remove duplicate items
     """
     typename = 'list'
+    # fmt: off
     defaults = {'sep'     : ', ',
                 'options' : None,
                 'aliases' : {},
                 'dedup'   : False}
+    # fmt: on
 
     def __new__(cls, *value, sep=defaults['sep'], options=defaults['options'],
                 aliases=defaults['options'], dedup=defaults['dedup']):
@@ -497,6 +501,7 @@ class _NumberBase(UsertypeMixin):
         'b': {'B': lambda value: value / 8},  # bits to bytes
     }
     typename = 'number'
+    # fmt: off
     defaults = {'unit'       : None,
                 'convert_to' : None,
                 'prefix'     : None,
@@ -504,6 +509,7 @@ class _NumberBase(UsertypeMixin):
                 'min'        : None,
                 'max'        : None,
                 'autolimit'  : None}
+    # fmt: on
 
     def __new__(cls, value, *, unit=defaults['unit'],
                 convert_to=defaults['convert_to'], prefix=defaults['prefix'],
@@ -665,6 +671,7 @@ class _NumberBase(UsertypeMixin):
         # Create new instance with copied properties
         return result_cls(result, **self._args)
 
+    # fmt: off
     def __add__(self, other):          return self._do_math('__add__', other)
     def __sub__(self, other):          return self._do_math('__sub__', other)
     def __mul__(self, other):          return self._do_math('__mul__', other)
@@ -676,6 +683,7 @@ class _NumberBase(UsertypeMixin):
     def __pow__(self, other):          return self._do_math('__pow__', other)
     def __floor__(self):               return self._do_math('__floor__')
     def __ceil__(self):                return self._do_math('__ceil__')
+    # fmt: on
     def __round__(self, ndigits=None): return self._do_math('__round__', ndigits)
 
 class Float(_NumberBase, float):

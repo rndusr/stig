@@ -35,6 +35,7 @@ def apply_patches():
         setattr(urwid, cls_name, cls_patched)
 
     # Add more actions for key bindings
+    # fmt: off
     urwid.CURSOR_WORD_LEFT         = 'cursor word left'
     urwid.CURSOR_WORD_RIGHT        = 'cursor word right'
     urwid.DELETE_TO_EOL            = 'delete to end of line'
@@ -45,12 +46,14 @@ def apply_patches():
     urwid.CANCEL                   = 'cancel'
     urwid.COMPLETE_NEXT            = 'complete next'
     urwid.COMPLETE_PREV            = 'complete previous'
+    # fmt: on
 
     # Remove urwid's default keybindings and create our own built-in command_map
     for key in tuple(urwid.command_map._command):
         del urwid.command_map._command[key]
 
     from .keymap import Key  # noqa isort:skip
+    # fmt: off
     urwid.command_map[Key('pgup')]           = urwid.CURSOR_PAGE_UP
     urwid.command_map[Key('pgdn')]           = urwid.CURSOR_PAGE_DOWN
     urwid.command_map[Key('ctrl-b')]         = urwid.CURSOR_PAGE_UP
@@ -84,6 +87,7 @@ def apply_patches():
     urwid.command_map[Key('ctrl-l')]         = urwid.REDRAW_SCREEN
     urwid.command_map[Key('tab')]            = urwid.COMPLETE_NEXT
     urwid.command_map[Key('shift-tab')]      = urwid.COMPLETE_PREV
+    # fmt: on
 
 def revert_patches():
     for cls_name in _patched_classes:

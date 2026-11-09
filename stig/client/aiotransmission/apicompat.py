@@ -25,6 +25,7 @@ old-protocol requests in libtransmission/api-compat.cc.
 
 # (current name, legacy name) pairs, taken from the RpcKeys table in
 # libtransmission/api-compat.cc
+# fmt: off
 _RPC_KEYS = (
     ('active_torrent_count',                 'activeTorrentCount'),
     ('activity_date',                        'activityDate'),
@@ -244,13 +245,16 @@ _RPC_KEYS = (
     ('utp_enabled',                          'utp-enabled'),
     ('webseeds_sending_to_us',               'webseedsSendingToUs'),
 )
+# fmt: on
 
 # The daemon uses different legacy names for the same value depending on the
 # context, so these can't be part of the lookup tables below.
+# fmt: off
 _DOWNLOAD_DIR_LEGACY_TORRENT   = 'downloadDir'   # torrent-get/torrent-set
 _DOWNLOAD_DIR_LEGACY_SESSION   = 'download-dir'  # session-get/session-set/torrent-add
 _TOTAL_SIZE_LEGACY_TORRENT     = 'totalSize'     # torrent-get
 _TOTAL_SIZE_LEGACY_FREE_SPACE  = 'total_size'    # free-space
+# fmt: on
 
 TO_CURRENT = {legacy: current for current,legacy in _RPC_KEYS}
 TO_CURRENT[_DOWNLOAD_DIR_LEGACY_TORRENT] = 'download_dir'

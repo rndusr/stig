@@ -26,6 +26,7 @@ class _CmpFilterSpec(CmpFilterSpec):
 class _SingleFilter(Filter):
     DEFAULT_FILTER = 'name'
 
+    # fmt: off
     BOOLEAN_FILTERS = FilterSpecDict({
         'all'      : _BoolFilterSpec(None,
                                      aliases=('*',),
@@ -66,6 +67,7 @@ class _SingleFilter(Filter):
                                        aliases=('prio',),
                                        description='Match VALUE against download priority (off, low, normal, high)'),
     })
+    # fmt: on
 
 
 class FileFilter(FilterChain):
