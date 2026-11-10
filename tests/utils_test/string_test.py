@@ -3,6 +3,19 @@ import unittest
 from stig.utils.string import stralign, strcrop, strwidth
 
 
+class Test_strcrop_with_tail(unittest.TestCase):
+    def test_tail_fits(self):
+        self.assertEqual(strcrop('123456', 5, tail='...'), '12...')
+        self.assertEqual(strcrop('12345678', 3, tail='…'), '12…')
+        self.assertEqual(strcrop('123', 100, tail='...'), '123')
+
+    def test_tail_wider_than_width(self):
+        # The tail alone is wider than the available width: crop the tail
+        # itself instead of crashing with an IndexError.
+        self.assertEqual(strcrop('123456', 2, tail='...'), '..')
+        self.assertEqual(strcrop('123456', 0, tail='…'), '')
+
+
 class Test_strwidth(unittest.TestCase):
     def test_empty_string(self):
         self.assertEqual(strwidth(''), 0)
