@@ -61,6 +61,7 @@ def strcrop(string, width, tail=None):
         return string  # string is already short enough
 
     if tail is not None:
+        orig_width = width
         width -= strwidth(tail)  # Account for tail in final width
 
     indexes = list(widechar_indexes(string)) + [len(string)]
@@ -81,7 +82,13 @@ def strcrop(string, width, tail=None):
 
     if currwidth > width:
         excess = currwidth - width
-        parts[-1] = parts[-1][:-excess]
+        if parts:
+            parts[-1] = parts[-1][:-excess]
+        elif tail is not None:
+            # The tail alone is wider than the available width, so there is
+            # nothing of the string to keep; crop the tail itself instead of
+            # crashing with an IndexError on the empty `parts` list.
+            return strcrop(tail, orig_width)
 
     if tail is not None:
         parts.append(tail)
